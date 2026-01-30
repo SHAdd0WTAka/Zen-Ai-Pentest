@@ -15,7 +15,7 @@
 # =============================================================================
 # STAGE 1: Base Image
 # =============================================================================
-FROM python:3.12-slim-bookworm AS base
+FROM python:3.14-slim-bookworm AS base
 
 LABEL maintainer="SHAdd0WTAka + Kimi AI"
 LABEL description="Zen AI Pentest Framework"
@@ -228,7 +228,7 @@ RUN pip install --upgrade pip && \
 # =============================================================================
 # STAGE 5: Final Minimal Image
 # =============================================================================
-FROM python:3.12-alpine AS minimal
+FROM python:3.14-alpine AS minimal
 
 # Install only runtime dependencies
 RUN apk add --no-cache \
