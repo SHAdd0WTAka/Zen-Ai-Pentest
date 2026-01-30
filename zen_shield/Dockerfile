@@ -1,7 +1,7 @@
 # Zen Shield Sanitizer Service
 # FastAPI microservice for data sanitization
 
-FROM python:3.11-slim
+FROM python:3.14-slim
 
 WORKDIR /app
 
