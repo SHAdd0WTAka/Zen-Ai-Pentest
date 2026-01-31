@@ -8,6 +8,8 @@
 [![Docker](https://img.shields.io/badge/Docker-Ready-blue)](docker/)
 [![Tests](https://img.shields.io/badge/Tests-pytest-brightgreen)](tests/)
 [![Version](https://img.shields.io/badge/Version-2.0.0-orange)](https://github.com/SHAdd0WTAka/zen-ai-pentest/releases)
+[![Authors](https://img.shields.io/badge/Authors-SHAdd0WTAka%20%7C%20KimiAI-purple)](#-authors--team)
+[![Roadmap](https://img.shields.io/badge/Roadmap-2026-blueviolet)](ROADMAP_2026.md)
 
 **Zen-AI-Pentest** is an autonomous, AI-powered penetration testing framework that combines cutting-edge language models with professional security tools. Built for security professionals, bug bounty hunters, and enterprise security teams.
 
@@ -668,6 +670,58 @@ zen-ai-pentest/
 ├── tools/                     # Pentesting Tools
 └── ...
 ```
+
+---
+
+## 👥 Authors & Team
+
+### Core Development Team
+
+<table>
+  <tr>
+    <td align="center">
+      <a href="https://github.com/SHAdd0WTAka">
+        <img src="https://github.com/SHAdd0WTAka.png?size=100" width="100px;" alt="SHAdd0WTAka"/>
+        <br />
+        <sub><b>@SHAdd0WTAka</b></sub>
+      </a>
+      <br />
+      <sub>Project Founder & Lead Developer</sub>
+      <br />
+      <sub>Security Architect</sub>
+    </td>
+    <td align="center">
+      <a href="https://www.moonshot.cn/">
+        <img src="https://img.shields.io/badge/Kimi-AI-blue?style=for-the-badge&logo=openai&logoColor=white" width="100px;" alt="Kimi AI"/>
+        <br />
+        <sub><b>Kimi AI</b></sub>
+      </a>
+      <br />
+      <sub>AI Development Partner</sub>
+      <br />
+      <sub>Architecture & Design</sub>
+    </td>
+  </tr>
+</table>
+
+### AI Contributors
+
+- **Kimi AI (Moonshot AI)** - Primary AI development partner
+  - Led architecture design for autonomous agent loop
+  - Implemented Risk Engine with false-positive reduction
+  - Created CI/CD integration templates
+  - Developed benchmarking framework
+  - Co-authored documentation and roadmaps
+
+### Special Thanks
+
+- **Grok (xAI)** - Strategic analysis and competitive research
+- **GitHub Copilot** - Code assistance and suggestions
+- **Security Community** - Feedback, bug reports, and feature requests
+
+### Contributing
+
+We welcome contributions! See [CONTRIBUTORS.md](CONTRIBUTORS.md) and [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
 ---
 

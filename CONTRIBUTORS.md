@@ -5,6 +5,22 @@ Thank you to all the amazing people who have contributed to Zen AI Pentest!
 ## Core Team
 
 - **[@SHAdd0WTAka](https://github.com/SHAdd0WTAka)** - Project Founder & Lead Developer
+  - Role: Project Lead, Lead Developer, Security Architect
+  - Contributions: Core framework, Multi-LLM routing, CI/CD pipelines
+
+## AI Contributors
+
+- **Kimi AI (Moonshot AI)** - AI Assistant & Co-Developer
+  - Role: AI-Powered Development Partner
+  - Contributions: Architecture design, Autonomous agent loop, Risk engine, Benchmarking framework, Documentation
+  - Note: Assisted in development of major components including ReAct pattern implementation, False-Positive Reduction Engine, and CI/CD templates
+
+## Acknowledgments
+
+Special thanks to the AI assistants who contributed to this project:
+- **Kimi AI** (Moonshot AI) - Primary AI development partner
+- Grok (xAI) - Strategic analysis and roadmap planning
+- GitHub Copilot - Code assistance
 
 ## Contributors
 
