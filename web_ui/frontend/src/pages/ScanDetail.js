@@ -1,149 +1,209 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import {
-    Box,
-    Typography,
-    Paper,
-    LinearProgress,
-    List,
-    ListItem,
-    ListItemText,
-    Chip,
-    Divider,
-    Grid
-} from '@mui/material';
-import axios from 'axios';
+import { useParams, useNavigate } from 'react-router-dom';
+import { scansAPI } from '../services/api';
+import { useWebSocket } from '../hooks/useWebSocket';
+import { 
+  ArrowLeft, 
+  CheckCircle, 
+  Activity, 
+  AlertCircle, 
+  Clock,
+  ShieldAlert,
+  Terminal,
+  Download
+} from 'lucide-react';
+import './ScanDetail.css';
 
 function ScanDetail() {
-    const { scanId } = useParams();
+    const { id } = useParams();
+    const navigate = useNavigate();
     const [scan, setScan] = useState(null);
     const [findings, setFindings] = useState([]);
-    const [logs, setLogs] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [activeTab, setActiveTab] = useState('overview');
+    
+    const { isConnected, logs, progress, status } = useWebSocket(
+        scan?.status === 'running' ? id : null
+    );
 
     useEffect(() => {
         fetchScanDetails();
-        const interval = setInterval(fetchScanDetails, 2000);
-        return () => clearInterval(interval);
-    }, [scanId]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [id]);
 
     const fetchScanDetails = async () => {
         try {
-            const [scanRes, findingsRes, logsRes] = await Promise.all([
-                axios.get(`/api/scans/${scanId}`),
-                axios.get(`/api/scans/${scanId}/findings`),
-                axios.get(`/api/scans/${scanId}/logs`)
+            const [scanRes, findingsRes] = await Promise.all([
+                scansAPI.getById(id),
+                scansAPI.getFindings(id),
             ]);
             setScan(scanRes.data);
-            setFindings(findingsRes.data);
-            setLogs(logsRes.data);
+            setFindings(findingsRes.data || []);
+            setLoading(false);
         } catch (error) {
             console.error('Error fetching scan details:', error);
         }
     };
 
-    const getSeverityColor = (severity) => {
-        switch (severity?.toUpperCase()) {
-            case 'CRITICAL':
-                return 'error';
-            case 'HIGH':
-                return 'warning';
-            case 'MEDIUM':
-                return 'info';
-            case 'LOW':
-                return 'success';
+    const getStatusIcon = (status) => {
+        switch (status) {
+            case 'completed':
+                return <CheckCircle size={20} className="status-icon completed" />;
+            case 'running':
+                return <Activity size={20} className="status-icon running" />;
+            case 'failed':
+                return <AlertCircle size={20} className="status-icon failed" />;
             default:
-                return 'default';
+                return <Clock size={20} className="status-icon pending" />;
         }
     };
 
+    const getSeverityClass = (severity) => {
+        return `severity-badge ${severity?.toLowerCase() || 'info'}`;
+    };
+
+    if (loading) {
+        return (
+            <div className="loading-container">
+                <div className="spinner"></div>
+                <p>Loading scan details...</p>
+            </div>
+        );
+    }
+
     if (!scan) {
-        return <LinearProgress />;
+        return (
+            <div className="error-container">
+                <AlertCircle size={48} />
+                <p>Scan not found</p>
+                <button onClick={() => navigate('/scans')} className="btn-primary">
+                    Back to Scans
+                </button>
+            </div>
+        );
     }
 
     return (
-        <Box>
-            <Typography variant="h4" gutterBottom>
-                Scan Details
-            </Typography>
+        <div className="scan-detail-page">
+            <header className="detail-header">
+                <button onClick={() => navigate('/scans')} className="btn-back">
+                    <ArrowLeft size={18} />
+                    Back
+                </button>
+                <div className="header-info">
+                    <h1>{scan.target}</h1>
+                    <div className="header-meta">
+                        <span className={getSeverityClass(scan.status)}>
+                            {getStatusIcon(scan.status)}
+                            {status || scan.status}
+                        </span>
+                        {isConnected && (
+                            <span className="ws-indicator connected">
+                                ● Live
+                            </span>
+                        )}
+                    </div>
+                </div>
+            </header>
 
-            {/* Overview */}
-            <Paper sx={{ p: 2, mb: 2 }}>
-                <Typography variant="h6">Overview</Typography>
-                <Grid container spacing={2}>
-                    <Grid item xs={6}>
-                        <Typography><strong>Target:</strong> {scan.request?.target}</Typography>
-                        <Typography><strong>Status:</strong> 
-                            <Chip 
-                                label={scan.status} 
-                                color={scan.status === 'completed' ? 'success' : 'primary'}
-                                size="small"
-                                sx={{ ml: 1 }}
-                            />
-                        </Typography>
-                    </Grid>
-                    <Grid item xs={6}>
-                        <Typography><strong>Progress:</strong> {scan.progress}%</Typography>
-                        <LinearProgress variant="determinate" value={scan.progress} sx={{ mt: 1 }} />
-                    </Grid>
-                </Grid>
-            </Paper>
+            {scan.status === 'running' && (
+                <div className="progress-section">
+                    <div className="progress-header">
+                        <span>Progress</span>
+                        <span>{Math.round(progress || scan.progress || 0)}%</span>
+                    </div>
+                    <div className="progress-bar-large">
+                        <div 
+                            className="progress-fill"
+                            style={{ width: `${progress || scan.progress || 0}%` }}
+                        ></div>
+                    </div>
+                </div>
+            )}
 
-            {/* Findings */}
-            <Paper sx={{ p: 2, mb: 2 }}>
-                <Typography variant="h6" gutterBottom>
+            <div className="tabs">
+                <button 
+                    className={activeTab === 'overview' ? 'active' : ''}
+                    onClick={() => setActiveTab('overview')}
+                >
+                    <ShieldAlert size={16} />
                     Findings ({findings.length})
-                </Typography>
-                <List>
-                    {findings.map((finding, index) => (
-                        <React.Fragment key={index}>
-                            <ListItem>
-                                <ListItemText
-                                    primary={
-                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                            <Typography variant="subtitle1">
-                                                {finding.title || finding.type}
-                                            </Typography>
-                                            <Chip
-                                                label={finding.severity}
-                                                color={getSeverityColor(finding.severity)}
-                                                size="small"
-                                            />
-                                        </Box>
-                                    }
-                                    secondary={
-                                        <>
-                                            <Typography variant="body2" color="textSecondary">
-                                                {finding.description}
-                                            </Typography>
-                                            {finding.risk_score && (
-                                                <Typography variant="body2" sx={{ mt: 1 }}>
-                                                    Risk Score: {finding.risk_score.risk_score}/10
-                                                </Typography>
-                                            )}
-                                        </>
-                                    }
-                                />
-                            </ListItem>
-                            <Divider />
-                        </React.Fragment>
-                    ))}
-                </List>
-            </Paper>
+                </button>
+                <button 
+                    className={activeTab === 'logs' ? 'active' : ''}
+                    onClick={() => setActiveTab('logs')}
+                >
+                    <Terminal size={16} />
+                    Logs ({logs.length})
+                </button>
+            </div>
 
-            {/* Logs */}
-            <Paper sx={{ p: 2 }}>
-                <Typography variant="h6" gutterBottom>
-                    Execution Logs
-                </Typography>
-                <Box sx={{ maxHeight: 300, overflow: 'auto', bgcolor: 'background.paper', p: 1 }}>
-                    {logs.map((log, index) => (
-                        <Typography key={index} variant="body2" sx={{ fontFamily: 'monospace' }}>
-                            [{new Date(log.timestamp).toLocaleTimeString()}] {log.message}
-                        </Typography>
-                    ))}
-                </Box>
-            </Paper>
-        </Box>
+            <div className="tab-content">
+                {activeTab === 'overview' && (
+                    <div className="findings-section">
+                        {findings.length > 0 ? (
+                            <div className="findings-list">
+                                {findings.map((finding) => (
+                                    <div key={finding.id} className="finding-card">
+                                        <div className="finding-header">
+                                            <span className={getSeverityClass(finding.severity)}>
+                                                {finding.severity}
+                                            </span>
+                                            <span className="finding-date">
+                                                {new Date(finding.created_at).toLocaleString()}
+                                            </span>
+                                        </div>
+                                        <h3>{finding.title}</h3>
+                                        <p>{finding.description}</p>
+                                        {finding.remediation && (
+                                            <div className="remediation">
+                                                <strong>Remediation:</strong> {finding.remediation}
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="empty-state">
+                                <ShieldAlert size={48} />
+                                <p>No findings yet</p>
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {activeTab === 'logs' && (
+                    <div className="logs-section">
+                        <div className="logs-header">
+                            <span>Real-time Logs</span>
+                            <button className="btn-icon">
+                                <Download size={16} />
+                            </button>
+                        </div>
+                        <div className="logs-container">
+                            {logs.length > 0 ? (
+                                logs.map((log) => (
+                                    <div key={log.id} className={`log-line ${log.level}`}>
+                                        <span className="log-time">
+                                            {new Date(log.timestamp).toLocaleTimeString()}
+                                        </span>
+                                        <span className={`log-level ${log.level}`}>
+                                            {log.level.toUpperCase()}
+                                        </span>
+                                        <span className="log-message">{log.message}</span>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="empty-logs">
+                                    <Terminal size={32} />
+                                    <p>Waiting for logs...</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
+            </div>
+        </div>
     );
 }
 

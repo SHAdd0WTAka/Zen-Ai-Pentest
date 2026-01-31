@@ -4,105 +4,117 @@ Zen-AI-Pentest Tools Package
 Alle Pentesting Tools Integrationen.
 """
 
-# Network Scanners
-from .nmap_integration import NmapTool, nmap_scan
-from .masscan_integration import MasscanScanner, masscan_quick_scan
-from .scapy_integration import ScapyScanner, scapy_syn_scan, scapy_arp_scan
-from .tshark_integration import TsharkAnalyzer, tshark_capture
+import logging
 
-# Web Security
-from .burpsuite_integration import BurpSuiteAPI, burp_scan_url
-from .sqlmap_integration import SQLMapScanner, sqlmap_scan
-from .gobuster_integration import GobusterScanner, gobuster_dir_scan
+logger = logging.getLogger(__name__)
 
-# Exploitation
-from .metasploit_integration import MetasploitManager, metasploit_search
+# Tool Registry - wird dynamisch gefüllt
+TOOL_REGISTRY = {}
 
-# Brute Force
-from .hydra_integration import HydraBruteForcer, hydra_ssh_brute
+# Versuche alle Tools zu importieren
+try:
+    from .nmap_integration import nmap_scan
+    TOOL_REGISTRY['nmap_scan'] = nmap_scan
+except ImportError as e:
+    logger.warning(f"nmap_integration not available: {e}")
 
-# Reconnaissance
-from .amass_integration import AmassRecon, amass_enum
-from .nuclei_integration import NucleiScanner  # Assuming exists
+try:
+    from .masscan_integration import masscan_quick_scan
+    TOOL_REGISTRY['masscan_quick_scan'] = masscan_quick_scan
+except ImportError as e:
+    logger.warning(f"masscan_integration not available: {e}")
 
-# Windows/AD
-from .bloodhound_integration import BloodHoundAnalyzer, bloodhound_analyze_path
-from .crackmapexec_integration import CrackMapExec, cme_smb_check
-from .responder_integration import ResponderPoisoner
+try:
+    from .scapy_integration import scapy_syn_scan, scapy_arp_scan
+    TOOL_REGISTRY['scapy_syn_scan'] = scapy_syn_scan
+    TOOL_REGISTRY['scapy_arp_scan'] = scapy_arp_scan
+except ImportError as e:
+    logger.warning(f"scapy_integration not available: {e}")
 
-# Wireless
-from .aircrack_integration import AircrackSuite, airodump_scan
+try:
+    from .tshark_integration import tshark_capture
+    TOOL_REGISTRY['tshark_capture'] = tshark_capture
+except ImportError as e:
+    logger.warning(f"tshark_integration not available: {e}")
 
-__all__ = [
-    # Network
-    'NmapTool', 'nmap_scan',
-    'MasscanScanner', 'masscan_quick_scan',
-    'ScapyScanner', 'scapy_syn_scan', 'scapy_arp_scan',
-    'TsharkAnalyzer', 'tshark_capture',
-    
-    # Web
-    'BurpSuiteAPI', 'burp_scan_url',
-    'SQLMapScanner', 'sqlmap_scan',
-    'GobusterScanner', 'gobuster_dir_scan',
-    
-    # Exploitation
-    'MetasploitManager', 'metasploit_search',
-    
-    # Brute Force
-    'HydraBruteForcer', 'hydra_ssh_brute',
-    
-    # Recon
-    'AmassRecon', 'amass_enum',
-    
-    # AD/Windows
-    'BloodHoundAnalyzer', 'bloodhound_analyze_path',
-    'CrackMapExec', 'cme_smb_check',
-    'ResponderPoisoner',
-    
-    # Wireless
-    'AircrackSuite', 'airodump_scan',
-]
+try:
+    from .burpsuite_integration import burp_scan_url
+    TOOL_REGISTRY['burp_scan_url'] = burp_scan_url
+except ImportError as e:
+    logger.warning(f"burpsuite_integration not available: {e}")
 
-# Tool Registry für den Agent
-TOOL_REGISTRY = {
-    # Network
-    'nmap_scan': nmap_scan,
-    'masscan_quick_scan': masscan_quick_scan,
-    'scapy_syn_scan': scapy_syn_scan,
-    'scapy_arp_scan': scapy_arp_scan,
-    'tshark_capture': tshark_capture,
-    
-    # Web
-    'burp_scan_url': burp_scan_url,
-    'sqlmap_scan': sqlmap_scan,
-    'gobuster_dir_scan': gobuster_dir_scan,
-    'gobuster_dns_scan': None,  # Import from module
-    
-    # Exploitation
-    'metasploit_search': metasploit_search,
-    
-    # Brute Force
-    'hydra_ssh_brute': hydra_ssh_brute,
-    
-    # Recon
-    'amass_enum': amass_enum,
-    
-    # AD/Windows
-    'bloodhound_analyze_path': bloodhound_analyze_path,
-    'cme_smb_check': cme_smb_check,
-    
-    # Wireless
-    'airodump_scan': airodump_scan,
-}
+try:
+    from .sqlmap_integration import sqlmap_scan
+    TOOL_REGISTRY['sqlmap_scan'] = sqlmap_scan
+except ImportError as e:
+    logger.warning(f"sqlmap_integration not available: {e}")
+
+try:
+    from .gobuster_integration import gobuster_dir_scan
+    TOOL_REGISTRY['gobuster_dir_scan'] = gobuster_dir_scan
+except ImportError as e:
+    logger.warning(f"gobuster_integration not available: {e}")
+
+try:
+    from .metasploit_integration import metasploit_search
+    TOOL_REGISTRY['metasploit_search'] = metasploit_search
+except ImportError as e:
+    logger.warning(f"metasploit_integration not available: {e}")
+
+try:
+    from .hydra_integration import hydra_ssh_brute
+    TOOL_REGISTRY['hydra_ssh_brute'] = hydra_ssh_brute
+except ImportError as e:
+    logger.warning(f"hydra_integration not available: {e}")
+
+try:
+    from .amass_integration import amass_enum
+    TOOL_REGISTRY['amass_enum'] = amass_enum
+except ImportError as e:
+    logger.warning(f"amass_integration not available: {e}")
+
+try:
+    from .bloodhound_integration import bloodhound_analyze_path
+    TOOL_REGISTRY['bloodhound_analyze_path'] = bloodhound_analyze_path
+except ImportError as e:
+    logger.warning(f"bloodhound_integration not available: {e}")
+
+try:
+    from .crackmapexec_integration import cme_smb_check
+    TOOL_REGISTRY['cme_smb_check'] = cme_smb_check
+except ImportError as e:
+    logger.warning(f"crackmapexec_integration not available: {e}")
+
+try:
+    from .aircrack_integration import airodump_scan
+    TOOL_REGISTRY['airodump_scan'] = airodump_scan
+except ImportError as e:
+    logger.warning(f"aircrack_integration not available: {e}")
+
+# Mock tools für Testzwecke
+def mock_scan(target, **kwargs):
+    """Mock scan for testing"""
+    return {"status": "success", "target": target, "mock": True}
+
+# Füge Mock-Tools hinzu, wenn keine echten verfügbar sind
+if not TOOL_REGISTRY:
+    logger.warning("No real tools available, using mock tools")
+    TOOL_REGISTRY['mock_scan'] = mock_scan
+
+__all__ = ['TOOL_REGISTRY', 'get_all_tools']
 
 
 def get_all_tools():
     """Gibt alle verfügbaren Tools zurück"""
-    from langchain_core.tools import Tool
-    
-    tools = []
-    for name, func in TOOL_REGISTRY.items():
-        if func:
-            tools.append(Tool(name=name, func=func, description=func.__doc__))
-    
-    return tools
+    try:
+        from langchain_core.tools import Tool
+        
+        tools = []
+        for name, func in TOOL_REGISTRY.items():
+            if func:
+                tools.append(Tool(name=name, func=func, description=func.__doc__))
+        
+        return tools
+    except ImportError:
+        # Fallback ohne LangChain
+        return list(TOOL_REGISTRY.items())

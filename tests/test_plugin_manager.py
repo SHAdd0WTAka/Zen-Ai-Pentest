@@ -10,7 +10,7 @@ from core.plugin_manager import (BasePlugin, HookManager, PluginManager,
                                  PluginType)
 
 
-class TestPlugin(BasePlugin):
+class MockPlugin(BasePlugin):
     """Test plugin for unit tests"""
 
     NAME = "test_plugin"

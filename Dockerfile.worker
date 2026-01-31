@@ -1,83 +1,24 @@
-# =============================================================================
-# Zen AI Pentest - Worker Node Dockerfile
-# =============================================================================
-# Lightweight worker for distributed scanning operations
-# Can be scaled horizontally with docker-compose up --scale worker=N
-# =============================================================================
+FROM python:3.11-slim
 
-FROM python:3.14-alpine
+WORKDIR /app
 
-LABEL maintainer="SHAdd0WTAka + Kimi AI"
-LABEL description="Zen AI Pentest Worker Node"
-LABEL version="1.0.0"
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    postgresql-client \
+    nmap \
+    && rm -rf /var/lib/apt/lists/*
 
-# Set environment
-ENV PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONIOENCODING=utf-8 \
-    WORKER_TYPE=scanner \
-    WORKER_QUEUE=default
-
-# Install minimal runtime dependencies
-RUN apk add --no-cache \
-    libpcap \
-    libssl3 \
-    libffi \
-    ca-certificates \
-    curl \
-    && rm -rf /var/cache/apk/*
-
-# Create non-root user
-RUN addgroup -g 1000 pentest && \
-    adduser -D -u 1000 -G pentest pentest
-
-# Copy requirements and install
-COPY requirements.txt ./
+# Install Python dependencies
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
-COPY --chown=pentest:pentest . /app
-WORKDIR /app
+COPY . .
 
-# Create directories
-RUN mkdir -p /app/logs /app/tmp && \
-    chown -R pentest:pentest /app
+# Create non-root user
+RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
+USER appuser
 
-# Switch to non-root user
-USER pentest
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD python -c "import redis; import psycopg2; print('OK')" || exit 1
-
-# Worker entrypoint
-ENTRYPOINT ["python", "-c"]
-CMD ["
-import asyncio
-import os
-import redis
-import json
-from agents.post_scan_agent import PostScanAgent
-
-async def worker():
-    r = redis.Redis(
-        host=os.getenv('ZEN_AI_REDIS_HOST', 'redis'),
-        port=int(os.getenv('ZEN_AI_REDIS_PORT', '6379')),
-        password=os.getenv('ZEN_AI_REDIS_PASSWORD')
-    )
-    
-    print(f'Worker {os.getenv(\"HOSTNAME\", \"unknown\")} started')
-    
-    while True:
-        # Wait for task
-        task = r.blpop('zen:tasks:default', timeout=5)
-        if task:
-            _, data = task
-            task_data = json.loads(data)
-            print(f'Processing task: {task_data[\"id\"]}')
-            # Process task
-            await asyncio.sleep(1)  # Simulate work
-            print(f'Task {task_data[\"id\"]} completed')
-
-asyncio.run(worker())
-"]
+# Run Celery worker
+CMD ["celery", "-A", "tasks", "worker", "--loglevel=info"]

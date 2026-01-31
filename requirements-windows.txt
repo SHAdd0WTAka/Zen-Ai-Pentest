@@ -1,0 +1,49 @@
+# Core Framework
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+pydantic==2.5.3
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+python-multipart==0.0.6
+
+# Database
+sqlalchemy==2.0.25
+# psycopg2-binary==2.9.9  <-- Disabled for Windows build issues
+alembic==1.13.1
+
+# LangChain & AI
+langchain==0.1.0
+langchain-core==0.1.10
+langgraph==0.0.10
+openai==1.8.0
+
+# WebSocket
+websockets==12.0
+
+# HTTP Client
+requests==2.31.0
+httpx==0.26.0
+aiohttp==3.9.1  # Added because tests need it
+
+# Async
+celery==5.3.6
+redis==5.0.1
+
+# Report Generation
+# weasyprint==60.2 <-- Often causes issues on Windows without GTK
+jinja2==3.1.3
+
+# Utilities
+python-dotenv==1.0.0
+pyyaml==6.0.1
+click==8.1.7
+typer==0.9.0
+rich==13.7.0
+
+# Security
+cryptography==42.0.1
+
+# Testing
+pytest==7.4.3
+pytest-asyncio==0.23.2
+coverage==7.4.0

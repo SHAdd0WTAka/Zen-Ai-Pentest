@@ -1,210 +1,284 @@
-# Contributing to Zen AI Pentest
+# Contributing to Zen-AI-Pentest
 
-Thank you for your interest in contributing to Zen AI Pentest! This document provides guidelines and instructions for contributing.
+First off, thank you for considering contributing to Zen-AI-Pentest! It's people like you that make this tool better for the security community.
 
-## Code of Conduct
+## 🚀 Getting Started
 
-This project and everyone participating in it is governed by our Code of Conduct. By participating, you are expected to uphold this code.
-
-## How Can I Contribute?
-
-### Reporting Bugs
-
-Before creating bug reports, please check the existing issues to avoid duplicates. When you create a bug report, include:
-
-- **Use a clear descriptive title**
-- **Describe the exact steps to reproduce**
-- **Provide specific examples** (commands, configs)
-- **Describe the behavior you observed**
-- **Explain which behavior you expected**
-- **Include system information** (OS, Python version)
-
-### Suggesting Enhancements
-
-Enhancement suggestions are tracked as GitHub issues. When creating an enhancement suggestion:
-
-- **Use a clear descriptive title**
-- **Provide a step-by-step description**
-- **Provide specific examples**
-- **Explain why this enhancement would be useful**
-
-### Adding CVEs or Payloads
-
-We welcome additions to our databases!
-
-#### Adding a CVE:
-1. Edit `data/cve_database.json`
-2. Follow the existing JSON structure
-3. Include all required fields (CVE ID, description, CVSS, etc.)
-4. Verify JSON validity: `python -m json.tool data/cve_database.json`
-
-#### Adding SQL Injection Payloads:
-1. Edit the appropriate file in `data/sql_injection/`
-2. Include description and expected behavior
-3. Test with relevant database type
-4. Document any special requirements
-
-#### Adding Ransomware IOCs:
-1. Edit `data/ransomware_families.json`
-2. Include comprehensive IOCs (file extensions, registry keys, URLs)
-3. Add MITRE ATT&CK mappings
-4. Include financial damage estimates if available
-
-### Pull Requests
-
-1. Fork the repository
-2. Create a new branch: `git checkout -b feature/my-feature`
-3. Make your changes
-4. Run tests and demos
-5. Commit your changes: `git commit -am 'Add new feature'`
-6. Push to the branch: `git push origin feature/my-feature`
-7. Submit a pull request
-
-## Development Setup
-
-### Prerequisites
-
-- Python 3.9 or higher
-- Git
-
-### Setting Up
+### Development Setup
 
 ```bash
-# Clone the repository
-git clone https://github.com/SHAdd0WTAka/zen-ai-pentest.git
+# Fork and clone
+git clone https://github.com/YOUR_USERNAME/zen-ai-pentest.git
 cd zen-ai-pentest
 
 # Create virtual environment
 python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-# Activate (Windows)
-venv\Scripts\activate
-
-# Activate (Linux/macOS)
-source venv/bin/activate
-
-# Install dependencies
+# Install development dependencies
 pip install -r requirements.txt
-pip install -r requirements-dev.txt  # Development dependencies
+pip install -r requirements-dev.txt
+
+# Setup pre-commit hooks
+pre-commit install
 ```
 
 ### Running Tests
 
 ```bash
-# Run all demos
-python examples/cve_and_ransomware_demo.py
-python examples/multi_agent_demo.py
+# Run all tests
+pytest
 
-# Run tests (if available)
-pytest tests/
+# With coverage
+pytest --cov=. --cov-report=html
 
-# Lint code
-flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-black --check .
+# Run specific test file
+pytest tests/test_react_agent.py -v
+
+# Run with markers
+pytest -m "not slow"  # Skip slow tests
 ```
 
-## Style Guidelines
+## 📋 Contribution Guidelines
 
-### Python Code Style
+### Code Style
 
 - Follow PEP 8
-- Use meaningful variable names
-- Add docstrings to functions and classes
-- Keep functions focused and small
-- Maximum line length: 127 characters
+- Use type hints
+- Write docstrings (Google style)
+- Maximum line length: 100 characters
 
-### Documentation
-
-- Update README.md if adding features
-- Add docstrings for new functions
-- Update relevant .md files in docs/
-- Include examples in documentation
+```python
+def scan_target(target: str, ports: List[int] = None) -> ScanResult:
+    """
+    Scan a target for open ports.
+    
+    Args:
+        target: IP address or hostname
+        ports: List of ports to scan (default: top 1000)
+        
+    Returns:
+        ScanResult object with findings
+        
+    Raises:
+        ValueError: If target is invalid
+    """
+    pass
+```
 
 ### Commit Messages
 
-- Use the present tense ("Add feature" not "Added feature")
-- Use the imperative mood ("Move cursor to..." not "Moves cursor to...")
-- Limit the first line to 72 characters or less
-- Reference issues and pull requests liberally after the first line
+Use conventional commits:
+
+- `feat:` New feature
+- `fix:` Bug fix
+- `docs:` Documentation changes
+- `style:` Code style (formatting, no logic change)
+- `refactor:` Code refactoring
+- `test:` Adding tests
+- `chore:` Maintenance tasks
 
 Example:
 ```
-Add support for PostgreSQL injection payloads
+feat(tools): add Nessus vulnerability scanner integration
 
-- Add 5 new PostgreSQL-specific payloads
-- Update SQLi database documentation
-- Fixes #123
+- Add NessusAPI class for REST API communication
+- Support scan initiation and report download
+- Add tests for Nessus integration
 ```
 
-## Security Considerations
+### Pull Request Process
 
-This is a penetration testing framework. When contributing:
+1. **Create a branch**
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
 
-- **Never** include real API keys or credentials
-- **Never** include actual exploited system data
-- **Always** validate inputs to prevent injection
-- **Always** use safe subprocess execution
-- **Test** thoroughly before submitting
+2. **Make your changes**
+   - Write code
+   - Add tests
+   - Update documentation
 
-## Database Contributions
+3. **Ensure tests pass**
+   ```bash
+   pytest
+   flake8
+   black --check .
+   ```
 
-### CVE Database Structure
+4. **Commit and push**
+   ```bash
+   git add .
+   git commit -m "feat: your feature description"
+   git push origin feature/your-feature-name
+   ```
 
-```json
-{
-  "CVE-2021-44228": {
-    "description": "Log4j RCE vulnerability",
-    "cvss_score": 10.0,
-    "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H",
-    "affected_systems": ["Apache Log4j 2.0-beta9 to 2.14.1"],
-    "ransomware_associations": ["Khonsari", "Conti"],
-    "exploit_available": true,
-    "poc_available": true,
-    "mitre_techniques": ["T1190", "T1059"],
-    "ioc_file_hashes": [],
-    "ioc_registry_keys": [],
-    "ioc_urls": [],
-    "ioc_ips": [],
-    "remediation": "Update to Log4j 2.15.0 or later"
-  }
-}
+5. **Create Pull Request**
+   - Fill out the PR template
+   - Link related issues
+   - Request review from maintainers
+
+## 🏗️ Project Structure
+
+```
+zen-ai-pentest/
+├── api/              # FastAPI endpoints
+├── agents/           # AI agent implementations
+├── database/         # Database models
+├── tools/            # Pentesting tool integrations
+├── virtualization/   # VM management
+├── gui/              # Web interface
+├── reports/          # Report generation
+├── notifications/    # Slack/email alerts
+├── tests/            # Test suite
+└── docs/             # Documentation
 ```
 
-### SQL Injection Payload Structure
+## 🛠️ Adding New Tools
 
-```json
-{
-  "payloads": [
-    {
-      "name": "MySQL Version Detection",
-      "payload": "' UNION SELECT @@version--",
-      "description": "Extracts MySQL version",
-      "context": "error_based",
-      "database_type": "mysql",
-      "waf_bypass": false
-    }
-  ]
-}
+To add a new pentesting tool:
+
+1. Create file in `tools/`:
+   ```python
+   # tools/my_tool_integration.py
+   from langchain_core.tools import tool
+   
+   @tool
+   def my_tool_scan(target: str) -> str:
+       """Description of what this tool does"""
+       # Implementation
+       return "Result"
+   ```
+
+2. Register in `tools/__init__.py`:
+   ```python
+   from .my_tool_integration import my_tool_scan
+   
+   TOOL_REGISTRY = {
+       # ... existing tools
+       'my_tool_scan': my_tool_scan,
+   }
+   ```
+
+3. Add tests in `tests/tools/test_my_tool.py`
+
+4. Update documentation
+
+## 🧪 Testing Guidelines
+
+### Unit Tests
+
+```python
+# tests/tools/test_nmap.py
+def test_nmap_scan_localhost():
+    """Test nmap scan against localhost"""
+    from tools.nmap_integration import NmapTool
+    
+    nmap = NmapTool()
+    result = nmap.scan("127.0.0.1", "22,80")
+    
+    assert isinstance(result, dict)
+    assert "scan" in result
 ```
 
-## Review Process
+### Integration Tests
 
-All submissions require review before being merged:
+```python
+# tests/integration/test_api.py
+@pytest.mark.integration
+def test_create_scan_api(client):
+    """Test creating scan via API"""
+    response = client.post("/scans", json={
+        "name": "Test Scan",
+        "target": "scanme.nmap.org",
+        "scan_type": "network"
+    })
+    assert response.status_code == 201
+```
 
-1. Automated checks must pass (CI/CD)
-2. Code review by maintainers
-3. Security review for sensitive changes
-4. Documentation review
+## 📝 Documentation
 
-## Recognition
+- Update README.md if adding major features
+- Add docstrings to all public functions
+- Update API docs in `docs/API.md`
+- Add examples to `examples/`
 
-Contributors will be recognized in our README.md Contributors section.
+## 🐛 Reporting Bugs
 
-## Questions?
+Use GitHub Issues with template:
 
-Feel free to:
-- Open an issue with the `question` label
-- Join discussions in existing issues
-- Contact maintainers
+```markdown
+**Description**
+Clear description of the bug
 
-Thank you for contributing to Zen AI Pentest!
+**To Reproduce**
+Steps to reproduce:
+1. Go to '...'
+2. Click on '...'
+3. See error
+
+**Expected Behavior**
+What you expected to happen
+
+**Environment**
+- OS: [e.g., Ubuntu 22.04]
+- Python: [e.g., 3.11]
+- Version: [e.g., 2.0.0]
+
+**Screenshots**
+If applicable
+
+**Additional Context**
+Any other information
+```
+
+## 💡 Feature Requests
+
+Create GitHub Issue with label `enhancement`:
+
+- Describe the feature
+- Explain use case
+- Propose implementation (optional)
+
+## 🔒 Security Issues
+
+**DO NOT** create public issues for security vulnerabilities.
+
+Instead, email: security@zen-pentest.local
+
+Include:
+- Description of vulnerability
+- Steps to reproduce
+- Possible impact
+- Suggested fix (if any)
+
+## 🏅 Recognition
+
+Contributors will be:
+- Listed in CONTRIBUTORS.md
+- Mentioned in release notes
+- Credited in documentation
+
+## 📜 Code of Conduct
+
+### Our Standards
+
+- Be respectful and inclusive
+- Accept constructive criticism
+- Focus on what's best for the community
+- Show empathy towards others
+
+### Unacceptable Behavior
+
+- Harassment or discrimination
+- Trolling or insulting comments
+- Personal or political attacks
+- Publishing others' private information
+
+## ❓ Questions?
+
+- Join our [Discord](https://discord.gg/zen-pentest)
+- Start a [Discussion](https://github.com/SHAdd0WTAka/zen-ai-pentest/discussions)
+- Email: support@zen-pentest.local
+
+Thank you for contributing! 🙏

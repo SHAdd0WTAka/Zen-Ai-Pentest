@@ -1,45 +1,128 @@
 version: '3.8'
 
 services:
-  zen-ai:
-    build: .
-    image: zen-ai-pentest:2.0.0
-    container_name: zen-ai-pentest
-    ports:
-      - "8000:8000"
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: zen-postgres
     environment:
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
-      - MISTRAL_API_KEY=${MISTRAL_API_KEY}
-      - ENVIRONMENT=production
-      - LOG_LEVEL=INFO
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: zen_pentest
     volumes:
-      - ./logs:/app/logs
-      - ./evidence:/app/evidence
-      - ./sessions:/app/sessions
-      - ./data:/app/data
-    restart: unless-stopped
-    networks:
-      - zen-ai-network
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - zen-network
 
+  # Redis Cache
   redis:
     image: redis:7-alpine
-    container_name: zen-ai-redis
-    restart: unless-stopped
-    networks:
-      - zen-ai-network
+    container_name: zen-redis
+    ports:
+      - "6379:6379"
     volumes:
-      - redis-data:/data
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - zen-network
 
-networks:
-  zen-ai-network:
-    driver: bridge
+  # FastAPI Backend
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: zen-api
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/zen_pentest
+      - REDIS_URL=redis://redis:6379/0
+      - SECRET_KEY=your-secret-key-here-change-in-production
+      - CORS_ORIGINS=http://localhost:3000,http://frontend:3000
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./:/app
+      - /app/venv
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    command: uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
+    networks:
+      - zen-network
+    restart: unless-stopped
+
+  # React Frontend
+  frontend:
+    build:
+      context: ./web_ui/frontend
+      dockerfile: Dockerfile
+    container_name: zen-frontend
+    environment:
+      - REACT_APP_API_URL=http://localhost:8000
+      - PORT=3000
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./web_ui/frontend:/app
+      - /app/node_modules
+    depends_on:
+      - api
+    networks:
+      - zen-network
+    restart: unless-stopped
+
+  # Celery Worker (for background tasks)
+  celery:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    container_name: zen-celery
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/zen_pentest
+      - REDIS_URL=redis://redis:6379/0
+      - SECRET_KEY=your-secret-key-here-change-in-production
+    volumes:
+      - ./:/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    command: celery -A tasks worker --loglevel=info
+    networks:
+      - zen-network
+    restart: unless-stopped
+
+  # Nginx Reverse Proxy (optional, for production)
+  nginx:
+    image: nginx:alpine
+    container_name: zen-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - api
+      - frontend
+    networks:
+      - zen-network
+    restart: unless-stopped
+    profiles:
+      - production
 
 volumes:
-  redis-data:
+  postgres_data:
+  redis_data:
+
+networks:
+  zen-network:
+    driver: bridge
