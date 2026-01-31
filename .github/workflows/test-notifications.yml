@@ -1,0 +1,80 @@
+name: Test Notifications
+
+on:
+  workflow_dispatch:
+    inputs:
+      test_type:
+        description: 'Type of test'
+        required: true
+        default: 'both'
+        type: choice
+        options:
+          - slack
+          - discord
+          - both
+
+jobs:
+  test-notifications:
+    name: Test Webhooks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Test Slack Notification
+        if: github.event.inputs.test_type == 'slack' || github.event.inputs.test_type == 'both'
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          custom_payload: |
+            {
+              "text": "🧪 Slack webhook test from Zen-AI-Pentest",
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "✅ Slack Webhook Test Successful"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "Your Slack webhook is configured correctly!"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Test Discord Notification
+        if: github.event.inputs.test_type == 'discord' || github.event.inputs.test_type == 'both'
+        uses: Ilshidur/action-discord@master
+        with:
+          args: |
+            🧪 **Discord Webhook Test**
+            
+            ✅ Your Discord webhook is configured correctly!
+            
+            Repository: ${{ github.repository }}
+            Time: ${{ github.event.head_commit.timestamp }}
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+
+      - name: Check Secrets
+        run: |
+          echo "Checking configured secrets..."
+          
+          if [ -n "${{ secrets.SLACK_WEBHOOK_URL }}" ]; then
+            echo "✅ SLACK_WEBHOOK_URL is configured"
+          else
+            echo "❌ SLACK_WEBHOOK_URL is NOT configured"
+          fi
+          
+          if [ -n "${{ secrets.DISCORD_WEBHOOK_URL }}" ]; then
+            echo "✅ DISCORD_WEBHOOK_URL is configured"
+          else
+            echo "❌ DISCORD_WEBHOOK_URL is NOT configured"
+          fi
