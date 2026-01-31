@@ -24,14 +24,27 @@ jobs:
         python -m pip install --upgrade pip
         pip install build twine
     
-    - name: Build package
+    - name: Check for package files
+      id: check-package
       run: |
-        python -m build || echo "Build requires setup.py or pyproject.toml"
-        ls -la dist/ 2>/dev/null || echo "No dist folder created"
-    
+        if [ -f "setup.py" ] || [ -f "pyproject.toml" ]; then
+          echo "exists=true" >> $GITHUB_OUTPUT
+        else
+          echo "exists=false" >> $GITHUB_OUTPUT
+          echo "::warning::No setup.py or pyproject.toml found. Skipping build."
+        fi
+        
+    - name: Build package
+      if: steps.check-package.outputs.exists == 'true'
+      run: |
+        python -m build
+        ls -la dist/
+      
     - name: Check package
-      if: hashFiles('dist/*') != ''
+      if: steps.check-package.outputs.exists == 'true'
       run: twine check dist/*
+    
+
     
     - name: Publish to PyPI
       if: github.event_name == 'release'

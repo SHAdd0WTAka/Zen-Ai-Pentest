@@ -8,11 +8,11 @@ Protects sensitive data from leaking to external LLMs by:
 - Local processing with optional small LLM
 """
 
-from .schemas import SanitizerRequest, SanitizerResponse, RiskLevel
-from .sanitizer import ZenSanitizer
-from .filters.secrets import SecretScrubber
-from .filters.compress import ContextCompressor
 from .circuit_breaker import CircuitBreaker
+from .filters.compress import ContextCompressor
+from .filters.secrets import SecretScrubber
+from .sanitizer import ZenSanitizer
+from .schemas import RiskLevel, SanitizerRequest, SanitizerResponse
 
 __version__ = "1.0.0"
 __all__ = [

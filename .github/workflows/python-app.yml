@@ -47,7 +47,6 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install flake8 pytest pytest-asyncio black isort
-      continue-on-error: true
         
     - name: Lint with flake8
       run: |
@@ -55,17 +54,14 @@ jobs:
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
         # Exit-zero treats all errors as warnings
         flake8 . --count --exit-zero --max-complexity=15 --max-line-length=127 --statistics --exclude=venv,env,__pycache__,.git,logs,evidence
-      continue-on-error: true
         
     - name: Check code formatting with black
       run: |
         black --check --diff . || true
-      continue-on-error: true
       
     - name: Check imports with isort
       run: |
         isort --check-only --diff . || true
-      continue-on-error: true
         
     - name: Validate Python syntax
       run: |
@@ -79,7 +75,6 @@ jobs:
       run: |
         cd examples
         python cve_and_ransomware_demo.py
-      continue-on-error: true
       env:
         PYTHONIOENCODING: utf-8
         PYTHONUTF8: 1
@@ -88,7 +83,6 @@ jobs:
       run: |
         cd examples
         python post_scan_demo.py
-      continue-on-error: true
       env:
         PYTHONIOENCODING: utf-8
         PYTHONUTF8: 1
@@ -100,7 +94,6 @@ jobs:
         else
           echo "No tests directory found"
         fi
-      continue-on-error: true
       env:
         PYTHONIOENCODING: utf-8
         PYTHONUTF8: 1

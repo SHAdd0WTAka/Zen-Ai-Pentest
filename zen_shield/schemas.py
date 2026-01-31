@@ -3,55 +3,53 @@ Pydantic Schemas for Zen Shield Sanitizer
 """
 
 from enum import Enum
-from typing import List, Optional, Dict, Any
+from typing import Any, Dict, List, Optional
+
 from pydantic import BaseModel, Field
 
 
 class RiskLevel(Enum):
     """Risk classification levels"""
+
     CLEAN = "clean"
-    SUSPECT = "suspect"      # Suspicious strings but no clear secret
-    DANGER = "danger"        # Definite secret found
+    SUSPECT = "suspect"  # Suspicious strings but no clear secret
+    DANGER = "danger"  # Definite secret found
     INJECTION = "injection"  # Prompt injection attempt
 
 
 class SanitizerRequest(BaseModel):
     """Request model for sanitization"""
+
     raw_data: str = Field(
-        ..., 
+        ...,
         description="Raw tool output (Nmap, Burp, etc.)",
-        max_length=500000  # 500KB limit
+        max_length=500000,  # 500KB limit
     )
     source_tool: str = Field(
-        ..., 
-        description="Source tool: nmap, nuclei, ffuf, sqlmap, etc."
+        ..., description="Source tool: nmap, nuclei, ffuf, sqlmap, etc."
     )
     intent: str = Field(
-        "analyze",
-        description="Purpose: analyze, explain, exploit, report"
+        "analyze", description="Purpose: analyze, explain, exploit, report"
     )
-    user_context: Optional[str] = Field(
-        None,
-        description="Additional user context"
-    )
+    user_context: Optional[str] = Field(None, description="Additional user context")
     compression_target: int = Field(
-        500,
-        description="Target token count for compression"
+        500, description="Target token count for compression"
     )
-    
+
     class Config:
         json_schema_extra = {
             "example": {
                 "raw_data": "Nmap scan results...",
                 "source_tool": "nmap",
                 "intent": "analyze",
-                "compression_target": 500
+                "compression_target": 500,
             }
         }
 
 
 class RedactionInfo(BaseModel):
     """Information about a redacted secret"""
+
     type: str = Field(..., description="Secret type: api_key, bearer_token, etc.")
     position: tuple = Field(..., description="(start, end) position in original text")
     hash: str = Field(..., description="Hash of original value for tracking")
@@ -60,40 +58,28 @@ class RedactionInfo(BaseModel):
 
 class SanitizerResponse(BaseModel):
     """Response model after sanitization"""
+
     cleaned_data: str = Field(..., description="Sanitized data safe for LLM")
     redactions: List[RedactionInfo] = Field(
-        default_factory=list,
-        description="What was removed and why"
+        default_factory=list, description="What was removed and why"
     )
     risk_indicators: List[str] = Field(
         default_factory=list,
-        description="Risk flags: 'contains_jwt', 'base64_encoded', etc."
+        description="Risk flags: 'contains_jwt', 'base64_encoded', etc.",
     )
-    compression_ratio: float = Field(
-        1.0,
-        description="Compression ratio achieved"
-    )
+    compression_ratio: float = Field(1.0, description="Compression ratio achieved")
     safe_to_send: bool = Field(
-        ...,
-        description="Whether data is safe to send to external LLM"
+        ..., description="Whether data is safe to send to external LLM"
     )
-    fallback_used: bool = Field(
-        False,
-        description="Whether regex fallback was used"
-    )
+    fallback_used: bool = Field(False, description="Whether regex fallback was used")
     risk_level: RiskLevel = Field(
-        RiskLevel.CLEAN,
-        description="Overall risk assessment"
+        RiskLevel.CLEAN, description="Overall risk assessment"
     )
-    tokens_saved: int = Field(
-        0,
-        description="Estimated tokens saved by compression"
-    )
+    tokens_saved: int = Field(0, description="Estimated tokens saved by compression")
     processing_time_ms: float = Field(
-        0.0,
-        description="Processing time in milliseconds"
+        0.0, description="Processing time in milliseconds"
     )
-    
+
     class Config:
         json_schema_extra = {
             "example": {
@@ -103,13 +89,14 @@ class SanitizerResponse(BaseModel):
                 "compression_ratio": 0.3,
                 "safe_to_send": True,
                 "fallback_used": False,
-                "risk_level": "suspect"
+                "risk_level": "suspect",
             }
         }
 
 
 class HealthStatus(BaseModel):
     """Health check response"""
+
     status: str = "healthy"
     small_llm_available: bool = True
     circuit_breaker_state: str = "closed"
@@ -119,6 +106,7 @@ class HealthStatus(BaseModel):
 
 class CompressionStats(BaseModel):
     """Statistics about compression performance"""
+
     original_chars: int
     cleaned_chars: int
     compression_ratio: float

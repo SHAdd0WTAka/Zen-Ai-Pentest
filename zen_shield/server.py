@@ -6,17 +6,16 @@ import logging
 from contextlib import asynccontextmanager
 from typing import Optional
 
-from fastapi import FastAPI, HTTPException, BackgroundTasks
+from fastapi import BackgroundTasks, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from .schemas import SanitizerRequest, SanitizerResponse, HealthStatus
 from .sanitizer import ZenSanitizer
+from .schemas import HealthStatus, SanitizerRequest, SanitizerResponse
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -28,18 +27,18 @@ sanitizer: Optional[ZenSanitizer] = None
 async def lifespan(app: FastAPI):
     """Application lifespan handler"""
     global sanitizer
-    
+
     # Startup
     logger.info("Starting Zen Shield Server...")
     sanitizer = ZenSanitizer(
         small_llm_endpoint="http://localhost:8001",
         enable_compression=True,
-        enable_injection_detection=True
+        enable_injection_detection=True,
     )
     logger.info("Zen Shield initialized")
-    
+
     yield
-    
+
     # Shutdown
     logger.info("Shutting down Zen Shield Server...")
 
@@ -48,7 +47,7 @@ app = FastAPI(
     title="Zen Shield - Security Sanitizer",
     description="Data sanitization service for pentesting tools",
     version="1.0.0",
-    lifespan=lifespan
+    lifespan=lifespan,
 )
 
 # CORS middleware
@@ -66,7 +65,7 @@ async def health_check():
     """Health check endpoint"""
     if not sanitizer:
         raise HTTPException(status_code=503, detail="Sanitizer not initialized")
-    
+
     health = await sanitizer.health_check()
     return HealthStatus(
         status=health["status"],
@@ -75,9 +74,9 @@ async def health_check():
         active_filters=[
             "secret_scrubber",
             "injection_detector" if health["injection_detector"] == "active" else None,
-            "context_compressor"
+            "context_compressor",
         ],
-        version="1.0.0"
+        version="1.0.0",
     )
 
 
@@ -85,7 +84,7 @@ async def health_check():
 async def sanitize_data(request: SanitizerRequest):
     """
     Sanitize raw data for safe LLM processing
-    
+
     This endpoint:
     1. Detects and masks secrets (API keys, tokens, passwords)
     2. Checks for prompt injection attempts
@@ -94,7 +93,7 @@ async def sanitize_data(request: SanitizerRequest):
     """
     if not sanitizer:
         raise HTTPException(status_code=503, detail="Sanitizer not initialized")
-    
+
     try:
         response = await sanitizer.process(request)
         return response
@@ -107,12 +106,12 @@ async def sanitize_data(request: SanitizerRequest):
 async def quick_scrub(text: str):
     """
     Quick scrub - only secret removal, no compression
-    
+
     Useful for simple cases where speed is priority.
     """
     if not sanitizer:
         raise HTTPException(status_code=503, detail="Sanitizer not initialized")
-    
+
     cleaned = await sanitizer.quick_scrub(text)
     return {"cleaned_data": cleaned}
 
@@ -122,7 +121,7 @@ async def get_stats():
     """Get sanitizer statistics"""
     if not sanitizer:
         raise HTTPException(status_code=503, detail="Sanitizer not initialized")
-    
+
     return sanitizer.get_stats()
 
 
@@ -131,7 +130,7 @@ async def reset_circuit_breaker():
     """Reset circuit breaker to closed state"""
     if not sanitizer:
         raise HTTPException(status_code=503, detail="Sanitizer not initialized")
-    
+
     await sanitizer.circuit_breaker.force_reset()
     return {"message": "Circuit breaker reset to CLOSED"}
 
@@ -139,6 +138,7 @@ async def reset_circuit_breaker():
 # Batch processing endpoint
 class BatchSanitizeRequest(BaseModel):
     """Batch sanitization request"""
+
     items: list[SanitizerRequest]
     continue_on_error: bool = True
 
@@ -147,15 +147,15 @@ class BatchSanitizeRequest(BaseModel):
 async def sanitize_batch(request: BatchSanitizeRequest):
     """
     Process multiple items in batch
-    
+
     Useful for processing multiple scan results at once.
     """
     if not sanitizer:
         raise HTTPException(status_code=503, detail="Sanitizer not initialized")
-    
+
     results = []
     errors = []
-    
+
     for i, item in enumerate(request.items):
         try:
             result = await sanitizer.process(item)
@@ -165,15 +165,16 @@ async def sanitize_batch(request: BatchSanitizeRequest):
             errors.append({"index": i, "error": str(e)})
             if not request.continue_on_error:
                 break
-    
+
     return {
         "successful": len(results),
         "failed": len(errors),
         "results": results,
-        "errors": errors
+        "errors": errors,
     }
 
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=9000)

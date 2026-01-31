@@ -151,7 +151,7 @@ jobs:
     - uses: actions/checkout@v4
     
     - name: Run OWASP Dependency-Check
-      uses: dependency-check/Dependency-Check_Action@v1.1.0
+      uses: dependency-check/Dependency-Check_Action@v1
       with:
         project: 'zen-ai-pentest'
         path: '.'

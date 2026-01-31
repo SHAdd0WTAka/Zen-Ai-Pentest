@@ -50,9 +50,8 @@ jobs:
       shell: bash
       run: |
         cd examples
-        python cve_and_ransomware_demo.py 2>&1 | tee ../cve_demo_output.txt
-        echo "CVE Demo completed with exit code: ${PIPESTATUS[0]}"
-      continue-on-error: true
+        python cve_and_ransomware_demo.py 2>&1 | tee ../cve_demo_output.txt || true
+        echo "CVE Demo completed"
       env:
         PYTHONIOENCODING: utf-8
         PYTHONUTF8: 1
@@ -61,9 +60,8 @@ jobs:
       id: post_scan_demo
       run: |
         cd examples
-        python post_scan_demo.py 2>&1 | tee ../post_scan_output.txt
-        echo "Post-Scan Demo completed with exit code: ${PIPESTATUS[0]}"
-      continue-on-error: true
+        python post_scan_demo.py 2>&1 | tee ../post_scan_output.txt || true
+        echo "Post-Scan Demo completed"
       env:
         PYTHONIOENCODING: utf-8
         PYTHONUTF8: 1
@@ -74,7 +72,6 @@ jobs:
         cd examples
         timeout 60 python multi_agent_demo.py 2>&1 | tee ../agent_demo_output.txt || true
         echo "Multi-Agent Demo completed"
-      continue-on-error: true
       env:
         PYTHONIOENCODING: utf-8
         PYTHONUTF8: 1
