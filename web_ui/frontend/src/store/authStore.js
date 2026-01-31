@@ -15,7 +15,10 @@ export const useAuthStore = create(
         set({ isLoading: true, error: null });
         try {
           const response = await authAPI.login(username, password);
-          const { access_token, user } = response.data;
+          const { access_token } = response.data;
+          
+          // Create user object from username
+          const user = { username, role: username === 'admin' ? 'admin' : 'operator' };
           
           localStorage.setItem('token', access_token);
           set({
