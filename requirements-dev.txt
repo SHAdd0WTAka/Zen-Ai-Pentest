@@ -1,48 +1,33 @@
-# Development Dependencies for Zen AI Pentest
-
 # Testing
-pytest>=7.4.0
-pytest-asyncio>=0.21.0
-pytest-cov>=4.1.0
-pytest-mock>=3.12.0
+pytest==7.4.4
+pytest-asyncio==0.23.3
+pytest-cov==4.1.0
+pytest-mock==3.12.0
+httpx==0.26.0
 
-# Code Quality
-black>=23.0.0
-isort>=5.12.0
-flake8>=6.1.0
-flake8-docstrings>=1.7.0
-flake8-import-order>=0.18.2
-
-# Security Scanning
-bandit>=1.7.5
-safety>=2.3.0
-trivy>=0.48.0
-
-# Type Checking
-mypy>=1.5.0
-types-requests>=2.31.0
-types-python-dotenv>=1.0.0
-
-# Pre-commit Hooks
-pre-commit>=3.5.0
+# Linting & Formatting
+black==23.12.1
+flake8==7.0.0
+isort==5.13.2
+mypy==1.8.0
+pylint==3.0.3
 
 # Documentation
-mkdocs>=1.5.0
-mkdocs-material>=9.4.0
-mkdocstrings[python]>=0.23.0
+mkdocs==1.5.3
+mkdocs-material==9.5.3
 
-# Build Tools
-build>=1.0.0
-twine>=4.0.0
+# Development Tools
+ipython==8.20.0
+ipdb==0.13.13
+pre-commit==3.6.0
 
 # Debugging
-ipdb>=0.13.13
-ipython>=8.14.0
+pytest-pdb==0.3.1
 
-# Profiling
-py-spy>=0.3.14
-memray>=1.10.0
+# Type Stubs
+types-requests==2.31.0.20240106
+types-pyyaml==6.0.12.12
 
-# Jupyter (for research/notebooks)
-jupyter>=1.0.0
-notebook>=7.0.0
+# Security Scanning
+bandit==1.7.7
+safety==3.0.0

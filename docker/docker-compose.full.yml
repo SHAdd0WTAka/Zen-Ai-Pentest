@@ -1,0 +1,172 @@
+# Full Zen-AI-Pentest Stack
+# 
+# Includes:
+# - API Server (FastAPI)
+# - PostgreSQL Database
+# - Redis Cache
+# - React Dashboard
+# - Kali Linux VM (optional)
+#
+# Usage:
+#   docker-compose -f docker-compose.full.yml up -d
+
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: zen-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: zen_pentest
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - zen-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: zen-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - zen-network
+
+  # API Server
+  api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: zen-api
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgresql://postgres:${DB_PASSWORD:-postgres}@postgres:5432/zen_pentest
+      - REDIS_URL=redis://redis:6379
+      - SECRET_KEY=${SECRET_KEY:-change-me-in-production}
+      - SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL}
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
+    volumes:
+      - ../:/app
+      - /var/run/docker.sock:/var/run/docker.sock  # For VM management
+    ports:
+      - "8000:8000"
+    networks:
+      - zen-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    command: uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # React Dashboard
+  dashboard:
+    image: node:18-alpine
+    container_name: zen-dashboard
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - ../dashboard:/app
+    ports:
+      - "3000:3000"
+    networks:
+      - zen-network
+    command: sh -c "npm install && npm start"
+    environment:
+      - REACT_APP_API_URL=http://localhost:8000
+      - CHOKIDAR_USEPOLLING=true
+
+  # Celery Worker (Background Tasks)
+  worker:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: zen-worker
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgresql://postgres:${DB_PASSWORD:-postgres}@postgres:5432/zen_pentest
+      - REDIS_URL=redis://redis:6379
+      - SECRET_KEY=${SECRET_KEY:-change-me-in-production}
+    volumes:
+      - ../:/app
+    networks:
+      - zen-network
+    depends_on:
+      - postgres
+      - redis
+    command: celery -A api.celery worker --loglevel=info
+
+  # Celery Beat (Scheduler)
+  scheduler:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: zen-scheduler
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgresql://postgres:${DB_PASSWORD:-postgres}@postgres:5432/zen_pentest
+      - REDIS_URL=redis://redis:6379
+    volumes:
+      - ../:/app
+    networks:
+      - zen-network
+    depends_on:
+      - postgres
+      - redis
+    command: celery -A api.celery beat --loglevel=info
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: zen-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ../reports:/usr/share/nginx/html/reports:ro
+    networks:
+      - zen-network
+    depends_on:
+      - api
+      - dashboard
+
+  # Optional: Kali Linux VM (Headless)
+  # Requires privileged mode and host networking
+  kali:
+    image: kalilinux/kali-rolling:latest
+    container_name: zen-kali
+    privileged: true
+    network_mode: host
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: tail -f /dev/null  # Keep running
+    profiles:
+      - kali  # Only start with: docker-compose --profile kali up
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  zen-network:
+    driver: bridge
