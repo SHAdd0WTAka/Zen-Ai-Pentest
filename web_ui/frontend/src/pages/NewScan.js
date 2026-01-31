@@ -1,22 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-    Box,
-    Typography,
-    TextField,
-    Button,
-    FormControl,
-    InputLabel,
-    Select,
-    MenuItem,
-    Paper,
-    Stepper,
-    Step,
-    StepLabel,
-    Alert,
-    CircularProgress
-} from '@mui/material';
-import axios from 'axios';
+import { scansAPI } from '../services/api';
+import { ScanLine, ArrowRight, ArrowLeft, AlertCircle } from 'lucide-react';
+import './NewScan.css';
 
 const steps = ['Target', 'Configuration', 'Review'];
 
@@ -30,7 +16,6 @@ function NewScan() {
         goal: '',
         scan_type: 'comprehensive',
         safety_level: 'non_destructive',
-        scope: {}
     });
 
     const handleNext = () => {
@@ -41,8 +26,8 @@ function NewScan() {
         setActiveStep((prevStep) => prevStep - 1);
     };
 
-    const handleChange = (field) => (event) => {
-        setScanConfig({ ...scanConfig, [field]: event.target.value });
+    const handleChange = (field) => (e) => {
+        setScanConfig({ ...scanConfig, [field]: e.target.value });
     };
 
     const handleSubmit = async () => {
@@ -50,8 +35,8 @@ function NewScan() {
         setError(null);
         
         try {
-            const response = await axios.post('/api/scans', scanConfig);
-            navigate(`/scans/${response.data.scan_id}`);
+            const response = await scansAPI.create(scanConfig);
+            navigate(`/scans/${response.data.id}`);
         } catch (err) {
             setError(err.response?.data?.detail || 'Failed to start scan');
             setLoading(false);
@@ -62,70 +47,80 @@ function NewScan() {
         switch (step) {
             case 0:
                 return (
-                    <Box sx={{ mt: 2 }}>
-                        <TextField
-                            fullWidth
-                            label="Target"
-                            value={scanConfig.target}
-                            onChange={handleChange('target')}
-                            placeholder="e.g., example.com or 192.168.1.1"
-                            margin="normal"
-                            required
-                        />
-                        <TextField
-                            fullWidth
-                            label="Goal (Optional)"
-                            value={scanConfig.goal}
-                            onChange={handleChange('goal')}
-                            placeholder="e.g., Find all vulnerabilities"
-                            margin="normal"
-                            multiline
-                            rows={2}
-                        />
-                    </Box>
+                    <div className="form-step">
+                        <div className="form-group">
+                            <label>Target *</label>
+                            <input
+                                type="text"
+                                value={scanConfig.target}
+                                onChange={handleChange('target')}
+                                placeholder="e.g., example.com or 192.168.1.1"
+                                required
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>Goal (Optional)</label>
+                            <textarea
+                                value={scanConfig.goal}
+                                onChange={handleChange('goal')}
+                                placeholder="e.g., Find all vulnerabilities"
+                                rows={3}
+                            />
+                        </div>
+                    </div>
                 );
             case 1:
                 return (
-                    <Box sx={{ mt: 2 }}>
-                        <FormControl fullWidth margin="normal">
-                            <InputLabel>Scan Type</InputLabel>
-                            <Select
+                    <div className="form-step">
+                        <div className="form-group">
+                            <label>Scan Type</label>
+                            <select
                                 value={scanConfig.scan_type}
                                 onChange={handleChange('scan_type')}
-                                label="Scan Type"
                             >
-                                <MenuItem value="quick">Quick (Port scan only)</MenuItem>
-                                <MenuItem value="standard">Standard (Common vulnerabilities)</MenuItem>
-                                <MenuItem value="comprehensive">Comprehensive (Full assessment)</MenuItem>
-                            </Select>
-                        </FormControl>
+                                <option value="quick">Quick (Port scan only)</option>
+                                <option value="standard">Standard (Common vulnerabilities)</option>
+                                <option value="comprehensive">Comprehensive (Full assessment)</option>
+                            </select>
+                        </div>
 
-                        <FormControl fullWidth margin="normal">
-                            <InputLabel>Safety Level</InputLabel>
-                            <Select
+                        <div className="form-group">
+                            <label>Safety Level</label>
+                            <select
                                 value={scanConfig.safety_level}
                                 onChange={handleChange('safety_level')}
-                                label="Safety Level"
                             >
-                                <MenuItem value="read_only">Read Only (Passive recon)</MenuItem>
-                                <MenuItem value="non_destructive">Non-Destructive (Safe tests)</MenuItem>
-                                <MenuItem value="destructive">Destructive (May modify data)</MenuItem>
-                                <MenuItem value="exploit">Full Exploitation</MenuItem>
-                            </Select>
-                        </FormControl>
-                    </Box>
+                                <option value="read_only">Read Only (Passive recon)</option>
+                                <option value="non_destructive">Non-Destructive (Safe tests)</option>
+                                <option value="destructive">Destructive (May modify data)</option>
+                                <option value="exploit">Full Exploitation</option>
+                            </select>
+                        </div>
+                    </div>
                 );
             case 2:
                 return (
-                    <Box sx={{ mt: 2 }}>
-                        <Paper sx={{ p: 2 }}>
-                            <Typography variant="h6">Scan Configuration</Typography>
-                            <Typography><strong>Target:</strong> {scanConfig.target}</Typography>
-                            <Typography><strong>Goal:</strong> {scanConfig.goal || 'Default comprehensive assessment'}</Typography>
-                            <Typography><strong>Scan Type:</strong> {scanConfig.scan_type}</Typography>
-                            <Typography><strong>Safety Level:</strong> {scanConfig.safety_level}</Typography>
-                        </Paper>
-                    </Box>
+                    <div className="form-step">
+                        <div className="review-card">
+                            <h3>Scan Configuration</h3>
+                            <div className="review-item">
+                                <span className="review-label">Target:</span>
+                                <span className="review-value">{scanConfig.target}</span>
+                            </div>
+                            <div className="review-item">
+                                <span className="review-label">Goal:</span>
+                                <span className="review-value">{scanConfig.goal || 'Default comprehensive assessment'}</span>
+                            </div>
+                            <div className="review-item">
+                                <span className="review-label">Scan Type:</span>
+                                <span className="review-value">{scanConfig.scan_type}</span>
+                            </div>
+                            <div className="review-item">
+                                <span className="review-label">Safety Level:</span>
+                                <span className="review-value">{scanConfig.safety_level}</span>
+                            </div>
+                        </div>
+                    </div>
                 );
             default:
                 return null;
@@ -133,55 +128,72 @@ function NewScan() {
     };
 
     return (
-        <Box>
-            <Typography variant="h4" gutterBottom>
-                New Scan
-            </Typography>
+        <div className="new-scan-page">
+            <header className="page-header">
+                <ScanLine size={28} />
+                <h1>New Scan</h1>
+            </header>
 
             {error && (
-                <Alert severity="error" sx={{ mb: 2 }}>
+                <div className="error-alert">
+                    <AlertCircle size={18} />
                     {error}
-                </Alert>
+                </div>
             )}
 
-            <Stepper activeStep={activeStep} sx={{ mb: 3 }}>
-                {steps.map((label) => (
-                    <Step key={label}>
-                        <StepLabel>{label}</StepLabel>
-                    </Step>
+            <div className="stepper">
+                {steps.map((label, index) => (
+                    <div 
+                        key={label} 
+                        className={`step ${index === activeStep ? 'active' : ''} ${index < activeStep ? 'completed' : ''}`}
+                    >
+                        <div className="step-number">{index + 1}</div>
+                        <div className="step-label">{label}</div>
+                    </div>
                 ))}
-            </Stepper>
+            </div>
 
-            <Paper sx={{ p: 3 }}>
+            <div className="step-content">
                 {renderStepContent(activeStep)}
+            </div>
 
-                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
-                    {activeStep > 0 && (
-                        <Button onClick={handleBack} sx={{ mr: 1 }}>
-                            Back
-                        </Button>
-                    )}
-                    {activeStep < steps.length - 1 ? (
-                        <Button
-                            variant="contained"
-                            onClick={handleNext}
-                            disabled={!scanConfig.target}
-                        >
-                            Next
-                        </Button>
-                    ) : (
-                        <Button
-                            variant="contained"
-                            onClick={handleSubmit}
-                            disabled={loading}
-                            startIcon={loading && <CircularProgress size={20} />}
-                        >
-                            Start Scan
-                        </Button>
-                    )}
-                </Box>
-            </Paper>
-        </Box>
+            <div className="step-actions">
+                {activeStep > 0 && (
+                    <button onClick={handleBack} className="btn-secondary">
+                        <ArrowLeft size={18} />
+                        Back
+                    </button>
+                )}
+                {activeStep < steps.length - 1 ? (
+                    <button
+                        onClick={handleNext}
+                        disabled={!scanConfig.target}
+                        className="btn-primary"
+                    >
+                        Next
+                        <ArrowRight size={18} />
+                    </button>
+                ) : (
+                    <button
+                        onClick={handleSubmit}
+                        disabled={loading}
+                        className="btn-primary"
+                    >
+                        {loading ? (
+                            <>
+                                <span className="spinner-small"></span>
+                                Starting...
+                            </>
+                        ) : (
+                            <>
+                                <ScanLine size={18} />
+                                Start Scan
+                            </>
+                        )}
+                    </button>
+                )}
+            </div>
+        </div>
     );
 }
 

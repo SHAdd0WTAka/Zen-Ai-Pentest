@@ -1,165 +1,135 @@
 import React, { useEffect, useState } from 'react';
-import {
-    Box,
-    Typography,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
-    Paper,
-    Chip,
-    TextField,
-    MenuItem,
-    FormControl,
-    InputLabel,
-    Select
-} from '@mui/material';
-import axios from 'axios';
+import { findingsAPI } from '../services/api';
+import { ShieldAlert, Filter, Search, AlertTriangle } from 'lucide-react';
+import './Findings.css';
+
+const SEVERITY_OPTIONS = ['all', 'critical', 'high', 'medium', 'low', 'info'];
 
 function Findings() {
     const [findings, setFindings] = useState([]);
-    const [filteredFindings, setFilteredFindings] = useState([]);
-    const [severityFilter, setSeverityFilter] = useState('all');
-    const [searchTerm, setSearchTerm] = useState('');
+    const [loading, setLoading] = useState(true);
+    const [filter, setFilter] = useState('all');
+    const [search, setSearch] = useState('');
 
     useEffect(() => {
         fetchFindings();
     }, []);
 
-    useEffect(() => {
-        filterFindings();
-    }, [findings, severityFilter, searchTerm]);
-
     const fetchFindings = async () => {
         try {
-            // Get all scans and extract findings
-            const scansRes = await axios.get('/api/scans');
-            const allFindings = [];
-            
-            for (const scan of scansRes.data) {
-                if (scan.findings_count > 0) {
-                    const findingsRes = await axios.get(`/api/scans/${scan.scan_id}/findings`);
-                    allFindings.push(...findingsRes.data.map(f => ({
-                        ...f,
-                        scan_id: scan.scan_id,
-                        target: scan.target
-                    })));
-                }
-            }
-            
-            setFindings(allFindings);
+            const response = await findingsAPI.getAll();
+            setFindings(response.data.items || []);
+            setLoading(false);
         } catch (error) {
             console.error('Error fetching findings:', error);
         }
     };
 
-    const filterFindings = () => {
-        let filtered = findings;
+    const filteredFindings = findings.filter(finding => {
+        const matchesSeverity = filter === 'all' || finding.severity?.toLowerCase() === filter;
+        const matchesSearch = !search || 
+            finding.title?.toLowerCase().includes(search.toLowerCase()) ||
+            finding.description?.toLowerCase().includes(search.toLowerCase());
+        return matchesSeverity && matchesSearch;
+    });
 
-        if (severityFilter !== 'all') {
-            filtered = filtered.filter(f => 
-                f.severity?.toUpperCase() === severityFilter.toUpperCase()
-            );
-        }
+    const getSeverityClass = (severity) => `severity-badge ${severity?.toLowerCase() || 'info'}`;
 
-        if (searchTerm) {
-            filtered = filtered.filter(f =>
-                f.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                f.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                f.target?.toLowerCase().includes(searchTerm.toLowerCase())
-            );
-        }
-
-        setFilteredFindings(filtered);
+    const getSeverityCount = (severity) => {
+        return findings.filter(f => f.severity?.toLowerCase() === severity).length;
     };
 
-    const getSeverityColor = (severity) => {
-        switch (severity?.toUpperCase()) {
-            case 'CRITICAL':
-                return 'error';
-            case 'HIGH':
-                return 'warning';
-            case 'MEDIUM':
-                return 'info';
-            case 'LOW':
-                return 'success';
-            default:
-                return 'default';
-        }
-    };
+    if (loading) {
+        return (
+            <div className="loading-container">
+                <div className="spinner"></div>
+                <p>Loading findings...</p>
+            </div>
+        );
+    }
 
     return (
-        <Box>
-            <Typography variant="h4" gutterBottom>
-                Findings
-            </Typography>
+        <div className="findings-page">
+            <header className="page-header">
+                <div className="header-title">
+                    <ShieldAlert size={28} />
+                    <h1>Findings</h1>
+                </div>
+            </header>
 
-            {/* Filters */}
-            <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-                <TextField
-                    label="Search"
-                    variant="outlined"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    sx={{ flexGrow: 1 }}
-                />
-                <FormControl sx={{ minWidth: 120 }}>
-                    <InputLabel>Severity</InputLabel>
-                    <Select
-                        value={severityFilter}
-                        onChange={(e) => setSeverityFilter(e.target.value)}
-                        label="Severity"
-                    >
-                        <MenuItem value="all">All</MenuItem>
-                        <MenuItem value="CRITICAL">Critical</MenuItem>
-                        <MenuItem value="HIGH">High</MenuItem>
-                        <MenuItem value="MEDIUM">Medium</MenuItem>
-                        <MenuItem value="LOW">Low</MenuItem>
-                    </Select>
-                </FormControl>
-            </Box>
+            <div className="findings-stats">
+                {SEVERITY_OPTIONS.slice(1).map(sev => (
+                    <div key={sev} className={`stat-pill ${sev}`}>
+                        <span className="stat-name">{sev}</span>
+                        <span className="stat-count">{getSeverityCount(sev)}</span>
+                    </div>
+                ))}
+            </div>
 
-            <TableContainer component={Paper}>
-                <Table>
-                    <TableHead>
-                        <TableRow>
-                            <TableCell>Target</TableCell>
-                            <TableCell>Type</TableCell>
-                            <TableCell>Severity</TableCell>
-                            <TableCell>Risk Score</TableCell>
-                            <TableCell>Description</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {filteredFindings.map((finding, index) => (
-                            <TableRow key={index}>
-                                <TableCell>{finding.target}</TableCell>
-                                <TableCell>{finding.type}</TableCell>
-                                <TableCell>
-                                    <Chip
-                                        label={finding.severity}
-                                        color={getSeverityColor(finding.severity)}
-                                        size="small"
-                                    />
-                                </TableCell>
-                                <TableCell>
-                                    {finding.risk_score ? (
-                                        <Chip
-                                            label={`${finding.risk_score.risk_score}/10`}
-                                            color={getSeverityColor(finding.severity)}
-                                            size="small"
-                                        />
-                                    ) : '-'}
-                                </TableCell>
-                                <TableCell>{finding.description}</TableCell>
-                            </TableRow>
+            <div className="findings-toolbar">
+                <div className="search-box">
+                    <Search size={18} />
+                    <input
+                        type="text"
+                        placeholder="Search findings..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                    />
+                </div>
+
+                <div className="filter-group">
+                    <Filter size={18} />
+                    <select value={filter} onChange={(e) => setFilter(e.target.value)}>
+                        {SEVERITY_OPTIONS.map(opt => (
+                            <option key={opt} value={opt}>
+                                {opt.charAt(0).toUpperCase() + opt.slice(1)}
+                            </option>
                         ))}
-                    </TableBody>
-                </Table>
-            </TableContainer>
-        </Box>
+                    </select>
+                </div>
+            </div>
+
+            <div className="findings-list">
+                {filteredFindings.length > 0 ? (
+                    filteredFindings.map((finding) => (
+                        <div key={finding.id} className="finding-card">
+                            <div className="finding-main">
+                                <div className="finding-header">
+                                    <span className={getSeverityClass(finding.severity)}>
+                                        {finding.severity}
+                                    </span>
+                                    <span className="finding-date">
+                                        {new Date(finding.created_at).toLocaleString()}
+                                    </span>
+                                </div>
+                                <h3>{finding.title}</h3>
+                                <p>{finding.description}</p>
+                                {finding.target && (
+                                    <div className="finding-target">
+                                        Target: <span>{finding.target}</span>
+                                    </div>
+                                )}
+                            </div>
+                            {finding.remediation && (
+                                <div className="finding-remediation">
+                                    <div className="remediation-header">
+                                        <AlertTriangle size={14} />
+                                        Remediation
+                                    </div>
+                                    <p>{finding.remediation}</p>
+                                </div>
+                            )}
+                        </div>
+                    ))
+                ) : (
+                    <div className="empty-state">
+                        <ShieldAlert size={48} />
+                        <p>No findings found</p>
+                        {search && <p className="hint">Try adjusting your search or filter</p>}
+                    </div>
+                )}
+            </div>
+        </div>
     );
 }
 

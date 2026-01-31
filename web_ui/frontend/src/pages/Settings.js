@@ -1,93 +1,151 @@
-import React from 'react';
-import {
-    Box,
-    Typography,
-    Paper,
-    TextField,
-    FormControl,
-    InputLabel,
-    Select,
-    MenuItem,
-    Button,
-    Divider,
-    Alert
-} from '@mui/material';
+import React, { useState } from 'react';
+import { useAuthStore } from '../store/authStore';
+import { Settings as SettingsIcon, User, Bell, Shield, Slack, Mail } from 'lucide-react';
+import './Settings.css';
 
 function Settings() {
+    const { user } = useAuthStore();
+    const [activeTab, setActiveTab] = useState('profile');
+    const [saved, setSaved] = useState(false);
+
+    const handleSave = () => {
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2000);
+    };
+
     return (
-        <Box>
-            <Typography variant="h4" gutterBottom>
-                Settings
-            </Typography>
+        <div className="settings-page">
+            <header className="page-header">
+                <div className="header-title">
+                    <SettingsIcon size={28} />
+                    <h1>Settings</h1>
+                </div>
+            </header>
 
-            <Paper sx={{ p: 3 }}>
-                <Typography variant="h6" gutterBottom>
-                    API Configuration
-                </Typography>
-                
-                <TextField
-                    fullWidth
-                    label="OpenRouter API Key"
-                    type="password"
-                    margin="normal"
-                    placeholder="sk-or-..."
-                />
-                
-                <TextField
-                    fullWidth
-                    label="OpenAI API Key"
-                    type="password"
-                    margin="normal"
-                    placeholder="sk-..."
-                />
+            <div className="settings-layout">
+                <aside className="settings-sidebar">
+                    <button 
+                        className={activeTab === 'profile' ? 'active' : ''}
+                        onClick={() => setActiveTab('profile')}
+                    >
+                        <User size={18} />
+                        Profile
+                    </button>
+                    <button 
+                        className={activeTab === 'notifications' ? 'active' : ''}
+                        onClick={() => setActiveTab('notifications')}
+                    >
+                        <Bell size={18} />
+                        Notifications
+                    </button>
+                    <button 
+                        className={activeTab === 'security' ? 'active' : ''}
+                        onClick={() => setActiveTab('security')}
+                    >
+                        <Shield size={18} />
+                        Security
+                    </button>
+                </aside>
 
-                <Divider sx={{ my: 3 }} />
+                <div className="settings-content">
+                    {activeTab === 'profile' && (
+                        <div className="settings-section">
+                            <h2>Profile Settings</h2>
+                            <div className="form-group">
+                                <label>Username</label>
+                                <input type="text" value={user?.username || ''} disabled />
+                            </div>
+                            <div className="form-group">
+                                <label>Email</label>
+                                <input type="email" placeholder="your@email.com" />
+                            </div>
+                            <div className="form-group">
+                                <label>Role</label>
+                                <input type="text" value={user?.role || 'Operator'} disabled />
+                            </div>
+                            <button className="btn-primary" onClick={handleSave}>
+                                {saved ? 'Saved!' : 'Save Changes'}
+                            </button>
+                        </div>
+                    )}
 
-                <Typography variant="h6" gutterBottom>
-                    Safety Settings
-                </Typography>
-                
-                <FormControl fullWidth margin="normal">
-                    <InputLabel>Default Safety Level</InputLabel>
-                    <Select label="Default Safety Level" defaultValue="non_destructive">
-                        <MenuItem value="read_only">Read Only</MenuItem>
-                        <MenuItem value="non_destructive">Non-Destructive</MenuItem>
-                        <MenuItem value="destructive">Destructive</MenuItem>
-                        <MenuItem value="exploit">Full Exploitation</MenuItem>
-                    </Select>
-                </FormControl>
+                    {activeTab === 'notifications' && (
+                        <div className="settings-section">
+                            <h2>Notification Settings</h2>
+                            
+                            <div className="setting-item">
+                                <div className="setting-info">
+                                    <Mail size={20} />
+                                    <div>
+                                        <label>Email Notifications</label>
+                                        <p>Receive scan completion emails</p>
+                                    </div>
+                                </div>
+                                <label className="toggle">
+                                    <input type="checkbox" defaultChecked />
+                                    <span className="toggle-slider"></span>
+                                </label>
+                            </div>
 
-                <Alert severity="info" sx={{ mt: 2 }}>
-                    Higher safety levels restrict what tools can be executed automatically.
-                </Alert>
+                            <div className="setting-item">
+                                <div className="setting-info">
+                                    <Slack size={20} />
+                                    <div>
+                                        <label>Slack Integration</label>
+                                        <p>Send notifications to Slack</p>
+                                    </div>
+                                </div>
+                                <label className="toggle">
+                                    <input type="checkbox" />
+                                    <span className="toggle-slider"></span>
+                                </label>
+                            </div>
 
-                <Divider sx={{ my: 3 }} />
+                            <div className="setting-item">
+                                <div className="setting-info">
+                                    <Bell size={20} />
+                                    <div>
+                                        <label>Critical Alerts</label>
+                                        <p>Notify on critical findings</p>
+                                    </div>
+                                </div>
+                                <label className="toggle">
+                                    <input type="checkbox" defaultChecked />
+                                    <span className="toggle-slider"></span>
+                                </label>
+                            </div>
 
-                <Typography variant="h6" gutterBottom>
-                    Notification Settings
-                </Typography>
-                
-                <TextField
-                    fullWidth
-                    label="Slack Webhook URL"
-                    margin="normal"
-                    placeholder="https://hooks.slack.com/services/..."
-                />
-                
-                <TextField
-                    fullWidth
-                    label="Email for Alerts"
-                    margin="normal"
-                    placeholder="security@example.com"
-                />
+                            <button className="btn-primary" onClick={handleSave}>
+                                {saved ? 'Saved!' : 'Save Changes'}
+                            </button>
+                        </div>
+                    )}
 
-                <Box sx={{ mt: 3 }}>
-                    <Button variant="contained" color="primary">
-                        Save Settings
-                    </Button>
-                </Box>
-            </Paper>
-        </Box>
+                    {activeTab === 'security' && (
+                        <div className="settings-section">
+                            <h2>Security Settings</h2>
+                            
+                            <div className="form-group">
+                                <label>Current Password</label>
+                                <input type="password" placeholder="••••••••" />
+                            </div>
+                            <div className="form-group">
+                                <label>New Password</label>
+                                <input type="password" placeholder="••••••••" />
+                            </div>
+                            <div className="form-group">
+                                <label>Confirm New Password</label>
+                                <input type="password" placeholder="••••••••" />
+                            </div>
+
+                            <button className="btn-primary" onClick={handleSave}>
+                                {saved ? 'Saved!' : 'Update Password'}
+                            </button>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
     );
 }
 
