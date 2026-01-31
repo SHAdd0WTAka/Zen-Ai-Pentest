@@ -1,0 +1,63 @@
+# Docker Compose für Zen-AI-Pentest mit VirtualBox
+# 
+# Verwendung:
+#   docker-compose -f docker-compose.vm.yml up -d
+#
+# Hinweis: VirtualBox im Container erfordert privilegierte Rechte
+# und ist nur für headless Server gedacht.
+
+version: '3.8'
+
+services:
+  zen-pentest:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: zen-ai-pentest
+    privileged: true  # Erforderlich für VM-Steuerung
+    volumes:
+      # VirtualBox Socket (Host muss VirtualBox haben)
+      - /var/run/vboxdrv:/var/run/vboxdrv
+      # VM Storage (optional)
+      - ~/VirtualBox VMs:/vms
+      # Zen Config
+      - ../config:/app/config
+      # Reports
+      - ../reports:/app/reports
+    environment:
+      - VBOX_USER_HOME=/vms
+      - DISPLAY=${DISPLAY:-:0}  # Für GUI (optional)
+      - ZEN_VM_MODE=headless
+    network_mode: host  # Für VM-Netzwerk-Zugriff
+    stdin_open: true
+    tty: true
+    command: /bin/bash
+
+  # Optional: Web UI für VM-Management
+  vbox-web:
+    image: jlesage/virtualbox-manager:latest
+    container_name: zen-vbox-web
+    ports:
+      - "5800:5800"
+    volumes:
+      - ~/VirtualBox VMs:/vms
+      - /var/run/vboxdrv:/var/run/vboxdrv
+    environment:
+      - USER_ID=1000
+      - GROUP_ID=1000
+      - VBOX_WEB_AUTO_START=1
+    privileged: true
+    profiles:
+      - gui  # Nur mit: docker-compose --profile gui up
+
+  # Optional: NoVNC für VM-Zugriff
+  novnc:
+    image: theasp/novnc:latest
+    container_name: zen-novnc
+    ports:
+      - "8080:8080"
+    environment:
+      - DISPLAY_WIDTH=1920
+      - DISPLAY_HEIGHT=1080
+    profiles:
+      - vnc
