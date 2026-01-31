@@ -99,4 +99,18 @@ export const schedulesAPI = {
   runNow: (id) => api.post(`/schedules/${id}/run`),
 };
 
+// Slack Notifications API
+export const slackAPI = {
+  getSettings: () => api.get('/settings/slack'),
+  updateSettings: (webhook_url, enabled = true) => api.post('/settings/slack', null, {
+    params: { webhook_url, enabled }
+  }),
+  test: (webhook_url) => api.post('/notifications/slack/test', null, {
+    params: { webhook_url }
+  }),
+  notifyScanComplete: (scan_id, webhook_url) => api.post('/notifications/slack/scan-complete', null, {
+    params: { scan_id, webhook_url }
+  }),
+};
+
 export default api;

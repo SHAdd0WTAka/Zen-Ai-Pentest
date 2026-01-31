@@ -827,6 +827,95 @@ async def get_tool_usage(
     # TODO: Implement tool usage tracking
     return []
 
+# ============================================================================
+# NOTIFICATIONS (SLACK)
+# ============================================================================
+
+@app.post("/notifications/slack/test")
+async def test_slack_notification(
+    webhook_url: str,
+    user: dict = Depends(verify_token)
+):
+    """Test Slack webhook configuration"""
+    try:
+        from notifications.slack import SlackNotifier
+        notifier = SlackNotifier(webhook_url)
+        success = notifier.send_message(
+            f"Test notification from Zen AI Pentest\nUser: {user.get('sub', 'unknown')}\nTime: {datetime.utcnow().isoformat()}"
+        )
+        if success:
+            return {"status": "success", "message": "Test notification sent"}
+        else:
+            raise HTTPException(status_code=400, detail="Failed to send Slack notification")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/notifications/slack/scan-complete")
+async def notify_slack_scan_complete(
+    scan_id: int,
+    webhook_url: str,
+    user: dict = Depends(verify_token),
+    db = Depends(get_db)
+):
+    """Send Slack notification for scan completion"""
+    try:
+        from notifications.slack import SlackNotifier
+        from database.models import Scan, Finding
+        
+        # Get scan details
+        scan = db.query(Scan).filter(Scan.id == scan_id).first()
+        if not scan:
+            raise HTTPException(status_code=404, detail="Scan not found")
+        
+        # Count findings
+        findings = db.query(Finding).filter(Finding.scan_id == scan_id).all()
+        findings_count = len(findings)
+        critical_count = sum(1 for f in findings if f.severity == 'critical')
+        
+        # Send notification
+        notifier = SlackNotifier(webhook_url)
+        success = notifier.send_scan_completed(
+            scan_id=scan_id,
+            target=scan.target,
+            findings_count=findings_count,
+            critical_count=critical_count
+        )
+        
+        if success:
+            return {"status": "success", "message": "Notification sent"}
+        else:
+            raise HTTPException(status_code=400, detail="Failed to send notification")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Store Slack webhook in memory (in production: use database)
+SLACK_CONFIG = {
+    "webhook_url": None,
+    "enabled": False
+}
+
+@app.get("/settings/slack")
+async def get_slack_settings(
+    user: dict = Depends(verify_token)
+):
+    """Get Slack configuration (without sensitive data)"""
+    return {
+        "enabled": SLACK_CONFIG["enabled"],
+        "configured": SLACK_CONFIG["webhook_url"] is not None
+    }
+
+@app.post("/settings/slack")
+async def update_slack_settings(
+    webhook_url: str,
+    enabled: bool = True,
+    user: dict = Depends(verify_token)
+):
+    """Update Slack configuration"""
+    global SLACK_CONFIG
+    SLACK_CONFIG["webhook_url"] = webhook_url
+    SLACK_CONFIG["enabled"] = enabled
+    return {"status": "success", "message": "Slack settings updated"}
+
 # Import models for reports
 from database.models import Report
 

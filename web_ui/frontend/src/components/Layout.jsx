@@ -8,7 +8,8 @@ import {
   Settings, 
   LogOut,
   PlusCircle,
-  Calendar
+  Calendar,
+  MessageSquare
 } from 'lucide-react';
 import './Layout.css';
 
@@ -68,6 +69,14 @@ function Layout() {
           >
             <Calendar size={20} />
             <span>Scheduler</span>
+          </Link>
+
+          <Link 
+            to="/slack" 
+            className={`nav-item ${isActive('/slack') ? 'active' : ''}`}
+          >
+            <MessageSquare size={20} />
+            <span>Slack</span>
           </Link>
 
           <Link 
