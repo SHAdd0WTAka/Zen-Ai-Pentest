@@ -6,7 +6,7 @@
 
 # HTTP and API
 requests>=2.31.0
-aiohttp>=3.9.0
+aiohttp>=3.13.3  # SECURITY FIX: CVE-2025-69223, CVE-2024-30251, CVE-2024-23334
 websockets>=12.0
 
 # Configuration and Environment
@@ -25,6 +25,7 @@ colorama>=0.4.6
 typer>=0.9.0
 
 # Security and Cryptography
+cryptography>=42.0.4  # SECURITY FIX: CVE-2024-26130
 cryptography>=41.0.0
 python-jose>=3.4.0  # SECURITY FIX: CVE-2024-33663
 passlib>=1.7.4

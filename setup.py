@@ -14,7 +14,7 @@ with open(os.path.join(here, 'README.md'), encoding='utf-8') as f:
 # Core dependencies
 install_requires = [
     'requests>=2.31.0',
-    'aiohttp>=3.9.0',
+    'aiohttp>=3.13.3  # SECURITY FIX: CVE-2025-69223',
     'python-dotenv>=1.0.0',
     'pydantic>=2.0.0',
     'fastapi>=0.104.0',
@@ -24,6 +24,7 @@ install_requires = [
     'rich>=13.0.0',
     'colorama>=0.4.6',
     'typer>=0.9.0',
+    'cryptography>=42.0.4  # SECURITY FIX: CVE-2024-26130',
     'cryptography>=41.0.0',
     'python-jose>=3.4.0  # SECURITY FIX: CVE-2024-33663',
     'passlib>=1.7.4',
