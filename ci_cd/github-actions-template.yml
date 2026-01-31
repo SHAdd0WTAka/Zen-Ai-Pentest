@@ -1,0 +1,592 @@
+# =============================================================================
+# Zen-AI-Pentest GitHub Actions Workflow Template
+# =============================================================================
+# Description: Production-ready CI/CD integration for automated security scanning
+# Version: 2.0.0
+# Author: DevSecOps Team
+# =============================================================================
+
+name: 🔒 Zen-AI-Pentest Security Scan
+
+# -----------------------------------------------------------------------------
+# TRIGGER CONFIGURATION
+# -----------------------------------------------------------------------------
+on:
+  # Manual trigger with parameters
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Target URL/IP to scan'
+        required: true
+        type: string
+        default: 'https://example.com'
+      scan_mode:
+        description: 'Scan mode to execute'
+        required: true
+        type: choice
+        options:
+          - recon
+          - vuln
+          - full
+          - stealth
+        default: 'full'
+      intensity:
+        description: 'Scan intensity level'
+        required: true
+        type: choice
+        options:
+          - low
+          - medium
+          - high
+        default: 'medium'
+      create_issues:
+        description: 'Create GitHub issues for findings'
+        required: false
+        type: boolean
+        default: true
+      notify_slack:
+        description: 'Send Slack notification'
+        required: false
+        type: boolean
+        default: true
+
+  # Automatic triggers
+  push:
+    branches:
+      - main
+      - develop
+      - 'release/*'
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.gitignore'
+
+  pull_request:
+    branches:
+      - main
+      - develop
+    types: [opened, synchronize, reopened]
+
+  # Scheduled scans (every Sunday at 2 AM UTC)
+  schedule:
+    - cron: '0 2 * * 0'
+
+# -----------------------------------------------------------------------------
+# GLOBAL CONFIGURATION
+# -----------------------------------------------------------------------------
+env:
+  ZEN_PENTEST_VERSION: '2.0.0'
+  PYTHON_VERSION: '3.11'
+  REPORT_RETENTION_DAYS: 90
+  SCAN_TIMEOUT: 3600  # 1 hour
+
+# -----------------------------------------------------------------------------
+# PERMISSIONS (Principle of Least Privilege)
+# -----------------------------------------------------------------------------
+permissions:
+  contents: read
+  issues: write
+  actions: read
+  checks: write
+  security-events: write
+
+# -----------------------------------------------------------------------------
+# CONCURRENCY CONTROL
+# -----------------------------------------------------------------------------
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event.inputs.target || 'scheduled' }}
+  cancel-in-progress: false
+
+# -----------------------------------------------------------------------------
+# JOBS
+# -----------------------------------------------------------------------------
+jobs:
+  # ===========================================================================
+  # JOB 1: Setup and Validate
+  # ===========================================================================
+  setup:
+    name: ⚙️ Setup Environment
+    runs-on: ubuntu-latest
+    outputs:
+      scan_id: ${{ steps.generate-id.outputs.scan_id }}
+      target: ${{ steps.set-target.outputs.target }}
+      scan_mode: ${{ steps.set-config.outputs.scan_mode }}
+      intensity: ${{ steps.set-config.outputs.intensity }}
+    steps:
+      - name: Generate Scan ID
+        id: generate-id
+        run: echo "scan_id=scan-$(date +%Y%m%d-%H%M%S)-$(echo $RANDOM | md5sum | head -c 8)" >> $GITHUB_OUTPUT
+
+      - name: Set Target
+        id: set-target
+        run: |
+          if [ "${{ github.event.inputs.target }}" != "" ]; then
+            echo "target=${{ github.event.inputs.target }}" >> $GITHUB_OUTPUT
+          else
+            echo "target=${{ vars.ZEN_PENTEST_DEFAULT_TARGET || 'https://staging.example.com' }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Set Configuration
+        id: set-config
+        run: |
+          echo "scan_mode=${{ github.event.inputs.scan_mode || 'full' }}" >> $GITHUB_OUTPUT
+          echo "intensity=${{ github.event.inputs.intensity || 'medium' }}" >> $GITHUB_OUTPUT
+
+  # ===========================================================================
+  # JOB 2: Security Scan
+  # ===========================================================================
+  security-scan:
+    name: 🔍 Zen-AI-Pentest Scan
+    needs: setup
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    
+    steps:
+      # -----------------------------------------------------------------------
+      # Checkout
+      # -----------------------------------------------------------------------
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      # -----------------------------------------------------------------------
+      # Setup Python
+      # -----------------------------------------------------------------------
+      - name: Setup Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      # -----------------------------------------------------------------------
+      # Cache Zen-AI-Pentest Dependencies
+      # -----------------------------------------------------------------------
+      - name: Cache Dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/pip
+            ~/.zen-pentest/cache
+          key: ${{ runner.os }}-zen-pentest-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-zen-pentest-
+
+      # -----------------------------------------------------------------------
+      # Install Zen-AI-Pentest
+      # -----------------------------------------------------------------------
+      - name: Install Zen-AI-Pentest
+        run: |
+          echo "🔧 Installing Zen-AI-Pentest Framework..."
+          pip install --upgrade pip
+          
+          # Install from PyPI (recommended for CI)
+          pip install zen-ai-pentest==${{ env.ZEN_PENTEST_VERSION }}
+          
+          # Or install from source (for development)
+          # pip install -e .
+          
+          # Verify installation
+          zen-pentest --version
+
+      # -----------------------------------------------------------------------
+      # Configure Zen-AI-Pentest
+      # -----------------------------------------------------------------------
+      - name: Configure Zen-AI-Pentest
+        run: |
+          mkdir -p ~/.config/zen-pentest
+          cat > ~/.config/zen-pentest/config.yaml << EOF
+          core:
+            threads: 10
+            timeout: 300
+            verbose: true
+            log_level: INFO
+          
+          ai:
+            provider: openai
+            model: gpt-4
+            api_key: "${{ secrets.OPENAI_API_KEY }}"
+          
+          reporting:
+            formats:
+              - json
+              - html
+              - sarif
+            output_dir: ./reports
+            include_screenshots: true
+          
+          notifications:
+            slack:
+              webhook_url: "${{ secrets.SLACK_WEBHOOK_URL }}"
+              enabled: ${{ github.event.inputs.notify_slack || 'true' }}
+            
+          compliance:
+            - owasp_top_10
+            - pci_dss
+            - iso27001
+          EOF
+
+      # -----------------------------------------------------------------------
+      # Run Security Scan
+      # -----------------------------------------------------------------------
+      - name: Execute Security Scan
+        id: scan
+        timeout-minutes: 55
+        run: |
+          echo "🚀 Starting Zen-AI-Pentest Security Scan"
+          echo "======================================="
+          echo "Scan ID: ${{ needs.setup.outputs.scan_id }}"
+          echo "Target: ${{ needs.setup.outputs.target }}"
+          echo "Mode: ${{ needs.setup.outputs.scan_mode }}"
+          echo "Intensity: ${{ needs.setup.outputs.intensity }}"
+          echo "======================================="
+          
+          mkdir -p reports
+          
+          # Execute scan with error handling
+          zen-pentest scan \
+            --target "${{ needs.setup.outputs.target }}" \
+            --mode "${{ needs.setup.outputs.scan_mode }}" \
+            --intensity "${{ needs.setup.outputs.intensity }}" \
+            --output-dir ./reports \
+            --format json,html,sarif \
+            --scan-id "${{ needs.setup.outputs.scan_id }}" \
+            --ci-mode \
+            2>&1 | tee reports/scan-log.txt
+          
+          SCAN_EXIT_CODE=${PIPESTATUS[0]}
+          echo "scan_exit_code=$SCAN_EXIT_CODE" >> $GITHUB_OUTPUT
+          
+          if [ $SCAN_EXIT_CODE -eq 0 ]; then
+            echo "✅ Scan completed successfully"
+          elif [ $SCAN_EXIT_CODE -eq 1 ]; then
+            echo "⚠️ Scan completed with findings"
+          else
+            echo "❌ Scan failed with error code $SCAN_EXIT_CODE"
+            exit $SCAN_EXIT_CODE
+          fi
+
+      # -----------------------------------------------------------------------
+      # Parse Scan Results
+      # -----------------------------------------------------------------------
+      - name: Parse Results
+        id: parse-results
+        run: |
+          if [ -f reports/scan-results.json ]; then
+            CRITICAL=$(jq '.summary.critical // 0' reports/scan-results.json)
+            HIGH=$(jq '.summary.high // 0' reports/scan-results.json)
+            MEDIUM=$(jq '.summary.medium // 0' reports/scan-results.json)
+            LOW=$(jq '.summary.low // 0' reports/scan-results.json)
+            INFO=$(jq '.summary.info // 0' reports/scan-results.json)
+            
+            echo "critical=$CRITICAL" >> $GITHUB_OUTPUT
+            echo "high=$HIGH" >> $GITHUB_OUTPUT
+            echo "medium=$MEDIUM" >> $GITHUB_OUTPUT
+            echo "low=$LOW" >> $GITHUB_OUTPUT
+            echo "info=$INFO" >> $GITHUB_OUTPUT
+            
+            # Calculate total risk score
+            RISK_SCORE=$((CRITICAL * 10 + HIGH * 5 + MEDIUM * 2 + LOW * 1))
+            echo "risk_score=$RISK_SCORE" >> $GITHUB_OUTPUT
+          else
+            echo "critical=0" >> $GITHUB_OUTPUT
+            echo "high=0" >> $GITHUB_OUTPUT
+            echo "medium=0" >> $GITHUB_OUTPUT
+            echo "low=0" >> $GITHUB_OUTPUT
+            echo "info=0" >> $GITHUB_OUTPUT
+            echo "risk_score=0" >> $GITHUB_OUTPUT
+          fi
+
+      # -----------------------------------------------------------------------
+      # Upload Artifacts
+      # -----------------------------------------------------------------------
+      - name: Upload Scan Reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: zen-pentest-reports-${{ needs.setup.outputs.scan_id }}
+          path: |
+            reports/
+            !reports/*.tmp
+          retention-days: ${{ env.REPORT_RETENTION_DAYS }}
+          if-no-files-found: warn
+
+      # -----------------------------------------------------------------------
+      # Upload to GitHub Security Tab (SARIF)
+      # -----------------------------------------------------------------------
+      - name: Upload SARIF to GitHub Security
+        if: hashFiles('reports/scan-results.sarif') != ''
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: reports/scan-results.sarif
+          category: zen-ai-pentest
+
+      # -----------------------------------------------------------------------
+      # Create Job Summary
+      # -----------------------------------------------------------------------
+      - name: Generate Job Summary
+        if: always()
+        run: |
+          echo "# 🔒 Zen-AI-Pentest Security Scan Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Scan ID** | ${{ needs.setup.outputs.scan_id }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Target** | ${{ needs.setup.outputs.target }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Mode** | ${{ needs.setup.outputs.scan_mode }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Intensity** | ${{ needs.setup.outputs.intensity }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          echo "## 📊 Vulnerability Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Severity | Count |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| 🔴 Critical | ${{ steps.parse-results.outputs.critical }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🟠 High | ${{ steps.parse-results.outputs.high }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🟡 Medium | ${{ steps.parse-results.outputs.medium }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🟢 Low | ${{ steps.parse-results.outputs.low }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| ⚪ Info | ${{ steps.parse-results.outputs.info }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ steps.parse-results.outputs.risk_score }}" -gt 50 ]; then
+            echo "## ⚠️ Risk Assessment: HIGH" >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ steps.parse-results.outputs.risk_score }}" -gt 20 ]; then
+            echo "## ⚡ Risk Assessment: MEDIUM" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "## ✅ Risk Assessment: LOW" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "[📥 Download Full Reports](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
+
+  # ===========================================================================
+  # JOB 3: Create GitHub Issues for Critical/High Findings
+  # ===========================================================================
+  create-issues:
+    name: 📝 Create Issues
+    needs: [setup, security-scan]
+    runs-on: ubuntu-latest
+    if: |
+      always() && 
+      (needs.security-scan.result == 'success' || needs.security-scan.result == 'failure') &&
+      github.event.inputs.create_issues != 'false' &&
+      (needs.security-scan.outputs.critical > 0 || needs.security-scan.outputs.high > 0)
+    
+    steps:
+      - name: Download Reports
+        uses: actions/download-artifact@v4
+        with:
+          name: zen-pentest-reports-${{ needs.setup.outputs.scan_id }}
+          path: reports
+
+      - name: Create Issues for Findings
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const findings = JSON.parse(fs.readFileSync('reports/scan-results.json', 'utf8'));
+            
+            const severityLabels = {
+              critical: 'zen-pentest:critical',
+              high: 'zen-pentest:high',
+              medium: 'zen-pentest:medium',
+              low: 'zen-pentest:low'
+            };
+            
+            const severityOrder = ['critical', 'high'];
+            
+            for (const severity of severityOrder) {
+              const items = findings.vulnerabilities?.filter(v => v.severity === severity) || [];
+              
+              for (const vuln of items.slice(0, 5)) { // Limit to 5 issues per severity
+                const title = `[${severity.toUpperCase()}] ${vuln.name} - ${vuln.target}`;
+                
+                const body = `## 🔒 Security Finding Detected
+            
+            **Scan ID:** ${{ needs.setup.outputs.scan_id }}
+            **Severity:** ${severity.toUpperCase()}
+            **Target:** ${vuln.target}
+            **Detected:** ${new Date().toISOString()}
+            
+            ### Description
+            ${vuln.description}
+            
+            ### Impact
+            ${vuln.impact}
+            
+            ### Remediation
+            ${vuln.remediation}
+            
+            ### Evidence
+            \`\`\`
+            ${JSON.stringify(vuln.evidence, null, 2)}
+            \`\`\`
+            
+            ---
+            *This issue was automatically created by Zen-AI-Pentest CI/CD*
+            `;
+                
+                try {
+                  await github.rest.issues.create({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    title: title,
+                    body: body,
+                    labels: [severityLabels[severity], 'security', 'automated', 'zen-pentest'],
+                    assignees: vuln.assigned_to ? [vuln.assigned_to] : undefined
+                  });
+                  console.log(`Created issue for: ${title}`);
+                } catch (error) {
+                  console.error(`Failed to create issue: ${error.message}`);
+                }
+              }
+            }
+
+  # ===========================================================================
+  # JOB 4: Notifications
+  # ===========================================================================
+  notify:
+    name: 📢 Send Notifications
+    needs: [setup, security-scan]
+    runs-on: ubuntu-latest
+    if: always() && github.event.inputs.notify_slack != 'false'
+    
+    steps:
+      # -----------------------------------------------------------------------
+      # Slack Notification
+      # -----------------------------------------------------------------------
+      - name: Notify Slack
+        if: secrets.SLACK_WEBHOOK_URL != ''
+        uses: slackapi/slack-github-action@v1.25.0
+        with:
+          payload: |
+            {
+              "text": "Zen-AI-Pentest Scan Completed",
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "🔒 Zen-AI-Pentest Security Scan"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Scan ID:*\n${{ needs.setup.outputs.scan_id }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Target:*\n${{ needs.setup.outputs.target }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Status:*\n${{ needs.security-scan.result }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Risk Score:*\n${{ needs.security-scan.outputs.risk_score }}"
+                    }
+                  ]
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Vulnerability Summary:*\n🔴 Critical: ${{ needs.security-scan.outputs.critical }}\n🟠 High: ${{ needs.security-scan.outputs.high }}\n🟡 Medium: ${{ needs.security-scan.outputs.medium }}\n🟢 Low: ${{ needs.security-scan.outputs.low }}"
+                  }
+                },
+                {
+                  "type": "actions",
+                  "elements": [
+                    {
+                      "type": "button",
+                      "text": {
+                        "type": "plain_text",
+                        "text": "View Report"
+                      },
+                      "url": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                    }
+                  ]
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      # -----------------------------------------------------------------------
+      # Discord Notification
+      # -----------------------------------------------------------------------
+      - name: Notify Discord
+        if: secrets.DISCORD_WEBHOOK_URL != ''
+        uses: tsickert/discord-webhook@v5.3.0
+        with:
+          webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          content: |
+            🔒 **Zen-AI-Pentest Scan Completed**
+            
+            **Scan ID:** ${{ needs.setup.outputs.scan_id }}
+            **Target:** ${{ needs.setup.outputs.target }}
+            **Status:** ${{ needs.security-scan.result }}
+            **Risk Score:** ${{ needs.security-scan.outputs.risk_score }}
+            
+            **Vulnerabilities Found:**
+            🔴 Critical: ${{ needs.security-scan.outputs.critical }}
+            🟠 High: ${{ needs.security-scan.outputs.high }}
+            🟡 Medium: ${{ needs.security-scan.outputs.medium }}
+            🟢 Low: ${{ needs.security-scan.outputs.low }}
+            
+            [View Full Report](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+  # ===========================================================================
+  # JOB 5: Compliance Check (Gate)
+  # ===========================================================================
+  compliance-gate:
+    name: 🛡️ Compliance Gate
+    needs: [setup, security-scan]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+      - name: Check Compliance Thresholds
+        run: |
+          echo "Checking compliance thresholds..."
+          
+          CRITICAL=${{ needs.security-scan.outputs.critical }}
+          HIGH=${{ needs.security-scan.outputs.high }}
+          RISK_SCORE=${{ needs.security-scan.outputs.risk_score }}
+          
+          # Configurable thresholds
+          MAX_CRITICAL=${{ vars.ZEN_PENTEST_MAX_CRITICAL || '0' }}
+          MAX_HIGH=${{ vars.ZEN_PENTEST_MAX_HIGH || '5' }}
+          MAX_RISK_SCORE=${{ vars.ZEN_PENTEST_MAX_RISK_SCORE || '50' }}
+          
+          FAILED=0
+          
+          if [ "$CRITICAL" -gt "$MAX_CRITICAL" ]; then
+            echo "❌ FAILED: Critical vulnerabilities ($CRITICAL) exceed threshold ($MAX_CRITICAL)"
+            FAILED=1
+          fi
+          
+          if [ "$HIGH" -gt "$MAX_HIGH" ]; then
+            echo "❌ FAILED: High vulnerabilities ($HIGH) exceed threshold ($MAX_HIGH)"
+            FAILED=1
+          fi
+          
+          if [ "$RISK_SCORE" -gt "$MAX_RISK_SCORE" ]; then
+            echo "❌ FAILED: Risk score ($RISK_SCORE) exceeds threshold ($MAX_RISK_SCORE)"
+            FAILED=1
+          fi
+          
+          if [ $FAILED -eq 1 ]; then
+            echo "Compliance check failed! Blocking deployment."
+            exit 1
+          fi
+          
+          echo "✅ All compliance thresholds passed"
+
+# -----------------------------------------------------------------------------
+# WORKFLOW LEVEL NOTIFICATIONS
+# -----------------------------------------------------------------------------

@@ -1,29 +1,99 @@
 """
-Risk Scoring Engine (2026 Roadmap - Q2)
+Risk Engine für das Zen-AI-Pentest Framework.
 
-Multi-factor risk assessment combining:
-- CVSS (Common Vulnerability Scoring System)
-- EPSS (Exploit Prediction Scoring System)
-- Business Impact Context
-- Exploit Validation
+Dieses Paket enthält:
+- FalsePositiveEngine: Multi-Faktor-Validierung und FP-Reduzierung
+- BusinessImpactCalculator: Geschäftliche Impact-Bewertung
+- CVSS Scoring und EPSS Integration
+- Compliance-Risiko-Analyse
 
 Usage:
-    from risk_engine import RiskScorer
+    from risk_engine import FalsePositiveEngine, BusinessImpactCalculator
+    from risk_engine import Finding, RiskFactors, ConfidenceLevel
     
-    scorer = RiskScorer()
-    risk_score = scorer.calculate(finding)
+    # False Positive Engine
+    fp_engine = FalsePositiveEngine()
+    result = await fp_engine.validate_finding(finding)
+    
+    # Business Impact Calculator
+    impact_calc = BusinessImpactCalculator(
+        organization_size="large",
+        annual_revenue=100000000,
+        industry="finance"
+    )
+    impact = impact_calc.calculate_overall_impact(
+        asset_context=asset,
+        finding_type="sql_injection",
+        severity="critical"
+    )
 """
 
-from .scorer import RiskScorer, RiskScore, SeverityLevel
+from .false_positive_engine import (
+    FalsePositiveEngine,
+    Finding,
+    ValidationResult,
+    RiskFactors,
+    CVSSData,
+    EPSSData,
+    ConfidenceLevel,
+    FindingStatus,
+    VulnerabilityType,
+    create_finding_from_scan_result,
+    FalsePositiveDatabase,
+    BayesianFilter,
+    LLMVotingEngine,
+)
+
+from .business_impact_calculator import (
+    BusinessImpactCalculator,
+    BusinessImpactResult,
+    AssetContext,
+    AssetCriticality,
+    DataClassification,
+    ComplianceFramework,
+    FinancialImpact,
+    ComplianceImpact,
+    ReputationImpact,
+    get_calculator,
+)
+
+# Additional exports for backwards compatibility
+from .scorer import RiskScorer
 from .cvss import CVSSCalculator
 from .epss import EPSSClient
-from .business_impact import BusinessImpactCalculator
 
 __all__ = [
-    'RiskScorer',
-    'RiskScore',
-    'SeverityLevel',
-    'CVSSCalculator',
-    'EPSSClient',
-    'BusinessImpactCalculator',
+    # False Positive Engine
+    "FalsePositiveEngine",
+    "Finding",
+    "ValidationResult",
+    "RiskFactors",
+    "CVSSData",
+    "EPSSData",
+    "ConfidenceLevel",
+    "FindingStatus",
+    "VulnerabilityType",
+    "create_finding_from_scan_result",
+    "FalsePositiveDatabase",
+    "BayesianFilter",
+    "LLMVotingEngine",
+    
+    # Business Impact Calculator
+    "BusinessImpactCalculator",
+    "BusinessImpactResult",
+    "AssetContext",
+    "AssetCriticality",
+    "DataClassification",
+    "ComplianceFramework",
+    "FinancialImpact",
+    "ComplianceImpact",
+    "ReputationImpact",
+    "get_calculator",
+    
+    # Additional scoring modules
+    "RiskScorer",
+    "CVSSCalculator",
+    "EPSSClient",
 ]
+
+__version__ = "2.0.0"

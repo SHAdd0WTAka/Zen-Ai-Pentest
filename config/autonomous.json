@@ -1,0 +1,74 @@
+{
+  "_comment": "Configuration for Autonomous Agent Loop",
+  "version": "2.0.0",
+  "agent_loop": {
+    "max_iterations": 50,
+    "retry_attempts": 3,
+    "retry_delay": 2.0,
+    "enable_progress_tracking": true,
+    "enable_state_callbacks": true
+  },
+  "memory": {
+    "max_short_term": 100,
+    "max_context_window": 20,
+    "enable_long_term": true,
+    "persistence_path": "data/agent_memory.db"
+  },
+  "tools": {
+    "nmap_scanner": {
+      "enabled": true,
+      "timeout": 600,
+      "default_options": "-sV -sC -O --script=vuln",
+      "default_ports": "1-1000"
+    },
+    "nuclei_scanner": {
+      "enabled": true,
+      "timeout": 600,
+      "default_templates": "cves,exposures,vulnerabilities",
+      "severity_filter": "critical,high,medium"
+    },
+    "exploit_validator": {
+      "enabled": true,
+      "timeout": 300,
+      "safety_level": "controlled",
+      "use_docker": false,
+      "enable_playwright": true
+    },
+    "subdomain_enumerator": {
+      "enabled": true,
+      "timeout": 300,
+      "wordlist": "default",
+      "recursive": false
+    },
+    "report_generator": {
+      "enabled": true,
+      "timeout": 120,
+      "default_format": "json"
+    }
+  },
+  "state_machine": {
+    "enabled_callbacks": [
+      "PLANNING",
+      "EXECUTING",
+      "OBSERVING",
+      "REFLECTING",
+      "COMPLETED",
+      "ERROR"
+    ],
+    "auto_pause_on_error": false,
+    "enable_human_in_the_loop": false
+  },
+  "safety": {
+    "max_concurrent_tools": 3,
+    "rate_limit_delay": 1.0,
+    "kill_switch_enabled": true,
+    "blocked_hosts": [
+      "localhost",
+      "127.0.0.1",
+      "::1",
+      "0.0.0.0",
+      "169.254.169.254"
+    ],
+    "blocked_ports": [22, 23, 25, 53, 110, 143, 587, 993, 995]
+  }
+}
