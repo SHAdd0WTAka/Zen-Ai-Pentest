@@ -1,0 +1,35 @@
+# GitHub Sponsors and Funding Configuration
+# Learn more: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/displaying-a-sponsor-button-in-your-repository
+
+# GitHub Sponsors (enable at https://github.com/sponsors)
+# github: [SHAdd0WTAka]
+
+# Open Collective
+# open_collective: zen-ai-pentest
+
+# Ko-fi
+# ko_fi: SHAdd0WTAka
+
+# Patreon
+# patreon: SHAdd0WTAka
+
+# LiberaPay
+# liberapay: SHAdd0WTAka
+
+# IssueHunt
+# issuehunt: SHAdd0WTAka
+
+# Otechie
+# otechie: SHAdd0WTAka
+
+# Custom Funding URLs
+custom:
+  - "https://www.buymeacoffee.com/SHAdd0WTAka"
+  - "https://paypal.me/SHAdd0WTAka"
+  - "https://github.com/SHAdd0WTAka/zen-ai-pentest/blob/master/CONTRIBUTORS.md#sponsors"
+
+# Funding tiers and benefits information
+# Tier 1 ($5/month): Name in CONTRIBUTORS.md
+# Tier 2 ($25/month): Name in README.md + Priority support
+# Tier 3 ($100/month): All above + Feature request priority
+# Tier 4 ($500/month): All above + Enterprise support + Custom development

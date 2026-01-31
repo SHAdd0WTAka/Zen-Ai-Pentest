@@ -1,0 +1,89 @@
+name: 🏆 Weekly Benchmarks
+
+on:
+  schedule:
+    # Run every Sunday at 2 AM
+    - cron: '0 2 * * 0'
+  workflow_dispatch:
+
+jobs:
+  run-benchmarks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Dependencies
+        run: |
+          pip install -e ".[dev]"
+          pip install pytest-asyncio
+
+      - name: Run Benchmarks
+        run: |
+          cd benchmarks
+          python run_benchmarks.py
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+
+      - name: Upload Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results
+          path: benchmarks/benchmark_report_*.json
+          retention-days: 90
+
+      - name: Update README with Latest Results
+        run: |
+          python benchmarks/update_readme_with_results.py
+          git config user.name 'GitHub Actions'
+          git config user.email 'actions@github.com'
+          git add README.md
+          git diff --staged --quiet || git commit -m "docs: update benchmark results [skip ci]"
+          git push
+
+      - name: Comment on Results Issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = JSON.parse(fs.readFileSync('benchmarks/benchmark_report_*.json')[0]);
+            
+            const body = `## 📊 Weekly Benchmark Results
+            
+            **Date:** ${report.benchmark_date}
+            **Commit:** ${context.sha}
+            
+            ### Summary
+            - Total Scenarios: ${report.total_scenarios}
+            - Success Rate: ${(report.by_difficulty.easy?.success_rate || 0) * 100}%
+            
+            ### By Difficulty
+            ${Object.entries(report.by_difficulty).map(([diff, stats]) => 
+              `- **${diff}**: Avg ${stats.avg_time_to_user?.toFixed(1)}min, ${(stats.success_rate * 100).toFixed(0)}% success`
+            ).join('\n')}
+            
+            Full report: [Artifacts](${context.payload.repository?.html_url}/actions/runs/${context.runId})
+            `;
+            
+            // Find or create benchmark results issue
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: 'benchmarks'
+            });
+            
+            const benchmarkIssue = issues.data.find(i => i.title.includes('Benchmark Results'));
+            
+            if (benchmarkIssue) {
+              await github.rest.issues.createComment({
+                issue_number: benchmarkIssue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: body
+              });
+            }

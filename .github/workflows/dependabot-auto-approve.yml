@@ -1,0 +1,71 @@
+name: Auto-Approve Dependabot PRs
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+permissions:
+  pull-requests: write
+  contents: write
+
+jobs:
+  auto-approve-and-merge:
+    runs-on: ubuntu-latest
+    if: github.actor == 'dependabot[bot]'
+    steps:
+      - name: Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@v1
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+          
+      - name: Approve patch and minor updates
+        if: |
+          steps.metadata.outputs.update-type == 'version-update:semver-patch' || 
+          (steps.metadata.outputs.update-type == 'version-update:semver-minor' && 
+           steps.metadata.outputs.dependency-type == 'direct:development')
+        run: |
+          echo "Approving Dependabot PR..."
+          gh pr review --approve "$PR_URL"
+          echo "✅ PR approved"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Auto-merge eligible PRs
+        if: |
+          steps.metadata.outputs.update-type == 'version-update:semver-patch' || 
+          (steps.metadata.outputs.update-type == 'version-update:semver-minor' && 
+           steps.metadata.outputs.dependency-type == 'direct:development')
+        run: |
+          echo "Enabling auto-merge..."
+          gh pr merge --auto --merge "$PR_URL"
+          echo "✅ Auto-merge enabled"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Comment on major updates
+        if: steps.metadata.outputs.update-type == 'version-update:semver-major'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `⚠️ **Major Version Update Detected**
+              
+This PR updates \`${{ steps.metadata.outputs.dependency-names }}\` to a new major version.
+              
+- **Manual review required** - Major updates may include breaking changes
+- **Auto-merge disabled** - Please review before merging
+- **Checklist:**
+  - [ ] Review changelog for breaking changes
+  - [ ] Test in development environment
+  - [ ] Update documentation if needed
+  - [ ] Verify compatibility with existing code
+              
+@SHAdd0WTAka please review when ready.`
+            });

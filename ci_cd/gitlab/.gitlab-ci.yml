@@ -1,0 +1,58 @@
+# GitLab CI Integration for Zen AI Pentest
+# Add this file to your repository as .gitlab-ci.yml
+
+stages:
+  - security
+
+variables:
+  ZEN_TARGET: "$CI_ENVIRONMENT_URL"
+  ZEN_SCAN_TYPE: "standard"
+  ZEN_SAFETY_LEVEL: "non_destructive"
+  ZEN_OUTPUT_FORMAT: "json"
+  ZEN_FAIL_ON: "high"
+
+zen-security-scan:
+  stage: security
+  image: python:3.11-slim
+  before_script:
+    - pip install zen-ai-pentest
+  script:
+    - echo "Starting Zen AI security scan..."
+    - |
+      zen-ai-pentest scan \
+        --target "${ZEN_TARGET}" \
+        --scan-type "${ZEN_SCAN_TYPE}" \
+        --safety-level "${ZEN_SAFETY_LEVEL}" \
+        --output "zen-results.${ZEN_OUTPUT_FORMAT}"
+  artifacts:
+    reports:
+      # GitLab SAST integration
+      sast: zen-results.json
+    paths:
+      - zen-results.json
+      - zen-results.html
+    expire_in: 30 days
+  allow_failure: false
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+    - if: $CI_PIPELINE_SOURCE == "web"
+    - if: $CI_COMMIT_BRANCH == "main"
+  tags:
+    - security
+
+# Alternative: Using Docker
+zen-docker-scan:
+  stage: security
+  image: docker:stable
+  services:
+    - docker:dind
+  script:
+    - docker run --rm 
+      -v $(pwd):/results
+      ghcr.io/shadd0wtaka/zen-ai-pentest:latest
+      scan --target "${ZEN_TARGET}" --output /results/zen-results.json
+  artifacts:
+    paths:
+      - zen-results.json
+  allow_failure: true
+  when: manual

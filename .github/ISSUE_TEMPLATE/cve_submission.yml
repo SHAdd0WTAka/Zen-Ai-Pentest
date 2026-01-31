@@ -1,0 +1,146 @@
+name: CVE/Payload Submission
+description: Submit a new CVE entry, payload, or security resource
+title: "[DATA] "
+labels: ["data-update", "cve", "payload", "needs-review"]
+body:
+  - type: dropdown
+    id: submission_type
+    attributes:
+      label: Submission Type
+      description: What are you submitting?
+      options:
+        - New CVE Entry
+        - Update Existing CVE
+        - SQL Injection Payload
+        - XSS Payload
+        - Command Injection Payload
+        - WordPress Vulnerability
+        - Ransomware IOC
+        - Other Payload/Resource
+    validations:
+      required: true
+      
+  - type: input
+    id: identifier
+    attributes:
+      label: CVE ID / Identifier
+      description: CVE ID or unique identifier
+      placeholder: "CVE-2024-XXXXX or CUSTOM-001"
+    validations:
+      required: false
+      
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Clear description of the vulnerability or payload
+      placeholder: |
+        A critical remote code execution vulnerability in XYZ software...
+    validations:
+      required: true
+      
+  - type: textarea
+    id: technical_details
+    attributes:
+      label: Technical Details
+      description: Technical information about the vulnerability
+      render: text
+      placeholder: |
+        Affected Versions: 1.0.0 - 2.5.0
+        CVSS Score: 9.8 (Critical)
+        Vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H
+        
+        Root Cause:
+        Deserialization of untrusted data in the authentication module...
+        
+  - type: textarea
+    id: payload_data
+    attributes:
+      label: Payload / POC
+      description: The actual payload or proof of concept
+      render: text
+      placeholder: |
+        SQL Injection:
+        ```sql
+        ' UNION SELECT username,password FROM users--
+        ```
+        
+        Or CVE JSON structure:
+        ```json
+        {
+          "CVE-2024-XXXXX": {
+            "description": "...",
+            "cvss_score": 9.8
+          }
+        }
+        ```
+        
+  - type: dropdown
+    id: database
+    attributes:
+      label: Target Database
+      description: Which database should this be added to?
+      options:
+        - CVE Database (data/cve_db/)
+        - SQL Injection Payloads (data/sql_injection/)
+        - XSS Payloads (data/payloads/)
+        - Ransomware IOCs (data/cve_db/ransomware_cves.json)
+        - Nuclei Templates (data/nuclei_templates/)
+        - Other
+    validations:
+      required: true
+      
+  - type: input
+    id: affected_systems
+    attributes:
+      label: Affected Systems / Software
+      description: What systems or software are affected?
+      placeholder: "WordPress 6.x, Apache Struts 2.x, etc."
+      
+  - type: textarea
+    id: references
+    attributes:
+      label: References
+      description: Links to advisories, write-ups, or research papers
+      placeholder: |
+        - https://nvd.nist.gov/vuln/detail/CVE-2024-XXXXX
+        - https://example.com/security-advisory
+        - https://research-paper.pdf
+        
+  - type: dropdown
+    id: verification_status
+    attributes:
+      label: Verification Status
+      description: Has this been tested/verified?
+      options:
+        - Tested - Working
+        - Tested - Not Working
+        - Theoretical (from research)
+        - From official source (vendor advisory)
+    validations:
+      required: true
+      
+  - type: checkboxes
+    id: quality_checks
+    attributes:
+      label: Quality Checklist
+      description: Please confirm the following
+      options:
+        - label: Payload/CVE does not contain malicious intent beyond security testing
+          required: true
+        - label: Information is accurate to the best of my knowledge
+          required: true
+        - label: JSON/YAML syntax is valid (if applicable)
+          required: false
+        - label: I have the right to share this information
+          required: true
+          
+  - type: textarea
+    id: additional_notes
+    attributes:
+      label: Additional Notes
+      description: Any other relevant information
+      placeholder: |
+        - WAF bypass techniques
+        - Variations of the payload
+        - Special requirements for exploitation

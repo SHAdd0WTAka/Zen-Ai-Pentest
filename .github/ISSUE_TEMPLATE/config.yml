@@ -1,0 +1,21 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 🤔 Questions & Discussions
+    url: https://github.com/SHAdd0WTAka/zen-ai-pentest/discussions
+    about: Please ask and answer questions here
+  
+  - name: 📖 Documentation
+    url: https://github.com/SHAdd0WTAka/zen-ai-pentest/tree/main/docs
+    about: Check our documentation for help
+  
+  - name: 🔒 Security Vulnerability
+    url: https://github.com/SHAdd0WTAka/zen-ai-pentest/security/advisories/new
+    about: Report security vulnerabilities privately
+  
+  - name: 💬 Discord Community
+    url: https://discord.gg/zen-ai-pentest
+    about: Join our Discord for real-time chat
+  
+  - name: 📧 Email Support
+    url: mailto:support@zen-ai-pentest.dev
+    about: Contact us via email for private inquiries
