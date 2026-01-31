@@ -1,0 +1,14 @@
+[run]
+source = .
+omit = tests/*,*/test_*,*/__pycache__/*,*/venv/*
+
+[report]
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    raise NotImplementedError
+    if __name__ == .__main__.:
+    if TYPE_CHECKING:
+
+fail_under = 70
+show_missing = True
