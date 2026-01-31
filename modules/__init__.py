@@ -6,8 +6,7 @@ from .cve_database import CVEDatabase, CVEEntry, RansomwareEntry
 from .exploit_assist import ExploitAssistModule
 from .nuclei_integration import NucleiIntegration, NucleiTemplateManager
 from .osint import (DomainInfo, EmailProfile, OSINTModule, OSINTResult,
-                    check_email_breach, enumerate_subdomains, harvest_emails,
-                    investigate_username)
+                    check_email_breach, enumerate_subdomains, harvest_emails)
 from .protonvpn import (ProtonVPNManager, VPNProtocol, VPNSecurityLevel,
                         VPNServer, VPNStatus, quick_connect, secure_connect)
 from .recon import ReconModule
@@ -44,5 +43,4 @@ __all__ = [
     "harvest_emails",
     "enumerate_subdomains",
     "check_email_breach",
-    "investigate_username",
 ]

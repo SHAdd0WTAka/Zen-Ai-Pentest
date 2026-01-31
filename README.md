@@ -5,6 +5,9 @@
 [![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://python.org)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Author](https://img.shields.io/badge/Author-SHAdd0WTAka-red.svg)](#)
+[![Branch Protection](https://img.shields.io/badge/Branch%20Protection-Required-orange.svg)](docs/BRANCH_PROTECTION.md)
+[![Security Scan](https://img.shields.io/badge/Security%20Scan-Enabled-success.svg)](.github/workflows/security-scan.yml)
+[![OpenSSF Scorecard](https://img.shields.io/badge/OpenSSF-Scorecard-blue.svg)](.github/workflows/scorecard.yml)
 
 > ⚠️ **DISCLAIMER**: This tool is for authorized security testing only. Always obtain proper permission before testing any systems you do not own.
 

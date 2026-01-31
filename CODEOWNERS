@@ -1,0 +1,46 @@
+# Global Owners
+# These owners will be the default owners for everything in the repo
+* @SHAdd0WTAka
+
+# Core Orchestrator (critical for Multi-LLM Routing)
+/core/ @SHAdd0WTAka
+
+# Agent System (complex logic)
+/agents/ @SHAdd0WTAka
+
+# LLM Backends
+/backends/ @SHAdd0WTAka
+
+# Security-critical modules
+/modules/exploit_assist.py @SHAdd0WTAka
+/modules/cve_database.py @SHAdd0WTAka
+
+# CVE and Payload Databases
+/data/cve_db/ @SHAdd0WTAka
+/data/payloads/ @SHAdd0WTAka
+/data/sql_injection/ @SHAdd0WTAka
+
+# API Routes (security sensitive)
+/api/routes/ @SHAdd0WTAka
+
+# Docker and Infrastructure
+/Dockerfile* @SHAdd0WTAka
+/docker-compose*.yml @SHAdd0WTAka
+/.dockerignore @SHAdd0WTAka
+
+# CI/CD Workflows (infrastructure)
+/.github/workflows/ @SHAdd0WTAka
+
+# Documentation
+docs/ @SHAdd0WTAka
+README.md @SHAdd0WTAka
+
+# Configuration Files
+config.json @SHAdd0WTAka
+requirements*.txt @SHAdd0WTAka
+setup.py @SHAdd0WTAka
+pyproject.toml @SHAdd0WTAka
+
+# Security Policy
+SECURITY.md @SHAdd0WTAka
+CODEOWNERS @SHAdd0WTAka

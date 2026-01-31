@@ -1,0 +1,134 @@
+name: PR Validation
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+
+jobs:
+  validate-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check PR Title
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = context.payload.pull_request.title;
+            const regex = /^(feat|fix|docs|style|refactor|test|chore|ci|security|data)(\(.+\))?!?: .+/i;
+            
+            if (!regex.test(title)) {
+              core.setFailed(`❌ PR title does not follow Conventional Commits format.
+              
+            Current: "${title}"
+            
+            Expected format: <type>(<scope>): <description>
+            
+            Examples:
+              - feat: add new agent system
+              - fix: resolve CVE database loading issue
+              - docs: update API documentation
+              - security: patch SQL injection vulnerability
+              - chore(deps): update dependencies
+              
+            Allowed types: feat, fix, docs, style, refactor, test, chore, ci, security, data
+            `);
+            } else {
+              console.log('✅ PR title follows Conventional Commits format');
+            }
+
+      - name: Check PR Description
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = context.payload.pull_request.body || '';
+            
+            if (body.length < 50) {
+              core.warning('⚠️ PR description is quite short. Consider adding more details.');
+            }
+            
+            const hasChecklist = body.includes('## Type of Change') || body.includes('## Checklist');
+            if (!hasChecklist) {
+              core.warning('⚠️ PR description is missing the standard checklist. Please use the PR template.');
+            }
+
+      - name: Check File Sizes
+        run: |
+          echo "Checking for large files..."
+          find . -type f -size +1M ! -path './.git/*' ! -path './data/*' ! -name '*.png' ! -name '*.jpg' | head -20 | while read file; do
+            echo "⚠️ Large file detected: $file ($(ls -lh "$file" | awk '{print $5}'))"
+          done
+          echo "✅ File size check complete"
+
+      - name: Check for Merge Conflicts
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            if (pr.mergeable === false) {
+              core.setFailed('❌ This PR has merge conflicts. Please resolve them before merging.');
+            } else if (pr.mergeable === null) {
+              console.log('⏳ Mergeability check pending...');
+            } else {
+              console.log('✅ No merge conflicts detected');
+            }
+
+      - name: Label PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = context.payload.pull_request.title.toLowerCase();
+            const labels = [];
+            
+            if (title.startsWith('feat:')) labels.push('enhancement');
+            if (title.startsWith('fix:')) labels.push('bug');
+            if (title.startsWith('docs:')) labels.push('documentation');
+            if (title.startsWith('security:')) labels.push('security');
+            if (title.startsWith('chore(deps)')) labels.push('dependencies');
+            if (title.includes('cve')) labels.push('cve', 'data-update');
+            if (title.includes('payload')) labels.push('payload', 'data-update');
+            
+            if (labels.length > 0) {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                labels: labels
+              });
+              console.log(`✅ Added labels: ${labels.join(', ')}`);
+            }
+
+      - name: Generate PR Summary
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const additions = pr.additions;
+            const deletions = pr.deletions;
+            const changedFiles = pr.changed_files;
+            
+            const summary = `## 📊 PR Statistics
+            
+            | Metric | Value |
+            |--------|-------|
+            | Files changed | ${changedFiles} |
+            | Additions | +${additions} |
+            | Deletions | -${deletions} |
+            | Net change | ${additions - deletions} |
+            
+            ${changedFiles > 20 ? '⚠️ **Note:** This PR touches many files. Consider splitting it if possible.' : ''}
+            ${additions > 1000 ? '⚠️ **Note:** Large PR. Review may take longer.' : ''}
+            `;
+            
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: summary
+            });

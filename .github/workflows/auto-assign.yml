@@ -1,0 +1,29 @@
+name: Auto Assign Issues and PRs
+
+on:
+  issues:
+    types: [opened, reopened]
+  pull_request:
+    types: [opened, reopened, ready_for_review]
+
+jobs:
+  auto-assign:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Auto-assign Issue
+        if: github.event_name == 'issues'
+        uses: pozil/auto-assign-issue@v1
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          assignees: SHAdd0WTAka
+          numOfAssignee: 1
+          allowSelfAssign: true
+          
+      - name: Auto-assign PR
+        if: github.event_name == 'pull_request'
+        uses: pozil/auto-assign-issue@v1
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          assignees: SHAdd0WTAka
+          numOfAssignee: 1
+          allowSelfAssign: true

@@ -1,0 +1,76 @@
+name: Zen AI Security Scan
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Run daily at 2 AM
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  zen-security-scan:
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      # Option 1: Use the GitHub Action
+      - name: Run Zen AI Scan
+        uses: SHAdd0WTAka/zen-ai-pentest-action@v1
+        with:
+          target: 'http://localhost:8080'
+          scan-type: 'standard'
+          safety-level: 'non_destructive'
+          output-format: 'sarif'
+          fail-on: 'high'
+      
+      # Option 2: Direct installation
+      # - name: Install Zen AI
+      #   run: pip install zen-ai-pentest
+      # 
+      # - name: Run Scan
+      #   run: |
+      #     zen-ai-pentest scan \
+      #       --target "http://localhost:8080" \
+      #       --scan-type comprehensive \
+      #       --output results.sarif
+      # 
+      # - name: Upload to Security Tab
+      #   uses: github/codeql-action/upload-sarif@v3
+      #   with:
+      #     sarif_file: results.sarif
+      
+      - name: Comment PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const results = JSON.parse(fs.readFileSync('zen-results.json', 'utf8'));
+            
+            const body = `## 🔒 Zen AI Security Scan Results
+            
+            | Severity | Count |
+            |----------|-------|
+            | Critical | ${results.critical_findings || 0} |
+            | High | ${results.high_findings || 0} |
+            | Medium | ${results.medium_findings || 0} |
+            | Low | ${results.low_findings || 0} |
+            
+            ${results.critical_findings > 0 ? '⚠️ **Critical vulnerabilities found!**' : '✅ No critical issues detected.'}
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });

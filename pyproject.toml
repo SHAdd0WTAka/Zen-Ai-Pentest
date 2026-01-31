@@ -1,0 +1,142 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "zen-ai-pentest"
+version = "2.0.0"
+description = "Advanced AI-Powered Penetration Testing Framework with Multi-Agent Orchestration"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.9"
+authors = [
+    {name = "SHAdd0WTAka", email = "shadd0wtaka@example.com"}
+]
+keywords = [
+    "penetration-testing",
+    "security",
+    "ai",
+    "llm",
+    "multi-agent",
+    "cve",
+    "vulnerability-scanner",
+    "pentest"
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Information Technology",
+    "Topic :: Security",
+    "Topic :: Security :: Pentesting",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Operating System :: OS Independent",
+]
+
+dependencies = [
+    "requests>=2.31.0",
+    "aiohttp>=3.9.0",
+    "python-dotenv>=1.0.0",
+    "pydantic>=2.0.0",
+    "fastapi>=0.104.0",
+    "uvicorn>=0.24.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.1.0",
+    "black>=23.0.0",
+    "isort>=5.12.0",
+    "flake8>=6.1.0",
+    "bandit>=1.7.5",
+    "safety>=2.3.0",
+    "mypy>=1.5.0",
+    "pre-commit>=3.5.0",
+]
+docs = [
+    "mkdocs>=1.5.0",
+    "mkdocs-material>=9.4.0",
+    "mkdocstrings[python]>=0.23.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/SHAdd0WTAka/zen-ai-pentest"
+Documentation = "https://github.com/SHAdd0WTAka/zen-ai-pentest/tree/main/docs"
+Repository = "https://github.com/SHAdd0WTAka/zen-ai-pentest.git"
+"Bug Tracker" = "https://github.com/SHAdd0WTAka/zen-ai-pentest/issues"
+Changelog = "https://github.com/SHAdd0WTAka/zen-ai-pentest/releases"
+Discussions = "https://github.com/SHAdd0WTAka/zen-ai-pentest/discussions"
+
+[project.scripts]
+zen-ai-pentest = "zen_ai_pentest:main"
+
+[tool.setuptools]
+packages = ["core", "agents", "backends", "modules", "api", "autonomous", "risk_engine", "web_ui.backend", "ci_cd", "benchmarks"]
+
+[tool.black]
+line-length = 127
+target-version = ['py311']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+  | logs
+  | evidence
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 127
+skip_gitignore = true
+skip_glob = ["logs/*", "evidence/*", "venv/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = "--cov=core --cov=agents --cov=backends --cov=autonomous --cov=risk_engine --cov=web_ui.backend --cov-report=term-missing"
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+]
+
+[tool.bandit]
+exclude_dirs = ["tests", "venv", "env", ".venv"]
+skips = ["B101", "B311"]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+ignore_missing_imports = true
+exclude = ["venv", "env", ".venv", "logs", "evidence"]
+
+[tool.coverage.run]
+source = ["core", "agents", "backends", "modules", "autonomous", "risk_engine", "web_ui.backend", "benchmarks", "ci_cd"]
+omit = ["*/tests/*", "*/venv/*", "*/env/*", "*/__pycache__/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]

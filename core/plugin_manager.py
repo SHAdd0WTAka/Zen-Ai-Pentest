@@ -33,7 +33,7 @@ class PluginType(Enum):
     EXPLOIT = "exploit"           # Exploit modules
     REPORT = "report"             # Report generators
     OSINT = "osint"               # OSINT sources
-    POST exploitation = "post"    # Post-exploitation
+    POST_EXPLOITATION = "post"    # Post-exploitation
     TOOL = "tool"                 # External tools integration
     NOTIFIER = "notifier"         # Notification services
     AUTH = "auth"                 # Authentication providers

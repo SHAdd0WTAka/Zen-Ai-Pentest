@@ -1,76 +1,79 @@
 """
 Setup script for Zen AI Pentest
+Q3 2026: PyPI Package
 """
 
-from pathlib import Path
+from setuptools import setup, find_packages
+import os
 
-from setuptools import find_packages, setup
+here = os.path.abspath(os.path.dirname(__file__))
 
-# Read README
-readme_file = Path(__file__).parent / "README.md"
-long_description = (
-    readme_file.read_text(encoding="utf-8") if readme_file.exists() else ""
-)
-
-# Read requirements
-requirements_file = Path(__file__).parent / "requirements.txt"
-requirements = []
-if requirements_file.exists():
-    with open(requirements_file) as f:
-        requirements = [
-            line.strip()
-            for line in f
-            if line.strip() and not line.startswith("#") and not line.startswith("-")
-        ]
+with open(os.path.join(here, 'README.md'), encoding='utf-8') as f:
+    long_description = f.read()
 
 setup(
-    name="zen-ai-pentest",
-    version="1.0.0",
-    author="SHAdd0WTAka",
-    author_email="shaddowtaka@example.com",
-    description="AI-Powered Multi-LLM Penetration Testing Framework",
+    name='zen-ai-pentest',
+    version='2.0.0',
+    description='Autonomous AI-Powered Penetration Testing Framework',
     long_description=long_description,
-    long_description_content_type="text/markdown",
-    url="https://github.com/SHAdd0WTAka/zen-ai-pentest",
-    packages=find_packages(exclude=["tests", "tests.*", "docs", "examples"]),
-    keywords="pentesting cybersecurity ai llm vulnerability-scanner security nuclei osint ethical-hacking",
-    classifiers=[
-        "Development Status :: 4 - Beta",
-        "Intended Audience :: Information Technology",
-        "Intended Audience :: System Administrators",
-        "Topic :: Security",
-        "Topic :: Security :: Penetration Testing",
-        "Topic :: Internet :: WWW/HTTP :: Indexing/Search",
-        "License :: OSI Approved :: MIT License",
-        "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.9",
-        "Programming Language :: Python :: 3.10",
-        "Programming Language :: Python :: 3.11",
-        "Programming Language :: Python :: 3.12",
-        "Environment :: Console",
-        "Operating System :: OS Independent",
-        "Framework :: AsyncIO",
+    long_description_content_type='text/markdown',
+    author='SHAdd0WTAka',
+    author_email='security@zen-ai-pentest.dev',
+    url='https://github.com/SHAdd0WTAka/zen-ai-pentest',
+    packages=find_packages(exclude=['tests*', 'docs*', 'web_ui*']),
+    include_package_data=True,
+    install_requires=[
+        'requests>=2.31.0',
+        'aiohttp>=3.9.0',
+        'python-dotenv>=1.0.0',
+        'pydantic>=2.0.0',
+        'fastapi>=0.104.0',
+        'uvicorn>=0.24.0',
+        'websockets>=12.0',
+        'click>=8.1.0',
+        'rich>=13.0.0',
+        'colorama>=0.4.6',
     ],
-    python_requires=">=3.9",
-    install_requires=requirements,
     extras_require={
-        "dev": [
-            "pytest>=7.0.0",
-            "pytest-asyncio>=0.21.0",
-            "black>=23.0.0",
-            "pylint>=2.17.0",
-            "mypy>=1.7.0",
+        'dev': [
+            'pytest>=7.4.0',
+            'pytest-asyncio>=0.21.0',
+            'pytest-cov>=4.1.0',
+            'black>=23.0.0',
+            'isort>=5.12.0',
+            'flake8>=6.1.0',
+            'mypy>=1.5.0',
         ],
+        'web': [
+            'react',
+            'recharts',
+            'axios',
+        ]
     },
     entry_points={
-        "console_scripts": [
-            "zen-ai-pentest=zen_ai_pentest:main",
-            "zen-pentest=zen_ai_pentest:main",
+        'console_scripts': [
+            'zen-ai-pentest=zen_ai_pentest:main',
+            'zen=zen_ai_pentest:main',
         ],
     },
-    include_package_data=True,
-    package_data={
-        "": ["*.json", "*.yaml", "*.txt", "*.md"],
+    classifiers=[
+        'Development Status :: 4 - Beta',
+        'Intended Audience :: Information Technology',
+        'Topic :: Security',
+        'Topic :: Security :: Pentesting',
+        'License :: OSI Approved :: MIT License',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.12',
+        'Operating System :: OS Independent',
+    ],
+    python_requires='>=3.9',
+    keywords='pentesting security ai autonomous red-team vulnerability scanning',
+    project_urls={
+        'Bug Reports': 'https://github.com/SHAdd0WTAka/zen-ai-pentest/issues',
+        'Source': 'https://github.com/SHAdd0WTAka/zen-ai-pentest',
+        'Documentation': 'https://shadd0wtaka.github.io/zen-ai-pentest',
     },
-    zip_safe=False,
 )

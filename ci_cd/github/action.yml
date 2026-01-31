@@ -1,0 +1,99 @@
+name: 'Zen AI Pentest'
+description: 'Autonomous security testing with Zen AI'
+author: 'SHAdd0WTAka'
+branding:
+  icon: 'shield'
+  color: 'red'
+
+inputs:
+  target:
+    description: 'Target to scan (URL, IP, or domain)'
+    required: true
+  scan-type:
+    description: 'Scan type (quick, standard, comprehensive)'
+    required: false
+    default: 'standard'
+  safety-level:
+    description: 'Safety level (read_only, non_destructive, destructive, exploit)'
+    required: false
+    default: 'non_destructive'
+  goal:
+    description: 'Specific goal for the scan'
+    required: false
+    default: ''
+  output-format:
+    description: 'Output format (json, sarif, html)'
+    required: false
+    default: 'sarif'
+  fail-on:
+    description: 'Fail on severity (critical, high, medium, low, never)'
+    required: false
+    default: 'high'
+  zen-version:
+    description: 'Zen AI version to use'
+    required: false
+    default: 'latest'
+
+outputs:
+  findings-count:
+    description: 'Number of findings'
+  critical-count:
+    description: 'Number of critical findings'
+  high-count:
+    description: 'Number of high findings'
+  report-path:
+    description: 'Path to generated report'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Zen AI
+      shell: bash
+      run: |
+        pip install zen-ai-pentest==${{ inputs.zen-version }} || pip install zen-ai-pentest
+        
+    - name: Run Zen Scan
+      shell: bash
+      run: |
+        zen-ai-pentest scan \
+          --target "${{ inputs.target }}" \
+          --scan-type "${{ inputs.scan-type }}" \
+          --safety-level "${{ inputs.safety-level }}" \
+          --output "zen-results.${{ inputs.output-format }}" \
+          ${{ inputs.goal && format('--goal "{0}"', inputs.goal) || '' }}
+          
+    - name: Upload Results
+      uses: actions/upload-artifact@v4
+      with:
+        name: zen-scan-results
+        path: zen-results.*
+        
+    - name: Upload to GitHub Security Tab
+      if: inputs.output-format == 'sarif'
+      uses: github/codeql-action/upload-sarif@v3
+      with:
+        sarif_file: zen-results.sarif
+        
+    - name: Check Fail Condition
+      shell: bash
+      run: |
+        CRITICAL=$(jq '.critical_findings // 0' zen-results.json)
+        HIGH=$(jq '.high_findings // 0' zen-results.json)
+        MEDIUM=$(jq '.medium_findings // 0' zen-results.json)
+        
+        echo "Findings: Critical=$CRITICAL, High=$HIGH, Medium=$MEDIUM"
+        
+        case "${{ inputs.fail-on }}" in
+          critical)
+            [ "$CRITICAL" -gt 0 ] && exit 1 || exit 0
+            ;;
+          high)
+            ([ "$CRITICAL" -gt 0 ] || [ "$HIGH" -gt 0 ]) && exit 1 || exit 0
+            ;;
+          medium)
+            ([ "$CRITICAL" -gt 0 ] || [ "$HIGH" -gt 0 ] || [ "$MEDIUM" -gt 0 ]) && exit 1 || exit 0
+            ;;
+          never)
+            exit 0
+            ;;
+        esac
