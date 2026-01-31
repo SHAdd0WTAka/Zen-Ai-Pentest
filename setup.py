@@ -25,6 +25,7 @@ install_requires = [
     'colorama>=0.4.6',
     'typer>=0.9.0',
     'cryptography>=42.0.4  # SECURITY FIX: CVE-2024-26130',
+    'cryptography>=41.0.0',
     'python-jose>=3.4.0  # SECURITY FIX: CVE-2024-33663',
     'passlib>=1.7.4',
     'sqlalchemy>=2.0.0',
