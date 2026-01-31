@@ -1,0 +1,207 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Base styles */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-gray-900 text-gray-100 antialiased;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-gray-800;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gray-600 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-500;
+  }
+
+  /* Selection */
+  ::selection {
+    @apply bg-cyan-900/50 text-cyan-100;
+  }
+}
+
+/* Component styles */
+@layer components {
+  /* Card hover effect */
+  .card-hover {
+    @apply transition-all duration-300 ease-out;
+  }
+
+  .card-hover:hover {
+    @apply transform -translate-y-1 shadow-xl;
+  }
+
+  /* Button styles */
+  .btn-primary {
+    @apply px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white font-medium rounded-lg 
+           transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 
+           focus:ring-offset-gray-900;
+  }
+
+  .btn-secondary {
+    @apply px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white font-medium rounded-lg 
+           transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 
+           focus:ring-offset-gray-900;
+  }
+
+  .btn-danger {
+    @apply px-4 py-2 bg-red-600 hover:bg-red-500 text-white font-medium rounded-lg 
+           transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 
+           focus:ring-offset-gray-900;
+  }
+
+  /* Input styles */
+  .input-field {
+    @apply w-full bg-gray-800 border border-gray-600 rounded-lg px-4 py-2 text-white 
+           placeholder-gray-400 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 
+           focus:outline-none transition-colors;
+  }
+
+  /* Status badges */
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  /* Cyber glow effect */
+  .cyber-glow {
+    box-shadow: 0 0 10px rgba(6, 182, 212, 0.5), 0 0 20px rgba(6, 182, 212, 0.3);
+  }
+
+  /* Scan line animation */
+  .scan-line {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .scan-line::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #06b6d4, transparent);
+    animation: scan 2s linear infinite;
+  }
+
+  /* Glass effect */
+  .glass {
+    @apply bg-gray-800/80 backdrop-blur-sm border border-gray-700/50;
+  }
+}
+
+/* Utility styles */
+@layer utilities {
+  /* Text gradient */
+  .text-gradient {
+    @apply bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent;
+  }
+
+  /* Hide scrollbar but allow scrolling */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Animated border */
+  .border-gradient {
+    position: relative;
+    background: linear-gradient(to right, #1f2937, #1f2937);
+    background-clip: padding-box;
+    border: 1px solid transparent;
+  }
+
+  .border-gradient::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: -1;
+    margin: -1px;
+    border-radius: inherit;
+    background: linear-gradient(45deg, #06b6d4, #8b5cf6, #ec4899);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .border-gradient:hover::before {
+    opacity: 1;
+  }
+
+  /* Focus visible styles */
+  .focus-ring {
+    @apply focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 focus:ring-offset-gray-900;
+  }
+}
+
+/* Prose customization for markdown */
+.prose pre {
+  @apply bg-gray-900 border border-gray-700;
+}
+
+.prose code {
+  @apply bg-gray-800 text-cyan-400 px-1 py-0.5 rounded text-sm;
+}
+
+.prose pre code {
+  @apply bg-transparent text-inherit p-0;
+}
+
+.prose h1, .prose h2, .prose h3, .prose h4 {
+  @apply text-white;
+}
+
+.prose p, .prose ul, .prose ol {
+  @apply text-gray-300;
+}
+
+.prose a {
+  @apply text-cyan-400 hover:text-cyan-300;
+}
+
+.prose strong {
+  @apply text-white;
+}
+
+.prose blockquote {
+  @apply border-l-4 border-cyan-500 bg-gray-800/50 pl-4;
+}
+
+.prose table {
+  @apply border-collapse;
+}
+
+.prose th {
+  @apply bg-gray-800 text-white border border-gray-700 px-4 py-2;
+}
+
+.prose td {
+  @apply border border-gray-700 px-4 py-2 text-gray-300;
+}
+
+.prose tr:nth-child(even) {
+  @apply bg-gray-800/30;
+}
