@@ -518,6 +518,109 @@ async def api_info():
         }
     }
 
+# ============================================================================
+# STATS
+# ============================================================================
+
+@app.get("/stats/overview")
+async def get_stats_overview(
+    user: dict = Depends(verify_token),
+    db = Depends(get_db)
+):
+    """Get dashboard statistics overview"""
+    from sqlalchemy import func
+    from database.models import Scan, Finding
+    
+    # Basic counts
+    total_scans = db.query(Scan).count()
+    completed_scans = db.query(Scan).filter(Scan.status == "completed").count()
+    running_scans = db.query(Scan).filter(Scan.status == "running").count()
+    
+    # Findings counts
+    total_findings = db.query(Finding).count()
+    
+    # Severity distribution
+    severity_counts = db.query(
+        Finding.severity, 
+        func.count(Finding.id)
+    ).group_by(Finding.severity).all()
+    
+    severity_distribution = [
+        {"name": sev.capitalize(), "value": count, "color": get_severity_color(sev)}
+        for sev, count in severity_counts
+    ]
+    
+    # Fill missing severities
+    all_severities = ['critical', 'high', 'medium', 'low', 'info']
+    existing = {s['name'].lower(): s for s in severity_distribution}
+    for sev in all_severities:
+        if sev not in existing:
+            severity_distribution.append({
+                "name": sev.capitalize(),
+                "value": 0,
+                "color": get_severity_color(sev)
+            })
+    
+    return {
+        "total_scans": total_scans,
+        "completed_scans": completed_scans,
+        "running_scans": running_scans,
+        "total_findings": total_findings,
+        "critical_findings": sum(1 for s in severity_counts if s[0] == 'critical'),
+        "severity_distribution": severity_distribution,
+        "trends": [],  # TODO: Implement trends
+        "tool_usage": []  # TODO: Implement tool usage
+    }
+
+def get_severity_color(severity: str) -> str:
+    """Get color for severity level"""
+    colors = {
+        'critical': '#ef4444',
+        'high': '#f97316',
+        'medium': '#eab308',
+        'low': '#22c55e',
+        'info': '#3b82f6'
+    }
+    return colors.get(severity.lower(), '#6b7280')
+
+@app.get("/stats/trends")
+async def get_stats_trends(
+    days: int = 30,
+    user: dict = Depends(verify_token),
+    db = Depends(get_db)
+):
+    """Get scan trends for the last N days"""
+    # TODO: Implement trend calculation
+    return []
+
+@app.get("/stats/severity")
+async def get_severity_stats(
+    user: dict = Depends(verify_token),
+    db = Depends(get_db)
+):
+    """Get findings by severity"""
+    from sqlalchemy import func
+    from database.models import Finding
+    
+    severity_counts = db.query(
+        Finding.severity, 
+        func.count(Finding.id)
+    ).group_by(Finding.severity).all()
+    
+    return [
+        {"severity": sev, "count": count}
+        for sev, count in severity_counts
+    ]
+
+@app.get("/stats/tools")
+async def get_tool_usage(
+    user: dict = Depends(verify_token),
+    db = Depends(get_db)
+):
+    """Get tool usage statistics"""
+    # TODO: Implement tool usage tracking
+    return []
+
 # Import models for reports
 from database.models import Report
 

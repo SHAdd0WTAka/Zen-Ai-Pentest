@@ -28,9 +28,12 @@ def get_scan(db: Session, scan_id: int):
     """Gibt einen spezifischen Scan zurück"""
     return db.query(models.Scan).filter(models.Scan.id == scan_id).first()
 
-def get_scans(db: Session, skip: int = 0, limit: int = 100):
+def get_scans(db: Session, skip: int = 0, limit: int = 100, status: str = None):
     """Gibt eine Liste von Scans zurück"""
-    return db.query(models.Scan).offset(skip).limit(limit).all()
+    query = db.query(models.Scan)
+    if status:
+        query = query.filter(models.Scan.status == status)
+    return query.offset(skip).limit(limit).all()
 
 def update_scan_status(db: Session, scan_id: int, status: str):
     """Aktualisiert den Status eines Scans"""
