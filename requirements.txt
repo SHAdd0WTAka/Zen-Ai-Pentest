@@ -5,6 +5,10 @@
 requests>=2.31.0
 aiohttp>=3.9.0
 websockets>=12.0
+urllib3>=2.6.3
+
+# File locking (security fix)
+filelock>=3.20.3
 
 # Configuration and Environment
 python-dotenv>=1.0.0
