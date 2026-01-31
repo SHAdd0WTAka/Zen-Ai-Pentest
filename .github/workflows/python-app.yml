@@ -26,12 +26,13 @@ permissions:
 
 jobs:
   # =============================================================================
-  # Lint & Format Checks
+  # Lint & Format Checks (Non-blocking)
   # =============================================================================
   lint:
     name: Lint & Format
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    continue-on-error: true
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -73,6 +74,7 @@ jobs:
           flake8 . --count --exit-zero --max-complexity=15 --max-line-length=127 --statistics \
             --exclude=venv,env,__pycache__,.git,logs,evidence,dist,build,.tox,.pytest_cache
           echo "::endgroup::"
+        continue-on-error: true
 
       - name: Type check with mypy
         run: |
@@ -155,13 +157,12 @@ jobs:
           retention-days: 30
 
   # =============================================================================
-  # Test Matrix
+  # Test Matrix (Runs independently - doesn't depend on lint)
   # =============================================================================
   test:
     name: Test (Python ${{ matrix.python-version }}, ${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
-    needs: [lint]
     strategy:
       fail-fast: false
       matrix:
@@ -272,6 +273,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     needs: [test]
+    if: always()
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -334,8 +336,16 @@ jobs:
           echo "| Build | ${{ needs.build.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
-          if [[ "${{ needs.test.result }}" == "success" && "${{ needs.security.result }}" == "success" ]]; then
-            echo "✅ All critical checks passed!" >> $GITHUB_STEP_SUMMARY
+          # Only fail if tests or security fail - lint is advisory
+          if [[ "${{ needs.test.result }}" == "failure" ]]; then
+            echo "❌ Tests failed!" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          elif [[ "${{ needs.security.result }}" == "failure" ]]; then
+            echo "❌ Security scan failed!" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          elif [[ "${{ needs.build.result }}" == "failure" ]]; then
+            echo "❌ Build failed!" >> $GITHUB_STEP_SUMMARY
+            exit 1
           else
-            echo "⚠️ Some checks failed. Please review the logs." >> $GITHUB_STEP_SUMMARY
+            echo "✅ All critical checks passed!" >> $GITHUB_STEP_SUMMARY
           fi

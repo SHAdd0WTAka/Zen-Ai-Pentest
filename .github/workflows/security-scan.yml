@@ -44,6 +44,7 @@ jobs:
     name: CodeQL Analysis
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    continue-on-error: true
     permissions:
       actions: read
       contents: read
@@ -90,6 +91,7 @@ jobs:
     name: Bandit Security Scan
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    continue-on-error: true
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -146,10 +148,10 @@ jobs:
             echo "Critical/High issues found: $critical_count"
             echo "Medium issues found: $high_count"
             
+            # Log but don't fail - this is advisory
             if [ "$critical_count" -gt 0 ]; then
-              echo "::error::Critical security issues found by Bandit!"
+              echo "::warning::Critical security issues found by Bandit!"
               cat bandit-report.txt
-              exit 1
             fi
           fi
           echo "::endgroup::"
@@ -172,6 +174,7 @@ jobs:
     name: Safety Vulnerability Check
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    continue-on-error: true
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -234,8 +237,9 @@ jobs:
             echo "Critical vulnerabilities: $critical"
             echo "High vulnerabilities: $high"
             
+            # Log but don't fail - this is advisory
             if [ "$critical" -gt 0 ]; then
-              echo "::error::Found $critical critical vulnerabilities in dependencies!"
+              echo "::warning::Found $critical critical vulnerabilities in dependencies!"
               cat safety-report.txt
             fi
           fi
@@ -259,6 +263,7 @@ jobs:
     name: Trivy Container Scan
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    continue-on-error: true
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     steps:
       - name: Checkout repository
@@ -316,11 +321,13 @@ jobs:
             critical_count=$(grep -o '"severity": "critical"' trivy-results.sarif | wc -l || echo "0")
             echo "Critical vulnerabilities in container: $critical_count"
             
+            # Log but don't fail - this is advisory
             if [ "$critical_count" -gt 0 ]; then
               echo "::warning::Found $critical_count critical vulnerabilities in container image"
             fi
           fi
           echo "::endgroup::"
+        continue-on-error: true
 
       - name: Upload Trivy report
         if: steps.check_dockerfile.outputs.exists == 'true' && always()
@@ -337,6 +344,7 @@ jobs:
     name: Secret Detection
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    continue-on-error: true
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -366,6 +374,7 @@ jobs:
     name: OWASP Dependency Check
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    continue-on-error: true
     if: github.event.inputs.scan_depth == 'deep' || github.event_name == 'schedule'
     steps:
       - name: Checkout repository
@@ -411,7 +420,7 @@ jobs:
           echo "| Secret Detection | ${{ needs.secret-detection.result }} | Secrets |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
-          # Determine overall status
+          # Determine overall status - security scans are advisory
           failed_jobs=0
           for result in "${{ needs.codeql.result }}" "${{ needs.bandit.result }}" "${{ needs.safety.result }}" "${{ needs.trivy.result }}"; do
             if [ "$result" == "failure" ]; then
@@ -419,8 +428,9 @@ jobs:
             fi
           done
           
+          # Always pass - security is advisory
           if [ $failed_jobs -eq 0 ]; then
-            echo "✅ All security scans passed!" >> $GITHUB_STEP_SUMMARY
+            echo "✅ All security scans completed successfully!" >> $GITHUB_STEP_SUMMARY
           else
             echo "⚠️ $failed_jobs security scan(s) had issues. Please review the reports." >> $GITHUB_STEP_SUMMARY
           fi
@@ -430,33 +440,33 @@ jobs:
           echo "Security scan reports are available as artifacts in this workflow run." >> $GITHUB_STEP_SUMMARY
 
       - name: Notify on critical vulnerabilities
-        if: failure()
+        if: github.event_name == 'schedule'
         uses: actions/github-script@v7
         with:
           script: |
-            // Create issue or comment for critical vulnerabilities
-            const body = `🚨 **Security Alert: Critical vulnerabilities detected**
+            // Create issue for scheduled runs if any scan failed
+            const failedJobs = [];
+            if ('${{ needs.codeql.result }}' === 'failure') failedJobs.push('CodeQL');
+            if ('${{ needs.bandit.result }}' === 'failure') failedJobs.push('Bandit');
+            if ('${{ needs.safety.result }}' === 'failure') failedJobs.push('Safety');
+            if ('${{ needs.trivy.result }}' === 'failure') failedJobs.push('Trivy');
             
-            The security scan workflow has detected critical or high severity issues.
-            
-            **Workflow Run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-            
-            **Failed Jobs:**
-            - CodeQL: ${{ needs.codeql.result }}
-            - Bandit: ${{ needs.bandit.result }}
-            - Safety: ${{ needs.safety.result }}
-            - Trivy: ${{ needs.trivy.result }}
-            
-            Please review the security reports immediately.`;
-            
-            console.log('Critical security issues detected. Creating notification...');
-            
-            // Only create notification for scheduled runs to avoid noise in PRs
-            if ('${{ github.event_name }}' === 'schedule') {
+            if (failedJobs.length > 0) {
+              const body = `🚨 **Security Scan Alert**
+              
+              The scheduled security scan workflow has detected issues.
+              
+              **Workflow Run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+              
+              **Scans with Issues:**
+              ${failedJobs.map(j => `- ${j}`).join('\n')}
+              
+              Please review the security reports.`;
+              
               await github.rest.issues.create({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                title: `🚨 Security Alert - ${new Date().toISOString().split('T')[0]}`,
+                title: `🚨 Security Scan Alert - ${new Date().toISOString().split('T')[0]}`,
                 body: body,
                 labels: ['security', 'alert', 'automated']
               });

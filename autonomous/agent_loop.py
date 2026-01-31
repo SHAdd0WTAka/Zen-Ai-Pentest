@@ -11,7 +11,7 @@ Based on: ReAct Pattern (https://arxiv.org/abs/2210.03629)
 """
 
 from enum import Enum, auto
-from typing import Dict, List, Any, Optional, Callable, Union, Tuple
+from typing import Dict, List, Any, Optional, Callable, Tuple
 from dataclasses import dataclass, field
 from datetime import datetime
 from abc import ABC, abstractmethod
@@ -21,7 +21,6 @@ import logging
 import uuid
 import time
 import traceback
-from contextlib import asynccontextmanager
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -31,7 +30,7 @@ logger = logging.getLogger(__name__)
 class AgentState(Enum):
     """
     Zustandsmaschine für den Agenten-Loop.
-    
+
     States:
         IDLE: Wartet auf Start
         PLANNING: Erstellt Aktionsplan
@@ -65,7 +64,7 @@ class ToolType(Enum):
 class AgentMemory:
     """
     Container für alle Memory-Typen des Agenten.
-    
+
     Attributes:
         session_id: Eindeutige Session-ID
         created_at: Zeitpunkt der Erstellung
@@ -78,45 +77,45 @@ class AgentMemory:
     goal: str = ""
     target: str = ""
     scope: Dict[str, Any] = field(default_factory=dict)
-    
+
     # Kurzzeit-Memory (Session-basiert)
     short_term: List[Dict[str, Any]] = field(default_factory=list)
     max_short_term: int = 100
-    
+
     # Langzeit-Memory (persistiert)
     long_term: Dict[str, Any] = field(default_factory=dict)
-    
+
     # Kontext-Fenster für LLM
     context_window: List[Dict[str, Any]] = field(default_factory=list)
     max_context_window: int = 20
-    
+
     # Plan und aktueller Status
     current_plan: List[Dict[str, Any]] = field(default_factory=list)
     plan_step: int = 0
-    
+
     # Findings und Ergebnisse
     findings: List[Dict[str, Any]] = field(default_factory=list)
     execution_history: List[Dict[str, Any]] = field(default_factory=list)
-    
+
     def add_to_short_term(self, entry: Dict[str, Any]) -> None:
         """Fügt einen Eintrag zum Kurzzeit-Memory hinzu."""
         entry['timestamp'] = datetime.now().isoformat()
         entry['id'] = str(uuid.uuid4())
         self.short_term.append(entry)
-        
+
         # Begrenze Größe
         if len(self.short_term) > self.max_short_term:
             self.short_term = self.short_term[-self.max_short_term:]
-    
+
     def add_to_context_window(self, entry: Dict[str, Any]) -> None:
         """Fügt einen Eintrag zum LLM Kontext-Fenster hinzu."""
         entry['timestamp'] = datetime.now().isoformat()
         self.context_window.append(entry)
-        
+
         # Begrenze Größe für LLM Kontext
         if len(self.context_window) > self.max_context_window:
             self.context_window = self.context_window[-self.max_context_window:]
-    
+
     def get_context_for_llm(self) -> str:
         """Erstellt formatierten Kontext für LLM Prompts."""
         context_parts = [
@@ -125,24 +124,24 @@ class AgentMemory:
             f"Progress: Step {self.plan_step + 1}/{len(self.current_plan) if self.current_plan else '?'}",
             "\nRecent Actions:"
         ]
-        
+
         # Letzte 5 Aktionen aus dem Kontext-Fenster
         for entry in self.context_window[-5:]:
             entry_type = entry.get('type', 'unknown')
             content = entry.get('content', '')
             context_parts.append(f"  [{entry_type.upper()}] {content[:100]}...")
-        
+
         if self.findings:
             context_parts.append(f"\nFindings: {len(self.findings)}")
-        
+
         return "\n".join(context_parts)
-    
+
     def add_finding(self, finding: Dict[str, Any]) -> None:
         """Fügt einen Security Finding hinzu."""
         finding['timestamp'] = datetime.now().isoformat()
         finding['id'] = str(uuid.uuid4())
         self.findings.append(finding)
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Konvertiert Memory zu Dictionary."""
         return {
@@ -162,7 +161,7 @@ class AgentMemory:
 class ToolResult:
     """
     Ergebnis einer Tool-Ausführung.
-    
+
     Attributes:
         tool_name: Name des ausgeführten Tools
         success: Ob die Ausführung erfolgreich war
@@ -181,7 +180,7 @@ class ToolResult:
     execution_time: float = 0.0
     timestamp: datetime = field(default_factory=datetime.now)
     metadata: Dict[str, Any] = field(default_factory=dict)
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Konvertiert ToolResult zu Dictionary."""
         return {
@@ -200,7 +199,7 @@ class ToolResult:
 class PlanStep:
     """
     Einzelner Schritt im Ausführungsplan.
-    
+
     Attributes:
         step_id: Eindeutige ID des Schritts
         tool_type: Typ des zu verwendenden Tools
@@ -217,7 +216,7 @@ class PlanStep:
     depends_on: List[str] = field(default_factory=list)
     completed: bool = False
     result: Optional[ToolResult] = None
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Konvertiert PlanStep zu Dictionary."""
         return {
@@ -234,17 +233,17 @@ class PlanStep:
 # Abstract Tool Classes
 class BaseTool(ABC):
     """Abstrakte Basisklasse für alle Tools."""
-    
+
     def __init__(self, name: str, timeout: int = 300):
         self.name = name
         self.timeout = timeout
         self.logger = logging.getLogger(f"{__name__}.{name}")
-    
+
     @abstractmethod
     async def execute(self, parameters: Dict[str, Any]) -> ToolResult:
         """Führt das Tool mit den gegebenen Parametern aus."""
         pass
-    
+
     def validate_parameters(self, parameters: Dict[str, Any]) -> Tuple[bool, str]:
         """Validiert die Tool-Parameter."""
         return True, ""
@@ -252,47 +251,47 @@ class BaseTool(ABC):
 
 class NmapScanner(BaseTool):
     """Nmap Port Scanner Integration."""
-    
+
     def __init__(self, timeout: int = 600):
         super().__init__("NmapScanner", timeout)
         self.default_options = "-sV -sC -O --script=vuln"
-    
+
     def validate_parameters(self, parameters: Dict[str, Any]) -> Tuple[bool, str]:
         """Validiert Nmap-spezifische Parameter."""
         target = parameters.get('target')
         if not target:
             return False, "Target is required"
-        
+
         # Validiere IP oder Domain
         if not isinstance(target, str) or len(target) < 1:
             return False, "Invalid target format"
-        
+
         return True, ""
-    
+
     async def execute(self, parameters: Dict[str, Any]) -> ToolResult:
         """Führt Nmap Scan aus."""
         start_time = time.time()
-        
+
         try:
             target = parameters.get('target')
             options = parameters.get('options', self.default_options)
             ports = parameters.get('ports', '1-1000')
-            
+
             # Baue Nmap Kommando
             cmd = f"nmap {options} -p {ports} {target}"
-            
+
             self.logger.info(f"Executing: {cmd}")
-            
+
             # Führe aus (simuliert für Produktionscode)
             # In echter Implementierung: subprocess oder async subprocess
             await asyncio.sleep(0.5)  # Simuliere Ausführung
-            
+
             # Simulierte Ausgabe
             output = self._simulate_scan_output(target, ports)
             parsed_data = self._parse_output(output)
-            
+
             execution_time = time.time() - start_time
-            
+
             return ToolResult(
                 tool_name=self.name,
                 success=True,
@@ -301,7 +300,7 @@ class NmapScanner(BaseTool):
                 execution_time=execution_time,
                 metadata={'ports_scanned': ports, 'options': options}
             )
-            
+
         except Exception as e:
             execution_time = time.time() - start_time
             self.logger.error(f"Nmap execution failed: {str(e)}")
@@ -311,7 +310,7 @@ class NmapScanner(BaseTool):
                 error_message=str(e),
                 execution_time=execution_time
             )
-    
+
     def _simulate_scan_output(self, target: str, ports: str) -> str:
         """Simuliert Nmap Output für Demo-Zwecke."""
         return f"""
@@ -329,12 +328,12 @@ PORT     STATE SERVICE     VERSION
 Service detection performed.
 OS and Service detection performed.
 """
-    
+
     def _parse_output(self, output: str) -> Dict[str, Any]:
         """Parst Nmap Output."""
         open_ports = []
         services = []
-        
+
         for line in output.split('\n'):
             if '/tcp' in line and 'open' in line:
                 parts = line.split()
@@ -348,7 +347,7 @@ OS and Service detection performed.
                         'version': version
                     })
                     services.append(service)
-        
+
         return {
             'open_ports': open_ports,
             'services': list(set(services)),
@@ -358,30 +357,30 @@ OS and Service detection performed.
 
 class NucleiScanner(BaseTool):
     """Nuclei Vulnerability Scanner Integration."""
-    
+
     def __init__(self, timeout: int = 600):
         super().__init__("NucleiScanner", timeout)
         self.default_templates = "cves,exposures,vulnerabilities"
-    
+
     async def execute(self, parameters: Dict[str, Any]) -> ToolResult:
         """Führt Nuclei Scan aus."""
         start_time = time.time()
-        
+
         try:
             target = parameters.get('target')
             templates = parameters.get('templates', self.default_templates)
             severity = parameters.get('severity', 'critical,high,medium')
-            
+
             cmd = f"nuclei -u {target} -t {templates} -severity {severity} -json"
-            
+
             self.logger.info(f"Executing: {cmd}")
             await asyncio.sleep(0.5)  # Simuliere Ausführung
-            
+
             # Simulierte Vulnerabilities
             findings = self._simulate_findings(target)
-            
+
             execution_time = time.time() - start_time
-            
+
             return ToolResult(
                 tool_name=self.name,
                 success=True,
@@ -390,7 +389,7 @@ class NucleiScanner(BaseTool):
                 execution_time=execution_time,
                 metadata={'templates': templates, 'severity_filter': severity}
             )
-            
+
         except Exception as e:
             execution_time = time.time() - start_time
             return ToolResult(
@@ -399,7 +398,7 @@ class NucleiScanner(BaseTool):
                 error_message=str(e),
                 execution_time=execution_time
             )
-    
+
     def _simulate_findings(self, target: str) -> List[Dict[str, Any]]:
         """Simuliert Nuclei Findings für Demo."""
         return [
@@ -423,11 +422,11 @@ class NucleiScanner(BaseTool):
 class ExploitValidator(BaseTool):
     """
     Validiert potenzielle Exploits mit dem ExploitValidator-System.
-    
+
     Nutzt Docker-Sandboxing, Evidence Collection und Safety Controls
     für sichere Exploit-Validierung.
     """
-    
+
     def __init__(
         self,
         timeout: int = 300,
@@ -438,22 +437,22 @@ class ExploitValidator(BaseTool):
         self.safety_level = safety_level
         self.use_docker = use_docker
         self._validator = None
-    
+
     async def _get_validator(self):
         """Lazy initialization of ExploitValidator."""
         if self._validator is None:
             # Import here to avoid circular imports
             from .exploit_validator import ExploitValidator, SafetyLevel, ScopeConfig
-            
+
             safety_map = {
                 'read_only': SafetyLevel.READ_ONLY,
                 'validate_only': SafetyLevel.VALIDATE_ONLY,
                 'controlled': SafetyLevel.CONTROLLED,
                 'full': SafetyLevel.FULL
             }
-            
+
             safety = safety_map.get(self.safety_level, SafetyLevel.CONTROLLED)
-            
+
             self._validator = ExploitValidator(
                 safety_level=safety,
                 scope_config=ScopeConfig(),
@@ -461,11 +460,11 @@ class ExploitValidator(BaseTool):
                 enable_playwright=False  # Disable for headless environments
             )
         return self._validator
-    
+
     async def execute(self, parameters: Dict[str, Any]) -> ToolResult:
         """
         Validiert einen Exploit.
-        
+
         Parameters:
             target: Ziel-URL oder Host
             vulnerability: Schwachstellen-Typ (sqli, xss, rce, etc.)
@@ -474,26 +473,26 @@ class ExploitValidator(BaseTool):
             parameters: Zusätzliche Parameter
         """
         start_time = time.time()
-        
+
         try:
             target = parameters.get('target')
             vulnerability = parameters.get('vulnerability', 'unknown')
             exploit_code = parameters.get('exploit_code', '')
             exploit_type_str = parameters.get('exploit_type', 'web_rce')
             extra_params = parameters.get('parameters', {})
-            
+
             self.logger.info(f"Validating {vulnerability} on {target}")
-            
+
             # If no exploit code provided, generate a basic test
             if not exploit_code:
                 exploit_code = self._generate_test_payload(vulnerability)
-            
+
             # Get validator and execute
             validator = await self._get_validator()
-            
+
             # Import ExploitType here
             from .exploit_validator import ExploitType
-            
+
             # Map vulnerability to ExploitType
             type_map = {
                 'sqli': ExploitType.WEB_SQLI,
@@ -510,12 +509,12 @@ class ExploitValidator(BaseTool):
                 'service': ExploitType.SERVICE,
                 'privesc': ExploitType.PRIVESC,
             }
-            
+
             exploit_type = type_map.get(
                 exploit_type_str.lower().replace('-', '_'),
                 ExploitType.WEB_RCE
             )
-            
+
             # Run validation
             result = await validator.validate(
                 exploit_code=exploit_code,
@@ -524,9 +523,9 @@ class ExploitValidator(BaseTool):
                 parameters=extra_params,
                 timeout=self.timeout
             )
-            
+
             execution_time = time.time() - start_time
-            
+
             # Convert to ToolResult format
             validation_result = {
                 'vulnerability': vulnerability,
@@ -541,7 +540,7 @@ class ExploitValidator(BaseTool):
                 'validator_id': result.validator_id,
                 'execution_time': result.execution_time
             }
-            
+
             return ToolResult(
                 tool_name=self.name,
                 success=result.success,
@@ -549,7 +548,7 @@ class ExploitValidator(BaseTool):
                 raw_output=result.to_json(),
                 execution_time=execution_time
             )
-            
+
         except Exception as e:
             execution_time = time.time() - start_time
             self.logger.error(f"Exploit validation failed: {e}")
@@ -559,7 +558,7 @@ class ExploitValidator(BaseTool):
                 error_message=str(e),
                 execution_time=execution_time
             )
-    
+
     def _generate_test_payload(self, vulnerability: str) -> str:
         """Generate a basic test payload based on vulnerability type."""
         payloads = {
@@ -575,21 +574,21 @@ class ExploitValidator(BaseTool):
 
 class ReportGenerator(BaseTool):
     """Generiert Penetration Testing Reports."""
-    
+
     def __init__(self, timeout: int = 120):
         super().__init__("ReportGenerator", timeout)
-    
+
     async def execute(self, parameters: Dict[str, Any]) -> ToolResult:
         """Generiert einen Report."""
         start_time = time.time()
-        
+
         try:
             findings = parameters.get('findings', [])
             target = parameters.get('target', 'unknown')
             format_type = parameters.get('format', 'json')
-            
+
             self.logger.info(f"Generating report for {target}")
-            
+
             report = {
                 'title': f'Penetration Test Report - {target}',
                 'generated_at': datetime.now().isoformat(),
@@ -604,9 +603,9 @@ class ReportGenerator(BaseTool):
                 'findings': findings,
                 'recommendations': self._generate_recommendations(findings)
             }
-            
+
             execution_time = time.time() - start_time
-            
+
             return ToolResult(
                 tool_name=self.name,
                 success=True,
@@ -615,7 +614,7 @@ class ReportGenerator(BaseTool):
                 execution_time=execution_time,
                 metadata={'format': format_type}
             )
-            
+
         except Exception as e:
             execution_time = time.time() - start_time
             return ToolResult(
@@ -624,42 +623,42 @@ class ReportGenerator(BaseTool):
                 error_message=str(e),
                 execution_time=execution_time
             )
-    
+
     def _generate_recommendations(self, findings: List[Dict]) -> List[str]:
         """Generiert Empfehlungen basierend auf Findings."""
         recommendations = []
-        
+
         severities = {f.get('severity') for f in findings}
-        
+
         if 'critical' in severities:
             recommendations.append("Address critical vulnerabilities immediately")
         if 'high' in severities:
             recommendations.append("Prioritize high severity findings")
-        
+
         recommendations.append("Implement regular security scanning")
         recommendations.append("Review and update security policies")
-        
+
         return recommendations
 
 
 class SubdomainEnumerator(BaseTool):
     """Subdomain Enumeration Tool."""
-    
+
     def __init__(self, timeout: int = 300):
         super().__init__("SubdomainEnumerator", timeout)
-    
+
     async def execute(self, parameters: Dict[str, Any]) -> ToolResult:
         """Führt Subdomain Enumeration aus."""
         start_time = time.time()
-        
+
         try:
             domain = parameters.get('target')
             wordlist = parameters.get('wordlist', 'default')
             recursive = parameters.get('recursive', False)
-            
+
             self.logger.info(f"Enumerating subdomains for {domain}")
             await asyncio.sleep(0.4)
-            
+
             # Simulierte Subdomains
             subdomains = [
                 f'www.{domain}',
@@ -671,7 +670,7 @@ class SubdomainEnumerator(BaseTool):
                 f'staging.{domain}',
                 f'dev.{domain}'
             ]
-            
+
             result_data = {
                 'domain': domain,
                 'subdomains': subdomains,
@@ -679,9 +678,9 @@ class SubdomainEnumerator(BaseTool):
                 'wordlist': wordlist,
                 'recursive': recursive
             }
-            
+
             execution_time = time.time() - start_time
-            
+
             return ToolResult(
                 tool_name=self.name,
                 success=True,
@@ -690,7 +689,7 @@ class SubdomainEnumerator(BaseTool):
                 execution_time=execution_time,
                 metadata={'enumeration_method': 'brute_force'}
             )
-            
+
         except Exception as e:
             execution_time = time.time() - start_time
             return ToolResult(
@@ -703,7 +702,7 @@ class SubdomainEnumerator(BaseTool):
 
 class ToolRegistry:
     """Registry für alle verfügbaren Tools."""
-    
+
     def __init__(self):
         self.tools: Dict[ToolType, BaseTool] = {
             ToolType.NMAP_SCANNER: NmapScanner(),
@@ -712,11 +711,11 @@ class ToolRegistry:
             ToolType.REPORT_GENERATOR: ReportGenerator(),
             ToolType.SUBDOMAIN_ENUMERATOR: SubdomainEnumerator()
         }
-    
+
     def get_tool(self, tool_type: ToolType) -> Optional[BaseTool]:
         """Holt ein Tool nach Typ."""
         return self.tools.get(tool_type)
-    
+
     def list_tools(self) -> List[str]:
         """Listet alle verfügbaren Tools."""
         return [t.value for t in self.tools.keys()]
@@ -725,10 +724,10 @@ class ToolRegistry:
 class AutonomousAgentLoop:
     """
     Autonomous Agent Loop Engine mit ReAct Pattern.
-    
+
     Diese Klasse implementiert einen vollständigen ReAct (Reasoning + Acting)
     Loop mit State Machine, Memory Management und Tool Integration.
-    
+
     Example:
         agent = AutonomousAgentLoop(llm_client=my_llm)
         result = await agent.run(
@@ -737,7 +736,7 @@ class AutonomousAgentLoop:
             scope={"depth": "comprehensive"}
         )
     """
-    
+
     def __init__(
         self,
         llm_client: Optional[Any] = None,
@@ -748,7 +747,7 @@ class AutonomousAgentLoop:
     ):
         """
         Initialisiert den Autonomous Agent Loop.
-        
+
         Args:
             llm_client: LLM Client für Reasoning (optional)
             max_iterations: Maximale Anzahl von Iterationen
@@ -761,17 +760,17 @@ class AutonomousAgentLoop:
         self.retry_attempts = retry_attempts
         self.retry_delay = retry_delay
         self.enable_progress_tracking = enable_progress_tracking
-        
+
         # State Machine
         self.state = AgentState.IDLE
         self.previous_state: Optional[AgentState] = None
-        
+
         # Memory
         self.memory: Optional[AgentMemory] = None
-        
+
         # Tools
         self.tool_registry = ToolRegistry()
-        
+
         # Progress Tracking
         self.progress: Dict[str, Any] = {
             'current_iteration': 0,
@@ -781,67 +780,67 @@ class AutonomousAgentLoop:
             'findings_count': 0,
             'errors': []
         }
-        
+
         # Callbacks
         self.state_callbacks: Dict[AgentState, List[Callable]] = {
             state: [] for state in AgentState
         }
         self.progress_callback: Optional[Callable[[Dict], None]] = None
-        
+
         # Execution tracking
         self.start_time: Optional[float] = None
         self.end_time: Optional[float] = None
-        
+
         self.logger = logging.getLogger(__name__)
-    
+
     def register_state_callback(self, state: AgentState, callback: Callable) -> None:
         """
         Registriert einen Callback für einen Zustand.
-        
+
         Args:
             state: Der Zustand für den Callback
             callback: Funktion die aufgerufen wird
         """
         self.state_callbacks[state].append(callback)
-    
+
     def set_progress_callback(self, callback: Callable[[Dict], None]) -> None:
         """
         Setzt den Progress Callback.
-        
+
         Args:
             callback: Funktion die mit Progress-Updates aufgerufen wird
         """
         self.progress_callback = callback
-    
+
     def _transition_to(self, new_state: AgentState) -> None:
         """
         Wechselt zu einem neuen Zustand und trigger Callbacks.
-        
+
         Args:
             new_state: Der neue Zustand
         """
         self.previous_state = self.state
         self.state = new_state
-        
+
         self.logger.info(f"State transition: {self.previous_state.name} -> {new_state.name}")
-        
+
         # Trigger callbacks
         for callback in self.state_callbacks.get(new_state, []):
             try:
                 callback(new_state)
             except Exception as e:
                 self.logger.error(f"State callback error: {e}")
-    
+
     def _update_progress(self, updates: Dict[str, Any]) -> None:
         """Aktualisiert den Progress und ruft Callback auf."""
         self.progress.update(updates)
-        
+
         if self.enable_progress_tracking and self.progress_callback:
             try:
                 self.progress_callback(self.progress.copy())
             except Exception as e:
                 self.logger.error(f"Progress callback error: {e}")
-    
+
     async def run(
         self,
         goal: str,
@@ -850,78 +849,78 @@ class AutonomousAgentLoop:
     ) -> Dict[str, Any]:
         """
         Haupt-Einstiegspunkt für den Autonomous Agent Loop.
-        
+
         Führt den kompletten ReAct Loop aus:
         1. PLANNING: Erstellt einen Plan basierend auf dem Ziel
         2. EXECUTING: Führt Tools aus
         3. OBSERVING: Analysiert Ergebnisse
         4. REFLECTING: Evaluiert Fortschritt und passt Plan an
-        
+
         Args:
             goal: Das zu erreichende Ziel (z.B. "Find all open ports")
             target: Das Ziel-System (IP, Domain, URL)
             scope: Optionale Scope-Beschränkungen
-            
+
         Returns:
             Dict mit execution_result, findings, statistics und metadata
         """
         self.start_time = time.time()
         self._transition_to(AgentState.PLANNING)
-        
+
         # Initialisiere Memory
         self.memory = AgentMemory(
             goal=goal,
             target=target,
             scope=scope or {}
         )
-        
+
         self.logger.info(f"Starting autonomous execution: {goal} on {target}")
-        
+
         try:
             # PLANNING Phase
             plan = await self.plan()
             self.memory.current_plan = [step.to_dict() for step in plan]
             self.progress['total_steps'] = len(plan)
-            
+
             # Haupt-Loop
             iteration = 0
             while iteration < self.max_iterations:
                 iteration += 1
                 self.progress['current_iteration'] = iteration
-                
+
                 # Prüfe ob alle Schritte abgeschlossen
                 if self.memory.plan_step >= len(plan):
                     self.logger.info("All plan steps completed")
                     break
-                
+
                 current_step = plan[self.memory.plan_step]
-                
+
                 # EXECUTING Phase
                 self._transition_to(AgentState.EXECUTING)
                 result = await self._execute_with_retry(current_step)
-                
+
                 # OBSERVING Phase
                 self._transition_to(AgentState.OBSERVING)
-                observation = await self.observe(result)
-                
+                await self.observe(result)  # Observation stored in memory
+
                 # Speichere Ergebnis
                 current_step.result = result
                 current_step.completed = True
                 self.memory.plan_step += 1
                 self.progress['completed_steps'] = self.memory.plan_step
-                
+
                 # Extrahiere Findings
                 if result.success and result.data:
                     await self._extract_findings(result)
-                
+
                 # REFLECTING Phase
                 self._transition_to(AgentState.REFLECTING)
                 should_continue = await self.reflect()
-                
+
                 if not should_continue:
                     self.logger.info("Reflection indicated completion")
                     break
-                
+
                 # Update Context Window
                 self.memory.add_to_context_window({
                     'type': 'execution',
@@ -929,10 +928,10 @@ class AutonomousAgentLoop:
                     'result': result.success,
                     'findings': len(self.memory.findings)
                 })
-            
+
             self._transition_to(AgentState.COMPLETED)
             return await self._compile_final_result()
-            
+
         except Exception as e:
             self.logger.error(f"Execution failed: {str(e)}")
             self._transition_to(AgentState.ERROR)
@@ -942,27 +941,27 @@ class AutonomousAgentLoop:
                 'traceback': traceback.format_exc()
             })
             return self._compile_error_result(e)
-        
+
         finally:
             self.end_time = time.time()
-    
+
     async def plan(self) -> List[PlanStep]:
         """
         Erstellt einen Aktionsplan basierend auf dem Ziel.
-        
+
         Analysiert das Ziel und erstellt eine Sequenz von PlanSteps
         mit den passenden Tools.
-        
+
         Returns:
             Liste von PlanSteps zur Zielerreichung
         """
         self.logger.info("Planning phase started")
-        
+
         goal_lower = self.memory.goal.lower() if self.memory else ""
         target = self.memory.target if self.memory else ""
-        
+
         plan: List[PlanStep] = []
-        
+
         # Entscheidungslogik basierend auf Ziel
         if 'port' in goal_lower or 'service' in goal_lower:
             plan.append(PlanStep(
@@ -970,35 +969,35 @@ class AutonomousAgentLoop:
                 action=f"Scan open ports on {target}",
                 parameters={'target': target, 'ports': '1-1000'}
             ))
-        
+
         if 'subdomain' in goal_lower or 'enumerate' in goal_lower:
             plan.append(PlanStep(
                 tool_type=ToolType.SUBDOMAIN_ENUMERATOR,
                 action=f"Enumerate subdomains of {target}",
                 parameters={'target': target}
             ))
-        
+
         if 'vulnerability' in goal_lower or 'scan' in goal_lower:
             plan.append(PlanStep(
                 tool_type=ToolType.NUCLEI_SCANNER,
                 action=f"Scan {target} for vulnerabilities",
                 parameters={'target': target}
             ))
-        
+
         if 'exploit' in goal_lower:
             plan.append(PlanStep(
                 tool_type=ToolType.EXPLOIT_VALIDATOR,
                 action=f"Validate exploits on {target}",
                 parameters={'target': target}
             ))
-        
+
         # Immer einen Report generieren
         plan.append(PlanStep(
             tool_type=ToolType.REPORT_GENERATOR,
             action="Generate final report",
             parameters={'target': target}
         ))
-        
+
         # Falls kein spezifischer Plan erstellt wurde, Standard-Plan
         if not plan:
             plan = [
@@ -1018,9 +1017,9 @@ class AutonomousAgentLoop:
                     parameters={'target': target}
                 )
             ]
-        
+
         self.logger.info(f"Plan created with {len(plan)} steps")
-        
+
         # Speichere Plan im Memory
         for step in plan:
             self.memory.add_to_short_term({
@@ -1028,22 +1027,22 @@ class AutonomousAgentLoop:
                 'content': step.action,
                 'tool': step.tool_type.value
             })
-        
+
         return plan
-    
+
     async def execute_action(self, action: Dict[str, Any]) -> ToolResult:
         """
         Führt eine einzelne Aktion aus.
-        
+
         Args:
             action: Dictionary mit tool_type und parameters
-            
+
         Returns:
             ToolResult mit dem Ausführungsergebnis
         """
         tool_type_str = action.get('tool_type', 'nmap_scanner')
         parameters = action.get('parameters', {})
-        
+
         # Konvertiere String zu Enum
         try:
             tool_type = ToolType(tool_type_str)
@@ -1053,7 +1052,7 @@ class AutonomousAgentLoop:
                 success=False,
                 error_message=f"Unknown tool type: {tool_type_str}"
             )
-        
+
         tool = self.tool_registry.get_tool(tool_type)
         if not tool:
             return ToolResult(
@@ -1061,7 +1060,7 @@ class AutonomousAgentLoop:
                 success=False,
                 error_message=f"Tool not found: {tool_type_str}"
             )
-        
+
         # Validiere Parameter
         valid, error = tool.validate_parameters(parameters)
         if not valid:
@@ -1070,69 +1069,69 @@ class AutonomousAgentLoop:
                 success=False,
                 error_message=f"Parameter validation failed: {error}"
             )
-        
+
         # Führe Tool aus
         self.logger.info(f"Executing {tool.name} with params: {parameters}")
         return await tool.execute(parameters)
-    
+
     async def _execute_with_retry(self, step: PlanStep) -> ToolResult:
         """
         Führt einen Plan-Schritt mit Retry-Logik aus.
-        
+
         Args:
             step: Der auszuführende PlanStep
-            
+
         Returns:
             ToolResult mit dem Ergebnis
         """
         last_error = None
-        
+
         for attempt in range(1, self.retry_attempts + 1):
             try:
                 self.logger.info(f"Executing step '{step.action}' (attempt {attempt}/{self.retry_attempts})")
-                
+
                 tool = self.tool_registry.get_tool(step.tool_type)
                 if not tool:
                     raise ValueError(f"Tool {step.tool_type.value} not found")
-                
+
                 result = await tool.execute(step.parameters)
-                
+
                 if result.success:
                     return result
-                
+
                 # Tool lieferte Fehler, versuche Retry
                 last_error = result.error_message
                 self.logger.warning(f"Attempt {attempt} failed: {last_error}")
-                
+
                 if attempt < self.retry_attempts:
                     await asyncio.sleep(self.retry_delay * attempt)
-                    
+
             except Exception as e:
                 last_error = str(e)
                 self.logger.error(f"Exception on attempt {attempt}: {e}")
-                
+
                 if attempt < self.retry_attempts:
                     await asyncio.sleep(self.retry_delay * attempt)
-        
+
         # Alle Versuche fehlgeschlagen
         return ToolResult(
             tool_name=step.tool_type.value,
             success=False,
             error_message=f"All {self.retry_attempts} attempts failed. Last error: {last_error}"
         )
-    
+
     async def observe(self, result: ToolResult) -> Dict[str, Any]:
         """
         Analysiert das Ergebnis einer Aktion.
-        
+
         Args:
             result: Das ToolResult zur Analyse
-            
+
         Returns:
             Dictionary mit Analyse-Ergebnissen
         """
         self.logger.info(f"Observing result from {result.tool_name}")
-        
+
         observation = {
             'tool': result.tool_name,
             'success': result.success,
@@ -1140,18 +1139,18 @@ class AutonomousAgentLoop:
             'timestamp': result.timestamp.isoformat(),
             'findings_extracted': 0
         }
-        
+
         if result.success:
             # Analysiere Daten
             data = result.data or {}
-            
+
             if 'open_ports' in data:
                 observation['open_ports'] = len(data['open_ports'])
             if 'findings' in data:
                 observation['vulnerabilities'] = len(data['findings'])
             if 'subdomains' in data:
                 observation['subdomains'] = len(data['subdomains'])
-            
+
             # Speichere Observation
             self.memory.add_to_short_term({
                 'type': 'observation',
@@ -1160,47 +1159,47 @@ class AutonomousAgentLoop:
             })
         else:
             observation['error'] = result.error_message
-            
+
             self.memory.add_to_short_term({
                 'type': 'observation',
                 'content': f"{result.tool_name} failed: {result.error_message}",
                 'error': True
             })
-        
+
         return observation
-    
+
     async def reflect(self) -> bool:
         """
         Evaluiert ob das Ziel erreicht wurde oder weitere Aktionen nötig sind.
-        
+
         Returns:
             True wenn weitere Aktionen nötig sind, False wenn beendet
         """
         self.logger.info("Reflection phase")
-        
+
         # Prüfe ob kritische Fehler aufgetreten sind
         recent_errors = [
             e for e in self.progress['errors']
             if (datetime.now() - datetime.fromisoformat(e['timestamp'])).seconds < 60
         ]
-        
+
         if len(recent_errors) > 5:
             self.logger.error("Too many recent errors, stopping")
             return False
-        
+
         # Prüfe ob Ziel erreicht (basierend auf Findings)
         critical_findings = [f for f in self.memory.findings if f.get('severity') == 'critical']
-        
+
         # Wenn kritische Findings gefunden und Report generiert, beenden
         if critical_findings and self.memory.plan_step >= len(self.memory.current_plan) - 1:
             self.logger.info("Critical findings detected and report ready")
             # Könnte hier entscheiden zu beenden oder weiterzumachen
-        
+
         # Prüfe ob maximale Iterationen erreicht
         if self.progress['current_iteration'] >= self.max_iterations:
             self.logger.info("Max iterations reached")
             return False
-        
+
         # Reflexion: Update Context
         self.memory.add_to_context_window({
             'type': 'reflection',
@@ -1208,13 +1207,13 @@ class AutonomousAgentLoop:
             'findings_count': len(self.memory.findings),
             'progress': f"{self.memory.plan_step}/{len(self.memory.current_plan)}"
         })
-        
+
         return True
-    
+
     async def _extract_findings(self, result: ToolResult) -> None:
         """Extrahiert Security Findings aus Tool-Ergebnissen."""
         data = result.data or {}
-        
+
         # Nmap Findings
         if 'open_ports' in data:
             for port_info in data['open_ports']:
@@ -1224,7 +1223,7 @@ class AutonomousAgentLoop:
                     'source': result.tool_name,
                     'details': port_info
                 })
-        
+
         # Nuclei Findings
         if 'findings' in data:
             for vuln in data['findings']:
@@ -1234,7 +1233,7 @@ class AutonomousAgentLoop:
                     'source': result.tool_name,
                     'details': vuln
                 })
-        
+
         # Subdomain Findings
         if 'subdomains' in data:
             for subdomain in data['subdomains']:
@@ -1244,13 +1243,13 @@ class AutonomousAgentLoop:
                     'source': result.tool_name,
                     'details': subdomain
                 })
-        
+
         self.progress['findings_count'] = len(self.memory.findings)
-    
+
     async def _compile_final_result(self) -> Dict[str, Any]:
         """Kompiliert das finale Ergebnis."""
         execution_time = self.end_time - self.start_time if self.start_time and self.end_time else 0
-        
+
         # Generiere finalen Report
         report_tool = self.tool_registry.get_tool(ToolType.REPORT_GENERATOR)
         report_result = await report_tool.execute({
@@ -1258,7 +1257,7 @@ class AutonomousAgentLoop:
             'findings': self.memory.findings,
             'format': 'json'
         })
-        
+
         return {
             'success': True,
             'state': self.state.name,
@@ -1279,7 +1278,7 @@ class AutonomousAgentLoop:
             'progress': self.progress,
             'timestamp': datetime.now().isoformat()
         }
-    
+
     def _compile_error_result(self, error: Exception) -> Dict[str, Any]:
         """Kompiliert ein Fehler-Ergebnis."""
         return {
@@ -1293,15 +1292,15 @@ class AutonomousAgentLoop:
             'progress': self.progress,
             'timestamp': datetime.now().isoformat()
         }
-    
+
     def get_state(self) -> AgentState:
         """Gibt den aktuellen Zustand zurück."""
         return self.state
-    
+
     def get_progress(self) -> Dict[str, Any]:
         """Gibt den aktuellen Progress zurück."""
         return self.progress.copy()
-    
+
     def is_running(self) -> bool:
         """Prüft ob der Agent läuft."""
         return self.state in [
@@ -1310,12 +1309,12 @@ class AutonomousAgentLoop:
             AgentState.OBSERVING,
             AgentState.REFLECTING
         ]
-    
+
     def pause(self) -> None:
         """Pausiert die Ausführung (Human-in-the-loop)."""
         if self.is_running():
             self._transition_to(AgentState.PAUSED)
-    
+
     def resume(self) -> None:
         """Setzt die Ausführung fort."""
         if self.state == AgentState.PAUSED and self.previous_state:
@@ -1330,12 +1329,12 @@ def create_agent_loop(
 ) -> AutonomousAgentLoop:
     """
     Factory-Funktion zum Erstellen eines AutonomousAgentLoop.
-    
+
     Args:
         llm_client: Optionaler LLM Client
         max_iterations: Maximale Iterationen
         retry_attempts: Anzahl der Retry-Versuche
-        
+
     Returns:
         Konfigurierte AutonomousAgentLoop Instanz
     """
@@ -1351,21 +1350,21 @@ if __name__ == "__main__":
     async def main():
         # Erstelle Agent
         agent = create_agent_loop(max_iterations=10)
-        
+
         # Definiere Progress Callback
         def on_progress(progress):
             print(f"Progress: {progress['completed_steps']}/{progress['total_steps']} steps")
-        
+
         agent.set_progress_callback(on_progress)
-        
+
         # Führe Scan aus
         result = await agent.run(
             goal="Find vulnerabilities and open ports",
             target="example.com",
             scope={"depth": "standard"}
         )
-        
+
         print("\n=== Execution Result ===")
         print(json.dumps(result, indent=2, default=str))
-    
+
     asyncio.run(main())

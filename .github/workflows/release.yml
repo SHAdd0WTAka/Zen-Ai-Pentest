@@ -146,8 +146,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs: [pre-release-checks]
-    outputs:
-      changelog: ${{ steps.changelog.outputs.changelog }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -193,6 +191,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     needs: [pre-release-checks, build, changelog]
+    outputs:
+      url: ${{ steps.create_release.outputs.url }}
+      id: ${{ steps.create_release.outputs.id }}
     steps:
       - name: Download build artifacts
         uses: actions/download-artifact@v4
@@ -330,7 +331,7 @@ jobs:
     name: Deploy Documentation
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    needs: [github-release]
+    needs: [pre-release-checks, github-release]
     if: needs.pre-release-checks.outputs.is_prerelease != 'true'
     steps:
       - name: Checkout repository
@@ -362,7 +363,7 @@ jobs:
     name: Post-Release Tasks
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    needs: [pypi-publish, docker]
+    needs: [pre-release-checks, github-release, pypi-publish, docker]
     if: always() && needs.pre-release-checks.outputs.is_prerelease != 'true'
     steps:
       - name: Create release discussion
@@ -374,7 +375,7 @@ jobs:
             await github.rest.repos.createReleaseDiscussion({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              release_id: ${{ steps.create_release.outputs.id || 'null' }},
+              release_id: ${{ needs.github-release.outputs.id || 'null' }},
             }).catch(() => {
               console.log('Release discussions may not be enabled');
             });
@@ -412,11 +413,11 @@ jobs:
     name: Send Notifications
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    needs: [github-release, pypi-publish, docker]
+    needs: [pre-release-checks, github-release, pypi-publish, docker]
     if: always()
     steps:
       - name: Notify Slack
-        if: secrets.SLACK_WEBHOOK_URL != ''
+        if: ${{ env.SLACK_WEBHOOK_URL != '' }}
         uses: 8398a7/action-slack@v3
         with:
           status: ${{ job.status }}
@@ -432,7 +433,7 @@ jobs:
         continue-on-error: true
 
       - name: Notify Discord
-        if: secrets.DISCORD_WEBHOOK_URL != ''
+        if: ${{ env.DISCORD_WEBHOOK_URL != '' }}
         uses: Ilshidur/action-discord@master
         with:
           args: |
