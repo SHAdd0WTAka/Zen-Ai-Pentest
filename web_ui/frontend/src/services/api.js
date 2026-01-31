@@ -113,4 +113,17 @@ export const slackAPI = {
   }),
 };
 
+// JIRA Integration API
+export const jiraAPI = {
+  getSettings: () => api.get('/settings/jira'),
+  updateSettings: (base_url, username, api_token, enabled = true) => api.post('/settings/jira', null, {
+    params: { base_url, username, api_token, enabled }
+  }),
+  test: () => api.post('/settings/jira/test'),
+  getProjects: () => api.get('/settings/jira/projects'),
+  createTicket: (finding_id, project_key) => api.post('/integrations/jira/create-ticket', null, {
+    params: { finding_id, project_key }
+  }),
+};
+
 export default api;

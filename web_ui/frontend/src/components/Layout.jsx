@@ -9,7 +9,8 @@ import {
   LogOut,
   PlusCircle,
   Calendar,
-  MessageSquare
+  MessageSquare,
+  Ticket
 } from 'lucide-react';
 import './Layout.css';
 
@@ -77,6 +78,14 @@ function Layout() {
           >
             <MessageSquare size={20} />
             <span>Slack</span>
+          </Link>
+
+          <Link 
+            to="/jira" 
+            className={`nav-item ${isActive('/jira') ? 'active' : ''}`}
+          >
+            <Ticket size={20} />
+            <span>JIRA</span>
           </Link>
 
           <Link 
