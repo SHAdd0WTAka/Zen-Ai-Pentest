@@ -199,10 +199,22 @@ class ToolConfig(Base):
 # DATABASE CONNECTION
 # ============================================================================
 
-# PostgreSQL URL - in production aus Umgebungsvariablen
-DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/zen_pentest"
+import os
 
-engine = create_engine(DATABASE_URL)
+# PostgreSQL URL - in production aus Umgebungsvariablen
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/zen_pentest")
+
+try:
+    # Versuche PostgreSQL Engine zu erstellen
+    engine = create_engine(DATABASE_URL)
+    # Teste Verbindung (import check)
+    import psycopg2
+except (ImportError, Exception):
+    # Fallback auf SQLite für lokale Entwicklung/Tests
+    print("⚠️  PostgreSQL/psycopg2 nicht verfügbar. Nutze SQLite Fallback (zen_pentest.db)")
+    DATABASE_URL = "sqlite:///./zen_pentest.db"
+    engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 def init_db():

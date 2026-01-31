@@ -30,6 +30,18 @@ class AgentRole(Enum):
     )
 
 
+class AgentState(Enum):
+    """Operational states for agents"""
+
+    IDLE = "idle"
+    BUSY = "busy"
+    WAITING = "waiting"
+    COMPLETED = "completed"
+    FAILED = "failed"
+    STOPPED = "stopped"
+
+
+
 @dataclass
 class AgentMessage:
     """Message format for inter-agent communication"""

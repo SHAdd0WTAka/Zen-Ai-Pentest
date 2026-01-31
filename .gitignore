@@ -62,3 +62,8 @@ htmlcov/
 # Misc
 *.bak
 *.tmp
+
+# GitHub Token
+.github_token
+.env
+
