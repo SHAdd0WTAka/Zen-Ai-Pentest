@@ -1,49 +1,48 @@
-import React, { useState } from 'react';
-import ScanDashboard from './components/ScanDashboard';
-import FindingsList from './components/FindingsList';
-import AgentStatus from './components/AgentStatus';
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { useAuthStore } from './store/authStore';
+import Login from './components/auth/Login';
+import Dashboard from './pages/Dashboard';
+import Scans from './pages/Scans';
+import ScanDetail from './pages/ScanDetail';
+import NewScan from './pages/NewScan';
+import Findings from './pages/Findings';
+import Settings from './pages/Settings';
+import Layout from './components/Layout';
 import './App.css';
 
+function PrivateRoute({ children }) {
+  const { isAuthenticated, checkAuth } = useAuthStore();
+  
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  return isAuthenticated ? children : <Navigate to="/login" />;
+}
+
 function App() {
-  const [activeTab, setActiveTab] = useState('scans');
-
   return (
-    <div className="App">
-      <nav className="navbar">
-        <div className="logo">Zen AI Pentest v2.0</div>
-        <div className="nav-tabs">
-          <button 
-            className={activeTab === 'scans' ? 'active' : ''}
-            onClick={() => setActiveTab('scans')}
-          >
-            Scans
-          </button>
-          <button 
-            className={activeTab === 'agents' ? 'active' : ''}
-            onClick={() => setActiveTab('agents')}
-          >
-            Agents
-          </button>
-          <button 
-            className={activeTab === 'findings' ? 'active' : ''}
-            onClick={() => setActiveTab('findings')}
-          >
-            Findings
-          </button>
-        </div>
-        <div className="version">v2.0.0</div>
-      </nav>
-      
-      <main>
-        {activeTab === 'scans' && <ScanDashboard />}
-        {activeTab === 'agents' && <AgentStatus />}
-        {activeTab === 'findings' && <FindingsList />}
-      </main>
-
-      <footer className="footer">
-        <p>Zen AI Pentest - Autonomous Red Team Framework</p>
-      </footer>
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route
+          path="/"
+          element={
+            <PrivateRoute>
+              <Layout />
+            </PrivateRoute>
+          }
+        >
+          <Route index element={<Dashboard />} />
+          <Route path="scans" element={<Scans />} />
+          <Route path="scans/new" element={<NewScan />} />
+          <Route path="scans/:id" element={<ScanDetail />} />
+          <Route path="findings" element={<Findings />} />
+          <Route path="settings" element={<Settings />} />
+        </Route>
+      </Routes>
+    </Router>
   );
 }
 
