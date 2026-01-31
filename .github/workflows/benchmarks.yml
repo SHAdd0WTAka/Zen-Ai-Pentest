@@ -1,83 +1,384 @@
-name: 🏆 Weekly Benchmarks
+name: Benchmarks
 
 on:
   schedule:
-    # Run every Sunday at 2 AM
+    # Run every Sunday at 2 AM UTC
     - cron: '0 2 * * 0'
+  pull_request:
+    branches: [main, master]
+    paths:
+      - 'core/**'
+      - 'agents/**'
+      - 'benchmarks/**'
   workflow_dispatch:
+    inputs:
+      compare_branch:
+        description: 'Branch to compare against (default: main)'
+        required: false
+        default: 'main'
+      scenario:
+        description: 'Specific scenario to run (leave empty for all)'
+        required: false
+        default: ''
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  checks: write
 
 jobs:
+  # =============================================================================
+  # Run Benchmarks
+  # =============================================================================
   run-benchmarks:
+    name: Run Benchmarks
     runs-on: ubuntu-latest
+    timeout-minutes: 60
+    outputs:
+      results_file: ${{ steps.benchmark.outputs.results_file }}
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Setup Python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.12'
+          cache: 'pip'
 
-      - name: Install Dependencies
+      - name: Install dependencies
         run: |
+          python -m pip install --upgrade pip
           pip install -e ".[dev]"
-          pip install pytest-asyncio
+          pip install pytest pytest-asyncio pytest-benchmark
 
-      - name: Run Benchmarks
+      - name: Create required directories
         run: |
+          mkdir -p logs evidence benchmarks/results
+
+      - name: Run benchmarks
+        id: benchmark
+        run: |
+          echo "::group::Running Benchmarks"
           cd benchmarks
-          python run_benchmarks.py
+          
+          SCENARIO="${{ github.event.inputs.scenario }}"
+          if [ -n "$SCENARIO" ]; then
+            echo "Running specific scenario: $SCENARIO"
+            python run_benchmarks.py --scenario "$SCENARIO" --output results/
+          else
+            echo "Running all benchmarks"
+            python run_benchmarks.py --output results/
+          fi
+          
+          # Find the latest results file
+          RESULTS_FILE=$(ls -t results/benchmark_report_*.json 2>/dev/null | head -1)
+          echo "results_file=$RESULTS_FILE" >> $GITHUB_OUTPUT
+          echo "Results file: $RESULTS_FILE"
+          
+          echo "::endgroup::"
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          PYTHONIOENCODING: utf-8
+        continue-on-error: true
 
-      - name: Upload Results
+      - name: Generate benchmark report
+        run: |
+          echo "::group::Generating Report"
+          cd benchmarks
+          if [ -f "generate_report.py" ]; then
+            python generate_report.py
+          fi
+          echo "::endgroup::"
+        continue-on-error: true
+
+      - name: Upload benchmark results
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: benchmark-results
-          path: benchmarks/benchmark_report_*.json
+          path: |
+            benchmarks/results/
+            logs/
           retention-days: 90
 
-      - name: Update README with Latest Results
-        run: |
-          python benchmarks/update_readme_with_results.py
-          git config user.name 'GitHub Actions'
-          git config user.email 'actions@github.com'
-          git add README.md
-          git diff --staged --quiet || git commit -m "docs: update benchmark results [skip ci]"
-          git push
+  # =============================================================================
+  # Compare with Previous Version
+  # =============================================================================
+  compare-benchmarks:
+    name: Compare Benchmarks
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: [run-benchmarks]
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout current PR
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
 
-      - name: Comment on Results Issue
+      - name: Checkout base branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.compare_branch || 'main' }}
+          path: base-branch
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Download current benchmark results
+        uses: actions/download-artifact@v4
+        with:
+          name: benchmark-results
+          path: current-results/
+
+      - name: Run base branch benchmarks
+        run: |
+          echo "::group::Running Base Branch Benchmarks"
+          cd base-branch
+          pip install -e ".[dev]" -q
+          mkdir -p benchmarks/results
+          cd benchmarks
+          python run_benchmarks.py --output results/ || true
+          echo "::endgroup::"
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        continue-on-error: true
+
+      - name: Compare results
+        id: compare
+        run: |
+          echo "::group::Comparing Benchmarks"
+          
+          # Find result files
+          CURRENT_FILE=$(ls -t current-results/benchmark_report_*.json 2>/dev/null | head -1)
+          BASE_FILE=$(ls -t base-branch/benchmarks/results/benchmark_report_*.json 2>/dev/null | head -1)
+          
+          if [ -z "$CURRENT_FILE" ] || [ -z "$BASE_FILE" ]; then
+            echo "⚠️ Could not find benchmark results for comparison"
+            echo "comparison_result=skipped" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          echo "Current: $CURRENT_FILE"
+          echo "Base: $BASE_FILE"
+          
+          # Run comparison
+          python benchmarks/compare_benchmarks.py "$BASE_FILE" "$CURRENT_FILE" --output comparison.md || true
+          
+          if [ -f "comparison.md" ]; then
+            echo "comparison_result=success" >> $GITHUB_OUTPUT
+            cat comparison.md
+          else
+            echo "comparison_result=failed" >> $GITHUB_OUTPUT
+          fi
+          
+          echo "::endgroup::"
+        continue-on-error: true
+
+      - name: Comment on PR with comparison
+        if: steps.compare.outputs.comparison_result == 'success'
         uses: actions/github-script@v7
         with:
           script: |
             const fs = require('fs');
-            const report = JSON.parse(fs.readFileSync('benchmarks/benchmark_report_*.json')[0]);
+            let comparisonBody = '';
             
-            const body = `## 📊 Weekly Benchmark Results
+            try {
+              comparisonBody = fs.readFileSync('comparison.md', 'utf8');
+            } catch (e) {
+              comparisonBody = 'Could not load comparison results.';
+            }
             
-            **Date:** ${report.benchmark_date}
-            **Commit:** ${context.sha}
+            const body = `## 📊 Benchmark Comparison
             
+            Comparing this PR against \`${{ github.event.inputs.compare_branch || 'main' }}\`
+            
+            ${comparisonBody}
+            
+            <details>
+            <summary>View Raw Results</summary>
+            
+            See the workflow artifacts for detailed benchmark results.
+            </details>
+            `;
+            
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: body
+            });
+        continue-on-error: true
+
+      - name: Check for performance regression
+        if: steps.compare.outputs.comparison_result == 'success'
+        run: |
+          echo "::group::Checking for Performance Regression"
+          
+          # Extract regression info from comparison
+          if [ -f "comparison.md" ]; then
+            REGRESSIONS=$(grep -c "⚠️\|🔴\|regression" comparison.md || echo "0")
+            
+            if [ "$REGRESSIONS" -gt 0 ]; then
+              echo "::warning::Found $REGRESSIONS potential performance regressions!"
+              echo "regression_detected=true" >> $GITHUB_ENV
+            else
+              echo "✅ No significant performance regressions detected"
+              echo "regression_detected=false" >> $GITHUB_ENV
+            fi
+          fi
+          
+          echo "::endgroup::"
+        continue-on-error: true
+
+  # =============================================================================
+  # Trend Analysis
+  # =============================================================================
+  trend-analysis:
+    name: Trend Analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [run-benchmarks]
+    if: github.event_name == 'schedule'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download benchmark results
+        uses: actions/download-artifact@v4
+        with:
+          name: benchmark-results
+          path: benchmarks/results/
+
+      - name: Analyze trends
+        run: |
+          echo "::group::Analyzing Trends"
+          cd benchmarks
+          
+          if [ -f "analyze_trends.py" ]; then
+            python analyze_trends.py --input results/ --output trend_report.md
+            cat trend_report.md
+          else
+            echo "No trend analysis script found"
+          fi
+          echo "::endgroup::"
+        continue-on-error: true
+
+      - name: Update README with trends
+        run: |
+          echo "::group::Updating README"
+          cd benchmarks
+          
+          if [ -f "update_readme_with_results.py" ]; then
+            python update_readme_with_results.py
+            
+            # Commit changes if any
+            git config user.name 'GitHub Actions'
+            git config user.email 'actions@github.com'
+            git add ../README.md
+            git diff --staged --quiet || git commit -m "docs: update benchmark results [skip ci]"
+            git push || echo "No changes to push"
+          fi
+          echo "::endgroup::"
+        continue-on-error: true
+
+      - name: Upload trend report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trend-report
+          path: benchmarks/trend_report.md
+          retention-days: 90
+        continue-on-error: true
+
+  # =============================================================================
+  # Update Benchmark Issue
+  # =============================================================================
+  update-issue:
+    name: Update Benchmark Issue
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [run-benchmarks, trend-analysis]
+    if: github.event_name == 'schedule'
+    steps:
+      - name: Download benchmark results
+        uses: actions/download-artifact@v4
+        with:
+          name: benchmark-results
+          path: benchmarks/results/
+
+      - name: Comment on benchmark results issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            
+            // Find latest report
+            const resultsDir = 'benchmarks/results';
+            let report = null;
+            
+            try {
+              const files = fs.readdirSync(resultsDir);
+              const reportFiles = files.filter(f => f.startsWith('benchmark_report_') && f.endsWith('.json'));
+              if (reportFiles.length > 0) {
+                const latestReport = reportFiles.sort().reverse()[0];
+                report = JSON.parse(fs.readFileSync(path.join(resultsDir, latestReport), 'utf8'));
+              }
+            } catch (e) {
+              console.log('Could not read benchmark report:', e.message);
+            }
+            
+            const date = new Date().toISOString().split('T')[0];
+            
+            const body = `## 📊 Weekly Benchmark Results - ${date}
+            
+            **Commit:** ${context.sha.substring(0, 8)}
+            **Workflow Run:** ${context.payload.repository?.html_url}/actions/runs/${context.runId}
+            
+            ${report ? `
             ### Summary
-            - Total Scenarios: ${report.total_scenarios}
-            - Success Rate: ${(report.by_difficulty.easy?.success_rate || 0) * 100}%
+            - Total Scenarios: ${report.total_scenarios || 'N/A'}
+            - Success Rate: ${report.overall_success_rate ? (report.overall_success_rate * 100).toFixed(1) : 'N/A'}%
+            - Average Time: ${report.average_time ? report.average_time.toFixed(2) : 'N/A'}s
             
             ### By Difficulty
-            ${Object.entries(report.by_difficulty).map(([diff, stats]) => 
-              `- **${diff}**: Avg ${stats.avg_time_to_user?.toFixed(1)}min, ${(stats.success_rate * 100).toFixed(0)}% success`
+            ${Object.entries(report.by_difficulty || {}).map(([diff, stats]) => 
+              `- **${diff}**: ${stats.success_rate ? (stats.success_rate * 100).toFixed(0) : 'N/A'}% success (${stats.avg_time ? stats.avg_time.toFixed(1) : 'N/A'}s avg)`
             ).join('\n')}
+            ` : 'Benchmark report not available. Check workflow artifacts.'}
             
-            Full report: [Artifacts](${context.payload.repository?.html_url}/actions/runs/${context.runId})
+            ---
+            *This comment was automatically generated by the benchmark workflow.*
             `;
             
             // Find or create benchmark results issue
             const issues = await github.rest.issues.listForRepo({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              labels: 'benchmarks'
+              labels: 'benchmarks',
+              state: 'open'
             });
             
-            const benchmarkIssue = issues.data.find(i => i.title.includes('Benchmark Results'));
+            let benchmarkIssue = issues.data.find(i => i.title.includes('Benchmark Results'));
             
             if (benchmarkIssue) {
               await github.rest.issues.createComment({
@@ -86,4 +387,49 @@ jobs:
                 repo: context.repo.repo,
                 body: body
               });
+              console.log(`Commented on issue #${benchmarkIssue.number}`);
+            } else {
+              // Create new issue
+              const newIssue = await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: `📊 Benchmark Results - ${date}`,
+                body: body,
+                labels: ['benchmarks', 'automated']
+              });
+              console.log(`Created issue #${newIssue.data.number}`);
             }
+        continue-on-error: true
+
+  # =============================================================================
+  # Benchmark Summary
+  # =============================================================================
+  benchmark-summary:
+    name: Benchmark Summary
+    runs-on: ubuntu-latest
+    needs: [run-benchmarks, compare-benchmarks, trend-analysis]
+    if: always()
+    steps:
+      - name: Generate Summary
+        run: |
+          echo "## 🏆 Benchmark Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Step | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Run Benchmarks | ${{ needs.run-benchmarks.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Compare Benchmarks | ${{ needs.compare-benchmarks.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Trend Analysis | ${{ needs.trend-analysis.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [[ "${{ needs.run-benchmarks.result }}" == "success" ]]; then
+            echo "✅ Benchmarks completed successfully!" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "📁 Results available as workflow artifacts." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ Benchmarks completed with issues. Check logs for details." >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [[ "${{ env.regression_detected }}" == "true" ]]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "⚠️ **Performance regression detected!** Please review the comparison results." >> $GITHUB_STEP_SUMMARY
+          fi
