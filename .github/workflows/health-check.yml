@@ -12,7 +12,7 @@ jobs:
     
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       
     - name: Install jq
       run: sudo apt-get update && sudo apt-get install -y jq
@@ -89,7 +89,7 @@ jobs:
         
     - name: Upload Health Report
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: health-check-report
         path: health_check_report.md
@@ -97,7 +97,7 @@ jobs:
         
     - name: Notify on Failure
       if: failure()
-      uses: actions/github-script@v7
+      uses: actions/github-script@v8
       with:
         script: |
           github.rest.issues.create({

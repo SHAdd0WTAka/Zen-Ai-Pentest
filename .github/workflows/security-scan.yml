@@ -15,10 +15,10 @@ jobs:
   bandit:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     
     - name: Set up Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: '3.12'
     
@@ -32,7 +32,7 @@ jobs:
       continue-on-error: true
     
     - name: Upload Bandit Report
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: bandit-security-report
         path: bandit-report.json
@@ -42,10 +42,10 @@ jobs:
   safety:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     
     - name: Set up Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: '3.12'
     
@@ -59,7 +59,7 @@ jobs:
       continue-on-error: true
     
     - name: Upload Safety Report
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: safety-vulnerability-report
         path: safety-report.json
@@ -70,7 +70,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name != 'pull_request'
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     
     - name: Check Dockerfile exists
       id: check_dockerfile
@@ -87,7 +87,7 @@ jobs:
     
     - name: Run Trivy Vulnerability Scanner
       if: steps.check_dockerfile.outputs.exists == 'true'
-      uses: aquasecurity/trivy-action@0.24.0
+      uses: aquasecurity/trivy-action@0.33.1
       with:
         image-ref: 'zen-ai-pentest:security-scan'
         format: 'sarif'
@@ -97,7 +97,7 @@ jobs:
     
     - name: Upload Trivy Report
       if: steps.check_dockerfile.outputs.exists == 'true'
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: trivy-container-scan
         path: trivy-results.sarif
@@ -111,7 +111,7 @@ jobs:
       contents: read
       security-events: write
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v3
@@ -131,7 +131,7 @@ jobs:
   secret-detection:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
       with:
         fetch-depth: 0
     
@@ -148,7 +148,7 @@ jobs:
   dependency-check:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     
     - name: Run OWASP Dependency-Check
       uses: dependency-check/Dependency-Check_Action@v1
@@ -159,7 +159,7 @@ jobs:
       continue-on-error: true
     
     - name: Upload OWASP Report
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: owasp-dependency-check
         path: reports/
