@@ -7,7 +7,8 @@ import {
   ShieldAlert, 
   Settings, 
   LogOut,
-  PlusCircle
+  PlusCircle,
+  Calendar
 } from 'lucide-react';
 import './Layout.css';
 
@@ -59,6 +60,14 @@ function Layout() {
           >
             <ShieldAlert size={20} />
             <span>Findings</span>
+          </Link>
+
+          <Link 
+            to="/scheduler" 
+            className={`nav-item ${isActive('/scheduler') ? 'active' : ''}`}
+          >
+            <Calendar size={20} />
+            <span>Scheduler</span>
           </Link>
 
           <Link 

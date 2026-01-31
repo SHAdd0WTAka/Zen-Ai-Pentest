@@ -31,7 +31,8 @@ from api.schemas import (
     FindingCreate, FindingResponse,
     ReportCreate, ReportResponse,
     ToolExecuteRequest, ToolExecuteResponse,
-    WSMessage
+    WSMessage,
+    ScheduledScanCreate, ScheduledScanUpdate, ScheduledScanResponse
 )
 from api.auth import verify_token, create_access_token
 from api.websocket import ConnectionManager
@@ -517,6 +518,211 @@ async def api_info():
             "reports": "/reports"
         }
     }
+
+# ============================================================================
+# SCHEDULED SCANS
+# ============================================================================
+
+# In-memory storage for scheduled scans (in production: use database)
+SCHEDULED_SCANS = []
+SCHEDULE_ID_COUNTER = 1
+
+@app.post("/schedules", response_model=ScheduledScanResponse)
+async def create_schedule(
+    schedule: ScheduledScanCreate,
+    user: dict = Depends(verify_token),
+    db = Depends(get_db)
+):
+    """Create a new scheduled scan"""
+    global SCHEDULE_ID_COUNTER
+    
+    schedule_dict = {
+        "id": SCHEDULE_ID_COUNTER,
+        "name": schedule.name,
+        "target": schedule.target,
+        "scan_type": schedule.scan_type,
+        "frequency": schedule.frequency.value,
+        "schedule_time": schedule.schedule_time,
+        "schedule_day": schedule.schedule_day,
+        "enabled": schedule.enabled,
+        "notification_email": schedule.notification_email,
+        "notification_slack": schedule.notification_slack,
+        "last_run_at": None,
+        "last_run_status": None,
+        "next_run_at": calculate_next_run(schedule.frequency.value, schedule.schedule_time, schedule.schedule_day),
+        "created_at": datetime.utcnow(),
+        "created_by": user.get("sub", "unknown")
+    }
+    
+    SCHEDULED_SCANS.append(schedule_dict)
+    SCHEDULE_ID_COUNTER += 1
+    
+    return schedule_dict
+
+@app.get("/schedules", response_model=List[ScheduledScanResponse])
+async def list_schedules(
+    user: dict = Depends(verify_token),
+    db = Depends(get_db)
+):
+    """List all scheduled scans"""
+    return SCHEDULED_SCANS
+
+@app.get("/schedules/{schedule_id}", response_model=ScheduledScanResponse)
+async def get_schedule(
+    schedule_id: int,
+    user: dict = Depends(verify_token),
+    db = Depends(get_db)
+):
+    """Get a specific scheduled scan"""
+    for schedule in SCHEDULED_SCANS:
+        if schedule["id"] == schedule_id:
+            return schedule
+    raise HTTPException(status_code=404, detail="Schedule not found")
+
+@app.patch("/schedules/{schedule_id}", response_model=ScheduledScanResponse)
+async def update_schedule(
+    schedule_id: int,
+    update: ScheduledScanUpdate,
+    user: dict = Depends(verify_token),
+    db = Depends(get_db)
+):
+    """Update a scheduled scan"""
+    for schedule in SCHEDULED_SCANS:
+        if schedule["id"] == schedule_id:
+            # Update fields
+            for field, value in update.dict(exclude_unset=True).items():
+                if value is not None:
+                    schedule[field] = value
+            
+            # Recalculate next run if schedule changed
+            if update.frequency or update.schedule_time or update.schedule_day is not None:
+                schedule["next_run_at"] = calculate_next_run(
+                    schedule["frequency"],
+                    schedule["schedule_time"],
+                    schedule["schedule_day"]
+                )
+            
+            return schedule
+    raise HTTPException(status_code=404, detail="Schedule not found")
+
+@app.delete("/schedules/{schedule_id}")
+async def delete_schedule(
+    schedule_id: int,
+    user: dict = Depends(verify_token),
+    db = Depends(get_db)
+):
+    """Delete a scheduled scan"""
+    global SCHEDULED_SCANS
+    for i, schedule in enumerate(SCHEDULED_SCANS):
+        if schedule["id"] == schedule_id:
+            SCHEDULED_SCANS.pop(i)
+            return {"message": "Schedule deleted"}
+    raise HTTPException(status_code=404, detail="Schedule not found")
+
+@app.post("/schedules/{schedule_id}/run")
+async def run_schedule_now(
+    schedule_id: int,
+    background_tasks: BackgroundTasks,
+    user: dict = Depends(verify_token),
+    db = Depends(get_db)
+):
+    """Manually trigger a scheduled scan"""
+    for schedule in SCHEDULED_SCANS:
+        if schedule["id"] == schedule_id:
+            background_tasks.add_task(
+                execute_scheduled_scan,
+                schedule,
+                user.get("sub")
+            )
+            return {"message": "Scan triggered"}
+    raise HTTPException(status_code=404, detail="Schedule not found")
+
+def calculate_next_run(frequency: str, time_str: str, day: Optional[int] = None) -> datetime:
+    """Calculate the next run time for a schedule"""
+    from datetime import timedelta
+    
+    now = datetime.utcnow()
+    hour, minute = map(int, time_str.split(':'))
+    
+    next_run = now.replace(hour=hour, minute=minute, second=0, microsecond=0)
+    
+    if frequency == "once":
+        if next_run <= now:
+            next_run += timedelta(days=1)
+    elif frequency == "daily":
+        if next_run <= now:
+            next_run += timedelta(days=1)
+    elif frequency == "weekly":
+        days_ahead = day - now.weekday() if day is not None else 0
+        if days_ahead <= 0:
+            days_ahead += 7
+        next_run += timedelta(days=days_ahead)
+    elif frequency == "monthly":
+        # Simplified: run on the first of next month
+        if now.day > 1 or (now.day == 1 and next_run <= now):
+            next_run = next_run.replace(month=now.month + 1 if now.month < 12 else 1)
+            if next_run.month == 1:
+                next_run = next_run.replace(year=next_run.year + 1)
+    
+    return next_run
+
+async def execute_scheduled_scan(schedule: dict, user_id: str):
+    """Execute a scheduled scan"""
+    from database.crud import create_scan, update_scan_status
+    
+    db = SessionLocal()
+    try:
+        # Update last run
+        schedule["last_run_at"] = datetime.utcnow()
+        schedule["last_run_status"] = "running"
+        
+        # Create scan
+        scan_data = type('obj', (object,), {
+            'name': schedule["name"],
+            'target': schedule["target"],
+            'scan_type': schedule["scan_type"],
+            'config': {},
+            'user_id': user_id
+        })
+        
+        db_scan = create_scan(db, scan_data)
+        
+        # Run scan
+        update_scan_status(db, db_scan.id, "running")
+        
+        # TODO: Actually run the scan (simplified for now)
+        import asyncio
+        await asyncio.sleep(5)  # Simulate scan
+        
+        update_scan_status(db, db_scan.id, "completed")
+        schedule["last_run_status"] = "completed"
+        
+        # Calculate next run
+        schedule["next_run_at"] = calculate_next_run(
+            schedule["frequency"],
+            schedule["schedule_time"],
+            schedule.get("schedule_day")
+        )
+        
+        # Send notifications
+        if schedule.get("notification_email"):
+            await send_email_notification(schedule, db_scan.id)
+        if schedule.get("notification_slack"):
+            await send_slack_notification(schedule, db_scan.id)
+            
+    except Exception as e:
+        schedule["last_run_status"] = "failed"
+        logger.error(f"Scheduled scan error: {e}")
+    finally:
+        db.close()
+
+async def send_email_notification(schedule: dict, scan_id: int):
+    """Send email notification"""
+    logger.info(f"Would send email to {schedule['notification_email']} for scan {scan_id}")
+
+async def send_slack_notification(schedule: dict, scan_id: int):
+    """Send Slack notification"""
+    logger.info(f"Would send Slack notification for scan {scan_id}")
 
 # ============================================================================
 # STATS

@@ -89,4 +89,14 @@ export const agentsAPI = {
   stop: (id) => api.post(`/agents/${id}/stop`),
 };
 
+// Scheduled Scans API
+export const schedulesAPI = {
+  getAll: () => api.get('/schedules'),
+  getById: (id) => api.get(`/schedules/${id}`),
+  create: (data) => api.post('/schedules', data),
+  update: (id, data) => api.patch(`/schedules/${id}`, data),
+  delete: (id) => api.delete(`/schedules/${id}`),
+  runNow: (id) => api.post(`/schedules/${id}/run`),
+};
+
 export default api;

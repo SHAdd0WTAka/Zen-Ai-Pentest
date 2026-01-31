@@ -7,6 +7,7 @@ import Scans from './pages/Scans';
 import ScanDetail from './pages/ScanDetail';
 import NewScan from './pages/NewScan';
 import Findings from './pages/Findings';
+import Scheduler from './pages/Scheduler';
 import Settings from './pages/Settings';
 import Layout from './components/Layout';
 import './App.css';
@@ -40,6 +41,7 @@ function App() {
           <Route path="scans/new" element={<NewScan />} />
           <Route path="scans/:id" element={<ScanDetail />} />
           <Route path="findings" element={<Findings />} />
+          <Route path="scheduler" element={<Scheduler />} />
           <Route path="settings" element={<Settings />} />
         </Route>
       </Routes>
