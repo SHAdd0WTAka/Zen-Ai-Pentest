@@ -8,10 +8,18 @@
 [![Docker](https://img.shields.io/badge/Docker-Ready-blue)](docker/)
 [![Tests](https://img.shields.io/badge/Tests-pytest-brightgreen)](tests/)
 [![PyPI](https://img.shields.io/pypi/v/zen-ai-pentest)](https://pypi.org/project/zen-ai-pentest/)
-[![Version](https://img.shields.io/badge/Version-2.0.4-orange)](https://github.com/SHAdd0WTAka/zen-ai-pentest/releases)
+[![Version](https://img.shields.io/badge/Version-2.2.0-orange)](https://github.com/SHAdd0WTAka/zen-ai-pentest/releases)
 [![Authors](https://img.shields.io/badge/Authors-SHAdd0WTAka%20%7C%20KimiAI-purple)](#-authors--team)
 [![Roadmap](https://img.shields.io/badge/Roadmap-2026-blueviolet)](ROADMAP_2026.md)
 [![Architecture](https://img.shields.io/badge/Architecture-Diagram-blue)](docs/architecture.md)
+
+## 🚀 CI/CD & Security Status
+
+[![CI/CD](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/actions/workflows/ci.yml/badge.svg)](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/actions/workflows/ci.yml)
+[![Security Scan](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/actions/workflows/security.yml/badge.svg)](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/actions/workflows/security.yml)
+[![CodeQL](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/security/code-scanning)
+[![Security Score](https://img.shields.io/badge/Security%20Score-95%2F100-brightgreen)](docs/production-hardening.md)
+[![Dependencies](https://img.shields.io/badge/dependencies-8%20moderate-yellow)](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/security/dependabot)
 ```mermaid
   graph TB
       subgraph "User Interface"
