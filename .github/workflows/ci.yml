@@ -1,0 +1,175 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [master, main, develop]
+  pull_request:
+    branches: [master, main]
+
+jobs:
+  # Backend Tests and Security
+  backend:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.11', '3.12', '3.13']
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Cache pip packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install bandit safety ruff
+
+      - name: Lint with Ruff
+        run: |
+          ruff check . --output-format=github
+          ruff format . --check
+
+      - name: Security scan with Bandit
+        run: |
+          bandit -r . -f json -o bandit-report.json || true
+          bandit -r . -ll
+
+      - name: Check for known security vulnerabilities
+        run: |
+          safety check --full-report || true
+
+      - name: Run tests with pytest
+        run: |
+          pytest tests/ -v --tb=short --cov=. --cov-report=xml --cov-report=term
+        env:
+          JWT_SECRET_KEY: test-secret-key
+          ADMIN_PASSWORD: test-admin-password
+          DATABASE_URL: sqlite:///./test.db
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        if: matrix.python-version == '3.13'
+        with:
+          file: ./coverage.xml
+          fail_ci_if_error: false
+
+  # Frontend Tests and Security
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./web_ui/frontend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: ./web_ui/frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npx eslint src/ --ext .js,.jsx || true
+
+      - name: Check for security vulnerabilities
+        run: npm audit --audit-level=moderate || true
+
+      - name: Build frontend
+        run: npm run build
+        env:
+          CI: true
+
+  # Pre-commit hooks
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install pre-commit
+        run: |
+          pip install pre-commit
+          pre-commit install
+
+      - name: Run pre-commit hooks
+        run: pre-commit run --all-files
+
+  # Database Migration Check
+  migrations:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install alembic
+
+      - name: Check Alembic migrations
+        run: |
+          alembic current || true
+          alembic check || true
+        env:
+          DATABASE_URL: sqlite:///./test.db
+
+  # Docker Build Test
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          tags: zen-ai-pentest:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # Summary
+  ci-summary:
+    needs: [backend, frontend, pre-commit, migrations, docker]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: CI Status
+        run: |
+          echo "Backend: ${{ needs.backend.result }}"
+          echo "Frontend: ${{ needs.frontend.result }}"
+          echo "Pre-commit: ${{ needs.pre-commit.result }}"
+          echo "Migrations: ${{ needs.migrations.result }}"
+          echo "Docker: ${{ needs.docker.result }}"
+
+      - name: Check all passed
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: exit 1

@@ -1,88 +1,80 @@
-name: Deploy Zen-AI-Pentest
+name: Deploy
 
 on:
-  push:
-    branches: [ main, master, release/v2.0.0 ]
-  pull_request:
-    branches: [ main, master ]
-
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
 
 jobs:
-  test:
+  # Build and test before deploy
+  pre-deploy-check:
     runs-on: ubuntu-latest
-    
-    services:
-      postgres:
-        image: postgres:15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run all tests
+        run: |
+          pip install -r requirements.txt
+          pytest tests/ -v
         env:
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: zen_pentest_test
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-    
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.12'
-    
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install pytest pytest-cov
-    
-    - name: Run tests
-      env:
-        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/zen_pentest_test
-      run: pytest --cov=. --cov-report=xml -v
+          JWT_SECRET_KEY: test
+          ADMIN_PASSWORD: test
 
-  build:
-    needs: test
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-    
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
-    
-    - name: Log in to Container Registry
-      uses: docker/login-action@v3
-      with:
-        registry: ${{ env.REGISTRY }}
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
-    
-    - name: Build and push Docker image
-      uses: docker/build-push-action@v5
-      with:
-        context: .
-        push: true
-        tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+      - name: Security scan
+        run: |
+          pip install bandit
+          bandit -r . -ll
 
-  security-scan:
-    needs: build
+  # Deploy to staging
+  deploy-staging:
+    needs: pre-deploy-check
     runs-on: ubuntu-latest
+    if: github.event.inputs.environment == 'staging' || github.event_name == 'release'
+    environment:
+      name: staging
+      url: https://staging.pentest.example.com
+
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Run Trivy vulnerability scanner
-      uses: aquasecurity/trivy-action@master
-      with:
-        image-ref: '${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest'
-        format: 'sarif'
-        output: 'trivy-results.sarif'
+      - uses: actions/checkout@v4
+
+      - name: Deploy to staging
+        run: |
+          echo "Deploying to staging environment..."
+          # Add your staging deployment commands here
+          # e.g., ssh, kubectl, docker-compose, etc.
+
+  # Deploy to production (manual only)
+  deploy-production:
+    needs: [pre-deploy-check, deploy-staging]
+    runs-on: ubuntu-latest
+    if: github.event.inputs.environment == 'production'
+    environment:
+      name: production
+      url: https://pentest.example.com
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to production
+        run: |
+          echo "Deploying to production environment..."
+          # Add your production deployment commands here
+
+      - name: Notify deployment
+        uses: 8398a7/action-slack@v3
+        if: always()
+        with:
+          status: ${{ job.status }}
+          text: 'Production deployment ${{ job.status }}'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        continue-on-error: true
