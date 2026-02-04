@@ -1,132 +1,86 @@
+/**
+ * WebSocket Hook for Real-time Updates
+ * Q2 2026 Feature
+ */
+
 import { useEffect, useRef, useState, useCallback } from 'react';
 
-const WS_BASE_URL = process.env.REACT_APP_WS_URL || 'ws://localhost:8000';
+const WS_BASE = `ws://${window.location.host}`;
 
-export function useWebSocket(scanId) {
-  const [isConnected, setIsConnected] = useState(false);
-  const [logs, setLogs] = useState([]);
-  const [progress, setProgress] = useState(0);
-  const [status, setStatus] = useState('idle');
-  const wsRef = useRef(null);
+export function useWebSocket(room = 'dashboard') {
+  const [connected, setConnected] = useState(false);
+  const [lastMessage, setLastMessage] = useState(null);
+  const ws = useRef(null);
+  const reconnectTimeout = useRef(null);
+
+  const connect = useCallback(() => {
+    const wsUrl = `${WS_BASE}/ws/v2/${room}`;
+    
+    try {
+      ws.current = new WebSocket(wsUrl);
+      
+      ws.current.onopen = () => {
+        console.log(`WebSocket connected to ${room}`);
+        setConnected(true);
+        
+        // Send ping every 30s
+        ws.current.pingInterval = setInterval(() => {
+          if (ws.current?.readyState === WebSocket.OPEN) {
+            ws.current.send(JSON.stringify({ action: 'ping' }));
+          }
+        }, 30000);
+      };
+      
+      ws.current.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        setLastMessage(data);
+      };
+      
+      ws.current.onclose = () => {
+        console.log(`WebSocket disconnected from ${room}`);
+        setConnected(false);
+        clearInterval(ws.current?.pingInterval);
+        
+        // Reconnect after 5s
+        reconnectTimeout.current = setTimeout(connect, 5000);
+      };
+      
+      ws.current.onerror = (error) => {
+        console.error('WebSocket error:', error);
+      };
+      
+    } catch (error) {
+      console.error('Failed to connect WebSocket:', error);
+    }
+  }, [room]);
 
   useEffect(() => {
-    if (!scanId) return;
-
-    const token = localStorage.getItem('token');
-    const wsUrl = `${WS_BASE_URL}/ws/scans/${scanId}?token=${token}`;
+    connect();
     
-    const ws = new WebSocket(wsUrl);
-    wsRef.current = ws;
-
-    ws.onopen = () => {
-      setIsConnected(true);
-      console.log('WebSocket connected');
-    };
-
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      
-      switch (data.type) {
-        case 'log':
-          setLogs((prev) => [...prev, {
-            id: Date.now(),
-            timestamp: new Date().toISOString(),
-            level: data.level || 'info',
-            message: data.message,
-          }]);
-          break;
-        case 'progress':
-          setProgress(data.progress);
-          break;
-        case 'status':
-          setStatus(data.status);
-          break;
-        case 'finding':
-          // New finding discovered
-          break;
-        default:
-          console.log('WebSocket message:', data);
-      }
-    };
-
-    ws.onerror = (error) => {
-      console.error('WebSocket error:', error);
-    };
-
-    ws.onclose = () => {
-      setIsConnected(false);
-      console.log('WebSocket disconnected');
-    };
-
     return () => {
-      ws.close();
+      clearTimeout(reconnectTimeout.current);
+      clearInterval(ws.current?.pingInterval);
+      ws.current?.close();
     };
-  }, [scanId]);
+  }, [connect]);
 
   const sendMessage = useCallback((message) => {
-    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify(message));
+    if (ws.current?.readyState === WebSocket.OPEN) {
+      ws.current.send(JSON.stringify(message));
     }
   }, []);
 
-  const clearLogs = useCallback(() => {
-    setLogs([]);
-  }, []);
-
-  return {
-    isConnected,
-    logs,
-    progress,
-    status,
-    sendMessage,
-    clearLogs,
-  };
+  return { connected, lastMessage, sendMessage };
 }
 
-export function useGlobalWebSocket() {
-  const [notifications, setNotifications] = useState([]);
-  const [systemStatus, setSystemStatus] = useState({});
-  const wsRef = useRef(null);
-
+export function useScanUpdates(scanId) {
+  const { connected, lastMessage, sendMessage } = useWebSocket('scans');
+  
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const wsUrl = `${WS_BASE_URL}/ws/notifications?token=${token}`;
-    
-    const ws = new WebSocket(wsUrl);
-    wsRef.current = ws;
-
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      
-      switch (data.type) {
-        case 'notification':
-          setNotifications((prev) => [data, ...prev].slice(0, 50));
-          break;
-        case 'system_status':
-          setSystemStatus(data.status);
-          break;
-        default:
-          break;
-      }
-    };
-
-    return () => {
-      ws.close();
-    };
-  }, []);
-
-  const dismissNotification = useCallback((id) => {
-    setNotifications((prev) => prev.filter((n) => n.id !== id));
-  }, []);
-
-  const clearAllNotifications = useCallback(() => {
-    setNotifications([]);
-  }, []);
-
-  return {
-    notifications,
-    systemStatus,
-    dismissNotification,
-    clearAllNotifications,
-  };
+    if (scanId && connected) {
+      sendMessage({ action: 'subscribe_scan', scan_id: scanId });
+    }
+  }, [scanId, connected, sendMessage]);
+  
+  return { connected, lastMessage };
 }
