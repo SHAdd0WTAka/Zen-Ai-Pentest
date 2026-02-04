@@ -393,10 +393,9 @@ if __name__ == "__main__":
     from langchain_core.tools import tool as langchain_tool
     
     @langchain_tool
-def example_scan(target: str) -> str:
-    """Example scanning tool"""
-    return f"Scanned {target}"
-
+    def example_scan(target: str) -> str:
+        """Example scanning tool"""
+        return f"Scanned {target}"
     
     # Manuelle Registrierung
     registry.register(

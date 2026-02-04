@@ -10,7 +10,7 @@ from .osint import (DomainInfo, EmailProfile, OSINTModule, OSINTResult,
 from .protonvpn import (ProtonVPNManager, VPNProtocol, VPNSecurityLevel,
                         VPNServer, VPNStatus, quick_connect, secure_connect)
 from .recon import ReconModule
-from .report_gen import ReportGenerator
+# from .report_gen import ReportGenerator  # Module not available
 from .sql_injection_db import (DBType, SQLInjectionDatabase, SQLITechnique,
                                SQLPayload)
 from .vuln_scanner import VulnScannerModule
@@ -19,7 +19,7 @@ __all__ = [
     "ReconModule",
     "VulnScannerModule",
     "ExploitAssistModule",
-    "ReportGenerator",
+    # "ReportGenerator",  # Module not available
     "NucleiIntegration",
     "NucleiTemplateManager",
     "SQLInjectionDatabase",
