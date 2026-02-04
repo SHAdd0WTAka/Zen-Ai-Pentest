@@ -48,5 +48,23 @@
     "autoprefixer": "^10.4.16",
     "postcss": "^8.4.32"
   },
-  "proxy": "http://localhost:8000"
+  "proxy": "http://localhost:8000",
+  "overrides": {
+    "nth-check": "^2.1.1",
+    "postcss": "^8.4.32",
+    "webpack-dev-server": "^4.15.1",
+    "jsonpath": "^1.1.1",
+    "bfj": {
+      "jsonpath": "^1.1.1"
+    },
+    "react-scripts": {
+      "webpack-dev-server": "^4.15.1",
+      "bfj": {
+        "jsonpath": "^1.1.1"
+      }
+    },
+    "@pmmmwh/react-refresh-webpack-plugin": {
+      "webpack-dev-server": "^4.15.1"
+    }
+  }
 }
