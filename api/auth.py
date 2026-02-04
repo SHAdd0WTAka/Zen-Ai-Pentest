@@ -1,7 +1,14 @@
 """
 JWT Authentication für Zen-AI-Pentest API
+
+SECURITY NOTES:
+- All secrets are loaded from environment variables
+- Never commit actual secrets to version control
+- Use .env file locally, proper secret management in production
 """
 
+import os
+import secrets
 from datetime import datetime, timedelta
 from typing import Optional, Dict
 from jose import JWTError, jwt
@@ -9,22 +16,46 @@ from passlib.context import CryptContext
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
-# Configuration
-SECRET_KEY = "your-secret-key-here-change-in-production"  # In production: env var
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+# =============================================================================
+# Configuration - Load from environment variables
+# =============================================================================
+
+# JWT Configuration
+SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+if not SECRET_KEY or SECRET_KEY == "your-super-secret-jwt-key-change-this-in-production":
+    # Generate a random key for development (not for production!)
+    import warnings
+    warnings.warn(
+        "JWT_SECRET_KEY not set or using default! Using random key for development. "
+        "Set JWT_SECRET_KEY environment variable for production!",
+        RuntimeWarning
+    )
+    SECRET_KEY = secrets.token_hex(32)
+
+ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
 
 # Password hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 security = HTTPBearer()
 
+# =============================================================================
+# Password Functions
+# =============================================================================
+
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verifiziert Passwort"""
     return pwd_context.verify(plain_password, hashed_password)
 
+
 def get_password_hash(password: str) -> str:
     """Hashed Passwort"""
     return pwd_context.hash(password)
+
+
+# =============================================================================
+# JWT Token Functions
+# =============================================================================
 
 def create_access_token(data: Dict, expires_delta: Optional[timedelta] = None) -> str:
     """Erstellt JWT Token"""
@@ -34,6 +65,7 @@ def create_access_token(data: Dict, expires_delta: Optional[timedelta] = None) -
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
+
 def decode_token(token: str) -> Optional[Dict]:
     """Decodiert JWT Token"""
     try:
@@ -41,6 +73,11 @@ def decode_token(token: str) -> Optional[Dict]:
         return payload
     except JWTError:
         return None
+
+
+# =============================================================================
+# FastAPI Dependencies
+# =============================================================================
 
 async def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)) -> Dict:
     """FastAPI Dependency für Token-Verifizierung"""
@@ -65,6 +102,7 @@ async def verify_token(credentials: HTTPAuthorizationCredentials = Depends(secur
     
     return payload
 
+
 def check_permissions(user: Dict, required_role: str) -> bool:
     """Prüft ob User die benötigte Rolle hat"""
     user_role = user.get("role", "viewer")
@@ -80,6 +118,7 @@ def check_permissions(user: Dict, required_role: str) -> bool:
     
     return user_level >= required_level
 
+
 async def require_admin(credentials: HTTPAuthorizationCredentials = Depends(security)) -> Dict:
     """Erfordert Admin-Rolle"""
     user = await verify_token(credentials)
@@ -91,6 +130,7 @@ async def require_admin(credentials: HTTPAuthorizationCredentials = Depends(secu
         )
     
     return user
+
 
 async def require_operator(credentials: HTTPAuthorizationCredentials = Depends(security)) -> Dict:
     """Erfordert Operator oder höhere Rolle"""
@@ -104,16 +144,22 @@ async def require_operator(credentials: HTTPAuthorizationCredentials = Depends(s
     
     return user
 
-# API Key Authentication (für CI/CD Integrationen)
-API_KEYS = {}  # In production: in DB speichern
+
+# =============================================================================
+# API Key Authentication
+# =============================================================================
+
+# In-memory store for API keys (use database in production!)
+API_KEYS: Dict[str, Dict] = {}
+
 
 def verify_api_key(api_key: str) -> Optional[Dict]:
     """Verifiziert API Key"""
     return API_KEYS.get(api_key)
 
+
 def create_api_key(user_id: int, name: str) -> str:
     """Erstellt neuen API Key"""
-    import secrets
     key = secrets.token_urlsafe(32)
     API_KEYS[key] = {
         "user_id": user_id,
@@ -121,3 +167,11 @@ def create_api_key(user_id: int, name: str) -> str:
         "created_at": datetime.utcnow().isoformat()
     }
     return key
+
+
+def revoke_api_key(api_key: str) -> bool:
+    """Widerruft API Key"""
+    if api_key in API_KEYS:
+        del API_KEYS[api_key]
+        return True
+    return False

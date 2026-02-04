@@ -11,7 +11,7 @@ from pathlib import Path
 # Add parent to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from fastapi import FastAPI, Depends, HTTPException, BackgroundTasks, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, Depends, HTTPException, BackgroundTasks, WebSocket, WebSocketDisconnect, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from contextlib import asynccontextmanager
@@ -36,6 +36,12 @@ from api.schemas import (
 )
 from api.auth import verify_token, create_access_token
 from api.websocket import ConnectionManager
+from api.rate_limiter import (
+    check_auth_rate_limit, 
+    record_auth_failure, 
+    record_auth_success,
+    rate_limit
+)
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -64,26 +70,73 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# CORS
+# =============================================================================
+# CORS Configuration
+# =============================================================================
+# Load allowed origins from environment variable
+# Format: comma-separated list of origins
+# Example: CORS_ORIGINS=https://domain.com,https://app.domain.com
+cors_origins_str = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:8000")
+ALLOWED_ORIGINS = [origin.strip() for origin in cors_origins_str.split(",")]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Production: Einschränken!
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH"],
+    allow_headers=["Authorization", "Content-Type", "X-Request-ID"],
+    expose_headers=["X-Request-ID"],
+    max_age=600,  # 10 minutes cache for preflight
 )
 
 # ============================================================================
 # AUTHENTICATION
 # ============================================================================
 
+# =============================================================================
+# Secure Credential Store (In production: use database!)
+# =============================================================================
+# Load admin credentials from environment variables
+ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD")
+
+if not ADMIN_PASSWORD:
+    import warnings
+    warnings.warn(
+        "ADMIN_PASSWORD not set! Using insecure default for development only. "
+        "Set ADMIN_PASSWORD environment variable for production!",
+        RuntimeWarning
+    )
+    ADMIN_PASSWORD = "admin"  # Only for development!
+
+
+def verify_admin_credentials(username: str, password: str) -> bool:
+    """Securely verify admin credentials using constant-time comparison"""
+    import hmac
+    return hmac.compare_digest(username, ADMIN_USERNAME) and \
+           hmac.compare_digest(password, ADMIN_PASSWORD)
+
+
 @app.post("/auth/login")
-async def login(credentials: dict):
-    """Login and get JWT token"""
-    # Simplified - in production: verify against DB/LDAP
-    if credentials.get("username") == "admin" and credentials.get("password") == "admin":
-        token = create_access_token({"sub": "admin", "role": "admin"})
+async def login(credentials: dict, request: Request):
+    """Login and get JWT token with secure credential verification and rate limiting"""
+    client_ip = request.client.host if request.client else "unknown"
+    
+    # Check auth rate limit
+    check_auth_rate_limit(client_ip)
+    
+    username = credentials.get("username", "")
+    password = credentials.get("password", "")
+    
+    if verify_admin_credentials(username, password):
+        record_auth_success(client_ip)
+        token = create_access_token({"sub": username, "role": "admin"})
+        logger.info(f"Successful login for user: {username} from {client_ip}")
         return {"access_token": token, "token_type": "bearer"}
+    
+    # Record failed attempt
+    record_auth_failure(client_ip)
+    logger.warning(f"Failed login attempt for user: {username} from {client_ip}")
     raise HTTPException(status_code=401, detail="Invalid credentials")
 
 @app.get("/auth/me")
