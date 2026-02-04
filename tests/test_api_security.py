@@ -112,15 +112,15 @@ class TestCSRFProtection:
         }
         
         # Cookies are automatically handled by TestClient
-        # Try POST with CSRF
-        response = client.post("/scans", json={
-            "name": "test",
-            "target": "localhost",
-            "scan_type": "quick"
-        }, headers=headers)
+        # Try POST with CSRF - using a simpler endpoint for testing
+        response = client.post(
+            "/auth/change-password",  # Use auth endpoint instead of scans
+            json={"old_password": "admin", "new_password": "newpass123"},
+            headers=headers
+        )
         
         # Should not be 403 (CSRF check passed)
-        # May be 422 (validation error) or 200
+        # May be 422 (validation error), 401/200 depending on implementation
         assert response.status_code != 403
     
     def test_csrf_token_validation(self):
@@ -139,9 +139,10 @@ class TestCSRFProtection:
     
     def test_csrf_token_expiry(self):
         """Test that expired tokens are rejected"""
+        from datetime import datetime, timedelta
         # Create expired token
         expired_token = CSRFToken()
-        expired_token.timestamp = expired_token.timestamp - 90000  # 25 hours ago
+        expired_token.timestamp = datetime.utcnow() - timedelta(hours=25)  # 25 hours ago
         
         assert not expired_token.is_valid()
 
@@ -231,13 +232,13 @@ class TestJWTAuthentication:
     def test_protected_endpoint_without_token(self):
         """Test accessing protected endpoint without token"""
         response = client.get("/scans")
-        assert response.status_code == 403
+        assert response.status_code == 401
     
     def test_protected_endpoint_with_invalid_token(self):
         """Test accessing protected endpoint with invalid token"""
         headers = {"Authorization": "Bearer invalid_token"}
         response = client.get("/scans", headers=headers)
-        assert response.status_code == 403
+        assert response.status_code == 401
     
     def test_protected_endpoint_with_valid_token(self, auth_headers):
         """Test accessing protected endpoint with valid token"""

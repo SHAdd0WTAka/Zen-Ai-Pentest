@@ -50,7 +50,7 @@ class TestTokenBucket:
         assert bucket.tokens > 0
     
     def test_wait_time_calculation(self):
-        bucket = TokenBucket(rate=1.0, burst_size=10)  # 1 per 60 seconds = slow
+        bucket = TokenBucket(rate=1/60, burst_size=10)  # 1 per 60 seconds = slow
         bucket.tokens = 0
         
         wait_time = bucket.get_wait_time(1)
