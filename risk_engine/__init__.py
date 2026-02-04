@@ -58,7 +58,7 @@ from .business_impact_calculator import (
 )
 
 # Additional exports for backwards compatibility
-from .scorer import RiskScorer
+from .scorer import RiskScorer, RiskScore, SeverityLevel
 from .cvss import CVSSCalculator
 from .epss import EPSSClient
 
@@ -92,6 +92,8 @@ __all__ = [
     
     # Additional scoring modules
     "RiskScorer",
+    "RiskScore",
+    "SeverityLevel",
     "CVSSCalculator",
     "EPSSClient",
 ]
