@@ -3,7 +3,7 @@ Tests for Risk Scoring Engine
 """
 
 import pytest
-from risk_engine import RiskScorer
+from risk_engine import RiskScorer, RiskScore, SeverityLevel
 
 
 @pytest.fixture
