@@ -12,7 +12,49 @@
 [![Authors](https://img.shields.io/badge/Authors-SHAdd0WTAka%20%7C%20KimiAI-purple)](#-authors--team)
 [![Roadmap](https://img.shields.io/badge/Roadmap-2026-blueviolet)](ROADMAP_2026.md)
 [![Architecture](https://img.shields.io/badge/Architecture-Diagram-blue)](docs/architecture.md)
+```mermaid
+  graph TB
+      subgraph "User Interface"
+          CLI[CLI]
+          API[REST API]
+          WebUI[Web UI]
+      end
 
+      subgraph "Core Engine"
+          Orchestrator[Agent Orchestrator]
+          StateMachine[State Machine]
+          RiskEngine[Risk Engine]
+      end
+
+      subgraph "AI Agents"
+          Recon[Reconnaissance]
+          Vuln[Vulnerability]
+          Exploit[Exploit]
+          Report[Report]
+      end
+
+      subgraph "Tools"
+          Nmap[Nmap]
+          SQLMap[SQLMap]
+          Metasploit[Metasploit]
+      end
+
+      subgraph "External APIs"
+          OpenAI[OpenAI]
+          Anthropic[Anthropic]
+          ThreatIntel[Threat Intelligence]
+      end
+
+      CLI --> API
+      WebUI --> API
+      API --> Orchestrator
+      Orchestrator --> StateMachine
+      StateMachine --> Recon
+      StateMachine --> Vuln
+      StateMachine --> Exploit
+      Exploit --> OpenAI
+      RiskEngine --> ThreatIntel
+  ```
 **Zen-AI-Pentest** is an autonomous, AI-powered penetration testing framework that combines cutting-edge language models with professional security tools. Built for security professionals, bug bounty hunters, and enterprise security teams.
 
 ---
