@@ -1,152 +1,75 @@
-import React, { useState } from 'react';
-import { useAuthStore } from '../store/authStore';
-import { Settings as SettingsIcon, User, Bell, Shield, Slack, Mail } from 'lucide-react';
-import './Settings.css';
+/**
+ * Settings Page
+ */
 
-function Settings() {
-    const { user } = useAuthStore();
-    const [activeTab, setActiveTab] = useState('profile');
-    const [saved, setSaved] = useState(false);
+import React from 'react';
 
-    const handleSave = () => {
-        setSaved(true);
-        setTimeout(() => setSaved(false), 2000);
-    };
-
-    return (
-        <div className="settings-page">
-            <header className="page-header">
-                <div className="header-title">
-                    <SettingsIcon size={28} />
-                    <h1>Settings</h1>
-                </div>
-            </header>
-
-            <div className="settings-layout">
-                <aside className="settings-sidebar">
-                    <button 
-                        className={activeTab === 'profile' ? 'active' : ''}
-                        onClick={() => setActiveTab('profile')}
-                    >
-                        <User size={18} />
-                        Profile
-                    </button>
-                    <button 
-                        className={activeTab === 'notifications' ? 'active' : ''}
-                        onClick={() => setActiveTab('notifications')}
-                    >
-                        <Bell size={18} />
-                        Notifications
-                    </button>
-                    <button 
-                        className={activeTab === 'security' ? 'active' : ''}
-                        onClick={() => setActiveTab('security')}
-                    >
-                        <Shield size={18} />
-                        Security
-                    </button>
-                </aside>
-
-                <div className="settings-content">
-                    {activeTab === 'profile' && (
-                        <div className="settings-section">
-                            <h2>Profile Settings</h2>
-                            <div className="form-group">
-                                <label>Username</label>
-                                <input type="text" value={user?.username || ''} disabled />
-                            </div>
-                            <div className="form-group">
-                                <label>Email</label>
-                                <input type="email" placeholder="your@email.com" />
-                            </div>
-                            <div className="form-group">
-                                <label>Role</label>
-                                <input type="text" value={user?.role || 'Operator'} disabled />
-                            </div>
-                            <button className="btn-primary" onClick={handleSave}>
-                                {saved ? 'Saved!' : 'Save Changes'}
-                            </button>
-                        </div>
-                    )}
-
-                    {activeTab === 'notifications' && (
-                        <div className="settings-section">
-                            <h2>Notification Settings</h2>
-                            
-                            <div className="setting-item">
-                                <div className="setting-info">
-                                    <Mail size={20} />
-                                    <div>
-                                        <label>Email Notifications</label>
-                                        <p>Receive scan completion emails</p>
-                                    </div>
-                                </div>
-                                <label className="toggle">
-                                    <input type="checkbox" defaultChecked />
-                                    <span className="toggle-slider"></span>
-                                </label>
-                            </div>
-
-                            <div className="setting-item">
-                                <div className="setting-info">
-                                    <Slack size={20} />
-                                    <div>
-                                        <label>Slack Integration</label>
-                                        <p>Send notifications to Slack</p>
-                                    </div>
-                                </div>
-                                <label className="toggle">
-                                    <input type="checkbox" />
-                                    <span className="toggle-slider"></span>
-                                </label>
-                            </div>
-
-                            <div className="setting-item">
-                                <div className="setting-info">
-                                    <Bell size={20} />
-                                    <div>
-                                        <label>Critical Alerts</label>
-                                        <p>Notify on critical findings</p>
-                                    </div>
-                                </div>
-                                <label className="toggle">
-                                    <input type="checkbox" defaultChecked />
-                                    <span className="toggle-slider"></span>
-                                </label>
-                            </div>
-
-                            <button className="btn-primary" onClick={handleSave}>
-                                {saved ? 'Saved!' : 'Save Changes'}
-                            </button>
-                        </div>
-                    )}
-
-                    {activeTab === 'security' && (
-                        <div className="settings-section">
-                            <h2>Security Settings</h2>
-                            
-                            <div className="form-group">
-                                <label>Current Password</label>
-                                <input type="password" placeholder="••••••••" />
-                            </div>
-                            <div className="form-group">
-                                <label>New Password</label>
-                                <input type="password" placeholder="••••••••" />
-                            </div>
-                            <div className="form-group">
-                                <label>Confirm New Password</label>
-                                <input type="password" placeholder="••••••••" />
-                            </div>
-
-                            <button className="btn-primary" onClick={handleSave}>
-                                {saved ? 'Saved!' : 'Update Password'}
-                            </button>
-                        </div>
-                    )}
-                </div>
+export default function Settings() {
+  return (
+    <div>
+      <h2 className="text-2xl font-bold text-gray-800 mb-6">Settings</h2>
+      
+      <div className="space-y-6">
+        {/* General Settings */}
+        <div className="bg-white rounded-xl shadow-sm p-6">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">General</h3>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Dashboard Refresh Interval
+              </label>
+              <select className="border rounded-lg px-3 py-2 w-full max-w-xs">
+                <option>30 seconds</option>
+                <option>1 minute</option>
+                <option>5 minutes</option>
+              </select>
             </div>
+            <div className="flex items-center gap-2">
+              <input type="checkbox" id="notifications" className="rounded" />
+              <label htmlFor="notifications" className="text-sm text-gray-700">
+                Enable browser notifications
+              </label>
+            </div>
+          </div>
         </div>
-    );
-}
 
-export default Settings;
+        {/* API Settings */}
+        <div className="bg-white rounded-xl shadow-sm p-6">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">API Configuration</h3>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                API Endpoint
+              </label>
+              <input
+                type="text"
+                value="http://localhost:8000"
+                className="border rounded-lg px-3 py-2 w-full max-w-md"
+                readOnly
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                API Version
+              </label>
+              <p className="text-sm text-gray-600">v1.0</p>
+            </div>
+          </div>
+        </div>
+
+        {/* About */}
+        <div className="bg-white rounded-xl shadow-sm p-6">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">About</h3>
+          <div className="text-sm text-gray-600 space-y-1">
+            <p><strong>Version:</strong> 2.1.0</p>
+            <p><strong>React Dashboard:</strong> v2.1.0</p>
+            <p><strong>API:</strong> v1.0</p>
+            <p className="mt-4 text-gray-500">
+              © 2026 Zen AI Pentest. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
