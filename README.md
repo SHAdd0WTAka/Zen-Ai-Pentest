@@ -7,7 +7,8 @@
 [![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
 [![Docker](https://img.shields.io/badge/Docker-Ready-blue)](docker/)
 [![Tests](https://img.shields.io/badge/Tests-pytest-brightgreen)](tests/)
-[![Version](https://img.shields.io/badge/Version-2.0.0-orange)](https://github.com/SHAdd0WTAka/zen-ai-pentest/releases)
+[![PyPI](https://img.shields.io/pypi/v/zen-ai-pentest)](https://pypi.org/project/zen-ai-pentest/)
+[![Version](https://img.shields.io/badge/Version-2.0.3-orange)](https://github.com/SHAdd0WTAka/zen-ai-pentest/releases)
 [![Authors](https://img.shields.io/badge/Authors-SHAdd0WTAka%20%7C%20KimiAI-purple)](#-authors--team)
 [![Roadmap](https://img.shields.io/badge/Roadmap-2026-blueviolet)](ROADMAP_2026.md)
 
