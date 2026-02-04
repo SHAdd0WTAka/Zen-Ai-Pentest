@@ -1,0 +1,23 @@
+{
+  "target": "scanme.nmap.org",
+  "scan_type": "quick",
+  "start_time": "2026-02-04T15:45:55.378701",
+  "findings": [],
+  "recon": {
+    "ip": "45.33.32.156",
+    "attack_vectors": 0,
+    "technologies": []
+  },
+  "status": "completed",
+  "summary": {
+    "total_findings": 0,
+    "severity_counts": {
+      "critical": 0,
+      "high": 0,
+      "medium": 0,
+      "low": 0,
+      "info": 0
+    },
+    "duration_seconds": 0.536447
+  }
+}
