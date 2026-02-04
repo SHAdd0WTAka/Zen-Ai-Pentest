@@ -60,7 +60,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="Zen-AI-Pentest API",
     description="Professional Pentesting Framework API",
-    version="2.1.0",
+    version="2.2.0",
     lifespan=lifespan
 )
 
@@ -500,7 +500,7 @@ async def health_check():
     """Health check endpoint"""
     return {
         "status": "healthy",
-        "version": "2.1.0",
+        "version": "2.2.0",
         "timestamp": datetime.utcnow().isoformat()
     }
 

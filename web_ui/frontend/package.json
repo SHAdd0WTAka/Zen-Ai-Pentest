@@ -1,23 +1,23 @@
 {
   "name": "zen-ai-dashboard",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Zen AI Pentest React Dashboard",
   "private": true,
   "dependencies": {
+    "@heroicons/react": "^2.0.0",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
+    "axios": "^1.6.0",
+    "date-fns": "^2.30.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.20.0",
     "react-scripts": "5.0.1",
-    "recharts": "^2.10.0",
-    "axios": "^1.6.0",
-    "ws": "^8.14.0",
     "react-use-websocket": "^4.5.0",
+    "recharts": "^2.10.0",
     "tailwindcss": "^3.3.0",
-    "@heroicons/react": "^2.0.0",
-    "date-fns": "^2.30.0"
+    "ws": "^8.14.0"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -44,6 +44,7 @@
     ]
   },
   "devDependencies": {
+    "@tailwindcss/typography": "^0.5.19",
     "autoprefixer": "^10.4.16",
     "postcss": "^8.4.32"
   },
