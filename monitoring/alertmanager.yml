@@ -1,0 +1,159 @@
+global:
+  smtp_smarthost: 'localhost:587'
+  smtp_from: 'alerts@zen-pentest.local'
+  smtp_auth_username: ''
+  smtp_auth_password: ''
+  
+  # Slack API URL (override per receiver)
+  slack_api_url: '${SLACK_WEBHOOK_URL}'
+  
+  # Discord webhook (override per receiver)
+  # Using generic webhook
+
+templates:
+- '/etc/alertmanager/templates/*.tmpl'
+
+# The root route on which each incoming alert enters.
+route:
+  # The labels by which incoming alerts are grouped together.
+  group_by: ['alertname', 'severity']
+  
+  # When a new group of alerts is created by an incoming alert, wait at
+  # least 'group_wait' to send the initial notification.
+  group_wait: 10s
+  
+  # When the first notification was sent, wait 'group_interval' to send a batch
+  # of new alerts that started firing for that group.
+  group_interval: 5m
+  
+  # If an alert has successfully been sent, wait 'repeat_interval' to
+  # resend them.
+  repeat_interval: 4h
+  
+  # A default receiver
+  receiver: 'default'
+  
+  # All the above attributes are inherited by all child routes and can
+  # overwritten on each.
+  routes:
+    # Critical alerts -> PagerDuty/Discord/Slack immediately
+    - match:
+        severity: critical
+      receiver: 'critical-alerts'
+      continue: true
+    
+    # Warning alerts -> Slack/Discord
+    - match:
+        severity: warning
+      receiver: 'warning-alerts'
+      continue: true
+    
+    # Info alerts -> Slack only
+    - match:
+        severity: info
+      receiver: 'info-alerts'
+    
+    # Security alerts -> Security team
+    - match_re:
+        alertname: 'AuthFailureSpike|CriticalFinding'
+      receiver: 'security-team'
+      continue: true
+
+# Inhibition rules allow to mute a set of alerts given that another alert is firing.
+inhibit_rules:
+  # Mute warning alerts if critical alert of same type is firing
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname']
+
+receivers:
+  # Default receiver (do nothing)
+  - name: 'default'
+
+  # Critical alerts - Immediate notification
+  - name: 'critical-alerts'
+    slack_configs:
+      - api_url: '${SLACK_WEBHOOK_URL}'
+        channel: '#alerts-critical'
+        title: '🔴 CRITICAL: {{ .GroupLabels.alertname }}'
+        text: |
+          {{ range .Alerts }}
+          *Alert:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          *Severity:* {{ .Labels.severity }}
+          *Instance:* {{ .Labels.instance }}
+          *Started:* {{ .StartsAt.Format "2006-01-02 15:04:05" }}
+          {{ end }}
+        send_resolved: true
+    discord_configs:
+      - webhook_url: '${DISCORD_WEBHOOK_URL}'
+        title: '🔴 CRITICAL ALERT'
+        message: |
+          {{ range .Alerts }}
+          **{{ .Annotations.summary }}**
+          {{ .Annotations.description }}
+          Severity: {{ .Labels.severity }}
+          Time: {{ .StartsAt.Format "2006-01-02 15:04:05" }}
+          {{ end }}
+
+  # Warning alerts
+  - name: 'warning-alerts'
+    slack_configs:
+      - api_url: '${SLACK_WEBHOOK_URL}'
+        channel: '#alerts-warning'
+        title: '🟡 WARNING: {{ .GroupLabels.alertname }}'
+        text: |
+          {{ range .Alerts }}
+          *Alert:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          {{ end }}
+        send_resolved: true
+    discord_configs:
+      - webhook_url: '${DISCORD_WEBHOOK_URL}'
+        title: '🟡 WARNING'
+        message: |
+          {{ range .Alerts }}
+          **{{ .Annotations.summary }}**
+          {{ .Annotations.description }}
+          {{ end }}
+
+  # Info alerts
+  - name: 'info-alerts'
+    slack_configs:
+      - api_url: '${SLACK_WEBHOOK_URL}'
+        channel: '#alerts-info'
+        title: '🔵 INFO: {{ .GroupLabels.alertname }}'
+        text: |
+          {{ range .Alerts }}
+          {{ .Annotations.summary }}
+          {{ end }}
+
+  # Security team alerts
+  - name: 'security-team'
+    slack_configs:
+      - api_url: '${SLACK_SECURITY_WEBHOOK_URL}'
+        channel: '#security-alerts'
+        title: '🛡️ SECURITY: {{ .GroupLabels.alertname }}'
+        text: |
+          {{ range .Alerts }}
+          *🚨 Security Alert*
+          *Type:* {{ .Labels.alertname }}
+          *Summary:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          *Time:* {{ .StartsAt.Format "2006-01-02 15:04:05" }}
+          {{ end }}
+        send_resolved: false
+
+  # Email receiver (optional)
+  - name: 'email-alerts'
+    email_configs:
+      - to: 'admin@zen-pentest.local'
+        subject: 'Zen AI Pentest Alert: {{ .GroupLabels.alertname }}'
+        body: |
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Severity: {{ .Labels.severity }}
+          {{ end }}

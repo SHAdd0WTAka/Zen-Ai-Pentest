@@ -1,0 +1,129 @@
+groups:
+  - name: zen-ai-pentest
+    rules:
+      # High Error Rate
+      - alert: HighErrorRate
+        expr: |
+          (
+            sum(rate(http_requests_total{status_code=~"5.."}[5m])) 
+            / 
+            sum(rate(http_requests_total[5m]))
+          ) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is {{ $value | humanizePercentage }} over the last 5 minutes"
+
+      # High Latency
+      - alert: HighLatency
+        expr: |
+          histogram_quantile(0.95, 
+            sum(rate(http_request_duration_seconds_bucket[5m])) by (le)
+          ) > 2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High latency detected"
+          description: "95th percentile latency is {{ $value }}s"
+
+      # Too Many Rate Limit Hits
+      - alert: RateLimitThreshold
+        expr: |
+          sum(rate(rate_limit_hits_total[5m])) > 10
+        for: 2m
+        labels:
+          severity: info
+        annotations:
+          summary: "High rate limit hits"
+          description: "{{ $value }} rate limit hits per second"
+
+      # Failed Authentication Spike
+      - alert: AuthFailureSpike
+        expr: |
+          (
+            sum(rate(auth_attempts_total{result="failure"}[5m]))
+            /
+            sum(rate(auth_attempts_total[5m]))
+          ) > 0.1
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Authentication failure spike"
+          description: "{{ $value | humanizePercentage }} of auth attempts are failing"
+
+      # Service Down
+      - alert: ServiceDown
+        expr: up{job="zen-ai-pentest"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Zen AI Pentest API is down"
+          description: "The API has been down for more than 1 minute"
+
+      # Database Connection Pool Exhaustion
+      - alert: DBConnectionsHigh
+        expr: db_connections_active > 25
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High database connection usage"
+          description: "{{ $value }} active database connections"
+
+      # Scan Stuck
+      - alert: ScansStuck
+        expr: |
+          scans_active > 0 and 
+          changes(scans_active[30m]) == 0
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Scans may be stuck"
+          description: "Active scans haven't changed in 30 minutes"
+
+      # Disk Space (via node exporter)
+      - alert: DiskSpaceLow
+        expr: |
+          (
+            node_filesystem_avail_bytes{mountpoint="/"} 
+            / 
+            node_filesystem_size_bytes{mountpoint="/"}
+          ) < 0.1
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Low disk space"
+          description: "Less than 10% disk space remaining"
+
+      # Memory Usage
+      - alert: HighMemoryUsage
+        expr: |
+          (
+            node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes
+          ) 
+          / 
+          node_memory_MemTotal_bytes > 0.9
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage"
+          description: "Memory usage is above 90%"
+
+      # Critical Finding Detected
+      - alert: CriticalFinding
+        expr: |
+          increase(findings_discovered_total{severity="critical"}[1h]) > 0
+        for: 0m
+        labels:
+          severity: info
+        annotations:
+          summary: "Critical vulnerability found"
+          description: "A critical severity finding was detected"
