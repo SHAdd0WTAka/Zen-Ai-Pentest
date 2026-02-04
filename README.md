@@ -11,6 +11,7 @@
 [![Version](https://img.shields.io/badge/Version-2.0.4-orange)](https://github.com/SHAdd0WTAka/zen-ai-pentest/releases)
 [![Authors](https://img.shields.io/badge/Authors-SHAdd0WTAka%20%7C%20KimiAI-purple)](#-authors--team)
 [![Roadmap](https://img.shields.io/badge/Roadmap-2026-blueviolet)](ROADMAP_2026.md)
+[![Architecture](https://img.shields.io/badge/Architecture-Diagram-blue)](docs/architecture.md)
 
 **Zen-AI-Pentest** is an autonomous, AI-powered penetration testing framework that combines cutting-edge language models with professional security tools. Built for security professionals, bug bounty hunters, and enterprise security teams.
 
