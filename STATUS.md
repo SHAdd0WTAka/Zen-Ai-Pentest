@@ -39,6 +39,15 @@ Phase 3 (DevOps & Docs):     85/100 -> 95/100  ✅ COMPLETE
 | Security Scan | [![Security Scan](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/actions/workflows/security.yml/badge.svg)](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/actions/workflows/security.yml) | On push/PR | Daily at 03:00 UTC |
 | CodeQL Analysis | [![CodeQL](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/security/code-scanning) | Weekly | Sundays |
 
+### Monitoring Stack
+
+| Component | URL | Status |
+|-----------|-----|--------|
+| Prometheus | http://localhost:9090 | Metrics Collection |
+| Grafana | http://localhost:3000 | Dashboards & Visualization |
+| Alertmanager | http://localhost:9093 | Alert Routing |
+| Loki | http://localhost:3100 | Log Aggregation |
+
 ### Test Coverage
 
 ```
@@ -94,6 +103,20 @@ Low: 0
 | Bandit | ✅ Pass | No high severity issues |
 | Ruff | ✅ Pass | Linting clean |
 | CodeQL | ✅ Pass | No security alerts |
+
+### Monitoring & Alerting
+
+| Component | URL | Status |
+|-----------|-----|--------|
+| Prometheus | http://localhost:9090 | ✅ Configured |
+| Grafana | http://localhost:3000 | ✅ 17 Panels |
+| Alertmanager | http://localhost:9093 | ✅ 10 Alerts |
+| Loki | http://localhost:3100 | ✅ Log Aggregation |
+
+**Alerts:**
+- 🔴 Critical (Slack + Discord): HighErrorRate, AuthFailureSpike, ServiceDown
+- 🟡 Warning (Slack): HighLatency, DBConnectionsHigh, HighMemoryUsage
+- 🔵 Info (Slack): CriticalFinding, RateLimitThreshold
 
 ---
 
@@ -224,14 +247,14 @@ Monitoring:     Prometheus (planned)
 
 1. [ ] Enable branch protection on GitHub
 2. [ ] Fix remaining 8 moderate npm vulnerabilities
-3. [ ] Add API rate limiting per user
+3. [x] Add API rate limiting per user ✅
 
 ### Medium Term (This Month)
 
-4. [ ] Implement Prometheus monitoring
-5. [ ] Add Slack/Discord alerts
+4. [x] Implement Prometheus monitoring ✅
+5. [x] Add Slack/Discord alerts ✅
 6. [ ] Expand test coverage to 80%
-7. [ ] Create security dashboard
+7. [x] Create security dashboard ✅ (Grafana)
 
 ### Long Term (This Quarter)
 
