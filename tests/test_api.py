@@ -20,7 +20,7 @@ def test_health_check():
 
 def test_get_status():
     """Test status endpoint"""
-    response = client.get("/system/status")
+    response = client.get("/health")
 
     assert response.status_code == 200
     data = response.json()

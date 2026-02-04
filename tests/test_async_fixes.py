@@ -7,6 +7,7 @@ Author: SHAdd0WTAka
 import asyncio
 import os
 import sys
+import pytest
 
 # Add parent directory to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -15,6 +16,7 @@ from utils.async_fixes import (apply_windows_async_fixes, safe_close_session,
                                setup_event_loop, silence_asyncio_warnings)
 
 
+@pytest.mark.asyncio
 async def test_basic_async():
     """Test basic async functionality"""
     print("[1] Testing basic async operations...")
@@ -29,6 +31,7 @@ async def test_basic_async():
     print("    ✓ Basic async works")
 
 
+@pytest.mark.asyncio
 async def test_session_cleanup():
     """Test session cleanup"""
     print("[2] Testing session cleanup...")
@@ -80,6 +83,7 @@ def test_windows_fixes():
         print("    ⚠ Not on Windows - fixes applied but may not be needed")
 
 
+@pytest.mark.asyncio
 async def test_multiple_sessions():
     """Test multiple session cleanup"""
     print("[5] Testing multiple session cleanup...")
@@ -98,57 +102,4 @@ async def test_multiple_sessions():
         print("    ⚠ aiohttp not installed, skipping")
 
 
-async def main():
-    """Run all tests"""
-    print("=" * 60)
-    print("Async Fixes Test Suite")
-    print(f"Python: {sys.version}")
-    print(f"Platform: {sys.platform}")
-    print("=" * 60)
-    print()
-
-    try:
-        # Run synchronous tests
-        test_event_loop_setup()
-        test_windows_fixes()
-
-        # Run async tests
-        await test_basic_async()
-        await test_session_cleanup()
-        await test_multiple_sessions()
-
-        print()
-        print("=" * 60)
-        print("✅ All tests passed!")
-        print("=" * 60)
-
-    except AssertionError as e:
-        print(f"\n❌ Test failed: {e}")
-        sys.exit(1)
-    except Exception as e:
-        print(f"\n❌ Error during testing: {e}")
-        import traceback
-
-        traceback.print_exc()
-        sys.exit(1)
-
-
-if __name__ == "__main__":
-    # Use the same logic as main app
-    if sys.platform == "win32" and sys.version_info >= (3, 13):
-        from utils.async_fixes import apply_windows_async_fixes
-
-        apply_windows_async_fixes()
-
-        loop = asyncio.SelectorEventLoop()
-        asyncio.set_event_loop(loop)
-        try:
-            loop.run_until_complete(main())
-        finally:
-            try:
-                loop.run_until_complete(asyncio.sleep(0.25))
-            except:
-                pass
-            loop.close()
-    else:
-        asyncio.run(main())
+# Note: Tests can be run individually or via pytest

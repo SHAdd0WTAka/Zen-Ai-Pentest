@@ -156,10 +156,12 @@ class TestToolCaller:
         """Test parallel tool calls"""
         @tool
         def tool1(x: str) -> str:
+            """Tool 1 for testing"""
             return f"tool1: {x}"
         
         @tool
         def tool2(x: str) -> str:
+            """Tool 2 for testing"""
             return f"tool2: {x}"
         
         registry.register(tool1, ToolCategory.UTILITY, ToolSafetyLevel.SAFE)
@@ -183,6 +185,7 @@ class TestToolCaller:
         """Test tool timeout"""
         @tool
         def slow_tool() -> str:
+            """Slow tool for testing timeout"""
             import time
             time.sleep(10)
             return "done"
