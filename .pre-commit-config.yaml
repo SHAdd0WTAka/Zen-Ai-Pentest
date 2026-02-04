@@ -1,72 +1,55 @@
-# Pre-commit hooks configuration
-# Install: pip install pre-commit
-# Setup: pre-commit install
-# Run manually: pre-commit run --all-files
+# Pre-commit hooks for Zen AI Pentest
+# Install: pre-commit install
+# Run all: pre-commit run --all-files
 
 repos:
-  # General file checks
+  # Ruff - Python linter and formatter
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.9
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+      - id: ruff-format
+
+  # Bandit - Security linter
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.10
+    hooks:
+      - id: bandit
+        args: ["-c", "pyproject.toml", "-r", "."]
+        additional_dependencies: ["bandit[toml]"]
+
+  # Gitleaks - Secret scanning
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.21.0
+    hooks:
+      - id: gitleaks
+
+  # TruffleHog - Additional secret scanning
+  - repo: https://github.com/trufflesecurity/trufflehog
+    rev: v3.82.12
+    hooks:
+      - id: trufflehog
+        entry: trufflehog
+        args: ["git", "file://.", "--only-verified", "--fail"]
+
+  # Generic hooks
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v5.0.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
       - id: check-yaml
       - id: check-json
-      - id: check-toml
       - id: check-added-large-files
-        args: ['--maxkb=1000']
+        args: ["--maxkb=1000"]
       - id: check-merge-conflict
-      - id: check-case-conflict
       - id: detect-private-key
-      - id: mixed-line-ending
+      - id: check-case-conflict
+      - id: check-symlinks
 
-  # Python code formatting
-  - repo: https://github.com/psf/black
-    rev: 23.12.1
+  # Requirements.txt formatter
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
     hooks:
-      - id: black
-        language_version: python3.11
-        args: ['--line-length=127']
-
-  # Python import sorting
-  - repo: https://github.com/pycqa/isort
-    rev: 5.13.2
-    hooks:
-      - id: isort
-        args: ['--profile=black', '--line-length=127']
-
-  # Python linting
-  - repo: https://github.com/pycqa/flake8
-    rev: 7.0.0
-    hooks:
-      - id: flake8
-        args: ['--max-line-length=127', '--extend-ignore=E203,W503']
-        additional_dependencies: [flake8-docstrings]
-
-  # Security scanning
-  - repo: https://github.com/pycqa/bandit
-    rev: 1.7.6
-    hooks:
-      - id: bandit
-        args: ['-ll', '-ii', '-c', 'pyproject.toml']
-        additional_dependencies: ["bandit[toml]"]
-
-  # Markdown linting
-  - repo: https://github.com/igorshubovych/markdownlint-cli
-    rev: v0.38.0
-    hooks:
-      - id: markdownlint
-        args: ['--fix']
-
-  # GitHub Actions linting
-  - repo: https://github.com/rhysd/actionlint
-    rev: v1.6.26
-    hooks:
-      - id: actionlint
-
-  # Docker linting
-  - repo: https://github.com/hadolint/hadolint
-    rev: v2.12.1-beta
-    hooks:
-      - id: hadolint-docker
-        args: ['--ignore', 'DL3008', '--ignore', 'DL3013']
+      - id: requirements-txt-fixer
