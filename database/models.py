@@ -204,20 +204,48 @@ import os
 # PostgreSQL URL - in production aus Umgebungsvariablen
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/zen_pentest")
 
+# =============================================================================
+# Connection Pool Configuration
+# =============================================================================
+# Pool settings from environment variables
+POOL_SIZE = int(os.getenv("DB_POOL_SIZE", "10"))              # Default connections
+MAX_OVERFLOW = int(os.getenv("DB_MAX_OVERFLOW", "20"))        # Extra connections under load
+POOL_TIMEOUT = int(os.getenv("DB_POOL_TIMEOUT", "30"))        # Seconds to wait for connection
+POOL_RECYCLE = int(os.getenv("DB_POOL_RECYCLE", "3600"))      # Recycle connections after 1 hour
+POOL_PRE_PING = os.getenv("DB_POOL_PRE_PING", "true").lower() == "true"  # Check connection health
+
+# Connection Pool arguments
+engine_args = {
+    "pool_size": POOL_SIZE,
+    "max_overflow": MAX_OVERFLOW,
+    "pool_timeout": POOL_TIMEOUT,
+    "pool_recycle": POOL_RECYCLE,
+    "pool_pre_ping": POOL_PRE_PING,
+}
+
 try:
     # Teste Verbindung (import check)
     import psycopg2
-    # Versuche PostgreSQL Engine zu erstellen
-    engine = create_engine(DATABASE_URL)
+    # Versuche PostgreSQL Engine zu erstellen mit Connection Pooling
+    print(f"Connecting to PostgreSQL with pool_size={POOL_SIZE}, max_overflow={MAX_OVERFLOW}")
+    engine = create_engine(DATABASE_URL, **engine_args)
 except ImportError:
     # Fallback auf SQLite für lokale Entwicklung/Tests
     print("Warning: PostgreSQL/psycopg2 not available. Using SQLite fallback (zen_pentest.db)")
     DATABASE_URL = "sqlite:///./zen_pentest.db"
-    engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+    engine = create_engine(
+        DATABASE_URL, 
+        connect_args={"check_same_thread": False},
+        **engine_args
+    )
 except Exception as e:
     print(f"Warning: PostgreSQL connection failed ({e}). Using SQLite fallback (zen_pentest.db)")
     DATABASE_URL = "sqlite:///./zen_pentest.db"
-    engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+    engine = create_engine(
+        DATABASE_URL, 
+        connect_args={"check_same_thread": False},
+        **engine_args
+    )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

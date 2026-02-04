@@ -11,7 +11,7 @@ from pathlib import Path
 # Add parent to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from fastapi import FastAPI, Depends, HTTPException, BackgroundTasks, WebSocket, WebSocketDisconnect, Request
+from fastapi import FastAPI, Depends, HTTPException, BackgroundTasks, WebSocket, WebSocketDisconnect, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from contextlib import asynccontextmanager
@@ -42,6 +42,7 @@ from api.rate_limiter import (
     record_auth_success,
     rate_limit
 )
+from api.csrf_protection import csrf_protection, require_csrf
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -144,16 +145,28 @@ async def me(user: dict = Depends(verify_token)):
     """Get current user info"""
     return user
 
+@app.get("/csrf-token")
+async def get_csrf_token(response: Response):
+    """
+    Get CSRF Token for protected endpoints
+    
+    Returns CSRF token that must be included in X-CSRF-Token header
+    for all POST/PUT/DELETE requests.
+    """
+    return csrf_protection.set_token(response)
+
 # ============================================================================
 # SCANS
 # ============================================================================
 
 @app.post("/scans", response_model=ScanResponse)
 async def create_new_scan(
+    request: Request,
     scan: ScanCreate,
     background_tasks: BackgroundTasks,
     user: dict = Depends(verify_token),
-    db = Depends(get_db)
+    db = Depends(get_db),
+    _: bool = Depends(require_csrf)
 ):
     """Create a new pentest scan"""
     db_scan = create_scan(
