@@ -60,7 +60,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="Zen-AI-Pentest API",
     description="Professional Pentesting Framework API",
-    version="2.0.0",
+    version="2.1.0",
     lifespan=lifespan
 )
 
@@ -500,7 +500,7 @@ async def health_check():
     """Health check endpoint"""
     return {
         "status": "healthy",
-        "version": "2.0.0",
+        "version": "2.1.0",
         "timestamp": datetime.utcnow().isoformat()
     }
 
@@ -1021,6 +1021,18 @@ async def create_jira_ticket(
 
 # Import models for reports
 from database.models import Report
+
+# ============================================================================
+# API v1.0 (Q1 2026)
+# ============================================================================
+
+# Import v1 router
+try:
+    from api.v1.siem import router as siem_v1_router
+    app.include_router(siem_v1_router, prefix="/api/v1/siem", tags=["SIEM v1.0"])
+    logger.info("API v1.0 SIEM endpoints loaded")
+except ImportError as e:
+    logger.warning(f"Could not load API v1.0 endpoints: {e}")
 
 if __name__ == "__main__":
     import uvicorn
