@@ -7,9 +7,7 @@ Each scenario represents a specific vulnerable application or challenge.
 
 from enum import Enum
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Any, Set
-from datetime import datetime
-import json
+from typing import Dict, List, Optional, Any
 
 
 class ScenarioType(Enum):

@@ -5,9 +5,8 @@ Measures scan throughput, target processing speed, and tool execution times.
 """
 
 import asyncio
-import time
 from typing import List, Dict, Any, Optional, Callable
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 import sys
 from pathlib import Path
@@ -251,7 +250,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     async def main():
-        config = ScanBenchmarkConfig(
+        _ = ScanBenchmarkConfig(
             target_count=args.targets,
             target_type=args.type
         )

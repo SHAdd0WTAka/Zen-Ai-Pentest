@@ -402,7 +402,7 @@ class BenchmarkCLI:
             metrics2 = data2.get('aggregate_metrics', {})
             
             if RICH_AVAILABLE:
-                console.print(f"\n[bold]Comparing Benchmarks:[/bold]")
+                console.print("\n[bold]Comparing Benchmarks:[/bold]")
                 console.print(f"  [cyan]{benchmark_id1}[/cyan] vs [cyan]{benchmark_id2}[/cyan]\n")
                 
                 table = Table(box=box.ROUNDED)
@@ -650,7 +650,7 @@ class BenchmarkCLI:
             else:
                 console.print("\n[green]✅ All Checks Passed[/green]")
             
-            console.print(f"\n[bold]Results:[/bold]")
+            console.print("\n[bold]Results:[/bold]")
             console.print(f"  Success Rate: {result['success_rate']:.1f}%")
             console.print(f"  Gates Passed: {result['gates_passed']}/{result['gates_total']}")
             console.print(f"  Regressions: {result['regressions']}")
@@ -668,7 +668,6 @@ class BenchmarkCLI:
 def main():
     """Main CLI entry point."""
     import argparse
-    from datetime import datetime
     
     parser = argparse.ArgumentParser(
         description="Zen-AI-Pentest Benchmark Framework",

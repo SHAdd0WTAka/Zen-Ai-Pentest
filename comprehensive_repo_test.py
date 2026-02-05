@@ -3,7 +3,6 @@
 ZEN AI PENTEST - KOMPREHENSIVER REPO-TEST
 Testet ALLE Komponenten des gesamten Repositories
 """
-import os
 import sys
 import json
 import subprocess
