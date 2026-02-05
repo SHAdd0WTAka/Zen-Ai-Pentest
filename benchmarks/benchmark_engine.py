@@ -32,7 +32,7 @@ from .scenarios import (
 )
 from .comparison import (
     ToolBenchmarkResult, ComparisonFramework, ToolMetadata,
-    ToolCategory, ToolCapabilities
+    ToolCategory
 )
 
 # Setup logging
@@ -309,9 +309,9 @@ class BenchmarkReport:
             if result.error_message:
                 lines.extend([
                     "**Error:**",
-                    f"```",
-                    f"{result.error_message}",
-                    f"```",
+                    "```",
+                    result.error_message,
+                    "```",
                     ""
                 ])
         
@@ -347,12 +347,12 @@ class BenchmarkEngine:
             # Try to get from package metadata
             import pkg_resources
             return pkg_resources.get_distribution("zen-ai-pentest").version
-        except:
+        except Exception:
             # Fallback to git commit or static version
             try:
                 from .. import __version__
                 return __version__
-            except:
+            except Exception:
                 return "dev"
     
     def _select_scenarios(self, config: BenchmarkConfig) -> List[TestScenario]:
@@ -489,7 +489,7 @@ class BenchmarkEngine:
                         if response.status < 500:
                             logger.info(f"Target ready: {scenario.id}")
                             return True
-            except:
+            except Exception:
                 pass
             
             await asyncio.sleep(2)
@@ -833,7 +833,7 @@ class BenchmarkEngine:
             try:
                 with open(history_file) as f:
                     history = json.load(f)
-            except:
+            except Exception:
                 pass
         
         # Add current report
@@ -899,5 +899,5 @@ class BenchmarkEngine:
             with open(history_file) as f:
                 history = json.load(f)
             return history[-limit:]
-        except:
+        except Exception:
             return []
