@@ -1,0 +1,145 @@
+name: API Key Health Check & Rotation
+
+on:
+  schedule:
+    # Weekly check (Sundays at 03:00 UTC)
+    - cron: '0 3 * * 0'
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action to perform'
+        required: true
+        default: 'check'
+        type: choice
+        options:
+          - check
+          - cleanup
+          - rotate-expired
+
+permissions:
+  contents: read
+
+jobs:
+  api-key-health:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        pip install cryptography keyring
+    
+    - name: Check API Key Health
+      run: |
+        python << 'EOF'
+        import sys
+        sys.path.insert(0, '.')
+        from modules.api_key_manager import APIKeyManager
+        from datetime import datetime
+        
+        manager = APIKeyManager()
+        
+        print("## API Key Health Report")
+        print(f"Generated: {datetime.utcnow().isoformat()}")
+        print()
+        
+        # Get all keys
+        keys = manager.list_keys()
+        
+        # Count by status
+        status_counts = {}
+        expired_soon = []
+        
+        for key in keys:
+            status = key.status
+            status_counts[status] = status_counts.get(status, 0) + 1
+            
+            # Check for keys expiring within 7 days
+            if key.expires_at and key.status == "active":
+                from datetime import datetime, timedelta
+                expires = datetime.fromisoformat(key.expires_at)
+                if expires < datetime.utcnow() + timedelta(days=7):
+                    expired_soon.append({
+                        'id': key.key_id,
+                        'name': key.name,
+                        'expires': key.expires_at
+                    })
+        
+        print("### Key Statistics")
+        for status, count in status_counts.items():
+            print(f"- {status}: {count}")
+        print(f"- **Total**: {len(keys)}")
+        print()
+        
+        if expired_soon:
+            print("### ⚠️ Keys Expiring Soon (within 7 days)")
+            for key in expired_soon:
+                print(f"- `{key['id']}` ({key['name']}) - Expires: {key['expires']}")
+            print()
+        else:
+            print("### ✅ No keys expiring soon")
+            print()
+        
+        # Recent audit log
+        print("### Recent Activity (last 10 entries)")
+        logs = manager.get_audit_log(limit=10)
+        for log in logs:
+            status = "✓" if log.success else "✗"
+            print(f"- [{status}] {log.action}: {log.key_id} ({log.timestamp[:10]})")
+        
+        # Output summary for GitHub
+        with open(os.environ.get('GITHUB_STEP_SUMMARY', '/dev/null'), 'a') as f:
+            f.write(f"## API Key Health Report\n\n")
+            f.write(f"**Total Keys**: {len(keys)}\n\n")
+            f.write("### Status Breakdown\n")
+            for status, count in status_counts.items():
+                f.write(f"- {status}: {count}\n")
+            f.write(f"\n### Expiring Soon\n")
+            if expired_soon:
+                for key in expired_soon:
+                    f.write(f"- ⚠️ `{key['id']}` expires {key['expires'][:10]}\n")
+            else:
+                f.write("✅ No keys expiring within 7 days\n")
+        EOF
+      env:
+        GITHUB_STEP_SUMMARY: $GITHUB_STEP_SUMMARY
+    
+    - name: Cleanup Expired Keys
+      if: github.event.inputs.action == 'cleanup' || github.event_name == 'schedule'
+      run: |
+        python << 'EOF'
+        import sys
+        sys.path.insert(0, '.')
+        from modules.api_key_manager import APIKeyManager
+        
+        manager = APIKeyManager()
+        removed = manager.cleanup_expired_keys()
+        
+        print(f"Cleaned up {removed} expired keys")
+        
+        # Output for summary
+        with open(os.environ.get('GITHUB_STEP_SUMMARY', '/dev/null'), 'a') as f:
+            f.write(f"\n### Cleanup\nRemoved {removed} expired keys\n")
+        EOF
+      env:
+        GITHUB_STEP_SUMMARY: $GITHUB_STEP_SUMMARY
+    
+    - name: Notify on Issues
+      if: failure()
+      uses: actions/github-script@v7
+      with:
+        script: |
+          github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: '🚨 API Key Health Check Failed',
+            body: `API Key health check failed on ${new Date().toISOString()}\n\nSee workflow run: ${context.payload.repository.html_url}/actions/runs/${context.runId}`,
+            labels: ['security', 'automation', 'health-alert']
+          })
