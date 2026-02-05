@@ -15,14 +15,12 @@ Author: Zen AI Pentest Framework v2.1
 import asyncio
 import json
 import logging
-import subprocess
 import uuid
-from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum, auto
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -130,12 +128,12 @@ class AgentMemory:
     def get_context_for_ki(self) -> str:
         """Erstellt formatierten Kontext für KI-Analyse."""
         context_parts = [
-            f"=== KI Analysis Context ===",
+            "=== KI Analysis Context ===",
             f"Goal: {self.goal}",
             f"Target: {self.target}",
             f"Session: {self.session_id}",
             f"Findings: {len(self.findings)}",
-            f"\n=== Recent ReAct Steps ==="
+            "\n=== Recent ReAct Steps ==="
         ]
         
         for step in self.context_window[-5:]:
@@ -145,7 +143,7 @@ class AgentMemory:
             context_parts.append(f"  Success: {step.success}")
         
         if self.findings:
-            context_parts.append(f"\n=== Key Findings ===")
+            context_parts.append("\n=== Key Findings ===")
             for f in self.findings[-5:]:
                 severity = f.get('severity', 'unknown')
                 name = f.get('name', 'Unknown')
@@ -699,7 +697,7 @@ Be specific and actionable."""
             try:
                 params_text = response.split("PARAMS:")[1].split("\n")[0].strip()
                 params = json.loads(params_text)
-            except:
+            except Exception:
                 params = {"target": self.memory.target, "tool": "nmap"}
         
         # Fallback wenn KI keine gute Antwort gibt
@@ -947,7 +945,7 @@ async def run_ki_agent(
     print(f"[CONFIG] Target: {target}")
     print(f"[CONFIG] Goal: {goal}")
     print(f"[CONFIG] Human-in-the-Loop: {'Enabled' if human_in_loop else 'Disabled'}")
-    print(f"[CONFIG] KI Backend: kimi-cli (fallback: built-in)\n")
+    print("[CONFIG] KI Backend: kimi-cli (fallback: built-in)\n")
     
     # Erstelle Agent
     agent = KIAutonomousAgent(
