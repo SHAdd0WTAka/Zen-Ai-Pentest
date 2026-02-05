@@ -10,7 +10,6 @@ import {
   Zap,
   Clock,
   Terminal,
-  ChevronRight,
   Users,
   Wifi,
   WifiOff

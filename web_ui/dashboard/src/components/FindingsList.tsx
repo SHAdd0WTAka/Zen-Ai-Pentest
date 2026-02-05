@@ -1,18 +1,14 @@
 import { useState, useEffect } from 'react'
 import { 
   Search, 
-  Filter, 
   ShieldAlert, 
-  ChevronDown,
-  ChevronRight,
   Download,
   FileText,
-  ExternalLink,
   AlertTriangle,
   CheckCircle2,
   XCircle
 } from 'lucide-react'
-import { format, formatDistanceToNow } from 'date-fns'
+import { formatDistanceToNow } from 'date-fns'
 import axios from 'axios'
 import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'

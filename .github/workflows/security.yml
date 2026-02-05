@@ -46,12 +46,12 @@ jobs:
           name: bandit-report
           path: bandit-report.json
 
-  # Node.js Dependencies Security
+  # Node.js Dependencies Security (Dashboard)
   node-security:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./web_ui/frontend
+        working-directory: ./web_ui/dashboard
 
     steps:
       - uses: actions/checkout@v4
@@ -61,17 +61,13 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: ./web_ui/frontend/package-lock.json
+          cache-dependency-path: ./web_ui/dashboard/package-lock.json
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Run npm audit
         run: npm audit --audit-level=moderate
-        continue-on-error: true
-
-      - name: Run better-npm-audit
-        run: npx better-npm-audit audit
         continue-on-error: true
 
   # Secret Scanning
