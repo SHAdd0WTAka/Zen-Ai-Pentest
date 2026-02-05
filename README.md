@@ -11,7 +11,7 @@
 [![Version](https://img.shields.io/badge/Version-2.2.0-orange)](https://github.com/SHAdd0WTAka/zen-ai-pentest/releases)
 [![Authors](https://img.shields.io/badge/Authors-SHAdd0WTAka%20%7C%20KimiAI-purple)](#-authors--team)
 [![Roadmap](https://img.shields.io/badge/Roadmap-2026-blueviolet)](ROADMAP_2026.md)
-[![Architecture](https://img.shields.io/badge/Architecture-Diagram-blue)](docs/architecture.md)
+[![Architecture](https://img.shields.io/badge/Architecture-Diagram-blue)](docs/ARCHITECTURE.md)
 
 ## 🚀 CI/CD & Security Status
 
@@ -20,6 +20,33 @@
 [![CodeQL](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/security/code-scanning)
 [![Security Score](https://img.shields.io/badge/Security%20Score-95%2F100-brightgreen)](docs/production-hardening.md)
 [![Dependencies](https://img.shields.io/badge/dependencies-8%20moderate-yellow)](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/security/dependabot)
+[![codecov](https://codecov.io/gh/SHAdd0WTAka/zen-ai-pentest/branch/main/graph/badge.svg)](https://codecov.io/gh/SHAdd0WTAka/zen-ai-pentest)
+
+---
+
+## 📚 Table of Contents
+
+- [Overview](#-overview)
+- [Features](#-features)
+- [Quick Start](#-quick-start)
+- [Installation](#-installation)
+- [Usage](#-usage)
+- [Architecture](#-architecture)
+- [API Reference](#-api-reference)
+- [Project Structure](#-project-structure)
+- [Configuration](#-configuration)
+- [Testing](#-testing)
+- [Documentation](#-documentation)
+- [Contributing](#-contributing)
+- [Support](#-support)
+- [License](#-license)
+
+---
+
+## 🎯 Overview
+
+**Zen-AI-Pentest** is an autonomous, AI-powered penetration testing framework that combines cutting-edge language models with professional security tools. Built for security professionals, bug bounty hunters, and enterprise security teams.
+
 ```mermaid
   graph TB
       subgraph "User Interface"
@@ -62,8 +89,15 @@
       StateMachine --> Exploit
       Exploit --> OpenAI
       RiskEngine --> ThreatIntel
-  ```
-**Zen-AI-Pentest** is an autonomous, AI-powered penetration testing framework that combines cutting-edge language models with professional security tools. Built for security professionals, bug bounty hunters, and enterprise security teams.
+```
+
+### Key Highlights
+
+- 🤖 **AI-Powered**: Leverages state-of-the-art LLMs for intelligent decision making
+- 🔒 **Security-First**: Multiple safety controls and validation layers
+- 🚀 **Production-Ready**: Enterprise-grade with CI/CD, monitoring, and support
+- 📊 **Comprehensive**: 20+ integrated security tools
+- 🔧 **Extensible**: Plugin system for custom tools and integrations
 
 ---
 
@@ -157,8 +191,7 @@ cp .env.example .env
 # Edit .env with your settings
 
 # Start full stack
-cd docker
-docker-compose -f docker-compose.full.yml up -d
+docker-compose up -d
 
 # Access:
 # Dashboard: http://localhost:3000
@@ -191,7 +224,17 @@ python scripts/setup_vms.py --kali
 
 ---
 
-## 📖 Usage
+## 📖 Installation
+
+For detailed installation instructions, see:
+- **[Docker Installation](docs/INSTALLATION.md#quick-start-docker)**
+- **[Local Installation](docs/INSTALLATION.md#local-installation)**
+- **[Production Deployment](docs/INSTALLATION.md#production-deployment)**
+- **[VirtualBox Setup](docs/setup/VIRTUALBOX_SETUP.md)**
+
+---
+
+## 💻 Usage
 
 ### Python API
 
@@ -273,7 +316,7 @@ ws.onmessage = (event) => {
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                    ZEN-AI-PENTEST v2.0 - System Architecture             │
+│                    ZEN-AI-PENTEST v2.2 - System Architecture             │
 ├─────────────────────────────────────────────────────────────────────────┤
 │                                                                          │
 │  ┌─────────────────────────────────────────────────────────────────┐    │
@@ -334,6 +377,16 @@ ws.onmessage = (event) => {
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
+For detailed architecture documentation, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
+---
+
+## 📡 API Reference
+
+- **[API Documentation](docs/API.md)** - Complete REST API reference
+- **[WebSocket API](docs/API.md#websocket)** - Real-time updates
+- **[Authentication](docs/API.md#authentication)** - Security and auth
+
 ---
 
 ## 📁 Project Structure
@@ -348,11 +401,27 @@ zen-ai-pentest/
 ├── agents/                     # AI Agents
 │   ├── react_agent.py         # ReAct Agent
 │   └── react_agent_vm.py      # VM-based Agent
+├── autonomous/                 # Autonomous Agent System
+│   ├── agent_loop.py          # ReAct Loop Engine
+│   ├── exploit_validator.py   # Exploit Validation
+│   ├── memory.py              # Memory Management
+│   └── tool_executor.py       # Tool Execution
+├── risk_engine/               # Risk Analysis
+│   ├── false_positive_engine.py
+│   ├── business_impact_calculator.py
+│   ├── cvss.py
+│   └── epss.py
+├── benchmarks/                # Benchmark Framework
+│   ├── run_benchmarks.py
+│   └── comparison.py
+├── integrations/              # CI/CD Integrations
+│   ├── github.py
+│   ├── gitlab.py
+│   ├── jira.py
+│   ├── slack.py
+│   └── jenkins.py
 ├── database/                   # Database Layer
 │   └── models.py              # SQLAlchemy Models
-├── virtualization/             # VM Management
-│   ├── vm_manager.py          # VirtualBox
-│   └── cloud_vm_manager.py    # AWS/Azure/GCP
 ├── tools/                      # Pentesting Tools
 │   ├── nmap_integration.py
 │   ├── sqlmap_integration.py
@@ -369,11 +438,12 @@ zen-ai-pentest/
 │   ├── Dockerfile
 │   └── docker-compose.full.yml
 ├── docs/                       # Documentation
-│   ├── setup/
-│   └── research/
-├── scripts/                    # Setup Scripts
-│   └── setup_vms.py
-└── tests/                      # Test Suite
+│   ├── ARCHITECTURE.md
+│   ├── INSTALLATION.md
+│   ├── API.md
+│   └── setup/
+├── tests/                      # Test Suite
+└── scripts/                    # Setup Scripts
 ```
 
 ---
@@ -390,17 +460,17 @@ DATABASE_URL=postgresql://postgres:password@localhost:5432/zen_pentest
 SECRET_KEY=your-secret-key-here
 JWT_EXPIRATION=3600
 
+# AI Providers
+OPENAI_API_KEY=sk-...
+ANTHROPIC_API_KEY=sk-ant-...
+
 # Notifications
 SLACK_WEBHOOK_URL=https://hooks.slack.com/...
 SMTP_HOST=smtp.gmail.com
-SMTP_USER=user@gmail.com
-SMTP_PASS=password
 
 # Cloud Providers
 AWS_ACCESS_KEY_ID=AKIA...
-AWS_SECRET_ACCESS_KEY=...
 AZURE_SUBSCRIPTION_ID=...
-GCP_PROJECT_ID=...
 ```
 
 See `.env.example` for all options.
@@ -427,22 +497,41 @@ pytest tests/integration/ -v
 
 ## 📚 Documentation
 
-- [Setup Guide](docs/setup/VIRTUALBOX_SETUP.md) - VM installation & configuration
-- [API Documentation](docs/API.md) - REST API reference
-- [Architecture](docs/ARCHITECTURE.md) - System design
-- [Tool Research](docs/research/FUNDAMENTAL_PENTEST_TOOLS.md) - Tool analysis
+- **[Getting Started](docs/tutorials/getting-started.md)** - First steps
+- **[Installation Guide](docs/INSTALLATION.md)** - Setup instructions
+- **[API Documentation](docs/API.md)** - REST API reference
+- **[Architecture](docs/ARCHITECTURE.md)** - System design
+- **[Support](SUPPORT.md)** - Help and support
 
 ---
 
 ## 🤝 Contributing
 
+We welcome contributions! Please see:
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** - Contribution guidelines
+- **[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)** - Community standards
+- **[CONTRIBUTORS.md](CONTRIBUTORS.md)** - Our amazing contributors
+
+Quick start:
 1. Fork the repository
 2. Create feature branch (`git checkout -b feature/amazing-feature`)
 3. Commit changes (`git commit -m 'Add amazing feature'`)
 4. Push to branch (`git push origin feature/amazing-feature`)
 5. Open Pull Request
 
-Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details.
+---
+
+## 💬 Support
+
+Need help? We've got you covered:
+
+- 📖 **[Documentation](docs/)** - Comprehensive guides
+- 💬 **[GitHub Discussions](https://github.com/SHAdd0WTAka/zen-ai-pentest/discussions)** - Community Q&A
+- 🐛 **[Issue Tracker](https://github.com/SHAdd0WTAka/zen-ai-pentest/issues)** - Bug reports
+- 🌐 **[Discord](https://discord.gg/zen-ai-pentest)** - Real-time chat
+- 📧 **[Email Support](mailto:support@zen-ai-pentest.dev)** - Direct contact
+
+See [SUPPORT.md](SUPPORT.md) for detailed support options.
 
 ---
 
@@ -468,260 +557,6 @@ This project is licensed under the MIT License - see [LICENSE](LICENSE) file for
 - [FastAPI](https://fastapi.tiangolo.com/) - Web framework
 - [Kali Linux](https://www.kali.org/) - Penetration testing distribution
 - All open-source security tool creators
-
----
-
-## 🎯 Advanced Features
-
-### Autonomous Mode
-
-The autonomous agent uses ReAct (Reasoning + Acting) pattern for fully automated penetration testing:
-
-```bash
-# Run autonomous scan
-zen-ai-pentest --autonomous --target example.com --goal "Find all vulnerabilities"
-
-# With custom scope
-zen-ai-pentest --autonomous --target example.com --scope config/autonomous.json
-```
-
-**Features:**
-- **State Machine**: PLANNING → EXECUTING → OBSERVING → REFLECTING → COMPLETED
-- **Memory Management**: Short-term, long-term, and context window
-- **Tool Orchestration**: Automatic selection and execution of 20+ tools
-- **Self-Correction**: Retry logic and error recovery
-- **Human-in-the-Loop**: Optional pause for critical decisions
-
-```python
-from autonomous import AutonomousAgentLoop
-
-agent = AutonomousAgentLoop(max_iterations=50)
-result = await agent.run(
-    goal="Find vulnerabilities and open ports",
-    target="example.com",
-    scope={"depth": "comprehensive"}
-)
-```
-
----
-
-### Risk Engine
-
-Advanced false-positive reduction and risk prioritization:
-
-```bash
-# Scan with risk validation
-zen-ai-pentest --target example.com --autonomous --validate-risks
-```
-
-**Components:**
-- **FalsePositiveEngine**: Multi-factor validation using Bayesian filtering and LLM voting
-- **BusinessImpactCalculator**: Financial, compliance, and reputation impact assessment
-- **CVSS/EPSS Scoring**: Industry-standard vulnerability scoring
-- **Priority Ranking**: Automated finding prioritization
-
-```python
-from risk_engine import FalsePositiveEngine, BusinessImpactCalculator
-
-# Validate findings
-fp_engine = FalsePositiveEngine()
-validation = await fp_engine.validate_finding(finding)
-
-# Calculate business impact
-impact_calc = BusinessImpactCalculator(
-    organization_size="large",
-    annual_revenue=100000000,
-    industry="finance"
-)
-impact = impact_calc.calculate_overall_impact(asset_context, finding_type, severity)
-```
-
----
-
-### CI/CD Integration
-
-Seamless integration with DevSecOps pipelines:
-
-**GitHub Actions:**
-```yaml
-- name: Security Scan
-  uses: zen-ai-pentest/action@v2
-  with:
-    target: ${{ vars.TARGET_URL }}
-    fail-on: critical
-    format: sarif
-```
-
-**GitLab CI:**
-```yaml
-security-scan:
-  image: zen-ai-pentest:latest
-  script:
-    - zen-ai-pentest --target $TARGET --ci-mode --fail-on high
-  artifacts:
-    reports:
-      sast: gl-sast-report.json
-```
-
-**Jenkins:**
-```groovy
-stage('Security Scan') {
-    steps {
-        sh 'zen-ai-pentest --target ${TARGET} --ci-mode --fail-on critical'
-    }
-}
-```
-
-**Supported Output Formats:**
-- **JSON**: Machine-readable findings
-- **JUnit XML**: Test result integration
-- **SARIF**: Static analysis results format
-- **Markdown**: Human-readable reports
-
-**Exit Codes:**
-- `0`: Scan passed (no findings above threshold)
-- `1`: Findings detected (above threshold)
-
----
-
-### Benchmarking
-
-Compare Zen AI against competitors:
-
-```bash
-# Run full benchmark suite
-zen-ai-pentest --benchmark
-
-# Quick benchmark
-python -c "from benchmarks import run_quick_benchmark; asyncio.run(run_quick_benchmark())"
-```
-
-**Benchmarks Include:**
-- HackTheBox machines (Lame, Blue, Legacy)
-- OWASP WebGoat scenarios
-- DVWA test cases
-- OWASP Juice Shop challenges
-
-**Metrics:**
-| Metric | Description |
-|--------|-------------|
-| Time to First Finding | Speed of initial vulnerability detection |
-| Time to User | Initial access achievement time |
-| Time to Root | Full compromise time |
-| Findings Count | Total vulnerabilities discovered |
-| False Positive Rate | Accuracy measurement |
-| Cost per Scan | API and compute costs |
-
-**Competitor Comparison:**
-| Tool | HTB Easy | FP Rate | Cost |
-|------|----------|---------|------|
-| Zen AI | ~45min | ~12% | $0.50 |
-| PentestGPT | ~80min | ~28% | $1.20 |
-| AutoPentest | ~120min | ~35% | $2.00 |
-
----
-
-### Exploit Validation
-
-Safe and controlled exploit testing:
-
-```bash
-# Validate exploit with safety controls
-zen-ai-pentest --validate-exploits --target example.com --exploit-type sqli
-```
-
-**Safety Levels:**
-- **READ_ONLY**: Passive validation only
-- **VALIDATE_ONLY**: Validate without full execution
-- **CONTROLLED**: Controlled execution with limits (default)
-- **FULL**: Full exploitation (requires explicit approval)
-
-**Features:**
-- Docker-based sandboxing
-- Evidence collection (screenshots, HTTP captures)
-- Chain of custody tracking
-- Automatic remediation generation
-
-```python
-from autonomous import ExploitValidator, ExploitType, ScopeConfig
-
-validator = ExploitValidator(
-    safety_level="controlled",
-    scope_config=ScopeConfig(allowed_hosts=["example.com"])
-)
-
-result = await validator.validate(
-    exploit_code="' OR '1'='1",
-    target="https://example.com/login",
-    exploit_type=ExploitType.WEB_SQLI
-)
-```
-
----
-
-### Notifications & Integrations
-
-**Slack Notifications:**
-```python
-from integrations import SlackNotifier
-
-slack = SlackNotifier(webhook_url="...")
-await slack.notify_scan_completed(results, target="example.com")
-```
-
-**JIRA Integration:**
-```python
-from integrations import JiraIntegration
-
-jira = JiraIntegration(server="...", username="...", api_token="...")
-ticket = await jira.create_finding_ticket(finding, project_key="SEC")
-```
-
-**Supported Integrations:**
-- GitHub (Issues, Check Runs)
-- GitLab (Issues, CI/CD)
-- JIRA (Ticket creation)
-- Slack (Notifications)
-- Jenkins (Pipeline triggers)
-- Email (SMTP alerts)
-- Webhooks (Custom endpoints)
-
----
-
-## 📁 Updated Project Structure
-
-```
-zen-ai-pentest/
-├── autonomous/                 # Autonomous Agent System
-│   ├── agent_loop.py          # ReAct Loop Engine
-│   ├── exploit_validator.py   # Exploit Validation
-│   ├── memory.py              # Memory Management
-│   └── tool_executor.py       # Tool Execution
-├── risk_engine/               # Risk Analysis
-│   ├── false_positive_engine.py
-│   ├── business_impact_calculator.py
-│   ├── cvss.py
-│   └── epss.py
-├── benchmarks/                # Benchmark Framework
-│   ├── run_benchmarks.py
-│   └── comparison.py
-├── integrations/              # CI/CD Integrations
-│   ├── github.py
-│   ├── gitlab.py
-│   ├── jira.py
-│   ├── slack.py
-│   └── jenkins.py
-├── config/                    # Configuration Files
-│   ├── autonomous.json
-│   ├── risk_engine.json
-│   ├── benchmarks.json
-│   └── integrations.json
-├── api/                       # FastAPI Backend
-├── agents/                    # AI Agents
-├── database/                  # Database Layer
-├── tools/                     # Pentesting Tools
-└── ...
-```
 
 ---
 
@@ -771,18 +606,17 @@ zen-ai-pentest/
 - **GitHub Copilot** - Code assistance and suggestions
 - **Security Community** - Feedback, bug reports, and feature requests
 
-### Contributing
-
-We welcome contributions! See [CONTRIBUTORS.md](CONTRIBUTORS.md) and [CONTRIBUTING.md](CONTRIBUTING.md) for details.
-
 ---
 
-## 📞 Support
+## 🗺️ Roadmap
 
-- GitHub Issues: [Report Bug](https://github.com/SHAdd0WTAka/zen-ai-pentest/issues)
-- Discussions: [Ask Question](https://github.com/SHAdd0WTAka/zen-ai-pentest/discussions)
-- Email: support@zen-pentest.local
-- Documentation: https://shadd0wtaka.github.io/zen-ai-pentest
+See [ROADMAP_2026.md](ROADMAP_2026.md) for our detailed 2026 roadmap.
+
+Highlights:
+- **Q1 2026**: SIEM integrations, React Dashboard
+- **Q2 2026**: Mobile app, quantum-resistant crypto
+- **Q3 2026**: Multi-cloud native, serverless support
+- **Q4 2026**: Autonomous SOC capabilities
 
 ---
 

@@ -1,0 +1,188 @@
+# Test Case: vuln_01_sql_injection
+# Category: Vulnerability Scanning - SQL Injection
+# Description: SQL injection vulnerability detection and exploitation test
+
+id: vuln_01_sql_injection
+name: SQL Injection Detection Test
+description: |
+  Tests the tool's ability to detect and potentially exploit
+  SQL injection vulnerabilities across various contexts:
+  - Classic SQL injection (error-based)
+  - Blind SQL injection (time-based)
+  - Union-based SQL injection
+  - Second-order SQL injection
+  
+  Targets include login forms, search fields, and URL parameters.
+
+category: vulnerability_scan
+target_type: web
+difficulty: medium
+version: "1.0"
+tags:
+  - sql-injection
+  - sqli
+  - injection
+  - database
+  - authentication-bypass
+owasp_categories:
+  - "A03:2021-Injection"
+
+cwe_ids:
+  - "CWE-89"
+  - "CWE-564"
+
+# Target Configuration
+target_url: "http://localhost:8080"
+target_host: localhost
+target_port: 8080
+
+# Test Pages and Parameters
+target_endpoints:
+  - path: "/login.php"
+    method: "POST"
+    parameters:
+      - name: "username"
+        type: "text"
+        vulnerable: true
+        injection_type: "error_based"
+      - name: "password"
+        type: "password"
+        vulnerable: false
+        
+  - path: "/search.php"
+    method: "GET"
+    parameters:
+      - name: "q"
+        type: "text"
+        vulnerable: true
+        injection_type: "union_based"
+        
+  - path: "/product.php"
+    method: "GET"
+    parameters:
+      - name: "id"
+        type: "numeric"
+        vulnerable: true
+        injection_type: "blind_time_based"
+
+# Expected Findings
+expected_findings:
+  - vuln_type: sql_injection
+    severity: critical
+    location: "/login.php - username parameter"
+    cwe_id: "CWE-89"
+    confidence: 0.95
+    description: |
+      Classic SQL injection in login form allows authentication bypass.
+      Payload: admin' OR '1'='1' --
+    verification_method: "sqlmap"
+    exploit_available: true
+    
+  - vuln_type: sql_injection
+    severity: high
+    location: "/search.php - q parameter"
+    cwe_id: "CWE-89"
+    confidence: 0.90
+    description: |
+      Union-based SQL injection in search field allows data extraction.
+      Payload: ' UNION SELECT username,password FROM users--
+    verification_method: "sqlmap"
+    exploit_available: true
+    
+  - vuln_type: blind_sql_injection
+    severity: high
+    location: "/product.php - id parameter"
+    cwe_id: "CWE-89"
+    confidence: 0.85
+    description: |
+      Time-based blind SQL injection in product ID parameter.
+      Payload: 1 AND (SELECT * FROM (SELECT(SLEEP(5)))a)
+    verification_method: "sqlmap"
+    exploit_available: true
+    
+  - vuln_type: information_disclosure
+    severity: medium
+    location: "Database error messages"
+    cwe_id: "CWE-209"
+    confidence: 0.90
+    description: "Detailed SQL error messages reveal database structure"
+    verification_method: "manual"
+
+# Test Parameters
+parameters:
+  injection_types:
+    - error_based
+    - union_based
+    - blind_time_based
+    - blind_boolean_based
+  database_types:
+    - mysql
+    - postgresql
+  test_forms: true
+  test_url_parameters: true
+  test_headers: false
+  test_cookies: true
+  
+# Success Criteria
+min_detection_rate: 0.75
+max_false_positive_rate: 0.15
+max_duration_seconds: 300
+
+# Expected Duration
+expected_duration_seconds: 120
+
+# Resource Requirements
+resource_requirements:
+  memory_mb: 1024
+  cpu_cores: 2
+  network_access: true
+
+# Docker Configuration
+docker_compose: |
+  version: '3'
+  services:
+    dvwa:
+      image: vulnerables/web-dvwa:latest
+      ports:
+        - "8080:80"
+      environment:
+        - MYSQL_PASS=dvwa
+      networks:
+        - sqli-net
+    
+    db:
+      image: mysql:5.7
+      environment:
+        MYSQL_ROOT_PASSWORD: rootpass
+        MYSQL_DATABASE: dvwa
+      networks:
+        - sqli-net
+
+  networks:
+    sqli-net:
+      driver: bridge
+
+# Validation
+health_check_endpoint: "http://localhost:8080/login.php"
+success_indicators:
+  - "At least 2 SQL injection vulnerabilities detected"
+  - "Injection type correctly identified"
+  - "Affected parameter identified"
+  
+# Reference Payloads for Verification
+reference_payloads:
+  error_based:
+    - "'"
+    - "''"
+    - "1' AND 1=1 --"
+    - "1' AND 1=2 --"
+  
+  union_based:
+    - "' UNION SELECT NULL--"
+    - "' UNION SELECT NULL,NULL--"
+    - "' UNION SELECT username,password FROM users--"
+  
+  blind_time_based:
+    - "1 AND SLEEP(5)"
+    - "1 AND (SELECT * FROM (SELECT(SLEEP(5)))a)"
+    - "1'; WAITFOR DELAY '0:0:5'--"

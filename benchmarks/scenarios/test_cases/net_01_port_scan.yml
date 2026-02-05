@@ -1,0 +1,295 @@
+# Test Case: net_01_port_scan
+# Category: Network Security - Port Scanning and Service Detection
+# Description: Network port scanning and service fingerprinting test
+
+id: net_01_port_scan
+name: Network Port Scanning and Service Detection
+description: |
+  Comprehensive network scanning test covering:
+  - TCP SYN/Connect/ACK scanning
+  - UDP port scanning
+  - Service version detection
+  - OS fingerprinting
+  - Firewall/IDS evasion
+  - Scan speed optimization
+  
+  Tests both accuracy and stealth capabilities.
+
+category: network_security
+target_type: network
+difficulty: medium
+version: "1.0"
+tags:
+  - port-scan
+  - service-detection
+  - os-fingerprinting
+  - network
+  - enumeration
+  - tcp
+  - udp
+owasp_categories:
+  - "A05:2021-Security Misconfiguration"
+  - "A06:2021-Vulnerable and Outdated Components"
+
+cwe_ids:
+  - "CWE-200"
+  - "CWE-284"
+
+# Target Configuration
+target_host: 192.168.56.20
+target_cidr: "192.168.56.0/24"
+
+# Target Services
+services:
+  tcp:
+    - port: 21
+      service: ftp
+      version: "vsftpd 3.0.3"
+      banner: "220 (vsFTPd 3.0.3)"
+      
+    - port: 22
+      service: ssh
+      version: "OpenSSH 8.2p1"
+      banner: "SSH-2.0-OpenSSH_8.2p1"
+      
+    - port: 23
+      service: telnet
+      version: "Linux telnetd"
+      banner: ""
+      
+    - port: 25
+      service: smtp
+      version: "Postfix 3.4.13"
+      banner: "220 mail.example.com ESMTP Postfix"
+      
+    - port: 53
+      service: dns
+      version: "BIND 9.16.1"
+      
+    - port: 80
+      service: http
+      version: "Apache httpd 2.4.41"
+      banner: "Server: Apache/2.4.41 (Ubuntu)"
+      
+    - port: 110
+      service: pop3
+      version: "Dovecot"
+      
+    - port: 139
+      service: netbios-ssn
+      version: "Samba smbd 4.11.6"
+      
+    - port: 143
+      service: imap
+      version: "Dovecot"
+      
+    - port: 443
+      service: https
+      version: "Apache httpd 2.4.41"
+      ssl: true
+      
+    - port: 445
+      service: microsoft-ds
+      version: "Samba smbd 4.11.6"
+      
+    - port: 3306
+      service: mysql
+      version: "MySQL 8.0.28"
+      banner: "5.7.38"
+      
+    - port: 3389
+      service: ms-wbt-server
+      version: "xrdp"
+      
+    - port: 5432
+      service: postgresql
+      version: "PostgreSQL 12.9"
+      banner: "PostgreSQL 12.9"
+      
+    - port: 6379
+      service: redis
+      version: "Redis 6.0.16"
+      
+    - port: 8080
+      service: http-proxy
+      version: "nginx 1.18.0"
+      
+    - port: 27017
+      service: mongodb
+      version: "MongoDB 5.0.6"
+      
+    - port: 9200
+      service: elasticsearch
+      version: "Elasticsearch 7.17.0"
+
+  udp:
+    - port: 53
+      service: dns
+      
+    - port: 67
+      service: dhcp
+      
+    - port: 123
+      service: ntp
+      
+    - port: 161
+      service: snmp
+      version: "SNMPv1"
+      
+    - port: 500
+      service: isakmp
+      
+    - port: 1900
+      service: upnp
+
+# Expected Findings
+expected_findings:
+  - vuln_type: exposed_telnet
+    severity: critical
+    location: "port 23/tcp"
+    cwe_id: "CWE-319"
+    confidence: 0.99
+    description: "Telnet service exposed - plaintext authentication"
+    verification_method: "port_scan"
+    exploit_available: true
+    
+  - vuln_type: outdated_service
+    severity: high
+    location: "port 3306/tcp - MySQL"
+    cwe_id: "CWE-1104"
+    confidence: 0.90
+    description: "MySQL version 5.7.38 has known vulnerabilities"
+    verification_method: "version_detection"
+    exploit_available: true
+    
+  - vuln_type: exposed_database
+    severity: critical
+    location: "port 27017/tcp - MongoDB"
+    cwe_id: "CWE-284"
+    confidence: 0.95
+    description: "MongoDB exposed without authentication"
+    verification_method: "port_scan"
+    exploit_available: true
+    
+  - vuln_type: exposed_redis
+    severity: critical
+    location: "port 6379/tcp - Redis"
+    cwe_id: "CWE-284"
+    confidence: 0.95
+    description: "Redis exposed without authentication"
+    verification_method: "port_scan"
+    exploit_available: true
+    
+  - vuln_type: exposed_elasticsearch
+    severity: high
+    location: "port 9200/tcp"
+    cwe_id: "CWE-284"
+    confidence: 0.95
+    description: "Elasticsearch cluster exposed to network"
+    verification_method: "port_scan"
+    exploit_available: true
+    
+  - vuln_type: information_disclosure
+    severity: medium
+    location: "port 161/udp - SNMP"
+    cwe_id: "CWE-200"
+    confidence: 0.85
+    description: "SNMP service may expose system information"
+    verification_method: "udp_scan"
+
+# Test Parameters
+parameters:
+  scan_types:
+    - tcp_syn
+    - tcp_connect
+    - tcp_ack
+    - tcp_window
+    - tcp_maimon
+    - udp
+    
+  scan_speeds:
+    - paranoid
+    - sneaky
+    - polite
+    - normal
+    - aggressive
+    - insane
+    
+  detection_techniques:
+    - version_detection
+    - os_fingerprinting
+    - service_probe
+    - script_scan
+    
+  evasion_techniques:
+    - fragment_packets
+    - decoy_scan
+    - source_port_spoofing
+    - scan_delay
+
+# Success Criteria
+min_detection_rate: 0.85
+max_false_positive_rate: 0.10
+max_duration_seconds: 300
+
+# Expected Duration
+expected_duration_seconds: 120
+
+# Resource Requirements
+resource_requirements:
+  memory_mb: 512
+  cpu_cores: 2
+  network_access: true
+  raw_sockets: true  # For SYN scanning
+
+# Docker Configuration
+docker_compose: |
+  version: '3'
+  services:
+    target-network:
+      build:
+        context: .
+        dockerfile: Dockerfile.network-target
+      networks:
+        pentest-net:
+          ipv4_address: 192.168.56.20
+      cap_add:
+        - NET_ADMIN
+
+  networks:
+    pentest-net:
+      driver: bridge
+      ipam:
+        config:
+          - subnet: 192.168.56.0/24
+
+# Validation
+health_check_endpoint: "192.168.56.20:80"
+success_indicators:
+  - "All open TCP ports detected"
+  - "Service versions identified"
+  - "OS fingerprinted"
+  - "UDP ports scanned"
+
+# Scan Benchmarks
+scan_benchmarks:
+  full_tcp_scan:
+    ports: 65535
+    target_time_seconds: 300
+    
+  top_1000_tcp:
+    ports: 1000
+    target_time_seconds: 60
+    
+  top_100_udp:
+    ports: 100
+    target_time_seconds: 120
+
+# Expected Results Summary
+expected_results:
+  open_tcp_ports: 18
+  open_udp_ports: 6
+  services_detected: 20
+  os_guesses:
+    - "Linux 4.15 - 5.8"
+    - "Ubuntu 20.04"

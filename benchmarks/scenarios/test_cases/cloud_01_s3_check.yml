@@ -1,0 +1,267 @@
+# Test Case: cloud_01_s3_check
+# Category: Cloud Security - AWS S3 Security Assessment
+# Description: AWS S3 bucket security configuration testing
+
+id: cloud_01_s3_check
+name: AWS S3 Bucket Security Assessment
+description: |
+  Comprehensive AWS S3 security testing including:
+  - Public access configuration
+  - Bucket policy analysis
+  - ACL permissions
+  - Encryption settings
+  - Versioning and logging
+  - CORS configuration
+  
+  Tests both detection and exploitation of misconfigurations.
+
+category: cloud_security
+target_type: cloud
+difficulty: medium
+version: "1.0"
+tags:
+  - aws
+  - s3
+  - cloud
+  - misconfiguration
+  - public-access
+  - encryption
+  - iam
+owasp_categories:
+  - "A05:2021-Security Misconfiguration"
+  - "A01:2021-Broken Access Control"
+
+cwe_ids:
+  - "CWE-200"
+  - "CWE-276"
+  - "CWE-284"
+  - "CWE-311"
+
+# Target Configuration
+target_buckets:
+  - name: "company-public-assets"
+    region: "us-east-1"
+    expected_findings:
+      - public_read
+      
+  - name: "company-backup-storage"
+    region: "us-east-1"
+    expected_findings:
+      - public_list
+      - no_encryption
+      
+  - name: "company-internal-docs"
+    region: "us-west-2"
+    expected_findings:
+      - public_write
+      - misconfigured_cors
+      
+  - name: "company-logs"
+    region: "eu-west-1"
+    expected_findings:
+      - public_read_acp
+      
+  - name: "company-app-data"
+    region: "us-east-1"
+    expected_findings:
+      - versioning_disabled
+      - logging_disabled
+
+# Expected Findings
+expected_findings:
+  - vuln_type: s3_public_read
+    severity: medium
+    location: "s3://company-public-assets/*"
+    cwe_id: "CWE-200"
+    confidence: 0.95
+    description: |
+      S3 bucket allows public read access to all objects.
+      Anyone can download files without authentication.
+    verification_method: "aws_cli"
+    exploit_available: true
+    
+  - vuln_type: s3_public_list
+    severity: medium
+    location: "s3://company-backup-storage/"
+    cwe_id: "CWE-200"
+    confidence: 0.95
+    description: |
+      S3 bucket allows public listing of objects.
+      Bucket contents can be enumerated without authentication.
+    verification_method: "aws_cli"
+    exploit_available: true
+    
+  - vuln_type: s3_public_write
+    severity: critical
+    location: "s3://company-internal-docs/"
+    cwe_id: "CWE-284"
+    confidence: 0.98
+    description: |
+      S3 bucket allows public write access!
+      Anyone can upload, modify, or delete objects.
+      Potential for malware distribution and data destruction.
+    verification_method: "aws_cli"
+    exploit_available: true
+    
+  - vuln_type: s3_no_encryption
+    severity: high
+    location: "s3://company-backup-storage/"
+    cwe_id: "CWE-311"
+    confidence: 0.95
+    description: |
+      S3 bucket has no encryption enabled.
+      Data at rest is not protected.
+    verification_method: "aws_cli"
+    exploit_available: false
+    
+  - vuln_type: s3_versioning_disabled
+    severity: medium
+    location: "s3://company-app-data/"
+    cwe_id: "CWE-693"
+    confidence: 0.95
+    description: |
+      S3 bucket versioning is disabled.
+      Deleted or modified objects cannot be recovered.
+    verification_method: "aws_cli"
+    exploit_available: false
+    
+  - vuln_type: s3_logging_disabled
+    severity: medium
+    location: "s3://company-app-data/"
+    cwe_id: "CWE-778"
+    confidence: 0.95
+    description: |
+      S3 access logging is not enabled.
+      Cannot audit access to bucket objects.
+    verification_method: "aws_cli"
+    exploit_available: false
+    
+  - vuln_type: s3_misconfigured_cors
+    severity: low
+    location: "s3://company-internal-docs/"
+    cwe_id: "CWE-942"
+    confidence: 0.85
+    description: |
+      S3 CORS configuration allows all origins (*).
+      May enable cross-origin attacks.
+    verification_method: "aws_cli"
+    exploit_available: false
+    
+  - vuln_type: s3_bucket_takeover
+    severity: high
+    location: "DNS CNAME records"
+    cwe_id: "CWE-284"
+    confidence: 0.70
+    description: |
+      Potential bucket takeover vulnerability.
+      DNS record points to non-existent S3 bucket.
+    verification_method: "dns_check"
+    exploit_available: true
+
+# Test Parameters
+parameters:
+  checks:
+    - public_access_settings
+    - bucket_policy
+    - acl_permissions
+    - encryption_configuration
+    - versioning_status
+    - logging_status
+    - cors_configuration
+    - lifecycle_policy
+    - replication_configuration
+    - website_configuration
+    
+  enumeration_techniques:
+    - permutations
+    - dns_bruteforce
+    - google_dorks
+    - certificate_transparency
+    - github_search
+    
+  regions_to_check:
+    - us-east-1
+    - us-west-1
+    - us-west-2
+    - eu-west-1
+    - eu-central-1
+    - ap-southeast-1
+
+# Success Criteria
+min_detection_rate: 0.80
+max_false_positive_rate: 0.15
+max_duration_seconds: 600
+
+# Expected Duration
+expected_duration_seconds: 180
+
+# Resource Requirements
+resource_requirements:
+  memory_mb: 512
+  cpu_cores: 1
+  network_access: true
+  aws_credentials: true
+
+# Validation
+success_indicators:
+  - "Public access configurations identified"
+  - "Encryption settings checked"
+  - "Bucket policies analyzed"
+  - "ACL permissions enumerated"
+
+# S3 Permission Matrix
+permission_matrix:
+  public_read:
+    description: "Anyone can read objects"
+    severity: medium
+    check: "s3:GetObject allowed for *"
+    
+  public_write:
+    description: "Anyone can write objects"
+    severity: critical
+    check: "s3:PutObject allowed for *"
+    
+  public_list:
+    description: "Anyone can list bucket"
+    severity: medium
+    check: "s3:ListBucket allowed for *"
+    
+  public_read_acp:
+    description: "Anyone can read ACL"
+    severity: low
+    check: "s3:GetBucketAcl allowed for *"
+
+# Test Commands
+reference_commands:
+  check_public_access:
+    - "aws s3api get-public-access-block --bucket <bucket-name>"
+    - "aws s3api get-bucket-acl --bucket <bucket-name>"
+    - "aws s3api get-bucket-policy --bucket <bucket-name>"
+    
+  check_encryption:
+    - "aws s3api get-bucket-encryption --bucket <bucket-name>"
+    
+  check_versioning:
+    - "aws s3api get-bucket-versioning --bucket <bucket-name>"
+    
+  check_logging:
+    - "aws s3api get-bucket-logging --bucket <bucket-name>"
+    
+  check_cors:
+    - "aws s3api get-bucket-cors --bucket <bucket-name>"
+
+# Remediation Guidance
+remediation:
+  public_access:
+    - "Enable Block Public Access settings"
+    - "Review and remove public bucket policies"
+    - "Remove public grants from ACLs"
+    
+  encryption:
+    - "Enable default encryption with AES-256 or KMS"
+    - "Enforce encryption in transit"
+    
+  logging:
+    - "Enable S3 access logging"
+    - "Configure log delivery to separate bucket"
+    - "Enable CloudTrail data events for S3"
