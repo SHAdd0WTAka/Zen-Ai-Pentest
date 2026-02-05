@@ -1,0 +1,305 @@
+# =============================================================================
+# Zen AI Pentest - GitLab CI/CD Template
+# =============================================================================
+# Description: Ready-to-use GitLab CI template for automated security scanning
+# Version: 2.0.0
+# Usage: Include this file in your .gitlab-ci.yml
+# =============================================================================
+#
+# QUICK START:
+# ------------
+# Include this template in your .gitlab-ci.yml:
+#
+#   include:
+#     - local: '.gitlab-ci-template.yml'
+#
+# Or from a remote URL:
+#
+#   include:
+#     - remote: 'https://raw.githubusercontent.com/your-org/zen-ai-pentest/main/.gitlab-ci-template.yml'
+#
+# Then define your scan job:
+#
+#   zen_security_scan:
+#     extends: .zen_pentest_scan
+#     variables:
+#       ZEN_TARGET: "https://your-app.com"
+#
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Default Image Configuration
+# -----------------------------------------------------------------------------
+default:
+  image: python:3.11-slim
+
+# -----------------------------------------------------------------------------
+# Global Variables
+# -----------------------------------------------------------------------------
+variables:
+  # Required: Target to scan
+  ZEN_TARGET: ""
+  
+  # Optional: Scan configuration
+  ZEN_SCOPE: "full"           # full, recon, vuln, stealth
+  ZEN_INTENSITY: "medium"     # low, medium, high
+  ZEN_FAIL_ON: "high"         # critical, high, medium, low, none
+  ZEN_TIMEOUT: "3600"         # seconds
+  ZEN_MODULES: "port_scan,web_scan,ssl_scan,ai_analysis"
+  ZEN_OUTPUT_FORMAT: "sarif"  # sarif, json, html, junit, all
+  
+  # Optional: API Keys (set in GitLab CI/CD Variables)
+  # OPENAI_API_KEY: ""
+  
+  # Optional: Artifact settings
+  ZEN_ARTIFACT_RETENTION: "30"
+
+# -----------------------------------------------------------------------------
+# Cache Configuration
+# -----------------------------------------------------------------------------
+.zen_cache: &zen_cache
+  cache:
+    key: "${CI_JOB_NAME}"
+    paths:
+      - .pip_cache/
+    policy: pull-push
+
+# -----------------------------------------------------------------------------
+# Base Zen Pentest Job Template
+# -----------------------------------------------------------------------------
+.zen_pentest_scan:
+  stage: test
+  <<: *zen_cache
+  
+  before_script:
+    # Install dependencies
+    - apt-get update && apt-get install -y gcc nmap 2>/dev/null || true
+    - pip install --cache-dir .pip_cache/ zen-ai-pentest
+    - mkdir -p zen-pentest-output
+    
+    # Validate required variables
+    - |
+      if [ -z "$ZEN_TARGET" ]; then
+        echo "ERROR: ZEN_TARGET variable is not set!"
+        exit 1
+      fi
+  
+  script:
+    # Generate unique scan ID
+    - SCAN_ID="zen-${CI_PIPELINE_ID}-${CI_JOB_ID}"
+    - echo "Starting Zen AI Pentest Scan..."
+    - echo "Target: $ZEN_TARGET"
+    - echo "Scan ID: $SCAN_ID"
+    
+    # Build output filenames
+    - |
+      if [ "$ZEN_OUTPUT_FORMAT" = "all" ]; then
+        SARIF_FILE="zen-pentest-output/zen-scan-${SCAN_ID}.sarif"
+        JSON_FILE="zen-pentest-output/zen-scan-${SCAN_ID}.json"
+        HTML_FILE="zen-pentest-output/zen-scan-${SCAN_ID}.html"
+        JUNIT_FILE="zen-pentest-output/zen-scan-${SCAN_ID}.xml"
+      elif [ "$ZEN_OUTPUT_FORMAT" = "sarif" ]; then
+        OUTPUT_FILE="zen-pentest-output/zen-scan-${SCAN_ID}.sarif"
+      elif [ "$ZEN_OUTPUT_FORMAT" = "junit" ]; then
+        OUTPUT_FILE="zen-pentest-output/zen-scan-${SCAN_ID}.xml"
+      else
+        OUTPUT_FILE="zen-pentest-output/zen-scan-${SCAN_ID}.${ZEN_OUTPUT_FORMAT}"
+      fi
+    
+    # Run the scan
+    - |
+      CMD="python -m zen_ai_pentest scan \"$ZEN_TARGET\""
+      CMD="$CMD --scope $ZEN_SCOPE"
+      CMD="$CMD --intensity $ZEN_INTENSITY"
+      CMD="$CMD --modules $ZEN_MODULES"
+      CMD="$CMD --timeout $ZEN_TIMEOUT"
+      CMD="$CMD --scan-id $SCAN_ID"
+      CMD="$CMD --output-dir zen-pentest-output"
+      
+      if [ "$ZEN_OUTPUT_FORMAT" = "all" ]; then
+        CMD="$CMD --format sarif --sarif-output $SARIF_FILE"
+        CMD="$CMD --format json --json-output $JSON_FILE"
+        CMD="$CMD --format html --html-output $HTML_FILE"
+        CMD="$CMD --format junit --junit-output $JUNIT_FILE"
+      else
+        CMD="$CMD --format $ZEN_OUTPUT_FORMAT --output $OUTPUT_FILE"
+      fi
+      
+      echo "Executing: $CMD"
+      eval $CMD
+    
+    # Parse results and generate summary
+    - |
+      if [ -f "zen-pentest-output/results.json" ]; then
+        FINDINGS=$(jq '.findings | length' zen-pentest-output/results.json 2>/dev/null || echo "0")
+        CRITICAL=$(jq '[.findings[] | select(.severity=="critical")] | length' zen-pentest-output/results.json 2>/dev/null || echo "0")
+        HIGH=$(jq '[.findings[] | select(.severity=="high")] | length' zen-pentest-output/results.json 2>/dev/null || echo "0")
+        MEDIUM=$(jq '[.findings[] | select(.severity=="medium")] | length' zen-pentest-output/results.json 2>/dev/null || echo "0")
+        LOW=$(jq '[.findings[] | select(.severity=="low")] | length' zen-pentest-output/results.json 2>/dev/null || echo "0")
+        RISK_SCORE=$(jq '.risk_score // 0' zen-pentest-output/results.json 2>/dev/null || echo "0")
+        
+        echo "============================================"
+        echo "📊 ZEN AI PENTEST SCAN RESULTS"
+        echo "============================================"
+        echo "Target: $ZEN_TARGET"
+        echo "Scan ID: $SCAN_ID"
+        echo "-------------------------------------------"
+        echo "Findings: $FINDINGS"
+        echo "  Critical: $CRITICAL"
+        echo "  High: $HIGH"
+        echo "  Medium: $MEDIUM"
+        echo "  Low: $LOW"
+        echo "Risk Score: $RISK_SCORE/100"
+        echo "============================================"
+        
+        # Export for use in other jobs
+        echo "ZEN_FINDINGS=$FINDINGS" >> zen.env
+        echo "ZEN_CRITICAL=$CRITICAL" >> zen.env
+        echo "ZEN_HIGH=$HIGH" >> zen.env
+        echo "ZEN_RISK_SCORE=$RISK_SCORE" >> zen.env
+      fi
+    
+    # Check fail condition
+    - |
+      case $ZEN_FAIL_ON in
+        critical)
+          if [ "${CRITICAL:-0}" -gt 0 ]; then
+            echo "ERROR: Found $CRITICAL critical vulnerabilities!"
+            exit 1
+          fi
+          ;;
+        high)
+          if [ "${CRITICAL:-0}" -gt 0 ] || [ "${HIGH:-0}" -gt 0 ]; then
+            echo "ERROR: Found critical/high vulnerabilities! (Critical: $CRITICAL, High: $HIGH)"
+            exit 1
+          fi
+          ;;
+        medium)
+          if [ "${RISK_SCORE:-0}" -gt 50 ]; then
+            echo "ERROR: Risk score ($RISK_SCORE) exceeds threshold (50)!"
+            exit 1
+          fi
+          ;;
+      esac
+    
+    - echo "Security scan passed all thresholds!"
+  
+  artifacts:
+    when: always
+    expire_in: ${ZEN_ARTIFACT_RETENTION} days
+    paths:
+      - zen-pentest-output/
+    reports:
+      # SARIF report for GitLab Security Dashboard
+      sast: zen-pentest-output/*.sarif
+      # JUnit report for test results
+      junit: zen-pentest-output/*.xml
+    dotenv: zen.env
+  
+  # Security scanning stage
+  stage: test
+  
+  # Only run on protected branches
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_MERGE_REQUEST_IID
+
+# -----------------------------------------------------------------------------
+# Predefined Job Templates
+# -----------------------------------------------------------------------------
+
+# Quick scan for merge requests
+.zen_quick_scan:
+  extends: .zen_pentest_scan
+  variables:
+    ZEN_SCOPE: "vuln"
+    ZEN_INTENSITY: "low"
+    ZEN_FAIL_ON: "high"
+    ZEN_MODULES: "web_scan,ssl_scan"
+    ZEN_TIMEOUT: "600"
+  rules:
+    - if: $CI_MERGE_REQUEST_IID
+
+# Full scan for default branch
+.zen_full_scan:
+  extends: .zen_pentest_scan
+  variables:
+    ZEN_SCOPE: "full"
+    ZEN_INTENSITY: "medium"
+    ZEN_FAIL_ON: "critical"
+    ZEN_MODULES: "port_scan,web_scan,ssl_scan,ai_analysis"
+    ZEN_TIMEOUT: "3600"
+    ZEN_OUTPUT_FORMAT: "all"
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+# Reconnaissance scan
+.zen_recon_scan:
+  extends: .zen_pentest_scan
+  variables:
+    ZEN_SCOPE: "recon"
+    ZEN_INTENSITY: "low"
+    ZEN_FAIL_ON: "none"
+    ZEN_MODULES: "port_scan,service_detection"
+    ZEN_TIMEOUT: "1800"
+    ZEN_OUTPUT_FORMAT: "json"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+
+# Compliance scan
+.zen_compliance_scan:
+  extends: .zen_pentest_scan
+  variables:
+    ZEN_SCOPE: "full"
+    ZEN_INTENSITY: "medium"
+    ZEN_FAIL_ON: "high"
+    ZEN_MODULES: "port_scan,web_scan,ssl_scan,ai_analysis,compliance"
+    ZEN_TIMEOUT: "7200"
+    ZEN_OUTPUT_FORMAT: "all"
+    ZEN_ARTIFACT_RETENTION: "365"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: manual
+
+# -----------------------------------------------------------------------------
+# Example Usage (commented out - copy to your .gitlab-ci.yml)
+# -----------------------------------------------------------------------------
+# Uncomment these to enable:
+#
+# stages:
+#   - build
+#   - test
+#   - security
+#   - deploy
+#
+# # Quick security scan on merge requests
+# security:quick:
+#   extends: .zen_quick_scan
+#   stage: security
+#   variables:
+#     ZEN_TARGET: "https://staging.your-app.com"
+#
+# # Full security scan on main branch
+# security:full:
+#   extends: .zen_full_scan
+#   stage: security
+#   variables:
+#     ZEN_TARGET: "https://production.your-app.com"
+#
+# # Weekly reconnaissance scan
+# security:recon:
+#   extends: .zen_recon_scan
+#   stage: security
+#   variables:
+#     ZEN_TARGET: "https://api.your-app.com"
+#   only:
+#     - schedules
+#
+# # Monthly compliance scan
+# security:compliance:
+#   extends: .zen_compliance_scan
+#   stage: security
+#   variables:
+#     ZEN_TARGET: "https://production.your-app.com"
+#   only:
+#     - schedules
