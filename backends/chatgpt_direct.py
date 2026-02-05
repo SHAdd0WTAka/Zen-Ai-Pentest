@@ -110,7 +110,7 @@ class ChatGPTDirectBackend:
                             # Update conversation ID for context
                             if data.get("conversation_id"):
                                 self.conversation_id = data["conversation_id"]
-                        except:
+                        except Exception:
                             continue
 
                 return full_response
@@ -129,5 +129,5 @@ class ChatGPTDirectBackend:
                 "https://chat.openai.com/backend-api/models", headers=headers
             ) as resp:
                 return resp.status == 200
-        except:
+        except Exception:
             return False

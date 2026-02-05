@@ -202,16 +202,16 @@ try:
             "description": f"Autonomous scan found {len(findings)} vulnerabilities (Risk: {risk_level})"
         }, timeout=5)
     if r.status_code == 200:
-        print(f"  SIEM Event: Gesendet")
-except:
-    print(f"  SIEM Event: API nicht erreichbar")
+        print("  SIEM Event: Gesendet")
+except Exception:
+    print("  SIEM Event: API nicht erreichbar")
 
 print("\n" + "=" * 70)
 print("AUTONOMER SCAN ABGESCHLOSSEN!")
 print("=" * 70)
-print(f"\nEmpfohlene nächste Schritte:")
-print(f"  1. Priorisiere die HIGH-Finding (OpenSSH CVE)")
-print(f"  2. Patch-Verwaltung für MEDIUM-Findings planen")
-print(f"  3. Re-Scan nach Behebung durchführen")
-print(f"\nBerichte gespeichert in: logs/")
+print("\nEmpfohlene nächste Schritte:")
+print("  1. Priorisiere die HIGH-Finding (OpenSSH CVE)")
+print("  2. Patch-Verwaltung für MEDIUM-Findings planen")
+print("  3. Re-Scan nach Behebung durchführen")
+print("\nBerichte gespeichert in: logs/")
 print("=" * 70)
