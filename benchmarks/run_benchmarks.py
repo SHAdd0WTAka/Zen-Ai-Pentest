@@ -6,6 +6,7 @@ and generating comparison reports.
 """
 
 import asyncio
+from datetime import datetime
 import json
 import logging
 import sys
@@ -17,11 +18,8 @@ try:
     from rich.console import Console
     from rich.table import Table
     from rich.panel import Panel
-    from rich.progress import Progress, TaskID
     from rich import box
     from rich.tree import Tree
-    from rich.layout import Layout
-    from rich.syntax import Syntax
     RICH_AVAILABLE = True
 except ImportError:
     RICH_AVAILABLE = False
@@ -40,10 +38,8 @@ from .benchmark_engine import (
     BenchmarkStatus
 )
 from .scenarios import (
-    list_all_scenarios, get_scenario, create_benchmark_suite,
-    ScenarioType, DifficultyLevel, ALL_SCENARIOS
+    list_all_scenarios, ScenarioType, DifficultyLevel, ALL_SCENARIOS
 )
-from .comparison import ComparisonFramework
 from .ci_benchmark import CIBenchmarkRunner, CIConfig
 
 # Setup logging

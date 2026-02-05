@@ -106,7 +106,6 @@ function AgentCard({
   onClick: () => void 
 }) {
   const stateConfig = STATE_COLORS[agent.state] || STATE_COLORS.idle
-  const RoleIcon = ROLE_ICONS[agent.role] || Bot
 
   return (
     <button
@@ -121,7 +120,7 @@ function AgentCard({
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">
           <div className={cn('w-10 h-10 rounded-lg flex items-center justify-center', stateConfig.bg)}>
-            <RoleIcon className={cn('w-5 h-5', stateConfig.text)} />
+            <RoleIconDisplay role={agent.role} state={agent.state} className="w-5 h-5" />
           </div>
           <div>
             <h4 className="font-medium text-slate-200">{agent.name}</h4>

@@ -208,7 +208,7 @@ async def example_4_create_custom_suite():
         tags=["training"]
     )
     
-    print(f"\nCreated beginner benchmark suite:")
+    print("\nCreated beginner benchmark suite:")
     print(f"  Total scenarios: {len(beginner_suite)}")
     for scenario in beginner_suite:
         print(f"    - {scenario.name}")
