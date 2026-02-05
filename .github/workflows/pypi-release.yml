@@ -18,13 +18,16 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     permissions:
-      id-token: write  # For trusted publishing
-      contents: read
+      contents: write
+      deployments: write
+    environment:
+      name: pypi
+      url: https://pypi.org/project/zen-ai-pentest/
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v4
     
     - name: Set up Python
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@v5
       with:
         python-version: '3.12'
     
@@ -33,36 +36,12 @@ jobs:
         python -m pip install --upgrade pip
         pip install build twine
     
-    - name: Check for package files
-      id: check-package
-      run: |
-        if [ -f "setup.py" ] || [ -f "pyproject.toml" ]; then
-          echo "exists=true" >> $GITHUB_OUTPUT
-        else
-          echo "exists=false" >> $GITHUB_OUTPUT
-          echo "::warning::No setup.py or pyproject.toml found. Skipping build."
-        fi
-        
     - name: Build package
-      if: steps.check-package.outputs.exists == 'true'
-      run: |
-        python -m build
-        ls -la dist/
+      run: python -m build
       
     - name: Check package
-      if: steps.check-package.outputs.exists == 'true'
       run: twine check dist/*
     
-
-    
-    - name: Publish to TestPyPI
-      if: github.event.inputs.test_pypi == 'true'
-      env:
-        TWINE_USERNAME: __token__
-        TWINE_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
-      run: twine upload --repository testpypi dist/*
-      continue-on-error: true
-      
     - name: Publish to PyPI
       if: github.event.inputs.test_pypi != 'true'
       env:
