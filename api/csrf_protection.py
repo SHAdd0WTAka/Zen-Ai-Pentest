@@ -14,7 +14,6 @@ Schützt vor:
 
 import os
 import secrets
-import hashlib
 import hmac
 from typing import Optional, Dict
 from datetime import datetime, timedelta

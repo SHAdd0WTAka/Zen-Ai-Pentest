@@ -1,5 +1,5 @@
 """API Database Module (Stub)"""
-from typing import Any, Generator
+from typing import Generator
 
 
 def init_db() -> None:

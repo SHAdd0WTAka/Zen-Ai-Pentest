@@ -8,13 +8,12 @@ Custom Middleware for FastAPI
 
 import logging
 import time
-from typing import Dict, Optional
+from typing import Dict
 
 from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.types import ASGIApp
 
-from api.core.cache import get_cache
 from api.core.config import settings
 
 logger = logging.getLogger("ZenAI.API.Middleware")

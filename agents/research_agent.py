@@ -117,6 +117,7 @@ class ResearchAgent(BaseAgent):
         """Perform actual research based on context"""
         findings = []
         target = context.get("target", "")
+        _ = target  # TODO: Use target for research
 
         # Research 1: Check for known CVEs related to target tech
         technologies = context.get("technologies", [])

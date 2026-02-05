@@ -7,7 +7,7 @@ Erweiterung des ReAct Agents für isolierte VM-basierte Pentests.
 from typing import List
 import logging
 
-from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
+from langchain_core.messages import HumanMessage, AIMessage, SystemMessage, ToolMessage
 from langgraph.graph import StateGraph, START, END
 from langgraph.checkpoint.memory import MemorySaver
 
