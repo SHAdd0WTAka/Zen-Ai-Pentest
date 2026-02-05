@@ -9,7 +9,7 @@ Author: SHAdd0WTAka
 import asyncio
 import logging
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from .agent_base import AgentMessage, AgentRole, BaseAgent
 
@@ -279,7 +279,7 @@ class AgentOrchestrator:
         from .post_scan_agent import PostScanAgent
 
         logger.info(f"[Orchestrator] Starting post-scan workflow for {target}")
-        print(f"\n[Post-Scan Workflow] Initiating professional pentest follow-up...")
+        print("\n[Post-Scan Workflow] Initiating professional pentest follow-up...")
 
         # Create and run post-scan agent
         post_scan_agent = PostScanAgent()

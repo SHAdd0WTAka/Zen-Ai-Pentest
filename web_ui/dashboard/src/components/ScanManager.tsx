@@ -1,12 +1,10 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { 
   Plus, 
   Search, 
   Filter, 
-  Play, 
   StopCircle, 
   RotateCw,
-  Clock,
   Target,
   FileText,
   ChevronDown,
@@ -226,8 +224,7 @@ function ScanLogsPanel({
   onClose: () => void 
 }) {
   const [logs, setLogs] = useState<ScanLog[]>([])
-  const [ws, setWs] = useState<WebSocket | null>(null)
-  const logsEndRef = useState<HTMLDivElement | null>(null)
+  const logsEndRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     if (!scanId || !isOpen) return

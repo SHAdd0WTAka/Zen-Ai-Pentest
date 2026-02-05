@@ -7,7 +7,7 @@ Author: SHAdd0WTAka
 
 import asyncio
 import sys
-from typing import Dict
+
 
 from backends.duckduckgo import DuckDuckGoBackend
 from core.orchestrator import ZenOrchestrator
@@ -135,7 +135,7 @@ Examples:
                     results = await self.integration.analyze_target(
                         target=args, findings=[]
                     )
-                    print(colorize(f"[+] Analysis complete!", "green"))
+                    print(colorize("[+] Analysis complete!", "green"))
                     print(
                         colorize(
                             f"[*] Agent responses: {len(results.get('agent_responses', {}))}",

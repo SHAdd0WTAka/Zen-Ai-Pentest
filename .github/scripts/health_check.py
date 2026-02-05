@@ -623,7 +623,7 @@ Generated: {self.now.strftime("%Y-%m-%d %H:%M UTC")}
 - **Ahead of Upstream:** {self.metrics.sync_details.get('ahead_by', 'N/A')} commits
 """
         
-        report += f"""
+        report += """
 ---
 
 ## 💡 Recommendations
@@ -636,7 +636,7 @@ Generated: {self.now.strftime("%Y-%m-%d %H:%M UTC")}
         else:
             report += "✅ No recommendations at this time. Repository looks healthy!\n"
         
-        report += f"""
+        report += """
 ---
 
 ## 📊 Health Score Trend
@@ -672,7 +672,7 @@ See `.github/health-trends/` for historical data.
                 status = "Healthy" if self.metrics.overall_score >= 80 else "Needs Attention" if self.metrics.overall_score >= 50 else "Critical"
                 f.write(f"health_status={status}\n")
                 
-                f.write(f"report_file=health-report.md\n")
+                f.write("report_file=health-report.md\n")
                 f.write(f"critical_issues={self.metrics.critical_issues}\n")
                 f.write(f"has_recommendations={'true' if self.metrics.recommendations else 'false'}\n")
         

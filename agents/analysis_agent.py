@@ -5,9 +5,8 @@ Part of the Multi-Agent Collaboration System
 Author: SHAdd0WTAka
 """
 
-import asyncio
 import logging
-from typing import Any, Dict, List
+from typing import Dict, List
 
 from .agent_base import AgentMessage, AgentRole, BaseAgent
 
@@ -99,7 +98,6 @@ class AnalysisAgent(BaseAgent):
 
         # Look for critical patterns
         cves = [f for f in findings if f.get("type") == "cve"]
-        ransomware = [f for f in findings if f.get("type") == "ransomware"]
 
         # Pattern 1: CVE associated with ransomware
         for cve in cves:
