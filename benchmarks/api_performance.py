@@ -15,7 +15,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from modules.benchmark import (
     BenchmarkRunner, BenchmarkResult, BenchmarkCategory,
-    measure_api_latency, ThroughputMetrics
+    ThroughputMetrics
 )
 
 
@@ -449,7 +449,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     async def main():
-        config = APIBenchmarkConfig(
+        _ = APIBenchmarkConfig(  # TODO: Use config
             iterations=args.iterations,
             concurrent_requests=args.concurrent,
             base_url=args.base_url

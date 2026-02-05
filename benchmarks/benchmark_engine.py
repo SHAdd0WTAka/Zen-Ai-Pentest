@@ -9,23 +9,22 @@ import asyncio
 import hashlib
 import json
 import logging
-import os
 import time
 import uuid
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum, auto
 from pathlib import Path
-from typing import Dict, List, Optional, Any, Callable, Union
+from typing import Dict, List, Optional, Any
 import traceback
 
 # Type hints for Zen-AI-Pentest core
 from ..core.orchestrator import PentestOrchestrator
-from ..core.models import ScanTarget, ScanConfig, ScanResult
+
 
 from .metrics import (
     BenchmarkMetrics, ClassificationMetrics, CoverageMetrics,
-    PerformanceMetrics, ExploitMetrics, TokenUsage, FindingMetrics,
+    ExploitMetrics, TokenUsage, FindingMetrics,
     SeverityLevel, FindingType, MetricsAggregator
 )
 from .scenarios import (
