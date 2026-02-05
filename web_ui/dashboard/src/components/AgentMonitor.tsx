@@ -4,8 +4,11 @@ import {
   Activity, 
   Brain,
   MessageSquare,
+  Play,
+  Pause,
   Square,
   Zap,
+  Clock,
   Terminal,
   Users,
   Wifi,
@@ -58,14 +61,14 @@ interface AgentAction {
   success: boolean | null
 }
 
-const STATE_COLORS: Record<string, { bg: string; text: string; icon: React.ElementType }> = {
-  idle: { bg: 'bg-slate-500/20', text: 'text-slate-400', icon: Bot },
-  thinking: { bg: 'bg-yellow-500/20', text: 'text-yellow-400', icon: Brain },
-  executing: { bg: 'bg-blue-500/20', text: 'text-blue-400', icon: Zap },
-  waiting: { bg: 'bg-orange-500/20', text: 'text-orange-400', icon: Clock },
-  completed: { bg: 'bg-green-500/20', text: 'text-green-400', icon: Activity },
-  failed: { bg: 'bg-red-500/20', text: 'text-red-400', icon: Activity },
-  stopped: { bg: 'bg-gray-500/20', text: 'text-gray-400', icon: Square },
+const STATE_COLORS: Record<string, { bg: string; text: string }> = {
+  idle: { bg: 'bg-slate-500/20', text: 'text-slate-400' },
+  thinking: { bg: 'bg-yellow-500/20', text: 'text-yellow-400' },
+  executing: { bg: 'bg-blue-500/20', text: 'text-blue-400' },
+  waiting: { bg: 'bg-orange-500/20', text: 'text-orange-400' },
+  completed: { bg: 'bg-green-500/20', text: 'text-green-400' },
+  failed: { bg: 'bg-red-500/20', text: 'text-red-400' },
+  stopped: { bg: 'bg-gray-500/20', text: 'text-gray-400' },
 }
 
 const ROLE_ICONS: Record<string, React.ElementType> = {
@@ -87,9 +90,9 @@ function RoleIconDisplay({
   state: string
   className?: string
 }) {
-  const Icon = ROLE_ICONS[role] || Bot
+  const IconComponent = ROLE_ICONS[role] || Bot
   const stateConfig = STATE_COLORS[state] || STATE_COLORS.idle
-  return <Icon className={cn(className, stateConfig.text)} />
+  return <IconComponent className={cn(className, stateConfig.text)} />
 }
 
 // Agent Card Component

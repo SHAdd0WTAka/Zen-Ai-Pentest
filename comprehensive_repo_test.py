@@ -6,7 +6,6 @@ Testet ALLE Komponenten des gesamten Repositories
 import sys
 import json
 import subprocess
-import time
 from datetime import datetime
 from pathlib import Path
 
@@ -142,7 +141,7 @@ def test_api_endpoints():
             
             status_ok = r.status_code in [200, 401, 422]  # Auth errors are OK for structure
             log_test(f"API: {name}", status_ok, f"HTTP {r.status_code}")
-        except Exception as e:
+        except Exception:
             log_test(f"API: {name}", False, "not reachable")
     
     # Test Auth
@@ -152,7 +151,7 @@ def test_api_endpoints():
                          timeout=5)
         has_token = 'access_token' in r.json() if r.status_code == 200 else False
         log_test("API: Auth/Login", has_token)
-    except Exception as e:
+    except Exception:
         log_test("API: Auth/Login", False)
 
 def test_siem_integration():
@@ -174,7 +173,7 @@ def test_siem_integration():
             "is_mock": True
         }, timeout=5)
         log_test("SIEM Connect", r.status_code == 200)
-    except Exception as e:
+    except Exception:
         log_test("SIEM Connect", False)
     
     # 2. Send Events
@@ -190,7 +189,7 @@ def test_siem_integration():
             }, timeout=5)
             if r.status_code == 200:
                 events_sent += 1
-        except:
+        except Exception:
             pass
     
     log_test("SIEM Send Events", events_sent >= 3, f"{events_sent}/5 sent")
@@ -200,7 +199,7 @@ def test_siem_integration():
         r = requests.get(f"{base_url}/siem/events", timeout=5)
         event_count = r.json().get('total', 0) if r.status_code == 200 else 0
         log_test("SIEM Get Events", event_count > 0, f"{event_count} events")
-    except Exception as e:
+    except Exception:
         log_test("SIEM Get Events", False)
 
 def test_report_generation():
@@ -208,19 +207,18 @@ def test_report_generation():
     print("\n[TEST 6] Report-Generierung")
     print("-" * 70)
     
-    import asyncio
     sys.path.insert(0, str(REPO_PATH))
     
     try:
         from modules.report_gen import ReportGenerator
-        from modules.report_export import ReportExporter, ReportData
+        from modules.report_export import ReportExporter
         
         # Test ReportGenerator
         gen = ReportGenerator()
         log_test("ReportGenerator init", True)
         
         # Test ReportExporter
-        exporter = ReportExporter()
+        _ = ReportExporter()
         log_test("ReportExporter init", True)
         
         # Test async methods exist
@@ -229,8 +227,8 @@ def test_report_generation():
         assert hasattr(gen, 'export_json')
         log_test("Report methods", True)
         
-    except Exception as e:
-        log_test("Report generation", False, str(e)[:30])
+    except Exception as exc:
+        log_test("Report generation", False, str(exc)[:30])
     
     # Check generated reports
     try:
@@ -241,7 +239,7 @@ def test_report_generation():
         total_reports = len(json_files) + len(md_files)
         log_test("Generated Reports", total_reports > 0, 
                 f"{len(json_files)} JSON, {len(md_files)} MD")
-    except Exception as e:
+    except Exception:
         log_test("Generated Reports", False)
 
 def test_cli_tools():
