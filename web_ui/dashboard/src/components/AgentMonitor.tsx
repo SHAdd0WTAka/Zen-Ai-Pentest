@@ -90,9 +90,9 @@ function RoleIconDisplay({
   state: string
   className?: string
 }) {
-  const IconComponent = ROLE_ICONS[role] || Bot
+  const Icon = ROLE_ICONS[role] || Bot
   const stateConfig = STATE_COLORS[state] || STATE_COLORS.idle
-  return <IconComponent className={cn(className, stateConfig.text)} />
+  return <Icon className={cn(className, stateConfig.text)} />
 }
 
 // Agent Card Component
