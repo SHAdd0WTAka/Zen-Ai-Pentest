@@ -206,7 +206,7 @@ async def demo_pentest_workflow():
     if status.connected:
         print("    ✅ VPN tunnel established")
         print(f"    Public IP: {status.public_ip}")
-        print(f"    Kill Switch: ACTIVE")
+        print("    Kill Switch: ACTIVE")
         
         # Phase 2: Reconnaissance
         print("\n[Phase 2] Anonymous Reconnaissance")
@@ -223,7 +223,7 @@ async def demo_pentest_workflow():
         
         new_status = await vpn.rotate_ip(country="NL")
         print(f"    New IP: {new_status.public_ip}")
-        print(f"    Continuing scan from new location...")
+        print("    Continuing scan from new location...")
         
         # Phase 4: C2 Setup
         print("\n[Phase 4] Secure C2 Communication")

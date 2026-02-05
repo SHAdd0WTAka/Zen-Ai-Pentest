@@ -4,12 +4,12 @@ Zen Shield Demo - Security Sanitization in Action
 """
 
 import asyncio
-import json
+
 import sys
 from pathlib import Path
 
 from rich.console import Console
-from rich.json import JSON
+
 from rich.panel import Panel
 from rich.table import Table
 
@@ -134,7 +134,7 @@ async def demo_compression():
     # Simulate large Nmap output
     large_output = ""
     for i in range(1000):
-        large_output += f"Scanning port {i}... {"open" if i % 100 == 0 else "closed"}\n"
+        large_output += f"Scanning port {i}... {'open' if i % 100 == 0 else 'closed'}\n"
 
     console.print(f"[bold]Original Size:[/] {len(large_output)} characters")
 

@@ -5,7 +5,7 @@ Inklusive VMs, Router, Drucker, etc.
 """
 import socket
 import subprocess
-import sys
+
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 
@@ -41,7 +41,7 @@ def scan_host(ip_suffix):
             # Host ist online, versuche Hostname zu bekommen
             try:
                 hostname = socket.gethostbyaddr(ip)[0]
-            except:
+            except Exception:
                 hostname = "Unknown"
             return (ip, hostname, True)
     except:
