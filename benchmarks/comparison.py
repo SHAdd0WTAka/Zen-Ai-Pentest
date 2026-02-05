@@ -5,6 +5,7 @@ Compare Zen-AI-Pentest performance against other security tools.
 Supports both AI-based and traditional security scanners.
 """
 
+import math
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Any
 from datetime import datetime
@@ -724,5 +725,4 @@ def calculate_cohen_d(group1: List[float], group2: List[float]) -> float:
     return (mean1 - mean2) / pooled_std
 
 
-# Import math here for calculate_cohen_d
-import math
+# math imported at top

@@ -20,7 +20,7 @@ from .benchmark_engine import (
     BenchmarkEngine, BenchmarkConfig, BenchmarkReport,
     BenchmarkStatus
 )
-from .metrics import BenchmarkMetrics
+
 from .scenarios import ALL_SCENARIOS
 
 logger = logging.getLogger(__name__)
