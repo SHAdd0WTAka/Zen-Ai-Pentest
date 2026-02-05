@@ -3,6 +3,30 @@
 > 🛡️ **Professional AI-Powered Penetration Testing Framework**
 
 [![Python](https://img.shields.io/badge/Python-3.9%2B-blue)](https://python.org)
+- **Guest Control**: Execute tools inside isolated VMs
+
+### 🚀 Modern API & Backend
+- **FastAPI**: High-performance REST API
+- **PostgreSQL**: Persistent data storage
+- **WebSocket**: Real-time scan updates
+- **JWT Auth**: Role-based access control (RBAC)
+- **Background Tasks**: Async scan execution
+
+### 📊 Reporting & Notifications
+- **PDF Reports**: Professional findings reports
+- **HTML Dashboard**: Interactive web interface
+- **Slack/Email**: Instant notifications
+- **JSON/XML**: Integration with other tools
+
+### 🐳 Easy Deployment
+- **Docker Compose**: One-command full stack deployment
+- **CI/CD**: GitHub Actions pipeline
+- **Production Ready**: Optimized for enterprise use
+
+---
+
+## 🚀 Quick Start
+
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.104%2B-green)](https://fastapi.tiangolo.com)
 [![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
 [![Docker](https://img.shields.io/badge/Docker-Ready-blue)](docker/)
@@ -161,30 +185,6 @@
 - **Local**: VirtualBox VM Management
 - **Cloud**: AWS EC2, Azure VMs, Google Cloud Compute
 - **Snapshots**: Automated clean-state workflows
-- **Guest Control**: Execute tools inside isolated VMs
-
-### 🚀 Modern API & Backend
-- **FastAPI**: High-performance REST API
-- **PostgreSQL**: Persistent data storage
-- **WebSocket**: Real-time scan updates
-- **JWT Auth**: Role-based access control (RBAC)
-- **Background Tasks**: Async scan execution
-
-### 📊 Reporting & Notifications
-- **PDF Reports**: Professional findings reports
-- **HTML Dashboard**: Interactive web interface
-- **Slack/Email**: Instant notifications
-- **JSON/XML**: Integration with other tools
-
-### 🐳 Easy Deployment
-- **Docker Compose**: One-command full stack deployment
-- **CI/CD**: GitHub Actions pipeline
-- **Production Ready**: Optimized for enterprise use
-
----
-
-## 🚀 Quick Start
-
 ### Option 1: Docker (Recommended)
 
 ```bash
