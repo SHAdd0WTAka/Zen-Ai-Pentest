@@ -5,8 +5,7 @@ This file demonstrates common use cases for the benchmark framework.
 """
 
 import asyncio
-import json
-from datetime import datetime
+
 
 # Import main components
 from benchmarks import (
@@ -15,13 +14,10 @@ from benchmarks import (
     BenchmarkMetrics,
     ClassificationMetrics,
     CoverageMetrics,
-    PerformanceMetrics,
-    ExploitMetrics,
     TokenUsage,
     FindingMetrics,
     SeverityLevel,
     FindingType,
-    get_scenario,
     list_all_scenarios,
     create_benchmark_suite,
     ComparisonFramework
@@ -55,7 +51,7 @@ async def example_2_run_simple_benchmark():
     print("=" * 60)
     
     # Create benchmark engine
-    engine = BenchmarkEngine(output_dir="example_results")
+    _ = BenchmarkEngine(output_dir="example_results")  # TODO: Use engine
     
     # Configure benchmark
     config = BenchmarkConfig(
@@ -169,7 +165,7 @@ async def example_3_work_with_metrics():
         model="gpt-4"
     )
     
-    print(f"\nToken Usage:")
+    print("\nToken Usage:")
     print(f"  Prompt Tokens: {metrics.token_usage.prompt_tokens}")
     print(f"  Completion Tokens: {metrics.token_usage.completion_tokens}")
     print(f"  Total Tokens: {metrics.token_usage.total_tokens}")
@@ -201,7 +197,7 @@ async def example_4_create_custom_suite():
         max_duration_minutes=60
     )
     
-    print(f"\nCreated web app benchmark suite:")
+    print("\nCreated web app benchmark suite:")
     print(f"  Total scenarios: {len(web_suite)}")
     for scenario in web_suite:
         print(f"    - {scenario.name} ({scenario.difficulty.value})")
