@@ -2,7 +2,7 @@
 SIEM Integration API v1.0
 """
 
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
 from datetime import datetime
@@ -10,8 +10,7 @@ from datetime import datetime
 from modules.siem_integration import (
     SIEMIntegrationManager, 
     SIEMConfig, 
-    SecurityEvent,
-    create_siem_connector
+    SecurityEvent
 )
 
 router = APIRouter()

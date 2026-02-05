@@ -18,9 +18,9 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from api.auth import verify_token
-from api.schemas import ScanResponse, ScanStatus, Severity
+from api.schemas import ScanResponse
 from api.websocket import ConnectionManager
-from database.models import Scan, Finding, get_db
+from database.models import Finding, get_db
 from database.crud import create_scan, get_scan, update_scan_status
 
 logger = logging.getLogger(__name__)
@@ -473,7 +473,7 @@ async def get_scan_timeline(
                 start = datetime.fromisoformat(item["started_at"])
                 end = datetime.fromisoformat(item["completed_at"])
                 item["duration_seconds"] = int((end - start).total_seconds())
-            except:
+            except Exception:
                 pass
     
     return {

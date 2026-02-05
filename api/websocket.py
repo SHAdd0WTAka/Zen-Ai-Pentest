@@ -2,9 +2,8 @@
 WebSocket Connection Manager für Real-Time Updates
 """
 
-import json
 import logging
-from typing import Dict, List, Set
+from typing import Dict, Set
 from fastapi import WebSocket
 
 logger = logging.getLogger(__name__)

@@ -171,7 +171,7 @@ async def websocket_notifications_endpoint(websocket: WebSocket, user_id: str = 
     await manager_v2.connect(websocket, room="notifications", user_id=user_id)
     try:
         while True:
-            data = await websocket.receive_text()
+            _ = await websocket.receive_text()
             # Acknowledge receipt
             await websocket.send_json({
                 "type": "ack",

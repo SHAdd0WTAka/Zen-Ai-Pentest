@@ -15,7 +15,6 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from api.auth import verify_token
-from api.schemas import Severity
 from api.websocket import ConnectionManager
 from database.models import Scan, Finding, Report, get_db
 
