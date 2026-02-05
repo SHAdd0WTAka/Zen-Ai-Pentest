@@ -4,13 +4,11 @@ ReAct Agent mit VirtualBox VM-Integration
 Erweiterung des ReAct Agents für isolierte VM-basierte Pentests.
 """
 
-from typing import List, TypedDict, Annotated, Literal
+from typing import List
 import logging
 
-from langchain_core.tools import tool
-from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, ToolMessage, SystemMessage
-from langchain_core.prompts import ChatPromptTemplate
-from langgraph.graph import StateGraph, START, END, add_messages
+from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
+from langgraph.graph import StateGraph, START, END
 from langgraph.checkpoint.memory import MemorySaver
 
 from .react_agent import ReActAgent, ReActAgentConfig, AgentState
@@ -169,8 +167,6 @@ Wenn fertig, gib eine finale Zusammenfassung."""
     def _create_vm_tools(self) -> List:
         """Erstellt VM-basierte Tools"""
         from langchain_core.tools import tool
-        
-        config = self.vm_config
         
         @tool
         def vm_nmap_scan(target: str, ports: str = "top-100") -> str:

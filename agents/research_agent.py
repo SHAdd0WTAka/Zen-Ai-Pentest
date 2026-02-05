@@ -5,9 +5,8 @@ Part of the Multi-Agent Collaboration System
 Author: SHAdd0WTAka
 """
 
-import asyncio
 import logging
-from typing import Any, Dict, List
+from typing import Dict, List
 
 from modules.cve_database import CVEDatabase
 from modules.sql_injection_db import SQLInjectionDatabase

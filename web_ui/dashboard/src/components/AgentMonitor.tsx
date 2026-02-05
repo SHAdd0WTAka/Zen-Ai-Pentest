@@ -80,6 +80,21 @@ const ROLE_ICONS: Record<string, React.ElementType> = {
   post_exploitation: Activity,
 }
 
+// Role Icon Display Component
+function RoleIconDisplay({ 
+  role, 
+  state,
+  className = 'w-6 h-6'
+}: { 
+  role: string
+  state: string
+  className?: string
+}) {
+  const IconComponent = ROLE_ICONS[role] || Bot
+  const stateConfig = STATE_COLORS[state] || STATE_COLORS.idle
+  return <IconComponent className={cn(className, stateConfig.text)} />
+}
+
 // Agent Card Component
 function AgentCard({ 
   agent, 
@@ -534,10 +549,11 @@ export default function AgentMonitor() {
                     'w-12 h-12 rounded-xl flex items-center justify-center',
                     STATE_COLORS[selectedAgent.state]?.bg || STATE_COLORS.idle.bg
                   )}>
-                    {(() => {
-                      const Icon = ROLE_ICONS[selectedAgent.role] || Bot
-                      return <Icon className={cn('w-6 h-6', STATE_COLORS[selectedAgent.state]?.text || STATE_COLORS.idle.text)} />
-                    })()}
+                    <RoleIconDisplay 
+                      role={selectedAgent.role} 
+                      state={selectedAgent.state}
+                      className="w-6 h-6"
+                    />
                   </div>
                   <div>
                     <h2 className="text-xl font-bold text-slate-100">{selectedAgent.name}</h2>
