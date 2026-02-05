@@ -17,9 +17,8 @@ Metrics:
 import os
 import sys
 import json
-import re
 from datetime import datetime, timedelta
-from typing import Dict, List, Any, Optional, Tuple
+from typing import Dict, List, Any, Optional
 from dataclasses import dataclass, asdict
 import requests
 from urllib.parse import urljoin

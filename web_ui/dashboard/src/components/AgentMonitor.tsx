@@ -92,7 +92,6 @@ function AgentCard({
 }) {
   const stateConfig = STATE_COLORS[agent.state] || STATE_COLORS.idle
   const RoleIcon = ROLE_ICONS[agent.role] || Bot
-  const StateIcon = stateConfig.icon
 
   return (
     <button
@@ -147,11 +146,9 @@ function AgentCard({
 
 // Thought Stream Component
 function ThoughtStream({ 
-  thoughts, 
-  agentId 
+  thoughts 
 }: { 
   thoughts: AgentThought[]
-  agentId: string 
 }) {
   const scrollRef = useRef<HTMLDivElement>(null)
 
@@ -537,7 +534,10 @@ export default function AgentMonitor() {
                     'w-12 h-12 rounded-xl flex items-center justify-center',
                     STATE_COLORS[selectedAgent.state]?.bg || STATE_COLORS.idle.bg
                   )}>
-                    {(ROLE_ICONS[selectedAgent.role] || Bot)({ className: cn('w-6 h-6', STATE_COLORS[selectedAgent.state]?.text || STATE_COLORS.idle.text) })}
+                    {(() => {
+                      const IconComponent = ROLE_ICONS[selectedAgent.role] || Bot
+                      return <IconComponent className={cn('w-6 h-6', STATE_COLORS[selectedAgent.state]?.text || STATE_COLORS.idle.text)} />
+                    })()}
                   </div>
                   <div>
                     <h2 className="text-xl font-bold text-slate-100">{selectedAgent.name}</h2>
@@ -554,7 +554,7 @@ export default function AgentMonitor() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  {selectedAgent.state === 'running' || selectedAgent.state === 'thinking' || selectedAgent.state === 'executing' ? (
+                  {(selectedAgent.state === 'thinking' || selectedAgent.state === 'executing') ? (
                     <>
                       <button
                         onClick={() => handleControlAction('pause')}
@@ -651,7 +651,7 @@ export default function AgentMonitor() {
 
             {/* Tab Content */}
             {activeTab === 'thoughts' ? (
-              <ThoughtStream thoughts={thoughts} agentId={selectedAgent.id} />
+              <ThoughtStream thoughts={thoughts} />
             ) : (
               <ActionLog actions={actions} />
             )}

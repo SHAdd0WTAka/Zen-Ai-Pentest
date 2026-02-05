@@ -17,10 +17,8 @@ Usage:
 import os
 import sys
 import json
-import re
-import subprocess
 from datetime import datetime, timedelta
-from typing import Dict, List, Any, Optional, Tuple
+from typing import Dict, List, Any, Optional
 from dataclasses import dataclass
 import requests
 from urllib.parse import urljoin
@@ -158,7 +156,7 @@ class AutoFixer:
         self.now = datetime.now()
         self.dry_run = os.environ.get("DRY_RUN", "false").lower() == "true"
         
-        print(f"🔧 Auto-Fix Configuration:")
+        print("🔧 Auto-Fix Configuration:")
         print(f"   Repository: {repo}")
         print(f"   Fix Level: {self.fix_level}")
         print(f"   Health Score: {self.health_score}")
@@ -218,7 +216,7 @@ class AutoFixer:
                 continue  # Skip PRs
             
             # Check if issue has stale label
-            labels = [l["name"].lower() for l in issue.get("labels", [])]
+            labels = [label["name"].lower() for label in issue.get("labels", [])]
             if "stale" not in labels and "auto-close" not in labels:
                 continue
             
@@ -297,7 +295,7 @@ If this issue is still relevant, please:
                 continue
             
             # Check if already has stale label
-            labels = [l["name"].lower() for l in pr.get("labels", [])]
+            labels = [label["name"].lower() for label in pr.get("labels", [])]
             if "stale" in labels:
                 continue
             
@@ -501,7 +499,7 @@ Please:
             return
         
         if self.dry_run:
-            print(f"   [DRY RUN] Would sync fork with upstream")
+            print("   [DRY RUN] Would sync fork with upstream")
             self.results.append(FixResult(
                 category="Sync",
                 action="Fork sync",
@@ -543,7 +541,7 @@ Please review and merge this PR to keep your fork up to date.
                     details={"pr_number": pr["number"], "commits": behind_by}
                 ))
             else:
-                print_colored(f"   ❌ Failed to create sync PR", Colors.RED)
+                print_colored("   ❌ Failed to create sync PR", Colors.RED)
                 self.results.append(FixResult(
                     category="Sync",
                     action="Fork sync",
