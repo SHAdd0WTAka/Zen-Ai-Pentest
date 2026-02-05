@@ -27,7 +27,7 @@ r = requests.post(f'{BASE}/api/v1/scans',
 )
 
 scan = r.json()
-print(f"\nScan erstellt:")
+print("\nScan erstellt:")
 print(f"  ID: {scan['id']}")
 print(f"  Status: {scan['status']}")
 print(f"  Target: {scan['target']}")
@@ -44,7 +44,7 @@ for i in range(5):
 
 # Ergebnisse holen
 results = requests.get(f'{BASE}/api/v1/scans/{scan["id"]}/results', headers=headers).json()
-print(f"\nErgebnisse:")
+print("\nErgebnisse:")
 print(f"  Findings: {len(results.get('findings', []))}")
 
 print("\n" + "=" * 60)

@@ -15,7 +15,7 @@ login_resp = requests.post(f'{BASE}/auth/login', json={
 })
 
 token = login_resp.json()['access_token']
-print(f"Token erhalten!")
+print("Token erhalten!")
 print(f"Token (gekürzt): {token[:50]}...")
 
 # Header mit Auth

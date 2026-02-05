@@ -4,14 +4,12 @@ Autonomous Agent - Main Entry Point
 Combines ReAct reasoning, tool execution, and memory into a unified agent.
 """
 
-import asyncio
-import json
 import logging
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Callable, Dict, List, Optional
 
-from .react import ReActLoop, Thought, Action, Observation
+from .react import ReActLoop
 from .tool_executor import ToolExecutor, ToolRegistry, SafetyLevel
 from .memory import MemoryManager
 

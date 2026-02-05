@@ -20,7 +20,7 @@ print("\n[2] Stats Overview...")
 try:
     r = requests.get(f"{BASE}/stats/overview")
     print(f"    Stats: {r.json()}")
-except:
+except Exception:
     print("    Stats nicht verfügbar")
 
 # 3. SIEM Events
