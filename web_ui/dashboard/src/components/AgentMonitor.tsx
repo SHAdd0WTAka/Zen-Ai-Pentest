@@ -535,8 +535,8 @@ export default function AgentMonitor() {
                     STATE_COLORS[selectedAgent.state]?.bg || STATE_COLORS.idle.bg
                   )}>
                     {(() => {
-                      const IconComponent = ROLE_ICONS[selectedAgent.role] || Bot
-                      return <IconComponent className={cn('w-6 h-6', STATE_COLORS[selectedAgent.state]?.text || STATE_COLORS.idle.text)} />
+                      const Icon = ROLE_ICONS[selectedAgent.role] || Bot
+                      return <Icon className={cn('w-6 h-6', STATE_COLORS[selectedAgent.state]?.text || STATE_COLORS.idle.text)} />
                     })()}
                   </div>
                   <div>

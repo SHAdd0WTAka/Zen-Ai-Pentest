@@ -10,15 +10,14 @@ Verbessert den bestehenden ReAct Agent um:
 """
 
 from typing import List, TypedDict, Annotated, Literal, Dict, Optional, Any
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
 import json
 import logging
 
-from langchain_core.tools import tool, BaseTool
+from langchain_core.tools import tool
 from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, ToolMessage, SystemMessage
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.runnables import RunnableConfig
+
 from langgraph.graph import StateGraph, START, END, add_messages
 from langgraph.checkpoint.memory import MemorySaver
 
@@ -192,8 +191,6 @@ class ReActAgentEnhanced:
     def _build_graph(self) -> StateGraph:
         """Baut den erweiterten LangGraph Workflow"""
         
-        llm_with_tools = self.llm.bind_tools(self.tools)
-        
         # === PHASE 1: PLAN ===
         def plan_node(state: AgentStateEnhanced) -> AgentStateEnhanced:
             """Plan Node: Erstellt einen strukturierten Plan"""
@@ -340,7 +337,7 @@ WICHTIG:
         # === PHASE 3: OBSERVE ===
         def observe_node(state: AgentStateEnhanced) -> AgentStateEnhanced:
             """Observe Node: Analysiert das Ergebnis"""
-            logger.info(f"[OBSERVE] Analysiere Ergebnisse")
+            logger.info("[OBSERVE] Analysiere Ergebnisse")
             
             current_step = state["plan"][state["current_step_index"]]
             result = current_step.get("result", "")
@@ -371,7 +368,7 @@ Antworte in 2-3 Sätzen."""
         # === PHASE 4: REFLECT ===
         def reflect_node(state: AgentStateEnhanced) -> AgentStateEnhanced:
             """Reflect Node: Bewertet Fortschritt und entscheidet weiteres Vorgehen"""
-            logger.info(f"[REFLECT] Bewerte Fortschritt")
+            logger.info("[REFLECT] Bewerte Fortschritt")
             
             if not self.config.enable_reflection:
                 return self._advance_or_complete(state)
@@ -492,7 +489,7 @@ Antworte mit einer klaren Empfehlung."""
                 json_str = content
             
             return json.loads(json_str.strip())
-        except:
+        except Exception:
             # Fallback: manuelles Parsen
             logger.warning("Konnte Plan nicht als JSON parsen, nutze Fallback")
             return {
