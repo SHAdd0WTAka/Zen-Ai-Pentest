@@ -1,0 +1,351 @@
+# =============================================================================
+# ZenScan Operator Deployment
+# =============================================================================
+# Description: Kubernetes operator for managing ZenScan resources
+# Version: 2.0.0
+# =============================================================================
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: zen-operator
+  labels:
+    app.kubernetes.io/name: zen-operator
+
+---
+# =============================================================================
+# Service Account for Operator
+# =============================================================================
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: zen-operator
+  namespace: zen-operator
+  labels:
+    app.kubernetes.io/name: zen-operator
+
+---
+# =============================================================================
+# RBAC: ClusterRole for Operator
+# =============================================================================
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: zen-operator
+rules:
+  # CRD management
+  - apiGroups:
+      - security.zen.io
+    resources:
+      - zenscans
+      - zenscans/status
+      - zenscans/finalizers
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+  
+  # Job management
+  - apiGroups:
+      - batch
+    resources:
+      - jobs
+      - cronjobs
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+  
+  # Pod management
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+      - pods/log
+    verbs:
+      - get
+      - list
+      - watch
+  
+  # ConfigMap and Secret management
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+      - secrets
+      - persistentvolumeclaims
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+  
+  # Event creation
+  - apiGroups:
+      - ""
+    resources:
+      - events
+    verbs:
+      - create
+      - patch
+
+---
+# =============================================================================
+# RBAC: ClusterRole Binding
+# =============================================================================
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: zen-operator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: zen-operator
+subjects:
+  - kind: ServiceAccount
+    name: zen-operator
+    namespace: zen-operator
+
+---
+# =============================================================================
+# ConfigMap: Operator Configuration
+# =============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: zen-operator-config
+  namespace: zen-operator
+data:
+  config.yaml: |
+    operator:
+      name: zen-scan-operator
+      version: "2.0.0"
+      workers: 3
+      resyncPeriod: 300
+      
+    scan:
+      defaultImage: "zenai/zen-pentest:latest"
+      defaultTimeout: 3600
+      defaultResources:
+        limits:
+          cpu: "1000m"
+          memory: "2Gi"
+        requests:
+          cpu: "250m"
+          memory: "512Mi"
+      
+    storage:
+      defaultStorageClass: "standard"
+      defaultSize: "10Gi"
+      
+    metrics:
+      enabled: true
+      port: 8080
+      path: /metrics
+
+---
+# =============================================================================
+# Deployment: ZenScan Operator
+# =============================================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zen-operator
+  namespace: zen-operator
+  labels:
+    app.kubernetes.io/name: zen-operator
+    app.kubernetes.io/component: operator
+    app.kubernetes.io/version: "2.0.0"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: zen-operator
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: zen-operator
+        app.kubernetes.io/component: operator
+    spec:
+      serviceAccountName: zen-operator
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      
+      containers:
+        - name: operator
+          image: zenai/zen-pentest-operator:2.0.0
+          imagePullPolicy: IfNotPresent
+          
+          ports:
+            - name: metrics
+              containerPort: 8080
+              protocol: TCP
+            - name: health
+              containerPort: 8081
+              protocol: TCP
+          
+          env:
+            - name: OPERATOR_NAME
+              value: "zen-operator"
+            - name: WATCH_NAMESPACE
+              value: ""  # Empty = watch all namespaces
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          
+          resources:
+            limits:
+              cpu: 500m
+              memory: 256Mi
+            requests:
+              cpu: 100m
+              memory: 64Mi
+          
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: health
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: health
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          
+          volumeMounts:
+            - name: config
+              mountPath: /etc/zen-operator
+              readOnly: true
+      
+      volumes:
+        - name: config
+          configMap:
+            name: zen-operator-config
+      
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app.kubernetes.io/name
+                      operator: In
+                      values:
+                        - zen-operator
+                topologyKey: kubernetes.io/hostname
+
+---
+# =============================================================================
+# Service: Operator Metrics
+# =============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: zen-operator-metrics
+  namespace: zen-operator
+  labels:
+    app.kubernetes.io/name: zen-operator
+spec:
+  type: ClusterIP
+  ports:
+    - name: metrics
+      port: 8080
+      targetPort: metrics
+      protocol: TCP
+    - name: health
+      port: 8081
+      targetPort: health
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: zen-operator
+
+---
+# =============================================================================
+# HorizontalPodAutoscaler: Operator Scaling
+# =============================================================================
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: zen-operator-hpa
+  namespace: zen-operator
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: zen-operator
+  minReplicas: 1
+  maxReplicas: 3
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 80
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+
+---
+# =============================================================================
+# PodDisruptionBudget: Ensure Availability
+# =============================================================================
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: zen-operator-pdb
+  namespace: zen-operator
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: zen-operator
+
+---
+# =============================================================================
+# ServiceMonitor: Prometheus Integration (requires Prometheus Operator)
+# =============================================================================
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: zen-operator-metrics
+  namespace: zen-operator
+  labels:
+    app.kubernetes.io/name: zen-operator
+    prometheus.io/scrape: "true"
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: zen-operator
+  endpoints:
+    - port: metrics
+      interval: 30s
+      path: /metrics
+      scrapeTimeout: 10s
+  namespaceSelector:
+    matchNames:
+      - zen-operator

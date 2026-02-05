@@ -1,0 +1,243 @@
+# =============================================================================
+# Zen AI Pentest - Example GitHub Action Usage
+# =============================================================================
+# This workflow demonstrates how to use the Zen AI Pentest GitHub Action
+# in your CI/CD pipeline.
+# 
+# Features:
+# - Automated security scanning on PR and scheduled runs
+# - SARIF output for GitHub Security tab integration
+# - Multiple scan configurations for different use cases
+# - Slack notifications on findings
+# =============================================================================
+
+name: Zen AI Pentest Security Scan
+
+on:
+  # Run on pull requests
+  pull_request:
+    branches: [ main, develop, 'release/*' ]
+    paths:
+      - 'src/**'
+      - 'app/**'
+      - '**.py'
+      - '**.js'
+      - '**.ts'
+  
+  # Run on scheduled intervals (weekly)
+  schedule:
+    - cron: '0 2 * * 0'  # Every Sunday at 2 AM
+  
+  # Manual trigger
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Target URL to scan'
+        required: true
+        default: 'https://staging.example.com'
+      scope:
+        description: 'Scan scope'
+        type: choice
+        options:
+          - full
+          - recon
+          - vuln
+          - stealth
+        default: 'full'
+      fail_on:
+        description: 'Fail on severity'
+        type: choice
+        options:
+          - critical
+          - high
+          - medium
+          - low
+          - none
+        default: 'high'
+      intensity:
+        description: 'Scan intensity'
+        type: choice
+        options:
+          - low
+          - medium
+          - high
+        default: 'medium'
+
+# Permissions required for SARIF upload
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+jobs:
+  # =============================================================================
+  # Job 1: Quick Security Scan (PR)
+  # =============================================================================
+  quick-scan:
+    name: Quick Security Scan
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      
+      - name: Run Zen AI Pentest (Quick)
+        uses: ./  # Uses the local action.yml
+        with:
+          target: 'http://localhost:8080'  # Your preview deployment URL
+          scope: 'vuln'
+          fail-on: 'high'
+          output-format: 'sarif'
+          intensity: 'low'
+          modules: 'web_scan,ssl_scan'
+          timeout: '600'
+          upload-sarif: 'true'
+          artifact-name: 'zen-quick-scan-results'
+    
+  # =============================================================================
+  # Job 2: Full Security Scan (Scheduled)
+  # =============================================================================
+  full-scan:
+    name: Full Security Assessment
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      
+      - name: Run Zen AI Pentest (Full)
+        uses: ./  # Uses the local action.yml
+        id: full-scan
+        with:
+          target: ${{ github.event.inputs.target || 'https://production.example.com' }}
+          scope: ${{ github.event.inputs.scope || 'full' }}
+          fail-on: ${{ github.event.inputs.fail_on || 'critical' }}
+          output-format: 'all'
+          intensity: ${{ github.event.inputs.intensity || 'medium' }}
+          modules: 'port_scan,web_scan,ssl_scan,ai_analysis'
+          timeout: '3600'
+          upload-sarif: 'true'
+          artifact-name: 'zen-full-scan-results'
+        env:
+          # Optional: Add your OpenAI API key for AI-powered analysis
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      
+      - name: Notify on Critical Findings
+        if: steps.full-scan.outputs.critical-count > 0
+        uses: slackapi/slack-github-action@v1
+        with:
+          payload: |
+            {
+              "text": "🚨 Critical security findings detected!",
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "⚠️ Zen AI Pentest Alert"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Target:*\n${{ github.event.inputs.target || 'https://production.example.com' }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Scan ID:*\n${{ steps.full-scan.outputs.scan-id }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Critical:*\n${{ steps.full-scan.outputs.critical-count }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*High:*\n${{ steps.full-scan.outputs.high-count }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Risk Score:*\n${{ steps.full-scan.outputs.risk-score }}/100"
+                    }
+                  ]
+                },
+                {
+                  "type": "actions",
+                  "elements": [
+                    {
+                      "type": "button",
+                      "text": {
+                        "type": "plain_text",
+                        "text": "View Details"
+                      },
+                      "url": "${{ github.server_url }}/${{ github.repository }}/security/code-scanning?query=tool%3Azen-ai-pentest",
+                      "style": "danger"
+                    }
+                  ]
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_SECURITY_WEBHOOK }}
+
+  # =============================================================================
+  # Job 3: Reconnaissance Scan (Daily)
+  # =============================================================================
+  recon-scan:
+    name: Reconnaissance Scan
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 2 * * 0'
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      
+      - name: Run Zen AI Pentest (Recon)
+        uses: ./
+        with:
+          target: 'https://api.example.com'
+          scope: 'recon'
+          fail-on: 'none'  # Don't fail, just gather intel
+          output-format: 'json'
+          intensity: 'low'
+          modules: 'port_scan,service_detection'
+          timeout: '1800'
+          upload-sarif: 'false'
+          artifact-name: 'zen-recon-results'
+
+  # =============================================================================
+  # Job 4: Compliance Scan (Monthly)
+  # =============================================================================
+  compliance-scan:
+    name: Compliance Assessment
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 2 1 * *'  # First day of month
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      
+      - name: Run Zen AI Pentest (Compliance)
+        uses: ./
+        with:
+          target: 'https://production.example.com'
+          scope: 'full'
+          fail-on: 'high'
+          output-format: 'all'
+          intensity: 'medium'
+          modules: 'port_scan,web_scan,ssl_scan,ai_analysis,compliance'
+          timeout: '7200'
+          upload-sarif: 'true'
+          artifact-name: 'zen-compliance-results'
+      
+      - name: Upload Compliance Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: compliance-report
+          path: |
+            zen-pentest-output/*.html
+            zen-pentest-output/*.pdf
+          retention-days: 365

@@ -1,0 +1,214 @@
+# =============================================================================
+# Zen AI Pentest - Docker Compose for CI/CD
+# =============================================================================
+# Description: Docker Compose configuration for CI/CD environments
+# Version: 2.0.0
+# =============================================================================
+
+version: '3.8'
+
+services:
+  # ---------------------------------------------------------------------------
+  # Main Scanner Service
+  # ---------------------------------------------------------------------------
+  scanner:
+    build:
+      context: .
+      dockerfile: Dockerfile.ci
+      target: production
+    image: zenai/zen-pentest:latest
+    container_name: zen-scanner
+    environment:
+      - ZEN_TARGET=${ZEN_TARGET:-https://example.com}
+      - ZEN_SCOPE=${ZEN_SCOPE:-full}
+      - ZEN_INTENSITY=${ZEN_INTENSITY:-medium}
+      - ZEN_OUTPUT_FORMAT=${ZEN_OUTPUT_FORMAT:-sarif}
+      - ZEN_TIMEOUT=${ZEN_TIMEOUT:-3600}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+    volumes:
+      - ./output:/app/output
+      - ./config:/app/config:ro
+    command: >
+      scan "${ZEN_TARGET}"
+      --scope ${ZEN_SCOPE}
+      --intensity ${ZEN_INTENSITY}
+      --format ${ZEN_OUTPUT_FORMAT}
+      --output /app/output/results.${ZEN_OUTPUT_FORMAT}
+    networks:
+      - zen-network
+    cap_add:
+      - NET_RAW
+      - NET_ADMIN
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp:noexec,nosuid,size=100m
+
+  # ---------------------------------------------------------------------------
+  # CI/CD Optimized Scanner
+  # ---------------------------------------------------------------------------
+  scanner-ci:
+    build:
+      context: .
+      dockerfile: Dockerfile.ci
+      target: ci
+    image: zenai/zen-pentest:ci
+    container_name: zen-scanner-ci
+    environment:
+      - ZEN_TARGET=${ZEN_TARGET}
+      - ZEN_SCOPE=${ZEN_SCOPE:-full}
+      - ZEN_INTENSITY=${ZEN_INTENSITY:-medium}
+      - ZEN_FAIL_ON=${ZEN_FAIL_ON:-high}
+      - ZEN_OUTPUT_FORMAT=${ZEN_OUTPUT_FORMAT:-all}
+      - ZEN_TIMEOUT=${ZEN_TIMEOUT:-3600}
+      - GITHUB_TOKEN=${GITHUB_TOKEN:-}
+      - GITHUB_REPOSITORY=${GITHUB_REPOSITORY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - CI=true
+    volumes:
+      - ./output:/app/output
+      - ./config:/app/config:ro
+      # Mount Docker socket for sibling container operations (optional)
+      # - /var/run/docker.sock:/var/run/docker.sock:ro
+    command: >
+      scan "${ZEN_TARGET}"
+      --scope ${ZEN_SCOPE}
+      --intensity ${ZEN_INTENSITY}
+      --format all
+      --output-dir /app/output
+    networks:
+      - zen-network
+    cap_add:
+      - NET_RAW
+      - NET_ADMIN
+    # Upload SARIF to GitHub if configured
+    post_start:
+      - command: |
+          if [ -n "$GITHUB_TOKEN" ] && [ -f /app/output/results.sarif ]; then
+            gh auth login --with-token <<< "$GITHUB_TOKEN" && \
+            gh api repos/$GITHUB_REPOSITORY/code-scanning/sarifs \
+              -F commit_sha=$GITHUB_SHA \
+              -F ref=$GITHUB_REF \
+              -F sarif=@/app/output/results.sarif \
+              -F tool_name="zen-ai-pentest"
+          fi
+
+  # ---------------------------------------------------------------------------
+  # API Server Mode
+  # ---------------------------------------------------------------------------
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.ci
+      target: production
+    image: zenai/zen-pentest:latest
+    container_name: zen-api
+    ports:
+      - "${ZEN_API_PORT:-8000}:8000"
+    environment:
+      - ZEN_MODE=api
+      - ZEN_API_KEY=${ZEN_API_KEY:-}
+      - DATABASE_URL=${DATABASE_URL:-sqlite:///data/zen.db}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+    volumes:
+      - ./data:/app/data
+      - ./config:/app/config:ro
+    command: >
+      api
+      --host 0.0.0.0
+      --port 8000
+    networks:
+      - zen-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # ---------------------------------------------------------------------------
+  # Scheduled Scan (Cron)
+  # ---------------------------------------------------------------------------
+  scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile.ci
+      target: production
+    image: zenai/zen-pentest:latest
+    container_name: zen-scheduler
+    environment:
+      - ZEN_TARGET=${ZEN_TARGET}
+      - ZEN_SCHEDULE=${ZEN_SCHEDULE:-0 2 * * *}
+      - ZEN_OUTPUT_FORMAT=sarif
+    volumes:
+      - ./output:/app/output
+      - ./config:/app/config:ro
+    command: >
+      schedule
+      --target "${ZEN_TARGET}"
+      --cron "${ZEN_SCHEDULE}"
+      --output /app/output
+    networks:
+      - zen-network
+
+  # ---------------------------------------------------------------------------
+  # Results Processor (for CI artifact handling)
+  # ---------------------------------------------------------------------------
+  processor:
+    build:
+      context: .
+      dockerfile: Dockerfile.ci
+      target: ci
+    image: zenai/zen-pentest:ci
+    container_name: zen-processor
+    environment:
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:-}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:-}
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:-us-east-1}
+      - S3_BUCKET=${S3_BUCKET:-}
+      - SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL:-}
+    volumes:
+      - ./output:/app/input:ro
+    command: >
+      process
+      --input /app/input
+      --upload-s3
+      --notify-slack
+    networks:
+      - zen-network
+    profiles:
+      - processor
+
+  # ---------------------------------------------------------------------------
+  # Development Environment
+  # ---------------------------------------------------------------------------
+  dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.ci
+      target: development
+    image: zenai/zen-pentest:dev
+    container_name: zen-dev
+    environment:
+      - ZEN_DEBUG=true
+      - PYTHONDONTWRITEBYTECODE=1
+    volumes:
+      - .:/app
+      - /app/venv
+      - /app/__pycache__
+      - ./output:/app/output
+    command: /bin/bash
+    stdin_open: true
+    tty: true
+    networks:
+      - zen-network
+    profiles:
+      - dev
+
+networks:
+  zen-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
