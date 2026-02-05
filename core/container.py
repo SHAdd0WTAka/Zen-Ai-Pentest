@@ -6,7 +6,7 @@ Provides loose coupling and testability
 import inspect
 import logging
 from functools import wraps
-from typing import Any, Callable, Optional, Type, TypeVar
+from typing import Any, Callable, Optional, TypeVar
 
 logger = logging.getLogger(__name__)
 
@@ -262,10 +262,10 @@ def inject(name: str) -> Any:
     return InjectMarker(name)
 
 
-# Context manager for scoped operations
 from contextlib import asynccontextmanager
 
 
+# Context manager for scoped operations
 @asynccontextmanager
 async def scope():
     """Create a scoped context"""

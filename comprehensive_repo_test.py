@@ -407,7 +407,7 @@ def main():
     with open(logs_dir / 'comprehensive_test_report.json', 'w') as f:
         json.dump(report, f, indent=2)
     
-    print(f"\nReport gespeichert: logs/comprehensive_test_report.json")
+    print("\nReport gespeichert: logs/comprehensive_test_report.json")
     
     return passed == total
 

@@ -12,7 +12,6 @@ Fix für bekannte Probleme:
 import sys
 import asyncio
 import platform
-import warnings
 from typing import Optional
 import logging
 
@@ -208,8 +207,6 @@ patch_asyncio_for_windows()
 
 if __name__ == "__main__":
     # Test
-    import time
-    
     async def test_coro():
         await asyncio.sleep(0.1)
         return "Success"

@@ -8,7 +8,7 @@ import logging
 import re
 import subprocess
 from dataclasses import dataclass
-from typing import Any, List, Optional, Pattern
+from typing import List, Optional, Pattern
 from urllib.parse import urlparse
 
 logger = logging.getLogger(__name__)
@@ -306,7 +306,7 @@ class SecureSubprocess:
                 check=check,
                 shell=False,  # NEVER use shell=True
             )
-        except subprocess.TimeoutExpired as e:
+        except subprocess.TimeoutExpired:
             logger.error(f"Command timeout after {timeout}s: {command[0]}")
             raise
         except subprocess.CalledProcessError as e:
