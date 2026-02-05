@@ -5,12 +5,9 @@ Executes actual security tools (nmap, nuclei, sqlmap, etc.) in sandboxed environ
 """
 
 import asyncio
-import json
 import logging
-import os
 import subprocess
 import tempfile
-from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
@@ -211,7 +208,7 @@ class ToolRegistry:
                 timeout=5
             )
             return result.return_code == 0
-        except:
+        except Exception:
             return False
 
 

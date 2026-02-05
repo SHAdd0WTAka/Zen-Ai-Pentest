@@ -16,7 +16,7 @@ print("=" * 70)
 print("ZEN AI PENTEST - AUTONOMER SECURITY SCAN")
 print("=" * 70)
 print(f"Ziel: {TARGET}")
-print(f"Modus: Autonom (KI-gesteuert)")
+print("Modus: Autonom (KI-gesteuert)")
 print(f"Start: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 print("=" * 70)
 
@@ -125,7 +125,7 @@ print(f"  Hoch (7.0-8.9):       {severity_counts['high']} findings")
 print(f"  Mittel (4.0-6.9):     {severity_counts['medium']} findings")
 print(f"  Niedrig (0.1-3.9):    {severity_counts['low']} findings")
 print(f"  Info (0.0):           {severity_counts['info']} findings")
-print(f"  -----------------------------")
+print("  -----------------------------")
 print(f"  GESAMT:               {len(findings)} findings")
 
 # Risiko-Score berechnen
@@ -168,13 +168,13 @@ print(f"  JSON Report: {json_file}")
 md_file = f'logs/autonomous_scan_{TARGET.replace(".", "_")}_{timestamp}.md'
 with open(md_file, 'w') as f:
     f.write(f"# Security Scan Report: {TARGET}\n\n")
-    f.write(f"**Scan Type:** Autonomous\n")
+    f.write("**Scan Type:** Autonomous\n")
     f.write(f"**Date:** {datetime.now().isoformat()}\n")
     f.write(f"**Risk Score:** {risk_score}/100 ({risk_level})\n\n")
     
     f.write("## Summary\n\n")
-    f.write(f"| Severity | Count |\n")
-    f.write(f"|----------|-------|\n")
+    f.write("| Severity | Count |\n")
+    f.write("|----------|-------|\n")
     for sev, count in severity_counts.items():
         if count > 0:
             f.write(f"| {sev.capitalize()} | {count} |\n")
