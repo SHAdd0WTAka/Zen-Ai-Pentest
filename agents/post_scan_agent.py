@@ -14,15 +14,14 @@ Based on industry-standard penetration testing methodology (PTES, OWASP, NIST):
 This agent runs automatically after every scan to ensure professional pentest standards.
 """
 
-import asyncio
 import json
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
-from .agent_base import AgentRole, AgentState, BaseAgent
+from .agent_base import AgentRole, BaseAgent
 
 
 class PostScanPhase(Enum):
@@ -203,7 +202,7 @@ class PostScanAgent(BaseAgent):
         """
         self.log_action(f"Starting post-scan workflow for {target}")
         print(f"\n[{'='*60}")
-        print(f"  Post-Scan Pentest Workflow")
+        print("  Post-Scan Pentest Workflow")
         print(f"  Target: {target}")
         print(f"  Initial Findings: {len(initial_findings)}")
         print(f"{'='*60}\n")

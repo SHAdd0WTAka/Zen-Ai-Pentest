@@ -248,12 +248,17 @@ function ScanLogsPanel({
       }
     }
 
-    setWs(websocket)
-
     return () => {
       websocket.close()
     }
   }, [scanId, isOpen])
+
+  // Auto-scroll to bottom when new logs arrive
+  useEffect(() => {
+    if (logsEndRef.current) {
+      logsEndRef.current.scrollIntoView({ behavior: 'smooth' })
+    }
+  }, [logs])
 
   const getLevelColor = (level: string) => {
     switch (level) {
@@ -296,6 +301,7 @@ function ScanLogsPanel({
               </div>
             ))
           )}
+          <div ref={logsEndRef} />
         </div>
       </div>
     </div>

@@ -7,7 +7,7 @@ Author: SHAdd0WTAka
 
 import asyncio
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from .agent_orchestrator import AgentOrchestrator
 from .analysis_agent import AnalysisAgent

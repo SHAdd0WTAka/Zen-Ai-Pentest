@@ -210,7 +210,7 @@ Examples:
                                 content=args,
                             )
                         )
-                    print(colorize(f"[+] Message sent to all agents", "green"))
+                    print(colorize("[+] Message sent to all agents", "green"))
 
                 elif command == "stop":
                     await self.integration.shutdown()
@@ -251,7 +251,7 @@ if __name__ == "__main__":
         finally:
             try:
                 loop.run_until_complete(asyncio.sleep(0.25))
-            except:
+            except Exception:
                 pass
             loop.close()
     else:
