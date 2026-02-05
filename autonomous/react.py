@@ -10,14 +10,11 @@ The ReAct loop allows the agent to:
 Based on: https://arxiv.org/abs/2210.03629
 """
 
-import asyncio
 import json
-import uuid
-from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum, auto
-from typing import Any, Callable, Dict, List, Optional, TypeVar, Generic
+from typing import Any, Dict, List, Optional
 
 
 class ActionType(Enum):
@@ -315,7 +312,7 @@ Rules:
     
     async def _human_approval(self, action: Action) -> bool:
         """Request human approval for critical actions."""
-        print(f"\n[Human Approval Required]")
+        print("\n[Human Approval Required]")
         print(f"Action: {action.type.name}")
         print(f"Tool: {action.tool_name}")
         print(f"Parameters: {action.parameters}")
