@@ -24,6 +24,7 @@
     "@headlessui/react": "^1.7.17",
     "@tailwindcss/forms": "^0.5.7",
     "clsx": "^2.0.0",
+    "tailwind-merge": "^2.0.0",
     "zustand": "^4.4.7",
     "react-hot-toast": "^2.4.1"
   },
