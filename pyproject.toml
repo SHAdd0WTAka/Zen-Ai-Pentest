@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "zen-ai-pentest"
-version = "2.2.0"
+version = "2.3.0"
 description = "Advanced AI-Powered Penetration Testing Framework with Multi-Agent Orchestration"
 readme = "README.md"
 license = {text = "MIT"}
@@ -70,6 +70,7 @@ Documentation = "https://github.com/SHAdd0WTAka/zen-ai-pentest/tree/main/docs"
 Repository = "https://github.com/SHAdd0WTAka/zen-ai-pentest.git"
 "Bug Tracker" = "https://github.com/SHAdd0WTAka/zen-ai-pentest/issues"
 Changelog = "https://github.com/SHAdd0WTAka/zen-ai-pentest/releases"
+Marketplace = "https://github.com/marketplace/actions/zen-ai-pentest"
 Discussions = "https://github.com/SHAdd0WTAka/zen-ai-pentest/discussions"
 
 [project.scripts]
