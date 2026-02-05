@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Komplette Demo aller Funktionen"""
 import requests
-import json
 
 BASE = 'http://localhost:8000/api/v1'
 

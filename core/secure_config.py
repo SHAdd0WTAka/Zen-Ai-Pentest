@@ -7,7 +7,7 @@ import base64
 import json
 import logging
 import os
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
 from typing import Any, Dict, Literal, Optional
@@ -271,7 +271,7 @@ class SecureConfigManager:
         if KEYRING_AVAILABLE:
             try:
                 keyring.delete_password(KEYRING_SERVICE, f"{provider}_key")
-            except:
+            except Exception:
                 pass
 
         # Remove from encrypted config

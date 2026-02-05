@@ -8,7 +8,7 @@ import hashlib
 import logging
 import random
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 from functools import wraps
 from typing import Any, Callable, Dict, Optional
@@ -170,7 +170,7 @@ class CircuitBreaker:
             result = await func(*args, **kwargs)
             await self._on_success()
             return result
-        except Exception as e:
+        except Exception:
             await self._on_failure()
             raise
 

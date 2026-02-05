@@ -5,6 +5,7 @@ Provides loose coupling and testability
 
 import inspect
 import logging
+from contextlib import asynccontextmanager
 from functools import wraps
 from typing import Any, Callable, Optional, TypeVar
 
@@ -260,9 +261,6 @@ def inject(name: str) -> Any:
             return get_container().get(self.dep_name)
 
     return InjectMarker(name)
-
-
-from contextlib import asynccontextmanager
 
 
 # Context manager for scoped operations

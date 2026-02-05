@@ -4,7 +4,7 @@ SQLAlchemy Database Models
 PostgreSQL Datenbank-Schema für Zen-AI-Pentest.
 """
 
-from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, Float, ForeignKey, JSON, Enum
+from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, Float, ForeignKey, JSON
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 from datetime import datetime
@@ -195,11 +195,11 @@ class ToolConfig(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
+import os
+
 # ============================================================================
 # DATABASE CONNECTION
 # ============================================================================
-
-import os
 
 # PostgreSQL URL - in production aus Umgebungsvariablen
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/zen_pentest")
@@ -225,7 +225,6 @@ engine_args = {
 
 try:
     # Teste Verbindung (import check)
-    import psycopg2
     # Versuche PostgreSQL Engine zu erstellen mit Connection Pooling
     print(f"Connecting to PostgreSQL with pool_size={POOL_SIZE}, max_overflow={MAX_OVERFLOW}")
     engine = create_engine(DATABASE_URL, **engine_args)
