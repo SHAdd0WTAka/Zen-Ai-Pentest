@@ -16,8 +16,8 @@ pydantic>=2.0.0
 pyyaml>=6.0.1
 
 # Web Framework (for API)
-fastapi>=0.104.0
-uvicorn>=0.24.0
+fastapi>=0.115.8  # SECURITY: Latest stable with security fixes
+uvicorn>=0.34.0  # SECURITY: Latest with security fixes
 python-multipart>=0.0.18  # SECURITY FIX: CVE-2024-53981
 
 # CLI and UI
@@ -29,7 +29,7 @@ typer>=0.9.0
 # Security and Cryptography
 cryptography>=42.0.4  # SECURITY FIX: CVE-2024-26130
 cryptography>=41.0.0
-python-jose>=3.4.0  # SECURITY FIX: CVE-2024-33663
+python-jose>=3.4.0  # SECURITY: Algorithm confusion fix (CVE-2024-33663)
 passlib>=1.7.4
 
 # Database
@@ -45,8 +45,8 @@ asyncio-mqtt>=0.13.0
 aiofiles>=23.0.0
 
 # AI / LLM Integration
-langchain-core>=0.2.43  # SECURITY FIX: CVE-2024-6239
-langchain>=0.2.16
+langchain-core>=0.3.33  # SECURITY: Fix serialization vulnerability (CVE-2024-6239)
+langchain>=0.3.17  # SECURITY: Latest with security fixes
 
 # Data Processing
 pandas>=2.0.0
