@@ -5,7 +5,6 @@ Measures agent decision-making time, ReAct loop iterations, and tool selection s
 """
 
 import asyncio
-import time
 from typing import List, Dict, Any, Optional, Callable
 from dataclasses import dataclass
 from enum import Enum
@@ -15,8 +14,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from modules.benchmark import (
-    BenchmarkRunner, BenchmarkResult, BenchmarkCategory,
-    TimingMetrics
+    BenchmarkRunner, BenchmarkResult, BenchmarkCategory
 )
 
 
@@ -345,7 +343,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     async def main():
-        config = AgentBenchmarkConfig(
+        _ = AgentBenchmarkConfig(  # TODO: Use config
             iterations=args.iterations,
             complexity=args.complexity
         )

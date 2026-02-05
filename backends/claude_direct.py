@@ -93,7 +93,7 @@ class ClaudeDirectBackend:
                             data = json.loads(line[6:])
                             if data.get("completion"):
                                 full_response += data["completion"]
-                        except:
+                        except Exception:
                             continue
 
                 return full_response
@@ -114,13 +114,11 @@ class ClaudeDirectBackend:
                 "https://claude.ai/api/organizations", headers=headers
             ) as resp:
                 if resp.status == 200:
-                    import json
-
                     data = await resp.json()
                     if data and len(data) > 0:
                         return data[0].get("uuid")
                 return None
-        except:
+        except Exception:
             return None
 
     async def health_check(self) -> bool:

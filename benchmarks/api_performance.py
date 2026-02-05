@@ -5,7 +5,6 @@ Measures API response times, throughput, and endpoint-specific latency.
 """
 
 import asyncio
-import time
 from typing import List, Dict, Any, Optional, Callable
 from dataclasses import dataclass
 from enum import Enum

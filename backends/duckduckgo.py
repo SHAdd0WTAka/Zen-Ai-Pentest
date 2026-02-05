@@ -120,7 +120,7 @@ class DuckDuckGoBackend:
                             data = json.loads(line[6:])
                             if "message" in data:
                                 full_response += data["message"]
-                        except:
+                        except Exception:
                             continue
 
                 return full_response
@@ -134,5 +134,5 @@ class DuckDuckGoBackend:
         try:
             await self._get_vqd_token()
             return self.vqd_token is not None
-        except:
+        except Exception:
             return False

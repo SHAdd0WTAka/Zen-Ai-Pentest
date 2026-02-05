@@ -116,5 +116,5 @@ class OpenRouterBackend:
                 "https://openrouter.ai/api/v1/auth/key", headers=headers
             ) as resp:
                 return resp.status == 200
-        except:
+        except Exception:
             return False
