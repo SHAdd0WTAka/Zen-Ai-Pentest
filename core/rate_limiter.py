@@ -13,12 +13,9 @@ from enum import Enum
 from functools import wraps
 from typing import Any, Callable, Dict, Optional
 
-try:
-    import aioredis
+import importlib.util
 
-    REDIS_AVAILABLE = True
-except ImportError:
-    REDIS_AVAILABLE = False
+REDIS_AVAILABLE = importlib.util.find_spec("aioredis") is not None
 
 logger = logging.getLogger(__name__)
 

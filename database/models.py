@@ -4,6 +4,8 @@ SQLAlchemy Database Models
 PostgreSQL Datenbank-Schema für Zen-AI-Pentest.
 """
 
+import os
+
 from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, Float, ForeignKey, JSON
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
@@ -195,7 +197,6 @@ class ToolConfig(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-import os
 
 # ============================================================================
 # DATABASE CONNECTION

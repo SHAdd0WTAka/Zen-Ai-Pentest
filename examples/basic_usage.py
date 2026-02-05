@@ -39,7 +39,7 @@ async def basic_example():
 
         # Initialize modules
         print("\n[2] Initializing Modules...")
-        recon = ReconModule(orchestrator)
+        _ = ReconModule(orchestrator)
         vuln_scanner = VulnScannerModule(orchestrator)
 
         # Example: Reconnaissance

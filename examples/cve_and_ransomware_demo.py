@@ -62,7 +62,7 @@ def demo_cve_database():
         print(f"  Associated CVEs: {', '.join(ransomware.cves)}")
 
         # Show IOCs
-        print(f"\n  IOCs:")
+        print("\n  IOCs:")
         for key, values in ransomware.ioc.items():
             if isinstance(values, list) and values:
                 print(f"    {key}:")
@@ -140,7 +140,7 @@ def demo_sql_injection_database():
     variants = sqli_db.generate_waf_bypass_variants(test_payload)
 
     print(f"  Original: {test_payload}")
-    print(f"  Variants:")
+    print("  Variants:")
     for i, variant in enumerate(variants[:5], 1):
         print(f"    {i}. {variant}")
 
