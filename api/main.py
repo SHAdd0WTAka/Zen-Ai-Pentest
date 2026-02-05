@@ -20,7 +20,7 @@ import logging
 from typing import List, Optional
 from datetime import datetime
 
-from database.models import init_db, get_db, SessionLocal
+from database.models import init_db, get_db, SessionLocal, Report
 from database.crud import (
     create_scan, get_scan, get_scans, update_scan_status,
     create_finding, get_findings, create_report, get_reports
@@ -1083,8 +1083,7 @@ async def create_jira_ticket(
     else:
         raise HTTPException(status_code=500, detail="Failed to create ticket")
 
-# Import models for reports (moved to top to fix E402)
-# from database.models import Report  # Already imported at top
+
 
 # ============================================================================
 # API v1.0 (Q1 2026)

@@ -4,17 +4,15 @@ OSINT API Endpoints
 Open Source Intelligence gathering through REST API.
 """
 
-import asyncio
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from fastapi import (APIRouter, BackgroundTasks, Depends, HTTPException, Query,
-                     status)
+from fastapi import APIRouter, BackgroundTasks, Depends, Query
 from pydantic import BaseModel, EmailStr, Field
 
 from api.core.auth import get_current_user
 from api.models.user import User
-from modules.osint import DomainInfo, EmailProfile, OSINTModule
+from modules.osint import EmailProfile, OSINTModule
 
 router = APIRouter()
 
