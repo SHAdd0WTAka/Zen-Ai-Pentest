@@ -1,0 +1,120 @@
+title: "💡 [IDEA] "
+labels: ["enhancement", "idea", "community"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        # 💡 Share Your Idea
+        
+        Thank you for taking the time to share your idea! We love hearing new suggestions from our community.
+        
+        > 💡 **Tip:** Check [existing discussions](https://github.com/SHAdd0WTAka/zen-ai-pentest/discussions?discussions_q=label%3Aidea) to avoid duplicates!
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Idea Summary
+      description: Provide a brief summary of your idea
+      placeholder: |
+        A one-paragraph summary of your idea...
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: What problem does this idea solve?
+      placeholder: |
+        Describe the problem or limitation you're addressing...
+        - What is the current pain point?
+        - Who is affected by this?
+        - When does this problem occur?
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: Describe your proposed solution
+      placeholder: |
+        How do you envision this working?
+        
+        Key aspects to consider:
+        - How would users interact with this feature?
+        - What would the API/interface look like?
+        - Are there any technical considerations?
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Have you considered other approaches?
+      placeholder: |
+        What alternatives have you considered?
+        - Other tools or approaches?
+        - Different implementation strategies?
+        - Why did you choose this approach?
+
+  - type: textarea
+    id: use-cases
+    attributes:
+      label: Use Cases
+      description: Describe specific use cases
+      placeholder: |
+        1. As a [type of user], I want to [action] so that [benefit]
+        2. ...
+
+  - type: dropdown
+    id: impact
+    attributes:
+      label: Impact Level
+      description: How impactful would this be for users?
+      options:
+        - Critical - Blocks core functionality
+        - High - Significantly improves workflow
+        - Medium - Nice to have
+        - Low - Minor improvement
+    validations:
+      required: true
+
+  - type: dropdown
+    id: complexity
+    attributes:
+      label: Implementation Complexity
+      description: How complex do you think this would be to implement?
+      options:
+        - Low - Simple change (hours)
+        - Medium - Moderate effort (days)
+        - High - Significant effort (weeks+)
+        - Unknown - Needs investigation
+
+  - type: checkboxes
+    id: willing-to-contribute
+    attributes:
+      label: Contribution
+      description: Are you interested in contributing?
+      options:
+        - label: I am willing to implement this feature
+        - label: I can help test this feature
+        - label: I can provide documentation
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Any other information, mockups, or examples
+      placeholder: |
+        Screenshots, mockups, links to similar features in other tools, etc.
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        
+        🗳️ **Voting:** Community members can vote on this idea using 👍 reactions!
+        
+        📊 This idea will be reviewed by maintainers and considered for the [roadmap](../docs/ROADMAP.md).

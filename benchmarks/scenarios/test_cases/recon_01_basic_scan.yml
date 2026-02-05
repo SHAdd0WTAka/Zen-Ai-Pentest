@@ -1,0 +1,146 @@
+# Test Case: recon_01_basic_scan
+# Category: Reconnaissance
+# Description: Basic reconnaissance and information gathering test
+
+id: recon_01_basic_scan
+name: Basic Reconnaissance Scan
+description: |
+  Tests the tool's ability to perform basic reconnaissance including:
+  - Host discovery
+  - Service enumeration
+  - Technology fingerprinting
+  - Basic OSINT gathering
+  
+  Target is a deliberately vulnerable web application with
+  multiple services running on standard ports.
+
+category: reconnaissance
+target_type: network
+difficulty: easy
+version: "1.0"
+tags:
+  - reconnaissance
+  - enumeration
+  - fingerprinting
+  - osint
+  - basic
+owasp_categories:
+  - "A05:2021-Security Misconfiguration"
+  - "A06:2021-Vulnerable and Outdated Components"
+
+# Target Configuration
+target_host: 192.168.56.10
+target_ports:
+  - 22    # SSH
+  - 80    # HTTP
+  - 443   # HTTPS
+  - 3306  # MySQL
+  - 8080  # Tomcat
+
+# Expected Findings
+expected_findings:
+  - vuln_type: information_disclosure
+    severity: low
+    location: "HTTP headers"
+    cwe_id: "CWE-200"
+    confidence: 0.95
+    description: "Server version disclosed in HTTP headers"
+    verification_method: "header_analysis"
+    
+  - vuln_type: exposed_service
+    severity: info
+    location: "port 22/tcp"
+    confidence: 0.99
+    description: "SSH service detected on port 22"
+    verification_method: "port_scan"
+    
+  - vuln_type: exposed_service
+    severity: info
+    location: "port 80/tcp"
+    confidence: 0.99
+    description: "HTTP service detected on port 80"
+    verification_method: "port_scan"
+    
+  - vuln_type: technology_fingerprint
+    severity: info
+    location: "HTTP service"
+    confidence: 0.85
+    description: "Apache/2.4.41 detected"
+    verification_method: "banner_grabbing"
+    
+  - vuln_type: exposed_service
+    severity: medium
+    location: "port 3306/tcp"
+    cwe_id: "CWE-284"
+    confidence: 0.95
+    description: "MySQL database exposed to network"
+    verification_method: "port_scan"
+
+# Test Parameters
+parameters:
+  scan_type: "full_tcp"
+  service_detection: true
+  os_detection: true
+  script_scan: "default"
+  
+# Success Criteria
+min_detection_rate: 0.80
+max_false_positive_rate: 0.10
+max_duration_seconds: 180
+
+# Expected Duration
+expected_duration_seconds: 60
+
+# Resource Requirements
+resource_requirements:
+  memory_mb: 512
+  cpu_cores: 1
+  network_access: true
+  
+# Known False Positives
+known_false_positives:
+  - "Some services may report version differently based on configuration"
+  - "OS detection may vary based on fingerprinting database version"
+
+# Docker Configuration (for test environment)
+docker_compose: |
+  version: '3'
+  services:
+    target:
+      image: vulnerables/web-dvwa:latest
+      ports:
+        - "80:80"
+      networks:
+        - pentest-net
+    
+    ssh-server:
+      image: linuxserver/openssh-server:latest
+      environment:
+        - PASSWORD_ACCESS=true
+        - USER_PASSWORD=testpass
+        - USER_NAME=testuser
+      ports:
+        - "22:2222"
+      networks:
+        - pentest-net
+    
+    mysql:
+      image: mysql:5.7
+      environment:
+        MYSQL_ROOT_PASSWORD: rootpass
+        MYSQL_DATABASE: testdb
+      ports:
+        - "3306:3306"
+      networks:
+        - pentest-net
+
+  networks:
+    pentest-net:
+      driver: bridge
+
+# Validation
+health_check_endpoint: "http://192.168.56.10:80"
+success_indicators:
+  - "At least 3 services detected"
+  - "Web technology identified"
+  - "Network topology partially mapped"

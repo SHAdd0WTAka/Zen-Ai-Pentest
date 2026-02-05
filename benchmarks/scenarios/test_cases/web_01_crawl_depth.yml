@@ -1,0 +1,259 @@
+# Test Case: web_01_crawl_depth
+# Category: Web Security - Crawler Depth and Coverage
+# Description: Web application crawling depth and coverage testing
+
+id: web_01_crawl_depth
+name: Web Crawler Depth and Coverage Test
+description: |
+  Tests the tool's web crawling capabilities including:
+  - Maximum crawl depth achievement
+  - JavaScript-rendered content discovery
+  - Hidden endpoint detection
+  - Form enumeration
+  - API endpoint discovery
+  - Parameter extraction
+  
+  Evaluates coverage vs. depth trade-offs.
+
+category: web_security
+target_type: web
+difficulty: medium
+version: "1.0"
+tags:
+  - crawling
+  - spidering
+  - javascript
+  - ajax
+  - spa
+  - coverage
+  - enumeration
+owasp_categories:
+  - "A07:2021-Identification and Authentication Failures"
+  - "A09:2021-Security Logging and Monitoring Failures"
+
+cwe_ids:
+  - "CWE-598"
+
+# Target Configuration
+target_url: "http://localhost:4000"
+target_host: localhost
+target_port: 4000
+
+# Site Structure
+site_structure:
+  depth_levels:
+    level_0:
+      - "/"
+      - "/login"
+      - "/about"
+      
+    level_1:
+      - "/dashboard"
+      - "/profile"
+      - "/products"
+      - "/api/docs"
+      
+    level_2:
+      - "/profile/settings"
+      - "/profile/security"
+      - "/products/category/{id}"
+      - "/products/search"
+      
+    level_3:
+      - "/products/category/{id}/item/{item_id}"
+      - "/profile/settings/notifications"
+      - "/admin/users"
+      
+    level_4:
+      - "/admin/users/{id}/permissions"
+      - "/admin/users/{id}/activity"
+      - "/api/internal/metrics"
+      
+    level_5_plus:
+      - "/api/internal/metrics/detailed"
+      - "/admin/system/config/advanced"
+
+  total_pages: 150
+  total_endpoints: 200
+  
+  dynamic_elements:
+    - infinite_scroll
+    - ajax_pagination
+    - modal_forms
+    - single_page_app_navigation
+    
+  hidden_endpoints:
+    - "/.git/config"
+    - "/admin-backup/"
+    - "/api/v2/secret"
+    - "/.env"
+
+# Expected Findings
+expected_findings:
+  - vuln_type: exposed_git_repository
+    severity: high
+    location: "http://localhost:4000/.git/"
+    cwe_id: "CWE-200"
+    confidence: 0.95
+    description: ".git directory exposed, source code can be extracted"
+    verification_method: "access_test"
+    exploit_available: true
+    
+  - vuln_type: information_disclosure
+    severity: medium
+    location: "http://localhost:4000/.env"
+    cwe_id: "CWE-200"
+    confidence: 0.90
+    description: "Environment file exposed containing sensitive configuration"
+    verification_method: "access_test"
+    exploit_available: true
+    
+  - vuln_type: hidden_admin_panel
+    severity: medium
+    location: "http://localhost:4000/admin-backup/"
+    cwe_id: "CWE-200"
+    confidence: 0.85
+    description: "Backup admin panel accessible without authentication"
+    verification_method: "access_test"
+    exploit_available: true
+    
+  - vuln_type: exposed_api_endpoint
+    severity: low
+    location: "http://localhost:4000/api/internal/"
+    cwe_id: "CWE-200"
+    confidence: 0.80
+    description: "Internal API endpoints exposed to external access"
+    verification_method: "access_test"
+    exploit_available: false
+
+# Test Parameters
+parameters:
+  crawl_depths_to_test:
+    - 2
+    - 3
+    - 5
+    - 10
+    - unlimited
+    
+  crawl_strategies:
+    - breadth_first
+    - depth_first
+    - intelligent
+    
+  features_to_test:
+    - javascript_rendering
+    - ajax_handling
+    - form_submission
+    - authentication_handling
+    - scope_control
+    
+  coverage_metrics:
+    - pages_discovered
+    - endpoints_found
+    - forms_identified
+    - parameters_extracted
+    - js_files_analyzed
+    - api_endpoints_found
+
+# Success Criteria
+min_detection_rate: 0.60
+max_false_positive_rate: 0.20
+max_duration_seconds: 600
+
+# Expected Coverage by Depth
+coverage_expectations:
+  depth_2:
+    pages: 25
+    coverage_percent: 17
+    
+  depth_3:
+    pages: 60
+    coverage_percent: 40
+    
+  depth_5:
+    pages: 120
+    coverage_percent: 80
+    
+  unlimited:
+    pages: 150
+    coverage_percent: 100
+
+# Expected Duration
+expected_duration_seconds: 300
+
+# Resource Requirements
+resource_requirements:
+  memory_mb: 2048
+  cpu_cores: 2
+  network_access: true
+  browser_engine: true  # Headless browser for JS
+
+# Docker Configuration
+docker_compose: |
+  version: '3'
+  services:
+    webapp:
+      build:
+        context: .
+        dockerfile: Dockerfile.crawl-test
+      ports:
+        - "4000:80"
+      environment:
+        - NODE_ENV=development
+      networks:
+        - crawl-net
+
+  networks:
+    crawl-net:
+      driver: bridge
+
+# Validation
+health_check_endpoint: "http://localhost:4000"
+success_indicators:
+  - "At least 60% of pages discovered at depth 3"
+  - "Hidden endpoints identified"
+  - "JavaScript-rendered content found"
+  - "API endpoints enumerated"
+  - "Forms correctly identified"
+
+# Coverage Checklist
+coverage_checklist:
+  static_pages:
+    - "/"
+    - "/about"
+    - "/contact"
+    
+  authenticated_pages:
+    - "/dashboard"
+    - "/profile"
+    - "/profile/settings"
+    
+  dynamic_pages:
+    - "/products"
+    - "/products/category/*"
+    - "/products/search"
+    
+  api_endpoints:
+    - "/api/v1/*"
+    - "/api/v2/*"
+    - "/api/internal/*"
+    
+  hidden_resources:
+    - "/.git/*"
+    - "/.env"
+    - "/admin-backup/*"
+    - "/backup/*"
+    - "/test/*"
+
+# Performance Benchmarks
+performance_benchmarks:
+  pages_per_second:
+    minimum: 5
+    target: 20
+    
+  memory_per_100_pages_mb:
+    maximum: 512
+    
+  accuracy:
+    false_positive_rate_max: 0.10
+    duplicate_detection_rate_min: 0.95

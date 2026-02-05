@@ -1,0 +1,222 @@
+# Test Case: auth_01_jwt_test
+# Category: Authentication - JWT Security Testing
+# Description: JWT implementation security testing
+
+id: auth_01_jwt_test
+name: JWT Authentication Security Test
+description: |
+  Comprehensive JWT (JSON Web Token) security testing including:
+  - Weak signing algorithm (none/HS256 confusion)
+  - Weak secret/key cracking
+  - Token manipulation attacks
+  - Expiration/validation issues
+  - Key injection attacks
+  - JWKS injection
+  
+  Tests both validation and exploitation capabilities.
+
+category: authentication
+target_type: api
+difficulty: hard
+version: "1.0"
+tags:
+  - jwt
+  - authentication
+  - token
+  - authorization
+  - api-security
+  - cryptography
+owasp_categories:
+  - "A01:2021-Broken Access Control"
+  - "A02:2021-Cryptographic Failures"
+
+cwe_ids:
+  - "CWE-327"
+  - "CWE-347"
+  - "CWE-798"
+
+# Target Configuration
+target_url: "http://localhost:5000"
+target_host: localhost
+target_port: 5000
+
+# JWT Test Endpoints
+jwt_endpoints:
+  login:
+    path: "/api/auth/login"
+    method: "POST"
+    returns_jwt: true
+    
+  protected_resource:
+    path: "/api/user/profile"
+    method: "GET"
+    requires_auth: true
+    
+  admin_resource:
+    path: "/api/admin/users"
+    method: "GET"
+    requires_auth: true
+    requires_role: "admin"
+
+# Expected Vulnerabilities
+expected_findings:
+  - vuln_type: jwt_algorithm_confusion
+    severity: critical
+    location: "JWT validation logic"
+    cwe_id: "CWE-347"
+    confidence: 0.95
+    description: |
+      JWT accepts 'none' algorithm or allows algorithm switching
+      from RS256 to HS256. Enables token forgery.
+    verification_method: "jwt_tool"
+    exploit_available: true
+    
+  - vuln_type: jwt_weak_secret
+    severity: critical
+    location: "JWT signing (HS256)"
+    cwe_id: "CWE-798"
+    confidence: 0.90
+    description: |
+      JWT signed with weak/guessable secret. Secret is
+      'secret123' which can be cracked.
+    verification_method: "jwt_tool"
+    exploit_available: true
+    
+  - vuln_type: jwt_missing_signature
+    severity: high
+    location: "JWT validation"
+    cwe_id: "CWE-347"
+    confidence: 0.95
+    description: |
+      Application accepts JWT tokens without signature
+      validation when alg is 'none'.
+    verification_method: "manual"
+    exploit_available: true
+    
+  - vuln_type: jwt_expiration_bypass
+    severity: medium
+    location: "JWT expiration validation"
+    cwe_id: "CWE-613"
+    confidence: 0.80
+    description: |
+      Expired tokens still accepted or expiration
+      can be modified without invalidating signature.
+    verification_method: "manual"
+    exploit_available: true
+    
+  - vuln_type: information_disclosure
+    severity: low
+    location: "JWT payload"
+    cwe_id: "CWE-200"
+    confidence: 0.95
+    description: |
+      JWT payload contains sensitive information
+      (email, roles, internal IDs) without encryption.
+    verification_method: "manual"
+
+# JWT Token Samples for Analysis
+sample_tokens:
+  weak_secret:
+    header: '{"alg":"HS256","typ":"JWT"}'
+    payload: '{"sub":"1234567890","name":"John Doe","admin":false}'
+    secret: "secret123"
+    
+  algorithm_none:
+    header: '{"alg":"none","typ":"JWT"}'
+    payload: '{"sub":"1234567890","name":"John Doe","admin":true}'
+    
+  rs256_to_hs256:
+    header: '{"alg":"HS256","typ":"JWT"}'
+    payload: '{"sub":"1234567890","name":"John Doe","admin":true}'
+    # Signed with RSA public key as HMAC secret
+    
+  expired:
+    header: '{"alg":"HS256","typ":"JWT"}'
+    payload: '{"sub":"1234567890","exp":1609459200}'
+    secret: "secret123"
+
+# Test Parameters
+parameters:
+  algorithms_to_test:
+    - HS256
+    - HS384
+    - HS512
+    - RS256
+    - RS384
+    - RS512
+    - ES256
+    - none
+    
+  attack_types:
+    - algorithm_confusion
+    - secret_cracking
+    - key_injection
+    - token_manipulation
+    - expiration_bypass
+    
+  wordlist_for_secrets:
+    - secrets.txt
+    - jwt.secrets.list
+    
+# Success Criteria
+min_detection_rate: 0.70
+max_false_positive_rate: 0.10
+max_duration_seconds: 300
+
+# Expected Duration
+expected_duration_seconds: 120
+
+# Resource Requirements
+resource_requirements:
+  memory_mb: 1024
+  cpu_cores: 4  # For secret cracking
+  network_access: true
+  gpu_optional: true  # For accelerated cracking
+
+# Docker Configuration
+docker_compose: |
+  version: '3'
+  services:
+    jwt-lab:
+      image: psiinon/jwt-lab:latest
+      ports:
+        - "5000:5000"
+      environment:
+        - JWT_SECRET=secret123
+        - JWT_ALGORITHM=HS256
+        - JWT_EXPIRATION=3600
+      networks:
+        - jwt-net
+
+  networks:
+    jwt-net:
+      driver: bridge
+
+# Validation
+health_check_endpoint: "http://localhost:5000/api/health"
+success_indicators:
+  - "JWT structure correctly parsed"
+  - "Weak secret identified"
+  - "Algorithm confusion vulnerability detected"
+  - "Successful token manipulation demonstrated"
+
+# Reference JWT Tools
+reference_tools:
+  - name: jwt_tool
+    command: "jwt_tool.py <token> -t"
+  
+  - name: jwt-cracker
+    command: "jwt-cracker <token> <wordlist>"
+  
+  - name: hashcat
+    command: "hashcat -m 16500 jwt.txt wordlist.txt"
+
+# Test Checklist
+test_checklist:
+  - "Decode JWT and analyze header/payload"
+  - "Check for 'none' algorithm acceptance"
+  - "Test RS256 to HS256 confusion attack"
+  - "Attempt secret cracking with wordlist"
+  - "Verify expiration validation"
+  - "Test role/claim manipulation"
+  - "Check for sensitive data in payload"

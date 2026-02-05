@@ -1,0 +1,298 @@
+# Test Case: api_01_rest_scan
+# Category: API Security - REST API Testing
+# Description: Comprehensive REST API security assessment
+
+id: api_01_rest_scan
+name: REST API Security Scan
+description: |
+  Comprehensive REST API security testing covering:
+  - Authentication and authorization flaws
+  - Input validation and injection attacks
+  - Rate limiting and DoS vulnerabilities
+  - Business logic flaws
+  - Information disclosure
+  - Mass assignment vulnerabilities
+  
+  Tests OWASP API Security Top 10 compliance.
+
+category: api_security
+target_type: api
+difficulty: medium
+version: "1.0"
+tags:
+  - api
+  - rest
+  - oauth
+  - authorization
+  - mass-assignment
+  - rate-limiting
+  - injection
+owasp_categories:
+  - "A01:2021-Broken Access Control"
+  - "A03:2021-Injection"
+  - "A04:2021-Insecure Design"
+  - "A05:2021-Security Misconfiguration"
+
+cwe_ids:
+  - "CWE-285"
+  - "CWE-639"
+  - "CWE-915"
+
+# Target Configuration
+target_url: "http://localhost:8000"
+target_host: localhost
+target_port: 8000
+base_path: "/api/v1"
+
+# API Specification
+api_spec:
+  openapi: "3.0.0"
+  endpoints:
+    # Authentication
+    - path: "/auth/login"
+      method: POST
+      auth_required: false
+      
+    - path: "/auth/register"
+      method: POST
+      auth_required: false
+      
+    - path: "/auth/refresh"
+      method: POST
+      auth_required: true
+      
+    # Users
+    - path: "/users"
+      method: GET
+      auth_required: true
+      admin_only: true
+      
+    - path: "/users"
+      method: POST
+      auth_required: true
+      admin_only: true
+      
+    - path: "/users/{id}"
+      method: GET
+      auth_required: true
+      owner_only: true
+      
+    - path: "/users/{id}"
+      method: PUT
+      auth_required: true
+      owner_only: true
+      
+    - path: "/users/{id}"
+      method: DELETE
+      auth_required: true
+      admin_only: true
+      
+    # Products
+    - path: "/products"
+      method: GET
+      auth_required: false
+      
+    - path: "/products"
+      method: POST
+      auth_required: true
+      roles: ["admin", "seller"]
+      
+    - path: "/products/{id}"
+      method: GET
+      auth_required: false
+      
+    - path: "/products/{id}"
+      method: PUT
+      auth_required: true
+      owner_only: true
+      
+    # Orders
+    - path: "/orders"
+      method: GET
+      auth_required: true
+      owner_only: true
+      
+    - path: "/orders"
+      method: POST
+      auth_required: true
+      
+    - path: "/orders/{id}"
+      method: GET
+      auth_required: true
+      owner_only: true
+
+# Expected Findings
+expected_findings:
+  - vuln_type: broken_object_level_authorization
+    severity: critical
+    location: "/api/v1/users/{id}"
+    cwe_id: "CWE-639"
+    confidence: 0.95
+    description: |
+      IDOR vulnerability allows access to other users' data
+      by manipulating the ID parameter.
+    verification_method: "api_test"
+    exploit_available: true
+    
+  - vuln_type: broken_authentication
+    severity: critical
+    location: "/api/v1/auth/login"
+    cwe_id: "CWE-287"
+    confidence: 0.90
+    description: |
+      Weak authentication allows brute force attacks.
+      No rate limiting on login endpoint.
+    verification_method: "api_test"
+    exploit_available: true
+    
+  - vuln_type: mass_assignment
+    severity: high
+    location: "/api/v1/users (POST/PUT)"
+    cwe_id: "CWE-915"
+    confidence: 0.88
+    description: |
+      API accepts and processes sensitive fields (role, is_admin)
+      in user creation/update requests without validation.
+    verification_method: "api_test"
+    exploit_available: true
+    
+  - vuln_type: security_misconfiguration
+    severity: medium
+    location: "API responses"
+    cwe_id: "CWE-200"
+    confidence: 0.95
+    description: |
+      Detailed error messages reveal stack traces,
+      server versions, and internal paths.
+    verification_method: "api_test"
+    exploit_available: false
+    
+  - vuln_type: excessive_data_exposure
+    severity: medium
+    location: "/api/v1/users/{id}"
+    cwe_id: "CWE-200"
+    confidence: 0.90
+    description: |
+      API returns sensitive fields (password_hash, api_keys)
+      that are not needed by the client.
+    verification_method: "api_test"
+    exploit_available: false
+    
+  - vuln_type: lack_of_rate_limiting
+    severity: medium
+    location: "Multiple endpoints"
+    cwe_id: "CWE-770"
+    confidence: 0.95
+    description: |
+      No rate limiting implemented, allowing brute force
+      and DoS attacks.
+    verification_method: "api_test"
+    exploit_available: true
+    
+  - vuln_type: sql_injection
+    severity: critical
+    location: "/api/v1/products"
+    cwe_id: "CWE-89"
+    confidence: 0.85
+    description: |
+      Search parameter vulnerable to SQL injection
+      in product listing endpoint.
+    verification_method: "sqlmap"
+    exploit_available: true
+
+# Test Parameters
+parameters:
+  auth_methods:
+    - bearer_token
+    - api_key
+    - oauth2
+    
+  test_types:
+    - authorization_bypass
+    - privilege_escalation
+    - input_validation
+    - rate_limiting
+    - data_exposure
+    - http_methods
+    - content_type
+    
+  injection_tests:
+    - sql_injection
+    - nosql_injection
+    - command_injection
+    - xpath_injection
+    
+  fuzzing:
+    enabled: true
+    parameters: true
+    headers: true
+    payloads_per_param: 100
+    
+# Success Criteria
+min_detection_rate: 0.70
+max_false_positive_rate: 0.15
+max_duration_seconds: 600
+
+# Expected Duration
+expected_duration_seconds: 300
+
+# Resource Requirements
+resource_requirements:
+  memory_mb: 2048
+  cpu_cores: 2
+  network_access: true
+
+# Docker Configuration
+docker_compose: |
+  version: '3'
+  services:
+    api-server:
+      image: vulnerables/crAPI:latest
+      ports:
+        - "8000:80"
+      environment:
+        - IDOR_ENABLED=true
+        - MASS_ASSIGNMENT_ENABLED=true
+      networks:
+        - api-net
+
+  networks:
+    api-net:
+      driver: bridge
+
+# Validation
+health_check_endpoint: "http://localhost:8000/api/v1/health"
+success_indicators:
+  - "API endpoints enumerated"
+  - "Authorization flaws detected"
+  - "Mass assignment vulnerability identified"
+  - "Rate limiting issues found"
+
+# Test Credentials
+test_credentials:
+  regular_user:
+    username: "user@example.com"
+    password: "password123"
+    
+  admin_user:
+    username: "admin@example.com"
+    password: "admin123"
+
+# API Test Scenarios
+scenarios:
+  - name: "IDOR Test"
+    steps:
+      - authenticate as user1
+      - request /api/v1/users/2
+      - verify access denied (should fail - vulnerability)
+      
+  - name: "Mass Assignment"
+    steps:
+      - authenticate as regular user
+      - POST /api/v1/users with role=admin
+      - verify user created with admin role
+      
+  - name: "Rate Limiting"
+    steps:
+      - send 100 requests to /auth/login
+      - verify rate limit enforced (should fail - vulnerability)
