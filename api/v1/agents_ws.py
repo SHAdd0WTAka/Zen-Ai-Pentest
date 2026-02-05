@@ -4,7 +4,6 @@ Agent Monitoring WebSocket API - Issue #24
 Real-time agent activity monitoring and thought process streaming.
 """
 
-import asyncio
 import json
 import logging
 from datetime import datetime
@@ -13,10 +12,8 @@ from enum import Enum
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends, HTTPException
 from pydantic import BaseModel, Field
-from sqlalchemy.orm import Session
 
 from api.auth import verify_token
-from database.models import get_db
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/agents", tags=["agents-ws"])

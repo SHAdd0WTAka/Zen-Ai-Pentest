@@ -18,7 +18,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from api.auth import verify_token
-from api.schemas import ScanCreate, ScanResponse, ScanStatus, Severity
+from api.schemas import ScanResponse, ScanStatus, Severity
 from api.websocket import ConnectionManager
 from database.models import Scan, Finding, get_db
 from database.crud import create_scan, get_scan, update_scan_status

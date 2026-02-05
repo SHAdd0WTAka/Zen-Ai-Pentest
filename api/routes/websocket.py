@@ -8,10 +8,8 @@ import asyncio
 import json
 from typing import Dict, Set
 
-from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
-from api.core.auth import get_current_user
-from api.models.user import User
 
 router = APIRouter()
 

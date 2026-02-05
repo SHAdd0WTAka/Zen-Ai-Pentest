@@ -6,7 +6,7 @@ System status, health checks, and administrative functions.
 
 import platform
 from datetime import datetime
-from typing import Dict
+
 
 import psutil
 from fastapi import APIRouter, Depends

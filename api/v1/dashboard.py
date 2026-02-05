@@ -379,7 +379,7 @@ async def get_recent_activities(
             activities.append(DashboardActivity(
                 id=f"report-{report.id}",
                 type="report_generated",
-                title=f"Report Generated",
+                title="Report Generated",
                 description=f"Format: {report.format.upper()}",
                 timestamp=report.created_at.isoformat(),
                 scan_id=report.scan_id
