@@ -120,27 +120,27 @@ Phases:
     print("  WORKFLOW COMPLETE - SUMMARY")
     print("=" * 70)
 
-    print(f"\n[Verification Results]")
+    print("\n[Verification Results]")
     verified = results.get("total_verified", 0)
     fp = results.get("total_false_positives", 0)
     print(f"  - Confirmed vulnerabilities: {verified}")
     print(f"  - False positives eliminated: {fp}")
     print(f"  - Reduction rate: {fp/(verified+fp)*100:.1f}%")
 
-    print(f"\n[Exploitation Results]")
+    print("\n[Exploitation Results]")
     exploited = results.get("total_exploited", 0)
     print(f"  - Successfully exploited: {exploited} systems")
 
-    print(f"\n[Loot Collected]")
+    print("\n[Loot Collected]")
     loot = results.get("loot_summary", {})
     print(f"  - Credentials: {loot.get('credentials', 0)}")
     print(f"  - Screenshots: {loot.get('screenshots', 0)}")
     print(f"  - Sensitive files: {loot.get('sensitive_files', 0)}")
 
-    print(f"\n[Evidence]")
+    print("\n[Evidence]")
     print(f"  - Evidence directory: {results.get('evidence_directory', 'N/A')}")
 
-    print(f"\n[Report Ready]")
+    print("\n[Report Ready]")
     report_data = results.get("report_data", {})
     exec_summary = report_data.get("executive_summary", {})
     print(f"  - Overall Risk: {exec_summary.get('overall_risk', 'N/A')}")

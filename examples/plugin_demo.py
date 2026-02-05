@@ -15,7 +15,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from core.plugin_manager import BasePlugin, PluginManager, PluginType
+from core.plugin_manager import PluginManager
 
 
 async def demo_plugin_system():

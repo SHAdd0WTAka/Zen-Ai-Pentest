@@ -143,7 +143,7 @@ async def demo_breach_check(email: str):
                 print(f"    - {source}")
 
         if profile.associated_domains:
-            print(f"\n  Associated Domains:")
+            print("\n  Associated Domains:")
             for domain in profile.associated_domains:
                 print(f"    - {domain}")
 

@@ -115,7 +115,7 @@ async def demo_ip_rotation():
     
     print("[Use Case: Pentest with IP rotation]")
     print("    Rotating IPs helps avoid:")
-    print("    - Rate limiting by target
+    print("    - Rate limiting by target")
     print("    - IP-based blocking")
     print("    - Detection by blue teams")
     print()
