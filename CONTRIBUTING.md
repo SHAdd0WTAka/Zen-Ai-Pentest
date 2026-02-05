@@ -1,284 +1,83 @@
-# Contributing to Zen-AI-Pentest
+# Contributing to Zen AI Pentest
 
-First off, thank you for considering contributing to Zen-AI-Pentest! It's people like you that make this tool better for the security community.
+Thank you for your interest in contributing to Zen AI Pentest! This document provides guidelines and instructions for contributing.
 
-## 🚀 Getting Started
+## Getting Started
 
-### Development Setup
+1. Fork the repository
+2. Clone your fork: `git clone https://github.com/YOUR_USERNAME/Zen-Ai-Pentest.git`
+3. Create a branch: `git checkout -b feature/your-feature-name`
+
+## Development Setup
 
 ```bash
-# Fork and clone
-git clone https://github.com/YOUR_USERNAME/zen-ai-pentest.git
-cd zen-ai-pentest
-
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install development dependencies
+# Install dependencies
 pip install -r requirements.txt
 pip install -r requirements-dev.txt
 
-# Setup pre-commit hooks
+# Install pre-commit hooks
 pre-commit install
-```
 
-### Running Tests
-
-```bash
-# Run all tests
+# Run tests
 pytest
 
-# With coverage
-pytest --cov=. --cov-report=html
-
-# Run specific test file
-pytest tests/test_react_agent.py -v
-
-# Run with markers
-pytest -m "not slow"  # Skip slow tests
+# Run tests with coverage
+pytest --cov=modules --cov-report=html
 ```
 
-## 📋 Contribution Guidelines
+## Code Style
 
-### Code Style
-
-- Follow PEP 8
-- Use type hints
-- Write docstrings (Google style)
+- Follow PEP 8 for Python code
+- Use type hints where possible
+- Write docstrings for all public functions
 - Maximum line length: 100 characters
 
-```python
-def scan_target(target: str, ports: List[int] = None) -> ScanResult:
-    """
-    Scan a target for open ports.
-    
-    Args:
-        target: IP address or hostname
-        ports: List of ports to scan (default: top 1000)
-        
-    Returns:
-        ScanResult object with findings
-        
-    Raises:
-        ValueError: If target is invalid
-    """
-    pass
-```
+## Testing
 
-### Commit Messages
+- Write tests for new features
+- Ensure all tests pass before submitting PR
+- Aim for >70% code coverage
+- Use pytest for unit tests
 
-Use conventional commits:
+## Submitting Changes
 
-- `feat:` New feature
-- `fix:` Bug fix
-- `docs:` Documentation changes
-- `style:` Code style (formatting, no logic change)
-- `refactor:` Code refactoring
-- `test:` Adding tests
-- `chore:` Maintenance tasks
+1. **Commit Messages**: Use conventional commits format
+   - `feat:` New feature
+   - `fix:` Bug fix
+   - `test:` Adding tests
+   - `docs:` Documentation changes
+   - `refactor:` Code refactoring
+   - `security:` Security improvements
 
-Example:
-```
-feat(tools): add Nessus vulnerability scanner integration
-
-- Add NessusAPI class for REST API communication
-- Support scan initiation and report download
-- Add tests for Nessus integration
-```
-
-### Pull Request Process
-
-1. **Create a branch**
-   ```bash
-   git checkout -b feature/your-feature-name
-   ```
-
-2. **Make your changes**
-   - Write code
-   - Add tests
+2. **Pull Request Process**:
+   - Update README.md if needed
    - Update documentation
-
-3. **Ensure tests pass**
-   ```bash
-   pytest
-   flake8
-   black --check .
-   ```
-
-4. **Commit and push**
-   ```bash
-   git add .
-   git commit -m "feat: your feature description"
-   git push origin feature/your-feature-name
-   ```
-
-5. **Create Pull Request**
-   - Fill out the PR template
-   - Link related issues
+   - Add tests for new code
+   - Ensure CI passes
    - Request review from maintainers
 
-## 🏗️ Project Structure
+## Reporting Issues
 
-```
-zen-ai-pentest/
-├── api/              # FastAPI endpoints
-├── agents/           # AI agent implementations
-├── database/         # Database models
-├── tools/            # Pentesting tool integrations
-├── virtualization/   # VM management
-├── gui/              # Web interface
-├── reports/          # Report generation
-├── notifications/    # Slack/email alerts
-├── tests/            # Test suite
-└── docs/             # Documentation
-```
-
-## 🛠️ Adding New Tools
-
-To add a new pentesting tool:
-
-1. Create file in `tools/`:
-   ```python
-   # tools/my_tool_integration.py
-   from langchain_core.tools import tool
-   
-   @tool
-   def my_tool_scan(target: str) -> str:
-       """Description of what this tool does"""
-       # Implementation
-       return "Result"
-   ```
-
-2. Register in `tools/__init__.py`:
-   ```python
-   from .my_tool_integration import my_tool_scan
-   
-   TOOL_REGISTRY = {
-       # ... existing tools
-       'my_tool_scan': my_tool_scan,
-   }
-   ```
-
-3. Add tests in `tests/tools/test_my_tool.py`
-
-4. Update documentation
-
-## 🧪 Testing Guidelines
-
-### Unit Tests
-
-```python
-# tests/tools/test_nmap.py
-def test_nmap_scan_localhost():
-    """Test nmap scan against localhost"""
-    from tools.nmap_integration import NmapTool
-    
-    nmap = NmapTool()
-    result = nmap.scan("127.0.0.1", "22,80")
-    
-    assert isinstance(result, dict)
-    assert "scan" in result
-```
-
-### Integration Tests
-
-```python
-# tests/integration/test_api.py
-@pytest.mark.integration
-def test_create_scan_api(client):
-    """Test creating scan via API"""
-    response = client.post("/scans", json={
-        "name": "Test Scan",
-        "target": "scanme.nmap.org",
-        "scan_type": "network"
-    })
-    assert response.status_code == 201
-```
-
-## 📝 Documentation
-
-- Update README.md if adding major features
-- Add docstrings to all public functions
-- Update API docs in `docs/API.md`
-- Add examples to `examples/`
-
-## 🐛 Reporting Bugs
-
-Use GitHub Issues with template:
-
-```markdown
-**Description**
-Clear description of the bug
-
-**To Reproduce**
-Steps to reproduce:
-1. Go to '...'
-2. Click on '...'
-3. See error
-
-**Expected Behavior**
-What you expected to happen
-
-**Environment**
-- OS: [e.g., Ubuntu 22.04]
-- Python: [e.g., 3.11]
-- Version: [e.g., 2.0.0]
-
-**Screenshots**
-If applicable
-
-**Additional Context**
-Any other information
-```
-
-## 💡 Feature Requests
-
-Create GitHub Issue with label `enhancement`:
-
-- Describe the feature
-- Explain use case
-- Propose implementation (optional)
-
-## 🔒 Security Issues
-
-**DO NOT** create public issues for security vulnerabilities.
-
-Instead, email: security@zen-pentest.local
-
-Include:
-- Description of vulnerability
+When reporting issues, please include:
+- Description of the problem
 - Steps to reproduce
-- Possible impact
-- Suggested fix (if any)
+- Expected behavior
+- Actual behavior
+- System information (OS, Python version)
+- Relevant logs or screenshots
 
-## 🏅 Recognition
+## Security Issues
 
-Contributors will be:
-- Listed in CONTRIBUTORS.md
-- Mentioned in release notes
-- Credited in documentation
+Please report security issues privately to the maintainers.
+Do NOT open public issues for security vulnerabilities.
 
-## 📜 Code of Conduct
+## Code of Conduct
 
-### Our Standards
-
-- Be respectful and inclusive
-- Accept constructive criticism
+- Be respectful and constructive
+- Welcome newcomers
 - Focus on what's best for the community
 - Show empathy towards others
 
-### Unacceptable Behavior
+## Questions?
 
-- Harassment or discrimination
-- Trolling or insulting comments
-- Personal or political attacks
-- Publishing others' private information
-
-## ❓ Questions?
-
-- Join our [Discord](https://discord.gg/zen-pentest)
-- Start a [Discussion](https://github.com/SHAdd0WTAka/zen-ai-pentest/discussions)
-- Email: support@zen-pentest.local
-
-Thank you for contributing! 🙏
+Join our discussions or open an issue!
