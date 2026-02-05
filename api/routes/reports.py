@@ -4,13 +4,12 @@ Report Generation Endpoints
 Generate professional penetration testing reports in various formats.
 """
 
-import io
 from datetime import datetime
 from typing import List, Optional
 
 from fastapi import (APIRouter, BackgroundTasks, Depends, HTTPException, Query,
                      status)
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
 from api.core.auth import get_current_user

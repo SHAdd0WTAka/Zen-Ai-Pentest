@@ -6,7 +6,7 @@ Control Proton VPN integration for secure anonymous scanning.
 
 from typing import List, Optional
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from pydantic import BaseModel, Field
 
 from api.core.auth import get_current_user

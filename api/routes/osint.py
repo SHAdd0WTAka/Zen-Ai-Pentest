@@ -12,7 +12,7 @@ from pydantic import BaseModel, EmailStr, Field
 
 from api.core.auth import get_current_user
 from api.models.user import User
-from modules.osint import EmailProfile, OSINTModule
+from modules.osint import OSINTModule
 
 router = APIRouter()
 

@@ -6,13 +6,13 @@ System status, health checks, and administrative functions.
 
 import platform
 from datetime import datetime
-from typing import Any, Dict
+from typing import Dict
 
 import psutil
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
-from api.core.auth import get_current_user, require_permissions
+from api.core.auth import require_permissions
 from api.models.user import User, UserRole
 
 router = APIRouter()

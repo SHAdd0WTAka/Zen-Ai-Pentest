@@ -4,7 +4,6 @@ Scan Management Endpoints
 Create, manage, and monitor penetration testing scans.
 """
 
-import asyncio
 from datetime import datetime
 from typing import List, Optional
 
