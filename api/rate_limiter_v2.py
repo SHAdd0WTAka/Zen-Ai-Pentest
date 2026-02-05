@@ -16,7 +16,7 @@ import hashlib
 from typing import Dict, Optional, Callable, Literal
 from functools import wraps
 from dataclasses import dataclass
-from fastapi import Request, HTTPException, status, Depends
+from fastapi import Request, HTTPException, status
 import logging
 
 logger = logging.getLogger(__name__)

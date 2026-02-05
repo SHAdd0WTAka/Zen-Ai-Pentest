@@ -7,7 +7,7 @@ Control and monitor multi-agent collaboration system.
 from datetime import datetime
 from typing import List, Optional
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from pydantic import BaseModel, Field
 
 from api.core.agents import agent_manager

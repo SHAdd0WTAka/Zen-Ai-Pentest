@@ -15,7 +15,6 @@ from fastapi import FastAPI, Depends, HTTPException, BackgroundTasks, WebSocket,
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer
 from contextlib import asynccontextmanager
-import asyncio
 import json
 import logging
 from typing import List, Optional
@@ -31,7 +30,7 @@ from api.schemas import (
     FindingCreate, FindingResponse,
     ReportCreate, ReportResponse,
     ToolExecuteRequest, ToolExecuteResponse,
-    WSMessage,
+
     ScheduledScanCreate, ScheduledScanUpdate, ScheduledScanResponse
 )
 from api.auth import verify_token, create_access_token
@@ -40,7 +39,6 @@ from api.rate_limiter import (
     check_auth_rate_limit, 
     record_auth_failure, 
     record_auth_success,
-    rate_limit
 )
 from api.csrf_protection import csrf_protection, require_csrf
 
@@ -427,7 +425,7 @@ async def notifications_websocket(websocket: WebSocket):
     await ws_manager.connect(websocket, "global")
     try:
         while True:
-            data = await websocket.receive_text()
+            _ = await websocket.receive_text()
             # Handle incoming messages
     except WebSocketDisconnect:
         ws_manager.disconnect(websocket, "global")
@@ -1085,8 +1083,8 @@ async def create_jira_ticket(
     else:
         raise HTTPException(status_code=500, detail="Failed to create ticket")
 
-# Import models for reports
-from database.models import Report
+# Import models for reports (moved to top to fix E402)
+# from database.models import Report  # Already imported at top
 
 # ============================================================================
 # API v1.0 (Q1 2026)

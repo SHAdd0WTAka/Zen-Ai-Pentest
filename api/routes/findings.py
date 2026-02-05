@@ -7,8 +7,8 @@ View, filter, and manage discovered vulnerabilities.
 from datetime import datetime
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
-from pydantic import BaseModel, Field
+from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel
 
 from api.core.auth import get_current_user
 from api.models.finding import Finding, FindingSeverity, FindingStatus
