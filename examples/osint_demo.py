@@ -23,9 +23,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from modules.osint import (OSINTModule, check_email_breach,
-                           enumerate_subdomains, harvest_emails,
-                           investigate_username)
+from modules.osint import OSINTModule
 
 
 async def demo_email_harvesting(domain: str):
@@ -90,7 +88,7 @@ async def demo_domain_recon(domain: str):
         print(f"  Expires: {info.expiration_date or 'N/A'}")
 
         if info.name_servers:
-            print(f"\n  Name Servers:")
+            print("\n  Name Servers:")
             for ns in info.name_servers:
                 print(f"    - {ns}")
 
@@ -102,17 +100,17 @@ async def demo_domain_recon(domain: str):
                 print(f"    ... and {len(info.subdomains) - 10} more")
 
         if info.ip_addresses:
-            print(f"\n  IP Addresses:")
+            print("\n  IP Addresses:")
             for ip in info.ip_addresses:
                 print(f"    - {ip}")
 
         if info.mx_records:
-            print(f"\n  Mail Servers:")
+            print("\n  Mail Servers:")
             for mx in info.mx_records:
                 print(f"    - {mx}")
 
         if info.technologies:
-            print(f"\n  Detected Technologies:")
+            print("\n  Detected Technologies:")
             for tech in info.technologies:
                 print(f"    - {tech}")
 
@@ -139,8 +137,8 @@ async def demo_breach_check(email: str):
         print(f"  Breached: {'YES ⚠️' if profile.breached else 'No'}")
 
         if profile.breached:
-            print(f"\n  ⚠️  WARNING: Email found in breaches!")
-            print(f"\n  Breach Sources:")
+            print("\n  ⚠️  WARNING: Email found in breaches!")
+            print("\n  Breach Sources:")
             for source in profile.breach_sources:
                 print(f"    - {source}")
 
