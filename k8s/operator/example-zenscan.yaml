@@ -1,0 +1,394 @@
+# =============================================================================
+# Example ZenScan Resources
+# =============================================================================
+# Description: Example Custom Resources demonstrating various use cases
+# Version: 2.0.0
+# =============================================================================
+
+# =============================================================================
+# Example 1: One-Time Security Scan (CI/CD Pipeline)
+# =============================================================================
+apiVersion: security.zen.io/v1
+kind: ZenScan
+metadata:
+  name: cicd-security-scan
+  namespace: zen-security
+  labels:
+    app: web-application
+    environment: staging
+    scan-type: on-demand
+spec:
+  target: "https://staging.example.com"
+  scanMode: vuln
+  intensity: medium
+  modules:
+    - web_scan
+    - ssl_scan
+    - api_scan
+  output:
+    formats:
+      - sarif
+      - json
+    storage: zen-results-pvc
+    retentionDays: 30
+  ciConfig:
+    failOn: high
+    uploadToGithub: true
+    githubToken: github-token-secret
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+    requests:
+      cpu: 250m
+      memory: 512Mi
+  timeout: 1800
+
+---
+# =============================================================================
+# Example 2: Recurring Scheduled Scan
+# =============================================================================
+apiVersion: security.zen.io/v1
+kind: ZenScan
+metadata:
+  name: weekly-full-scan
+  namespace: zen-security
+  labels:
+    app: production-api
+    environment: production
+    scan-type: scheduled
+spec:
+  target: "https://api.example.com"
+  scanMode: full
+  intensity: high
+  modules:
+    - port_scan
+    - web_scan
+    - ssl_scan
+    - ai_analysis
+    - compliance
+  schedule: "0 2 * * 0"  # Every Sunday at 2 AM
+  suspend: false
+  output:
+    formats:
+      - sarif
+      - json
+      - html
+    storage: zen-results-pvc
+    retentionDays: 90
+  ciConfig:
+    failOn: critical
+  resources:
+    limits:
+      cpu: 2000m
+      memory: 4Gi
+    requests:
+      cpu: 500m
+      memory: 1Gi
+  timeout: 7200
+
+---
+# =============================================================================
+# Example 3: API Security Scan with Authentication
+# =============================================================================
+apiVersion: security.zen.io/v1
+kind: ZenScan
+metadata:
+  name: api-auth-scan
+  namespace: zen-security
+  labels:
+    app: api-gateway
+    scan-type: api-security
+spec:
+  target: "https://api.example.com/v1"
+  scanMode: api
+  intensity: medium
+  modules:
+    - api_scan
+    - web_scan
+  auth:
+    type: bearer
+    secretRef: api-auth-secret
+  output:
+    formats:
+      - sarif
+      - junit
+    storage: zen-results-pvc
+    retentionDays: 30
+  ciConfig:
+    failOn: high
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+    requests:
+      cpu: 250m
+      memory: 512Mi
+  timeout: 3600
+
+---
+# =============================================================================
+# Example 4: Reconnaissance Only (Passive)
+# =============================================================================
+apiVersion: security.zen.io/v1
+kind: ZenScan
+metadata:
+  name: daily-recon
+  namespace: zen-security
+  labels:
+    app: infrastructure
+    scan-type: reconnaissance
+spec:
+  target: "example.com"
+  scanMode: recon
+  intensity: low
+  modules:
+    - port_scan
+  schedule: "0 6 * * *"  # Daily at 6 AM
+  output:
+    formats:
+      - json
+    storage: zen-results-pvc
+    retentionDays: 14
+  ciConfig:
+    failOn: none  # Informational only
+  resources:
+    limits:
+      cpu: 500m
+      memory: 1Gi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+  timeout: 1800
+
+---
+# =============================================================================
+# Example 5: Compliance Scan (PCI-DSS)
+# =============================================================================
+apiVersion: security.zen.io/v1
+kind: ZenScan
+metadata:
+  name: pci-compliance-scan
+  namespace: zen-security
+  labels:
+    compliance: pci-dss
+    scan-type: compliance
+spec:
+  target: "https://payment.example.com"
+  scanMode: full
+  intensity: medium
+  modules:
+    - port_scan
+    - web_scan
+    - ssl_scan
+    - compliance
+  output:
+    formats:
+      - sarif
+      - json
+      - html
+    storage: zen-results-pvc
+    retentionDays: 365  # Long retention for compliance
+  ciConfig:
+    failOn: high
+  resources:
+    limits:
+      cpu: 2000m
+      memory: 4Gi
+    requests:
+      cpu: 500m
+      memory: 1Gi
+  timeout: 7200
+
+---
+# =============================================================================
+# Example 6: Stealth Scan (Low and Slow)
+# =============================================================================
+apiVersion: security.zen.io/v1
+kind: ZenScan
+metadata:
+  name: stealth-assessment
+  namespace: zen-security
+  labels:
+    app: sensitive-target
+    scan-type: stealth
+spec:
+  target: "https://target.example.com"
+  scanMode: stealth
+  intensity: low
+  modules:
+    - port_scan
+    - web_scan
+  output:
+    formats:
+      - json
+      - html
+    storage: zen-results-pvc
+    retentionDays: 60
+  ciConfig:
+    failOn: none
+  resources:
+    limits:
+      cpu: 500m
+      memory: 1Gi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+  timeout: 14400  # 4 hours for stealth
+
+---
+# =============================================================================
+# Persistent Volume Claim for Results Storage
+# =============================================================================
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: zen-results-pvc
+  namespace: zen-security
+  labels:
+    app.kubernetes.io/name: zen-scan-results
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 50Gi
+  storageClassName: standard
+
+---
+# =============================================================================
+# Secret: API Authentication (Template)
+# =============================================================================
+apiVersion: v1
+kind: Secret
+metadata:
+  name: api-auth-secret
+  namespace: zen-security
+type: Opaque
+stringData:
+  # For Bearer token auth
+  token: "your-api-token-here"
+  # For Basic auth
+  username: "api-user"
+  password: "api-password"
+
+---
+# =============================================================================
+# Secret: GitHub Token (Template)
+# =============================================================================
+apiVersion: v1
+kind: Secret
+metadata:
+  name: github-token-secret
+  namespace: zen-security
+type: Opaque
+stringData:
+  # GitHub Personal Access Token with 'security_events' scope
+  token: "ghp_your_github_token_here"
+
+---
+# =============================================================================
+# ConfigMap: Scan Policies
+# =============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: zen-scan-policies
+  namespace: zen-security
+data:
+  policies.yaml: |
+    policies:
+      - name: strict
+        failOn: medium
+        modules:
+          - port_scan
+          - web_scan
+          - ssl_scan
+          - ai_analysis
+      
+      - name: relaxed
+        failOn: critical
+        modules:
+          - web_scan
+          - ssl_scan
+      
+      - name: api-focus
+        failOn: high
+        modules:
+          - api_scan
+          - web_scan
+          - ai_analysis
+      
+      - name: compliance-pci
+        failOn: high
+        modules:
+          - port_scan
+          - web_scan
+          - ssl_scan
+          - compliance
+
+---
+# =============================================================================
+# Network Policy: Restrict Scan Job Network Access
+# =============================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: zen-scan-network-policy
+  namespace: zen-security
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: zen-scan-job
+  policyTypes:
+    - Egress
+  egress:
+    # Allow DNS
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: UDP
+          port: 53
+    # Allow HTTPS to targets
+    - to: []
+      ports:
+        - protocol: TCP
+          port: 443
+        - protocol: TCP
+          port: 80
+    # Allow API server
+    - to:
+        - ipBlock:
+            cidr: 10.0.0.0/8
+      ports:
+        - protocol: TCP
+          port: 443
+
+---
+# =============================================================================
+# INSTALLATION INSTRUCTIONS
+# =============================================================================
+#
+# 1. Install the operator:
+#    kubectl apply -f k8s/operator/zenscan-crd.yaml
+#    kubectl apply -f k8s/operator/operator-deployment.yaml
+#
+# 2. Create secrets:
+#    kubectl create secret generic api-auth-secret \
+#      --from-literal=token='your-token' \
+#      -n zen-security
+#
+# 3. Apply example scans:
+#    kubectl apply -f k8s/operator/example-zenscan.yaml
+#
+# 4. Check scan status:
+#    kubectl get zenscans -n zen-security
+#    kubectl describe zenscan cicd-security-scan -n zen-security
+#
+# 5. View results:
+#    kubectl get pods -n zen-security -l job-name=zen-scan-cicd-security-scan
+#    kubectl logs -l job-name=zen-scan-cicd-security-scan -n zen-security
+#
+# 6. Access results from PVC:
+#    kubectl exec -it <results-pod> -n zen-security -- ls /results
+# =============================================================================

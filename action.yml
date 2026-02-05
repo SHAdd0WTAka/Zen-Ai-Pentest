@@ -1,0 +1,298 @@
+# =============================================================================
+# Zen AI Pentest GitHub Action
+# =============================================================================
+# Description: GitHub Action for running AI-powered security scans
+# Version: 2.0.0
+# Author: Zen-AI-Pentest Team
+# License: MIT
+# =============================================================================
+
+name: 'Zen AI Pentest'
+description: 'AI-powered security scanning for CI/CD pipelines with SARIF output'
+author: 'Zen-AI-Pentest Team'
+branding:
+  icon: 'shield'
+  color: 'green'
+
+inputs:
+  target:
+    description: 'Target URL or IP address to scan'
+    required: true
+  
+  scope:
+    description: 'Scan scope (full, recon, vuln, stealth)'
+    required: false
+    default: 'full'
+  
+  fail-on:
+    description: 'Fail pipeline on severity level (critical, high, medium, low, none)'
+    required: false
+    default: 'high'
+  
+  output-format:
+    description: 'Output format (sarif, json, html, junit, all)'
+    required: false
+    default: 'sarif'
+  
+  intensity:
+    description: 'Scan intensity (low, medium, high)'
+    required: false
+    default: 'medium'
+  
+  modules:
+    description: 'Comma-separated list of scan modules to enable'
+    required: false
+    default: 'port_scan,web_scan,ssl_scan,ai_analysis'
+  
+  timeout:
+    description: 'Scan timeout in seconds'
+    required: false
+    default: '3600'
+  
+  config-file:
+    description: 'Path to configuration file'
+    required: false
+    default: ''
+  
+  api-key:
+    description: 'API key for AI features (set as secret)'
+    required: false
+    default: ''
+  
+  upload-sarif:
+    description: 'Upload SARIF results to GitHub Security tab'
+    required: false
+    default: 'true'
+  
+  artifact-name:
+    description: 'Name for the uploaded artifact'
+    required: false
+    default: 'zen-pentest-results'
+
+outputs:
+  scan-id:
+    description: 'Unique identifier for the scan'
+    value: ${{ steps.scan.outputs.scan-id }}
+  
+  results-file:
+    description: 'Path to the generated results file'
+    value: ${{ steps.scan.outputs.results-file }}
+  
+  findings-count:
+    description: 'Total number of findings'
+    value: ${{ steps.scan.outputs.findings-count }}
+  
+  critical-count:
+    description: 'Number of critical findings'
+    value: ${{ steps.scan.outputs.critical-count }}
+  
+  high-count:
+    description: 'Number of high severity findings'
+    value: ${{ steps.scan.outputs.high-count }}
+  
+  risk-score:
+    description: 'Overall risk score (0-100)'
+    value: ${{ steps.scan.outputs.risk-score }}
+  
+  scan-status:
+    description: 'Status of the scan (success, failure)'
+    value: ${{ steps.scan.outputs.scan-status }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    
+    - name: Install Zen AI Pentest
+      shell: bash
+      run: |
+        pip install --upgrade pip
+        pip install zen-ai-pentest
+        
+        # Verify installation
+        zen-cli --version || python -m zen_ai_pentest --version
+    
+    - name: Prepare Environment
+      shell: bash
+      run: |
+        # Create output directory
+        mkdir -p zen-pentest-output
+        
+        # Setup API key if provided
+        if [ -n "${{ inputs.api-key }}" ]; then
+          echo "OPENAI_API_KEY=${{ inputs.api-key }}" >> $GITHUB_ENV
+        fi
+        
+        # Setup configuration file if provided
+        if [ -n "${{ inputs.config-file }}" ] && [ -f "${{ inputs.config-file }}" ]; then
+          export ZEN_CONFIG_FILE="${{ inputs.config-file }}"
+        fi
+    
+    - name: Run Security Scan
+      id: scan
+      shell: bash
+      run: |
+        TARGET="${{ inputs.target }}"
+        SCOPE="${{ inputs.scope }}"
+        OUTPUT_FORMAT="${{ inputs.output-format }}"
+        INTENSITY="${{ inputs.intensity }}"
+        MODULES="${{ inputs.modules }}"
+        TIMEOUT="${{ inputs.timeout }}"
+        
+        # Generate timestamp for unique filenames
+        TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+        SCAN_ID="zen-${GITHUB_RUN_ID}-${TIMESTAMP}"
+        
+        # Prepare output filenames
+        if [ "$OUTPUT_FORMAT" = "all" ]; then
+          SARIF_FILE="zen-pentest-output/zen-scan-${SCAN_ID}.sarif"
+          JSON_FILE="zen-pentest-output/zen-scan-${SCAN_ID}.json"
+          HTML_FILE="zen-pentest-output/zen-scan-${SCAN_ID}.html"
+          JUNIT_FILE="zen-pentest-output/zen-scan-${SCAN_ID}.xml"
+        elif [ "$OUTPUT_FORMAT" = "sarif" ]; then
+          SARIF_FILE="zen-pentest-output/zen-scan-${SCAN_ID}.sarif"
+        elif [ "$OUTPUT_FORMAT" = "junit" ]; then
+          JUNIT_FILE="zen-pentest-output/zen-scan-${SCAN_ID}.xml"
+        else
+          OUTPUT_FILE="zen-pentest-output/zen-scan-${SCAN_ID}.${OUTPUT_FORMAT}"
+        fi
+        
+        echo "Starting Zen AI Pentest scan..."
+        echo "Target: $TARGET"
+        echo "Scope: $SCOPE"
+        echo "Intensity: $INTENSITY"
+        echo "Scan ID: $SCAN_ID"
+        
+        # Build scan command
+        SCAN_CMD="python -m zen_ai_pentest scan \""$TARGET"\" \
+          --scope $SCOPE \
+          --intensity $INTENSITY \
+          --modules $MODULES \
+          --timeout $TIMEOUT \
+          --output-dir zen-pentest-output \
+          --scan-id $SCAN_ID"
+        
+        # Add output format options
+        if [ "$OUTPUT_FORMAT" = "all" ]; then
+          SCAN_CMD="$SCAN_CMD --format sarif --sarif-output $SARIF_FILE"
+          SCAN_CMD="$SCAN_CMD --format json --json-output $JSON_FILE"
+          SCAN_CMD="$SCAN_CMD --format html --html-output $HTML_FILE"
+          SCAN_CMD="$SCAN_CMD --format junit --junit-output $JUNIT_FILE"
+        elif [ "$OUTPUT_FORMAT" = "sarif" ]; then
+          SCAN_CMD="$SCAN_CMD --format sarif --sarif-output $SARIF_FILE"
+        elif [ "$OUTPUT_FORMAT" = "junit" ]; then
+          SCAN_CMD="$SCAN_CMD --format junit --junit-output $JUNIT_FILE"
+        else
+          SCAN_CMD="$SCAN_CMD --format $OUTPUT_FORMAT --output $OUTPUT_FILE"
+        fi
+        
+        # Run scan and capture output
+        echo "Executing: $SCAN_CMD"
+        eval $SCAN_CMD 2>&1 | tee zen-pentest-output/scan.log
+        SCAN_EXIT_CODE=${PIPESTATUS[0]}
+        
+        # Parse results
+        if [ -f "zen-pentest-output/results.json" ]; then
+          FINDINGS=$(jq '.findings | length' zen-pentest-output/results.json 2>/dev/null || echo "0")
+          CRITICAL=$(jq '[.findings[] | select(.severity=="critical")] | length' zen-pentest-output/results.json 2>/dev/null || echo "0")
+          HIGH=$(jq '[.findings[] | select(.severity=="high")] | length' zen-pentest-output/results.json 2>/dev/null || echo "0")
+          RISK_SCORE=$(jq '.risk_score // 0' zen-pentest-output/results.json 2>/dev/null || echo "0")
+        else
+          FINDINGS="0"
+          CRITICAL="0"
+          HIGH="0"
+          RISK_SCORE="0"
+        fi
+        
+        # Set outputs
+        echo "scan-id=$SCAN_ID" >> $GITHUB_OUTPUT
+        echo "findings-count=$FINDINGS" >> $GITHUB_OUTPUT
+        echo "critical-count=$CRITICAL" >> $GITHUB_OUTPUT
+        echo "high-count=$HIGH" >> $GITHUB_OUTPUT
+        echo "risk-score=$RISK_SCORE" >> $GITHUB_OUTPUT
+        
+        if [ "$OUTPUT_FORMAT" = "sarif" ] || [ "$OUTPUT_FORMAT" = "all" ]; then
+          echo "results-file=zen-pentest-output/zen-scan-${SCAN_ID}.sarif" >> $GITHUB_OUTPUT
+        elif [ "$OUTPUT_FORMAT" = "junit" ]; then
+          echo "results-file=zen-pentest-output/zen-scan-${SCAN_ID}.xml" >> $GITHUB_OUTPUT
+        else
+          echo "results-file=zen-pentest-output/zen-scan-${SCAN_ID}.${OUTPUT_FORMAT}" >> $GITHUB_OUTPUT
+        fi
+        
+        if [ $SCAN_EXIT_CODE -eq 0 ]; then
+          echo "scan-status=success" >> $GITHUB_OUTPUT
+        else
+          echo "scan-status=failure" >> $GITHUB_OUTPUT
+        fi
+        
+        # Check fail-on condition
+        FAIL_ON="${{ inputs.fail-on }}"
+        SHOULD_FAIL=false
+        
+        case $FAIL_ON in
+          critical)
+            [ "$CRITICAL" -gt 0 ] && SHOULD_FAIL=true
+            ;;
+          high)
+            [ "$CRITICAL" -gt 0 ] || [ "$HIGH" -gt 0 ] && SHOULD_FAIL=true
+            ;;
+          medium)
+            [ "$RISK_SCORE" -gt 50 ] && SHOULD_FAIL=true
+            ;;
+          low)
+            [ "$FINDINGS" -gt 0 ] && SHOULD_FAIL=true
+            ;;
+          none)
+            SHOULD_FAIL=false
+            ;;
+        esac
+        
+        if [ "$SHOULD_FAIL" = true ]; then
+          echo "::error::Security scan failed threshold ($FAIL_ON). Critical: $CRITICAL, High: $HIGH, Risk Score: $RISK_SCORE"
+          exit 1
+        fi
+        
+        echo "Scan completed successfully!"
+        echo "Findings: $FINDINGS (Critical: $CRITICAL, High: $HIGH)"
+        echo "Risk Score: $RISK_SCORE"
+    
+    - name: Upload SARIF to GitHub Security
+      if: ${{ inputs.upload-sarif == 'true' && (inputs.output-format == 'sarif' || inputs.output-format == 'all') }}
+      uses: github/codeql-action/upload-sarif@v3
+      with:
+        sarif_file: ${{ steps.scan.outputs.results-file }}
+        category: zen-ai-pentest
+    
+    - name: Upload Artifacts
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.artifact-name }}
+        path: |
+          zen-pentest-output/
+        retention-days: 30
+    
+    - name: Generate Summary
+      if: always()
+      shell: bash
+      run: |
+        echo "## 🔒 Zen AI Pentest Scan Results" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+        echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+        echo "| **Target** | ${{ inputs.target }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| **Scan ID** | ${{ steps.scan.outputs.scan-id }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| **Status** | ${{ steps.scan.outputs.scan-status }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| **Findings** | ${{ steps.scan.outputs.findings-count }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| **Critical** | ${{ steps.scan.outputs.critical-count }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| **High** | ${{ steps.scan.outputs.high-count }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| **Risk Score** | ${{ steps.scan.outputs.risk-score }}/100 |" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        if [ "${{ steps.scan.outputs.critical-count }}" -gt 0 ]; then
+          echo "### ⚠️ Critical Findings Detected!" >> $GITHUB_STEP_SUMMARY
+          echo "Please review the security report immediately." >> $GITHUB_STEP_SUMMARY
+        fi
