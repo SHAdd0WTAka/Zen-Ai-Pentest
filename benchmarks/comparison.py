@@ -6,10 +6,9 @@ Supports both AI-based and traditional security scanners.
 """
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Any, Callable
+from typing import Dict, List, Optional, Any
 from datetime import datetime
 from enum import Enum
-import json
 import statistics
 from abc import ABC, abstractmethod
 
@@ -515,7 +514,7 @@ class ComparisonResult:
     def generate_report_markdown(self) -> str:
         """Generate a markdown comparison report."""
         lines = [
-            f"# Benchmark Comparison Report",
+            "# Benchmark Comparison Report",
             f"**Scenario:** {self.scenario_id}",
             f"**Date:** {self.timestamp.strftime('%Y-%m-%d %H:%M:%S')}",
             "",
@@ -570,7 +569,7 @@ class ComparisonResult:
         if self.winner:
             lines.extend([
                 "## Winner",
-                f"",
+                "",
                 f"🏆 **{self.winner}** achieved the best overall performance.",
                 ""
             ])

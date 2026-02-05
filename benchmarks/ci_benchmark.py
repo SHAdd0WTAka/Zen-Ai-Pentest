@@ -20,7 +20,8 @@ from .benchmark_engine import (
     BenchmarkEngine, BenchmarkConfig, BenchmarkReport,
     BenchmarkStatus
 )
-from .metrics import BenchmarkMetrics, MetricsAggregator
+from .metrics import BenchmarkMetrics
+from .scenarios import ALL_SCENARIOS
 
 logger = logging.getLogger(__name__)
 
@@ -301,10 +302,10 @@ class CIBenchmarkRunner:
                 if report_path.exists():
                     try:
                         with open(report_path) as f:
-                            data = json.load(f)
+                            _ = json.load(f)  # TODO: Use data
                         # Reconstruct report (simplified)
                         return current  # Placeholder
-                    except:
+                    except Exception:
                         pass
         
         return None
@@ -533,7 +534,7 @@ class CIBenchmarkRunner:
         if should_fail:
             lines.extend([
                 "### ❌ Build Status: FAILED",
-                f"",
+                "",
                 f"**Reason:** {reason}",
                 ""
             ])
@@ -719,8 +720,7 @@ jobs:
         return workflow
 
 
-# Import ALL_SCENARIOS for default config
-from .scenarios import ALL_SCENARIOS
+# ALL_SCENARIOS imported at top
 
 
 async def main():
