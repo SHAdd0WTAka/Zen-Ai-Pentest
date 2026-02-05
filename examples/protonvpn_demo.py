@@ -17,8 +17,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from modules.protonvpn import (ProtonVPNManager, VPNProtocol, VPNSecurityLevel,
-                               quick_connect, secure_connect)
+from modules.protonvpn import ProtonVPNManager, VPNProtocol, VPNSecurityLevel
 
 
 async def demo_basic_connection():
@@ -40,7 +39,7 @@ async def demo_basic_connection():
     status = await vpn.connect(country="CH", protocol=VPNProtocol.WIREGUARD)
     
     if status.connected:
-        print(f"    ✅ Connected!")
+        print("    ✅ Connected!")
         print(f"    Location: {status.server_location}")
         print(f"    Protocol: {status.protocol}")
         print(f"    New IP: {status.public_ip}")
@@ -48,9 +47,9 @@ async def demo_basic_connection():
         
         # Verify IP change
         if status.public_ip != original_ip:
-            print(f"    ✅ IP successfully changed!")
+            print("    ✅ IP successfully changed!")
         else:
-            print(f"    ⚠️  IP might not have changed (check VPN)")
+            print("    ⚠️  IP might not have changed (check VPN)")
     else:
         print("    ❌ Connection failed")
     
@@ -97,10 +96,10 @@ async def demo_secure_core():
     )
     
     if status.connected:
-        print(f"    ✅ Secure Core connected!")
+        print("    ✅ Secure Core connected!")
         print(f"    Path: Privacy-friendly country → {status.server_location}")
         print(f"    Public IP: {status.public_ip}")
-        print(f"    Protection: Maximum anonymity")
+        print("    Protection: Maximum anonymity")
     
     await vpn.disconnect()
 
@@ -131,11 +130,11 @@ async def demo_ip_rotation():
             print(f"    Location: {status.server_location}")
             
             # Simulate pentest activity
-            print(f"    Performing reconnaissance...")
+            print("    Performing reconnaissance...")
             await asyncio.sleep(1)
             
             if i < len(countries):
-                print(f"    Rotating to next IP...")
+                print("    Rotating to next IP...")
                 await vpn.disconnect()
                 await asyncio.sleep(1)
     
@@ -205,7 +204,7 @@ async def demo_pentest_workflow():
     )
     
     if status.connected:
-        print(f"    ✅ VPN tunnel established")
+        print("    ✅ VPN tunnel established")
         print(f"    Public IP: {status.public_ip}")
         print(f"    Kill Switch: ACTIVE")
         
