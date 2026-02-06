@@ -9,7 +9,9 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "audit": "npm audit",
+    "audit:fix": "npm audit fix"
   },
   "dependencies": {
     "react": "^18.2.0",
@@ -17,7 +19,7 @@
     "react-router-dom": "^6.20.0",
     "recharts": "^2.10.0",
     "socket.io-client": "^4.7.0",
-    "axios": "^1.6.0",
+    "axios": "^1.7.4",
     "date-fns": "^2.30.0",
     "lucide-react": "^0.294.0",
     "tailwindcss": "^3.3.0",
@@ -40,7 +42,7 @@
     "eslint-plugin-react-refresh": "^0.4.4",
     "postcss": "^8.4.32",
     "typescript": "^5.2.2",
-    "vite": "^5.0.0"
+    "vite": "^5.4.14"
   },
   "browserslist": {
     "production": [
@@ -53,5 +55,10 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "overrides": {
+    "esbuild": "^0.21.5",
+    "jsonpath": "^1.1.1",
+    "webpack-dev-server": "^5.0.4"
   }
 }
