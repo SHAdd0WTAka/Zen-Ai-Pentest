@@ -81,7 +81,7 @@ extras_require = {
 
 setup(
     name='zen-ai-pentest',
-    version='2.0.0',
+    version='2.3.5',
     description='Autonomous AI-Powered Penetration Testing Framework',
     long_description=long_description,
     long_description_content_type='text/markdown',
