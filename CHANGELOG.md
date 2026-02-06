@@ -30,6 +30,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.3.6] - 2026-02-06
+
+### 🛡️ Security Fixes
+
+#### Python Dependencies
+- **requests** (CVE-2024-35195): Updated to >= 2.32.0
+- **jinja2** (CVE-2024-56201, CVE-2024-56326): Updated to >= 3.1.5
+- **cryptography** (CVE-2024-41985, CVE-2024-25185): Updated to >= 43.0.1
+
+#### NPM Dependencies
+- **jsonpath** (CVE-2025-61140): Updated to >= 1.2.0
+- **webpack-dev-server** (CVE-2025-30360, CVE-2025-30359): Updated to >= 5.2.1
+
+### ✨ New Features
+- **Cache System**: Redis-backed caching with in-memory fallback
+- **Auth Flow**: Complete authentication system in React dashboard
+- **API Enhancements**: New PATCH /findings/{id} endpoint for updating findings
+
+### 🔧 Code Quality
+- Fixed 74+ Ruff linting errors across 252 files
+- Added Bandit security configuration for pentesting tools
+- Formatted all Python files with consistent style
+
+### 🚀 CI/CD Improvements
+- Reduced Python CI test matrix (Ubuntu: 3.11-3.13, Windows/macOS: 3.12 only)
+- Added npm cache configuration for faster frontend builds
+- Improved PyPI deployment workflow with deployment tracking
+
+---
+
 ## [2.2.0] - 2026-02-05 (Q1 2026 Release)
 
 ### 🚀 New Features
