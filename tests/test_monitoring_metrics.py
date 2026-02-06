@@ -4,8 +4,8 @@ Tests für Monitoring Metrics
 
 import pytest
 import sys
-import time
-from unittest.mock import Mock, patch, MagicMock
+
+from unittest.mock import Mock
 
 sys.path.insert(0, "C:\\Users\\Ataka\\source\\repos\\SHAdd0WTAka\\Zen-Ai-Pentest")
 

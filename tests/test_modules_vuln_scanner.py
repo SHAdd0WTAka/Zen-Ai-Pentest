@@ -1,6 +1,6 @@
 """Tests for vulnerability scanner module"""
 import pytest  # noqa: F401
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 from modules.vuln_scanner import VulnScannerModule
 
 

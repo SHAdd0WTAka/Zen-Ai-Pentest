@@ -2,7 +2,7 @@
 Unit Tests for Ransomware Database
 """
 
-import pytest
+import pytest  # noqa: F401
 
 from core.database import get_ransomware_db
 
@@ -25,7 +25,7 @@ def test_ransomware_family_structure():
         assert "name" in family
         # Data may have 'first_seen' or different field names
         # Check for common ransomware attributes
-        has_temporal = any(k in family for k in ["first_seen", "first_seen_date", "discovered_date"])
+        _ = any(k in family for k in ["first_seen", "first_seen_date", "discovered_date"])
         has_extensions = any(k in family for k in ["extensions", "file_extensions", "file_extensions_targeted"])
         
         # Check data types

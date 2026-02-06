@@ -2,7 +2,7 @@
 Unit Tests for Plugin Manager
 """
 
-import asyncio
+
 
 import pytest
 

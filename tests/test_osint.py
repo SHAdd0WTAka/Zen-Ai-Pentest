@@ -2,7 +2,7 @@
 Unit Tests for OSINT Module
 """
 
-import asyncio
+
 
 import pytest
 
