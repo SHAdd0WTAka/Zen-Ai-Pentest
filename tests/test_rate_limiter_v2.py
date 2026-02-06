@@ -4,8 +4,8 @@ Tests für User-basiertes Rate Limiting v2
 
 import pytest
 import time
-from fastapi import Request, HTTPException
-from unittest.mock import Mock, patch
+from fastapi import HTTPException
+from unittest.mock import Mock
 
 # Test the new rate limiter
 import sys
@@ -18,7 +18,7 @@ from api.rate_limiter_v2 import (
     RATE_LIMITS,
     rate_limit,
     UserAuthRateLimiter,
-    get_rate_limit_stats
+
 )
 
 
@@ -195,10 +195,9 @@ class TestRateLimitDecorator:
     
     @pytest.mark.asyncio
     async def test_anonymous_rate_limit(self):
-        from fastapi import Request
-        
         # Create mock request
-        mock_request = Mock(spec=Request)
+        from fastapi import Request as Req
+        mock_request = Mock(spec=Req)
         mock_request.client.host = "192.168.1.1"
         mock_request.headers = {}
         
@@ -248,8 +247,6 @@ class TestStats:
     
     def test_stats_with_memory_storage(self):
         # Patch the global storage for this test
-        from api.rate_limiter_v2 import rate_limit_storage
-        
         # Create fresh storage
         test_storage = MemoryStorage()
         

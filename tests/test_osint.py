@@ -6,7 +6,7 @@ Unit Tests for OSINT Module
 
 import pytest
 
-from modules.osint import OSINTModule, enumerate_subdomains, harvest_emails
+from modules.osint import OSINTModule  # noqa: F401
 
 
 @pytest.mark.asyncio
