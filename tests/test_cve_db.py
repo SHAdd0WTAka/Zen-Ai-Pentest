@@ -2,7 +2,7 @@
 Unit Tests for CVE Database
 """
 
-import pytest
+import pytest  # noqa: F401
 
 from core.database import get_cve_db
 

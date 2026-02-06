@@ -1,6 +1,6 @@
 """Tests for agent coordinator module"""
 import pytest
-import asyncio
+
 from modules.agent_coordinator import (
     AgentCoordinator, Agent, AgentStatus, ResourceType
 )

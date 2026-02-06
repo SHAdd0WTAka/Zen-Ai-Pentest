@@ -1,7 +1,7 @@
 """Tests for false positive filter module"""
 import pytest
 from modules.false_positive_filter import (
-    FalsePositiveFilter, Finding, ConfidenceLevel
+    FalsePositiveFilter, Finding
 )
 
 

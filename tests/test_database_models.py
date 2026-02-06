@@ -5,8 +5,8 @@ Tests für Database Models
 import pytest
 import os
 import sys
-from datetime import datetime, timedelta
-from unittest.mock import Mock, patch, MagicMock
+from datetime import datetime
+
 
 # Setup path
 sys.path.insert(0, "C:\\Users\\Ataka\\source\\repos\\SHAdd0WTAka\\Zen-Ai-Pentest")
