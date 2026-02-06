@@ -8,7 +8,7 @@ Erstellt und konfiguriert Kali Linux, Windows und macOS VMs für Pentesting.
 import argparse
 import json
 import logging
-import os
+
 import subprocess
 import sys
 from pathlib import Path
@@ -46,7 +46,7 @@ class VMSetup:
                                       capture_output=True, timeout=5)
                 if result.returncode == 0:
                     return path
-            except:
+            except Exception:
                 continue
         
         raise RuntimeError("VirtualBox nicht gefunden. Bitte installieren.")

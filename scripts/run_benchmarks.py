@@ -11,12 +11,12 @@ import json
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from modules.benchmark import BenchmarkRunner, BenchmarkResult, BenchmarkCategory
+from modules.benchmark import BenchmarkResult, BenchmarkCategory
 from benchmarks.scan_performance import ScanPerformanceBenchmark
 from benchmarks.agent_performance import AgentPerformanceBenchmark
 from benchmarks.api_performance import APIPerformanceBenchmark
@@ -480,7 +480,7 @@ Examples:
             
             # Convert dicts back to BenchmarkResult objects
             # (simplified - in production would need full reconstruction)
-            report = runner.generate_report()
+            _ = runner.generate_report()
             print(f"\nReport generated: {args.input}/benchmark_report.md")
         return
     
