@@ -27,14 +27,14 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 # Apply Windows/asyncio fixes
 from utils.async_fixes import apply_windows_async_fixes, silence_asyncio_warnings
 from core.orchestrator import ZenOrchestrator
-
-apply_windows_async_fixes()
-silence_asyncio_warnings()
 from backends.duckduckgo import DuckDuckGoBackend
 from modules.recon import ReconModule
 from modules.vuln_scanner import VulnScannerModule
 from modules.report_gen import ReportGenerator
 from utils.helpers import banner, colorize, get_severity_color
+
+apply_windows_async_fixes()
+silence_asyncio_warnings()
 
 
 class StandaloneScanner:
