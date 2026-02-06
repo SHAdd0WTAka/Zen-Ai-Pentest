@@ -1,12 +1,12 @@
 """
 Safety Pipeline - Integration wrapper for all safety checks
 """
-from typing import Dict, Any, Optional, Tuple
+from typing import Dict, Any, Optional
 
 from .guardrails import OutputGuardrails, SafetyLevel
 from .validator import OutputValidator
 from .fact_checker import FactChecker
-from .confidence import ConfidenceScorer, ConfidenceScore
+from .confidence import ConfidenceScorer
 from .self_correction import SelfCorrection
 
 

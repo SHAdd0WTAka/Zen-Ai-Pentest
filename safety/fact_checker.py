@@ -187,7 +187,7 @@ class FactChecker:
                         claim=f"Port {port} is {claimed_status}",
                         status=FactCheckStatus.VERIFIED,
                         confidence=0.95,
-                        evidence=[f"Matches scan result"],
+                        evidence=["Matches scan result"],
                         source='scan_data'
                     )
                 else:

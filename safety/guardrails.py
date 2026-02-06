@@ -2,7 +2,7 @@
 Output Guardrails - Primary defense against hallucinations
 """
 from enum import Enum
-from typing import List, Dict, Any, Optional, Tuple
+from typing import List, Dict, Any, Optional
 from dataclasses import dataclass
 import re
 
