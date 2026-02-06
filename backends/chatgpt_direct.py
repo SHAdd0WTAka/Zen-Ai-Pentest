@@ -125,9 +125,7 @@ class ChatGPTDirectBackend:
             return False
         try:
             headers = {"Authorization": f"Bearer {self.access_token}"}
-            async with self.session.get(
-                "https://chat.openai.com/backend-api/models", headers=headers
-            ) as resp:
+            async with self.session.get("https://chat.openai.com/backend-api/models", headers=headers) as resp:
                 return resp.status == 200
         except Exception:
             return False

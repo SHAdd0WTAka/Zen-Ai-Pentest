@@ -11,7 +11,6 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Callable, Optional
 
-from .filters.compress import ContextCompressor
 from .filters.injection import PromptInjectionDetector
 from .filters.secrets import SecretScrubber
 from .schemas import RiskLevel, SanitizerResponse
@@ -137,9 +136,7 @@ class CircuitBreaker:
                 self.state = CircuitState.OPEN
                 logger.warning(f"Circuit OPEN - {self.metrics.failures} failures")
 
-    async def _fallback_response(
-        self, raw_data: str, source_tool: str = "unknown", **kwargs
-    ) -> SanitizerResponse:
+    async def _fallback_response(self, raw_data: str, source_tool: str = "unknown", **kwargs) -> SanitizerResponse:
         """
         Generate fallback response using only regex
 

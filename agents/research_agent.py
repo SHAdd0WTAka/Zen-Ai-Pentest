@@ -138,9 +138,7 @@ class ResearchAgent(BaseAgent):
                 for cve_id in cves[:5]:  # Limit to top 5
                     cve_data = self.cve_db.search_cve(cve_id)
                     if cve_data:
-                        findings.append(
-                            {"type": "cve", "data": cve_data, "source": "llm_research"}
-                        )
+                        findings.append({"type": "cve", "data": cve_data, "source": "llm_research"})
 
         # Research 2: Check for ransomware using these technologies
         ransomware = self.cve_db.list_all_ransomware()

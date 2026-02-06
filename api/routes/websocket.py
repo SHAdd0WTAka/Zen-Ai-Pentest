@@ -76,9 +76,7 @@ async def scan_websocket(websocket: WebSocket, scan_id: str):
                     await websocket.send_json({"type": "pong"})
 
                 elif message.get("action") == "subscribe":
-                    await websocket.send_json(
-                        {"type": "subscribed", "channel": f"scan:{scan_id}"}
-                    )
+                    await websocket.send_json({"type": "subscribed", "channel": f"scan:{scan_id}"})
 
             except json.JSONDecodeError:
                 await websocket.send_json({"type": "error", "message": "Invalid JSON"})
@@ -128,13 +126,7 @@ async def agents_websocket(websocket: WebSocket):
                     "type": "agent_status",
                     "data": {
                         "total": len(agent_manager.get_all_agents()),
-                        "active": len(
-                            [
-                                a
-                                for a in agent_manager.get_all_agents()
-                                if a.state.value == "running"
-                            ]
-                        ),
+                        "active": len([a for a in agent_manager.get_all_agents() if a.state.value == "running"]),
                     },
                 }
                 await websocket.send_json(status)
@@ -204,16 +196,12 @@ async def notify_scan_update(scan_id: str, data: dict):
     """Send update to all clients watching a scan"""
     channel = f"scan:{scan_id}"
     if channel in active_connections:
-        await broadcast_to_channel(
-            channel, {"type": "scan_update", "scan_id": scan_id, "data": data}
-        )
+        await broadcast_to_channel(channel, {"type": "scan_update", "scan_id": scan_id, "data": data})
 
 
 async def notify_agent_update(agent_id: str, data: dict):
     """Send agent update to all connected clients"""
-    await broadcast_to_channel(
-        "agents", {"type": "agent_update", "agent_id": agent_id, "data": data}
-    )
+    await broadcast_to_channel("agents", {"type": "agent_update", "agent_id": agent_id, "data": data})
 
 
 async def notify_system_event(event_type: str, message: str, severity: str = "info"):

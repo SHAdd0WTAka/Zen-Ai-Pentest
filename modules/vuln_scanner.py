@@ -68,14 +68,10 @@ CVE: <cve_ids>
         response = await self.orchestrator.process(prompt)
         vulnerabilities = self._parse_vulnerabilities(response.content)
 
-        logger.info(
-            f"[VulnScanner] Found {len(vulnerabilities)} vulnerabilities in nmap output"
-        )
+        logger.info(f"[VulnScanner] Found {len(vulnerabilities)} vulnerabilities in nmap output")
         return vulnerabilities
 
-    async def analyze_web_headers(
-        self, headers: Dict[str, str], url: str
-    ) -> List[Vulnerability]:
+    async def analyze_web_headers(self, headers: Dict[str, str], url: str) -> List[Vulnerability]:
         """
         Analyze HTTP headers for security issues
         """
@@ -101,17 +97,13 @@ List each finding with severity and remediation.
         response = await self.orchestrator.process(prompt)
         return self._parse_vulnerabilities(response.content)
 
-    async def analyze_web_page(
-        self, html_content: str, url: str
-    ) -> List[Vulnerability]:
+    async def analyze_web_page(self, html_content: str, url: str) -> List[Vulnerability]:
         """
         Analyze web page content for vulnerabilities
         """
         # Extract potentially interesting parts
         forms = re.findall(r"<form.*?</form>", html_content, re.DOTALL | re.IGNORECASE)
-        scripts = re.findall(
-            r"<script.*?</script>", html_content, re.DOTALL | re.IGNORECASE
-        )
+        scripts = re.findall(r"<script.*?</script>", html_content, re.DOTALL | re.IGNORECASE)
         comments = re.findall(r"<!--.*?-->", html_content, re.DOTALL)
 
         analysis_input = f"""
@@ -146,9 +138,7 @@ Provide findings with severity and remediation.
         response = await self.orchestrator.process(prompt)
         return self._parse_vulnerabilities(response.content)
 
-    async def check_cve_database(
-        self, service: str, version: str
-    ) -> List[Vulnerability]:
+    async def check_cve_database(self, service: str, version: str) -> List[Vulnerability]:
         """
         Query LLM for known CVEs for a service/version
         """
@@ -224,10 +214,7 @@ List findings with severity and remediation.
             # Try alternate parsing (numbered lists)
             sections = content.split("\n\n")
             for section in sections:
-                if any(
-                    s in section.lower()
-                    for s in ["severity:", "vulnerability:", "risk:"]
-                ):
+                if any(s in section.lower() for s in ["severity:", "vulnerability:", "risk:"]):
                     vulns.append(self._create_vuln_from_text(section))
         else:
             for block in vuln_blocks:
@@ -241,15 +228,9 @@ List findings with severity and remediation.
         # Extract fields using regex
         name_match = re.search(r"Name:\s*(.+?)(?:\n|$)", text, re.IGNORECASE)
         severity_match = re.search(r"Severity:\s*(\w+)", text, re.IGNORECASE)
-        desc_match = re.search(
-            r"Description:\s*(.+?)(?:\n\w+:|$)", text, re.DOTALL | re.IGNORECASE
-        )
-        evidence_match = re.search(
-            r"Evidence:\s*(.+?)(?:\n\w+:|$)", text, re.DOTALL | re.IGNORECASE
-        )
-        remediation_match = re.search(
-            r"Remediation:\s*(.+?)(?:\n\w+:|$)", text, re.DOTALL | re.IGNORECASE
-        )
+        desc_match = re.search(r"Description:\s*(.+?)(?:\n\w+:|$)", text, re.DOTALL | re.IGNORECASE)
+        evidence_match = re.search(r"Evidence:\s*(.+?)(?:\n\w+:|$)", text, re.DOTALL | re.IGNORECASE)
+        remediation_match = re.search(r"Remediation:\s*(.+?)(?:\n\w+:|$)", text, re.DOTALL | re.IGNORECASE)
         cve_match = re.findall(r"(CVE-\d{4}-\d{4,})", text)
 
         # Validate severity
@@ -262,17 +243,11 @@ List findings with severity and remediation.
             severity=severity,
             description=desc_match.group(1).strip()[:500] if desc_match else text[:300],
             evidence=evidence_match.group(1).strip()[:300] if evidence_match else "N/A",
-            remediation=(
-                remediation_match.group(1).strip()[:500]
-                if remediation_match
-                else "Review and fix"
-            ),
+            remediation=(remediation_match.group(1).strip()[:500] if remediation_match else "Review and fix"),
             cve_ids=cve_match if cve_match else [],
         )
 
-    def get_severity_summary(
-        self, vulnerabilities: List[Vulnerability]
-    ) -> Dict[str, int]:
+    def get_severity_summary(self, vulnerabilities: List[Vulnerability]) -> Dict[str, int]:
         """Get summary of vulnerabilities by severity"""
         summary = {"Critical": 0, "High": 0, "Medium": 0, "Low": 0, "Info": 0}
         for v in vulnerabilities:
@@ -280,9 +255,7 @@ List findings with severity and remediation.
                 summary[v.severity] += 1
         return summary
 
-    def sort_by_severity(
-        self, vulnerabilities: List[Vulnerability]
-    ) -> List[Vulnerability]:
+    def sort_by_severity(self, vulnerabilities: List[Vulnerability]) -> List[Vulnerability]:
         """Sort vulnerabilities by severity (highest first)"""
         return sorted(
             vulnerabilities,

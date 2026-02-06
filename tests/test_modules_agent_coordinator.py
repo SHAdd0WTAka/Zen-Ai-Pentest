@@ -1,8 +1,11 @@
 """Tests for agent coordinator module"""
+
 import pytest
 
 from modules.agent_coordinator import (
-    AgentCoordinator, AgentStatus, ResourceType  # noqa: F401
+    AgentCoordinator,
+    AgentStatus,
+    ResourceType,  # noqa: F401
 )
 
 
@@ -55,12 +58,10 @@ class TestAgentCoordinator:
         """Test acquiring a single resource"""
         coord = AgentCoordinator()
         await coord.register_agent("agent-1", "Test Agent")
-        
-        success = await coord._acquire_resource(
-            "agent-1", ResourceType.SCANNER, timeout=1.0
-        )
+
+        success = await coord._acquire_resource("agent-1", ResourceType.SCANNER, timeout=1.0)
         assert success is True
-        
+
         # Check resource is acquired
         agent = coord.agents["agent-1"]
         assert ResourceType.SCANNER in agent.acquired_resources
@@ -70,11 +71,11 @@ class TestAgentCoordinator:
         """Test releasing a resource"""
         coord = AgentCoordinator()
         await coord.register_agent("agent-1", "Test Agent")
-        
+
         # Acquire and release
         await coord._acquire_resource("agent-1", ResourceType.SCANNER)
         await coord._release_resource("agent-1", ResourceType.SCANNER)
-        
+
         agent = coord.agents["agent-1"]
         assert ResourceType.SCANNER not in agent.acquired_resources
 
@@ -83,15 +84,13 @@ class TestAgentCoordinator:
         """Test context manager for resource acquisition"""
         coord = AgentCoordinator()
         await coord.register_agent("agent-1", "Test Agent")
-        
-        async with coord.acquire_resources(
-            "agent-1", [ResourceType.SCANNER, ResourceType.DATABASE]
-        ) as resources:
+
+        async with coord.acquire_resources("agent-1", [ResourceType.SCANNER, ResourceType.DATABASE]) as resources:
             assert len(resources) == 2
             agent = coord.agents["agent-1"]
             assert ResourceType.SCANNER in agent.acquired_resources
             assert ResourceType.DATABASE in agent.acquired_resources
-        
+
         # After context exit, resources should be released
         agent = coord.agents["agent-1"]
         assert len(agent.acquired_resources) == 0
@@ -100,22 +99,18 @@ class TestAgentCoordinator:
     async def test_resource_limits_respected(self):
         """Test that resource limits are respected"""
         coord = AgentCoordinator()
-        
+
         # Register 4 agents (limit is 3 for SCANNER)
         for i in range(4):
             await coord.register_agent(f"agent-{i}", f"Agent {i}")
-        
+
         # First 3 should succeed
         for i in range(3):
-            success = await coord._acquire_resource(
-                f"agent-{i}", ResourceType.SCANNER, timeout=0.5
-            )
+            success = await coord._acquire_resource(f"agent-{i}", ResourceType.SCANNER, timeout=0.5)
             assert success is True
-        
+
         # 4th should fail (timeout)
-        success = await coord._acquire_resource(
-            "agent-3", ResourceType.SCANNER, timeout=0.5
-        )
+        success = await coord._acquire_resource("agent-3", ResourceType.SCANNER, timeout=0.5)
         assert success is False
 
     @pytest.mark.asyncio
@@ -130,11 +125,11 @@ class TestAgentCoordinator:
         """Test deadlock detection for timeout"""
         coord = AgentCoordinator()
         await coord.register_agent("agent-1", "Test Agent", timeout=0.01)
-        
+
         # Put agent in waiting state
         coord.agents["agent-1"].status = AgentStatus.WAITING
         coord.agents["agent-1"].start_time = 0  # Force timeout
-        
+
         deadlocks = await coord.check_deadlocks()
         assert len(deadlocks) >= 0  # May or may not detect depending on timing
 
@@ -144,7 +139,7 @@ class TestAgentCoordinator:
         coord = AgentCoordinator()
         await coord.register_agent("agent-1", "Test Agent")
         await coord._acquire_resource("agent-1", ResourceType.SCANNER)
-        
+
         status = coord.get_status()
         assert "agents" in status
         assert "resources" in status

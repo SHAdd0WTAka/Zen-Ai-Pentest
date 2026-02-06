@@ -56,9 +56,7 @@ async def demo_email_harvesting(domain: str):
                 for e in emails[:5]:  # Show top 5 per confidence
                     print(f"    - {e.value}")
                     if e.metadata.get("method"):
-                        print(
-                            f"      Source: {e.source} | Method: {e.metadata['method']}"
-                        )
+                        print(f"      Source: {e.source} | Method: {e.metadata['method']}")
         else:
             print("[!] No emails found")
 

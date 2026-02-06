@@ -13,8 +13,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from modules.cve_database import CVEDatabase
-from modules.sql_injection_db import (DBType, SQLInjectionDatabase,
-                                      SQLITechnique)
+from modules.sql_injection_db import DBType, SQLInjectionDatabase, SQLITechnique
 from utils.helpers import colorize
 
 
@@ -41,9 +40,7 @@ def demo_cve_database():
         print(f"  CVSS Score: {cve.cvss_score}")
         print(f"  Severity: {colorize(cve.severity, 'red')}")
         print(f"  Description: {cve.description}")
-        print(
-            f"  Ransomware using this: {', '.join(cve.ransomware_used_by) if cve.ransomware_used_by else 'None documented'}"
-        )
+        print(f"  Ransomware using this: {', '.join(cve.ransomware_used_by) if cve.ransomware_used_by else 'None documented'}")
         print(f"  Mitigation: {cve.mitigations[0] if cve.mitigations else 'N/A'}")
 
     # 2. Search for WannaCry
@@ -54,9 +51,7 @@ def demo_cve_database():
         print(f"  Name: {ransomware.name}")
         print(f"  First Seen: {ransomware.first_seen}")
         print(f"  Type: {ransomware.type}")
-        print(
-            f"  Decryptable: {colorize('YES', 'green') if ransomware.decryptable else colorize('NO', 'red')}"
-        )
+        print(f"  Decryptable: {colorize('YES', 'green') if ransomware.decryptable else colorize('NO', 'red')}")
         print(f"  File Extensions: {', '.join(ransomware.file_extensions)}")
         print(f"  Ransom Note: {ransomware.ransom_note}")
         print(f"  Associated CVEs: {', '.join(ransomware.cves)}")
@@ -70,11 +65,7 @@ def demo_cve_database():
                     print(f"      - {v}")
 
     # 3. Check system indicators
-    print(
-        colorize(
-            "\n[3] Checking system indicators against ransomware database...", "cyan"
-        )
-    )
+    print(colorize("\n[3] Checking system indicators against ransomware database...", "cyan"))
 
     # Simulate system indicators
     test_indicators = {
@@ -114,9 +105,7 @@ def demo_sql_injection_database():
 
     # 1. Get MySQL payloads
     print(colorize("[1] MySQL Error-Based Payloads:", "cyan"))
-    mysql_payloads = sqli_db.get_payloads(
-        db_type=DBType.MYSQL, technique=SQLITechnique.ERROR_BASED
-    )
+    mysql_payloads = sqli_db.get_payloads(db_type=DBType.MYSQL, technique=SQLITechnique.ERROR_BASED)
 
     for payload in mysql_payloads[:3]:
         print(f"\n  {payload.name}:")
@@ -125,9 +114,7 @@ def demo_sql_injection_database():
 
     # 2. Get Time-Based payloads
     print(colorize("\n[2] MSSQL Time-Based Payloads:", "cyan"))
-    mssql_payloads = sqli_db.get_payloads(
-        db_type=DBType.MSSQL, technique=SQLITechnique.BLIND_TIME
-    )
+    mssql_payloads = sqli_db.get_payloads(db_type=DBType.MSSQL, technique=SQLITechnique.BLIND_TIME)
 
     for payload in mssql_payloads:
         print(f"\n  {payload.name}:")
@@ -155,9 +142,7 @@ def demo_sql_injection_database():
 
     # 5. MongoDB NoSQL
     print(colorize("\n[5] MongoDB NoSQL Injection Payloads:", "cyan"))
-    nosql_payloads = sqli_db.get_payloads(
-        db_type=DBType.MONGODB, technique=SQLITechnique.ERROR_BASED
-    )
+    nosql_payloads = sqli_db.get_payloads(db_type=DBType.MONGODB, technique=SQLITechnique.ERROR_BASED)
 
     for payload in nosql_payloads:
         print(f"\n  {payload.name}:")
@@ -178,18 +163,12 @@ def demo_statistics():
 
     print(colorize("CVE Database:", "cyan"))
     print(f"  Total CVEs: {len(all_cves)}")
-    print(
-        f"  Critical CVEs: {len([c for c in all_cves if c['severity'] == 'Critical'])}"
-    )
+    print(f"  Critical CVEs: {len([c for c in all_cves if c['severity'] == 'Critical'])}")
     print(f"  Ransomware Families: {len(ransomware_list)}")
 
     # Calculate total damage
     total_damage = sum(
-        [
-            cve_db.search_ransomware(rw["key"]).estimated_damage
-            for rw in ransomware_list
-            if cve_db.search_ransomware(rw["key"])
-        ]
+        [cve_db.search_ransomware(rw["key"]).estimated_damage for rw in ransomware_list if cve_db.search_ransomware(rw["key"])]
     )
     print(f"  Estimated Total Damage: ${total_damage:,}")
 

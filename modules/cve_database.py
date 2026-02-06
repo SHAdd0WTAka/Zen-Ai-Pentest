@@ -76,9 +76,7 @@ class CVEDatabase:
                     self.ransomware_data = data.get("ransomware_campaigns", {})
                     self.cve_data = data.get("critical_historical_cves", {})
                     self.exploit_chains = data.get("common_exploit_chains", {})
-                logger.info(
-                    f"[CVE DB] Loaded {len(self.ransomware_data)} ransomware entries, {len(self.cve_data)} CVEs"
-                )
+                logger.info(f"[CVE DB] Loaded {len(self.ransomware_data)} ransomware entries, {len(self.cve_data)} CVEs")
             except Exception as e:
                 logger.error(f"[CVE DB] Error loading database: {e}")
 
@@ -178,10 +176,7 @@ class CVEDatabase:
             if "files" in indicators and "files" in ioc:
                 for file in indicators["files"]:
                     for ioc_file in ioc["files"]:
-                        if (
-                            file.lower() in ioc_file.lower()
-                            or ioc_file.lower() in file.lower()
-                        ):
+                        if file.lower() in ioc_file.lower() or ioc_file.lower() in file.lower():
                             match_score += 10
                             match_details.append(f"File match: {file}")
 
@@ -244,7 +239,7 @@ class CVEDatabase:
         # Add LLM analysis if orchestrator available
         if self.orchestrator and ransomware_list:
             prompt = f"""
-Analyze CVE {cve_id} which is used by ransomware: {', '.join(ransomware_list)}
+Analyze CVE {cve_id} which is used by ransomware: {", ".join(ransomware_list)}
 
 Provide:
 1. Why this CVE is attractive to ransomware operators
@@ -260,10 +255,7 @@ Provide:
     def get_exploit_chain(self, chain_name: str) -> Optional[Dict]:
         """Get a specific exploit chain"""
         for key, data in self.exploit_chains.items():
-            if (
-                chain_name.lower() in key.lower()
-                or chain_name.lower() in data.get("name", "").lower()
-            ):
+            if chain_name.lower() in key.lower() or chain_name.lower() in data.get("name", "").lower():
                 return data
         return None
 
@@ -331,9 +323,7 @@ Provide:
                     report_lines.append(f"- {product}")
 
                 if entry.ransomware_used_by:
-                    report_lines.extend(
-                        ["", "⚠️ **Ransomware Alert:** This CVE is used by:", ""]
-                    )
+                    report_lines.extend(["", "⚠️ **Ransomware Alert:** This CVE is used by:", ""])
                     for rw in entry.ransomware_used_by:
                         report_lines.append(f"- {rw}")
 

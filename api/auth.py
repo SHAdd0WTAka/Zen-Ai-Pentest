@@ -25,10 +25,11 @@ SECRET_KEY = os.getenv("JWT_SECRET_KEY")
 if not SECRET_KEY or SECRET_KEY == "your-super-secret-jwt-key-change-this-in-production":
     # Generate a random key for development (not for production!)
     import warnings
+
     warnings.warn(
         "JWT_SECRET_KEY not set or using default! Using random key for development. "
         "Set JWT_SECRET_KEY environment variable for production!",
-        RuntimeWarning
+        RuntimeWarning,
     )
     SECRET_KEY = secrets.token_hex(32)
 
@@ -43,6 +44,7 @@ security = HTTPBearer()
 # Password Functions
 # =============================================================================
 
+
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verifiziert Passwort"""
     return pwd_context.verify(plain_password, hashed_password)
@@ -56,6 +58,7 @@ def get_password_hash(password: str) -> str:
 # =============================================================================
 # JWT Token Functions
 # =============================================================================
+
 
 def create_access_token(data: Dict, expires_delta: Optional[timedelta] = None) -> str:
     """Erstellt JWT Token"""
@@ -79,18 +82,19 @@ def decode_token(token: str) -> Optional[Dict]:
 # FastAPI Dependencies
 # =============================================================================
 
+
 async def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)) -> Dict:
     """FastAPI Dependency für Token-Verifizierung"""
     token = credentials.credentials
     payload = decode_token(token)
-    
+
     if payload is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid authentication credentials",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    
+
     # Check expiration
     exp = payload.get("exp")
     if exp and datetime.utcnow().timestamp() > exp:
@@ -99,49 +103,39 @@ async def verify_token(credentials: HTTPAuthorizationCredentials = Depends(secur
             detail="Token has expired",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    
+
     return payload
 
 
 def check_permissions(user: Dict, required_role: str) -> bool:
     """Prüft ob User die benötigte Rolle hat"""
     user_role = user.get("role", "viewer")
-    
-    roles_hierarchy = {
-        "viewer": 1,
-        "operator": 2,
-        "admin": 3
-    }
-    
+
+    roles_hierarchy = {"viewer": 1, "operator": 2, "admin": 3}
+
     user_level = roles_hierarchy.get(user_role, 0)
     required_level = roles_hierarchy.get(required_role, 0)
-    
+
     return user_level >= required_level
 
 
 async def require_admin(credentials: HTTPAuthorizationCredentials = Depends(security)) -> Dict:
     """Erfordert Admin-Rolle"""
     user = await verify_token(credentials)
-    
+
     if not check_permissions(user, "admin"):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Admin privileges required"
-        )
-    
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin privileges required")
+
     return user
 
 
 async def require_operator(credentials: HTTPAuthorizationCredentials = Depends(security)) -> Dict:
     """Erfordert Operator oder höhere Rolle"""
     user = await verify_token(credentials)
-    
+
     if not check_permissions(user, "operator"):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Operator privileges required"
-        )
-    
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Operator privileges required")
+
     return user
 
 
@@ -161,11 +155,7 @@ def verify_api_key(api_key: str) -> Optional[Dict]:
 def create_api_key(user_id: int, name: str) -> str:
     """Erstellt neuen API Key"""
     key = secrets.token_urlsafe(32)
-    API_KEYS[key] = {
-        "user_id": user_id,
-        "name": name,
-        "created_at": datetime.utcnow().isoformat()
-    }
+    API_KEYS[key] = {"user_id": user_id, "name": name, "created_at": datetime.utcnow().isoformat()}
     return key
 
 

@@ -73,9 +73,7 @@ class AgentSystemIntegration:
         if not self.initialized:
             await self.initialize()
 
-        thread_id = await self.agent_orchestrator.start_research_coordination(
-            topic=topic, pentest_context=pentest_context
-        )
+        thread_id = await self.agent_orchestrator.start_research_coordination(topic=topic, pentest_context=pentest_context)
 
         logger.info(f"[AgentIntegration] Research started: {thread_id}")
 
@@ -161,9 +159,7 @@ class AgentSystemIntegration:
     async def share_context(self, key: str, value: Any):
         """Share context with all agents"""
         if self.initialized:
-            await self.agent_orchestrator.update_shared_context(
-                key=key, value=value, source_agent_id="user"
-            )
+            await self.agent_orchestrator.update_shared_context(key=key, value=value, source_agent_id="user")
 
     async def shutdown(self):
         """Shutdown the agent system gracefully"""
@@ -176,9 +172,7 @@ class AgentSystemIntegration:
 # Convenience functions for direct use
 
 
-async def start_collaborative_research(
-    topic: str, zen_orchestrator=None
-) -> AgentSystemIntegration:
+async def start_collaborative_research(topic: str, zen_orchestrator=None) -> AgentSystemIntegration:
     """
     Quick-start function to begin collaborative research
 
@@ -189,15 +183,11 @@ async def start_collaborative_research(
     """
     integration = AgentSystemIntegration(zen_orchestrator)
     await integration.initialize()
-    await integration.conduct_research(
-        topic=topic, pentest_context={"target_type": "web", "scope": "full"}
-    )
+    await integration.conduct_research(topic=topic, pentest_context={"target_type": "web", "scope": "full"})
     return integration
 
 
-async def multi_agent_analysis(
-    target: str, findings: List[Dict], zen_orchestrator=None
-) -> Dict:
+async def multi_agent_analysis(target: str, findings: List[Dict], zen_orchestrator=None) -> Dict:
     """
     One-shot function for multi-agent analysis
 

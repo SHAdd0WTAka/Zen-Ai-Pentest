@@ -3,6 +3,7 @@
 Netzwerk-Scanner - Finde alle Geräte in deinem Netzwerk
 Inklusive VMs, Router, Drucker, etc.
 """
+
 import socket
 import subprocess
 
@@ -26,17 +27,13 @@ print("Das dauert ca. 30-60 Sekunden...\n")
 
 found_hosts = []
 
+
 def scan_host(ip_suffix):
     """Prüfe ob Host aktiv ist"""
     ip = f"{network}.{ip_suffix}"
     try:
         # Ping mit kurzem Timeout
-        result = subprocess.run(
-            ["ping", "-n", "1", "-w", "500", ip],
-            capture_output=True,
-            text=True,
-            timeout=2
-        )
+        result = subprocess.run(["ping", "-n", "1", "-w", "500", ip], capture_output=True, text=True, timeout=2)
         if "TTL=" in result.stdout or "bytes=" in result.stdout:
             # Host ist online, versuche Hostname zu bekommen
             try:
@@ -48,19 +45,20 @@ def scan_host(ip_suffix):
         pass
     return None
 
+
 # Scan starten
 print("[1] Suche nach aktiven Hosts...")
 print("-" * 70)
 
 with ThreadPoolExecutor(max_workers=50) as executor:
     futures = [executor.submit(scan_host, i) for i in range(start_ip, end_ip + 1)]
-    
+
     completed = 0
     for future in as_completed(futures):
         completed += 1
         if completed % 50 == 0:
-            print(f"  Fortschritt: {completed}/{end_ip-start_ip+1} IPs geprüft...")
-        
+            print(f"  Fortschritt: {completed}/{end_ip - start_ip + 1} IPs geprüft...")
+
         result = future.result()
         if result:
             ip, hostname, active = result
@@ -75,17 +73,17 @@ if not found_hosts:
     print("\n[!] Keine aktiven Hosts gefunden!")
 else:
     print(f"\nGefunden: {len(found_hosts)} aktive Geräte\n")
-    
+
     # Sortieren
-    found_hosts.sort(key=lambda x: [int(x) for x in x[0].split('.')])
-    
+    found_hosts.sort(key=lambda x: [int(x) for x in x[0].split(".")])
+
     print(f"{'IP-Adresse':<16} | {'Hostname':<30} | {'Vermutung'}")
     print("-" * 70)
-    
+
     for ip, hostname, _ in found_hosts:
         guess = ""
-        last_octet = int(ip.split('.')[-1])
-        
+        last_octet = int(ip.split(".")[-1])
+
         # Vermutungen basierend auf IP/Hostname
         if last_octet == 1:
             guess = "Router/Gateway"
@@ -104,7 +102,7 @@ else:
             guess = "Dein PC (Windows)"
         else:
             guess = "PC/Server/VM"
-        
+
         print(f"{ip:<16} | {hostname:<30} | {guess}")
 
 # Häufige VM-IPs vorschlagen
@@ -112,10 +110,11 @@ print("\n" + "=" * 70)
 print("MÖGLICHE VMs")
 print("=" * 70)
 
-vm_candidates = [h for h in found_hosts if 
-    int(h[0].split('.')[-1]) > 100 and 
-    h[0] not in ["192.168.1.1", "192.168.1.243"] and
-    h[1] == "Unknown"]
+vm_candidates = [
+    h
+    for h in found_hosts
+    if int(h[0].split(".")[-1]) > 100 and h[0] not in ["192.168.1.1", "192.168.1.243"] and h[1] == "Unknown"
+]
 
 if vm_candidates:
     print("\nDiese IPs könnten deine VMs sein:")

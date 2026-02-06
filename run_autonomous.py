@@ -2,6 +2,7 @@
 """
 Autonomer LLM Scan - Das LLM macht alles automatisch!
 """
+
 import asyncio
 import sys
 import os
@@ -19,34 +20,31 @@ silence_asyncio_warnings()
 async def main():
     target = sys.argv[1] if len(sys.argv) > 1 else "scanme.nmap.org"
     goal = sys.argv[2] if len(sys.argv) > 2 else "Find vulnerabilities"
-    
+
     print("=" * 60)
     print("ZEN AI PENTEST - AUTONOMOUS MODE")
     print("=" * 60)
     print(f"Target: {target}")
     print(f"Goal: {goal}")
     print("=" * 60)
-    
+
     # Initialize
     app = ZenAIPentest()
     await app.initialize_backends()
-    
+
     # Run autonomous scan
-    result = await app.run_autonomous_scan(
-        target=target,
-        goal=goal
-    )
-    
+    result = await app.run_autonomous_scan(target=target, goal=goal)
+
     print("\n" + "=" * 60)
     print("AUTONOMOUS SCAN COMPLETE")
     print("=" * 60)
     print(f"Status: {result.get('status', 'unknown')}")
     print(f"Success: {result.get('success', False)}")
-    
-    if result.get('success'):
-        findings = result.get('findings', {})
+
+    if result.get("success"):
+        findings = result.get("findings", {})
         print(f"Findings: {findings.get('count', 0)}")
-        
+
         # Generate report
         await app.generate_report(target, "markdown")
         print("\nReport generated!")
@@ -67,4 +65,5 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"\n[!] Error: {e}")
         import traceback
+
         traceback.print_exc()

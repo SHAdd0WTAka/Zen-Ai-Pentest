@@ -33,9 +33,7 @@ class AnalysisAgent(BaseAgent):
         findings = msg.context.get("findings", [])
         source = msg.sender
 
-        logger.info(
-            f"[AnalysisAgent:{self.name}] Analyzing {len(findings)} findings from {source}"
-        )
+        logger.info(f"[AnalysisAgent:{self.name}] Analyzing {len(findings)} findings from {source}")
 
         # Perform analysis
         analysis = await self._analyze_findings(findings)
@@ -129,7 +127,7 @@ class AnalysisAgent(BaseAgent):
             prompt = f"""
             Analyze these security patterns and provide recommendations:
             {analysis["critical_patterns"]}
-            
+
             Provide:
             1. Priority order for remediation
             2. Immediate actions
@@ -139,9 +137,7 @@ class AnalysisAgent(BaseAgent):
             response = await self.zen_orchestrator.process(prompt)
             analysis["recommendations"] = response.content.split("\n")
 
-        analysis["summary"] = (
-            f"Found {len(analysis['critical_patterns'])} critical patterns across {len(findings)} findings"
-        )
+        analysis["summary"] = f"Found {len(analysis['critical_patterns'])} critical patterns across {len(findings)} findings"
 
         return analysis
 
@@ -161,7 +157,7 @@ class AnalysisAgent(BaseAgent):
             prompt = f"""
             Analyze these vulnerabilities and identify potential attack paths:
             {data}
-            
+
             Map out:
             1. Entry points
             2. Lateral movement possibilities

@@ -5,7 +5,6 @@ Comprehensive SQL injection payloads, techniques and detection
 Author: SHAdd0WTAka
 """
 
-
 import base64
 import logging
 import urllib.parse
@@ -584,9 +583,7 @@ class SQLInjectionDatabase:
 
         return payloads
 
-    def get_payloads(
-        self, db_type: DBType = None, technique: SQLITechnique = None
-    ) -> List[SQLPayload]:
+    def get_payloads(self, db_type: DBType = None, technique: SQLITechnique = None) -> List[SQLPayload]:
         """Get payloads filtered by database type and/or technique"""
         results = []
 

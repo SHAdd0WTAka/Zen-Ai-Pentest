@@ -3,7 +3,7 @@ Pydantic Schemas for Zen Shield Sanitizer
 """
 
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import List, Optional
 
 from pydantic import BaseModel, Field
 
@@ -25,16 +25,10 @@ class SanitizerRequest(BaseModel):
         description="Raw tool output (Nmap, Burp, etc.)",
         max_length=500000,  # 500KB limit
     )
-    source_tool: str = Field(
-        ..., description="Source tool: nmap, nuclei, ffuf, sqlmap, etc."
-    )
-    intent: str = Field(
-        "analyze", description="Purpose: analyze, explain, exploit, report"
-    )
+    source_tool: str = Field(..., description="Source tool: nmap, nuclei, ffuf, sqlmap, etc.")
+    intent: str = Field("analyze", description="Purpose: analyze, explain, exploit, report")
     user_context: Optional[str] = Field(None, description="Additional user context")
-    compression_target: int = Field(
-        500, description="Target token count for compression"
-    )
+    compression_target: int = Field(500, description="Target token count for compression")
 
     class Config:
         json_schema_extra = {
@@ -60,25 +54,17 @@ class SanitizerResponse(BaseModel):
     """Response model after sanitization"""
 
     cleaned_data: str = Field(..., description="Sanitized data safe for LLM")
-    redactions: List[RedactionInfo] = Field(
-        default_factory=list, description="What was removed and why"
-    )
+    redactions: List[RedactionInfo] = Field(default_factory=list, description="What was removed and why")
     risk_indicators: List[str] = Field(
         default_factory=list,
         description="Risk flags: 'contains_jwt', 'base64_encoded', etc.",
     )
     compression_ratio: float = Field(1.0, description="Compression ratio achieved")
-    safe_to_send: bool = Field(
-        ..., description="Whether data is safe to send to external LLM"
-    )
+    safe_to_send: bool = Field(..., description="Whether data is safe to send to external LLM")
     fallback_used: bool = Field(False, description="Whether regex fallback was used")
-    risk_level: RiskLevel = Field(
-        RiskLevel.CLEAN, description="Overall risk assessment"
-    )
+    risk_level: RiskLevel = Field(RiskLevel.CLEAN, description="Overall risk assessment")
     tokens_saved: int = Field(0, description="Estimated tokens saved by compression")
-    processing_time_ms: float = Field(
-        0.0, description="Processing time in milliseconds"
-    )
+    processing_time_ms: float = Field(0.0, description="Processing time in milliseconds")
 
     class Config:
         json_schema_extra = {

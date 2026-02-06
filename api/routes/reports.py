@@ -7,8 +7,7 @@ Generate professional penetration testing reports in various formats.
 from datetime import datetime
 from typing import List, Optional
 
-from fastapi import (APIRouter, BackgroundTasks, Depends, HTTPException, Query,
-                     status)
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
@@ -26,9 +25,7 @@ class ReportCreate(BaseModel):
     scan_id: str
     name: Optional[str] = None
     format: ReportFormat = Field(default=ReportFormat.PDF)
-    template: str = Field(
-        default="executive", description="executive, technical, or full"
-    )
+    template: str = Field(default="executive", description="executive, technical, or full")
     include_evidence: bool = Field(default=True)
     include_remediation: bool = Field(default=True)
 
@@ -66,8 +63,7 @@ async def create_report(
 
     # Create report record
     report = Report(
-        name=report_data.name
-        or f"Report-{scan.name}-{datetime.now().strftime('%Y%m%d')}",
+        name=report_data.name or f"Report-{scan.name}-{datetime.now().strftime('%Y%m%d')}",
         scan_id=report_data.scan_id,
         format=report_data.format,
         template=report_data.template,
@@ -115,9 +111,7 @@ async def get_report(report_id: str, current_user: User = Depends(get_current_us
 
 
 @router.get("/{report_id}/download")
-async def download_report(
-    report_id: str, current_user: User = Depends(get_current_user)
-):
+async def download_report(report_id: str, current_user: User = Depends(get_current_user)):
     """
     Download generated report file.
 
@@ -145,9 +139,7 @@ async def download_report(
     ext = report.format.value.lower()
     media_type = media_types.get(ext, "application/octet-stream")
 
-    return FileResponse(
-        path=report.file_path, media_type=media_type, filename=f"{report.name}.{ext}"
-    )
+    return FileResponse(path=report.file_path, media_type=media_type, filename=f"{report.name}.{ext}")
 
 
 @router.delete("/{report_id}")

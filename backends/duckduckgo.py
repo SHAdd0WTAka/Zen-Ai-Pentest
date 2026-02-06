@@ -58,9 +58,7 @@ class DuckDuckGoBackend:
         }
 
         try:
-            async with self.session.get(
-                "https://duckduckgo.com/?q=DuckDuckGo+AI+Chat&ia=chat", headers=headers
-            ) as resp:
+            async with self.session.get("https://duckduckgo.com/?q=DuckDuckGo+AI+Chat&ia=chat", headers=headers) as resp:
                 text = await resp.text()
                 if 'vqd="' in text:
                     self.vqd_token = text.split('vqd="')[1].split('"')[0]
@@ -92,9 +90,7 @@ class DuckDuckGoBackend:
 
             logger.info(f"[DDG] Sending to {model}...")
 
-            async with self.session.post(
-                "https://duckduckgo.com/duckchat/v1/chat", json=payload, headers=headers
-            ) as resp:
+            async with self.session.post("https://duckduckgo.com/duckchat/v1/chat", json=payload, headers=headers) as resp:
                 if resp.status == 429:
                     logger.warning("[DDG] Rate limited, rotating model...")
                     self.current_model += 1

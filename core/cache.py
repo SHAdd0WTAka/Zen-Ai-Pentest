@@ -142,9 +142,7 @@ class SQLiteCache(CacheBackend):
         async with self._lock:
             db = await self._get_db()
 
-            cursor = await db.execute(
-                "SELECT value, expires FROM cache WHERE key = ?", (key,)
-            )
+            cursor = await db.execute("SELECT value, expires FROM cache WHERE key = ?", (key,))
             row = await cursor.fetchone()
 
             if row is None:
@@ -198,9 +196,7 @@ class SQLiteCache(CacheBackend):
         """Remove expired entries"""
         async with self._lock:
             db = await self._get_db()
-            await db.execute(
-                "DELETE FROM cache WHERE expires < ?", (datetime.utcnow().isoformat(),)
-            )
+            await db.execute("DELETE FROM cache WHERE expires < ?", (datetime.utcnow().isoformat(),))
             await db.commit()
 
     async def close(self):

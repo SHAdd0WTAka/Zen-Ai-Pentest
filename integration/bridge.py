@@ -44,18 +44,14 @@ class ScanRequest(BaseModel):
     """Base scan request model"""
 
     target: str = Field(..., description="Target host/IP/URL")
-    options: Dict[str, Any] = Field(
-        default_factory=dict, description="Tool-specific options"
-    )
+    options: Dict[str, Any] = Field(default_factory=dict, description="Tool-specific options")
     callback_url: Optional[str] = Field(None, description="Webhook URL for completion")
 
 
 class NmapScanRequest(ScanRequest):
     """Nmap-specific scan request"""
 
-    scan_type: str = Field(
-        "tcp_syn", description="Scan type: tcp_syn, tcp_connect, udp, comprehensive"
-    )
+    scan_type: str = Field("tcp_syn", description="Scan type: tcp_syn, tcp_connect, udp, comprehensive")
     ports: str = Field("top-1000", description="Port specification")
     scripts: List[str] = Field(default_factory=list, description="NSE scripts to run")
 
@@ -218,9 +214,7 @@ async def run_sqlmap_scan(request: SQLMapRequest, background_tasks: BackgroundTa
 
 # Metasploit Integration
 @app.post("/api/v1/scan/metasploit", response_model=ScanResult)
-async def run_metasploit_module(
-    request: MetasploitRequest, background_tasks: BackgroundTasks
-):
+async def run_metasploit_module(request: MetasploitRequest, background_tasks: BackgroundTasks):
     """
     Execute Metasploit module
     """
@@ -476,9 +470,7 @@ async def execute_docker_scan(
         logger.info(f"Starting scan {scan_id} in {container_name}: {' '.join(command)}")
 
         # Execute command
-        exit_code, output = container.exec_run(
-            command, workdir="/scans", timeout=timeout
-        )
+        exit_code, output = container.exec_run(command, workdir="/scans", timeout=timeout)
 
         # Update scan status
         active_scans[scan_id]["status"] = "completed" if exit_code == 0 else "failed"
@@ -591,12 +583,8 @@ def parse_nmap_xml(file_path: Path) -> Dict[str, Any]:
     hosts = []
     for host in root.findall("host"):
         host_info = {
-            "address": (
-                host.find("address").get("addr") if host.find("address") else None
-            ),
-            "status": (
-                host.find("status").get("state") if host.find("status") else "unknown"
-            ),
+            "address": (host.find("address").get("addr") if host.find("address") else None),
+            "status": (host.find("status").get("state") if host.find("status") else "unknown"),
             "ports": [],
         }
 
@@ -606,16 +594,8 @@ def parse_nmap_xml(file_path: Path) -> Dict[str, Any]:
                 port_info = {
                     "port": port.get("portid"),
                     "protocol": port.get("protocol"),
-                    "state": (
-                        port.find("state").get("state")
-                        if port.find("state")
-                        else "unknown"
-                    ),
-                    "service": (
-                        port.find("service").get("name")
-                        if port.find("service")
-                        else None
-                    ),
+                    "state": (port.find("state").get("state") if port.find("state") else "unknown"),
+                    "service": (port.find("service").get("name") if port.find("service") else None),
                 }
                 host_info["ports"].append(port_info)
 
@@ -676,9 +656,7 @@ async def health_check():
     return {
         "status": "healthy",
         "docker_available": docker_client is not None,
-        "active_scans": len(
-            [s for s in active_scans.values() if s["status"] == "running"]
-        ),
+        "active_scans": len([s for s in active_scans.values() if s["status"] == "running"]),
         "total_scans": len(active_scans),
     }
 

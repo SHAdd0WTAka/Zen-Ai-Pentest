@@ -140,3 +140,15 @@ exclude_lines = [
     "class .*\\bProtocol\\):",
     "@(abc\\.)?abstractmethod",
 ]
+
+[tool.ruff]
+line-length = 127
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W"]
+ignore = ["E402", "I001", "E501"]  # E402: imports not at top, I001: import sorting, E501: line too long
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"

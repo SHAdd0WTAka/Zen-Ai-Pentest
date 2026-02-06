@@ -318,9 +318,7 @@ def migrate_plain_config(config_path: Path) -> bool:
         backup_path = config_path.with_suffix(".json.backup")
         config_path.rename(backup_path)
 
-        logger.info(
-            f"Config migrated to secure storage. Old config backed up to {backup_path}"
-        )
+        logger.info(f"Config migrated to secure storage. Old config backed up to {backup_path}")
         return True
 
     except Exception as e:

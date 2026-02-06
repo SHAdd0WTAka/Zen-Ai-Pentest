@@ -127,9 +127,7 @@ class OSINTModule:
                 if headers:
                     default_headers.update(headers)
 
-                async with self.session.get(
-                    url, headers=default_headers, ssl=False
-                ) as resp:
+                async with self.session.get(url, headers=default_headers, ssl=False) as resp:
                     if resp.status == 200:
                         return await resp.text()
             except Exception as e:
@@ -140,9 +138,7 @@ class OSINTModule:
     # Email Harvesting
     # =================================================================
 
-    async def harvest_emails(
-        self, domain: str, sources: Optional[List[str]] = None
-    ) -> List[OSINTResult]:
+    async def harvest_emails(self, domain: str, sources: Optional[List[str]] = None) -> List[OSINTResult]:
         """
         Harvest email addresses from multiple sources
 
@@ -243,9 +239,7 @@ class OSINTModule:
         # GitHub API search
         github_api = f"https://api.github.com/search/code?q=@{domain}+in:email"
 
-        content = await self._fetch(
-            github_api, headers={"Accept": "application/vnd.github.v3+json"}
-        )
+        content = await self._fetch(github_api, headers={"Accept": "application/vnd.github.v3+json"})
         if content:
             try:
                 data = json.loads(content)
@@ -314,9 +308,7 @@ class OSINTModule:
             "name_servers": ["ns1.example.com", "ns2.example.com"],
         }
 
-    async def _enumerate_subdomains(
-        self, domain: str, wordlist: Optional[List[str]] = None
-    ) -> List[str]:
+    async def _enumerate_subdomains(self, domain: str, wordlist: Optional[List[str]] = None) -> List[str]:
         """
         Enumerate subdomains using wordlist and certificate transparency
         """
@@ -434,9 +426,7 @@ class OSINTModule:
                 "profile_data": {},  # Would contain scraped data
             }
 
-        await asyncio.gather(
-            *[check_platform(name, url) for name, url in platforms.items()]
-        )
+        await asyncio.gather(*[check_platform(name, url) for name, url in platforms.items()])
 
         return results
 
@@ -495,7 +485,9 @@ class OSINTModule:
         # In production: Use VirusTotal, AbuseIPDB, etc.
 
         # Geolocation (use ip-api.com - free tier)
-        geo_url = f"http://ip-api.com/json/{ip}?fields=status,message,country,regionName,city,zip,lat,lon,isp,org,as,proxy,hosting"
+        geo_url = (
+            f"http://ip-api.com/json/{ip}?fields=status,message,country,regionName,city,zip,lat,lon,isp,org,as,proxy,hosting"
+        )
 
         content = await self._fetch(geo_url)
         if content:
@@ -532,9 +524,7 @@ class OSINTModule:
         """Generate OSINT report for target"""
 
         # Filter results for target
-        target_results = [
-            r for r in self.results if target in r.value or target in str(r.metadata)
-        ]
+        target_results = [r for r in self.results if target in r.value or target in str(r.metadata)]
 
         report = {
             "target": target,
@@ -547,9 +537,7 @@ class OSINTModule:
         # Count by type
         for result in target_results:
             data_type = result.data_type
-            report["summary"]["by_type"][data_type] = (
-                report["summary"]["by_type"].get(data_type, 0) + 1
-            )
+            report["summary"]["by_type"][data_type] = report["summary"]["by_type"].get(data_type, 0) + 1
 
         return report
 

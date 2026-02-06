@@ -22,11 +22,7 @@ console = Console()
 
 async def demo_basic_sanitization():
     """Demo: Basic secret detection and masking"""
-    console.print(
-        Panel.fit(
-            "[bold cyan]Zen Shield Demo - Basic Sanitization[/]", border_style="cyan"
-        )
-    )
+    console.print(Panel.fit("[bold cyan]Zen Shield Demo - Basic Sanitization[/]", border_style="cyan"))
 
     # Initialize sanitizer (local mode, no LLM needed for this demo)
     sanitizer = ZenSanitizer(
@@ -74,9 +70,7 @@ session=eyJ1c2VyX2lkIjoxMjN9.abc123def456
     console.print(sample_data[:500] + "...\n")
 
     # Process through shield
-    request = SanitizerRequest(
-        raw_data=sample_data, source_tool="nmap", intent="analyze"
-    )
+    request = SanitizerRequest(raw_data=sample_data, source_tool="nmap", intent="analyze")
 
     with console.status("[cyan]Sanitizing...[/]"):
         response = await sanitizer.process(request)
@@ -120,11 +114,7 @@ session=eyJ1c2VyX2lkIjoxMjN9.abc123def456
 
 async def demo_compression():
     """Demo: Context compression"""
-    console.print(
-        Panel.fit(
-            "[bold cyan]Zen Shield Demo - Context Compression[/]", border_style="cyan"
-        )
-    )
+    console.print(Panel.fit("[bold cyan]Zen Shield Demo - Context Compression[/]", border_style="cyan"))
 
     sanitizer = ZenSanitizer(
         enable_compression=True,
@@ -183,9 +173,7 @@ async def demo_injection_detection():
     table.add_column("Severity", style="yellow")
 
     for name, test_input in test_cases:
-        request = SanitizerRequest(
-            raw_data=test_input, source_tool="test", intent="analyze"
-        )
+        request = SanitizerRequest(raw_data=test_input, source_tool="test", intent="analyze")
 
         response = await sanitizer.process(request)
 
@@ -209,11 +197,7 @@ async def demo_injection_detection():
 
 async def demo_circuit_breaker():
     """Demo: Circuit breaker behavior"""
-    console.print(
-        Panel.fit(
-            "[bold cyan]Zen Shield Demo - Circuit Breaker[/]", border_style="cyan"
-        )
-    )
+    console.print(Panel.fit("[bold cyan]Zen Shield Demo - Circuit Breaker[/]", border_style="cyan"))
 
     sanitizer = ZenSanitizer()
 
@@ -229,9 +213,7 @@ async def demo_circuit_breaker():
     table.add_row("Circuit State", status["state"])
     table.add_row("Failure Count", str(status["metrics"]["failures"]))
     table.add_row("Success Count", str(status["metrics"]["successes"]))
-    table.add_row(
-        "Consecutive Successes", str(status["metrics"]["consecutive_successes"])
-    )
+    table.add_row("Consecutive Successes", str(status["metrics"]["consecutive_successes"]))
     table.add_row("Failure Threshold", str(status["config"]["failure_threshold"]))
 
     console.print(table)
@@ -271,9 +253,9 @@ This demo shows how Zen Shield:
     ]
 
     for name, demo_func in demos:
-        console.print(f"\n[bold]{'='*60}[/]")
+        console.print(f"\n[bold]{'=' * 60}[/]")
         console.print(f"[bold]Running: {name}[/]")
-        console.print(f"[bold]{'='*60}[/]\n")
+        console.print(f"[bold]{'=' * 60}[/]\n")
 
         try:
             await demo_func()
@@ -284,9 +266,7 @@ This demo shows how Zen Shield:
 
     console.print(
         Panel.fit(
-            "[bold green]Demo Complete![/]\n\n"
-            "For production use:\n"
-            "  docker-compose -f docker-compose.shield.yml up -d",
+            "[bold green]Demo Complete![/]\n\nFor production use:\n  docker-compose -f docker-compose.shield.yml up -d",
             border_style="green",
         )
     )

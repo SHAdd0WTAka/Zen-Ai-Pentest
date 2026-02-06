@@ -25,9 +25,7 @@ class AgentRole(Enum):
     EXPLOIT = "exploit"  # Develops exploits, payloads
     COORDINATOR = "coordinator"  # Manages workflow between agents
     REPORTER = "reporter"  # Generates reports, summaries
-    POST_EXPLOITATION = (
-        "post_exploit"  # Post-scan workflow: verification, evidence, cleanup
-    )
+    POST_EXPLOITATION = "post_exploit"  # Post-scan workflow: verification, evidence, cleanup
 
 
 class AgentState(Enum):
@@ -39,7 +37,6 @@ class AgentState(Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     STOPPED = "stopped"
-
 
 
 @dataclass
@@ -133,9 +130,7 @@ class BaseAgent(ABC):
         self.inbox.append(msg)
 
         # Store in memory
-        self.memory.append(
-            {"type": "received", "message": msg.to_dict(), "processed": False}
-        )
+        self.memory.append({"type": "received", "message": msg.to_dict(), "processed": False})
 
         logger.debug(f"[Agent:{self.name}] Received message from {msg.sender}")
 
@@ -172,9 +167,7 @@ class BaseAgent(ABC):
         if msg.msg_type == "chat":
             response = f"Acknowledged: {msg.content[:50]}..."
             if msg.requires_response:
-                await self.send_message(
-                    content=response, recipient=msg.sender, msg_type="response"
-                )
+                await self.send_message(content=response, recipient=msg.sender, msg_type="response")
 
     def update_context(self, key: str, value: Any, share: bool = False):
         """
@@ -184,9 +177,7 @@ class BaseAgent(ABC):
         self.context[key] = value
 
         if share and self.orchestrator:
-            asyncio.create_task(
-                self.orchestrator.update_shared_context(key, value, self.id)
-            )
+            asyncio.create_task(self.orchestrator.update_shared_context(key, value, self.id))
 
     def get_context(self, key: str) -> Any:
         """Get value from context"""

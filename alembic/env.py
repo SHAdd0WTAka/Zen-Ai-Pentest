@@ -61,7 +61,7 @@ def run_migrations_online() -> None:
     """
     # Override the URL if in environment
     db_url = os.getenv("DATABASE_URL", DATABASE_URL)
-    
+
     connectable = engine_from_config(
         config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",

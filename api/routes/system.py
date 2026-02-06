@@ -131,9 +131,7 @@ async def get_api_stats(
 
 
 @router.get("/logs")
-async def get_system_logs(
-    lines: int = 100, current_user: User = Depends(require_permissions(UserRole.ADMIN))
-):
+async def get_system_logs(lines: int = 100, current_user: User = Depends(require_permissions(UserRole.ADMIN))):
     """Get recent system logs (admin only)"""
     try:
         with open("logs/zen_ai.log", "r") as f:
@@ -144,9 +142,7 @@ async def get_system_logs(
 
 
 @router.post("/maintenance")
-async def toggle_maintenance_mode(
-    enabled: bool, current_user: User = Depends(require_permissions(UserRole.ADMIN))
-):
+async def toggle_maintenance_mode(enabled: bool, current_user: User = Depends(require_permissions(UserRole.ADMIN))):
     """Toggle maintenance mode (admin only)"""
     # TODO: Implement maintenance mode
     return {

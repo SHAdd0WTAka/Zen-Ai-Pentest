@@ -132,9 +132,7 @@ class InputValidator:
 
         return email
 
-    def validate_url(
-        self, url: str, allowed_schemes: List[str] = None
-    ) -> Optional[str]:
+    def validate_url(self, url: str, allowed_schemes: List[str] = None) -> Optional[str]:
         """Validate and sanitize URL"""
         if not url:
             return None
@@ -239,11 +237,7 @@ class InputValidator:
         output = output.replace("\x00", "")
 
         # Remove control characters except newlines and tabs
-        output = "".join(
-            char
-            for char in output
-            if char == "\n" or char == "\t" or (ord(char) >= 32 and ord(char) < 127)
-        )
+        output = "".join(char for char in output if char == "\n" or char == "\t" or (ord(char) >= 32 and ord(char) < 127))
 
         # Escape HTML
         output = self.escape_html(output)

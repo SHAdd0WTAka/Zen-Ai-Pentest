@@ -2,12 +2,9 @@
 Unit Tests for Plugin Manager
 """
 
-
-
 import pytest
 
-from core.plugin_manager import (BasePlugin, HookManager, PluginManager,
-                                 PluginType)
+from core.plugin_manager import BasePlugin, HookManager, PluginManager, PluginType
 
 
 class MockPlugin(BasePlugin):

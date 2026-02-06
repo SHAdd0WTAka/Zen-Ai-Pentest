@@ -1,4 +1,5 @@
 """Tests for recon module"""
+
 import pytest  # noqa: F401
 from unittest.mock import patch
 from modules.recon import ReconModule
@@ -25,7 +26,7 @@ class TestReconModule:
         assert module.validate_target("") is False
         assert module.validate_target(None) is False
 
-    @patch('modules.recon.socket.gethostbyname')
+    @patch("modules.recon.socket.gethostbyname")
     def test_resolve_dns_success(self, mock_gethost):
         """Test DNS resolution success"""
         mock_gethost.return_value = "93.184.216.34"
@@ -33,7 +34,7 @@ class TestReconModule:
         result = module.resolve_dns("example.com")
         assert result == "93.184.216.34"
 
-    @patch('modules.recon.socket.gethostbyname')
+    @patch("modules.recon.socket.gethostbyname")
     def test_resolve_dns_failure(self, mock_gethost):
         """Test DNS resolution failure"""
         mock_gethost.side_effect = Exception("DNS Error")
@@ -44,7 +45,7 @@ class TestReconModule:
     def test_run_basic_scan(self):
         """Test basic scan execution"""
         module = ReconModule()
-        with patch.object(module, 'scan_host') as mock_scan:
+        with patch.object(module, "scan_host") as mock_scan:
             mock_scan.return_value = {"open_ports": [80, 443]}
             result = module.run("192.168.1.1")
             assert "open_ports" in result

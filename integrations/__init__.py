@@ -11,19 +11,19 @@ This module provides integrations with:
 Usage:
     # GitHub Integration
     from integrations import GitHubIntegration
-    
+
     github = GitHubIntegration(token="ghp_...")
     await github.create_security_issue(finding, repo="owner/repo")
-    
+
     # Slack Notifications
     from integrations import SlackNotifier
-    
+
     slack = SlackNotifier(webhook_url="https://hooks.slack.com/...")
     await slack.notify_scan_completed(results)
-    
+
     # JIRA Integration
     from integrations import JiraIntegration
-    
+
     jira = JiraIntegration(
         server="https://your-domain.atlassian.net",
         username="user@example.com",
@@ -43,6 +43,7 @@ logger = logging.getLogger(__name__)
 
 class IntegrationStatus(Enum):
     """Status of an integration."""
+
     CONFIGURED = "configured"
     CONNECTED = "connected"
     ERROR = "error"
@@ -52,48 +53,42 @@ class IntegrationStatus(Enum):
 @dataclass
 class IntegrationConfig:
     """Configuration for an integration."""
+
     name: str
     enabled: bool = True
     config: Dict[str, Any] = field(default_factory=dict)
     status: IntegrationStatus = IntegrationStatus.DISABLED
     last_error: Optional[str] = None
-    
+
     def to_dict(self) -> Dict[str, Any]:
-        return {
-            "name": self.name,
-            "enabled": self.enabled,
-            "status": self.status.value,
-            "last_error": self.last_error
-        }
+        return {"name": self.name, "enabled": self.enabled, "status": self.status.value, "last_error": self.last_error}
 
 
 # GitHub Integration
 class GitHubIntegration:
     """Integration with GitHub for security workflows."""
-    
+
     def __init__(self, token: Optional[str] = None, base_url: str = "https://api.github.com"):
         self.token = token
-        self.base_url = base_url.rstrip('/')
+        self.base_url = base_url.rstrip("/")
         self.config = IntegrationConfig(name="github", enabled=bool(token))
         self._session = None
-    
+
     async def _get_session(self):
         """Get or create aiohttp session."""
         if self._session is None:
             import aiohttp
+
             self._session = aiohttp.ClientSession(
-                headers={
-                    "Authorization": f"token {self.token}",
-                    "Accept": "application/vnd.github.v3+json"
-                }
+                headers={"Authorization": f"token {self.token}", "Accept": "application/vnd.github.v3+json"}
             )
         return self._session
-    
+
     async def test_connection(self) -> bool:
         """Test GitHub API connection."""
         if not self.token:
             return False
-        
+
         try:
             session = await self._get_session()
             async with session.get(f"{self.base_url}/user") as resp:
@@ -108,50 +103,44 @@ class GitHubIntegration:
             self.config.last_error = str(e)
             logger.error(f"GitHub connection test failed: {e}")
             return False
-    
+
     async def create_security_issue(
-        self,
-        finding: Dict[str, Any],
-        repo: str,
-        labels: List[str] = None
+        self, finding: Dict[str, Any], repo: str, labels: List[str] = None
     ) -> Optional[Dict[str, Any]]:
         """Create a security issue in a GitHub repository."""
         if not self.token:
             logger.warning("GitHub token not configured")
             return None
-        
+
         session = await self._get_session()
-        
-        severity = finding.get('severity', 'Medium')
+
+        severity = finding.get("severity", "Medium")
         title = f"[SECURITY] [{severity}] {finding.get('title', 'Security Finding')}"
-        
+
         body = f"""## Security Finding Detected
 
 **Severity:** {severity}
-**Tool:** {finding.get('tool', 'Zen AI Pentest')}
-**Target:** {finding.get('target', 'N/A')}
+**Tool:** {finding.get("tool", "Zen AI Pentest")}
+**Target:** {finding.get("target", "N/A")}
 
 ### Description
-{finding.get('description', 'No description available.')}
+{finding.get("description", "No description available.")}
 
 ### Remediation
-{finding.get('remediation', 'No remediation steps provided.')}
+{finding.get("remediation", "No remediation steps provided.")}
 
 ---
 *This issue was automatically created by Zen AI Pentest*
 """
-        
+
         payload = {
             "title": title,
             "body": body,
-            "labels": labels or ["security", "vulnerability", f"severity:{severity.lower()}"]
+            "labels": labels or ["security", "vulnerability", f"severity:{severity.lower()}"],
         }
-        
+
         try:
-            async with session.post(
-                f"{self.base_url}/repos/{repo}/issues",
-                json=payload
-            ) as resp:
+            async with session.post(f"{self.base_url}/repos/{repo}/issues", json=payload) as resp:
                 if resp.status == 201:
                     return await resp.json()
                 else:
@@ -160,7 +149,7 @@ class GitHubIntegration:
         except Exception as e:
             logger.error(f"GitHub API error: {e}")
             return None
-    
+
     async def create_check_run(
         self,
         repo: str,
@@ -168,27 +157,18 @@ class GitHubIntegration:
         head_sha: str,
         status: str = "completed",
         conclusion: str = "neutral",
-        output: Dict[str, Any] = None
+        output: Dict[str, Any] = None,
     ) -> Optional[Dict[str, Any]]:
         """Create a check run for security scanning results."""
         if not self.token:
             return None
-        
+
         session = await self._get_session()
-        
-        payload = {
-            "name": name,
-            "head_sha": head_sha,
-            "status": status,
-            "conclusion": conclusion,
-            "output": output or {}
-        }
-        
+
+        payload = {"name": name, "head_sha": head_sha, "status": status, "conclusion": conclusion, "output": output or {}}
+
         try:
-            async with session.post(
-                f"{self.base_url}/repos/{repo}/check-runs",
-                json=payload
-            ) as resp:
+            async with session.post(f"{self.base_url}/repos/{repo}/check-runs", json=payload) as resp:
                 if resp.status == 201:
                     return await resp.json()
                 return None
@@ -200,27 +180,26 @@ class GitHubIntegration:
 # GitLab Integration
 class GitLabIntegration:
     """Integration with GitLab CI/CD and Issues."""
-    
+
     def __init__(self, token: Optional[str] = None, base_url: str = "https://gitlab.com"):
         self.token = token
-        self.base_url = base_url.rstrip('/')
+        self.base_url = base_url.rstrip("/")
         self.config = IntegrationConfig(name="gitlab", enabled=bool(token))
         self._session = None
-    
+
     async def _get_session(self):
         """Get or create aiohttp session."""
         if self._session is None:
             import aiohttp
-            self._session = aiohttp.ClientSession(
-                headers={"PRIVATE-TOKEN": self.token}
-            )
+
+            self._session = aiohttp.ClientSession(headers={"PRIVATE-TOKEN": self.token})
         return self._session
-    
+
     async def test_connection(self) -> bool:
         """Test GitLab API connection."""
         if not self.token:
             return False
-        
+
         try:
             session = await self._get_session()
             async with session.get(f"{self.base_url}/api/v4/user") as resp:
@@ -231,48 +210,42 @@ class GitLabIntegration:
         except Exception as e:
             logger.error(f"GitLab connection test failed: {e}")
             return False
-    
+
     async def create_issue(
-        self,
-        project_id: str,
-        finding: Dict[str, Any],
-        labels: List[str] = None
+        self, project_id: str, finding: Dict[str, Any], labels: List[str] = None
     ) -> Optional[Dict[str, Any]]:
         """Create a security issue in GitLab."""
         if not self.token:
             return None
-        
+
         session = await self._get_session()
-        
-        severity = finding.get('severity', 'Medium')
+
+        severity = finding.get("severity", "Medium")
         title = f"[SECURITY] [{severity}] {finding.get('title', 'Security Finding')}"
-        
+
         description = f"""## Security Finding
 
 **Severity:** {severity}
-**Target:** {finding.get('target', 'N/A')}
+**Target:** {finding.get("target", "N/A")}
 
 ### Description
-{finding.get('description', 'No description available.')}
+{finding.get("description", "No description available.")}
 
 ### Remediation
-{finding.get('remediation', 'No remediation steps provided.')}
+{finding.get("remediation", "No remediation steps provided.")}
 
 ---
 *Generated by Zen AI Pentest*
 """
-        
+
         payload = {
             "title": title,
             "description": description,
-            "labels": ",".join(labels or ["security", f"severity::{severity.lower()}"])
+            "labels": ",".join(labels or ["security", f"severity::{severity.lower()}"]),
         }
-        
+
         try:
-            async with session.post(
-                f"{self.base_url}/api/v4/projects/{project_id}/issues",
-                data=payload
-            ) as resp:
+            async with session.post(f"{self.base_url}/api/v4/projects/{project_id}/issues", data=payload) as resp:
                 if resp.status == 201:
                     return await resp.json()
                 return None
@@ -284,37 +257,25 @@ class GitLabIntegration:
 # Jenkins Integration
 class JenkinsIntegration:
     """Integration with Jenkins CI/CD."""
-    
-    def __init__(
-        self,
-        url: str,
-        username: Optional[str] = None,
-        api_token: Optional[str] = None
-    ):
-        self.url = url.rstrip('/')
+
+    def __init__(self, url: str, username: Optional[str] = None, api_token: Optional[str] = None):
+        self.url = url.rstrip("/")
         self.username = username
         self.api_token = api_token
-        self.config = IntegrationConfig(
-            name="jenkins",
-            enabled=bool(username and api_token)
-        )
-    
-    async def trigger_job(
-        self,
-        job_name: str,
-        parameters: Dict[str, Any] = None
-    ) -> bool:
+        self.config = IntegrationConfig(name="jenkins", enabled=bool(username and api_token))
+
+    async def trigger_job(self, job_name: str, parameters: Dict[str, Any] = None) -> bool:
         """Trigger a Jenkins job."""
         import aiohttp
-        
+
         auth = aiohttp.BasicAuth(self.username, self.api_token)
-        
+
         async with aiohttp.ClientSession() as session:
             try:
                 url = f"{self.url}/job/{job_name}/build"
                 if parameters:
                     url += "WithParameters"
-                
+
                 async with session.post(url, auth=auth, data=parameters or {}) as resp:
                     return resp.status == 201
             except Exception as e:
@@ -325,64 +286,48 @@ class JenkinsIntegration:
 # Slack Notifier
 class SlackNotifier:
     """Slack notification integration."""
-    
+
     def __init__(self, webhook_url: Optional[str] = None, channel: Optional[str] = None):
         self.webhook_url = webhook_url
         self.channel = channel
         self.config = IntegrationConfig(name="slack", enabled=bool(webhook_url))
-    
+
     async def notify_scan_started(self, target: str, scan_type: str = "security"):
         """Notify that a scan has started."""
         message = {
             "text": "🔍 Security scan started",
             "blocks": [
-                {
-                    "type": "header",
-                    "text": {
-                        "type": "plain_text",
-                        "text": "🔍 Zen AI Pentest - Scan Started"
-                    }
-                },
+                {"type": "header", "text": {"type": "plain_text", "text": "🔍 Zen AI Pentest - Scan Started"}},
                 {
                     "type": "section",
                     "fields": [
                         {"type": "mrkdwn", "text": f"*Target:*\n{target}"},
                         {"type": "mrkdwn", "text": f"*Type:*\n{scan_type}"},
-                        {"type": "mrkdwn", "text": f"*Time:*\n{datetime.now().isoformat()}"}
-                    ]
-                }
-            ]
+                        {"type": "mrkdwn", "text": f"*Time:*\n{datetime.now().isoformat()}"},
+                    ],
+                },
+            ],
         }
-        
+
         if self.channel:
             message["channel"] = self.channel
-        
+
         await self._send(message)
-    
-    async def notify_scan_completed(
-        self,
-        results: Dict[str, Any],
-        target: str
-    ):
+
+    async def notify_scan_completed(self, results: Dict[str, Any], target: str):
         """Notify that a scan has completed."""
-        findings = results.get('findings', [])
+        findings = results.get("findings", [])
         severity_counts = {"critical": 0, "high": 0, "medium": 0, "low": 0}
-        
+
         for finding in findings:
-            sev = finding.get('severity', 'unknown').lower()
+            sev = finding.get("severity", "unknown").lower()
             if sev in severity_counts:
                 severity_counts[sev] += 1
-        
+
         message = {
             "text": f"✅ Security scan completed for {target}",
             "blocks": [
-                {
-                    "type": "header",
-                    "text": {
-                        "type": "plain_text",
-                        "text": "✅ Zen AI Pentest - Scan Completed"
-                    }
-                },
+                {"type": "header", "text": {"type": "plain_text", "text": "✅ Zen AI Pentest - Scan Completed"}},
                 {
                     "type": "section",
                     "fields": [
@@ -390,71 +335,64 @@ class SlackNotifier:
                         {"type": "mrkdwn", "text": f"*Total Findings:*\n{len(findings)}"},
                         {"type": "mrkdwn", "text": f"*Critical:*\n{severity_counts['critical']}"},
                         {"type": "mrkdwn", "text": f"*High:*\n{severity_counts['high']}"},
-                    ]
-                }
-            ]
+                    ],
+                },
+            ],
         }
-        
-        if severity_counts['critical'] > 0:
-            message["blocks"].append({
-                "type": "section",
-                "text": {
-                    "type": "mrkdwn",
-                    "text": f"🚨 *Action Required:* {severity_counts['critical']} critical vulnerabilities found!"
+
+        if severity_counts["critical"] > 0:
+            message["blocks"].append(
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": f"🚨 *Action Required:* {severity_counts['critical']} critical vulnerabilities found!",
+                    },
                 }
-            })
-        
+            )
+
         await self._send(message)
-    
+
     async def notify_finding(self, finding: Dict[str, Any]):
         """Notify about a specific finding."""
-        severity = finding.get('severity', 'Unknown')
+        severity = finding.get("severity", "Unknown")
         emoji = {"Critical": "🚨", "High": "⚠️", "Medium": "⚡", "Low": "ℹ️"}.get(severity, "ℹ️")
-        
+
         message = {
             "text": f"{emoji} Security Finding: {finding.get('title', 'Unknown')}",
             "blocks": [
-                {
-                    "type": "header",
-                    "text": {
-                        "type": "plain_text",
-                        "text": f"{emoji} Security Finding Detected"
-                    }
-                },
+                {"type": "header", "text": {"type": "plain_text", "text": f"{emoji} Security Finding Detected"}},
                 {
                     "type": "section",
                     "fields": [
                         {"type": "mrkdwn", "text": f"*Title:*\n{finding.get('title', 'N/A')}"},
                         {"type": "mrkdwn", "text": f"*Severity:*\n{severity}"},
                         {"type": "mrkdwn", "text": f"*Target:*\n{finding.get('target', 'N/A')}"},
-                    ]
+                    ],
                 },
                 {
                     "type": "section",
                     "text": {
                         "type": "mrkdwn",
-                        "text": f"*Description:*\n{finding.get('description', 'No description')[:500]}"
-                    }
-                }
-            ]
+                        "text": f"*Description:*\n{finding.get('description', 'No description')[:500]}",
+                    },
+                },
+            ],
         }
-        
+
         await self._send(message)
-    
+
     async def _send(self, message: Dict[str, Any]):
         """Send message to Slack webhook."""
         if not self.webhook_url:
             logger.debug("Slack webhook not configured, skipping notification")
             return
-        
+
         import aiohttp
-        
+
         async with aiohttp.ClientSession() as session:
             try:
-                async with session.post(
-                    self.webhook_url,
-                    json=message
-                ) as resp:
+                async with session.post(self.webhook_url, json=message) as resp:
                     if resp.status != 200:
                         logger.error(f"Slack notification failed: {resp.status}")
             except Exception as e:
@@ -464,42 +402,31 @@ class SlackNotifier:
 # JIRA Integration (wrapper around existing jira_client)
 class JiraIntegration:
     """Integration with JIRA for issue tracking."""
-    
-    def __init__(
-        self,
-        server: str,
-        username: Optional[str] = None,
-        api_token: Optional[str] = None
-    ):
-        self.server = server.rstrip('/')
+
+    def __init__(self, server: str, username: Optional[str] = None, api_token: Optional[str] = None):
+        self.server = server.rstrip("/")
         self.username = username
         self.api_token = api_token
-        self.config = IntegrationConfig(
-            name="jira",
-            enabled=bool(username and api_token)
-        )
+        self.config = IntegrationConfig(name="jira", enabled=bool(username and api_token))
         self._client = None
-    
+
     def _get_client(self):
         """Get or create JIRA client."""
         if self._client is None and self.config.enabled:
             try:
                 from .jira_client import JiraClient
-                self._client = JiraClient(
-                    base_url=self.server,
-                    username=self.username,
-                    api_token=self.api_token
-                )
+
+                self._client = JiraClient(base_url=self.server, username=self.username, api_token=self.api_token)
             except Exception as e:
                 logger.error(f"Failed to create JIRA client: {e}")
         return self._client
-    
+
     async def test_connection(self) -> bool:
         """Test JIRA connection."""
         client = self._get_client()
         if not client:
             return False
-        
+
         try:
             result = client.test_connection()
             self.config.status = IntegrationStatus.CONNECTED if result else IntegrationStatus.ERROR
@@ -508,18 +435,14 @@ class JiraIntegration:
             self.config.status = IntegrationStatus.ERROR
             self.config.last_error = str(e)
             return False
-    
-    async def create_finding_ticket(
-        self,
-        finding: Dict[str, Any],
-        project_key: str
-    ) -> Optional[Dict[str, Any]]:
+
+    async def create_finding_ticket(self, finding: Dict[str, Any], project_key: str) -> Optional[Dict[str, Any]]:
         """Create a ticket from a security finding."""
         client = self._get_client()
         if not client:
             logger.warning("JIRA not configured")
             return None
-        
+
         try:
             return client.create_finding_ticket(finding, project_key)
         except Exception as e:
@@ -530,69 +453,56 @@ class JiraIntegration:
 # Factory functions
 def create_github_integration(config: Dict[str, Any]) -> GitHubIntegration:
     """Create GitHub integration from config."""
-    return GitHubIntegration(
-        token=config.get('token'),
-        base_url=config.get('base_url', 'https://api.github.com')
-    )
+    return GitHubIntegration(token=config.get("token"), base_url=config.get("base_url", "https://api.github.com"))
 
 
 def create_gitlab_integration(config: Dict[str, Any]) -> GitLabIntegration:
     """Create GitLab integration from config."""
-    return GitLabIntegration(
-        token=config.get('token'),
-        base_url=config.get('base_url', 'https://gitlab.com')
-    )
+    return GitLabIntegration(token=config.get("token"), base_url=config.get("base_url", "https://gitlab.com"))
 
 
 def create_slack_notifier(config: Dict[str, Any]) -> SlackNotifier:
     """Create Slack notifier from config."""
-    return SlackNotifier(
-        webhook_url=config.get('webhook_url'),
-        channel=config.get('channel')
-    )
+    return SlackNotifier(webhook_url=config.get("webhook_url"), channel=config.get("channel"))
 
 
 def create_jira_integration(config: Dict[str, Any]) -> JiraIntegration:
     """Create JIRA integration from config."""
-    return JiraIntegration(
-        server=config.get('server'),
-        username=config.get('username'),
-        api_token=config.get('api_token')
-    )
+    return JiraIntegration(server=config.get("server"), username=config.get("username"), api_token=config.get("api_token"))
 
 
 def load_integrations_from_config(config_path: str = "config/integrations.json") -> Dict[str, Any]:
     """Load all integrations from configuration file."""
     import json
     import os
-    
+
     integrations = {}
-    
+
     if not os.path.exists(config_path):
         logger.warning(f"Integration config not found: {config_path}")
         return integrations
-    
+
     try:
-        with open(config_path, 'r') as f:
+        with open(config_path, "r") as f:
             config = json.load(f)
-        
-        if config.get('github', {}).get('enabled'):
-            integrations['github'] = create_github_integration(config['github'])
-        
-        if config.get('gitlab', {}).get('enabled'):
-            integrations['gitlab'] = create_gitlab_integration(config['gitlab'])
-        
-        if config.get('slack', {}).get('enabled'):
-            integrations['slack'] = create_slack_notifier(config['slack'])
-        
-        if config.get('jira', {}).get('enabled'):
-            integrations['jira'] = create_jira_integration(config['jira'])
-        
+
+        if config.get("github", {}).get("enabled"):
+            integrations["github"] = create_github_integration(config["github"])
+
+        if config.get("gitlab", {}).get("enabled"):
+            integrations["gitlab"] = create_gitlab_integration(config["gitlab"])
+
+        if config.get("slack", {}).get("enabled"):
+            integrations["slack"] = create_slack_notifier(config["slack"])
+
+        if config.get("jira", {}).get("enabled"):
+            integrations["jira"] = create_jira_integration(config["jira"])
+
         logger.info(f"Loaded {len(integrations)} integrations")
-        
+
     except Exception as e:
         logger.error(f"Failed to load integrations: {e}")
-    
+
     return integrations
 
 
@@ -603,11 +513,9 @@ __all__ = [
     "JenkinsIntegration",
     "SlackNotifier",
     "JiraIntegration",
-    
     # Configuration
     "IntegrationConfig",
     "IntegrationStatus",
-    
     # Factory functions
     "create_github_integration",
     "create_gitlab_integration",

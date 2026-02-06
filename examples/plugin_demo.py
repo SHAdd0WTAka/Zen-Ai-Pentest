@@ -75,9 +75,7 @@ async def demo_plugin_system():
     for name, plugin in manager.plugins.items():
         print(f"    Executing {name}...")
         try:
-            result = await manager.execute_plugin(
-                name, target="example.com", options={"aggressive": False}
-            )
+            result = await manager.execute_plugin(name, target="example.com", options={"aggressive": False})
             print(f"    Result: {result}")
         except Exception as e:
             print(f"    Error: {e}")

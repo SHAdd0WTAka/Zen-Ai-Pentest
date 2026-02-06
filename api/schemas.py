@@ -11,12 +11,14 @@ from enum import Enum
 # ENUMS
 # ============================================================================
 
+
 class ScanStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
     COMPLETED = "completed"
     FAILED = "failed"
     CANCELLED = "cancelled"
+
 
 class Severity(str, Enum):
     CRITICAL = "critical"
@@ -25,15 +27,18 @@ class Severity(str, Enum):
     LOW = "low"
     INFO = "info"
 
+
 class ReportFormat(str, Enum):
     PDF = "pdf"
     HTML = "html"
     JSON = "json"
     XML = "xml"
 
+
 # ============================================================================
 # BASE SCHEMAS
 # ============================================================================
+
 
 class ScanBase(BaseModel):
     name: str = Field(..., min_length=1, max_length=255)
@@ -41,12 +46,15 @@ class ScanBase(BaseModel):
     scan_type: str = Field(..., min_length=1, max_length=100)
     config: Optional[Dict[str, Any]] = {}
 
+
 class ScanCreate(ScanBase):
     objective: Optional[str] = "comprehensive security scan"
+
 
 class ScanUpdate(BaseModel):
     status: Optional[str] = None
     config: Optional[Dict[str, Any]] = None
+
 
 class ScanResponse(ScanBase):
     id: int
@@ -57,13 +65,15 @@ class ScanResponse(ScanBase):
     completed_at: Optional[datetime] = None
     result_summary: Optional[str] = None
     findings_count: Optional[int] = 0
-    
+
     class Config:
         from_attributes = True
+
 
 # ============================================================================
 # FINDING SCHEMAS
 # ============================================================================
+
 
 class FindingBase(BaseModel):
     title: str = Field(..., min_length=1, max_length=500)
@@ -78,34 +88,41 @@ class FindingBase(BaseModel):
     port: Optional[int] = None
     service: Optional[str] = None
 
+
 class FindingCreate(FindingBase):
     pass
+
 
 class FindingResponse(FindingBase):
     id: int
     scan_id: int
     created_at: datetime
     verified: int = 0
-    
+
     class Config:
         from_attributes = True
+
 
 class FindingUpdate(BaseModel):
     severity: Optional[Severity] = None
     verified: Optional[int] = None
     remediation: Optional[str] = None
 
+
 # ============================================================================
 # REPORT SCHEMAS
 # ============================================================================
+
 
 class ReportBase(BaseModel):
     scan_id: int
     format: ReportFormat = ReportFormat.PDF
     template: Optional[str] = "default"
 
+
 class ReportCreate(ReportBase):
     pass
+
 
 class ReportResponse(ReportBase):
     id: int
@@ -115,13 +132,15 @@ class ReportResponse(ReportBase):
     file_size: Optional[int] = None
     created_at: datetime
     generated_at: Optional[datetime] = None
-    
+
     class Config:
         from_attributes = True
+
 
 # ============================================================================
 # TOOL EXECUTION SCHEMAS
 # ============================================================================
+
 
 class ToolExecuteRequest(BaseModel):
     tool_name: str = Field(..., description="Name of the tool to execute")
@@ -129,11 +148,13 @@ class ToolExecuteRequest(BaseModel):
     parameters: Optional[Dict[str, Any]] = {}
     timeout: Optional[int] = 300
 
+
 class ToolExecuteResponse(BaseModel):
     scan_id: int
     status: str
     message: str
     estimated_duration: Optional[int] = None
+
 
 class ToolInfo(BaseModel):
     name: str
@@ -141,19 +162,23 @@ class ToolInfo(BaseModel):
     category: str
     parameters: Optional[Dict[str, Any]] = {}
 
+
 # ============================================================================
 # AUTH SCHEMAS
 # ============================================================================
+
 
 class UserLogin(BaseModel):
     username: str
     password: str
 
+
 class UserCreate(BaseModel):
     username: str = Field(..., min_length=3, max_length=100)
-    email: str = Field(..., pattern=r'^[\w\.-]+@[\w\.-]+\.\w+$')
+    email: str = Field(..., pattern=r"^[\w\.-]+@[\w\.-]+\.\w+$")
     password: str = Field(..., min_length=8)
     role: Optional[str] = "operator"
+
 
 class UserResponse(BaseModel):
     id: int
@@ -162,18 +187,21 @@ class UserResponse(BaseModel):
     role: str
     is_active: int
     created_at: datetime
-    
+
     class Config:
         from_attributes = True
+
 
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
     expires_in: int = 3600
 
+
 # ============================================================================
 # DASHBOARD SCHEMAS
 # ============================================================================
+
 
 class DashboardStats(BaseModel):
     total_scans: int
@@ -185,6 +213,7 @@ class DashboardStats(BaseModel):
     high_findings: int
     reports_generated: int
 
+
 class RecentActivity(BaseModel):
     id: int
     type: str  # scan, finding, report
@@ -192,15 +221,18 @@ class RecentActivity(BaseModel):
     timestamp: datetime
     user: str
 
+
 class DashboardResponse(BaseModel):
     stats: DashboardStats
     recent_activities: List[RecentActivity]
     scans_by_status: Dict[str, int]
     findings_by_severity: Dict[str, int]
 
+
 # ============================================================================
 # WEBSOCKET SCHEMAS
 # ============================================================================
+
 
 class WSMessage(BaseModel):
     type: str  # status, log, result, error
@@ -209,35 +241,42 @@ class WSMessage(BaseModel):
     data: Optional[Dict[str, Any]] = None
     timestamp: datetime = Field(default_factory=datetime.utcnow)
 
+
 class WSCommand(BaseModel):
     action: str  # start, stop, status, ping
     scan_id: Optional[int] = None
     parameters: Optional[Dict[str, Any]] = None
 
+
 # ============================================================================
 # NOTIFICATION SCHEMAS
 # ============================================================================
+
 
 class NotificationBase(BaseModel):
     type: str
     title: str
     message: str
 
+
 class NotificationCreate(NotificationBase):
     user_id: int
+
 
 class NotificationResponse(NotificationBase):
     id: int
     user_id: int
     read: int
     created_at: datetime
-    
+
     class Config:
         from_attributes = True
+
 
 # ============================================================================
 # ASSET SCHEMAS
 # ============================================================================
+
 
 class AssetBase(BaseModel):
     name: str
@@ -247,21 +286,25 @@ class AssetBase(BaseModel):
     os: Optional[str] = None
     criticality: str = "medium"
 
+
 class AssetCreate(AssetBase):
     pass
+
 
 class AssetResponse(AssetBase):
     id: int
     services: Optional[Dict[str, Any]] = None
     created_at: datetime
     last_scanned: Optional[datetime] = None
-    
+
     class Config:
         from_attributes = True
+
 
 # ============================================================================
 # VULNERABILITY DB SCHEMAS
 # ============================================================================
+
 
 class VulnerabilityDBResponse(BaseModel):
     id: int
@@ -275,9 +318,11 @@ class VulnerabilityDBResponse(BaseModel):
     references: Optional[List[str]] = None
     exploits: Optional[List[str]] = None
 
+
 # ============================================================================
 # PAGINATION SCHEMAS
 # ============================================================================
+
 
 class PaginatedResponse(BaseModel):
     items: List[Any]
@@ -286,23 +331,27 @@ class PaginatedResponse(BaseModel):
     page_size: int
     pages: int
 
+
 class PaginationParams(BaseModel):
     page: int = Field(1, ge=1)
     page_size: int = Field(20, ge=1, le=100)
-    
+
     @property
     def skip(self) -> int:
         return (self.page - 1) * self.page_size
 
+
 # ============================================================================
 # SCHEDULED SCAN SCHEMAS
 # ============================================================================
+
 
 class ScheduleFrequency(str, Enum):
     ONCE = "once"
     DAILY = "daily"
     WEEKLY = "weekly"
     MONTHLY = "monthly"
+
 
 class ScheduledScanCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=200)
@@ -315,6 +364,7 @@ class ScheduledScanCreate(BaseModel):
     notification_email: Optional[str] = None
     notification_slack: Optional[str] = None
 
+
 class ScheduledScanUpdate(BaseModel):
     name: Optional[str] = None
     target: Optional[str] = None
@@ -326,6 +376,7 @@ class ScheduledScanUpdate(BaseModel):
     notification_email: Optional[str] = None
     notification_slack: Optional[str] = None
     last_run_status: Optional[str] = None
+
 
 class ScheduledScanResponse(BaseModel):
     id: int
@@ -343,9 +394,10 @@ class ScheduledScanResponse(BaseModel):
     next_run_at: Optional[datetime] = None
     created_at: datetime
     created_by: str
-    
+
     class Config:
         from_attributes = True
+
 
 class ScheduleExecutionResponse(BaseModel):
     id: int

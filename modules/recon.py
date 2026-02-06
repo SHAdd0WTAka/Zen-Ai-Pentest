@@ -40,8 +40,8 @@ class ReconModule:
         prompt = f"""
 Analyze this target for penetration testing:
 Target: {target}
-IP: {target_info['ip']}
-DNS Records: {target_info['dns_records']}
+IP: {target_info["ip"]}
+DNS Records: {target_info["dns_records"]}
 
 Provide a structured reconnaissance plan including:
 1. Potential attack vectors
@@ -89,9 +89,7 @@ Provide a structured reconnaissance plan including:
     async def _get_whois(self, target: str) -> str:
         """Get WHOIS information"""
         try:
-            result = subprocess.run(
-                ["whois", target], capture_output=True, text=True, timeout=15
-            )
+            result = subprocess.run(["whois", target], capture_output=True, text=True, timeout=15)
             # Return first 500 chars of relevant info
             return result.stdout[:500] if result.returncode == 0 else "WHOIS failed"
         except Exception:
@@ -102,16 +100,11 @@ Provide a structured reconnaissance plan including:
         vectors = []
         lines = llm_content.split("\n")
         for line in lines:
-            if any(
-                keyword in line.lower()
-                for keyword in ["vector", "attack", "exploit", "vulnerability"]
-            ):
+            if any(keyword in line.lower() for keyword in ["vector", "attack", "exploit", "vulnerability"]):
                 vectors.append(line.strip())
         return vectors[:10]  # Limit to top 10
 
-    async def generate_nmap_command(
-        self, target: str, intensity: str = "normal"
-    ) -> str:
+    async def generate_nmap_command(self, target: str, intensity: str = "normal") -> str:
         """
         Generate optimized nmap command based on target analysis
         """

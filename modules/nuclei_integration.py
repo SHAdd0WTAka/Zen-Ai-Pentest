@@ -122,9 +122,7 @@ class NucleiIntegration:
 
         # Get from nuclei if available
         try:
-            result = subprocess.run(
-                [self.nuclei_path, "-tl"], capture_output=True, text=True, timeout=30
-            )
+            result = subprocess.run([self.nuclei_path, "-tl"], capture_output=True, text=True, timeout=30)
             if result.returncode == 0:
                 for line in result.stdout.split("\n"):
                     for category in categories.keys():
@@ -147,9 +145,7 @@ class NucleiIntegration:
         Run Nuclei scan against target
         """
         if not await self.check_nuclei_installed():
-            logger.error(
-                "[Nuclei] Nuclei not installed. Install from: https://nuclei.projectdiscovery.io/"
-            )
+            logger.error("[Nuclei] Nuclei not installed. Install from: https://nuclei.projectdiscovery.io/")
             return []
 
         cmd = [
@@ -196,9 +192,7 @@ class NucleiIntegration:
                     finding = self._parse_nuclei_output(data)
                     if finding:
                         findings.append(finding)
-                        logger.info(
-                            f"[Nuclei] Found: {finding.template_name} ({finding.severity})"
-                        )
+                        logger.info(f"[Nuclei] Found: {finding.template_name} ({finding.severity})")
                 except json.JSONDecodeError:
                     continue
 
@@ -236,9 +230,7 @@ class NucleiIntegration:
         Run Nuclei scan and analyze results with LLM
         """
         # Run the scan
-        findings = await self.scan_target(
-            target, severity=["critical", "high", "medium"]
-        )
+        findings = await self.scan_target(target, severity=["critical", "high", "medium"])
 
         if not findings:
             return {"findings": [], "analysis": "No vulnerabilities found"}
@@ -284,14 +276,10 @@ Provide:
                 summary[sev] += 1
         return summary
 
-    def export_results(
-        self, findings: List[NucleiFinding], filename: str = None
-    ) -> str:
+    def export_results(self, findings: List[NucleiFinding], filename: str = None) -> str:
         """Export findings to JSON"""
         if not filename:
-            filename = (
-                f"logs/nuclei_scan_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-            )
+            filename = f"logs/nuclei_scan_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
 
         data = {
             "scan_date": datetime.now().isoformat(),

@@ -11,13 +11,13 @@ from .risk_engine import RiskEngine, RiskScore
 from .report import RiskReportGenerator
 
 __all__ = [
-    'CVSSCalculator',
-    'CVSSVector',
-    'EPSSClient',
-    'EPSSScore',
-    'BusinessImpactScorer',
-    'ImpactLevel',
-    'RiskEngine',
-    'RiskScore',
-    'RiskReportGenerator',
+    "CVSSCalculator",
+    "CVSSVector",
+    "EPSSClient",
+    "EPSSScore",
+    "BusinessImpactScorer",
+    "ImpactLevel",
+    "RiskEngine",
+    "RiskScore",
+    "RiskReportGenerator",
 ]

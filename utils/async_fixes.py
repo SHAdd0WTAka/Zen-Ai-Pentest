@@ -63,7 +63,7 @@ def _patch_proactor_connection_lost():
             """Patched _call_connection_lost that handles shutdown errors"""
             try:
                 original_call_connection_lost(self, exc)
-            except (OSError, AttributeError) as e:
+            except (OSError, AttributeError):
                 # Silently ignore shutdown errors
                 pass
 
@@ -143,10 +143,8 @@ def silence_asyncio_warnings():
     """
     Silence common asyncio warnings that don't affect functionality
     """
-    warnings.filterwarnings(
-        "ignore", category=RuntimeWarning, message="coroutine.*was never awaited"
-    )
-    warnings.filterwarnings("ignore", message=".*socket\.socket.*")
+    warnings.filterwarnings("ignore", category=RuntimeWarning, message="coroutine.*was never awaited")
+    warnings.filterwarnings("ignore", message=r".*socket\.socket.*")
     warnings.filterwarnings("ignore", message=".*_ProactorBasePipeTransport.*")
     warnings.filterwarnings("ignore", message=".*unclosed.*")
     warnings.filterwarnings("ignore", message=".*Unclosed connector.*")

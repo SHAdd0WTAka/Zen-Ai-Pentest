@@ -72,9 +72,7 @@ class ChangelogGenerator:
 
         # Format: hash|date|author|message
         log_format = "%H|%aI|%an|%s"
-        output = self.run_git_command(
-            ["log", range_spec, f"--format={log_format}", "--no-merges"]
-        )
+        output = self.run_git_command(["log", range_spec, f"--format={log_format}", "--no-merges"])
 
         commits = []
         for line in output.split("\n"):
@@ -117,9 +115,7 @@ class ChangelogGenerator:
         categorized["other"] = []
 
         for commit in commits:
-            commit_type, scope, description = self.parse_conventional_commit(
-                commit["message"]
-            )
+            commit_type, scope, description = self.parse_conventional_commit(commit["message"])
 
             if commit_type in categorized:
                 categorized[commit_type].append(
@@ -150,9 +146,7 @@ class ChangelogGenerator:
     def get_stats(self, commits: List[Dict]) -> Dict:
         """Get statistics for the release."""
         # Count files changed, insertions, deletions
-        stats_output = self.run_git_command(
-            ["diff", "--stat", f"{self.get_last_tag()}..HEAD"]
-        )
+        stats_output = self.run_git_command(["diff", "--stat", f"{self.get_last_tag()}..HEAD"])
 
         files_changed = 0
         insertions = 0
@@ -178,9 +172,7 @@ class ChangelogGenerator:
             "deletions": deletions,
         }
 
-    def generate_changelog(
-        self, version: str, since_tag: Optional[str] = None
-    ) -> str:
+    def generate_changelog(self, version: str, since_tag: Optional[str] = None) -> str:
         """Generate the changelog content."""
         today = datetime.now().strftime("%Y-%m-%d")
         commits = self.get_commits_since(since_tag)
@@ -208,7 +200,7 @@ class ChangelogGenerator:
                 lines.append(f"### {title}")
                 lines.append("")
                 for item in items:
-                    scope = f"**{item['scope']}:** " if item['scope'] else ""
+                    scope = f"**{item['scope']}:** " if item["scope"] else ""
                     lines.append(f"- {scope}{item['description']} ({item['hash']})")
                 lines.append("")
 
@@ -272,9 +264,7 @@ class ChangelogGenerator:
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Generate changelog for Zen AI Pentest"
-    )
+    parser = argparse.ArgumentParser(description="Generate changelog for Zen AI Pentest")
     parser.add_argument(
         "--version",
         type=str,

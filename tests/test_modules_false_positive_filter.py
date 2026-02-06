@@ -1,8 +1,7 @@
 """Tests for false positive filter module"""
+
 import pytest
-from modules.false_positive_filter import (
-    FalsePositiveFilter, Finding
-)
+from modules.false_positive_filter import FalsePositiveFilter, Finding
 
 
 class TestFalsePositiveFilter:
@@ -23,7 +22,7 @@ class TestFalsePositiveFilter:
             severity="medium",
             cvss_score=5.0,
             evidence=["cert.pem"],
-            tool="ssl_scanner"
+            tool="ssl_scanner",
         )
         is_fp, reason = fpf.apply_rule_based_filter(finding)
         assert is_fp is True
@@ -39,7 +38,7 @@ class TestFalsePositiveFilter:
             cvss_score=9.5,
             evidence=["request.txt", "response.txt", "sqlmap_output"],
             tool="sql_scanner",
-            confidence=0.95
+            confidence=0.95,
         )
         is_fp, reason = fpf.apply_rule_based_filter(finding)
         assert is_fp is False
@@ -54,7 +53,7 @@ class TestFalsePositiveFilter:
             cvss_score=2.0,
             evidence=[],
             tool="scanner",
-            confidence=0.1
+            confidence=0.1,
         )
         is_fp, reason = fpf.apply_rule_based_filter(finding)
         assert is_fp is True
@@ -64,12 +63,7 @@ class TestFalsePositiveFilter:
         """Test ML filter with no evidence"""
         fpf = FalsePositiveFilter()
         finding = Finding(
-            title="Vulnerability",
-            description="Description",
-            severity="high",
-            cvss_score=8.0,
-            evidence=[],
-            tool="scanner"
+            title="Vulnerability", description="Description", severity="high", cvss_score=8.0, evidence=[], tool="scanner"
         )
         score = fpf.apply_ml_filter(finding)
         assert score >= 0.3  # High FP probability due to no evidence
@@ -83,7 +77,7 @@ class TestFalsePositiveFilter:
             severity="critical",
             cvss_score=9.0,
             evidence=["payload.txt", "response.txt", "screenshot.png"],
-            tool="sql_scanner"
+            tool="sql_scanner",
         )
         score = fpf.apply_ml_filter(finding)
         assert score < 0.3  # Low FP probability
@@ -98,7 +92,7 @@ class TestFalsePositiveFilter:
                 severity="low",
                 cvss_score=3.0,
                 evidence=["cert.pem"],
-                tool="ssl_scanner"
+                tool="ssl_scanner",
             ),
             Finding(
                 title="SQL Injection",
@@ -107,7 +101,7 @@ class TestFalsePositiveFilter:
                 cvss_score=9.5,
                 evidence=["payload.txt", "response.txt"],
                 tool="sql_scanner",
-                confidence=0.95
+                confidence=0.95,
             ),
             Finding(
                 title="Low confidence alert",
@@ -116,31 +110,31 @@ class TestFalsePositiveFilter:
                 cvss_score=2.0,
                 evidence=[],
                 tool="scanner",
-                confidence=0.2
-            )
+                confidence=0.2,
+            ),
         ]
-        
+
         result = fpf.filter_findings(findings)
-        
+
         # Should have 1 true positive (SQLi)
-        assert len(result['true_positives']) == 1
-        assert result['true_positives'][0].title == "SQL Injection"
-        
+        assert len(result["true_positives"]) == 1
+        assert result["true_positives"][0].title == "SQL Injection"
+
         # Should have 2 false positives
-        assert len(result['false_positives']) == 2
-        
+        assert len(result["false_positives"]) == 2
+
         # Reduction rate should be ~67%
-        assert result['reduction_rate'] == pytest.approx(0.67, abs=0.01)
+        assert result["reduction_rate"] == pytest.approx(0.67, abs=0.01)
 
     def test_filter_findings_empty(self):
         """Test filtering empty list"""
         fpf = FalsePositiveFilter()
         result = fpf.filter_findings([])
-        assert result['reduction_rate'] == 0
+        assert result["reduction_rate"] == 0
 
     def test_get_info(self):
         """Test module info"""
         fpf = FalsePositiveFilter()
         info = fpf.get_info()
-        assert info['name'] == 'false_positive_filter'
-        assert 'ml' in info['description'].lower()
+        assert info["name"] == "false_positive_filter"
+        assert "ml" in info["description"].lower()

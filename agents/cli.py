@@ -117,9 +117,7 @@ Examples:
                             "initiated_by": "user",
                         },
                     )
-                    print(
-                        colorize(f"[+] Research thread started: {thread_id}", "green")
-                    )
+                    print(colorize(f"[+] Research thread started: {thread_id}", "green"))
                     print(
                         colorize(
                             "[*] Agents are working... Check status for updates",
@@ -132,9 +130,7 @@ Examples:
                         print(colorize("[!] Usage: analyze <target>", "red"))
                         continue
                     print(colorize(f"[*] Analyzing target: {args}", "cyan"))
-                    results = await self.integration.analyze_target(
-                        target=args, findings=[]
-                    )
+                    results = await self.integration.analyze_target(target=args, findings=[])
                     print(colorize("[+] Analysis complete!", "green"))
                     print(
                         colorize(
@@ -147,14 +143,8 @@ Examples:
                     if not args:
                         print(colorize("[!] Usage: discuss <topic>", "red"))
                         continue
-                    print(
-                        colorize(
-                            f"[*] Facilitating agent discussion on: {args}", "cyan"
-                        )
-                    )
-                    messages = await self.integration.facilitate_discussion(
-                        topic=args, rounds=2
-                    )
+                    print(colorize(f"[*] Facilitating agent discussion on: {args}", "cyan"))
+                    messages = await self.integration.facilitate_discussion(topic=args, rounds=2)
                     print(colorize("[+] Discussion complete:", "green"))
                     for i, msg in enumerate(messages, 1):
                         print(f"  {i}. {msg[:100]}...")
@@ -164,9 +154,7 @@ Examples:
                     print(colorize("[*] Agent System Status:", "cyan"))
                     print(f"  Active agents: {len(status.get('agents', {}))}")
                     print(f"  Message count: {status.get('message_count', 0)}")
-                    print(
-                        f"  Shared context keys: {len(status.get('shared_context_keys', []))}"
-                    )
+                    print(f"  Shared context keys: {len(status.get('shared_context_keys', []))}")
                     print(f"  Role distribution: {status.get('role_distribution', {})}")
 
                 elif command == "agents":
@@ -175,12 +163,8 @@ Examples:
                     for agent_id, agent_status in status.get("agents", {}).items():
                         role = agent_status.get("role", "unknown")
                         running = "✓" if agent_status.get("running") else "✗"
-                        print(
-                            f"  {running} {agent_status['name']} ({role}) [{agent_id}]"
-                        )
-                        print(
-                            f"     Queue: {agent_status.get('queue_size', 0)} | Inbox: {agent_status.get('inbox_count', 0)}"
-                        )
+                        print(f"  {running} {agent_status['name']} ({role}) [{agent_id}]")
+                        print(f"     Queue: {agent_status.get('queue_size', 0)} | Inbox: {agent_status.get('inbox_count', 0)}")
 
                 elif command == "context":
                     if not args or len(args.split()) < 2:

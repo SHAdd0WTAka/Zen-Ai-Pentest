@@ -27,7 +27,7 @@ def test_ransomware_family_structure():
         # Check for common ransomware attributes
         _ = any(k in family for k in ["first_seen", "first_seen_date", "discovered_date"])
         _ = any(k in family for k in ["extensions", "file_extensions", "file_extensions_targeted"])  # has_extensions
-        
+
         # Check data types
         assert isinstance(family["name"], str)
         # Extensions may be in different fields or formats

@@ -1,8 +1,7 @@
 """Tests for risk scoring module"""
+
 import pytest  # noqa: F401
-from modules.risk_scoring import (
-    RiskScoringModule, RiskFactors, SeverityLevel
-)
+from modules.risk_scoring import RiskScoringModule, RiskFactors, SeverityLevel
 
 
 class TestRiskScoringModule:
@@ -47,26 +46,14 @@ class TestRiskScoringModule:
     def test_calculate_composite_score_max(self):
         """Test max composite score (100)"""
         module = RiskScoringModule()
-        factors = RiskFactors(
-            cvss_score=10.0,
-            epss_score=1.0,
-            business_impact=5,
-            exposure=5,
-            data_sensitivity=5
-        )
+        factors = RiskFactors(cvss_score=10.0, epss_score=1.0, business_impact=5, exposure=5, data_sensitivity=5)
         score = module.calculate_composite_score(factors)
         assert score == 100.0
 
     def test_calculate_composite_score_min(self):
         """Test min composite score (low values)"""
         module = RiskScoringModule()
-        factors = RiskFactors(
-            cvss_score=0.0,
-            epss_score=0.0,
-            business_impact=1,
-            exposure=1,
-            data_sensitivity=1
-        )
+        factors = RiskFactors(cvss_score=0.0, epss_score=0.0, business_impact=1, exposure=1, data_sensitivity=1)
         score = module.calculate_composite_score(factors)
         assert score < 20
 
@@ -104,14 +91,14 @@ class TestRiskScoringModule:
         """Test vulnerability scoring returns correct structure"""
         module = RiskScoringModule()
         result = module.score_vulnerability("CVE-2021-44228", "production")
-        
-        assert 'cve_id' in result
-        assert 'cvss_score' in result
-        assert 'epss_score' in result
-        assert 'composite_score' in result
-        assert 'severity' in result
-        assert 'priority' in result
-        assert 'remediation_timeline' in result
+
+        assert "cve_id" in result
+        assert "cvss_score" in result
+        assert "epss_score" in result
+        assert "composite_score" in result
+        assert "severity" in result
+        assert "priority" in result
+        assert "remediation_timeline" in result
 
     def test_calculate_priority_p1(self):
         """Test P1 priority (critical)"""
@@ -135,18 +122,18 @@ class TestRiskScoringModule:
         """Test that findings are sorted by score"""
         module = RiskScoringModule()
         findings = [
-            {'cve_id': 'CVE-2024-9999', 'asset_type': 'workstation'},
-            {'cve_id': 'CVE-2021-44228', 'asset_type': 'production'},
+            {"cve_id": "CVE-2024-9999", "asset_type": "workstation"},
+            {"cve_id": "CVE-2021-44228", "asset_type": "production"},
         ]
         scored = module.score_findings(findings)
-        
+
         # Log4j (critical) should be first
-        assert scored[0]['cve_id'] == 'CVE-2021-44228'
+        assert scored[0]["cve_id"] == "CVE-2021-44228"
 
     def test_get_info(self):
         """Test module info"""
         module = RiskScoringModule()
         info = module.get_info()
-        assert info['name'] == 'risk_scoring'
-        assert 'CVSS' in info['description']
-        assert 'EPSS' in info['description']
+        assert info["name"] == "risk_scoring"
+        assert "CVSS" in info["description"]
+        assert "EPSS" in info["description"]

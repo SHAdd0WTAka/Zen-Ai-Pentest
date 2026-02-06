@@ -10,60 +10,54 @@ import requests
 
 def setup_branch_protection():
     """Configure branch protection rules for master branch"""
-    
+
     token = os.getenv("GITHUB_TOKEN")
     if not token:
         print("❌ Error: GITHUB_TOKEN environment variable not set")
         print("Please set your GitHub personal access token:")
         print("  set GITHUB_TOKEN=your_token_here")
         sys.exit(1)
-    
+
     owner = "SHAdd0WTAka"
     repo = "Zen-Ai-Pentest"
     branch = "master"
-    
+
     url = f"https://api.github.com/repos/{owner}/{repo}/branches/{branch}/protection"
-    
+
     headers = {
         "Authorization": f"Bearer {token}",
         "Accept": "application/vnd.github+json",
-        "X-GitHub-Api-Version": "2022-11-28"
+        "X-GitHub-Api-Version": "2022-11-28",
     }
-    
+
     # Branch protection configuration
     data = {
         "required_status_checks": {
             "strict": True,
-            "contexts": [
-                "backend (3.13)",
-                "frontend",
-                "pre-commit",
-                "docker",
-                "ci-summary"
-            ]
+            "contexts": ["backend (3.13)", "frontend", "pre-commit", "docker", "ci-summary"],
         },
         "enforce_admins": True,
         "required_pull_request_reviews": {
             "required_approving_review_count": 1,
             "dismiss_stale_reviews": True,
             "require_code_owner_reviews": False,
-            "required_last_push_approval": False
+            "required_last_push_approval": False,
         },
         "restrictions": None,
         "allow_force_pushes": False,
         "allow_deletions": False,
         "required_conversation_resolution": True,
-        "lock_branch": False
+        "lock_branch": False,
     }
-    
+
     print("🔐 Setting up Branch Protection for Zen AI Pentest...")
     print(f"   Repository: {owner}/{repo}")
     print(f"   Branch: {branch}")
     print()
-    
+
     try:
         response = requests.put(url, headers=headers, json=data)
-        
+
         if response.status_code == 200:
             print("✅ Branch Protection successfully configured!")
             print()
@@ -99,31 +93,32 @@ def setup_branch_protection():
             print(f"❌ Error: HTTP {response.status_code}")
             print(f"   Response: {response.text}")
             return False
-            
+
     except requests.exceptions.RequestException as e:
         print("❌ Error: Network request failed")
         print(f"   {e}")
         return False
 
+
 def verify_branch_protection():
     """Verify current branch protection settings"""
-    
+
     token = os.getenv("GITHUB_TOKEN")
     if not token:
         return False
-    
+
     owner = "SHAdd0WTAka"
     repo = "Zen-Ai-Pentest"
     branch = "master"
-    
+
     url = f"https://api.github.com/repos/{owner}/{repo}/branches/{branch}/protection"
-    
+
     headers = {
         "Authorization": f"Bearer {token}",
         "Accept": "application/vnd.github+json",
-        "X-GitHub-Api-Version": "2022-11-28"
+        "X-GitHub-Api-Version": "2022-11-28",
     }
-    
+
     try:
         response = requests.get(url, headers=headers)
         if response.status_code == 200:
@@ -149,15 +144,16 @@ def verify_branch_protection():
         print(f"\n⚠️  Could not verify status: {e}")
         return False
 
+
 if __name__ == "__main__":
     print("=" * 60)
     print("   Zen AI Pentest - Branch Protection Setup")
     print("=" * 60)
     print()
-    
+
     # First verify current status
     verify_branch_protection()
-    
+
     print()
     print("📝 This script will configure:")
     print("   • Require pull request before merging (1 approval)")
@@ -165,8 +161,8 @@ if __name__ == "__main__":
     print("   • Block force pushes")
     print("   • Block branch deletions")
     print()
-    
-    if input("Continue? (y/n): ").lower() == 'y':
+
+    if input("Continue? (y/n): ").lower() == "y":
         success = setup_branch_protection()
         sys.exit(0 if success else 1)
     else:

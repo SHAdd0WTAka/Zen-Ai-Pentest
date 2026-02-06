@@ -42,9 +42,7 @@ class AgentOrchestrator:
             self.agent_by_role[agent.role] = []
         self.agent_by_role[agent.role].append(agent)
 
-        logger.info(
-            f"[Orchestrator] Registered agent {agent.name} ({agent.role.value})"
-        )
+        logger.info(f"[Orchestrator] Registered agent {agent.name} ({agent.role.value})")
 
     def unregister_agent(self, agent_id: str):
         """Remove an agent from the system"""
@@ -53,9 +51,7 @@ class AgentOrchestrator:
 
             # Remove from role index
             if agent.role in self.agent_by_role:
-                self.agent_by_role[agent.role] = [
-                    a for a in self.agent_by_role[agent.role] if a.id != agent_id
-                ]
+                self.agent_by_role[agent.role] = [a for a in self.agent_by_role[agent.role] if a.id != agent_id]
 
             del self.agents[agent_id]
             logger.info(f"[Orchestrator] Unregistered agent {agent_id}")
@@ -116,9 +112,7 @@ class AgentOrchestrator:
             return self.shared_context.get(key, {}).get("value")
         return self.shared_context
 
-    async def start_research_coordination(
-        self, topic: str, pentest_context: Dict
-    ) -> str:
+    async def start_research_coordination(self, topic: str, pentest_context: Dict) -> str:
         """
         Coordinate multi-agent research on a topic
         Returns thread ID for tracking
@@ -212,9 +206,7 @@ class AgentOrchestrator:
 
         return results
 
-    async def facilitate_conversation(
-        self, topic: str, participants: List[str], rounds: int = 3
-    ) -> List[AgentMessage]:
+    async def facilitate_conversation(self, topic: str, participants: List[str], rounds: int = 3) -> List[AgentMessage]:
         """
         Facilitate a multi-round conversation between agents
         Similar to Clawed/Moltbot group discussions
@@ -259,9 +251,7 @@ class AgentOrchestrator:
         for agent in self.agents.values():
             await agent.stop()
 
-    async def execute_post_scan_workflow(
-        self, target: str, scan_results: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    async def execute_post_scan_workflow(self, target: str, scan_results: Dict[str, Any]) -> Dict[str, Any]:
         """
         Execute the complete post-scan pentester workflow
         This runs automatically after every scan to ensure professional standards
@@ -334,13 +324,9 @@ class AgentOrchestrator:
     def get_system_status(self) -> Dict:
         """Get status of entire multi-agent system"""
         return {
-            "agents": {
-                agent_id: agent.get_status() for agent_id, agent in self.agents.items()
-            },
+            "agents": {agent_id: agent.get_status() for agent_id, agent in self.agents.items()},
             "shared_context_keys": list(self.shared_context.keys()),
             "message_count": len(self.message_history),
             "active_research": list(self.research_coordination.keys()),
-            "role_distribution": {
-                role.value: len(agents) for role, agents in self.agent_by_role.items()
-            },
+            "role_distribution": {role.value: len(agents) for role, agents in self.agent_by_role.items()},
         }

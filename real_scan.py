@@ -2,6 +2,7 @@
 """
 ECHTER Security Scan - Auf localhost/VM
 """
+
 import socket
 import sys
 import json
@@ -33,7 +34,7 @@ print("-" * 70)
 # Häufige Ports prüfen
 common_ports = {
     21: "FTP",
-    22: "SSH", 
+    22: "SSH",
     23: "Telnet",
     25: "SMTP",
     53: "DNS",
@@ -49,10 +50,11 @@ common_ports = {
     5432: "PostgreSQL",
     5900: "VNC",
     8080: "HTTP-Proxy",
-    8443: "HTTPS-Alt"
+    8443: "HTTPS-Alt",
 }
 
 open_ports = []
+
 
 def check_port(port_info):
     port, service = port_info
@@ -63,6 +65,7 @@ def check_port(port_info):
     if result == 0:
         return (port, service, "open")
     return None
+
 
 print("  Scanne Ports... (das kann 10-20 Sekunden dauern)")
 with ThreadPoolExecutor(max_workers=50) as executor:
@@ -88,11 +91,11 @@ for port, svc_name, status in open_ports:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.settimeout(2)
         sock.connect((target, port))
-        
+
         # Banner grabbing für einige Services
         if port in [22, 25, 80, 110, 143]:
             try:
-                banner = sock.recv(1024).decode('utf-8', errors='ignore').strip()
+                banner = sock.recv(1024).decode("utf-8", errors="ignore").strip()
                 if banner:
                     print(f"  Port {port}: {banner[:80]}")
                     services.append({"port": port, "service": svc_name, "banner": banner})
@@ -117,138 +120,156 @@ for svc in services:
     port = svc["port"]
     service = svc["service"]
     banner = svc.get("banner", "")
-    
+
     # SSH Analyse
     if port == 22:
         if "OpenSSH" in banner:
             if "7." in banner or "8.2" in banner or "8.3" in banner:
-                findings.append({
-                    "id": f"VULN-{port}-001",
-                    "port": port,
-                    "service": "SSH",
-                    "name": "OpenSSH CVE-2020-15778",
-                    "severity": "high",
-                    "cvss": 7.8,
-                    "description": f"OpenSSH Version in {banner} ist verwundbar für Command Injection via scp.",
-                    "recommendation": "Aktualisiere OpenSSH auf Version 8.4p1 oder neuer",
-                    "evidence": banner
-                })
+                findings.append(
+                    {
+                        "id": f"VULN-{port}-001",
+                        "port": port,
+                        "service": "SSH",
+                        "name": "OpenSSH CVE-2020-15778",
+                        "severity": "high",
+                        "cvss": 7.8,
+                        "description": f"OpenSSH Version in {banner} ist verwundbar für Command Injection via scp.",
+                        "recommendation": "Aktualisiere OpenSSH auf Version 8.4p1 oder neuer",
+                        "evidence": banner,
+                    }
+                )
             else:
-                findings.append({
+                findings.append(
+                    {
+                        "id": f"INFO-{port}-001",
+                        "port": port,
+                        "service": "SSH",
+                        "name": "SSH Service Detected",
+                        "severity": "info",
+                        "cvss": 0.0,
+                        "description": f"SSH Service läuft auf Port {port}: {banner}",
+                        "recommendation": "Stelle sicher, dass nur Key-Authentifizierung erlaubt ist",
+                        "evidence": banner,
+                    }
+                )
+        else:
+            findings.append(
+                {
                     "id": f"INFO-{port}-001",
                     "port": port,
                     "service": "SSH",
                     "name": "SSH Service Detected",
                     "severity": "info",
                     "cvss": 0.0,
-                    "description": f"SSH Service läuft auf Port {port}: {banner}",
-                    "recommendation": "Stelle sicher, dass nur Key-Authentifizierung erlaubt ist",
-                    "evidence": banner
-                })
-        else:
-            findings.append({
-                "id": f"INFO-{port}-001",
-                "port": port,
-                "service": "SSH",
-                "name": "SSH Service Detected",
-                "severity": "info",
-                "cvss": 0.0,
-                "description": f"SSH Service erkannt auf Port {port}",
-                "recommendation": "Prüfe die SSH-Konfiguration (PasswordAuthentication no)",
-                "evidence": "Port 22 offen"
-            })
-    
+                    "description": f"SSH Service erkannt auf Port {port}",
+                    "recommendation": "Prüfe die SSH-Konfiguration (PasswordAuthentication no)",
+                    "evidence": "Port 22 offen",
+                }
+            )
+
     # HTTP/HTTPS Analyse
     elif port in [80, 443, 8080, 8443]:
-        findings.append({
-            "id": f"INFO-{port}-001",
-            "port": port,
-            "service": service,
-            "name": f"{service} Service Detected",
-            "severity": "info",
-            "cvss": 0.0,
-            "description": f"Web-Server erkannt auf Port {port}",
-            "recommendation": "Überprüfe auf veraltete Software und CSP-Header",
-            "evidence": f"Port {port} antwortet"
-        })
-    
+        findings.append(
+            {
+                "id": f"INFO-{port}-001",
+                "port": port,
+                "service": service,
+                "name": f"{service} Service Detected",
+                "severity": "info",
+                "cvss": 0.0,
+                "description": f"Web-Server erkannt auf Port {port}",
+                "recommendation": "Überprüfe auf veraltete Software und CSP-Header",
+                "evidence": f"Port {port} antwortet",
+            }
+        )
+
     # RDP
     elif port == 3389:
-        findings.append({
-            "id": f"WARN-{port}-001",
-            "port": port,
-            "service": "RDP",
-            "name": "Remote Desktop Protocol Exposed",
-            "severity": "medium",
-            "cvss": 5.3,
-            "description": "RDP ist von außen erreichbar. Angriffsvektor für Brute-Force.",
-            "recommendation": "Beschränke RDP-Zugriff via Firewall oder VPN",
-            "evidence": "Port 3389 offen"
-        })
-    
+        findings.append(
+            {
+                "id": f"WARN-{port}-001",
+                "port": port,
+                "service": "RDP",
+                "name": "Remote Desktop Protocol Exposed",
+                "severity": "medium",
+                "cvss": 5.3,
+                "description": "RDP ist von außen erreichbar. Angriffsvektor für Brute-Force.",
+                "recommendation": "Beschränke RDP-Zugriff via Firewall oder VPN",
+                "evidence": "Port 3389 offen",
+            }
+        )
+
     # SMB
     elif port == 445:
-        findings.append({
-            "id": f"CRIT-{port}-001",
-            "port": port,
-            "service": "SMB",
-            "name": "SMB Service Exposed",
-            "severity": "high",
-            "cvss": 8.1,
-            "description": "SMB (Windows File Sharing) ist erreichbar. Risiko für EternalBlue & Co.",
-            "recommendation": "Deaktiviere SMBv1, beschränke Zugriff auf internes Netz",
-            "evidence": "Port 445 offen"
-        })
-    
+        findings.append(
+            {
+                "id": f"CRIT-{port}-001",
+                "port": port,
+                "service": "SMB",
+                "name": "SMB Service Exposed",
+                "severity": "high",
+                "cvss": 8.1,
+                "description": "SMB (Windows File Sharing) ist erreichbar. Risiko für EternalBlue & Co.",
+                "recommendation": "Deaktiviere SMBv1, beschränke Zugriff auf internes Netz",
+                "evidence": "Port 445 offen",
+            }
+        )
+
     # Datenbanken
     elif port in [3306, 5432]:
-        findings.append({
-            "id": f"CRIT-{port}-001",
-            "port": port,
-            "service": service,
-            "name": f"{service} Database Exposed",
-            "severity": "critical",
-            "cvss": 9.1,
-            "description": f"Datenbank-Server {service} ist direkt erreichbar. Hohes Datenleck-Risiko!",
-            "recommendation": "SOFORT: Datenbank hinter Firewall schützen, Zugriff nur via localhost/VPN",
-            "evidence": f"Port {port} offen"
-        })
-    
+        findings.append(
+            {
+                "id": f"CRIT-{port}-001",
+                "port": port,
+                "service": service,
+                "name": f"{service} Database Exposed",
+                "severity": "critical",
+                "cvss": 9.1,
+                "description": f"Datenbank-Server {service} ist direkt erreichbar. Hohes Datenleck-Risiko!",
+                "recommendation": "SOFORT: Datenbank hinter Firewall schützen, Zugriff nur via localhost/VPN",
+                "evidence": f"Port {port} offen",
+            }
+        )
+
     # Telnet (unsicher!)
     elif port == 23:
-        findings.append({
-            "id": f"CRIT-{port}-001",
-            "port": port,
-            "service": "Telnet",
-            "name": "Insecure Telnet Protocol",
-            "severity": "critical",
-            "cvss": 9.8,
-            "description": "Telnet sendet Daten unverschlüsselt. Sofort deaktivieren!",
-            "recommendation": "DEAKTIVIERE Telnet sofort. Nutze stattdessen SSH.",
-            "evidence": "Port 23 offen"
-        })
+        findings.append(
+            {
+                "id": f"CRIT-{port}-001",
+                "port": port,
+                "service": "Telnet",
+                "name": "Insecure Telnet Protocol",
+                "severity": "critical",
+                "cvss": 9.8,
+                "description": "Telnet sendet Daten unverschlüsselt. Sofort deaktivieren!",
+                "recommendation": "DEAKTIVIERE Telnet sofort. Nutze stattdessen SSH.",
+                "evidence": "Port 23 offen",
+            }
+        )
 
 # Standard-Finding wenn nichts gefunden
 if not findings:
-    findings.append({
-        "id": "INFO-000",
-        "port": 0,
-        "service": "System",
-        "name": "Scan Completed - No Vulnerabilities Detected",
-        "severity": "info",
-        "cvss": 0.0,
-        "description": f"Scan auf {target} abgeschlossen. Keine kritischen Schwachstellen erkannt.",
-        "recommendation": "Führe regelmäßige Scans durch um die Sicherheit zu überwachen",
-        "evidence": "Scan durchgeführt"
-    })
+    findings.append(
+        {
+            "id": "INFO-000",
+            "port": 0,
+            "service": "System",
+            "name": "Scan Completed - No Vulnerabilities Detected",
+            "severity": "info",
+            "cvss": 0.0,
+            "description": f"Scan auf {target} abgeschlossen. Keine kritischen Schwachstellen erkannt.",
+            "recommendation": "Führe regelmäßige Scans durch um die Sicherheit zu überwachen",
+            "evidence": "Scan durchgeführt",
+        }
+    )
 
 # Ausgabe der Findings
 severity_colors = {
     "critical": "\033[91m",  # Rot
-    "high": "\033[93m",      # Gelb
-    "medium": "\033[94m",    # Blau
-    "low": "\033[92m",       # Grün
-    "info": "\033[96m"       # Cyan
+    "high": "\033[93m",  # Gelb
+    "medium": "\033[94m",  # Blau
+    "low": "\033[92m",  # Grün
+    "info": "\033[96m",  # Cyan
 }
 reset = "\033[0m"
 
@@ -284,63 +305,60 @@ print(f"  Niedrig:  {severity_counts['low']}")
 print(f"  Info:     {severity_counts['info']}")
 
 # Risiko-Score
-risk_score = sum([
-    severity_counts["critical"] * 10,
-    severity_counts["high"] * 7,
-    severity_counts["medium"] * 4,
-    severity_counts["low"] * 1
-])
+risk_score = sum(
+    [severity_counts["critical"] * 10, severity_counts["high"] * 7, severity_counts["medium"] * 4, severity_counts["low"] * 1]
+)
 risk_level = "Kritisch" if risk_score > 50 else "Hoch" if risk_score > 30 else "Mittel" if risk_score > 10 else "Niedrig"
 print(f"\n  Risiko-Score: {risk_score}/100 ({risk_level})")
 
 # Report speichern
 print("\n[5] Report wird gespeichert...")
-os.makedirs('logs', exist_ok=True)
+os.makedirs("logs", exist_ok=True)
 
-timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 report_data = {
     "scan_info": {
         "target": target,
         "timestamp": datetime.now().isoformat(),
         "scan_type": "real_port_scan",
         "open_ports": len(open_ports),
-        "findings_count": len(findings)
+        "findings_count": len(findings),
     },
     "summary": severity_counts,
     "risk_score": risk_score,
     "risk_level": risk_level,
     "open_ports": [{"port": p[0], "service": p[1]} for p in open_ports],
-    "findings": findings
+    "findings": findings,
 }
 
-json_file = f'logs/real_scan_{target.replace(".", "_")}_{timestamp}.json'
-with open(json_file, 'w') as f:
+json_file = f"logs/real_scan_{target.replace('.', '_')}_{timestamp}.json"
+with open(json_file, "w") as f:
     json.dump(report_data, f, indent=2)
 
 print(f"  JSON Report: {json_file}")
 
 # Markdown Report
-md_file = f'logs/real_scan_{target.replace(".", "_")}_{timestamp}.md'
-with open(md_file, 'w') as f:
+md_file = f"logs/real_scan_{target.replace('.', '_')}_{timestamp}.md"
+with open(md_file, "w") as f:
     f.write(f"# Security Scan Report: {target}\n\n")
     f.write("**Scan Type:** Real Port Scan\n")
     f.write(f"**Date:** {datetime.now().isoformat()}\n")
     f.write(f"**Risk Score:** {risk_score}/100 ({risk_level})\n\n")
-    
+
     f.write("## Summary\n\n")
     f.write(f"- **Open Ports:** {len(open_ports)}\n")
     f.write(f"- **Findings:** {len(findings)}\n\n")
-    
+
     f.write("| Severity | Count |\n")
     f.write("|----------|-------|\n")
     for sev, count in severity_counts.items():
         if count > 0:
             f.write(f"| {sev.capitalize()} | {count} |\n")
-    
+
     f.write("\n## Open Ports\n\n")
     for p in open_ports:
         f.write(f"- Port {p[0]}/{p[1]}\n")
-    
+
     f.write(f"\n## Findings ({len(findings)} total)\n\n")
     for f_item in findings:
         f.write(f"### {f_item['id']}: {f_item['name']}\n\n")
@@ -356,14 +374,18 @@ print(f"  Markdown Report: {md_file}")
 print("\n[6] SIEM Event wird gesendet...")
 try:
     import requests
-    r = requests.post('http://localhost:8000/api/v1/siem/events',
+
+    r = requests.post(
+        "http://localhost:8000/api/v1/siem/events",
         json={
             "severity": "info" if risk_score < 30 else "high",
             "event_type": "real_scan_completed",
             "source": "real_scanner",
             "target": target,
-            "description": f"Real scan on {target} found {len(findings)} issues (Risk: {risk_level})"
-        }, timeout=5)
+            "description": f"Real scan on {target} found {len(findings)} issues (Risk: {risk_level})",
+        },
+        timeout=5,
+    )
     if r.status_code == 200:
         print("  SIEM Event: Gesendet ✓")
 except Exception as e:
@@ -373,9 +395,9 @@ print("\n" + "=" * 70)
 print("SCAN ABGESCHLOSSEN!")
 print("=" * 70)
 print("\nEmpfohlene Aktionen:")
-if severity_counts['critical'] > 0:
+if severity_counts["critical"] > 0:
     print(f"  ⚠️  SOFORT HANDELN: {severity_counts['critical']} kritische Schwachstellen!")
-if severity_counts['high'] > 0:
+if severity_counts["high"] > 0:
     print(f"  ⚠️  Priorisiere: {severity_counts['high']} hohe Risiken")
 print("  → Reports findest du in: logs/")
 print("=" * 70)

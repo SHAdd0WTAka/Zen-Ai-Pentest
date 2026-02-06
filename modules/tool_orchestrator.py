@@ -213,9 +213,7 @@ class ToolOrchestrator:
 
         return await self._trigger_scan("gobuster", payload)
 
-    async def enumerate_subdomains(
-        self, domain: str, active: bool = False
-    ) -> Dict[str, Any]:
+    async def enumerate_subdomains(self, domain: str, active: bool = False) -> Dict[str, Any]:
         """
         Enumerate subdomains with Amass
 
@@ -227,9 +225,7 @@ class ToolOrchestrator:
 
         return await self._trigger_scan("amass", payload)
 
-    async def scan_wordpress(
-        self, url: str, enumerate_plugins: bool = True
-    ) -> Dict[str, Any]:
+    async def scan_wordpress(self, url: str, enumerate_plugins: bool = True) -> Dict[str, Any]:
         """
         Scan WordPress site with WPScan
 
@@ -295,9 +291,7 @@ class ToolOrchestrator:
             logger.error(f"Failed to trigger {tool} scan: {e}")
             raise
 
-    async def wait_for_scan(
-        self, scan_id: str, poll_interval: int = 10, timeout: int = 3600
-    ) -> Dict[str, Any]:
+    async def wait_for_scan(self, scan_id: str, poll_interval: int = 10, timeout: int = 3600) -> Dict[str, Any]:
         """
         Wait for scan to complete
 
@@ -369,9 +363,7 @@ class ToolOrchestrator:
             elif scan_type == "full":
                 tools = ["nmap", "nuclei", "gobuster", "amass", "nikto"]
 
-        console.print(
-            f"[bold green]Starting comprehensive {scan_type} scan against {target}[/]"
-        )
+        console.print(f"[bold green]Starting comprehensive {scan_type} scan against {target}[/]")
         console.print(f"[dim]Tools: {', '.join(tools)}[/]\n")
 
         # Run scans concurrently
@@ -417,9 +409,7 @@ class ToolOrchestrator:
             scan_id = result["scan_id"]
 
             # Wait for completion
-            final_status = await self.wait_for_scan(
-                scan_id, poll_interval=5, timeout=config.typical_duration * 2
-            )
+            final_status = await self.wait_for_scan(scan_id, poll_interval=5, timeout=config.typical_duration * 2)
 
             # Get results
             try:
@@ -447,9 +437,7 @@ class ToolOrchestrator:
 
         for tool, result in results.get("scans", {}).items():
             status = result.get("status", "unknown")
-            status_emoji = (
-                "✓" if status == "completed" else "✗" if "error" in result else "⏳"
-            )
+            status_emoji = "✓" if status == "completed" else "✗" if "error" in result else "⏳"
 
             # Count findings if available
             findings = "N/A"
@@ -467,27 +455,21 @@ class ToolOrchestrator:
 
 
 # Convenience functions for direct usage
-async def quick_nmap_scan(
-    target: str, bridge_url: str = "http://localhost:8080"
-) -> Dict[str, Any]:
+async def quick_nmap_scan(target: str, bridge_url: str = "http://localhost:8080") -> Dict[str, Any]:
     """Quick Nmap scan wrapper"""
     async with ToolOrchestrator(bridge_url) as orch:
         result = await orch.scan_with_nmap(target, scan_type="quick")
         return await orch.wait_for_scan(result["scan_id"])
 
 
-async def quick_web_scan(
-    url: str, bridge_url: str = "http://localhost:8080"
-) -> Dict[str, Any]:
+async def quick_web_scan(url: str, bridge_url: str = "http://localhost:8080") -> Dict[str, Any]:
     """Quick web vulnerability scan with Nuclei"""
     async with ToolOrchestrator(bridge_url) as orch:
         result = await orch.scan_with_nuclei(url)
         return await orch.wait_for_scan(result["scan_id"])
 
 
-async def find_subdomains(
-    domain: str, bridge_url: str = "http://localhost:8080"
-) -> List[str]:
+async def find_subdomains(domain: str, bridge_url: str = "http://localhost:8080") -> List[str]:
     """Enumerate subdomains with Amass"""
     async with ToolOrchestrator(bridge_url) as orch:
         result = await orch.enumerate_subdomains(domain, active=False)

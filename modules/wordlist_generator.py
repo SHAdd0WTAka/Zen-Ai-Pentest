@@ -25,9 +25,7 @@ class WordlistConfig:
     include_numbers: bool = True
     include_special: bool = False
     include_years: bool = True
-    years_range: List[int] = field(
-        default_factory=lambda: [2020, 2021, 2022, 2023, 2024, 2025]
-    )
+    years_range: List[int] = field(default_factory=lambda: [2020, 2021, 2022, 2023, 2024, 2025])
     mutations: bool = True
     mutation_level: str = "medium"  # low, medium, high
 
@@ -190,11 +188,7 @@ class WordlistGenerator:
                     all_words.add(f"{year}{word}")
 
         # Filter by length
-        filtered = {
-            w
-            for w in all_words
-            if self.config.min_length <= len(w) <= self.config.max_length
-        }
+        filtered = {w for w in all_words if self.config.min_length <= len(w) <= self.config.max_length}
 
         return sorted(list(filtered))
 
@@ -274,9 +268,7 @@ class WordlistGenerator:
 
         return sorted(list(all_words))
 
-    def generate_pattern_wordlist(
-        self, pattern: str, values: Dict[str, List[str]]
-    ) -> List[str]:
+    def generate_pattern_wordlist(self, pattern: str, values: Dict[str, List[str]]) -> List[str]:
         """
         Generate wordlist from pattern.
 
@@ -535,9 +527,7 @@ class WordlistGenerator:
         # Simple replacements
         for char, replacements in self.LEET_SPEAK.items():
             for replacement in replacements:
-                leet = text.replace(char, replacement).replace(
-                    char.upper(), replacement
-                )
+                leet = text.replace(char, replacement).replace(char.upper(), replacement)
                 results.add(leet)
 
         return results

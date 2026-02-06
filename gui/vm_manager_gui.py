@@ -15,7 +15,7 @@ app = Flask(__name__)
 CORS(app)
 
 # HTML Template mit React
-HTML_TEMPLATE = '''
+HTML_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -43,7 +43,7 @@ HTML_TEMPLATE = '''
         }
         h1 { color: #58a6ff; font-size: 28px; margin-bottom: 10px; }
         .subtitle { color: #8b949e; }
-        
+
         .tabs {
             display: flex;
             gap: 10px;
@@ -66,20 +66,20 @@ HTML_TEMPLATE = '''
             border-color: #58a6ff;
             color: white;
         }
-        
+
         .grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
             gap: 20px;
         }
-        
+
         .card {
             background: #161b22;
             border: 1px solid #30363d;
             border-radius: 12px;
             padding: 20px;
         }
-        
+
         .vm-header {
             display: flex;
             justify-content: space-between;
@@ -100,7 +100,7 @@ HTML_TEMPLATE = '''
         }
         .status-running { background: #238636; color: white; }
         .status-stopped { background: #8957e5; color: white; }
-        
+
         .actions {
             display: flex;
             gap: 10px;
@@ -129,19 +129,19 @@ HTML_TEMPLATE = '''
                 { id: '2', name: 'win10-target', state: 'stopped', type: 'Windows 10', provider: 'VirtualBox' },
                 { id: '3', name: 'aws-kali-01', state: 'running', type: 'Kali Linux', provider: 'AWS', ip: '54.123.45.67' }
             ]);
-            
+
             return (
                 <div className="container">
                     <header>
                         <h1>Zen-AI-Pentest VM Manager</h1>
                         <p className="subtitle">Manage VirtualBox and Cloud VMs</p>
                     </header>
-                    
+
                     <div className="tabs">
                         <button className="tab active">VirtualBox</button>
                         <button className="tab">Cloud VMs</button>
                     </div>
-                    
+
                     <div className="grid">
                         {vms.map(vm => (
                             <div key={vm.id} className="card">
@@ -170,28 +170,28 @@ HTML_TEMPLATE = '''
                 </div>
             );
         };
-        
+
         ReactDOM.createRoot(document.getElementById('root')).render(<App />);
     </script>
 </body>
 </html>
-'''
+"""
 
 
-@app.route('/')
+@app.route("/")
 def index():
     return render_template_string(HTML_TEMPLATE)
 
 
-@app.route('/api/vms')
+@app.route("/api/vms")
 def get_vms():
     return jsonify({"vms": []})
 
 
-def start_gui(host='0.0.0.0', port=8080, debug=False):
+def start_gui(host="0.0.0.0", port=8080, debug=False):
     print(f"Starting GUI at http://{host}:{port}")
     app.run(host=host, port=port, debug=debug)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     start_gui(debug=True)

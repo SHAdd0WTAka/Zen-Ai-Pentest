@@ -61,9 +61,7 @@ def get_password_hash(password: str) -> str:
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     to_encode = data.copy()
-    expire = datetime.utcnow() + (
-        expires_delta or timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    )
+    expire = datetime.utcnow() + (expires_delta or timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES))
     to_encode.update({"exp": expire, "type": "access"})
     return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
 
@@ -83,9 +81,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)) -> User:
     )
 
     try:
-        payload = jwt.decode(
-            token, settings.SECRET_KEY, algorithms=[settings.JWT_ALGORITHM]
-        )
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
         user_id: str = payload.get("sub")
         token_type: str = payload.get("type")
 
@@ -105,17 +101,13 @@ async def get_current_user(token: str = Depends(oauth2_scheme)) -> User:
 async def require_permissions(required_role: UserRole):
     async def permission_checker(current_user: User = Depends(get_current_user)):
         if current_user.role.value < required_role.value:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions"
-            )
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions")
         return current_user
 
     return permission_checker
 
 
-@router.post(
-    "/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED
-)
+@router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 async def register(user_data: UserCreate):
     """Register a new user account"""
     # Check if user exists
@@ -160,9 +152,7 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
 
     # Check if user is active
     if not user.is_active:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="User account is deactivated"
-        )
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User account is deactivated")
 
     # Update last login
     await user.update_last_login()
@@ -187,9 +177,7 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
 async def refresh_token(refresh_token: str):
     """Refresh access token using refresh token"""
     try:
-        payload = jwt.decode(
-            refresh_token, settings.SECRET_KEY, algorithms=[settings.JWT_ALGORITHM]
-        )
+        payload = jwt.decode(refresh_token, settings.SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
         user_id: str = payload.get("sub")
         token_type: str = payload.get("type")
 

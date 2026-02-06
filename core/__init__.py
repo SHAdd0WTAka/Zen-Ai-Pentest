@@ -8,6 +8,7 @@ Version: 1.0.0
 # Muss vor allen anderen Imports geladen werden
 try:
     from .asyncio_fix import patch_asyncio_for_windows
+
     patch_asyncio_for_windows()
 except ImportError:
     pass  # Not critical

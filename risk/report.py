@@ -2,6 +2,7 @@
 Risk Report Generator
 Creates comprehensive risk reports
 """
+
 from typing import List, Dict, Any, Optional
 from datetime import datetime
 import json
@@ -13,51 +14,38 @@ class RiskReportGenerator:
     """
     Generates various risk report formats
     """
-    
+
     def __init__(self):
         self.templates = {
             "executive": self._generate_executive_summary,
             "technical": self._generate_technical_report,
             "remediation": self._generate_remediation_plan,
         }
-    
-    def generate(
-        self,
-        risk_scores: List[RiskScore],
-        report_type: str = "executive",
-        **kwargs
-    ) -> Dict[str, Any]:
+
+    def generate(self, risk_scores: List[RiskScore], report_type: str = "executive", **kwargs) -> Dict[str, Any]:
         """
         Generate risk report
         """
         if report_type in self.templates:
             return self.templates[report_type](risk_scores, **kwargs)
-        
+
         return self._generate_full_report(risk_scores)
-    
-    def _generate_executive_summary(
-        self,
-        risk_scores: List[RiskScore],
-        organization: str = "Organization"
-    ) -> Dict:
+
+    def _generate_executive_summary(self, risk_scores: List[RiskScore], organization: str = "Organization") -> Dict:
         """Generate executive summary"""
-        
+
         # Calculate statistics
         total = len(risk_scores)
         critical = sum(1 for r in risk_scores if r.risk_priority == "Critical")
         high = sum(1 for r in risk_scores if r.risk_priority == "High")
         medium = sum(1 for r in risk_scores if r.risk_priority == "Medium")
-        
+
         avg_cvss = sum(r.cvss_score for r in risk_scores) / total if total > 0 else 0
         avg_epss = sum(r.epss_probability for r in risk_scores) / total if total > 0 else 0
-        
+
         # Top risks
-        top_risks = sorted(
-            risk_scores,
-            key=lambda x: x.overall_risk_score,
-            reverse=True
-        )[:5]
-        
+        top_risks = sorted(risk_scores, key=lambda x: x.overall_risk_score, reverse=True)[:5]
+
         return {
             "report_type": "Executive Summary",
             "generated_at": datetime.now().isoformat(),
@@ -86,18 +74,12 @@ class RiskReportGenerator:
                 }
                 for r in top_risks
             ],
-            "recommendations": self._generate_executive_recommendations(
-                critical, high, medium
-            )
+            "recommendations": self._generate_executive_recommendations(critical, high, medium),
         }
-    
-    def _generate_technical_report(
-        self,
-        risk_scores: List[RiskScore],
-        include_details: bool = True
-    ) -> Dict:
+
+    def _generate_technical_report(self, risk_scores: List[RiskScore], include_details: bool = True) -> Dict:
         """Generate detailed technical report"""
-        
+
         return {
             "report_type": "Technical Report",
             "generated_at": datetime.now().isoformat(),
@@ -128,37 +110,31 @@ class RiskReportGenerator:
                 }
                 for r in sorted(risk_scores, key=lambda x: x.overall_risk_score, reverse=True)
             ],
-            "statistics": self._calculate_statistics(risk_scores)
+            "statistics": self._calculate_statistics(risk_scores),
         }
-    
-    def _generate_remediation_plan(
-        self,
-        risk_scores: List[RiskScore],
-        max_items: int = 20
-    ) -> Dict:
+
+    def _generate_remediation_plan(self, risk_scores: List[RiskScore], max_items: int = 20) -> Dict:
         """Generate prioritized remediation plan"""
-        
+
         # Sort by overall risk
-        sorted_scores = sorted(
-            risk_scores,
-            key=lambda x: (x.overall_risk_score, x.epss_probability),
-            reverse=True
-        )
-        
+        sorted_scores = sorted(risk_scores, key=lambda x: (x.overall_risk_score, x.epss_probability), reverse=True)
+
         remediation_items = []
         for i, score in enumerate(sorted_scores[:max_items], 1):
             action = self._get_action_timeline(score.risk_priority)
-            
-            remediation_items.append({
-                "priority": i,
-                "cve_id": score.cve_id,
-                "risk_level": score.risk_priority,
-                "overall_score": score.overall_risk_score,
-                "recommended_action": self._get_action_description(score),
-                "timeline": action["timeline"],
-                "effort_estimate": action["effort"],
-            })
-        
+
+            remediation_items.append(
+                {
+                    "priority": i,
+                    "cve_id": score.cve_id,
+                    "risk_level": score.risk_priority,
+                    "overall_score": score.overall_risk_score,
+                    "recommended_action": self._get_action_description(score),
+                    "timeline": action["timeline"],
+                    "effort_estimate": action["effort"],
+                }
+            )
+
         return {
             "report_type": "Remediation Plan",
             "generated_at": datetime.now().isoformat(),
@@ -168,9 +144,9 @@ class RiskReportGenerator:
                 "critical_timeline": "24-48 hours",
                 "high_timeline": "1 week",
                 "medium_timeline": "30 days",
-            }
+            },
         }
-    
+
     def _generate_full_report(self, risk_scores: List[RiskScore]) -> Dict:
         """Generate comprehensive report"""
         return {
@@ -178,14 +154,14 @@ class RiskReportGenerator:
             "technical": self._generate_technical_report(risk_scores),
             "remediation": self._generate_remediation_plan(risk_scores),
         }
-    
+
     def _calculate_statistics(self, risk_scores: List[RiskScore]) -> Dict:
         """Calculate detailed statistics"""
         if not risk_scores:
             return {}
-        
+
         total = len(risk_scores)
-        
+
         return {
             "count": total,
             "cvss": {
@@ -202,38 +178,25 @@ class RiskReportGenerator:
                 "avg": round(sum(r.business_impact_score for r in risk_scores) / total, 1),
             },
         }
-    
-    def _generate_executive_recommendations(
-        self,
-        critical: int,
-        high: int,
-        medium: int
-    ) -> List[str]:
+
+    def _generate_executive_recommendations(self, critical: int, high: int, medium: int) -> List[str]:
         """Generate executive recommendations"""
         recommendations = []
-        
+
         if critical > 0:
-            recommendations.append(
-                f"IMMEDIATE ACTION: Address {critical} critical vulnerabilities within 24-48 hours"
-            )
-        
+            recommendations.append(f"IMMEDIATE ACTION: Address {critical} critical vulnerabilities within 24-48 hours")
+
         if high > 0:
-            recommendations.append(
-                f"Urgent: Plan remediation for {high} high-risk vulnerabilities within 1 week"
-            )
-        
+            recommendations.append(f"Urgent: Plan remediation for {high} high-risk vulnerabilities within 1 week")
+
         if medium > 5:
-            recommendations.append(
-                f"Schedule {medium} medium-risk items for next maintenance window"
-            )
-        
+            recommendations.append(f"Schedule {medium} medium-risk items for next maintenance window")
+
         if critical == 0 and high == 0:
-            recommendations.append(
-                "Risk posture is manageable. Continue regular patching cycle."
-            )
-        
+            recommendations.append("Risk posture is manageable. Continue regular patching cycle.")
+
         return recommendations
-    
+
     def _get_action_timeline(self, priority: str) -> Dict:
         """Get timeline and effort for priority"""
         timelines = {
@@ -243,7 +206,7 @@ class RiskReportGenerator:
             "Low": {"timeline": "90 days", "effort": "Low"},
         }
         return timelines.get(priority, {"timeline": "As scheduled", "effort": "Low"})
-    
+
     def _get_action_description(self, score: RiskScore) -> str:
         """Get specific action description"""
         if score.risk_priority == "Critical":
@@ -254,14 +217,14 @@ class RiskReportGenerator:
             return f"Schedule patch for {score.cve_id} in next maintenance."
         else:
             return f"Monitor {score.cve_id} and patch during routine updates."
-    
+
     def export_json(self, report: Dict, filename: Optional[str] = None) -> str:
         """Export report to JSON"""
         if filename is None:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             filename = f"risk_report_{timestamp}.json"
-        
-        with open(filename, 'w') as f:
+
+        with open(filename, "w") as f:
             json.dump(report, f, indent=2)
-        
+
         return filename

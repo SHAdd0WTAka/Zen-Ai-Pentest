@@ -6,7 +6,6 @@ Author: SHAdd0WTAka
 
 import random
 import time
-from typing import List
 
 
 class StealthManager:
