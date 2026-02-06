@@ -372,10 +372,10 @@ except Exception as e:
 print("\n" + "=" * 70)
 print("SCAN ABGESCHLOSSEN!")
 print("=" * 70)
-print(f"\nEmpfohlene Aktionen:")
+print("\nEmpfohlene Aktionen:")
 if severity_counts['critical'] > 0:
     print(f"  ⚠️  SOFORT HANDELN: {severity_counts['critical']} kritische Schwachstellen!")
 if severity_counts['high'] > 0:
     print(f"  ⚠️  Priorisiere: {severity_counts['high']} hohe Risiken")
-print(f"  → Reports findest du in: logs/")
+print("  → Reports findest du in: logs/")
 print("=" * 70)

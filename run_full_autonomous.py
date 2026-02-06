@@ -10,13 +10,13 @@ from datetime import datetime
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from utils.async_fixes import apply_windows_async_fixes, silence_asyncio_warnings
-apply_windows_async_fixes()
-silence_asyncio_warnings()
-
 from dataclasses import dataclass
 
+from utils.async_fixes import apply_windows_async_fixes, silence_asyncio_warnings
 from zen_ai_pentest import ZenAIPentest
+
+apply_windows_async_fixes()
+silence_asyncio_warnings()
 
 
 @dataclass
@@ -181,7 +181,7 @@ async def main():
     print("=" * 70)
     print(f"Ende: {datetime.now().strftime('%H:%M:%S')}")
     print(f"Gesamt Findings: {len(findings)}")
-    print(f"Reports gespeichert in: logs/")
+    print("Reports gespeichert in: logs/")
     print("=" * 70)
 
 
