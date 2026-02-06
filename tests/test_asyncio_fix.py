@@ -7,7 +7,7 @@ import pytest
 import asyncio
 import sys
 import platform
-from unittest.mock import patch
+
 
 from core.asyncio_fix import (
     is_windows,

@@ -5,14 +5,14 @@ Tests für CRUD Operations
 import pytest
 import sys
 import os
-from datetime import datetime
-from unittest.mock import Mock, patch, MagicMock
+
+from unittest.mock import Mock
 
 sys.path.insert(0, "C:\\Users\\Ataka\\source\\repos\\SHAdd0WTAka\\Zen-Ai-Pentest")
 
 os.environ["DATABASE_URL"] = "sqlite:///./test_crud.db"
 
-from database import crud, models
+from database import crud
 
 
 class TestCRUDBase:
@@ -59,7 +59,7 @@ class TestCRUDBase:
         user_data.email = "new@example.com"
         user_data.password = "password123"
         
-        result = crud.create_user(mock_db, user=user_data)
+        _ = crud.create_user(mock_db, user=user_data)
         
         mock_db.add.assert_called_once()
         mock_db.commit.assert_called_once()
@@ -98,7 +98,7 @@ class TestScanCRUD:
         scan_data.target = "example.com"
         scan_data.scan_type = "web"
         
-        result = crud.create_scan(mock_db, scan=scan_data)
+        _ = crud.create_scan(mock_db, scan=scan_data)
         
         mock_db.add.assert_called_once()
         mock_db.commit.assert_called_once()

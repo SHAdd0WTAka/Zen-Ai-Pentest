@@ -63,7 +63,7 @@ def test_event_loop_setup():
         return True
 
     result = loop.run_until_complete(check())
-    assert result == True, "Event loop execution failed"
+    assert result is True, "Event loop execution failed"
     print("    ✓ Event loop setup successful")
 
 
