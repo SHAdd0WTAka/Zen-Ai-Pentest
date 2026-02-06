@@ -43,7 +43,7 @@ class CVSSCalculator:
             c = self.WEIGHTS['C'].get(metrics.get('C', 'N'), 0)
             i = self.WEIGHTS['I'].get(metrics.get('I', 'N'), 0)
             a = self.WEIGHTS['A'].get(metrics.get('A', 'N'), 0)
-            s = self.WEIGHTS['S'].get(metrics.get('S', 'U'), 6.42)
+            _ = self.WEIGHTS['S'].get(metrics.get('S', 'U'), 6.42)
             
             # Calculate Impact Sub-Score (ISS)
             iss = 1 - ((1 - c) * (1 - i) * (1 - a))
@@ -69,7 +69,7 @@ class CVSSCalculator:
             # Round to one decimal place
             return round(base_score, 1)
             
-        except Exception as e:
+        except Exception:
             return 5.0  # Default on error
     
     def from_cve(self, cve_id: str) -> float:

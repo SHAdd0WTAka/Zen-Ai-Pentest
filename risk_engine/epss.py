@@ -5,8 +5,6 @@ Fetches exploit probability scores from FIRST EPSS API.
 https://www.first.org/epss/
 """
 
-import asyncio
-import json
 import logging
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional

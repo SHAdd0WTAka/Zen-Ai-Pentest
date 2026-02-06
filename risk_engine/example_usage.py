@@ -6,7 +6,7 @@ von Security Findings verwendet wird.
 """
 
 import asyncio
-from datetime import datetime
+
 
 from risk_engine import (
     FalsePositiveEngine,
@@ -18,7 +18,6 @@ from risk_engine import (
     AssetCriticality,
     DataClassification,
     ComplianceFramework,
-    create_finding_from_scan_result,
 )
 
 
@@ -162,7 +161,7 @@ async def example_business_impact_calculation():
     print(f"Gesamt-Impact-Score: {impact.overall_score:.2f}")
     print(f"Risiko-Kategorie: {impact.get_risk_category()}")
     
-    print(f"\nFinanzieller Impact:")
+    print("\nFinanzieller Impact:")
     print(f"  Direkte Kosten: €{impact.financial_impact.direct_costs:,.2f}")
     print(f"  Indirekte Kosten: €{impact.financial_impact.indirect_costs:,.2f}")
     print(f"  Regulatorische Strafen: €{impact.financial_impact.regulatory_fines:,.2f}")
@@ -170,7 +169,7 @@ async def example_business_impact_calculation():
     print(f"  Reputationskosten: €{impact.financial_impact.reputation_costs:,.2f}")
     print(f"  GESAMT: €{impact.financial_impact.total_costs:,.2f}")
     
-    print(f"\nCompliance-Impact:")
+    print("\nCompliance-Impact:")
     print(f"  Betroffene Frameworks: {', '.join(f.framework_name for f in impact.compliance_impact.frameworks)}")
     print(f"  Verletzte Controls: {', '.join(impact.compliance_impact.violated_controls[:5])}")
     print(f"  Maximale Strafe: €{impact.compliance_impact.get_max_fine():,.2f}")
