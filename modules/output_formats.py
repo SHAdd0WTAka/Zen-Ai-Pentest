@@ -247,7 +247,7 @@ class SARIFFormatter:
             start = datetime.fromisoformat(start_time.replace("Z", "+00:00"))
             end = start.timestamp() + duration
             return datetime.fromtimestamp(end).isoformat()
-        except:
+        except Exception:
             return start_time
     
     def write(self, findings: List[Finding], summary: ScanSummary, 
@@ -310,7 +310,7 @@ class JUnitXMLFormatter:
         
         # Add test cases for each finding
         for finding in findings:
-            testcase = self._create_testcase(testsuite, finding, summary)
+            _ = self._create_testcase(testsuite, finding, summary)
         
         # Add summary test case
         summary_case = ET.SubElement(testsuite, "testcase")

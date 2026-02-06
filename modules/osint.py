@@ -20,7 +20,7 @@ import re
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Dict, List, Optional
-from urllib.parse import quote, urlparse
+
 
 import aiohttp
 
@@ -182,11 +182,10 @@ class OSINTModule:
     async def _google_email_search(self, domain: str) -> List[OSINTResult]:
         """Search for emails using Google Dorks"""
         results = []
-        query = f"@{domain}"
 
         # Note: In production, use Google Custom Search API or Selenium
         # This is a simplified implementation
-        patterns = [
+        _ = f"@{domain}"
             rf"[a-zA-Z0-9._%+-]+@{re.escape(domain)}",
         ]
 

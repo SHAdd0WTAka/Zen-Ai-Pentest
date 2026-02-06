@@ -11,14 +11,14 @@ Author: SHAdd0WTAka
 """
 
 import asyncio
-import json
+
 import logging
 import random
 import subprocess
 from dataclasses import dataclass, field
 from enum import Enum
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger("ZenAI.ProtonVPN")
 
@@ -143,7 +143,7 @@ class ProtonVPNManager:
                     ip = stdout.decode().strip()
                     if ip and self._is_valid_ip(ip):
                         return ip
-                except:
+                except Exception:
                     continue
 
             return "unknown"
