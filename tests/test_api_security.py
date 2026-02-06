@@ -12,9 +12,9 @@ Ziel: 80%+ Coverage der Security Features
 """
 
 import pytest
-import time
+
 from fastapi.testclient import TestClient
-from unittest.mock import patch, MagicMock
+
 
 # Import the app
 import sys
@@ -22,7 +22,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from api.main import app
-from api.csrf_protection import CSRFToken, csrf_protection
+from api.csrf_protection import CSRFToken  # noqa: F401
 from api.rate_limiter import auth_rate_limiter
 
 client = TestClient(app)
