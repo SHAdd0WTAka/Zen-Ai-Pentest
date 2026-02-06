@@ -13,7 +13,7 @@ with open(os.path.join(here, 'README.md'), encoding='utf-8') as f:
 
 # Core dependencies
 install_requires = [
-    'requests>=2.31.0',
+    'requests>=2.32.0',  # SECURITY FIX: CVE-2024-35195
     'aiohttp>=3.13.3  # SECURITY FIX: CVE-2025-69223',
     'python-dotenv>=1.0.0',
     'pydantic>=2.0.0',
@@ -24,14 +24,13 @@ install_requires = [
     'rich>=13.0.0',
     'colorama>=0.4.6',
     'typer>=0.9.0',
-    'cryptography>=42.0.4  # SECURITY FIX: CVE-2024-26130',
-    'cryptography>=41.0.0',
+    'cryptography>=43.0.1',  # SECURITY FIX: CVE-2024-26130, CVE-2024-41985
     'python-jose>=3.4.0  # SECURITY FIX: CVE-2024-33663',
     'passlib>=1.7.4',
     'sqlalchemy>=2.0.0',
     'alembic>=1.12.0',
     'aiosqlite>=0.19.0',
-    'jinja2>=3.1.0',
+    'jinja2>=3.1.5',  # SECURITY FIX: CVE-2024-56201, CVE-2024-56326, CVE-2024-34064
     'markdown>=3.5.0',
     'pyyaml>=6.0.1',
     'tenacity>=8.2.0',
