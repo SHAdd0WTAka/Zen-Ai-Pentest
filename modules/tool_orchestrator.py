@@ -4,11 +4,11 @@ Connects Zen AI Pentest with containerized classic tools via Integration Bridge
 """
 
 import asyncio
-import json
+
 import logging
 from dataclasses import dataclass
 from datetime import datetime
-from pathlib import Path
+
 from typing import Any, Dict, List, Optional
 
 import aiohttp
@@ -491,7 +491,7 @@ async def find_subdomains(
     """Enumerate subdomains with Amass"""
     async with ToolOrchestrator(bridge_url) as orch:
         result = await orch.enumerate_subdomains(domain, active=False)
-        status = await orch.wait_for_scan(result["scan_id"])
+        await orch.wait_for_scan(result["scan_id"])
 
         # Parse results
         results = await orch.get_scan_results(result["scan_id"])

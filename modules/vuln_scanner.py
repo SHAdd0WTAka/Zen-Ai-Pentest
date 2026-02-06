@@ -5,7 +5,6 @@ AI-powered vulnerability analysis and scanning
 Author: SHAdd0WTAka
 """
 
-import asyncio
 import logging
 import re
 from dataclasses import dataclass

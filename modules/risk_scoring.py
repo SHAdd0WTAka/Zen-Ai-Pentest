@@ -5,10 +5,10 @@ Combines multiple risk factors for comprehensive scoring:
 - EPSS (Exploit Prediction Scoring System)
 - Business Impact (Criticality of affected asset)
 """
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 from dataclasses import dataclass
 from enum import Enum
-import math
+
 
 
 class SeverityLevel(Enum):

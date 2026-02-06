@@ -94,7 +94,7 @@ Provide a structured reconnaissance plan including:
             )
             # Return first 500 chars of relevant info
             return result.stdout[:500] if result.returncode == 0 else "WHOIS failed"
-        except:
+        except Exception:
             return "WHOIS not available"
 
     def _parse_attack_vectors(self, llm_content: str) -> List[str]:

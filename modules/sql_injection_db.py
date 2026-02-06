@@ -5,13 +5,13 @@ Comprehensive SQL injection payloads, techniques and detection
 Author: SHAdd0WTAka
 """
 
-import asyncio
+
 import base64
 import logging
 import urllib.parse
 from dataclasses import dataclass
 from enum import Enum
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 logger = logging.getLogger("ZenAI")
 
