@@ -7,7 +7,7 @@ import subprocess
 import sys
 import os
 import json
-import time
+
 from datetime import datetime
 
 print("=" * 70)

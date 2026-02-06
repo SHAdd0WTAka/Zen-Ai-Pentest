@@ -44,7 +44,7 @@ def scan_host(ip_suffix):
             except Exception:
                 hostname = "Unknown"
             return (ip, hostname, True)
-    except:
+    except Exception:
         pass
     return None
 
