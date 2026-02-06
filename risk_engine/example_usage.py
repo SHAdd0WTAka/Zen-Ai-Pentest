@@ -177,7 +177,7 @@ async def example_business_impact_calculation():
     print(f"\nReputation-Impact: {impact.reputation_impact.name}")
     print(f"  Beschreibung: {impact.reputation_impact.description}")
     
-    print(f"\nEinzelfaktoren:")
+    print("\nEinzelfaktoren:")
     print(f"  Asset-Kritikalität: {impact.asset_criticality_score:.2f}")
     print(f"  Daten-Sensitivität: {impact.data_sensitivity_score:.2f}")
     print(f"  Expositions-Score: {impact.exposure_score:.2f}")

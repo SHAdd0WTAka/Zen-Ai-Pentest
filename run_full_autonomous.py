@@ -14,8 +14,9 @@ from utils.async_fixes import apply_windows_async_fixes, silence_asyncio_warning
 apply_windows_async_fixes()
 silence_asyncio_warnings()
 
-from zen_ai_pentest import ZenAIPentest
 from dataclasses import dataclass
+
+from zen_ai_pentest import ZenAIPentest
 
 
 @dataclass
@@ -171,8 +172,8 @@ async def main():
                 "description": f"Scan completed with {len(findings)} findings"
             }, timeout=5)
         if r.status_code == 200:
-            print(f"   SIEM: Event gesendet")
-    except:
+            print("   SIEM: Event gesendet")
+    except Exception:
         pass
     
     print("\n" + "=" * 70)
