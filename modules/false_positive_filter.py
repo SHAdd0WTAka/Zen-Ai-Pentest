@@ -3,7 +3,7 @@
 Uses ML-based heuristics and rule-based filters to reduce false positives.
 Addresses Issue #14
 """
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Tuple
 from dataclasses import dataclass
 from enum import Enum
 import re
@@ -53,7 +53,7 @@ class FalsePositiveFilter:
         self.rules_applied = 0
         self.ml_model_loaded = False
 
-    def apply_rule_based_filter(self, finding: Finding) -> Tuple[bool, str]:
+    def apply_rule_based_filter(self, finding) -> Tuple[bool, str]:
         """
         Apply rule-based filtering
         Returns: (is_false_positive, reason)

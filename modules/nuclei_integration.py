@@ -9,11 +9,11 @@ import asyncio
 import json
 import logging
 import os
-import re
+
 import subprocess
 from dataclasses import asdict, dataclass
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 
 logger = logging.getLogger("ZenAI")
 
@@ -81,7 +81,7 @@ class NucleiIntegration:
                 timeout=10,
             )
             return result.returncode == 0
-        except:
+        except Exception:
             return False
 
     async def update_templates(self) -> bool:
@@ -130,7 +130,7 @@ class NucleiIntegration:
                     for category in categories.keys():
                         if f"{category}/" in line.lower():
                             categories[category].append(line.strip())
-        except:
+        except Exception:
             pass
 
         return categories
