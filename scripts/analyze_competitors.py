@@ -30,7 +30,6 @@ from benchmarks.comparison.common_benchmarks import (
     FindingResult,
     TestCategory,
     load_test_case,
-    calculate_overall_score
 )
 
 # Setup logging
@@ -370,8 +369,8 @@ class ComparisonAnalyzer:
     def generate_visualizations(self, output_dir: Path) -> None:
         """Generate comparison charts."""
         try:
-            import matplotlib.pyplot as plt
-            import numpy as np
+            import matplotlib.pyplot as plt  # noqa: F401
+            import numpy as np  # noqa: F401
         except ImportError:
             logger.warning("matplotlib not available, skipping visualizations")
             return
@@ -629,7 +628,7 @@ def main():
         analyzer.load_results()
         
         output_path = args.output or Path("comparison_report.md")
-        report = analyzer.generate_markdown_report(
+        _ = analyzer.generate_markdown_report(
             template_path=args.template,
             output_path=output_path
         )
