@@ -10,9 +10,7 @@ Generates targeted wordlists for penetration testing:
 Author: SHAdd0WTAka + Kimi AI
 """
 
-import hashlib
 import itertools
-import random
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set
@@ -211,8 +209,6 @@ class WordlistGenerator:
         - hobbies
         - favorite_things
         """
-        words = set()
-
         # Extract all information
         keywords = []
 

@@ -9,7 +9,6 @@ Sends real-time alerts for:
 """
 
 import os
-import json
 import asyncio
 import aiohttp
 from typing import Optional, Dict, Any

@@ -20,10 +20,9 @@ from prometheus_client import (
     Info,
     CollectorRegistry,
     generate_latest,
-    CONTENT_TYPE_LATEST
+    generate_latest
 )
-from fastapi import Request, Response
-from fastapi.routing import APIRoute
+
 
 # Custom registry
 METRICS_REGISTRY = CollectorRegistry()
@@ -371,7 +370,7 @@ def init_app_info(version: str, environment: str):
 
 def get_health_status():
     """Get comprehensive health status with metrics"""
-    from prometheus_client import REGISTRY
+    pass  # Registry imported but metrics come from METRICS_REGISTRY
     
     # Count total requests in last collection
     total_requests = 0
