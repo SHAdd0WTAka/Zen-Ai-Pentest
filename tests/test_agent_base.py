@@ -2,7 +2,6 @@
 Tests for agent_base module
 """
 import pytest  # noqa: F401
-from unittest.mock import Mock
 
 class TestBaseAgent:
     def test_agent_initialization(self):

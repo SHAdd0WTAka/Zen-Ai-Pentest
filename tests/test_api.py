@@ -2,7 +2,7 @@
 Unit Tests for REST API
 """
 
-import pytest
+import pytest  # noqa: F401
 from fastapi.testclient import TestClient
 
 from api.main import app
