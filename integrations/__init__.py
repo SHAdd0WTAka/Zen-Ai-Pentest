@@ -334,7 +334,7 @@ class SlackNotifier:
     async def notify_scan_started(self, target: str, scan_type: str = "security"):
         """Notify that a scan has started."""
         message = {
-            "text": f"🔍 Security scan started",
+            "text": "🔍 Security scan started",
             "blocks": [
                 {
                     "type": "header",

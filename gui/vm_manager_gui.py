@@ -4,9 +4,8 @@ Web-basierte GUI für VM Management
 Flask + React-basierte Oberfläche für VirtualBox und Cloud-VMs.
 """
 
-import json
 import logging
-from flask import Flask, jsonify, request, render_template_string
+from flask import Flask, jsonify, render_template_string
 from flask_cors import CORS
 
 logging.basicConfig(level=logging.INFO)

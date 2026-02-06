@@ -19,7 +19,7 @@ Example:
 
 import asyncio
 import sys
-import time
+
 from datetime import datetime
 from pathlib import Path
 
@@ -27,7 +27,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 from autonomous.ki_analysis_agent import (
-    KIAutonomousAgent, AgentState, AnalysisPhase,
+    KIAutonomousAgent, AgentState,
     ReActStep, run_ki_agent
 )
 

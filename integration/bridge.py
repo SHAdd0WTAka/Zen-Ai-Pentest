@@ -3,10 +3,8 @@ Integration Bridge - API for Pentesting Tool Orchestration
 Connects Zen AI Pentest with classic tools (Nmap, Metasploit, SQLmap, etc.)
 """
 
-import asyncio
 import json
 import logging
-import subprocess
 import uuid
 from datetime import datetime
 from pathlib import Path

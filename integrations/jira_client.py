@@ -3,10 +3,8 @@ JIRA Integration für Zen-AI-Pentest
 """
 
 import requests
-import json
 import logging
 from typing import Dict, Optional, List
-from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
