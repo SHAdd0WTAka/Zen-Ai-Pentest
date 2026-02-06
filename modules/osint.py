@@ -185,9 +185,6 @@ class OSINTModule:
 
         # Note: In production, use Google Custom Search API or Selenium
         # This is a simplified implementation
-        _ = f"@{domain}"
-            rf"[a-zA-Z0-9._%+-]+@{re.escape(domain)}",
-        ]
 
         # Simulate finding emails (in production, actual scraping)
         common_names = ["admin", "info", "support", "contact", "sales", "webmaster"]

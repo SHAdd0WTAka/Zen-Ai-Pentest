@@ -178,7 +178,7 @@ class ProtonVPNManager:
             p2p: Use P2P-optimized servers
             kill_switch: Enable kill switch
         """
-        logger.info(f"Connecting to Proton VPN...")
+        logger.info("Connecting to Proton VPN...")
 
         # Save original IP
         if not self._original_ip:
@@ -193,7 +193,7 @@ class ProtonVPNManager:
             country = random.choice(self.P2P_COUNTRIES)
 
         # Build connection command
-        server_name = self._get_server_name(country, city, p2p)
+        _ = self._get_server_name(country, city, p2p)
 
         try:
             # Check if protonvpn-cli is available

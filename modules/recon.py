@@ -5,11 +5,10 @@ Intelligent target reconnaissance using LLM analysis
 Author: SHAdd0WTAka
 """
 
-import asyncio
 import logging
 import socket
 import subprocess
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 logger = logging.getLogger("ZenAI")
 
@@ -64,7 +63,7 @@ Provide a structured reconnaissance plan including:
         try:
             ip = socket.gethostbyname(target)
             return ip
-        except:
+        except Exception:
             return "Could not resolve"
 
     async def _get_dns_records(self, target: str) -> List[str]:
@@ -82,7 +81,7 @@ Provide a structured reconnaissance plan including:
                 )
                 if result.returncode == 0:
                     records.append(f"{rtype}: {result.stdout[:200]}...")
-            except:
+            except Exception:
                 continue
 
         return records if records else ["No DNS records found"]
