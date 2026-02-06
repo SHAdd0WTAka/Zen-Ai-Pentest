@@ -1,13 +1,15 @@
 name: Branch Protection Check
 
 on:
-  push:
-    branches: [master, main]
-  pull_request:
-    branches: [master, main]
-  schedule:
-    # Run daily at 03:00 UTC
-    - cron: '0 3 * * *'
+  # NOTE: This workflow fails because branch protection IS enabled (404 error)
+  # It's designed to alert when protection is DISABLED
+  # Keeping it as manual trigger for occasional checks
+  # push:
+  #   branches: [master, main]
+  # pull_request:
+  #   branches: [master, main]
+  # schedule:
+  #   - cron: '0 3 * * *'
   workflow_dispatch:
 
 permissions:

@@ -4,16 +4,16 @@
 name: Telegram Notifications
 
 on:
-  workflow_run:
-    workflows: ["Python application", "Repository Health Check"]
-    types: [completed]
-  push:
-    branches: [master, main]
-  issues:
-    types: [opened, closed, reopened]
-  pull_request:
-    types: [opened, closed, reopened]
-  # Manual trigger for testing
+  # DISABLED: Requires TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID secrets
+  # workflow_run:
+  #   workflows: ["Python application", "Repository Health Check"]
+  #   types: [completed]
+  # push:
+  #   branches: [master, main]
+  # issues:
+  #   types: [opened, closed, reopened]
+  # pull_request:
+  #   types: [opened, closed, reopened]
   workflow_dispatch:
     inputs:
       message:

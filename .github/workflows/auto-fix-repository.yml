@@ -1,10 +1,11 @@
 name: Auto-Fix Repository Issues
 
 on:
-  push:
-    branches: [master, main]
-  schedule:
-    - cron: '0 3 * * *'  # Täglich um 3:00 UTC
+  # DISABLED: Requires .github/scripts/health_check.py which doesn't exist
+  # push:
+  #   branches: [master, main]
+  # schedule:
+  #   - cron: '0 3 * * *'
   workflow_dispatch:
     inputs:
       fix_mode:
