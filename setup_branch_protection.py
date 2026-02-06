@@ -129,13 +129,13 @@ def verify_branch_protection():
         if response.status_code == 200:
             protection = response.json()
             print("\n📊 Current Branch Protection Status:")
-            print(f"   Enabled: ✅")
+            print("   Enabled: ✅")
             if "required_status_checks" in protection:
-                print(f"   Status Checks: ✅")
+                print("   Status Checks: ✅")
             if "required_pull_request_reviews" in protection:
-                print(f"   PR Reviews: ✅")
-            if protection.get("allow_force_pushes", {}).get("enabled") == False:
-                print(f"   Force Push Blocked: ✅")
+                print("   PR Reviews: ✅")
+            if not protection.get("allow_force_pushes", {}).get("enabled"):
+                print("   Force Push Blocked: ✅")
             if protection.get("allow_deletions", {}).get("enabled") == False:
                 print(f"   Deletion Blocked: ✅")
             return True
