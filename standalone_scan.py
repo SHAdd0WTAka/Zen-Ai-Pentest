@@ -31,7 +31,7 @@ from backends.duckduckgo import DuckDuckGoBackend
 from modules.recon import ReconModule
 from modules.vuln_scanner import VulnScannerModule
 from modules.report_gen import ReportGenerator
-from utils.helpers import banner, colorize, get_severity_color
+from utils.helpers import colorize, get_severity_color
 
 apply_windows_async_fixes()
 silence_asyncio_warnings()
@@ -287,20 +287,20 @@ class StandaloneScanner:
     def _generate_markdown_report(self, results: Dict, filename: str):
         """Generate Markdown report"""
         with open(filename, "w") as f:
-            f.write(f"# Security Scan Report\n\n")
+            f.write("# Security Scan Report\n\n")
             f.write(f"**Target:** {results['target']}\n\n")
             f.write(f"**Scan Type:** {results['scan_type']}\n\n")
             f.write(f"**Date:** {results['start_time']}\n\n")
             f.write(f"**Status:** {results['status']}\n\n")
             
             if 'summary' in results:
-                f.write(f"## Summary\n\n")
+                f.write("## Summary\n\n")
                 f.write(f"- **Duration:** {results['summary']['duration_seconds']:.1f}s\n")
                 f.write(f"- **Total Findings:** {results['summary']['total_findings']}\n\n")
                 
-                f.write(f"### Severity Breakdown\n\n")
-                f.write(f"| Severity | Count |\n")
-                f.write(f"|----------|-------|\n")
+                f.write("### Severity Breakdown\n\n")
+                f.write("| Severity | Count |\n")
+                f.write("|----------|-------|\n")
                 for sev, count in results['summary']['severity_counts'].items():
                     if count > 0:
                         f.write(f"| {sev.upper()} | {count} |\n")
