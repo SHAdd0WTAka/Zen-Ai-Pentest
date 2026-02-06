@@ -6,7 +6,7 @@ import pytest
 import sys
 import os
 
-from unittest.mock import Mock
+from unittest.mock import Mock, patch, MagicMock
 
 sys.path.insert(0, "C:\\Users\\Ataka\\source\\repos\\SHAdd0WTAka\\Zen-Ai-Pentest")
 

@@ -11,6 +11,8 @@ sys.path.insert(0, "C:\\Users\\Ataka\\source\\repos\\SHAdd0WTAka\\Zen-Ai-Pentest
 
 os.environ["JWT_SECRET_KEY"] = "test-secret-key-for-jwt"
 os.environ["JWT_ALGORITHM"] = "HS256"
+from datetime import timedelta
+
 os.environ["JWT_ACCESS_TOKEN_EXPIRE_MINUTES"] = "30"
 
 from api.auth import (
