@@ -1,6 +1,6 @@
 """Tests for recon module"""
-import pytest
-from unittest.mock import Mock, patch, MagicMock
+import pytest  # noqa: F401
+from unittest.mock import patch
 from modules.recon import ReconModule
 
 

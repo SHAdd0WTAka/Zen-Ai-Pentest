@@ -1,5 +1,5 @@
 """Tests for risk scoring module"""
-import pytest
+import pytest  # noqa: F401
 from modules.risk_scoring import (
     RiskScoringModule, RiskFactors, SeverityLevel
 )

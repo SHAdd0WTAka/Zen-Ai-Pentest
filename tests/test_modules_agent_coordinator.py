@@ -2,7 +2,7 @@
 import pytest
 
 from modules.agent_coordinator import (
-    AgentCoordinator, Agent, AgentStatus, ResourceType
+    AgentCoordinator, AgentStatus, ResourceType  # noqa: F401
 )
 
 

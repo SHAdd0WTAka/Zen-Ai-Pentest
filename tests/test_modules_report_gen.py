@@ -1,6 +1,6 @@
 """Tests for report generator module"""
-import pytest
-from unittest.mock import Mock, patch, mock_open
+import pytest  # noqa: F401
+from unittest.mock import patch, mock_open
 from modules.report_gen import ReportGenerator
 
 
@@ -20,7 +20,7 @@ class TestReportGenerator:
             {"title": "Test", "severity": "high", "description": "Test finding"}
         ]
         with patch('builtins.open', mock_open()) as mock_file:
-            result = gen.generate_json(findings, "test.json")
+            _ = gen.generate_json(findings, "test.json")
             mock_file.assert_called_once()
 
     def test_generate_markdown_report(self):
@@ -30,7 +30,7 @@ class TestReportGenerator:
             {"title": "Test", "severity": "high", "description": "Test finding"}
         ]
         with patch('builtins.open', mock_open()) as mock_file:
-            result = gen.generate_markdown(findings, "test.md")
+            _ = gen.generate_markdown(findings, "test.md")
             mock_file.assert_called_once()
 
     def test_format_findings(self):
