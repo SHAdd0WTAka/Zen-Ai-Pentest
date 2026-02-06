@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "zen-ai-pentest"
-version = "2.3.7"
+version = "2.3.8"
 description = "Advanced AI-Powered Penetration Testing Framework with Multi-Agent Orchestration"
 readme = "README.md"
 license = {text = "MIT"}

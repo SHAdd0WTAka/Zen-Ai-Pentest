@@ -1,3 +1,14 @@
+## [2.3.8] - 2026-02-06
+
+### Fixed
+- Restored 18 truncated workflow files with complete job definitions
+- Fixed 6 YAML syntax errors in workflow files
+- Restored complete PyPI release workflow with OIDC authentication
+- Fixed multi-line string issues in telegram-notifications.yml
+
+### Changed  
+- Updated README badges to reflect current security status (100/100)
+- All 50 workflows now pass YAML validation
 # Changelog
 
 All notable changes to Zen AI Pentest will be documented in this file.
@@ -240,3 +251,4 @@ alembic upgrade head
 <p align="center">
   <sub>For detailed migration guides, see <a href="docs/MIGRATION.md">docs/MIGRATION.md</a></sub>
 </p>
+
