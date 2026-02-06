@@ -127,8 +127,8 @@ class TestRiskScorer:
         risk = scorer.calculate(finding, {})
         
         # With default EPSS of 0.5, should get exploit probability recommendation
-        has_epss_rec = any('EXPLOIT PROBABILITY' in rec or 'exploit' in rec.lower() 
-                          for rec in risk.prioritized_actions)
+        _ = any('EXPLOIT PROBABILITY' in rec or 'exploit' in rec.lower() 
+                for rec in risk.prioritized_actions)  # has_epss_rec
         # Or should have high severity recommendations
         assert len(risk.prioritized_actions) >= 0  # May be empty for medium risk
 

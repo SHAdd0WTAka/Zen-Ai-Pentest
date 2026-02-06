@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import requests
-import sys
+
 
 BASE_URL = "http://localhost:8000"
 

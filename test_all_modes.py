@@ -4,7 +4,7 @@ Testet ALLE 3 Modi auf einmal
 """
 import subprocess
 import sys
-import os
+
 
 def test_standalone():
     """Test 1: Standalone Mode (kein API nötig)"""

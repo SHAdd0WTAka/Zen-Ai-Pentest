@@ -1,7 +1,7 @@
 """
 Tests for agent_base module
 """
-import pytest
+import pytest  # noqa: F401
 from unittest.mock import Mock
 
 class TestBaseAgent:
