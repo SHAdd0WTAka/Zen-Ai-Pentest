@@ -1,6 +1,18 @@
 # Pre-commit hooks for Zen AI Pentest
-# Install: pre-commit install
-# Run all: pre-commit run --all-files
+# 
+# Installation:
+#   pip install pre-commit
+#   pre-commit install
+#
+# Usage:
+#   pre-commit run --all-files    # Run on all files
+#   pre-commit run                # Run on staged files only
+#   pre-commit run ruff           # Run specific hook
+#
+# Update hooks:
+#   pre-commit autoupdate
+
+default_stages: [pre-commit]
 
 repos:
   # Ruff - Python linter and formatter
