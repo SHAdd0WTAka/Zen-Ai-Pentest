@@ -27,7 +27,7 @@
 
 ## 🚀 Quick Start
 
-[![Version](https://img.shields.io/badge/Version-2.3.5-orange)](https://github.com/SHAdd0WTAka/zen-ai-pentest/releases)
+[![Version](https://img.shields.io/badge/Version-2.3.6-orange)](https://github.com/SHAdd0WTAka/zen-ai-pentest/releases)
 [![Python](https://img.shields.io/badge/Python-3.9%2B-blue)](https://python.org)
 [![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
 
