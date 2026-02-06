@@ -57,7 +57,7 @@
     ]
   },
   "overrides": {
-    "esbuild": "^0.21.5",
+    "esbuild": "^0.27.3",
     "jsonpath": "^1.1.1",
     "webpack-dev-server": "^5.0.4"
   }
