@@ -49,7 +49,7 @@
 
 [![CodeQL](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/security/code-scanning)
 [![Security Score](https://img.shields.io/badge/Security%20Score-95%2F100-brightgreen)](docs/production-hardening.md)
-[![Dependencies](https://img.shields.io/badge/dependencies-8%20moderate-yellow)](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/security/dependabot)
+[![Dependencies](https://img.shields.io/badge/dependencies-4%20moderate-yellow)](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/security/dependabot)
 [![codecov](https://codecov.io/gh/SHAdd0WTAka/zen-ai-pentest/branch/main/graph/badge.svg)](https://codecov.io/gh/SHAdd0WTAka/zen-ai-pentest)
 
 ---
