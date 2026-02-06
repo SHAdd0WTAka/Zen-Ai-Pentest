@@ -2,7 +2,7 @@
 Memory lifecycle management and factory
 """
 from typing import Optional, Dict
-from .base import MemoryType
+
 from .conversation import ConversationMemory
 from .storage import SQLiteStorage, RedisStorage
 

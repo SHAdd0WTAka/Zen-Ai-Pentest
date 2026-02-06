@@ -1,7 +1,7 @@
 """
 Example: Using Memory System with Agents
 """
-from memory import MemoryManager, ConversationMemory
+from memory import MemoryManager
 
 
 def example_conversation_memory():

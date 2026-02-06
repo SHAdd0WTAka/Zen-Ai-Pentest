@@ -189,7 +189,7 @@ async def demo_with_visualization(target: str, human_in_loop: bool = False):
     print(f"{Colors.CYAN}Configuration:{Colors.ENDC}")
     print(f"  Target: {Colors.BOLD}{target}{Colors.ENDC}")
     print(f"  Human-in-the-Loop: {Colors.GREEN if human_in_loop else Colors.DIM}{'Enabled' if human_in_loop else 'Disabled'}{Colors.ENDC}")
-    print(f"  KI Backend: kimi-cli (with fallback)")
+    print("  KI Backend: kimi-cli (with fallback)")
     
     # Erstelle Agent
     agent = KIAutonomousAgent(

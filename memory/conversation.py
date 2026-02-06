@@ -1,8 +1,7 @@
 """
 Conversation memory with LangGraph integration
 """
-from typing import List, Optional, Dict, Any
-from datetime import datetime
+from typing import List, Optional, Dict
 import uuid
 
 from .base import BaseMemory, MemoryEntry, MemoryType

@@ -5,7 +5,7 @@ Addresses Issue #13
 """
 import asyncio
 import time
-from typing import Dict, List, Set, Optional, Any
+from typing import Dict, List, Set, Optional
 from dataclasses import dataclass, field
 from enum import Enum
 from contextlib import asynccontextmanager
