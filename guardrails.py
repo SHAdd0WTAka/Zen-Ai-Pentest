@@ -13,8 +13,9 @@ import json
 import re
 
 from dataclasses import dataclass, field
+from datetime import datetime
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, TypeVar, Generic
+from typing import Any, Callable, Dict, List, Optional
 
 
 class ValidationResult(Enum):
@@ -178,7 +179,7 @@ class MultiLLMVoting:
             try:
                 response = await llm.generate(prompt)
                 responses.append(response)
-            except Exception as e:
+            except Exception:
                 responses.append(None)
         
         # Filter out failures
