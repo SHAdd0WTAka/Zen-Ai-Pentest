@@ -136,8 +136,8 @@ def verify_branch_protection():
                 print("   PR Reviews: ✅")
             if not protection.get("allow_force_pushes", {}).get("enabled"):
                 print("   Force Push Blocked: ✅")
-            if protection.get("allow_deletions", {}).get("enabled") == False:
-                print(f"   Deletion Blocked: ✅")
+            if not protection.get("allow_deletions", {}).get("enabled"):
+                print("   Deletion Blocked: ✅")
             return True
         elif response.status_code == 404:
             print("\n⚠️  Branch Protection: Not configured")

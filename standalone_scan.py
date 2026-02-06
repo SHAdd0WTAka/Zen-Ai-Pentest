@@ -26,10 +26,10 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 # Apply Windows/asyncio fixes
 from utils.async_fixes import apply_windows_async_fixes, silence_asyncio_warnings
+from core.orchestrator import ZenOrchestrator
+
 apply_windows_async_fixes()
 silence_asyncio_warnings()
-
-from core.orchestrator import ZenOrchestrator
 from backends.duckduckgo import DuckDuckGoBackend
 from modules.recon import ReconModule
 from modules.vuln_scanner import VulnScannerModule
