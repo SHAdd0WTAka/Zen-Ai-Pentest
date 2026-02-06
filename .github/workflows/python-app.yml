@@ -1,13 +1,10 @@
 name: Python CI
 
 on:
-  push:
-    branches: [main, master, develop]
-    paths-ignore:
-      - '**.md'
-      - 'docs/**'
-      - '.github/**/*.md'
-  pull_request:
+  # DISABLED: Duplicate of ci.yml (use ci.yml instead)
+  # push:
+  #   branches: [main, master, develop]
+  # pull_request:
     branches: [main, master, develop]
     paths-ignore:
       - '**.md'
