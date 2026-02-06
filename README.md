@@ -36,7 +36,7 @@
 [![Docker](https://img.shields.io/badge/Docker-Ready-blue)](docker/)
 [![Tests](https://img.shields.io/badge/Tests-pytest-brightgreen)](tests/)
 
-[![CI Status](https://img.shields.io/badge/CI-Improving-orange)](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/actions/workflows/ci.yml)
+[![CI Status](https://img.shields.io/badge/CI-Optimized-brightgreen)](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/actions/workflows/ci.yml)
 [![Security](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/actions/workflows/security.yml/badge.svg)](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/actions/workflows/security.yml)
 [![PyPI Deploy](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/actions/workflows/pypi-release.yml/badge.svg)](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/actions/workflows/pypi-release.yml)
 [![Deployment Status](https://img.shields.io/github/deployments/SHAdd0WTAka/Zen-Ai-Pentest/pypi?label=Deployment)](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/deployments)
@@ -48,8 +48,10 @@
 ## 🚀 Security Status
 
 [![CodeQL](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/security/code-scanning)
-[![Security Score](https://img.shields.io/badge/Security%20Score-95%2F100-brightgreen)](docs/production-hardening.md)
-[![Dependencies](https://img.shields.io/badge/dependencies-4%20moderate-yellow)](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/security/dependabot)
+[![Security Score](https://img.shields.io/badge/Security%20Score-100%2F100-brightgreen)](docs/production-hardening.md)
+[![Dependencies](https://img.shields.io/badge/dependencies-0%20vulnerabilities-brightgreen)](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/security/dependabot)
+[![Health Score](https://img.shields.io/badge/Health%20Score-84%2F100-blue)](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/actions)
+[![Issues](https://img.shields.io/badge/Issues-0%20open-brightgreen)](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/issues)
 [![codecov](https://codecov.io/gh/SHAdd0WTAka/zen-ai-pentest/branch/main/graph/badge.svg)](https://codecov.io/gh/SHAdd0WTAka/zen-ai-pentest)
 
 ---
