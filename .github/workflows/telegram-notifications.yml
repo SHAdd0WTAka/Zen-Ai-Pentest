@@ -48,13 +48,7 @@ jobs:
               STATUS="⚠️ $CONCLUSION"
             fi
             
-            MESSAGE="<b>Workflow $STATUS</b>
-          
-Name: $WORKFLOW_NAME
-Branch: $BRANCH
-Repository: ${{ github.repository }}
-
-<a href=\"$URL\">View Details</a>"
+            MESSAGE="<b>Workflow $STATUS</b> - Name: $WORKFLOW_NAME, Branch: $BRANCH, Repo: ${{ github.repository }} - $URL"
           
           elif [ "${{ github.event_name }}" == "issues" ]; then
             ISSUE_TITLE="${{ github.event.issue.title }}"
@@ -69,12 +63,7 @@ Repository: ${{ github.repository }}
               ICON="📝"
             fi
             
-            MESSAGE="<b>$ICON Issue $ACTION</b>
-          
-Title: $ISSUE_TITLE
-Repository: ${{ github.repository }}
-
-<a href=\"$ISSUE_URL\">View Issue</a>"
+            MESSAGE="<b>$ICON Issue $ACTION</b> - $ISSUE_TITLE - ${{ github.repository }} - $ISSUE_URL"
           
           elif [ "${{ github.event_name }}" == "pull_request" ]; then
             PR_TITLE="${{ github.event.pull_request.title }}"
@@ -89,27 +78,13 @@ Repository: ${{ github.repository }}
               ICON="📝"
             fi
             
-            MESSAGE="<b>$ICON PR $ACTION</b>
-          
-Title: $PR_TITLE
-Repository: ${{ github.repository }}
-
-<a href=\"$PR_URL\">View PR</a>"
+            MESSAGE="<b>$ICON PR $ACTION</b> - $PR_TITLE - ${{ github.repository }} - $PR_URL"
           
           elif [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-            MESSAGE="<b>🧪 Test Notification</b>
-          
-${{ github.event.inputs.message }}
-Repository: ${{ github.repository }}
-Triggered by: ${{ github.actor }}"
+            MESSAGE="<b>🧪 Test Notification</b> - ${{ github.event.inputs.message }} - ${{ github.repository }} by ${{ github.actor }}"
           
           else
-            MESSAGE="<b>🔔 Repository Event</b>
-          
-Event: ${{ github.event_name }}
-Repository: ${{ github.repository }}
-Branch: ${{ github.ref_name }}
-Actor: ${{ github.actor }}"
+            MESSAGE="<b>🔔 Repository Event</b> - ${{ github.event_name }} - ${{ github.repository }} - ${{ github.ref_name }} by ${{ github.actor }}"
           fi
           
           # Send Telegram message

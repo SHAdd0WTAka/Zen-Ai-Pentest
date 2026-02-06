@@ -220,33 +220,7 @@ jobs:
                 owner: owner,
                 repo: repo,
                 title: '🚨 CRITICAL: Branch Protection Not Enabled',
-                body: `## ⚠️ Security Issue Detected
-            
-The \`${context.ref_name}\` branch is currently **UNPROTECTED**.
-            
-### Immediate Actions Required:
-            
-1. **Enable Branch Protection** for \`${context.ref_name}\`
-2. **Require Pull Request Reviews** (minimum 1 approval)
-3. **Require Status Checks** before merging
-4. **Disable Force Pushes**
-5. **Disable Branch Deletion**
-            
-### How to Fix:
-            
-1. Go to: [Settings > Branches](../../settings/branches)
-2. Click "Add rule" for \`${context.ref_name}\`
-3. Apply recommended settings from \`.github/settings.yml\`
-4. Save the rule
-            
-### Documentation:
-- [Branch Protection Guide](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches)
-- [Security Best Practices](../blob/main/SECURITY.md)
-            
----
-            
-*This issue was automatically created by the Branch Protection Check workflow.*
-`,
+                body: "## Security Issue Detected\n\nThe `" + context.ref_name + "` branch is currently UNPROTECTED.\n\n### Actions Required:\n1. Enable Branch Protection\n2. Require PR Reviews\n3. Require Status Checks\n4. Disable Force Pushes\n\n[Fix in Settings](../../settings/branches)",
                 labels: ['security', 'critical', 'infrastructure']
               });
               console.log('Created issue for unprotected branch');

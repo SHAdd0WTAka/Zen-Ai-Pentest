@@ -5,10 +5,10 @@ on:
   # push:
   #   branches: [main, master, develop]
   # pull_request:
-    branches: [main, master, develop]
-    paths-ignore:
-      - '**.md'
-      - 'docs/**'
+  #   branches: [main, master, develop]
+  #   paths-ignore:
+  #     - '**.md'
+  #     - 'docs/**'
   schedule:
     # Run daily at 02:00 UTC
     - cron: '0 2 * * *'

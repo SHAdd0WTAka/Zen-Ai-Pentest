@@ -40,88 +40,19 @@ jobs:
       - name: Create MkDocs config if not exists
         run: |
           if [ ! -f mkdocs.yml ]; then
-            cat > mkdocs.yml << 'EOF'
-site_name: Zen AI Pentest
-site_description: AI-Powered Penetration Testing Framework
-site_author: SHAdd0WTAka
-site_url: https://shadd0wtaka.github.io/zen-ai-pentest
-
-repo_name: SHAdd0WTAka/zen-ai-pentest
-repo_url: https://github.com/SHAdd0WTAka/zen-ai-pentest
-
-nav:
-  - Home: index.md
-  - Getting Started:
-    - Installation: DOCKER_SETUP.md
-    - Quick Start: README.md
-  - Guides:
-    - Architecture: ARCHITECTURE.md
-    - API Documentation: API_DOCUMENTATION.md
-    - Plugin System: PLUGIN_SYSTEM.md
-    - OSINT Module: OSINT_MODULE.md
-    - Post Scan Agent: POST_SCAN_AGENT.md
-  - Security:
-    - Security Policy: SECURITY.md
-    - Branch Protection: BRANCH_PROTECTION.md
-    - CI/CD Monitoring: CI_CD_MONITORING.md
-  - Development:
-    - Contributing: CONTRIBUTING.md
-    - Container Integration: CONTAINER_INTEGRATION.md
-    - ProtonVPN Integration: PROTONVPN_INTEGRATION.md
-
-extra:
-  social:
-    - icon: fontawesome/brands/github
-      link: https://github.com/SHAdd0WTAka
-  version:
-    provider: mike
-
-theme:
-  name: material
-  palette:
-    - scheme: default
-      primary: indigo
-      accent: indigo
-      toggle:
-        icon: material/brightness-7
-        name: Switch to dark mode
-    - scheme: slate
-      primary: indigo
-      accent: indigo
-      toggle:
-        icon: material/brightness-4
-        name: Switch to light mode
-  features:
-    - navigation.tabs
-    - navigation.sections
-    - navigation.expand
-    - search.suggest
-    - search.highlight
-    - content.tabs.link
-    - content.code.annotation
-    - content.code.copy
-
-plugins:
-  - search
-  - minify:
-      minify_html: true
-
-markdown_extensions:
-  - pymdownx.highlight:
-      anchor_linenums: true
-  - pymdownx.inlinehilite
-  - pymdownx.snippets
-  - pymdownx.superfences
-  - admonition
-  - pymdownx.details
-  - pymdownx.tabbed:
-      alternate_style: true
-  - tables
-  - attr_list
-  - pymdownx.emoji:
-      emoji_index: !!python/name:material.extensions.emoji.twemoji
-      emoji_generator: !!python/name:material.extensions.emoji.to_svg
-EOF
+            echo "site_name: Zen AI Pentest" > mkdocs.yml
+            echo "site_description: AI-Powered Penetration Testing Framework" >> mkdocs.yml
+            echo "site_author: SHAdd0WTAka" >> mkdocs.yml
+            echo "site_url: https://shadd0wtaka.github.io/zen-ai-pentest" >> mkdocs.yml
+            echo "" >> mkdocs.yml
+            echo "repo_name: SHAdd0WTAka/zen-ai-pentest" >> mkdocs.yml
+            echo "repo_url: https://github.com/SHAdd0WTAka/zen-ai-pentest" >> mkdocs.yml
+            echo "" >> mkdocs.yml
+            echo "theme:" >> mkdocs.yml
+            echo "  name: material" >> mkdocs.yml
+            echo "" >> mkdocs.yml
+            echo "plugins:" >> mkdocs.yml
+            echo "  - search" >> mkdocs.yml
           fi
 
       - name: Create index.md from README

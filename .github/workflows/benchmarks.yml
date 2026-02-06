@@ -5,11 +5,11 @@ on:
   # schedule:
   #   - cron: '0 2 * * 0'
   # pull_request:
-    branches: [main, master]
-    paths:
-      - 'core/**'
-      - 'agents/**'
-      - 'benchmarks/**'
+  #   branches: [main, master]
+  #   paths:
+  #     - 'core/**'
+  #     - 'agents/**'
+  #     - 'benchmarks/**'
   workflow_dispatch:
     inputs:
       compare_branch:
