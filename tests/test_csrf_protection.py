@@ -5,17 +5,17 @@ Tests für CSRF Protection Module
 import pytest
 import sys
 import os
-import time
+
 import hmac
-import hashlib
+
 from datetime import datetime, timedelta
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock
 
 sys.path.insert(0, "C:\\Users\\Ataka\\source\\repos\\SHAdd0WTAka\\Zen-Ai-Pentest")
 
 os.environ["JWT_SECRET_KEY"] = "test-secret-key"
 
-from api.csrf_protection import CSRFProtection, CSRFToken
+from api.csrf_protection import CSRFProtection
 
 
 class TestCSRFToken:
@@ -103,19 +103,17 @@ class TestCSRFTokenExpiry:
     
     def test_token_expires_after_24_hours(self):
         """Test that tokens expire after 24 hours"""
-        from api.csrf_protection import CSRFToken
-        
         # Create token that is 25 hours old
-        old_token = CSRFToken()
+        from api.csrf_protection import CSRFToken as Token1
+        old_token = Token1()
         old_token.timestamp = datetime.utcnow() - timedelta(hours=25)
         
         assert old_token.is_valid() is False
     
     def test_valid_token_not_expired(self):
         """Test that fresh token is not expired"""
-        from api.csrf_protection import CSRFToken
-        
-        fresh_token = CSRFToken()
+        from api.csrf_protection import CSRFToken as Token2
+        fresh_token = Token2()
         assert fresh_token.is_valid() is True
 
 
@@ -126,7 +124,7 @@ class TestCSRFMiddleware:
         """Test that GET requests bypass CSRF check"""
         from api.csrf_protection import CSRFProtection
         
-        csrf = CSRFProtection(secret_key="test-key")
+        _ = CSRFProtection(secret_key="test-key")
         
         # Safe methods should be allowed without token
         safe_methods = ["GET", "HEAD", "OPTIONS", "TRACE"]
@@ -213,7 +211,7 @@ class TestCSRFTimingAttack:
     
     def test_comparison_is_timing_safe(self):
         """Test that token comparison is timing-safe"""
-        csrf = CSRFProtection(secret_key="test-key")
+        _ = CSRFProtection(secret_key="test-key")
         
         # This test verifies that hmac.compare_digest is used
         # which is timing-safe

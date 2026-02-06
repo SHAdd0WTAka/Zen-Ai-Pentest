@@ -163,7 +163,7 @@ class TestAuditLogCRUD:
     def test_create_audit_log(self, mock_session_class):
         mock_db = MagicMock()
         
-        result = crud.create_audit_log(
+        _ = crud.create_audit_log(
             mock_db,
             user_id=1,
             action="login",
