@@ -87,7 +87,7 @@ class VMSetup:
                 if int(result.stdout.strip()) > 0:
                     logger.info("✓ Virtualisierung aktiviert")
                     return True
-        except:
+        except Exception:
             pass
         
         logger.warning("⚠ Virtualisierung möglicherweise nicht aktiviert!")
@@ -124,6 +124,7 @@ class VMSetup:
         logger.info(f"Entpacke {archive_path}...")
         
         # 7z finden
+        import shutil
         seven_zip = shutil.which("7z") or shutil.which("7za")
         if not seven_zip and self.system == "windows":
             seven_zip = r"C:\Program Files\7-Zip\7z.exe"

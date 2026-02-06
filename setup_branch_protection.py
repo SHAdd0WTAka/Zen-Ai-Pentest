@@ -6,7 +6,7 @@ Setup Branch Protection for Zen AI Pentest Repository
 import os
 import sys
 import requests
-import json
+
 
 def setup_branch_protection():
     """Configure branch protection rules for master branch"""
@@ -101,7 +101,7 @@ def setup_branch_protection():
             return False
             
     except requests.exceptions.RequestException as e:
-        print(f"❌ Error: Network request failed")
+        print("❌ Error: Network request failed")
         print(f"   {e}")
         return False
 
