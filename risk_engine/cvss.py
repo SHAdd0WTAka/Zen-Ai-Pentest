@@ -4,8 +4,7 @@ CVSS (Common Vulnerability Scoring System) Calculator
 Supports CVSS v3.1
 """
 
-import re
-from typing import Dict, Optional
+from typing import Dict
 
 
 class CVSSCalculator:

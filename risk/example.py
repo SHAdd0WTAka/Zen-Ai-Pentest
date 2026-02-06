@@ -4,7 +4,6 @@ Risk Scoring Examples
 from risk import (
     RiskEngine,
     CVSSVector,
-    BusinessImpactScorer,
     BusinessContext,
     ImpactLevel,
     RiskReportGenerator
@@ -63,7 +62,7 @@ def example_with_business_context():
         business_context=context
     )
     
-    print(f"\nWith Business Context:")
+    print("\nWith Business Context:")
     print(f"Overall Risk: {risk.overall_risk_score}")
     print(f"Priority: {risk.risk_priority}")
     
