@@ -137,8 +137,7 @@ class OutputValidator:
                 confidence_impact += 0.15
         
         # Check output length (hallucinations often too verbose)
-        lines = output.strip().split('
-')
+        lines = output.strip().splitlines()
         if len(lines) > 500:
             warnings.append(f"Unusually long output: {len(lines)} lines")
             confidence_impact += 0.1
