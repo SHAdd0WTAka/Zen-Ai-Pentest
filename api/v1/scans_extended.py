@@ -24,7 +24,7 @@ from database.models import Finding, get_db
 from database.crud import create_scan, get_scan, update_scan_status
 
 logger = logging.getLogger(__name__)
-router = APIRouter(prefix="/scans", tags=["scans-extended"])
+router = APIRouter(tags=["scans-extended"])
 
 # Scan-specific WebSocket manager
 scan_ws_manager = ConnectionManager()
@@ -157,6 +157,57 @@ def calculate_progress(phase: str, step: int, total_steps: int) -> int:
 # REST Endpoints
 # ============================================================================
 
+@router.get("/", response_model=List[ScanStatusResponse])
+async def list_scans(
+    skip: int = 0,
+    limit: int = 100,
+    status: Optional[str] = None,
+    user: dict = Depends(verify_token),
+    db: Session = Depends(get_db)
+):
+    """
+    List all scans with optional filtering.
+    """
+    from database.crud import get_scans
+    
+    scans = get_scans(db, skip=skip, limit=limit, status=status)
+    
+    result = []
+    for scan in scans:
+        duration = None
+        if scan.started_at:
+            end_time = scan.completed_at or datetime.utcnow()
+            duration = int((end_time - scan.started_at).total_seconds())
+        
+        findings_count = db.query(Finding).filter(Finding.scan_id == scan.id).count()
+        
+        progress = 0
+        if scan.status == "running" and scan.started_at:
+            elapsed = (datetime.utcnow() - scan.started_at).total_seconds()
+            progress = min(int((elapsed / 600) * 100), 99)
+        elif scan.status == "completed":
+            progress = 100
+        
+        result.append(ScanStatusResponse(
+            id=scan.id,
+            name=scan.name,
+            target=scan.target,
+            scan_type=scan.scan_type,
+            status=scan.status,
+            progress=progress,
+            current_phase=scan.config.get("phase") if scan.config else None,
+            phase_description=None,
+            started_at=scan.started_at.isoformat() if scan.started_at else None,
+            completed_at=scan.completed_at.isoformat() if scan.completed_at else None,
+            duration_seconds=duration,
+            findings_count=findings_count,
+            error_message=None,
+            config=scan.config or {}
+        ))
+    
+    return result
+
+
 @router.post("/", response_model=ScanResponse, status_code=status.HTTP_201_CREATED)
 async def create_new_scan(
     request: CreateScanRequest,
@@ -183,7 +234,7 @@ async def create_new_scan(
                 "objective": request.objective or f"Security scan of {request.target}",
                 "scheduled_for": request.scheduled_for
             },
-            user_id=user.get("sub", 1)
+            user_id=1  # TODO: Map username to user_id properly
         )
         
         # Initialize logs

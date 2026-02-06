@@ -263,6 +263,39 @@ async def add_finding(
     )
     return db_finding
 
+@app.patch("/findings/{finding_id}")
+async def update_finding(
+    finding_id: int,
+    update: dict,
+    user: dict = Depends(verify_token),
+    db = Depends(get_db)
+):
+    """Update a finding"""
+    from database.models import Finding
+    
+    finding = db.query(Finding).filter(Finding.id == finding_id).first()
+    if not finding:
+        raise HTTPException(status_code=404, detail="Finding not found")
+    
+    # Update allowed fields
+    allowed_fields = ['title', 'description', 'severity', 'cvss_score', 
+                      'evidence', 'remediation', 'verified']
+    
+    for field, value in update.items():
+        if field in allowed_fields and hasattr(finding, field):
+            setattr(finding, field, value)
+    
+    db.commit()
+    db.refresh(finding)
+    
+    return {
+        "id": finding.id,
+        "title": finding.title,
+        "severity": finding.severity,
+        "verified": finding.verified,
+        "message": "Finding updated successfully"
+    }
+
 # ============================================================================
 # TOOLS EXECUTION
 # ============================================================================
@@ -1089,13 +1122,27 @@ async def create_jira_ticket(
 # API v1.0 (Q1 2026)
 # ============================================================================
 
-# Import v1 router
+# Import v1 routers
 try:
     from api.v1.siem import router as siem_v1_router
     app.include_router(siem_v1_router, prefix="/api/v1/siem", tags=["SIEM v1.0"])
     logger.info("API v1.0 SIEM endpoints loaded")
 except ImportError as e:
-    logger.warning(f"Could not load API v1.0 endpoints: {e}")
+    logger.warning(f"Could not load SIEM v1.0 endpoints: {e}")
+
+try:
+    from api.v1.dashboard import router as dashboard_v1_router
+    app.include_router(dashboard_v1_router, prefix="/api/v1", tags=["Dashboard v1.0"])
+    logger.info("API v1.0 Dashboard endpoints loaded")
+except ImportError as e:
+    logger.warning(f"Could not load Dashboard v1.0 endpoints: {e}")
+
+try:
+    from api.v1.scans_extended import router as scans_v1_router
+    app.include_router(scans_v1_router, prefix="/api/v1/scans-extended", tags=["Scans v1.0"])
+    logger.info("API v1.0 Scans endpoints loaded")
+except ImportError as e:
+    logger.warning(f"Could not load Scans v1.0 endpoints: {e}")
 
 if __name__ == "__main__":
     import uvicorn

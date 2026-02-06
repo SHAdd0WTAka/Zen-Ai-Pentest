@@ -1,21 +1,52 @@
-import { Routes, Route, NavLink } from 'react-router-dom'
+import { Routes, Route, NavLink, Navigate } from 'react-router-dom'
 import { 
   LayoutDashboard, 
   Scan, 
   ShieldAlert, 
   Bot, 
-  Settings,
   Menu,
-  X
+  X,
+  LogOut
 } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Dashboard from './components/Dashboard'
 import ScanManager from './components/ScanManager'
 import FindingsList from './components/FindingsList'
 import AgentMonitor from './components/AgentMonitor'
+import Login from './components/Login'
+import { authApi } from './api/client'
 
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    // Check auth status on mount
+    setIsAuthenticated(authApi.isAuthenticated())
+    setLoading(false)
+  }, [])
+
+  const handleLogin = () => {
+    setIsAuthenticated(true)
+  }
+
+  const handleLogout = () => {
+    authApi.logout()
+    setIsAuthenticated(false)
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
+  }
+
+  if (!isAuthenticated) {
+    return <Login onLogin={handleLogin} />
+  }
 
   const navItems = [
     { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
@@ -85,9 +116,12 @@ function App() {
 
           {/* Bottom section */}
           <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-slate-700">
-            <button className="flex items-center gap-3 px-4 py-3 w-full rounded-lg text-slate-400 hover:bg-slate-700/50 hover:text-slate-100 transition-all">
-              <Settings className="w-5 h-5" />
-              Settings
+            <button 
+              onClick={handleLogout}
+              className="flex items-center gap-3 px-4 py-3 w-full rounded-lg text-slate-400 hover:bg-slate-700/50 hover:text-slate-100 transition-all"
+            >
+              <LogOut className="w-5 h-5" />
+              Logout
             </button>
             
             {/* Connection status */}
@@ -114,6 +148,7 @@ function App() {
               <Route path="/scans" element={<ScanManager />} />
               <Route path="/findings" element={<FindingsList />} />
               <Route path="/agents" element={<AgentMonitor />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </div>
         </main>

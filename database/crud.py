@@ -10,14 +10,34 @@ from datetime import datetime
 # SCAN CRUD
 # ============================================================================
 
-def create_scan(db: Session, scan_data):
-    """Erstellt einen neuen Scan"""
+def create_scan(db: Session, scan_data=None, **kwargs):
+    """Erstellt einen neuen Scan
+    
+    Args:
+        db: Database session
+        scan_data: Object with name, target, scan_type, config, user_id attributes
+        **kwargs: Alternative way to pass name, target, scan_type, config, user_id
+    """
+    # Handle both object and keyword arguments
+    if scan_data is not None:
+        name = getattr(scan_data, 'name', None) or kwargs.get('name')
+        target = getattr(scan_data, 'target', None) or kwargs.get('target')
+        scan_type = getattr(scan_data, 'scan_type', None) or kwargs.get('scan_type')
+        config = getattr(scan_data, 'config', None) or kwargs.get('config', {})
+        user_id = getattr(scan_data, 'user_id', None) or kwargs.get('user_id')
+    else:
+        name = kwargs.get('name')
+        target = kwargs.get('target')
+        scan_type = kwargs.get('scan_type')
+        config = kwargs.get('config', {})
+        user_id = kwargs.get('user_id')
+    
     db_scan = models.Scan(
-        name=scan_data.name,
-        target=scan_data.target,
-        scan_type=scan_data.scan_type,
-        config=scan_data.config,
-        user_id=scan_data.user_id if hasattr(scan_data, 'user_id') else None
+        name=name,
+        target=target,
+        scan_type=scan_type,
+        config=config,
+        user_id=user_id
     )
     db.add(db_scan)
     db.commit()
@@ -35,7 +55,7 @@ def get_scans(db: Session, skip: int = 0, limit: int = 100, status: str = None):
         query = query.filter(models.Scan.status == status)
     return query.offset(skip).limit(limit).all()
 
-def update_scan_status(db: Session, scan_id: int, status: str):
+def update_scan_status(db: Session, scan_id: int, status: str, result: dict = None):
     """Aktualisiert den Status eines Scans"""
     db_scan = get_scan(db, scan_id)
     if db_scan:
@@ -44,6 +64,8 @@ def update_scan_status(db: Session, scan_id: int, status: str):
             db_scan.started_at = datetime.utcnow()
         elif status in ["completed", "failed"]:
             db_scan.completed_at = datetime.utcnow()
+        if result:
+            db_scan.result_summary = str(result)[:1000]  # Limit length
         db.commit()
         db.refresh(db_scan)
     return db_scan
