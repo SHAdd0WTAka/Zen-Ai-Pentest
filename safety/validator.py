@@ -1,7 +1,7 @@
 """
 Output Validator - Structured validation against schemas
 """
-from typing import Dict, Any, List, Optional, Union
+from typing import Dict, List, Optional
 from dataclasses import dataclass
 import json
 import re
@@ -187,13 +187,12 @@ class OutputValidator:
         cve_pattern = r'CVE-\d{4}-\d{4,}'
         port_pattern = r'port\s+(\d{1,5})'
         
-        new_ips = set(re.findall(ip_pattern, new_output))
         new_cves = set(re.findall(cve_pattern, new_output, re.IGNORECASE))
-        new_ports = set(re.findall(port_pattern, new_output, re.IGNORECASE))
+        _ = re.findall(port_pattern, new_output, re.IGNORECASE)  # new_ports
         
         # Check against memory context
         for memory in memory_context:
-            memory_ips = set(re.findall(ip_pattern, memory))
+            _ = re.findall(ip_pattern, memory)  # memory_ips
             memory_cves = set(re.findall(cve_pattern, memory, re.IGNORECASE))
             
             # Check for contradictory CVE claims
