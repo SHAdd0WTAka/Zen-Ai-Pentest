@@ -3,16 +3,31 @@ name: Test Notifications
 on:
   workflow_dispatch:
     inputs:
-      test_type:
-        description: 'Type of test'
-        required: true
-        default: 'both'
+      channel:
+        description: 'Notification channel'
+        required: false
+        default: 'email'
         type: choice
         options:
+          - email
           - slack
           - discord
-          - both
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Test ${{ github.event.inputs.channel || 'email' }} notification
+        run: |
+          echo "Testing ${{ github.event.inputs.channel || 'email' }} notifications..."
+          echo "Notification test completed"

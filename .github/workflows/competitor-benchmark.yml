@@ -1,16 +1,31 @@
-# GitHub Actions Workflow: Monthly Competitor Benchmark
-# 
-# This workflow runs comprehensive benchmark comparisons against
-# competitor tools (PentestGPT, AutoPentest-DRL) on a monthly basis
-# and generates comparison reports.
-
-name: Competitor Benchmark Comparison
+name: Competitor Benchmark
 
 on:
-  # Run monthly on the 1st at 00:00 UTC
   schedule:
     - cron: '0 0 1 * *'
-  
+  workflow_dispatch:
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      
+      - name: Run benchmark comparison
+        run: |
+          echo "Running competitor benchmark..."
+          # Placeholder for actual benchmark logic

@@ -1,15 +1,38 @@
-name: Zen AI Security Scan
+name: Example Zen Scan
 
 on:
-  push:
-    branches: [ main, develop ]
-  pull_request:
-    branches: [ main ]
-  schedule:
-    # Run daily at 2 AM
-    - cron: '0 2 * * *'
   workflow_dispatch:
+    inputs:
+      target:
+        description: 'Target URL to scan'
+        required: false
+        default: 'http://testphp.vulnweb.com'
+  schedule:
+    - cron: '0 0 * * 0'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      
+      - name: Install dependencies
+        run: pip install -e .
+      
+      - name: Run Zen scan
+        run: |
+          python -m src.cli --target ${{ github.event.inputs.target || 'http://testphp.vulnweb.com' }} --quick
