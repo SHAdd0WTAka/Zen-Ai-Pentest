@@ -140,7 +140,7 @@ class FactChecker:
                     claim=f"CVE reference: {cve_id}",
                     status=FactCheckStatus.VERIFIED,
                     confidence=0.95,
-                    evidence=[f"Found in CVE database"],
+                    evidence=["Found in CVE database"],
                     source='cve_db',
                     correction=None
                 )

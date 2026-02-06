@@ -1,7 +1,7 @@
 """
 Confidence Scorer - Calculate output confidence score
 """
-from typing import Dict, Any, List, Optional
+from typing import Dict, List
 from dataclasses import dataclass
 
 
