@@ -295,7 +295,6 @@ print(f"\n  Risiko-Score: {risk_score}/100 ({risk_level})")
 
 # Report speichern
 print("\n[5] Report wird gespeichert...")
-import os
 os.makedirs('logs', exist_ok=True)
 
 timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -338,7 +337,7 @@ with open(md_file, 'w') as f:
         if count > 0:
             f.write(f"| {sev.capitalize()} | {count} |\n")
     
-    f.write(f"\n## Open Ports\n\n")
+    f.write("\n## Open Ports\n\n")
     for p in open_ports:
         f.write(f"- Port {p[0]}/{p[1]}\n")
     
@@ -366,7 +365,7 @@ try:
             "description": f"Real scan on {target} found {len(findings)} issues (Risk: {risk_level})"
         }, timeout=5)
     if r.status_code == 200:
-        print(f"  SIEM Event: Gesendet ✓")
+        print("  SIEM Event: Gesendet ✓")
 except Exception as e:
     print(f"  SIEM Event: API nicht erreichbar ({str(e)[:30]})")
 

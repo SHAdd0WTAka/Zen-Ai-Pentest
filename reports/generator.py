@@ -8,10 +8,10 @@ import json
 import logging
 from datetime import datetime
 from pathlib import Path
-from typing import List, Dict, Optional
+from typing import List, Dict
 
 try:
-    from weasyprint import HTML, CSS
+    from weasyprint import HTML
     WEASYPRINT_AVAILABLE = True
 except ImportError:
     WEASYPRINT_AVAILABLE = False
@@ -427,7 +427,7 @@ if __name__ == "__main__":
     html_path = generator.generate_html(123, findings, scan_info)
     json_path = generator.generate_json(123, findings, scan_info)
     
-    print(f"Reports generated:")
+    print("Reports generated:")
     print(f"  PDF: {pdf_path}")
     print(f"  HTML: {html_path}")
     print(f"  JSON: {json_path}")
