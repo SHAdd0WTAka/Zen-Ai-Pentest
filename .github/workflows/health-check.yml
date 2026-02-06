@@ -1,4 +1,4 @@
-name: Health Check - Monitor CI Status
+name: Health Check - Monitor CI Status (Fixed)
 
 on:
   schedule:
@@ -6,13 +6,29 @@ on:
     - cron: '*/20 * * * *'
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  issues: write
+
 jobs:
   health-check:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v6
+      uses: actions/checkout@v4
+      
+    - name: Debug Environment
+      run: |
+        echo "=== Debug Info ==="
+        echo "PWD: $(pwd)"
+        ls -la
+        echo "=================="
       
     - name: Install jq
       run: sudo apt-get update && sudo apt-get install -y jq
@@ -54,7 +70,6 @@ jobs:
         
         if [ "$FAILURES" -gt 0 ]; then
           echo "::warning::Found $FAILURES failed workflow runs!"
-          # Don't exit 1 here, let the step continue and report via annotation
         fi
         
     - name: Run Quick Smoke Test
@@ -89,7 +104,7 @@ jobs:
         
     - name: Upload Health Report
       if: always()
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v4
       with:
         name: health-check-report
         path: health_check_report.md
@@ -97,7 +112,7 @@ jobs:
         
     - name: Notify on Failure
       if: failure()
-      uses: actions/github-script@v8
+      uses: actions/github-script@v7
       with:
         script: |
           github.rest.issues.create({

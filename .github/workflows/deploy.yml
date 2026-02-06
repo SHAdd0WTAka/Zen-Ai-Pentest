@@ -1,4 +1,4 @@
-name: Deploy
+name: Deploy (Improved)
 
 on:
   release:
@@ -14,16 +14,48 @@ on:
           - staging
           - production
 
+concurrency:
+  group: deploy-${{ github.event.inputs.environment || 'release' }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  packages: write
+  id-token: write
+  deployments: write
+
 jobs:
-  # Build and test before deploy
+  # =============================================================================
+  # Pre-Deploy Checks
+  # =============================================================================
   pre-deploy-check:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Debug Environment
+        run: |
+          echo "=== Debug Info ==="
+          echo "PWD: $(pwd)"
+          ls -la
+          echo "=================="
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest bandit
 
       - name: Run all tests
         run: |
-          pip install -r requirements.txt
           pytest tests/ -v
         env:
           JWT_SECRET_KEY: test
@@ -31,20 +63,41 @@ jobs:
 
       - name: Security scan
         run: |
-          pip install bandit
           bandit -r . -ll
 
-  # Deploy to staging
+      - name: Upload logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pre-deploy-logs
+          path: |
+            logs/
+            *.log
+          retention-days: 7
+          if-no-files-found: ignore
+
+  # =============================================================================
+  # Deploy to Staging
+  # =============================================================================
   deploy-staging:
     needs: pre-deploy-check
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     if: github.event.inputs.environment == 'staging' || github.event_name == 'release'
     environment:
       name: staging
       url: https://staging.pentest.example.com
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Debug Environment
+        run: |
+          echo "=== Deploy to Staging ==="
+          echo "PWD: $(pwd)"
+          ls -la
+          echo "========================"
 
       - name: Deploy to staging
         run: |
@@ -52,17 +105,39 @@ jobs:
           # Add your staging deployment commands here
           # e.g., ssh, kubectl, docker-compose, etc.
 
-  # Deploy to production (manual only)
+      - name: Upload logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: deploy-staging-logs
+          path: |
+            logs/
+            *.log
+          retention-days: 7
+          if-no-files-found: ignore
+
+  # =============================================================================
+  # Deploy to Production
+  # =============================================================================
   deploy-production:
     needs: [pre-deploy-check, deploy-staging]
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     if: github.event.inputs.environment == 'production'
     environment:
       name: production
       url: https://pentest.example.com
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Debug Environment
+        run: |
+          echo "=== Deploy to Production ==="
+          echo "PWD: $(pwd)"
+          ls -la
+          echo "============================"
 
       - name: Deploy to production
         run: |
@@ -78,3 +153,32 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         continue-on-error: true
+
+      - name: Upload logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: deploy-production-logs
+          path: |
+            logs/
+            *.log
+          retention-days: 7
+          if-no-files-found: ignore
+
+  # =============================================================================
+  # Deploy Summary
+  # =============================================================================
+  deploy-summary:
+    needs: [pre-deploy-check, deploy-staging, deploy-production]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Generate Deploy Summary
+        run: |
+          echo "## 🚀 Deploy Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Pre-Deploy Checks | ${{ needs.pre-deploy-check.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Deploy Staging | ${{ needs.deploy-staging.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Deploy Production | ${{ needs.deploy-production.result }} |" >> $GITHUB_STEP_SUMMARY
