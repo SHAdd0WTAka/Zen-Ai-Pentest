@@ -125,9 +125,6 @@ This is an automated message from Zen-AI-Pentest.
             attachments=[report_file] if report_file else None
         )
 
-from langchain_core.tools import tool
-
-@tool
 def email_scan_report(recipient: str, scan_id: int, 
                      report_file: str) -> str:
     """Sendet Scan-Report per Email"""

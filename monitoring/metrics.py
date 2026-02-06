@@ -19,7 +19,6 @@ from prometheus_client import (
     Gauge,
     Info,
     CollectorRegistry,
-    generate_latest,
     generate_latest
 )
 

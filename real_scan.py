@@ -3,9 +3,9 @@
 ECHTER Security Scan - Auf localhost/VM
 """
 import socket
-import subprocess
 import sys
 import json
+import os
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -23,8 +23,8 @@ print("=" * 70)
 try:
     hostname = socket.gethostbyaddr(target)[0]
     print(f"\n[+] Hostname: {hostname}")
-except:
-    print(f"\n[+] Hostname: Konnte nicht aufgelöst werden")
+except Exception:
+    print("\n[+] Hostname: Konnte nicht aufgelöst werden")
 
 # Echter Port Scan
 print("\n[1] Port-Scan wird durchgeführt...")
@@ -98,7 +98,7 @@ for port, svc_name, status in open_ports:
                     services.append({"port": port, "service": svc_name, "banner": banner})
                 else:
                     services.append({"port": port, "service": svc_name, "banner": "N/A"})
-            except:
+            except Exception:
                 services.append({"port": port, "service": svc_name, "banner": "N/A"})
         else:
             services.append({"port": port, "service": svc_name, "banner": "N/A"})
@@ -324,7 +324,7 @@ print(f"  JSON Report: {json_file}")
 md_file = f'logs/real_scan_{target.replace(".", "_")}_{timestamp}.md'
 with open(md_file, 'w') as f:
     f.write(f"# Security Scan Report: {target}\n\n")
-    f.write(f"**Scan Type:** Real Port Scan\n")
+    f.write("**Scan Type:** Real Port Scan\n")
     f.write(f"**Date:** {datetime.now().isoformat()}\n")
     f.write(f"**Risk Score:** {risk_score}/100 ({risk_level})\n\n")
     

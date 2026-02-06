@@ -4,7 +4,7 @@ Slack Integration für Zen-AI-Pentest
 
 import requests
 import logging
-from typing import Dict, Optional
+from typing import Dict
 from datetime import datetime
 
 logger = logging.getLogger(__name__)
@@ -90,9 +90,6 @@ class SlackNotifier:
             logger.error(f"Slack send error: {e}")
             return False
 
-from langchain_core.tools import tool
-
-@tool
 def slack_notify_scan_complete(scan_id: int, target: str, 
                                findings_count: int, critical_count: int) -> str:
     """Sendet Slack-Benachrichtigung bei Scan-Abschluss"""
