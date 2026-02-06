@@ -304,10 +304,10 @@ class StandaloneScanner:
                 for sev, count in results['summary']['severity_counts'].items():
                     if count > 0:
                         f.write(f"| {sev.upper()} | {count} |\n")
-                f.write(f"\n")
+                f.write("\n")
             
             if results.get('findings'):
-                f.write(f"## Findings\n\n")
+                f.write("## Findings\n\n")
                 for i, finding in enumerate(results['findings'], 1):
                     f.write(f"### {i}. {finding['name']}\n\n")
                     f.write(f"- **Severity:** {finding['severity']}\n")
@@ -315,11 +315,11 @@ class StandaloneScanner:
                     f.write(f"- **Description:** {finding['description']}\n")
                     f.write(f"- **Recommendation:** {finding['recommendation']}\n\n")
             
-            f.write(f"## Scan Log\n\n")
-            f.write(f"```\n")
+            f.write("## Scan Log\n\n")
+            f.write("```\n")
             for log_entry in self.scan_log:
                 f.write(f"{log_entry}\n")
-            f.write(f"```\n")
+            f.write("```\n")
     
     def _generate_csv_report(self, filename: str):
         """Generate CSV report"""
