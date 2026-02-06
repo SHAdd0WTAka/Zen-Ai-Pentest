@@ -38,7 +38,7 @@
 
 [![CI Status](https://img.shields.io/badge/CI-Optimized-brightgreen)](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/actions/workflows/ci.yml)
 [![Security](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/actions/workflows/security.yml/badge.svg)](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/actions/workflows/security.yml)
-[![PyPI Deploy](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/actions/workflows/pypi-release.yml/badge.svg)](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/actions/workflows/pypi-release.yml)
+[![PyPI](https://img.shields.io/pypi/v/zen-ai-pentest?label=PyPI&color=green)](https://pypi.org/project/zen-ai-pentest/)
 [![Deployment Status](https://img.shields.io/github/deployments/SHAdd0WTAka/Zen-Ai-Pentest/pypi?label=Deployment)](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/deployments)
 
 [![Authors](https://img.shields.io/badge/Authors-SHAdd0WTAka%20%7C%20KimiAI-purple)](#-authors--team)
