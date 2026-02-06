@@ -18,7 +18,7 @@ on:
           - 'true'
           - 'false'
       fix_level:
-        description: 'Auto-fix level (safe=only safe fixes, aggressive=all fixes)'
+        description: 'Auto-fix level'
         required: false
         default: 'safe'
         type: choice
@@ -29,3 +29,23 @@ on:
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Check Repository Health
+        run: |
+          echo "Running repository health check..."
+          echo "Auto-fix: ${{ github.event.inputs.run_auto_fix || 'false' }}"
+          echo "Fix level: ${{ github.event.inputs.fix_level || 'safe' }}"
+          
+          # Check for common issues
+          echo "Checking for large files..."
+          find . -type f -size +10M -not -path './.git/*' || true

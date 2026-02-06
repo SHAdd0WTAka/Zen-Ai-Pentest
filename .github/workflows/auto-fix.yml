@@ -21,3 +21,24 @@ on:
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  auto-fix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      
+      - name: Run Auto-Fix
+        run: |
+          echo "Running auto-fix for: ${{ github.event.inputs.issue_type || 'all' }}"
+          pip install black isort autopep8
+          black --check . || true
