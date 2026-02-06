@@ -21,7 +21,7 @@ from pathlib import Path
 try:
     from cryptography.fernet import Fernet
 
-    from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2
+
     CRYPTO_AVAILABLE = True
 except ImportError:
     CRYPTO_AVAILABLE = False
