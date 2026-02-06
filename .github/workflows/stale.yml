@@ -4,23 +4,6 @@ on:
   schedule:
     - cron: '30 1 * * *'
 
-permissions:
-  issues: write
-  pull-requests: write
-
-jobs:
-  stale:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/stale@v10
-        with:
-          stale-issue-message: 'This issue has been automatically marked as stale because it has not had recent activity. It will be closed if no further activity occurs. Thank you for your contributions.'
-          stale-pr-message: 'This pull request has been automatically marked as stale because it has not had recent activity. It will be closed if no further activity occurs. Thank you for your contributions.'
-          close-issue-message: 'This issue was closed because it has been stalled for 7 days with no activity.'
-          close-pr-message: 'This pull request was closed because it has been stalled for 7 days with no activity.'
-          days-before-stale: 30
-          days-before-close: 7
-          stale-issue-label: 'stale'
-          stale-pr-label: 'stale'
-          exempt-issue-labels: 'bug,enhancement,help wanted'
-          exempt-pr-labels: 'work-in-progress'
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true

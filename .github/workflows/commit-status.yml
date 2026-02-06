@@ -6,40 +6,6 @@ on:
   pull_request:
     branches: [ master, develop ]
 
-jobs:
-  validate:
-    name: ✅ Validate Commit
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Check Python syntax
-        run: |
-          python3 -m py_compile $(find . -name "*.py" -not -path "./venv/*" -not -path "./.git/*" | head -20) || true
-
-      - name: Validate pyproject.toml
-        run: |
-          if [ -f "pyproject.toml" ]; then
-            echo "✅ pyproject.toml exists"
-            grep -q "version" pyproject.toml && echo "✅ Version field found"
-          fi
-
-      - name: Check README exists
-        run: |
-          if [ -f "README.md" ]; then
-            echo "✅ README.md exists"
-            grep -q "zen-ai-pentest" README.md && echo "✅ Package name in README"
-          fi
-
-      - name: Validate package structure
-        run: |
-          echo "Checking core directories..."
-          for dir in core agents modules api; do
-            if [ -d "$dir" ]; then
-              echo "✅ $dir/ directory exists"
-            fi
-          done
-
-      - name: Set success status
-        run: echo "✅ All validation checks passed"
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true

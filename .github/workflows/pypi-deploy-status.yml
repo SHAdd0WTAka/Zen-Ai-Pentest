@@ -6,37 +6,6 @@ on:
     types:
       - completed
 
-jobs:
-  update-deployment-status:
-    runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
-    steps:
-      - name: Update Deployment Status
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const ref = context.payload.workflow_run.head_branch;
-            
-            // Find the deployment
-            const deployments = await github.rest.repos.listDeployments({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: ref,
-              environment: 'pypi'
-            });
-            
-            if (deployments.data.length > 0) {
-              const deployment = deployments.data[0];
-              
-              // Create success status
-              await github.rest.repos.createDeploymentStatus({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                deployment_id: deployment.id,
-                state: 'success',
-                description: 'Successfully published to PyPI',
-                environment_url: `https://pypi.org/project/zen-ai-pentest/${ref.replace('v', '')}/`
-              });
-              
-              console.log(`Updated deployment ${deployment.id} to success`);
-            }
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
