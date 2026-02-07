@@ -415,6 +415,9 @@ jobs:
     timeout-minutes: 5
     needs: [pre-release-checks, github-release, pypi-publish, docker]
     if: always()
+    env:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
     steps:
       - name: Notify Slack
         if: ${{ env.SLACK_WEBHOOK_URL != '' }}
@@ -429,7 +432,7 @@ jobs:
             GitHub Release: ${{ needs.github-release.outputs.url || 'N/A' }}
             PyPI: https://pypi.org/project/zen-ai-pentest/${{ needs.pre-release-checks.outputs.version }}/
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_URL: ${{ env.SLACK_WEBHOOK_URL }}
         continue-on-error: true
 
       - name: Notify Discord
@@ -442,7 +445,7 @@ jobs:
             GitHub: ${{ github.server_url }}/${{ github.repository }}/releases/tag/v${{ needs.pre-release-checks.outputs.version }}
             PyPI: https://pypi.org/project/zen-ai-pentest/${{ needs.pre-release-checks.outputs.version }}/
         env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          DISCORD_WEBHOOK: ${{ env.DISCORD_WEBHOOK_URL }}
         continue-on-error: true
 
   # =============================================================================

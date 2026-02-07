@@ -240,7 +240,7 @@ jobs:
     
     steps:
       - name: Slack Notification
-        if: ${{ secrets.SLACK_WEBHOOK_URL != '' && (needs.analyze-and-fix.outputs.score < 50 || failure()) }}
+        if: ${{ needs.analyze-and-fix.outputs.score < 50 || failure() }}
         uses: 8398a7/action-slack@v3
         with:
           status: ${{ job.status }}
@@ -248,9 +248,10 @@ jobs:
           text: '🚨 Repository Health Check Alert'
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        continue-on-error: true
 
       - name: Discord Notification
-        if: ${{ secrets.DISCORD_WEBHOOK_URL != '' && (needs.analyze-and-fix.outputs.score < 50 || failure()) }}
+        if: ${{ needs.analyze-and-fix.outputs.score < 50 || failure() }}
         uses: Ilshidur/action-discord@master
         with:
           args: |
@@ -262,3 +263,4 @@ jobs:
             [View Details](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        continue-on-error: true
