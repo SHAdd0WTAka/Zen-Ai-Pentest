@@ -187,9 +187,19 @@
 | **Web** | BurpSuite, SQLMap, Gobuster, OWASP ZAP |
 | **Exploitation** | Metasploit Framework |
 | **Brute Force** | Hydra, Hashcat |
-| **Reconnaissance** | Amass, Nuclei, TheHarvester |
+| **Reconnaissance** | Amass, Nuclei, TheHarvester, Subdomain Scanner |
 | **Active Directory** | BloodHound, CrackMapExec, Responder |
 | **Wireless** | Aircrack-ng Suite |
+
+### 🔍 Subdomain Scanner
+- **Multi-Technique Enumeration**: DNS, Wordlist, Certificate Transparency
+- **Advanced Techniques**: Zone Transfer (AXFR), Permutation/Mangling
+- **OSINT Integration**: VirusTotal, AlienVault OTX, BufferOver
+- **IPv6 Support**: AAAA record enumeration
+- **Technology Detection**: Automatic fingerprinting of live hosts
+- **Export Formats**: JSON, CSV, TXT
+- **REST API**: Async and sync scanning endpoints
+- **CLI Tools**: Standalone scanner with comprehensive options
 
 ### ☁️ Multi-Cloud & Virtualization
 - **Local**: VirtualBox VM Management
@@ -226,6 +236,12 @@ python database/models.py
 
 # Start API server
 python api/main.py
+
+# Run subdomain scan
+python scan_target_subdomains.py
+
+# Or use the advanced CLI
+python tools/subdomain_enum.py example.com --advanced
 ```
 
 ### Option 3: AI Personas Quick Start
