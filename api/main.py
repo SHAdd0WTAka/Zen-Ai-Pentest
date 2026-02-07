@@ -545,8 +545,50 @@ async def generate_report_task(report_id: int, scan_id: int, format: str):
 
 @app.get("/health")
 async def health_check():
-    """Health check endpoint"""
-    return {"status": "healthy", "version": "2.2.0", "timestamp": datetime.utcnow().isoformat()}
+    """
+    Health check endpoint für Docker und Monitoring
+    Prüft alle wichtigen Services
+    """
+    from sqlalchemy import text
+    import redis
+    import socket
+    
+    health_status = {
+        "status": "healthy",
+        "version": "2.2.0",
+        "timestamp": datetime.utcnow().isoformat(),
+        "services": {}
+    }
+    
+    # Check Database
+    try:
+        db = SessionLocal()
+        db.execute(text("SELECT 1"))
+        db.close()
+        health_status["services"]["database"] = {"status": "ok", "type": "postgresql"}
+    except Exception as e:
+        health_status["services"]["database"] = {"status": "error", "error": str(e)}
+        health_status["status"] = "degraded"
+    
+    # Check Redis
+    try:
+        redis_client = redis.from_url(
+            os.getenv("REDIS_URL", "redis://localhost:6379/0"),
+            socket_connect_timeout=2
+        )
+        redis_client.ping()
+        health_status["services"]["redis"] = {"status": "ok"}
+    except Exception as e:
+        health_status["services"]["redis"] = {"status": "error", "error": str(e)}
+        health_status["status"] = "degraded"
+    
+    # Check API selbst
+    health_status["services"]["api"] = {"status": "ok", "port": 8000}
+    
+    # HTTP Status Code
+    status_code = 200 if health_status["status"] == "healthy" else 503
+    
+    return health_status
 
 
 @app.get("/info")
