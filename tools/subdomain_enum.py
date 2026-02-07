@@ -8,16 +8,15 @@ import argparse
 import asyncio
 import json
 import logging
-import os
 import sys
 from pathlib import Path
-from typing import List, Optional
+from typing import List
 
 # Add parent to path
-sys.path.insert(0, str(Path(__file__).parent.parent))
+sys.path.insert(0, str(Path(__file__).parent.parent))  # noqa: E402
 
-from modules.subdomain_scanner import SubdomainScanner
-from modules.subdomain_scanner_advanced import AdvancedSubdomainScanner
+from modules.subdomain_scanner import SubdomainScanner  # noqa: E402
+from modules.subdomain_scanner_advanced import AdvancedSubdomainScanner  # noqa: E402
 
 logging.basicConfig(
     level=logging.INFO,
@@ -63,7 +62,7 @@ def print_results(results, verbose: bool = False):
         print("-" * 80)
         print(f"{'Subdomain':<45} {'Status':<8} {'Server':<18} {'Tech'}")
         print("-" * 80)
-        
+
         for subdomain, result in sorted(live, key=lambda x: x[0]):
             status = f"{result.status_code}" if result.status_code else "???"
             server = (result.server_header or "Unknown")[:17]
@@ -103,17 +102,17 @@ def print_technology_summary(results):
 
     print("\n📊 Technology Summary:")
     print("-" * 40)
-    
+
     if tech_count:
         print("\nDetected Technologies:")
         for tech, count in sorted(tech_count.items(), key=lambda x: x[1], reverse=True)[:10]:
             print(f"  • {tech}: {count}")
-    
+
     if server_count:
         print("\nServer Headers:")
         for server, count in sorted(server_count.items(), key=lambda x: x[1], reverse=True)[:5]:
             print(f"  • {server}: {count}")
-    
+
     if status_count:
         print("\nStatus Codes:")
         for status, count in sorted(status_count.items()):
@@ -128,7 +127,7 @@ def load_wordlist(path: str) -> List[str]:
 
 async def run_scan(args) -> dict:
     """Execute subdomain scan based on arguments"""
-    
+
     # Choose scanner type
     if args.advanced:
         logger.info("Using advanced scanner with extended techniques")
@@ -136,21 +135,21 @@ async def run_scan(args) -> dict:
             max_workers=args.workers,
             timeout=args.timeout
         )
-        
+
         if args.virustotal_key:
             scanner.set_virustotal_key(args.virustotal_key)
-        
+
         techniques = args.techniques.split(",") if args.techniques else [
             "basic", "permute", "dnsrecords"
         ]
-        
+
         results = await scanner.scan_advanced(
             domain=args.domain,
             techniques=techniques,
             check_http=not args.no_http,
             permutation_depth=args.permutation_depth
         )
-        
+
         # Generate and optionally save report
         if args.report:
             report = scanner.generate_report()
@@ -162,16 +161,16 @@ async def run_scan(args) -> dict:
             max_workers=args.workers,
             timeout=args.timeout
         )
-        
+
         techniques = args.techniques.split(",") if args.techniques else [
             "dns", "wordlist", "crt"
         ]
-        
+
         wordlist = None
         if args.wordlist:
             wordlist = load_wordlist(args.wordlist)
             logger.info(f"Loaded {len(wordlist)} entries from wordlist")
-        
+
         results = await scanner.scan(
             domain=args.domain,
             wordlist=wordlist,
@@ -190,19 +189,19 @@ async def main():
 Examples:
   # Basic scan
   python tools/subdomain_enum.py target.com
-  
+
   # Advanced scan with all techniques
   python tools/subdomain_enum.py target.com --advanced
-  
+
   # Custom wordlist
   python tools/subdomain_enum.py target.com -w wordlist.txt
-  
+
   # Export results
   python tools/subdomain_enum.py target.com -o results.json
-  
+
   # API integration
   python tools/subdomain_enum.py target.com --advanced --virustotal-key <key>
-  
+
   # Quick DNS-only scan
   python tools/subdomain_enum.py target.com --no-http
         """
@@ -210,48 +209,67 @@ Examples:
 
     # Target
     parser.add_argument("domain", help="Target domain to scan")
-    
+
     # Scan modes
-    parser.add_argument("-a", "--advanced", action="store_true",
-                       help="Use advanced scanning techniques")
-    parser.add_argument("-t", "--techniques",
-                       help="Comma-separated techniques (default: dns,wordlist,crt)")
-    
+    parser.add_argument(
+        "-a", "--advanced", action="store_true",
+        help="Use advanced scanning techniques"
+    )
+    parser.add_argument(
+        "-t", "--techniques",
+        help="Comma-separated techniques (default: dns,wordlist,crt)"
+    )
+
     # Wordlist
-    parser.add_argument("-w", "--wordlist",
-                       help="Custom wordlist file")
-    parser.add_argument("--generate-wordlist", action="store_true",
-                       help="Generate and save default wordlist")
-    
+    parser.add_argument("-w", "--wordlist", help="Custom wordlist file")
+    parser.add_argument(
+        "--generate-wordlist", action="store_true",
+        help="Generate and save default wordlist"
+    )
+
     # HTTP checking
-    parser.add_argument("--no-http", action="store_true",
-                       help="Skip HTTP/HTTPS checking (faster)")
-    
+    parser.add_argument(
+        "--no-http", action="store_true",
+        help="Skip HTTP/HTTPS checking (faster)"
+    )
+
     # Performance
-    parser.add_argument("--workers", type=int, default=50,
-                       help="Concurrent workers (default: 50)")
-    parser.add_argument("--timeout", type=int, default=10,
-                       help="Request timeout in seconds (default: 10)")
-    
+    parser.add_argument(
+        "--workers", type=int, default=50,
+        help="Concurrent workers (default: 50)"
+    )
+    parser.add_argument(
+        "--timeout", type=int, default=10,
+        help="Request timeout in seconds (default: 10)"
+    )
+
     # Advanced options
-    parser.add_argument("--permutation-depth", type=int, default=1,
-                       help="Permutation depth for advanced scan (default: 1)")
-    parser.add_argument("--virustotal-key",
-                       help="VirusTotal API key for enhanced enumeration")
-    
+    parser.add_argument(
+        "--permutation-depth", type=int, default=1,
+        help="Permutation depth for advanced scan (default: 1)"
+    )
+    parser.add_argument(
+        "--virustotal-key",
+        help="VirusTotal API key for enhanced enumeration"
+    )
+
     # Output
-    parser.add_argument("-o", "--output",
-                       help="Output file")
-    parser.add_argument("-f", "--format", choices=["json", "txt", "csv"],
-                       default="json", help="Output format")
-    parser.add_argument("-v", "--verbose", action="store_true",
-                       help="Verbose output")
-    parser.add_argument("--report", action="store_true",
-                       help="Generate detailed report (advanced mode)")
-    
+    parser.add_argument("-o", "--output", help="Output file")
+    parser.add_argument(
+        "-f", "--format", choices=["json", "txt", "csv"],
+        default="json", help="Output format"
+    )
+    parser.add_argument("-v", "--verbose", action="store_true", help="Verbose output")
+    parser.add_argument(
+        "--report", action="store_true",
+        help="Generate detailed report (advanced mode)"
+    )
+
     # Other
-    parser.add_argument("--quiet", action="store_true",
-                       help="Suppress banner and minimize output")
+    parser.add_argument(
+        "--quiet", action="store_true",
+        help="Suppress banner and minimize output"
+    )
 
     args = parser.parse_args()
 

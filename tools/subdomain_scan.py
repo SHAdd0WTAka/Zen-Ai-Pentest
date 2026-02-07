@@ -6,15 +6,14 @@ Quick subdomain enumeration for target.com
 
 import argparse
 import asyncio
-import json
 import logging
 import sys
 from pathlib import Path
 
 # Add parent to path
-sys.path.insert(0, str(Path(__file__).parent.parent))
+sys.path.insert(0, str(Path(__file__).parent.parent))  # noqa: E402
 
-from modules.subdomain_scanner import SubdomainScanner, scan_subdomains
+from modules.subdomain_scanner import SubdomainScanner  # noqa: E402
 
 logging.basicConfig(
     level=logging.INFO,
@@ -90,25 +89,31 @@ Examples:
         """
     )
 
-    parser.add_argument("domain", nargs="?", default="target.com",
-                       help="Target domain (default: target.com)")
-    parser.add_argument("-o", "--output",
-                       help="Output file (JSON, TXT, or CSV)")
-    parser.add_argument("-f", "--format", choices=["json", "txt", "csv"],
-                       default="json", help="Output format")
-    parser.add_argument("-t", "--techniques",
-                       default="dns,wordlist,crt",
-                       help="Enumeration techniques (comma-separated)")
-    parser.add_argument("-w", "--wordlist",
-                       help="Custom wordlist file")
-    parser.add_argument("--no-http", action="store_true",
-                       help="Skip HTTP/HTTPS checking")
-    parser.add_argument("--workers", type=int, default=50,
-                       help="Concurrent workers (default: 50)")
-    parser.add_argument("--timeout", type=int, default=10,
-                       help="Request timeout in seconds (default: 10)")
-    parser.add_argument("-v", "--verbose", action="store_true",
-                       help="Verbose output")
+    parser.add_argument(
+        "domain", nargs="?", default="target.com",
+        help="Target domain (default: target.com)"
+    )
+    parser.add_argument("-o", "--output", help="Output file (JSON, TXT, or CSV)")
+    parser.add_argument(
+        "-f", "--format", choices=["json", "txt", "csv"],
+        default="json", help="Output format"
+    )
+    parser.add_argument(
+        "-t", "--techniques", default="dns,wordlist,crt",
+        help="Enumeration techniques (comma-separated)"
+    )
+    parser.add_argument("-w", "--wordlist", help="Custom wordlist file")
+    parser.add_argument(
+        "--no-http", action="store_true", help="Skip HTTP/HTTPS checking"
+    )
+    parser.add_argument(
+        "--workers", type=int, default=50, help="Concurrent workers (default: 50)"
+    )
+    parser.add_argument(
+        "--timeout", type=int, default=10,
+        help="Request timeout in seconds (default: 10)"
+    )
+    parser.add_argument("-v", "--verbose", action="store_true", help="Verbose output")
 
     args = parser.parse_args()
 

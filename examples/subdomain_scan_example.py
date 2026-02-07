@@ -9,9 +9,9 @@ import sys
 from pathlib import Path
 
 # Add parent to path
-sys.path.insert(0, str(Path(__file__).parent.parent))
+sys.path.insert(0, str(Path(__file__).parent.parent))  # noqa: E402
 
-from modules.subdomain_scanner import SubdomainScanner
+from modules.subdomain_scanner import SubdomainScanner  # noqa: E402
 
 
 async def scan_target_com():
@@ -19,7 +19,7 @@ async def scan_target_com():
     Example: Scan target.com for subdomains
     """
     target = "target.com"
-    
+
     print("=" * 70)
     print("  Zen AI Pentest - Subdomain Scanner Demo")
     print("  Target:", target)
@@ -70,7 +70,7 @@ async def scan_target_com():
         print(f"\n{'=' * 70}")
         print("EXPORT EXAMPLES")
         print("=" * 70)
-        
+
         json_output = scanner.export_results("json")
         print(f"\nJSON format ({len(json_output)} chars):")
         print(json_output[:500] + "..." if len(json_output) > 500 else json_output)
