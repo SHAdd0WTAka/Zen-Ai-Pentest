@@ -35,6 +35,7 @@ plugins:
 nav:
   - Home: index.md
   - Getting Started:
+    - Installation: INSTALLATION.md
     - User Setup: README_USER_SETUP.md
     - Aliases: ALIASES.md
   - AI Integration:
