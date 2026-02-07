@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  kimi-personas-api:
+    build: .
+    container_name: kimi-personas-api
+    ports:
+      - "${KIMI_API_PORT:-5000}:5000"
+    environment:
+      - FLASK_ENV=${FLASK_ENV:-production}
+      - KIMI_API_KEY=${KIMI_API_KEY}
+    volumes:
+      - ~/.config/kimi/personas:/root/.config/kimi/personas:ro
+      - ~/Zen-Ai-Pentest/config.json:/app/config.json:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import requests; requests.get('http://localhost:5000/api/v1/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - kimi-network
+
+  # Optional: Redis für Rate Limiting
+  redis:
+    image: redis:7-alpine
+    container_name: kimi-redis
+    restart: unless-stopped
+    networks:
+      - kimi-network
+    profiles:
+      - redis
+
+networks:
+  kimi-network:
+    driver: bridge

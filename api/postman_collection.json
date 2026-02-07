@@ -1,0 +1,219 @@
+{
+  "info": {
+    "name": "Zen-Ai Kimi Personas API",
+    "description": "REST API für 11 Pentest-Personas",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "zen-ai-pentest"
+  },
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/v1/health",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "health"]
+        }
+      }
+    },
+    {
+      "name": "List All Personas",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/v1/personas",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "personas"]
+        }
+      }
+    },
+    {
+      "name": "List Core Personas",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/v1/personas?category=core",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "personas"],
+          "query": [
+            {
+              "key": "category",
+              "value": "core"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Get Persona Details",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/v1/personas/recon",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "personas", "recon"]
+        }
+      }
+    },
+    {
+      "name": "Get Persona with System Prompt",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/v1/personas/exploit?include_prompt=true",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "personas", "exploit"],
+          "query": [
+            {
+              "key": "include_prompt",
+              "value": "true"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Get System Prompt (Plain Text)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/v1/personas/audit/prompt",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "personas", "audit", "prompt"]
+        }
+      }
+    },
+    {
+      "name": "List Categories",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/v1/personas/categories",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "personas", "categories"]
+        }
+      }
+    },
+    {
+      "name": "Chat with Persona",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-API-Key",
+            "value": "{{api_key}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"persona\": \"exploit\",\n  \"message\": \"Schreibe einen Python-Scanner für SQL Injection\",\n  \"temperature\": 0.7\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/chat",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "chat"]
+        }
+      }
+    },
+    {
+      "name": "Chat with Context",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-API-Key",
+            "value": "{{api_key}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"persona\": \"network\",\n  \"message\": \"Wie gehe ich weiter vor?\",\n  \"context\": \"Ich habe einen Domain Admin Account über Kerberoasting erhalten.\",\n  \"temperature\": 0.5\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/chat",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "chat"]
+        }
+      }
+    },
+    {
+      "name": "Chat with Kimi API (Complete)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-API-Key",
+            "value": "{{api_key}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"persona\": \"report\",\n  \"message\": \"Erstelle einen CVSS-Bericht für XSS auf login.php\",\n  \"temperature\": 0.7,\n  \"max_tokens\": 4096\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/chat/complete",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "chat", "complete"]
+        }
+      }
+    },
+    {
+      "name": "Batch Processing",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-API-Key",
+            "value": "{{api_key}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"requests\": [\n    {\n      \"persona\": \"recon\",\n      \"message\": \"Analysiere example.com\"\n    },\n    {\n      \"persona\": \"exploit\",\n      \"message\": \"Schreibe Scanner\"\n    },\n    {\n      \"persona\": \"report\",\n      \"message\": \"Erstelle Bericht\"\n    }\n  ]\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/batch",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "batch"]
+        }
+      }
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:5000",
+      "type": "string"
+    },
+    {
+      "key": "api_key",
+      "value": "your-api-key-here",
+      "type": "string"
+    }
+  ]
+}
