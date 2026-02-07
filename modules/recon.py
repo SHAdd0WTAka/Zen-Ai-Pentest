@@ -5,10 +5,19 @@ Intelligent target reconnaissance using LLM analysis
 Author: SHAdd0WTAka
 """
 
+import asyncio
 import logging
 import socket
 import subprocess
-from typing import Dict, List
+from typing import Dict, List, Optional
+
+# Import subdomain scanner
+try:
+    from modules.subdomain_scanner import SubdomainScanner
+    from modules.subdomain_scanner_advanced import AdvancedSubdomainScanner
+    SUBDOMAIN_SCANNER_AVAILABLE = True
+except ImportError:
+    SUBDOMAIN_SCANNER_AVAILABLE = False
 
 logger = logging.getLogger("ZenAI")
 
@@ -155,3 +164,144 @@ Return as a comma-separated list.
                     subdomains.append(f"{item}.{domain}")
 
         return list(set(subdomains))[:20]  # Return unique, limited
+
+    async def comprehensive_subdomain_scan(
+        self,
+        domain: str,
+        advanced: bool = False,
+        check_http: bool = True,
+        max_workers: int = 50,
+    ) -> Dict:
+        """
+        Comprehensive subdomain enumeration using SubdomainScanner
+        
+        Args:
+            domain: Target domain
+            advanced: Use advanced scanning techniques
+            check_http: Check HTTP/HTTPS availability
+            max_workers: Concurrent workers
+            
+        Returns:
+            Dictionary with scan results and metadata
+        """
+        if not SUBDOMAIN_SCANNER_AVAILABLE:
+            logger.warning("[Recon] SubdomainScanner not available, falling back to basic enumeration")
+            return {
+                "domain": domain,
+                "subdomains": await self.subdomain_enum(domain),
+                "method": "basic_llm",
+            }
+
+        logger.info(f"[Recon] Starting comprehensive subdomain scan for {domain}")
+        
+        if advanced:
+            scanner = AdvancedSubdomainScanner(
+                orchestrator=self.orchestrator,
+                max_workers=max_workers
+            )
+            results = await scanner.scan_advanced(
+                domain=domain,
+                check_http=check_http
+            )
+        else:
+            scanner = SubdomainScanner(
+                orchestrator=self.orchestrator,
+                max_workers=max_workers
+            )
+            results = await scanner.scan(
+                domain=domain,
+                check_http=check_http
+            )
+        
+        # Build comprehensive result
+        live_hosts = [r for r in results.values() if r.is_alive]
+        dns_only = [r for r in results.values() if not r.is_alive]
+        
+        scan_result = {
+            "domain": domain,
+            "total_discovered": len(results),
+            "live_hosts": len(live_hosts),
+            "dns_only": len(dns_only),
+            "subdomains": {
+                sub: {
+                    "ip_addresses": r.ip_addresses,
+                    "status_code": r.status_code,
+                    "server_header": r.server_header,
+                    "technologies": r.technologies,
+                    "is_alive": r.is_alive,
+                }
+                for sub, r in results.items()
+            },
+            "method": "advanced_scan" if advanced else "standard_scan",
+        }
+        
+        logger.info(f"[Recon] Subdomain scan complete: {len(results)} found ({len(live_hosts)} live)")
+        return scan_result
+
+    async def discover_attack_surface(self, domain: str) -> Dict:
+        """
+        Complete attack surface discovery for a domain
+        
+        Combines:
+        - Subdomain enumeration
+        - DNS record analysis
+        - Technology fingerprinting
+        - Service discovery
+        """
+        logger.info(f"[Recon] Discovering attack surface for {domain}")
+        
+        # Run subdomain scan
+        subdomain_data = await self.comprehensive_subdomain_scan(
+            domain=domain,
+            advanced=True,
+            check_http=True
+        )
+        
+        # Get basic target info
+        target_info = {
+            "ip": await self._resolve_ip(domain),
+            "dns_records": await self._get_dns_records(domain),
+            "whois": await self._get_whois(domain),
+        }
+        
+        # Use LLM to analyze attack surface
+        live_subdomains = [
+            sub for sub, data in subdomain_data["subdomains"].items()
+            if data.get("is_alive")
+        ]
+        
+        prompt = f"""
+Analyze the attack surface for penetration testing:
+
+Target Domain: {domain}
+IP Address: {target_info["ip"]}
+Total Subdomains Discovered: {subdomain_data["total_discovered"]}
+Live Hosts: {subdomain_data["live_hosts"]}
+
+Live Subdomains:
+{chr(10).join(f"- {sub}" for sub in live_subdomains[:20])}
+
+DNS Records:
+{chr(10).join(target_info["dns_records"][:5])}
+
+Provide:
+1. Priority targets for penetration testing
+2. Potential entry points
+3. Likely vulnerability areas based on discovered services
+4. Recommended next steps (specific tools and techniques)
+"""
+        
+        try:
+            llm_response = await self.orchestrator.process(prompt)
+            analysis = llm_response.content
+        except Exception as e:
+            logger.warning(f"[Recon] LLM analysis failed: {e}")
+            analysis = "LLM analysis not available"
+        
+        return {
+            "domain": domain,
+            "target_info": target_info,
+            "subdomain_data": subdomain_data,
+            "analysis": analysis,
+            "recommended_targets": live_subdomains[:10] if live_subdomains else [domain],
+        }
