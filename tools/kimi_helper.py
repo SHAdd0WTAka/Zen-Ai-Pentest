@@ -158,22 +158,34 @@ def get_api_key():
     return None
 
 def query_kimi_api(prompt, system_prompt, model="kimi-k2.5", temperature=0.7):
-    """Sendet Query an Kimi API"""
+    """Sendet Query an Kimi oder OpenRouter API"""
     if not REQUESTS_AVAILABLE:
         console.print("[red]requests nicht installiert. Installiere: pip install requests[/red]")
         return None
     
     api_key = get_api_key()
     if not api_key:
-        console.print("[red]KIMI_API_KEY nicht gesetzt![/red]")
+        console.print("[red]API Key nicht gesetzt![/red]")
         console.print("[dim]Führe aus: python scripts/setup_wizard.py[/dim]")
         return None
     
-    url = "https://api.moonshot.cn/v1/chat/completions"
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json"
-    }
+    # Erkenne OpenRouter Keys
+    if api_key.startswith("sk-or-"):
+        url = "https://openrouter.ai/api/v1/chat/completions"
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+            "HTTP-Referer": "https://zen-ai-pentest.local",
+            "X-Title": "Zen-AI Pentest"
+        }
+        # Für OpenRouter: nutze free model falls nicht anders angegeben
+        if model == "kimi-k2.5":
+            model = "openrouter/free"
+    else:
+            headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        }
     
     data = {
         "model": model,
