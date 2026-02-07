@@ -35,7 +35,7 @@ console = Console()
 PERSONAS = {
     "recon": {
         "name": "[Recon] OSINT Specialist",
-        "emoji": "🔍",
+        "emoji": "[R]",
         "desc": "Subdomain-Enum, Port-Scanning, Technologie-Erkennung",
         "prompt": """Du bist ein OSINT-Spezialist und Recon-Experte für Penetration Testing.
 REGELN:
@@ -48,7 +48,7 @@ REGELN:
     },
     "exploit": {
         "name": "[Exploit] Developer",
-        "emoji": "💣", 
+        "emoji": "[E]", 
         "desc": "Python-Exploits, POC-Entwicklung, Automation",
         "prompt": """Du bist ein Exploit-Developer für das Zen-AI-Pentest Framework.
 CODE-REGELN:
@@ -62,7 +62,7 @@ CODE-REGELN:
     },
     "report": {
         "name": "[Report] Technical Writer",
-        "emoji": "📝",
+        "emoji": "[Rep]",
         "desc": "CVSS-Scoring, Remediation, Executive Summary",
         "prompt": """Du bist ein Technical Writer für Pentest-Reports nach BSI/OWASP Standard.
 STRUKTUR:
@@ -77,7 +77,7 @@ FORMAT:
     },
     "audit": {
         "name": "[Audit] Code Auditor",
-        "emoji": "🔐",
+        "emoji": "[A]",
         "desc": "Sicherheits-Review, Bug-Bounty Pattern",
         "prompt": """Du bist ein Security Code Auditor für Python und Web-Applikationen.
 FOKUS:
@@ -92,7 +92,7 @@ OUTPUT:
     },
     "network": {
         "name": "[Network] Pentester", 
-        "emoji": "🌐",
+        "emoji": "[N]",
         "desc": "Infrastruktur, AD, Lateral Movement",
         "prompt": """Du bist ein Network Penetration Tester mit Fokus auf Active Directory und Infrastruktur.
 SPEZIALISIERUNG:
@@ -107,7 +107,7 @@ TOOLS:
     },
     "redteam": {
         "name": "[RedTeam] Operator",
-        "emoji": "🕵️",
+        "emoji": "[RT]",
         "desc": "Adversary Simulation, APT TTPs",
         "prompt": """Du bist ein Red Team Operator für Adversary Simulation.
 FOKUS:
@@ -326,7 +326,7 @@ Beispiele:
     # Login
     if args.login:
         if check_kimi_cli():
-            console.print("🔐 Starte kimi login...")
+            console.print("Starte kimi login...")
             subprocess.run(["kimi", "login"])
         else:
             console.print("[red]kimi CLI nicht installiert: pip install kimi-cli[/red]")
