@@ -20,8 +20,13 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Send webhook notification
-        if: secrets.WEBHOOK_URL != ''
+        env:
+          WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
         run: |
-          curl -X POST -H "Content-Type: application/json" \
-            -d '{"event":"${{ github.event_name }}","ref":"${{ github.ref }}","repo":"${{ github.repository }}"}' \
-            ${{ secrets.WEBHOOK_URL }} || echo "Webhook not configured"
+          if [ -n "$WEBHOOK_URL" ]; then
+            curl -X POST -H "Content-Type: application/json" \
+              -d '{"event":"${{ github.event_name }}","ref":"${{ github.ref }}","repo":"${{ github.repository }}"}' \
+              "$WEBHOOK_URL" || echo "Webhook failed"
+          else
+            echo "Webhook not configured"
+          fi

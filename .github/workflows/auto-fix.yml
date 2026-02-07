@@ -2,7 +2,7 @@ name: Auto-Fix Common Issues
 
 on:
   workflow_run:
-    workflows: ["Python Application - Test & Lint"]
+    workflows: ["Python CI", "CI/CD Pipeline (Improved)"]
     types:
       - completed
   workflow_dispatch:
