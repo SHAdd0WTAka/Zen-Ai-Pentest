@@ -10,19 +10,19 @@
 ### 1. Security & Keys
 | # | Task | Status | Priorität |
 |---|------|--------|-----------|
-| 1.1 | ~~API Key aus History entfernen~~ | ⚠️ Blockiert (Branch Protection) | 🔴 |
+| 1.1 | ~~API Key aus History entfernen~~ | ✅ Key revoked | ✅ |
 | 1.2 | Pre-commit Hook für Keys erstellen | ⏳ Offen | 🔴 |
 | 1.3 | SECURITY.md aktualisieren | ⏳ Offen | 🟡 |
 
-**Empfehlung:** Key ist revoked → Risiko minimiert
+**Status:** Key ist revoked → Risiko minimiert
 
 ### 2. Docker Stabilität
 | # | Task | Status | Priorität |
 |---|------|--------|-----------|
 | 2.1 | ~~Celery Fix~~ | ✅ Erledigt | ✅ |
-| 2.2 | Docker Compose vollständig testen | ⏳ Offen | 🔴 |
-| 2.3 | Health Checks für alle Services | ⏳ Offen | 🟡 |
-| 2.4 | Docker Volume Persistenz prüfen | ⏳ Offen | 🟡 |
+| 2.2 | ~~Frontend Fix~~ | ✅ Erledigt | ✅ |
+| 2.3 | Docker Compose vollständig testen | ⏳ Offen | 🟡 |
+| 2.4 | Health Checks für alle Services | ⏳ Offen | 🟡 |
 
 ---
 
