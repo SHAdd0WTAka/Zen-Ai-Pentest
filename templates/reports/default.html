@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Penetration Test Report - {{ scan.name }}</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px;
+        }
+        .header {
+            border-bottom: 4px solid #10b981;
+            padding-bottom: 30px;
+            margin-bottom: 40px;
+        }
+        .header h1 {
+            color: #1f2937;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        .header h2 {
+            color: #6b7280;
+            font-weight: normal;
+            font-size: 1.5em;
+        }
+        .meta {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            background: #f9fafb;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 40px;
+        }
+        .meta-item {
+            display: flex;
+            justify-content: space-between;
+        }
+        .meta-label {
+            font-weight: 600;
+            color: #4b5563;
+        }
+        .summary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 40px;
+        }
+        .summary h3 {
+            font-size: 1.8em;
+            margin-bottom: 20px;
+        }
+        .severity-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .severity-box {
+            text-align: center;
+            padding: 20px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.2);
+        }
+        .severity-count {
+            font-size: 2.5em;
+            font-weight: bold;
+        }
+        .severity-label {
+            font-size: 0.9em;
+            text-transform: uppercase;
+        }
+        .findings h3 {
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            color: #1f2937;
+        }
+        .finding {
+            background: #fff;
+            border-left: 5px solid #e5e7eb;
+            padding: 25px;
+            margin-bottom: 20px;
+            border-radius: 0 8px 8px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .finding.critical { border-left-color: #dc2626; }
+        .finding.high { border-left-color: #ea580c; }
+        .finding.medium { border-left-color: #ca8a04; }
+        .finding.low { border-left-color: #65a30d; }
+        .finding-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .finding-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #1f2937;
+        }
+        .severity-badge {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .severity-badge.critical { background: #fee2e2; color: #dc2626; }
+        .severity-badge.high { background: #ffedd5; color: #ea580c; }
+        .severity-badge.medium { background: #fef3c7; color: #ca8a04; }
+        .severity-badge.low { background: #ecfccb; color: #65a30d; }
+        .finding-section {
+            margin-top: 15px;
+        }
+        .finding-section h4 {
+            font-size: 1em;
+            color: #4b5563;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .cvss-score {
+            display: inline-block;
+            background: #1f2937;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .footer {
+            margin-top: 60px;
+            padding-top: 20px;
+            border-top: 2px solid #e5e7eb;
+            text-align: center;
+            color: #9ca3af;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔒 Penetration Test Report</h1>
+        <h2>{{ scan.name }}</h2>
+    </div>
+
+    <div class="meta">
+        <div class="meta-item">
+            <span class="meta-label">Target:</span>
+            <span>{{ scan.target }}</span>
+        </div>
+        <div class="meta-item">
+            <span class="meta-label">Scan Type:</span>
+            <span>{{ scan.scan_type }}</span>
+        </div>
+        <div class="meta-item">
+            <span class="meta-label">Status:</span>
+            <span>{{ scan.status }}</span>
+        </div>
+        <div class="meta-item">
+            <span class="meta-label">Generated:</span>
+            <span>{{ generated_at.strftime('%Y-%m-%d %H:%M') }}</span>
+        </div>
+    </div>
+
+    <div class="summary">
+        <h3>📊 Executive Summary</h3>
+        <p>Total Findings: {{ findings|length }}</p>
+        <div class="severity-grid">
+            <div class="severity-box">
+                <div class="severity-count">{{ counts.critical }}</div>
+                <div class="severity-label">Critical</div>
+            </div>
+            <div class="severity-box">
+                <div class="severity-count">{{ counts.high }}</div>
+                <div class="severity-label">High</div>
+            </div>
+            <div class="severity-box">
+                <div class="severity-count">{{ counts.medium }}</div>
+                <div class="severity-label">Medium</div>
+            </div>
+            <div class="severity-box">
+                <div class="severity-count">{{ counts.low }}</div>
+                <div class="severity-label">Low</div>
+            </div>
+            <div class="severity-box">
+                <div class="severity-count">{{ counts.info }}</div>
+                <div class="severity-label">Info</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="findings">
+        <h3>🎯 Detailed Findings</h3>
+        {% for finding in findings %}
+        <div class="finding {{ finding.severity.lower() }}">
+            <div class="finding-header">
+                <span class="finding-title">{{ finding.title }}</span>
+                <span class="severity-badge {{ finding.severity.lower() }}">
+                    {{ finding.severity }}
+                </span>
+            </div>
+            
+            <div class="finding-section">
+                <h4>Description</h4>
+                <p>{{ finding.description }}</p>
+            </div>
+            
+            <div class="finding-section">
+                <h4>Impact</h4>
+                <p>{{ finding.impact or 'No impact specified' }}</p>
+            </div>
+            
+            <div class="finding-section">
+                <h4>Remediation</h4>
+                <p>{{ finding.remediation }}</p>
+            </div>
+            
+            {% if finding.cvss_score %}
+            <div class="finding-section">
+                <h4>CVSS Score</h4>
+                <span class="cvss-score">{{ finding.cvss_score }}</span>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="footer">
+        <p>Generated by Zen-AI Pentest Framework v2.5.0</p>
+        <p>© 2026 - Confidential</p>
+    </div>
+</body>
+</html>
