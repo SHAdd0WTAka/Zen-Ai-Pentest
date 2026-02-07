@@ -59,6 +59,7 @@ from api.auth_simple import (
     USERS_DB
 )
 from api.websocket import ConnectionManager
+from api.websocket_manager import manager
 from api.rate_limiter import (
     check_auth_rate_limit,
     record_auth_failure,
@@ -624,6 +625,43 @@ async def api_info():
         "description": "Professional Pentesting Framework",
         "endpoints": {"scans": "/scans", "findings": "/scans/{id}/findings", "tools": "/tools", "reports": "/reports"},
     }
+
+
+@app.websocket("/ws/{client_id}")
+async def websocket_endpoint(websocket: WebSocket, client_id: str):
+    """
+    WebSocket Endpoint für Echtzeit-Updates
+    
+    Nutzung:
+    - Verbinden: wscat -c ws://localhost:8000/ws/client123
+    - Ping: {"type": "ping"}
+    - Subscribe: {"type": "subscribe", "channel": "scans"}
+    """
+    await manager.connect(websocket, client_id)
+    try:
+        while True:
+            data = await websocket.receive_text()
+            message = json.loads(data)
+            
+            if message.get("type") == "ping":
+                await manager.send_personal_message({
+                    "type": "pong",
+                    "timestamp": datetime.utcnow().isoformat()
+                }, websocket)
+            
+            elif message.get("type") == "subscribe":
+                channel = message.get("channel", "general")
+                await manager.send_personal_message({
+                    "type": "subscribed",
+                    "channel": channel,
+                    "client_id": client_id
+                }, websocket)
+                
+    except WebSocketDisconnect:
+        manager.disconnect(websocket, client_id)
+    except Exception as e:
+        print(f"WebSocket error: {e}")
+        manager.disconnect(websocket, client_id)
 
 
 # ============================================================================
