@@ -36,6 +36,35 @@ class ReportFormat(str, Enum):
 
 
 # ============================================================================
+# AUTH SCHEMAS
+# ============================================================================
+
+
+class UserLogin(BaseModel):
+    username: str = Field(..., min_length=3, max_length=50)
+    password: str = Field(..., min_length=6)
+
+
+class UserCreate(BaseModel):
+    username: str = Field(..., min_length=3, max_length=50)
+    password: str = Field(..., min_length=6)
+    role: str = Field(default="user", pattern="^(admin|user)$")
+
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    expires_in: int
+    username: str
+    role: str
+
+
+class UserInfo(BaseModel):
+    username: str
+    role: str
+
+
+# ============================================================================
 # BASE SCHEMAS
 # ============================================================================
 
