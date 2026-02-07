@@ -1,6 +1,7 @@
 {
   "backends": {
     "openrouter_api_key": null,
+    "kimi_api_key": null,
     "chatgpt_token": null,
     "claude_session": null
   },

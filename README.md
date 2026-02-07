@@ -27,9 +27,6 @@
 
 ## 🚀 Quick Start
 
-> ⚠️ **Wichtig:** Jeder Benutzer muss seine eigenen API Keys konfigurieren!
-> Siehe [README_USER_SETUP.md](README_USER_SETUP.md) für Details.
-
 [![Version](https://img.shields.io/badge/Version-2.3.9-orange)](https://github.com/SHAdd0WTAka/zen-ai-pentest/releases)
 [![Python](https://img.shields.io/badge/Python-3.9%2B-blue)](https://python.org)
 [![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
@@ -216,13 +213,6 @@ docker-compose up -d
 # Install dependencies
 pip install -r requirements.txt
 
-# Configure your API keys (each user must do this!)
-python scripts/setup_wizard.py -b kimi -m kimi-k2.5 -k "your-api-key"
-# Or interactive: python scripts/setup_wizard.py
-
-# Verify configuration
-python scripts/check_config.py
-
 # Initialize database
 python database/models.py
 
@@ -239,36 +229,6 @@ python scripts/setup_vms.py --kali
 # Manual setup
 # See docs/setup/VIRTUALBOX_SETUP.md
 ```
-
----
-
-## 🤖 AI Assistant (Kimi Helper)
-
-Zen-AI-Pentest includes a built-in AI assistant with specialized personas for different pentesting phases:
-
-```bash
-# One-shot queries
-python tools/kimi_helper.py -p recon "Analyze example.com for subdomains"
-python tools/kimi_helper.py -p exploit "Write SQLi scanner for login forms"
-python tools/kimi_helper.py -p report "Generate CVSS report for XSS bug"
-python tools/kimi_helper.py -p audit "Review this code for vulnerabilities"
-
-# Interactive mode with context
-python tools/kimi_helper.py -i
-# Commands: /recon, /exploit, /report, /audit, /clear, /exit
-
-# Switch between AI backends
-python scripts/switch_model.py --list
-python scripts/switch_model.py -b openai -m gpt-4o
-```
-
-**Available Personas:**
-- **recon**: OSINT specialist for reconnaissance
-- **exploit**: Python exploit developer
-- **report**: Technical writer for pentest reports
-- **audit**: Security code reviewer
-
-See [KIMI_PERSONAS.md](docs/KIMI_PERSONAS.md) for details.
 
 ---
 
