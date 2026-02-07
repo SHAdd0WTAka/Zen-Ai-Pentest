@@ -172,6 +172,14 @@
 - **Notifications**: Slack, JIRA, Email alerts
 - **Exit Codes**: Pipeline-friendly status codes
 
+### 🧠 AI Persona System
+- **11 Specialized Personas**: Recon, Exploit, Report, Audit, Social, Network, Mobile, Red Team, ICS, Cloud, Crypto
+- **CLI Tool**: Interactive and one-shot modes (`k-recon`, `k-exploit`, etc.)
+- **REST API**: Flask-based API with WebSocket support
+- **Web UI**: Modern browser interface with screenshot analysis
+- **Context Preservation**: Multi-turn conversations with memory
+- **Screenshot Analysis**: Upload and analyze images with AI personas
+
 ### 🛠️ 20+ Integrated Tools
 | Category | Tools |
 |----------|-------|
@@ -220,7 +228,24 @@ python database/models.py
 python api/main.py
 ```
 
-### Option 3: VirtualBox VM Setup
+### Option 3: AI Personas Quick Start
+
+```bash
+# Start the AI Personas API & Web UI
+bash api/QUICKSTART.sh
+
+# Or manually:
+bash api/manage.sh start
+# Open http://127.0.0.1:5000
+
+# CLI Usage
+source tools/setup_aliases.sh
+k-recon "Target: example.com"
+k-exploit "Write SQLi scanner"
+k-chat  # Interactive mode
+```
+
+### Option 4: VirtualBox VM Setup
 
 ```bash
 # Automated Kali Linux setup
