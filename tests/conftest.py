@@ -1,44 +1,64 @@
 """
-Pytest configuration and shared fixtures
+Pytest Fixtures für Zen-AI Pentest Tests
 """
-
-import sys
-from unittest.mock import MagicMock, Mock
-
-# Mock external dependencies BEFORE any imports
-# DNS module
-_dns_mock = MagicMock()
-_dns_mock.resolver = MagicMock()
-_dns_mock.query = MagicMock()
-_dns_mock.zone = MagicMock()
-if 'dns' not in sys.modules:
-    sys.modules['dns'] = _dns_mock
-    sys.modules['dns.resolver'] = _dns_mock.resolver
-    sys.modules['dns.query'] = _dns_mock.query
-    sys.modules['dns.zone'] = _dns_mock.zone
-
-# aiohttp mock
-_aiohttp_mock = MagicMock()
-_aiohttp_mock.ClientSession = MagicMock
-_aiohttp_mock.ClientTimeout = MagicMock
-if 'aiohttp' not in sys.modules:
-    sys.modules['aiohttp'] = _aiohttp_mock
-
-# requests mock
-_requests_mock = MagicMock()
-if 'requests' not in sys.modules:
-    sys.modules['requests'] = _requests_mock
-
 import pytest
+from fastapi.testclient import TestClient
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+import sys
+from pathlib import Path
+
+# Add parent to path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from database.models import Base, get_db
+from api.main import app
+
+# Test Database
+SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
+engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
+TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+
+def override_get_db():
+    """Override für Test-Datenbank"""
+    try:
+        db = TestingSessionLocal()
+        yield db
+    finally:
+        db.close()
+
+
+@pytest.fixture(scope="function")
+def db():
+    """Erstellt frische Test-Datenbank pro Test"""
+    Base.metadata.create_all(bind=engine)
+    db = TestingSessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+        Base.metadata.drop_all(bind=engine)
 
 
 @pytest.fixture
-def mock_openai_client():
-    client = Mock()
-    client.chat.completions.create.return_value = Mock(choices=[Mock(message=Mock(content="Test response"))])
-    return client
+def client(db):
+    """FastAPI Test Client mit Test-DB"""
+    app.dependency_overrides[get_db] = override_get_db
+    with TestClient(app) as c:
+        yield c
+    app.dependency_overrides.clear()
 
 
 @pytest.fixture
-def sample_cve_data():
-    return {"id": "CVE-2023-1234", "severity": "HIGH", "cvss_score": 8.5, "description": "Test vulnerability"}
+def auth_token():
+    """Test JWT Token"""
+    from api.auth_simple import create_access_token
+    token = create_access_token({"sub": "testuser", "role": "admin"})
+    return token
+
+
+@pytest.fixture
+def auth_headers(auth_token):
+    """Auth Headers für API Requests"""
+    return {"Authorization": f"Bearer {auth_token}"}
