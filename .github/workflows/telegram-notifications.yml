@@ -21,12 +21,17 @@ on:
         required: false
         default: 'Test notification from Zen-AI-Pentest'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
 jobs:
   notify:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     if: always()
     env:
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
