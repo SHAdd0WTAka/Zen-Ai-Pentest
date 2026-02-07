@@ -1026,6 +1026,15 @@ try:
 except ImportError as e:
     logger.warning(f"Could not load Scans v1.0 endpoints: {e}")
 
+# Subdomain scanning routes
+try:
+    from api.routes.subdomain import router as subdomain_router
+
+    app.include_router(subdomain_router, prefix="/api/v1/subdomain", tags=["Subdomain"])
+    logger.info("Subdomain scanning endpoints loaded")
+except ImportError as e:
+    logger.warning(f"Could not load Subdomain endpoints: {e}")
+
 if __name__ == "__main__":
     import uvicorn
 
