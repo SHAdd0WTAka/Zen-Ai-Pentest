@@ -1,143 +1,208 @@
-# Kimi CLI Personas für Zen-AI Pentest
+# Kimi Personas für Zen-AI Pentest
 
-## Übersicht
+Zen-AI Pentest bietet spezialisierte AI-Personas für verschiedene Pentesting-Phasen.
 
-Personas sind spezialisierte System-Prompts für verschiedene Pentesting-Phasen.
-
-## Verfügbare Personas
-
-| Persona | Datei | Verwendung |
-|---------|-------|------------|
-| **Recon** | `~/.config/kimi/personas/recon.md` | OSINT, Subdomain-Scanning, Port-Scanning |
-| **Exploit** | `~/.config/kimi/personas/exploit.md` | Exploit-Entwicklung, Python-Code |
-| **Report** | `~/.config/kimi/personas/report.md` | Pentest-Berichte, CVSS-Scoring |
-| **Audit** | `~/.config/kimi/personas/audit.md` | Code Review, Security Audit |
-
-## Installation
-
-### 1. Personas erstellen
+## Schnellstart
 
 ```bash
-# Linux/macOS
-mkdir -p ~/.config/kimi/personas
+# Status prüfen
+python tools/kimi_helper.py --check
 
-# Windows
-mkdir %USERPROFILE%\.config\kimi\personas
-```
-
-### 2. Wrapper-Script verwenden
-
-#### Linux/macOS
-```bash
-# Recon-Modus
-./scripts/ask-kimi.sh recon "Analysiere example.com"
-
-# Exploit-Modus
-./scripts/ask-kimi.sh exploit "Schreibe SQLi-Scanner"
-
-# Report-Modus
-./scripts/ask-kimi.sh report "CVSS-Bericht für XSS"
-```
-
-#### Windows (PowerShell)
-```powershell
-# Recon-Modus
-.\scripts\ask-kimi.ps1 recon "Analysiere example.com"
-
-# Exploit-Modus
-.\scripts\ask-kimi.ps1 exploit "Schreibe SQLi-Scanner"
-```
-
-#### Windows (CMD)
-```cmd
-scripts\ask-kimi.bat recon "Analysiere example.com"
-```
-
-## Kimi Helper Tool (Empfohlen)
-
-### Installation & Nutzung
-
-```bash
-# Liste alle Personas
-python tools/kimi_helper.py --list
-
-# One-Shot Anfrage
-python tools/kimi_helper.py -p recon "Analysiere example.com"
-python tools/kimi_helper.py -p exploit "SQLi-Scanner fuer login.php"
-python tools/kimi_helper.py -p report "CVSS-Bericht fuer XSS"
-python tools/kimi_helper.py -p audit "Review diese Python-Funktion"
-
-# Aus Datei lesen
-python tools/kimi_helper.py -p exploit -f request.txt
-
-# Mit Temperature (Kreativitaet)
-python tools/kimi_helper.py -p recon -t 0.3 "Scan example.com"
+# Mit Persona arbeiten
+python tools/kimi_helper.py -p recon "Analysiere target.com"
+python tools/kimi_helper.py -p exploit "SQLi-Scanner schreiben"
+python tools/kimi_helper.py -p report "CVSS-Bericht erstellen"
 
 # Interaktiver Modus
 python tools/kimi_helper.py -i
+
+# Oder mit lokaler kimi CLI
+python tools/kimi_helper.py --cli -p recon
 ```
 
-### Interaktiver Modus
+## Personas
 
-```
-/recon     -> Wechsle zu Recon Persona
-/exploit   -> Wechsle zu Exploit Persona
-/report    -> Wechsle zu Report Persona
-/audit     -> Wechsle zu Audit Persona
-/clear     -> History loeschen
-/exit      -> Beenden
-```
+| Persona | Emoji | Fokus |
+|---------|-------|-------|
+| **recon** | 🔍 | OSINT, Subdomains, Ports, Technologien |
+| **exploit** | 💣 | Python-Exploits, POCs, Automation |
+| **report** | 📝 | CVSS-Scoring, Remediation, Executive Summary |
+| **audit** | 🔐 | Code Review, Security Audit, Bug Bounty |
+| **network** | 🌐 | Infrastruktur, AD, Lateral Movement |
+| **redteam** | 🕵️ | Adversary Simulation, APT TTPs |
 
-## Aliase (Optional)
+## Zwei Modi
 
-### Linux/macOS (~/.bashrc oder ~/.zshrc)
+### API Mode (Standard)
+Nutzt die Kimi API direkt - erfordert API Key.
+
 ```bash
-alias recon='~/zen-ai-pentest/scripts/ask-kimi.sh recon'
-alias exploit='~/zen-ai-pentest/scripts/ask-kimi.sh exploit'
-alias report='~/zen-ai-pentest/scripts/ask-kimi.sh report'
+python tools/kimi_helper.py -p recon "Scan target.com"
 ```
 
-### Windows (PowerShell $PROFILE)
+**Vorteile:**
+- Keine lokale Installation nötig
+- Funktioniert überall
+- Bessere Fehlerbehandlung
+
+### CLI Mode
+Nutzt die lokale `kimi` CLI - erfordert Installation + Login.
+
+```bash
+# Einmalig installieren
+pip install kimi-cli
+kimi login
+
+# Dann nutzen
+python tools/kimi_helper.py --cli -p recon
+```
+
+**Vorteile:**
+- Session-basierte Authentifizierung
+- Interaktiver Chat
+- Kein API Key Management
+
+## Installation & Setup
+
+### 1. API Mode Setup
+
+```bash
+# API Key konfigurieren
+python scripts/setup_wizard.py -b kimi -m kimi-k2.5 -k "sk-your-key"
+
+# Oder interaktiv
+python scripts/setup_wizard.py
+```
+
+### 2. CLI Mode Setup
+
+```bash
+# kim CLI installieren
+pip install kimi-cli
+
+# Einloggen
+kimi login
+# oder
+python tools/kimi_helper.py --login
+```
+
+### 3. Verifizieren
+
+```bash
+python tools/kimi_helper.py --check
+```
+
+## Aliase einrichten
+
+### PowerShell
+
 ```powershell
-function recon { & "$env:USERPROFILE\zen-ai-pentest\scripts\ask-kimi.ps1" recon @args }
-function exploit { & "$env:USERPROFILE\zen-ai-pentest\scripts\ask-kimi.ps1" exploit @args }
-function report { & "$env:USERPROFILE\zen-ai-pentest\scripts\ask-kimi.ps1" report @args }
+# Automatisch (Windows)
+.\scripts\setup_kimi_aliases.ps1
+
+# Oder manuell in $PROFILE:
+function zki { python "$env:USERPROFILE\zen-ai-pentest\tools\kimi_helper.py" @args }
+function zrecon { python "$env:USERPROFILE\zen-ai-pentest\tools\kimi_helper.py" -p recon @args }
+function zexploit { python "$env:USERPROFILE\zen-ai-pentest\tools\kimi_helper.py" -p exploit @args }
+function zreport { python "$env:USERPROFILE\zen-ai-pentest\tools\kimi_helper.py" -p report @args }
+function zaudit { python "$env:USERPROFILE\zen-ai-pentest\tools\kimi_helper.py" -p audit @args }
 ```
 
-## Empfohlene Kimi-Einstellungen
+### Bash/Linux
 
-| Einstellung | Coding | Recon | Reports |
-|-------------|--------|-------|---------|
-| **Model** | kimi-k2.5 | kimi-k2.5 | kimi-k2.5 |
-| **Temperature** | 0.3 | 0.7 | 0.5 |
-| **Max Tokens** | 2048 | 4096 | 8192 |
+```bash
+# Automatisch
+bash tools/setup_kimi_aliases.sh
 
-## Eigene Personas erstellen
-
-Erstelle eine neue `.md` Datei in `~/.config/kimi/personas/`:
-
-```markdown
-Du bist ein [Spezialist für X].
-- Regel 1
-- Regel 2
-- Output: Format
+# Oder manuell in ~/.bashrc:
+alias zki='python3 ~/zen-ai-pentest/tools/kimi_helper.py'
+alias zrecon='python3 ~/zen-ai-pentest/tools/kimi_helper.py -p recon'
+alias zexploit='python3 ~/zen-ai-pentest/tools/kimi_helper.py -p exploit'
+alias zreport='python3 ~/zen-ai-pentest/tools/kimi_helper.py -p report'
+alias zaudit='python3 ~/zen-ai-pentest/tools/kimi_helper.py -p audit'
 ```
 
-## Umgebungsvariablen
+## Interaktiver Modus
 
-| Variable | Beschreibung | Standard |
-|----------|--------------|----------|
-| `KIMI_PERSONA_DIR` | Pfad zu den Persona-Dateien | `~/.config/kimi/personas` |
+```bash
+python tools/kimi_helper.py -i
+```
+
+Befehle:
+- `/recon`, `/exploit`, `/report`, `/audit`, `/network`, `/red` - Persona wechseln
+- `/clear` - History löschen
+- `/exit` - Beenden
+
+## Beispiele
+
+### Reconnaissance
+
+```bash
+zrecon "Finde alle Subdomains von example.com mit amass und subfinder"
+zrecon "Nmap Scan für Top 1000 Ports auf 192.168.1.0/24"
+zrecon "Technologie-Stack von target.com identifizieren"
+```
+
+### Exploit Development
+
+```bash
+zexploit "Python-Scanner für SQL Injection in Login-Formularen"
+zexploit "PoC für CVE-2024-1234 als Python-Script"
+zexploit "Buffer Overflow Exploit für vulnerable_app.exe"
+```
+
+### Reporting
+
+```bash
+zreport "CVSS-Bericht für XSS auf admin.php mit PoC"
+zreport "Executive Summary für Critical SQL Injection"
+zreport "Remediation Plan für 5 gefundene Schwachstellen"
+```
+
+### Code Audit
+
+```bash
+zaudit "Review login() Funktion auf Auth-Bypass"
+zaudit "Suche nach Race Conditions in file_upload.py"
+zaudit "OWASP Top 10 Analyse für api/endpoints.py"
+```
 
 ## Troubleshooting
 
-### "kimi-cli nicht gefunden"
+### "API Key nicht gefunden"
+
 ```bash
-pip install kimi-cli
+# Setup durchführen
+python scripts/setup_wizard.py -b kimi -k "sk-your-key"
+
+# Oder Umgebungsvariable setzen
+export KIMI_API_KEY="sk-your-key"  # Linux/Mac
+$env:KIMI_API_KEY="sk-your-key"    # PowerShell
 ```
 
-### "Persona nicht gefunden"
-Prüfe, ob die `.md` Datei existiert:
+### "kimi CLI nicht installiert"
+
 ```bash
-ls ~/.config/kimi/personas/
+pip install kimi-cli
+kimi login
 ```
+
+### "requests nicht installiert"
+
+```bash
+pip install requests rich
+```
+
+## Weitere Tools
+
+| Tool | Zweck |
+|------|-------|
+| `scripts/setup_wizard.py` | API Keys konfigurieren |
+| `scripts/check_config.py` | Konfiguration prüfen |
+| `scripts/switch_model.py` | Backend/Modell wechseln |
+| `scripts/ask-kimi.sh/ps1/bat` | Wrapper-Scripts |
+
+## Siehe auch
+
+- [README_USER_SETUP.md](../README_USER_SETUP.md) - Detaillierte Setup-Anleitung
+- [ALIASES.md](ALIASES.md) - Alias-Dokumentation

@@ -1,103 +1,56 @@
 #!/usr/bin/env python3
 """
-Kimi AI Helper für Zen-Ai-Pentest
-Managed Skills/Personas für verschiedene Pentest-Phasen
+Kimi AI Helper für Zen-AI-Pentest
+Unified Tool: Unterstützt sowohl API-Mode als auch CLI-Mode
+
+Usage:
+    # API Mode (Standard)
+    python tools/kimi_helper.py -p recon "Scan target.com"
+    
+    # CLI Mode (lokale kimi CLI)
+    python tools/kimi_helper.py --cli -p recon
+    
+    # Interaktiv
+    python tools/kimi_helper.py -i
 """
 
 import os
 import sys
 import argparse
+import subprocess
 from pathlib import Path
 from rich.console import Console
 from rich.panel import Panel
 from rich.markdown import Markdown
-import requests
 
-# Add parent to path for config_loader
-sys.path.insert(0, str(Path(__file__).parent.parent))
-from config_loader import load_config
+try:
+    import requests
+    REQUESTS_AVAILABLE = True
+except ImportError:
+    REQUESTS_AVAILABLE = False
 
 console = Console()
 
+# Personas mit detaillierten System-Prompts
 PERSONAS = {
     "recon": {
-        "name": "🔍 Recon/OSINT Specialist",
-        "file": "recon.md",
-        "desc": "Subdomain枚举, Port扫描, Technologie-Erkennung"
-    },
-    "exploit": {
-        "name": "💣 Exploit Developer", 
-        "file": "exploit.md",
-        "desc": "Python-Exploits, POC-Entwicklung, Automation"
-    },
-    "report": {
-        "name": "📝 Technical Writer",
-        "file": "report.md", 
-        "desc": "CVSS-Scoring, Remediation, Executive Summary"
-    },
-    "audit": {
-        "name": "🔐 Code Auditor",
-        "file": "audit.md",
-        "desc": "Sicherheits-Review, Bug-Bounty Pattern"
-    },
-    "social": {
-        "name": "🎭 Social Engineering Specialist",
-        "file": "social.md",
-        "desc": "Phishing, Pretexting, OSINT auf Personen"
-    },
-    "network": {
-        "name": "🌐 Network Pentester",
-        "file": "network.md",
-        "desc": "Infrastruktur, Active Directory, Lateral Movement"
-    },
-    "mobile": {
-        "name": "📱 Mobile Security Expert",
-        "file": "mobile.md",
-        "desc": "Android/iOS, App-Analyse, API-Testing"
-    },
-    "redteam": {
-        "name": "🕵️ Red Team Operator",
-        "file": "redteam.md",
-        "desc": "Adversary Simulation, APT TTPs, C2 Operations"
-    },
-    "ics": {
-        "name": "🧪 ICS/SCADA Specialist",
-        "file": "ics.md",
-        "desc": "Industrial Control Systems, Modbus, S7, Safety"
-    },
-    "cloud": {
-        "name": "☁️ Cloud Security Expert",
-        "file": "cloud.md",
-        "desc": "AWS, Azure, GCP, Container, K8s Pentesting"
-    },
-    "crypto": {
-        "name": "🔬 Cryptography Analyst",
-        "file": "crypto.md",
-        "desc": "Kryptographie, Hash-Analyse, JWT, TLS"
-    }
-}
-
-def get_persona_dir():
-    """Erstellt und gibt Persona-Verzeichnis zurück"""
-    persona_dir = Path.home() / ".config" / "kimi" / "personas"
-    persona_dir.mkdir(parents=True, exist_ok=True)
-    return persona_dir
-
-def create_default_personas():
-    """Erstellt Default Skill-Files falls nicht vorhanden"""
-    persona_dir = get_persona_dir()
-    
-    personas_content = {
-        "recon.md": """Du bist ein OSINT-Spezialist und Recon-Experte für Penetration Testing.
+        "name": "[Recon] OSINT Specialist",
+        "emoji": "🔍",
+        "desc": "Subdomain-Enum, Port-Scanning, Technologie-Erkennung",
+        "prompt": """Du bist ein OSINT-Spezialist und Recon-Experte für Penetration Testing.
 REGELN:
 - Analysiere Ziele strukturiert: Subdomains → Ports → Technologien
 - Gib nur verifizierbare, echte Tools/Befehle an (keine Halluzinationen)
 - Output-Format: Markdown mit Code-Blocks für Befehle
 - Priorisierung: Critical (CVSS 9.0-10.0) > High > Medium > Low
-- Nutze Zen-Ai-Pentest Konventionen: Python 3.13, virtuelle Umgebungen
-- Wenn unsicher: Frage nach Verifikation statt zu raten""",
-        
-        "exploit.md": """Du bist ein Exploit-Developer für das Zen-Ai-Pentest Framework.
+- Nutze Zen-AI-Pentest Konventionen: Python 3.13, virtuelle Umgebungen
+- Wenn unsicher: Frage nach Verifikation statt zu raten"""
+    },
+    "exploit": {
+        "name": "[Exploit] Developer",
+        "emoji": "💣", 
+        "desc": "Python-Exploits, POC-Entwicklung, Automation",
+        "prompt": """Du bist ein Exploit-Developer für das Zen-AI-Pentest Framework.
 CODE-REGELN:
 - Python 3.13+ mit Type Hints wo sinnvoll
 - Nutze bestehende Module: config_loader.py, logging aus config.json
@@ -105,9 +58,13 @@ CODE-REGELN:
 - Kein Pseudo-Code, nur funktionierende Implementationen
 - Docstrings für alle Funktionen (Google-Stil)
 - Respektiere Rate-Limits: max 10 req/min, Backoff 60s
-- Stealth-Mode: Zufällige Delays (1-3s), User-Agent Rotation""",
-        
-        "report.md": """Du bist ein Technical Writer für Pentest-Reports nach BSI/OWASP Standard.
+- Stealth-Mode: Zufällige Delays (1-3s), User-Agent Rotation"""
+    },
+    "report": {
+        "name": "[Report] Technical Writer",
+        "emoji": "📝",
+        "desc": "CVSS-Scoring, Remediation, Executive Summary",
+        "prompt": """Du bist ein Technical Writer für Pentest-Reports nach BSI/OWASP Standard.
 STRUKTUR:
 1. Executive Summary (nicht-technisch, Risiko-basiert)
 2. Technical Details (Proof-of-Concept, Schritte)
@@ -116,9 +73,13 @@ STRUKTUR:
 FORMAT:
 - Markdown für GitHub/GitLab
 - Tabellen für Vergleiche
-- Code-Blocks für PoCs""",
-        
-        "audit.md": """Du bist ein Security Code Auditor für Python und Web-Applikationen.
+- Code-Blocks für PoCs"""
+    },
+    "audit": {
+        "name": "[Audit] Code Auditor",
+        "emoji": "🔐",
+        "desc": "Sicherheits-Review, Bug-Bounty Pattern",
+        "prompt": """Du bist ein Security Code Auditor für Python und Web-Applikationen.
 FOKUS:
 - OWASP Top 10 Patterns erkennen
 - Input Validation, Auth, Session Management
@@ -127,178 +88,87 @@ FOKUS:
 OUTPUT:
 - Zeilennummern referenzieren
 - CWE-IDs nennen
-- Fix-Vorschläge mit Diff-Format""",
-        
-        "social.md": """Du bist ein Social Engineering Spezialist für autorisierte Pentests.
-ETHIK & REGELN:
-- Nur für autorisierte Red Team Engagements
-- Keine Anleitungen für illegale Aktivitäten
-- Fokus auf Awareness-Training und Defense
-TECHNIKEN:
-- Phishing Email Analyse (Header, SPF/DKIM/DMARC)
-- Pretexting Szenarien für autorisierte Tests
-- OSINT auf Organisationen (NICHT Privatpersonen)
-- Vishing (Voice Phishing) Skript-Vorlagen
-OUTPUT:
-- Defense-Strategien priorisieren
-- Email-Sicherheits-Checks
-- Awareness-Training Empfehlungen""",
-        
-        "network.md": """Du bist ein Network Pentester für Infrastruktur-Tests.
-FOKUSBEREICHE:
-- Active Directory Enumeration (BloodHound, ldapsearch)
-- Lateral Movement Techniken (Pass-the-Hash, Kerberoasting)
-- Pivoting durch Netzwerk-Segmente
-- VLAN Hopping, ARP Spoofing
-- VPN & Remote Access Tests
+- Fix-Vorschläge mit Diff-Format"""
+    },
+    "network": {
+        "name": "[Network] Pentester", 
+        "emoji": "🌐",
+        "desc": "Infrastruktur, AD, Lateral Movement",
+        "prompt": """Du bist ein Network Penetration Tester mit Fokus auf Active Directory und Infrastruktur.
+SPEZIALISIERUNG:
+- Active Directory Enumeration und Angriffe
+- Lateral Movement Techniken
+- Network Protocol Analysis
+- Pivoting und Tunneling
 TOOLS:
-- impacket, crackmapexec, enum4linux
-- nmap NSE Scripts, masscan
-- Wireshark Analysis, tcpdump
-OUTPUT:
-- Network Diagramme (ASCII/Text)
-- Exploit Chains dokumentieren
-- Remediation: Segmentierung, ACLs, Monitoring""",
-        
-        "mobile.md": """Du bist ein Mobile Security Experte für Android & iOS.
-ANDROID:
-- APK Decompilation (jadx, apktool)
-- Insecure Storage, Hardcoded Keys
-- Intent Injection, Exported Components
-- Root Detection Bypass
-IOS:
-- IPA Analysis, Plist Files, Keychain
-- Jailbreak Detection Bypass
-- Binary Analysis mit otool, class-dump
-API-TESTING:
-- REST/GraphQL API Endpoints
-- Certificate Pinning Bypass
-- Traffic Interception (Burp, Objection)
-OUTPUT:
-- MobSF-kompatible Reports
-- Frida-Scripts für Bypass
-- Secure Coding Guidelines""",
-        
-        "redteam.md": """Du bist ein Red Team Operator für Adversary Simulation.
-TTPs (Tactics, Techniques, Procedures):
-- Initial Access: Spear Phishing, Watering Hole, Supply Chain
-- Execution: Living-off-the-Land (LoL), LOLBAS
-- Persistence: WMI Events, Registry Run Keys, Services
-- Privilege Escalation: Token Impersonation, Bypass UAC
-- Defense Evasion: AMSI Bypass, ETW Patching, Process Injection
-- C2: Cobalt Strike, Sliver, Mythic, Custom implants
-- Exfiltration: DNS Tunneling, Steganography, Cloud APIs
-OPSEC:
-- Kill Chain Planning
-- Indicators of Compromise (IOC) Minimierung
-- Attribution Hiding (False Flags)
-OUTPUT:
-- Kill Chain Diagramme
-- Detection-Engineering Empfehlungen
-- Purple Team Integration""",
-        
-        "ics.md": """Du bist ein ICS/SCADA Security Spezialist für kritische Infrastruktur.
-PROTOKOLLE:
-- Modbus TCP/RTU, DNP3, IEC 104/61850
-- Siemens S7, Omron FINS, EtherNet/IP
-- OPC UA, MQTT, CoAP
-ANGRIFFSVEKTOREN:
-- HMI Manipulation, PLC Code Injection
-- Safety System Bypass, Historian Angriffe
-- Network Segmentation Bypass ( Purdue Model )
-- Wireless: Zigbee, WirelessHART
-SAFETY FIRST:
-- Keine disruptive Tests ohne Outage-Plan
-- Safety Instrumented Systems (SIS) niemals targeten
-- Nur passive Enumeration in Produktion
-TOOLS:
-- mbtget, smbt, s7scan
-- Wireshark Dissectors, GRASSMARLIN
-OUTPUT:
-- Conpot-Konfigurationen für Honeypots
-- Network Architecture Reviews
-- IEC 62443 Compliance Checks""",
-        
-        "cloud.md": """Du bist ein Cloud Security Experte für AWS, Azure und GCP.
-AWS:
-- IAM Privilege Escalation (sts:AssumeRole, lambda:Invoke)
-- S3 Bucket Enumeration, ACL/Policy Misconfigs
-- EC2 Metadata Service (IMDSv1 vs v2), SSRF
-- Lambda, ECS, EKS Angriffsvektoren
-AZURE:
-- Azure AD Enumeration, Conditional Access Bypass
-- Storage Account SAS Token Manipulation
-- Managed Identity Abuse
-GCP:
-- Service Account Key Exploitation
-- Cloud Function Privilege Escalation
-- Org Policy Bypass
-KUBERNETES:
-- Pod Escape, Container Breakout
-- RBAC Misconfigurations
-- Supply Chain: Poisoned Images
-OUTPUT:
-- Prowler/ScoutSuite Report-Interpretation
-- Terraform/Pulumi Secure Configs
-- CloudTrail/GuardDuty Detections""",
-        
-        "crypto.md": """Du bist ein Kryptographie-Analyst für sicherheitsrelevante Reviews.
-SCHWÄCHEN:
-- Weak Randomness (predictable seeds)
-- ECB Mode, Weak Ciphers (DES, RC4)
-- Hardcoded Keys, IV Reuse
-- Padding Oracle, Bleichenbacher
-TOKEN & AUTH:
-- JWT: Algorithm Confusion (none/RS256), Weak Secrets
-- OAuth 2.0/PKCE Flow Validierung
-- Session Token Entropie-Analyse
-HASHING:
-- MD5/SHA1 Collisions
-- Password Hashing: bcrypt > PBKDF2 > scrypt > SHA256
-- Salt Reuse, Pepper Implementation
-TLS/SSL:
-- Certificate Validation Bypass
-- Weak Cipher Suites (3DES, EXPORT)
-- HSTS, Certificate Pinning
-OUTPUT:
-- Crypto Material Analysis (OpenSSL, keytool)
-- Remediation mit modernen Standards ( libsodium )
-- Keine eigenen Crypto-Implementierungen empfehlen"""
+- impacket, bloodhound, crackmapexec
+- nmap, responder, mitm6
+- chisel, ligolo-ng, sshuttle"""
+    },
+    "redteam": {
+        "name": "[RedTeam] Operator",
+        "emoji": "🕵️",
+        "desc": "Adversary Simulation, APT TTPs",
+        "prompt": """Du bist ein Red Team Operator für Adversary Simulation.
+FOKUS:
+- APT Tactics, Techniques, Procedures (TTPs)
+- OPSEC und Anti-Forensics
+- Command & Control Infrastruktur
+- Social Engineering und Phishing
+FRAMEWORKS:
+- MITRE ATT&CK Mapping
+- Cyber Kill Chain
+- Unified Kill Chain"""
     }
-    
-    for filename, content in personas_content.items():
-        filepath = persona_dir / filename
-        if not filepath.exists():
-            filepath.write_text(content)
-            console.print(f"[green]Created:[/green] {filepath}")
+}
 
-def load_persona(persona_name):
-    """Lädt System Prompt aus Persona-File"""
-    persona_dir = get_persona_dir()
-    
-    if persona_name not in PERSONAS:
-        available = ", ".join(PERSONAS.keys())
-        console.print(f"[red]❌ Unbekannte Persona: {persona_name}[/red]")
-        console.print(f"[dim]Verfügbar: {available}[/dim]")
-        return None
-        
-    persona_file = persona_dir / PERSONAS[persona_name]["file"]
-    
-    if not persona_file.exists():
-        create_default_personas()
-        
-    return persona_file.read_text()
+def check_kimi_cli():
+    """Prüft ob kimi CLI installiert ist"""
+    try:
+        subprocess.run(["kimi", "--version"], capture_output=True, check=True)
+        return True
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return False
 
-def query_kimi(prompt, system_prompt, model="kimi-k2.5", temperature=0.7):
+def check_kimi_logged_in():
+    """Prüft ob Session existiert"""
+    kimi_dir = Path.home() / ".kimi"
+    return kimi_dir.exists()
+
+def get_api_key():
+    """Holt API Key aus Umgebungsvariable oder .env"""
+    api_key = os.environ.get('KIMI_API_KEY')
+    if api_key:
+        return api_key
+    
+    # Versuche .env Datei
+    env_paths = [
+        Path(__file__).parent.parent / ".env",
+        Path.cwd() / ".env"
+    ]
+    
+    for env_path in env_paths:
+        if env_path.exists():
+            content = env_path.read_text()
+            import re
+            match = re.search(r'export KIMI_API_KEY="([^"]+)"', content)
+            if match:
+                return match.group(1)
+    
+    return None
+
+def query_kimi_api(prompt, system_prompt, model="kimi-k2.5", temperature=0.7):
     """Sendet Query an Kimi API"""
-    config = load_config()
-    api_key = config['backends']['kimi_api_key']
-    
-    if not api_key:
-        console.print("[red]❌ KIMI_API_KEY nicht gesetzt![/red]")
-        console.print("Führe aus: python3 setup_wizard.py")
+    if not REQUESTS_AVAILABLE:
+        console.print("[red]requests nicht installiert. Installiere: pip install requests[/red]")
         return None
-        
+    
+    api_key = get_api_key()
+    if not api_key:
+        console.print("[red]KIMI_API_KEY nicht gesetzt![/red]")
+        console.print("[dim]Führe aus: python scripts/setup_wizard.py[/dim]")
+        return None
+    
     url = "https://api.moonshot.cn/v1/chat/completions"
     headers = {
         "Authorization": f"Bearer {api_key}",
@@ -321,14 +191,46 @@ def query_kimi(prompt, system_prompt, model="kimi-k2.5", temperature=0.7):
             response.raise_for_status()
             return response.json()['choices'][0]['message']['content']
     except Exception as e:
-        console.print(f"[red]❌ API Fehler: {e}[/red]")
+        console.print(f"[red]API Fehler: {e}[/red]")
         return None
 
-def interactive_mode():
+def query_kimi_cli(prompt, persona):
+    """Nutzt lokale kimi CLI"""
+    if not check_kimi_cli():
+        console.print("[red]kimi CLI nicht installiert![/red]")
+        console.print("[dim]Installiere: pip install kimi-cli[/dim]")
+        return None
+    
+    if not check_kimi_logged_in():
+        console.print("[red]Nicht bei kimi CLI eingeloggt![/red]")
+        console.print("[dim]Führe aus: kimi login[/dim]")
+        return None
+    
+    system_prompt = PERSONAS.get(persona, {}).get("prompt", "")
+    full_prompt = f"{system_prompt}\n\n{prompt}" if system_prompt else prompt
+    
+    try:
+        result = subprocess.run(
+            ["kimi", "ask"],
+            input=full_prompt,
+            capture_output=True,
+            text=True,
+            timeout=120
+        )
+        return result.stdout
+    except subprocess.TimeoutExpired:
+        console.print("[red]Timeout - Kimi CLI hat nicht rechtzeitig geantwortet[/red]")
+        return None
+    except Exception as e:
+        console.print(f"[red]CLI Fehler: {e}[/red]")
+        return None
+
+def interactive_mode(use_cli=False):
     """Interaktiver Modus mit Context-Erhaltung"""
     console.print(Panel.fit(
-        "🧠 Zen-Ai Kimi Helper - Interactive Mode\n"
-        "Befehle: /recon, /exploit, /report, /audit, /clear, /exit",
+        f"Zen-AI Kimi Helper - Interactive Mode\n"
+        f"Mode: {'CLI' if use_cli else 'API'}\n"
+        "Befehle: /recon, /exploit, /report, /audit, /network, /red, /clear, /exit",
         title="Interactive", border_style="cyan"
     ))
     
@@ -347,91 +249,148 @@ def interactive_mode():
                 elif cmd == "clear":
                     history.clear()
                     console.clear()
+                    continue
                 elif cmd in PERSONAS:
                     current_persona = cmd
-                    console.print(f"[green]✅ Gewechselt zu:[/green] {PERSONAS[cmd]['name']}")
+                    console.print(f"[green]Gewechselt zu:[/green] {PERSONAS[cmd]['emoji']} {PERSONAS[cmd]['name']}")
+                    continue
                 else:
                     console.print("[red]Unbekannter Befehl[/red]")
-                continue
+                    continue
             
             if not user_input:
                 continue
-                
+            
             # Füge History hinzu für Context
             context = "\n".join(history[-3:]) if history else ""
             full_prompt = f"Context:\n{context}\n\nNeue Anfrage:\n{user_input}" if context else user_input
             
-            system_prompt = load_persona(current_persona)
-            if system_prompt:
-                response = query_kimi(full_prompt, system_prompt)
-                if response:
-                    console.print(Markdown(response))
-                    history.append(f"Q: {user_input}\nA: {response[:200]}...")
+            system_prompt = PERSONAS[current_persona]["prompt"]
+            
+            if use_cli:
+                response = query_kimi_cli(full_prompt, current_persona)
+            else:
+                response = query_kimi_api(full_prompt, system_prompt)
+            
+            if response:
+                console.print(Markdown(response))
+                history.append(f"Q: {user_input}\nA: {response[:200]}...")
                     
         except KeyboardInterrupt:
+            break
+        except EOFError:
             break
     
     console.print("[dim]Auf Wiedersehen![/dim]")
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Kimi AI Helper für Zen-Ai-Pentest",
+        description="Kimi AI Helper für Zen-AI-Pentest",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Beispiele:
+  # API Mode (Standard)
   %(prog)s -p recon "Analysiere example.com"
-  %(prog)s -p exploit -f request.txt
-  %(prog)s -i                    # Interaktiver Modus
+  %(prog)s -p exploit "SQLi-Scanner schreiben"
+  %(prog)s -p report "CVSS-Bericht erstellen"
+  
+  # CLI Mode (lokale kimi CLI)
+  %(prog)s --cli -p recon
+  
+  # Interaktiver Modus
+  %(prog)s -i
+  %(prog)s --cli -i
         """
     )
     
     parser.add_argument("prompt", nargs="?", help="Die Anfrage/Prompt")
-    parser.add_argument("-p", "--persona", choices=PERSONAS.keys(), 
-                       default="recon", help="Skill/Persona (default: recon)")
-    parser.add_argument("-f", "--file", type=Path, 
-                       help="Lese Prompt aus Datei")
+    parser.add_argument("-p", "--persona", choices=list(PERSONAS.keys()), 
+                       default="recon", help="Pentest Persona (default: recon)")
+    parser.add_argument("--cli", action="store_true",
+                       help="Nutze lokale kimi CLI statt API")
     parser.add_argument("-i", "--interactive", action="store_true",
                        help="Interaktiver Modus")
     parser.add_argument("-t", "--temperature", type=float, default=0.7,
                        help="Temperature 0.0-1.0 (default: 0.7)")
+    parser.add_argument("-m", "--model", default="kimi-k2.5",
+                       help="Model für API Mode (default: kimi-k2.5)")
+    parser.add_argument("--login", action="store_true",
+                       help="Bei kimi CLI einloggen")
+    parser.add_argument("--check", action="store_true",
+                       help="Status prüfen")
     parser.add_argument("--list", action="store_true",
-                       help="Zeige verfügbare Personas")
+                       help="Personas auflisten")
     
     args = parser.parse_args()
     
-    # Initialisiere Personas
-    create_default_personas()
+    # Login
+    if args.login:
+        if check_kimi_cli():
+            console.print("🔐 Starte kimi login...")
+            subprocess.run(["kimi", "login"])
+        else:
+            console.print("[red]kimi CLI nicht installiert: pip install kimi-cli[/red]")
+        return
     
+    # Check
+    if args.check:
+        console.print(Panel("Kimi Status Check", border_style="cyan"))
+        
+        # CLI Status
+        if check_kimi_cli():
+            console.print("[green]OK[/green] Kimi CLI installiert")
+            if check_kimi_logged_in():
+                console.print("[green]OK[/green] Kimi CLI eingeloggt")
+            else:
+                console.print("[yellow]WARN[/yellow] Kimi CLI nicht eingeloggt")
+        else:
+            console.print("[red]ERR[/red] Kimi CLI nicht installiert")
+        
+        # API Status
+        api_key = get_api_key()
+        if api_key:
+            console.print("[green]OK[/green] API Key konfiguriert")
+        else:
+            console.print("[red]ERR[/red] API Key nicht konfiguriert")
+            console.print("[dim]  Führe aus: python scripts/setup_wizard.py[/dim]")
+        return
+    
+    # List
     if args.list:
         console.print("[bold]Verfügbare Personas:[/bold]")
         for key, data in PERSONAS.items():
-            console.print(f"  [cyan]{key:10}[/cyan] {data['name']} - {data['desc']}")
+            console.print(f"  {data['emoji']} [cyan]{key:10}[/cyan] {data['name']} - {data['desc']}")
         return
     
+    # Interaktiver Modus
     if args.interactive:
-        interactive_mode()
+        interactive_mode(use_cli=args.cli)
         return
     
     # Normaler One-Shot Modus
-    if args.file:
-        prompt = args.file.read_text()
-    elif args.prompt:
-        prompt = args.prompt
-    else:
+    if not args.prompt:
         parser.print_help()
         return
     
-    system_prompt = load_persona(args.persona)
-    if not system_prompt:
-        return
-        
-    console.print(Panel(f"[bold]{PERSONAS[args.persona]['name']}[/bold]", 
-                       border_style="cyan"))
+    system_prompt = PERSONAS[args.persona]["prompt"]
     
-    response = query_kimi(prompt, system_prompt, temperature=args.temperature)
+    console.print(Panel(
+        f"{PERSONAS[args.persona]['emoji']} [bold]{PERSONAS[args.persona]['name']}[/bold]\n"
+        f"Mode: {'CLI' if args.cli else 'API'}",
+        border_style="cyan"
+    ))
+    
+    if args.cli:
+        response = query_kimi_cli(args.prompt, args.persona)
+    else:
+        response = query_kimi_api(args.prompt, system_prompt, model=args.model, temperature=args.temperature)
     
     if response:
         console.print(Markdown(response))
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        console.print("\n[dim]Abgebrochen.[/dim]")
+        sys.exit(0)

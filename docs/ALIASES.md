@@ -2,93 +2,73 @@
 
 Schnellzugriff auf alle wichtigen Tools via Kurzbefehle.
 
-## PowerShell (Empfohlen)
+## Automatische Installation
 
-### Installation
+### PowerShell (Windows)
 
 ```powershell
-# Aliase wurden automatisch zu deinem Profil hinzugefuegt
-# Neues PowerShell-Fenster oeffnen oder Profil neu laden:
+# Aliase werden automatisch beim ersten Setup hinzugefügt
+# Profil neu laden oder neues PowerShell-Fenster öffnen:
 . $PROFILE
 ```
 
-### Verfuegbare Aliase
+### Bash (Linux/macOS/WSL)
+
+```bash
+# Füge zu ~/.bashrc hinzu:
+echo 'alias zki="python3 ~/zen-ai-pentest/tools/kimi_helper.py"' >> ~/.bashrc
+echo 'alias zrecon="python3 ~/zen-ai-pentest/tools/kimi_helper.py -p recon"' >> ~/.bashrc
+echo 'alias zexploit="python3 ~/zen-ai-pentest/tools/kimi_helper.py -p exploit"' >> ~/.bashrc
+echo 'alias zreport="python3 ~/zen-ai-pentest/tools/kimi_helper.py -p report"' >> ~/.bashrc
+echo 'alias zaudit="python3 ~/zen-ai-pentest/tools/kimi_helper.py -p audit"' >> ~/.bashrc
+
+# Laden
+source ~/.bashrc
+```
+
+## Verfügbare Aliase
 
 | Alias | Befehl | Beschreibung |
 |-------|--------|--------------|
 | `zki` | `python tools/kimi_helper.py` | Kimi Helper (allgemein) |
-| `zrecon` | `python tools/kimi_helper.py -p recon` | Recon Persona |
-| `zexploit` | `python tools/kimi_helper.py -p exploit` | Exploit Persona |
-| `zreport` | `python tools/kimi_helper.py -p report` | Report Persona |
-| `zaudit` | `python tools/kimi_helper.py -p audit` | Audit Persona |
+| `zrecon` | `python tools/kimi_helper.py -p recon` | 🔍 Recon Persona |
+| `zexploit` | `python tools/kimi_helper.py -p exploit` | 💣 Exploit Persona |
+| `zreport` | `python tools/kimi_helper.py -p report` | 📝 Report Persona |
+| `zaudit` | `python tools/kimi_helper.py -p audit` | 🔐 Audit Persona |
 | `zsetup` | `python scripts/setup_wizard.py` | Setup Wizard |
 | `zcheck` | `python scripts/check_config.py` | Config Check |
 | `zswitch` | `python scripts/switch_model.py` | Model Switcher |
 
-### Beispiele
+## Manuelle Einrichtung
+
+### PowerShell ($PROFILE)
 
 ```powershell
-# Recon-Analyse
-zrecon "Finde Subdomains von example.com"
+# Zeige Profil-Pfad
+$PROFILE
 
-# Exploit entwickeln
-zexploit "Schreibe SQLi-Scanner fuer login.php"
-
-# Bericht erstellen
-zreport "CVSS-Bericht fuer XSS auf admin.php"
-
-# Code review
-zaudit "Review diese Funktion auf SQL Injection"
-
-# Konfiguration pruefen
-zcheck
-
-# Backend wechseln
-zswitch -b openai -m gpt-4o
-
-# Interaktiver Modus
-zki -i
+# Bearbeiten
+notepad $PROFILE
 ```
 
-## CMD (Eingabeaufforderung)
+Füge hinzu:
 
-### Verwendung
-
-```cmd
-# Hilfe anzeigen
-scripts\zen-alias.bat help
-
-# Recon
-scripts\zen-alias.bat zrecon "Scan target.com"
-
-# Exploit
-scripts\zen-alias.bat zexploit "Buffer Overflow PoC"
-
-# Config check
-scripts\zen-alias.bat zcheck
+```powershell
+# Zen-AI Pentest Aliase
+function zki { python "$env:USERPROFILE\zen-ai-pentest\tools\kimi_helper.py" @args }
+function zrecon { python "$env:USERPROFILE\zen-ai-pentest\tools\kimi_helper.py" -p recon @args }
+function zexploit { python "$env:USERPROFILE\zen-ai-pentest\tools\kimi_helper.py" -p exploit @args }
+function zreport { python "$env:USERPROFILE\zen-ai-pentest\tools\kimi_helper.py" -p report @args }
+function zaudit { python "$env:USERPROFILE\zen-ai-pentest\tools\kimi_helper.py" -p audit @args }
+function zsetup { python "$env:USERPROFILE\zen-ai-pentest\scripts\setup_wizard.py" @args }
+function zcheck { python "$env:USERPROFILE\zen-ai-pentest\scripts\check_config.py" }
+function zswitch { python "$env:USERPROFILE\zen-ai-pentest\scripts\switch_model.py" @args }
 ```
 
-## Bash (WSL/Git Bash)
-
-```bash
-# Fuege zu ~/.bashrc hinzu:
-alias zki='python3 ~/zen-ai-pentest/tools/kimi_helper.py'
-alias zrecon='python3 ~/zen-ai-pentest/tools/kimi_helper.py -p recon'
-alias zexploit='python3 ~/zen-ai-pentest/tools/kimi_helper.py -p exploit'
-alias zreport='python3 ~/zen-ai-pentest/tools/kimi_helper.py -p report'
-alias zaudit='python3 ~/zen-ai-pentest/tools/kimi_helper.py -p audit'
-alias zsetup='python3 ~/zen-ai-pentest/scripts/setup_wizard.py'
-alias zcheck='python3 ~/zen-ai-pentest/scripts/check_config.py'
-alias zswitch='python3 ~/zen-ai-pentest/scripts/switch_model.py'
-
-# Dann laden:
-source ~/.bashrc
-```
-
-## Zsh (macOS/Linux)
+### Zsh (~/.zshrc)
 
 ```zsh
-# Fuege zu ~/.zshrc hinzu:
+# Zen-AI Pentest Aliase
 alias zki='python3 ~/zen-ai-pentest/tools/kimi_helper.py'
 alias zrecon='python3 ~/zen-ai-pentest/tools/kimi_helper.py -p recon'
 alias zexploit='python3 ~/zen-ai-pentest/tools/kimi_helper.py -p exploit'
@@ -97,48 +77,66 @@ alias zaudit='python3 ~/zen-ai-pentest/tools/kimi_helper.py -p audit'
 alias zsetup='python3 ~/zen-ai-pentest/scripts/setup_wizard.py'
 alias zcheck='python3 ~/zen-ai-pentest/scripts/check_config.py'
 alias zswitch='python3 ~/zen-ai-pentest/scripts/switch_model.py'
-
-# Dann laden:
-source ~/.zshrc
 ```
 
-## Tastenkombinationen (PowerShell)
+## CMD (Windows)
 
-```powershell
-# Optional: Tastenkuerzel hinzufuegen
-Set-PSReadLineKeyHandler -Chord Ctrl+Shift+R -ScriptBlock {
-    [Microsoft.PowerShell.PSConsoleReadLine]::RevertLine()
-    [Microsoft.PowerShell.PSConsoleReadLine]::Insert('zrecon ""')
-    [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition(9)
-}
-
-Set-PSReadLineKeyHandler -Chord Ctrl+Shift+E -ScriptBlock {
-    [Microsoft.PowerShell.PSConsoleReadLine]::RevertLine()
-    [Microsoft.PowerShell.PSConsoleReadLine]::Insert('zexploit ""')
-    [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition(11)
-}
+```cmd
+# Verwende Batch-Wrapper
+scripts\zen-alias.bat zrecon "Scan target.com"
+scripts\zen-alias.bat zcheck
 ```
 
 ## Typischer Workflow
 
-```powershell
-# 1. Konfiguration pruefen
+```bash
+# 1. Konfiguration prüfen
 zcheck
 
-# 2. Setup (falls noetig)
+# 2. Setup (falls nötig)
 zsetup -b kimi -m kimi-k2.5 -k "sk-..."
 
-# 3. Recon durchfuehren
+# 3. Recon durchführen
 zrecon "Analysiere target.com"
 
 # 4. Exploit entwickeln
-zexploit "Schreibe PoC fuer gefundene Luecke"
+zexploit "Schreibe PoC für gefundene Lücke"
 
 # 5. Bericht erstellen
 zreport "CVSS-Bericht mit Remediation"
+
+# 6. Code review
+zaudit "Reviewe die Implementierung"
 ```
 
-## Fehlersuche
+## Interaktiver Modus
+
+```bash
+# Starten
+zki -i
+
+# Befehle:
+/recon     → Wechsle zu Recon Persona
+/exploit   → Wechsle zu Exploit Persona
+/report    → Wechsle zu Report Persona
+/audit     → Wechsle zu Audit Persona
+/network   → Wechsle zu Network Persona
+/red       → Wechsle zu RedTeam Persona
+/clear     → History löschen
+/exit      → Beenden
+```
+
+## CLI vs API Mode
+
+```bash
+# API Mode (Standard, erfordert Key)
+zrecon "Scan target.com"
+
+# CLI Mode (erfordert kim CLI)
+zki --cli -p recon
+```
+
+## Troubleshooting
 
 ### "Der Befehl zki wurde nicht gefunden"
 
@@ -146,13 +144,24 @@ zreport "CVSS-Bericht mit Remediation"
 # PowerShell-Profil neu laden
 . $PROFILE
 
-# Oder neues PowerShell-Fenster oeffnen
+# Oder neues PowerShell-Fenster öffnen
 ```
 
 ### "Python wurde nicht gefunden"
 
 ```powershell
-# Python zum PATH hinzufuegen
+# Python zum PATH hinzufügen
 # Oder vollen Pfad verwenden:
 C:\Python313\python.exe tools\kimi_helper.py ...
 ```
+
+### "Module nicht gefunden"
+
+```bash
+pip install -r requirements.txt
+```
+
+## Siehe auch
+
+- [KIMI_PERSONAS.md](KIMI_PERSONAS.md) - Persona-Dokumentation
+- [README_USER_SETUP.md](../README_USER_SETUP.md) - Setup-Anleitung
