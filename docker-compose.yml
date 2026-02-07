@@ -75,6 +75,7 @@ services:
       - /app/node_modules
     depends_on:
       - api
+    command: sh -c "npm ci && npm run build && npx serve -s build -l 3000"
     networks:
       - zen-network
     restart: unless-stopped

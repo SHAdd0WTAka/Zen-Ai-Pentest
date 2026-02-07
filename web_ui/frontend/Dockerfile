@@ -6,6 +6,9 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 
+# Install serve for production build
+RUN npm install -g serve
+
 # Copy app source
 COPY . .
 
