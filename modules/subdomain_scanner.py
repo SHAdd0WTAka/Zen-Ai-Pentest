@@ -9,8 +9,6 @@ import asyncio
 import json
 import logging
 import socket
-import ssl
-import subprocess
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -174,8 +172,6 @@ class SubdomainScanner:
     async def _dns_enumeration(self, domain: str) -> Set[str]:
         """Enumerate subdomains using DNS queries"""
         discovered = set()
-        record_types = ["A", "AAAA", "CNAME", "MX", "NS", "TXT", "SOA"]
-
         # Common prefixes for DNS enumeration
         prefixes = ["www", "mail", "ftp", "ns", "ns1", "ns2", "mx", "mx1", "mx2", "blog", "shop"]
 
@@ -463,7 +459,10 @@ Example: admin,api,dev,staging,us-west,cdn
             for subdomain, result in self.results.items():
                 ips = "|".join(result.ip_addresses) if result.ip_addresses else ""
                 techs = "|".join(result.technologies) if result.technologies else ""
-                lines.append(f'"{subdomain}","{ips}",{result.status_code or ""},"{result.server_header or ""}","{techs}",{result.is_alive}')
+                lines.append(
+                    f'"{subdomain}","{ips}",{result.status_code or ""},'
+                    f'"{result.server_header or ""}","{techs}",{result.is_alive}'
+                )
             return "\n".join(lines)
 
         else:

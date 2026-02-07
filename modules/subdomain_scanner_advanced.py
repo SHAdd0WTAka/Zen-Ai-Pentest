@@ -6,18 +6,14 @@ Author: SHAdd0WTAka
 """
 
 import asyncio
-import hashlib
 import json
 import logging
-import random
 import re
-import ssl
-import string
 from concurrent.futures import ThreadPoolExecutor
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
-from typing import Dict, List, Optional, Set, Tuple
-from urllib.parse import urljoin, urlparse
+from typing import Dict, List, Optional, Set
+from urllib.parse import urlparse
 
 import aiohttp
 import dns.query
@@ -97,7 +93,7 @@ class AdvancedSubdomainScanner(SubdomainScanner):
     ) -> Dict[str, SubdomainResult]:
         """
         Perform advanced subdomain enumeration with all techniques
-        
+
         Techniques:
         - basic: Basic DNS + wordlist + CRT.sh
         - axfr: DNS Zone Transfer attempts
@@ -186,12 +182,12 @@ class AdvancedSubdomainScanner(SubdomainScanner):
     async def _try_zone_transfer(self, domain: str) -> Set[str]:
         """Attempt DNS zone transfer (AXFR) from discovered NS servers"""
         discovered = set()
-        
+
         try:
             # Get NS records
             resolver = dns.resolver.Resolver()
             ns_records = resolver.resolve(domain, "NS")
-            
+
             for ns in ns_records:
                 ns_server = str(ns).rstrip(".")
                 try:
@@ -205,29 +201,29 @@ class AdvancedSubdomainScanner(SubdomainScanner):
                         logger.info(f"[AdvancedScanner] AXFR successful from {ns_server}")
                 except Exception as e:
                     logger.debug(f"[AdvancedScanner] AXFR failed from {ns_server}: {e}")
-                    
+
         except Exception as e:
             logger.debug(f"[AdvancedScanner] Zone transfer enumeration failed: {e}")
-            
+
         return discovered
 
     async def _permutation_scan(
-        self, 
-        domain: str, 
+        self,
+        domain: str,
         base_subdomains: Set[str],
     ) -> Set[str]:
         """Generate and test subdomain permutations"""
         discovered = set()
-        
+
         # Extract base names from discovered subdomains
         base_names = set()
         for sub in base_subdomains:
             name = sub.replace(f".{domain}", "").split(".")[0]
             base_names.add(name)
-        
+
         # Generate permutations
         permutations = set()
-        
+
         for base in base_names:
             # Add prefixes
             if self.permutation_config.add_prefixes:
@@ -235,29 +231,29 @@ class AdvancedSubdomainScanner(SubdomainScanner):
                     permutations.add(f"{prefix}-{base}")
                     permutations.add(f"{prefix}{base}")
                     permutations.add(f"{prefix}.{base}")
-            
+
             # Add suffixes
             if self.permutation_config.add_suffixes:
                 for suffix in self.COMMON_SUFFIXES:
                     permutations.add(f"{base}{suffix}")
-            
+
             # Insert numbers
             if self.permutation_config.insert_numbers:
                 for i in range(1, 10):
                     permutations.add(f"{base}{i}")
                     permutations.add(f"{base}-{i}")
-            
+
             # Dash variations
             if self.permutation_config.insert_dashes:
                 permutations.add(base.replace("-", ""))
                 permutations.add(base.replace("-", "_"))
-        
+
         # Limit permutations
         permutations = list(permutations)[:self.permutation_config.max_permutations]
-        
+
         # Test permutations
         semaphore = asyncio.Semaphore(self.max_workers)
-        
+
         async def test_permutation(name: str) -> Optional[str]:
             async with semaphore:
                 subdomain = f"{name}.{domain}"
@@ -265,36 +261,38 @@ class AdvancedSubdomainScanner(SubdomainScanner):
                     loop = asyncio.get_event_loop()
                     with ThreadPoolExecutor(max_workers=1) as executor:
                         await asyncio.wait_for(
-                            loop.run_in_executor(executor, 
-                                lambda: dns.resolver.resolve(subdomain, "A")),
+                            loop.run_in_executor(
+                                executor,
+                                lambda: dns.resolver.resolve(subdomain, "A")
+                            ),
                             timeout=self.timeout
                         )
                     return subdomain
                 except Exception:
                     return None
-        
+
         tasks = [test_permutation(p) for p in permutations]
         results = await asyncio.gather(*tasks)
-        
+
         for result in results:
             if result:
                 discovered.add(result)
-        
+
         return discovered
 
     async def _virustotal_lookup(self, domain: str) -> Set[str]:
         """Query VirusTotal API for subdomains"""
         discovered = set()
-        
+
         if not self.virustotal_api_key:
             return discovered
-        
-        url = f"https://www.virustotal.com/vtapi/v2/domain/report"
+
+        url = "https://www.virustotal.com/vtapi/v2/domain/report"
         params = {
             "apikey": self.virustotal_api_key,
             "domain": domain
         }
-        
+
         try:
             timeout = aiohttp.ClientTimeout(total=self.timeout)
             async with aiohttp.ClientSession(timeout=timeout) as session:
@@ -306,7 +304,7 @@ class AdvancedSubdomainScanner(SubdomainScanner):
                             discovered.add(sub.lower())
         except Exception as e:
             logger.debug(f"[AdvancedScanner] VirusTotal lookup failed: {e}")
-        
+
         return discovered
 
     async def _analyze_dns_records(self, domain: str) -> Set[str]:
@@ -314,7 +312,7 @@ class AdvancedSubdomainScanner(SubdomainScanner):
         discovered = set()
         resolver = dns.resolver.Resolver()
         resolver.timeout = self.timeout
-        
+
         # Check SPF record
         try:
             answers = resolver.resolve(domain, "TXT")
@@ -329,11 +327,11 @@ class AdvancedSubdomainScanner(SubdomainScanner):
                         inc_answers = resolver.resolve(inc, "A")
                         if inc_answers:
                             discovered.add(inc.lower())
-                    except:
+                    except Exception:
                         pass
-        except:
+        except Exception:
             pass
-        
+
         # Check DMARC
         try:
             dmarc_domain = f"_dmarc.{domain}"
@@ -346,9 +344,9 @@ class AdvancedSubdomainScanner(SubdomainScanner):
                     if "@" in uri:
                         report_domain = uri.split("@")[1]
                         discovered.add(report_domain.lower())
-        except:
+        except Exception:
             pass
-        
+
         # Check MX records for subdomains
         try:
             answers = resolver.resolve(domain, "MX")
@@ -361,9 +359,9 @@ class AdvancedSubdomainScanner(SubdomainScanner):
                 if len(parts) > 2:
                     potential_sub = ".".join(parts[:-2]) + f".{domain}"
                     discovered.add(potential_sub.lower())
-        except:
+        except Exception:
             pass
-        
+
         return discovered
 
     async def _ipv6_enumeration(self, domain: str) -> Set[str]:
@@ -371,26 +369,26 @@ class AdvancedSubdomainScanner(SubdomainScanner):
         discovered = set()
         resolver = dns.resolver.Resolver()
         resolver.timeout = self.timeout
-        
+
         # Common prefixes to check for AAAA records
         prefixes = ["www", "mail", "ftp", "ns", "ns1", "ns2", "mx", "api", "dev"]
-        
+
         for prefix in prefixes:
             subdomain = f"{prefix}.{domain}"
             try:
                 answers = resolver.resolve(subdomain, "AAAA")
                 if answers:
                     discovered.add(subdomain.lower())
-            except:
+            except Exception:
                 pass
-        
+
         return discovered
 
     async def _alienvault_lookup(self, domain: str) -> Set[str]:
         """Query AlienVault OTX for subdomains"""
         discovered = set()
         url = f"https://otx.alienvault.com/api/v1/indicators/domain/{domain}/passive_dns"
-        
+
         try:
             timeout = aiohttp.ClientTimeout(total=self.timeout)
             async with aiohttp.ClientSession(timeout=timeout) as session:
@@ -403,14 +401,14 @@ class AdvancedSubdomainScanner(SubdomainScanner):
                                 discovered.add(hostname)
         except Exception as e:
             logger.debug(f"[AdvancedScanner] AlienVault lookup failed: {e}")
-        
+
         return discovered
 
     async def _bufferover_lookup(self, domain: str) -> Set[str]:
         """Query BufferOver DNS data"""
         discovered = set()
         url = f"https://dns.bufferover.run/dns?q=.{domain}"
-        
+
         try:
             timeout = aiohttp.ClientTimeout(total=self.timeout)
             async with aiohttp.ClientSession(timeout=timeout) as session:
@@ -425,26 +423,26 @@ class AdvancedSubdomainScanner(SubdomainScanner):
                                     discovered.add(subdomain)
         except Exception as e:
             logger.debug(f"[AdvancedScanner] BufferOver lookup failed: {e}")
-        
+
         return discovered
 
     def generate_report(self) -> Dict:
         """Generate comprehensive scan report"""
         live_hosts = [r for r in self.results.values() if r.is_alive]
         dns_only = [r for r in self.results.values() if not r.is_alive]
-        
+
         # Technology statistics
         tech_stats = {}
         for result in self.results.values():
             for tech in result.technologies:
                 tech_stats[tech] = tech_stats.get(tech, 0) + 1
-        
+
         # Server statistics
         server_stats = {}
         for result in self.results.values():
             server = result.server_header or "Unknown"
             server_stats[server] = server_stats.get(server, 0) + 1
-        
+
         return {
             "summary": {
                 "total_discovered": len(self.results),
@@ -474,20 +472,20 @@ async def scan_subdomains_advanced(
 ) -> Dict[str, SubdomainResult]:
     """
     Standalone advanced subdomain scanner
-    
+
     Args:
         domain: Target domain
         techniques: List of techniques to use
         check_http: Check HTTP availability
         virustotal_key: Optional VirusTotal API key
-    
+
     Returns:
         Dictionary of subdomain results
     """
     scanner = AdvancedSubdomainScanner(max_workers=50)
     if virustotal_key:
         scanner.set_virustotal_key(virustotal_key)
-    
+
     return await scanner.scan_advanced(
         domain=domain,
         techniques=techniques,
@@ -497,26 +495,26 @@ async def scan_subdomains_advanced(
 
 if __name__ == "__main__":
     import sys
-    
+
     logging.basicConfig(level=logging.INFO, format="%(message)s")
-    
+
     if len(sys.argv) < 2:
         print("Usage: python subdomain_scanner_advanced.py <domain>")
         print("Example: python subdomain_scanner_advanced.py target.com")
         sys.exit(1)
-    
+
     target = sys.argv[1]
     print(f"[*] Starting advanced subdomain scan for: {target}\n")
-    
+
     scanner = AdvancedSubdomainScanner(max_workers=30)
-    
+
     results = asyncio.run(scanner.scan_advanced(
         target,
         techniques=["basic", "permute", "dnsrecords"],
         check_http=True
     ))
-    
+
     print(f"\n[+] Found {len(results)} subdomains\n")
-    
+
     report = scanner.generate_report()
     print(json.dumps(report, indent=2))

@@ -4,7 +4,6 @@ Subdomain Scanning API Routes
 RESTful API for subdomain enumeration
 """
 
-import asyncio
 from typing import List, Optional
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
@@ -83,13 +82,13 @@ async def start_subdomain_scan(
 ):
     """
     Start a new subdomain enumeration scan
-    
+
     Returns a job ID that can be used to check scan status and retrieve results.
     """
     import uuid
-    
+
     job_id = str(uuid.uuid4())
-    
+
     scan_jobs[job_id] = {
         "job_id": job_id,
         "status": "pending",
@@ -100,10 +99,10 @@ async def start_subdomain_scan(
         "message": "Scan queued",
         "user": current_user.get("username", "anonymous"),
     }
-    
+
     # Start scan in background
     background_tasks.add_task(_run_scan, job_id, request)
-    
+
     return ScanJobResponse(
         job_id=job_id,
         status="pending",
@@ -115,17 +114,17 @@ async def start_subdomain_scan(
 async def _run_scan(job_id: str, request: SubdomainScanRequest):
     """Background task to run subdomain scan"""
     import time
-    
+
     start_time = time.time()
     scan_jobs[job_id]["status"] = "running"
     scan_jobs[job_id]["message"] = "Scan in progress..."
-    
+
     try:
         scanner = SubdomainScanner(
             max_workers=request.max_workers,
             timeout=request.timeout
         )
-        
+
         # Run scan
         results = await scanner.scan(
             domain=request.domain,
@@ -133,7 +132,7 @@ async def _run_scan(job_id: str, request: SubdomainScanRequest):
             check_http=request.check_http,
             wordlist=request.custom_wordlist
         )
-        
+
         # Update job with results
         scan_jobs[job_id]["status"] = "completed"
         scan_jobs[job_id]["results"] = {
@@ -143,7 +142,7 @@ async def _run_scan(job_id: str, request: SubdomainScanRequest):
         scan_jobs[job_id]["progress"] = 100
         scan_jobs[job_id]["scan_duration"] = time.time() - start_time
         scan_jobs[job_id]["message"] = f"Scan completed. Found {len(results)} subdomains"
-        
+
     except Exception as e:
         scan_jobs[job_id]["status"] = "failed"
         scan_jobs[job_id]["message"] = f"Scan failed: {str(e)}"
@@ -157,7 +156,7 @@ async def get_scan_status(
     """Get the status of a running or completed scan"""
     if job_id not in scan_jobs:
         raise HTTPException(status_code=404, detail="Scan job not found")
-    
+
     job = scan_jobs[job_id]
     return ScanJobResponse(
         job_id=job_id,
@@ -178,21 +177,21 @@ async def get_scan_results(
     """Get results from a completed scan"""
     if job_id not in scan_jobs:
         raise HTTPException(status_code=404, detail="Scan job not found")
-    
+
     job = scan_jobs[job_id]
-    
+
     if job["status"] not in ["completed", "running"]:
         raise HTTPException(
-            status_code=400, 
+            status_code=400,
             detail=f"Scan not ready. Status: {job['status']}"
         )
-    
+
     results = job.get("results", {})
-    
+
     # Filter if requested
     if alive_only:
         results = {k: v for k, v in results.items() if v.get("is_alive", False)}
-    
+
     return list(results.values())
 
 
@@ -204,12 +203,12 @@ async def get_scan_summary(
     """Get summary statistics for a scan"""
     if job_id not in scan_jobs:
         raise HTTPException(status_code=404, detail="Scan job not found")
-    
+
     job = scan_jobs[job_id]
     results = job.get("results", {})
-    
+
     live_count = sum(1 for r in results.values() if r.get("is_alive", False))
-    
+
     return ScanSummary(
         total_discovered=len(results),
         live_hosts=live_count,
@@ -227,7 +226,7 @@ async def delete_scan_job(
     """Delete a scan job and its results"""
     if job_id not in scan_jobs:
         raise HTTPException(status_code=404, detail="Scan job not found")
-    
+
     del scan_jobs[job_id]
     return {"message": "Scan job deleted"}
 
@@ -259,19 +258,19 @@ async def quick_subdomain_scan(
 ):
     """
     Quick synchronous subdomain scan
-    
+
     Returns results immediately (may take 30-60 seconds for large domains).
     For longer scans, use the async /scan endpoint.
     """
     scanner = SubdomainScanner(max_workers=30, timeout=10)
-    
+
     try:
         results = await scanner.scan(
             domain=domain,
             techniques=["dns", "wordlist", "crt"],
             check_http=True
         )
-        
+
         return {
             "domain": domain,
             "total_found": len(results),
