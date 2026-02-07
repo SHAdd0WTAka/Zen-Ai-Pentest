@@ -1,0 +1,48 @@
+site_name: Zen AI Pentest
+site_description: AI-Powered Multi-LLM Penetration Testing Framework
+site_author: SHAdd0WTAka
+site_url: https://shadd0wtaka.github.io/Zen-Ai-Pentest
+
+repo_name: SHAdd0WTAka/Zen-Ai-Pentest
+repo_url: https://github.com/SHAdd0WTAka/Zen-Ai-Pentest
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.sections
+    - navigation.expand
+    - search.suggest
+    - search.highlight
+
+plugins:
+  - search
+  - minify:
+      minify_html: true
+
+nav:
+  - Home: index.md
+  - Getting Started:
+    - User Setup: README_USER_SETUP.md
+    - Aliases: ALIASES.md
+  - AI Integration:
+    - Personas: KIMI_PERSONAS.md
+  - API: API.md
+  - Architecture: architecture.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/SHAdd0WTAka
