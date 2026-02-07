@@ -7,6 +7,7 @@ Nutzt die lokale kimi CLI mit Session-Auth
 import subprocess
 import sys
 import os
+import tempfile
 from pathlib import Path
 
 PERSONAS = {
@@ -28,46 +29,73 @@ def check_kimi_installed():
 
 def check_kimi_logged_in():
     """Prüft ob Session existiert (via kimi status oder einfacher Test)"""
-    # Prüfe ob .kimi Verzeichnis existiert (Session-Daten)
     kimi_dir = Path.home() / ".kimi"
     return kimi_dir.exists()
 
-def start_kimi_with_context(persona, context=""):
+def start_kimi_with_persona(persona, context=""):
     """Startet kimi mit Persona-Context"""
     
-    # Prompt vorbereiten
-    if persona in PERSONAS:
-        system_prompt = f"Du bist ein {PERSONAS[persona]}. "
-        full_prompt = f"{system_prompt}\n\n{context}"
+    if persona not in PERSONAS:
+        persona = "recon"
+    
+    persona_desc = PERSONAS[persona]
+    
+    print(f"""
+{'='*60}
+🧠 ZEN-KIMI PENTEST CLI
+{'='*60}
+Persona: {persona_desc}
+{'='*60}
+💡 Befehle: /help - Hilfe | /exit - Beenden | /clear - Clear
+{'='*60}
+""")
+    
+    # Erste Nachricht vorbereiten (Persona als Kontext)
+    if context:
+        initial_message = f"[Als {persona}] {context}"
     else:
-        full_prompt = context
+        initial_message = f"Ich bin bereit als {persona_desc}. Was möchtest du tun?"
     
-    print(f"🧠 Starte Kimi mit Persona: {persona}")
-    print(f"💡 Tipp: Nutze /help für Commands, /exit zum Beenden\n")
-    
-    # kimi starten (interaktiv)
+    # kimi starten (interaktiv) mit initialer Nachricht
     try:
-        subprocess.run(["kimi"], input=full_prompt + "\n", text=True)
+        subprocess.run(["kimi"], input=initial_message + "\n", text=True)
     except KeyboardInterrupt:
-        pass
+        print("\n👋 Beendet.")
 
 def main():
     import argparse
     
-    parser = argparse.ArgumentParser(description="Kimi CLI Integration")
+    parser = argparse.ArgumentParser(
+        description="Zen-Kimi Pentest CLI - Kimi CLI mit Pentest-Personas",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Beispiele:
+  zen-kimi -p recon "Scanne example.com"     # One-shot mit Prompt
+  zen-kimi -p exploit                         # Interaktiver Chat
+  zlogin                                      # Bei kimi einloggen
+        """
+    )
     parser.add_argument("context", nargs="?", help="Initialer Prompt/Context")
     parser.add_argument("-p", "--persona", choices=list(PERSONAS.keys()), 
-                       default="recon", help="Pentest Persona")
+                       default="recon", help="Pentest Persona (default: recon)")
     parser.add_argument("--login", action="store_true", help="Login durchführen")
     parser.add_argument("--check", action="store_true", help="Status prüfen")
+    parser.add_argument("--list-personas", action="store_true", help="Zeige alle Personas")
     
     args = parser.parse_args()
+    
+    # Zeige Personas
+    if args.list_personas:
+        print("🎭 Verfügbare Personas:")
+        for key, desc in PERSONAS.items():
+            print(f"  -p {key:<10} {desc}")
+        return
     
     # Check Installation
     if not check_kimi_installed():
         print("❌ kimi CLI nicht installiert!")
-        print("Installiere: pip install kimi-cli")
-        print("Dann: kimi login")
+        print("📦 Installiere: pip install kimi-cli")
+        print("🔐 Dann: kimi login  oder  zlogin")
         sys.exit(1)
     
     # Login Check
@@ -80,19 +108,21 @@ def main():
         if check_kimi_logged_in():
             print("✅ Kimi CLI ist installiert und konfiguriert")
             print("📁 Session-Daten gefunden in ~/.kimi")
+            print("\n🎭 Verfügbare Personas:")
+            for key, desc in PERSONAS.items():
+                print(f"   {key:<10} - {desc.split(' - ')[1]}")
         else:
-            print("⚠️  Keine Session gefunden. Führe aus:")
-            print("   kimi login")
-            print("   Oder: python3 tools/kimi_cli_integration.py --login")
+            print("⚠️  Keine Session gefunden.")
+            print("   Führe aus: zlogin")
         return
     
     if not check_kimi_logged_in():
         print("⚠️  Nicht eingeloggt!")
-        print("Führe zuerst aus: python3 tools/kimi_cli_integration.py --login")
+        print("   Führe zuerst aus: zlogin")
         sys.exit(1)
     
     # Kimi starten
-    start_kimi_with_context(args.persona, args.context or "")
+    start_kimi_with_persona(args.persona, args.context or "")
 
 if __name__ == "__main__":
     main()
