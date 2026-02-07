@@ -2,8 +2,34 @@
 Pytest configuration and shared fixtures
 """
 
+import sys
+from unittest.mock import MagicMock, Mock
+
+# Mock external dependencies BEFORE any imports
+# DNS module
+_dns_mock = MagicMock()
+_dns_mock.resolver = MagicMock()
+_dns_mock.query = MagicMock()
+_dns_mock.zone = MagicMock()
+if 'dns' not in sys.modules:
+    sys.modules['dns'] = _dns_mock
+    sys.modules['dns.resolver'] = _dns_mock.resolver
+    sys.modules['dns.query'] = _dns_mock.query
+    sys.modules['dns.zone'] = _dns_mock.zone
+
+# aiohttp mock
+_aiohttp_mock = MagicMock()
+_aiohttp_mock.ClientSession = MagicMock
+_aiohttp_mock.ClientTimeout = MagicMock
+if 'aiohttp' not in sys.modules:
+    sys.modules['aiohttp'] = _aiohttp_mock
+
+# requests mock
+_requests_mock = MagicMock()
+if 'requests' not in sys.modules:
+    sys.modules['requests'] = _requests_mock
+
 import pytest
-from unittest.mock import Mock
 
 
 @pytest.fixture
