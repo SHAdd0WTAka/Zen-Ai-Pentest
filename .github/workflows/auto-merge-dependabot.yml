@@ -12,6 +12,10 @@ on:
         default: false
         type: boolean
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: write
   pull-requests: write
@@ -20,6 +24,7 @@ permissions:
 jobs:
   auto-merge:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v4

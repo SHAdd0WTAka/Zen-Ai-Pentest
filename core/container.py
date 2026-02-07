@@ -106,15 +106,11 @@ class Container:
         self._providers[name] = provider
         return self
 
-    def register_singleton(
-        self, name: str, factory: Callable, *args, **kwargs
-    ) -> "Container":
+    def register_singleton(self, name: str, factory: Callable, *args, **kwargs) -> "Container":
         """Register a singleton provider"""
         return self.register(name, Singleton(factory, *args, **kwargs))
 
-    def register_factory(
-        self, name: str, factory: Callable, *args, **kwargs
-    ) -> "Container":
+    def register_factory(self, name: str, factory: Callable, *args, **kwargs) -> "Container":
         """Register a factory provider"""
         return self.register(name, Factory(factory, *args, **kwargs))
 
@@ -166,10 +162,7 @@ class Container:
             bound.apply_defaults()
 
             for param_name, param in sig.parameters.items():
-                if (
-                    param_name not in bound.arguments
-                    or bound.arguments[param_name] is None
-                ):
+                if param_name not in bound.arguments or bound.arguments[param_name] is None:
                     # Try to resolve from container
                     if self.has(param_name):
                         bound.arguments[param_name] = self.get(param_name)

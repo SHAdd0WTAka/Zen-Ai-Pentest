@@ -1,6 +1,5 @@
 """Tests for utils helpers"""
-import pytest
-from unittest.mock import patch
+
 from utils.helpers import banner, colorize, get_severity_color
 
 

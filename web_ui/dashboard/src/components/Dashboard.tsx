@@ -22,7 +22,7 @@ import {
   Cell
 } from 'recharts'
 import { format } from 'date-fns'
-import axios from 'axios'
+import { dashboardApi } from '../api/client'
 import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 
@@ -159,9 +159,9 @@ export default function Dashboard() {
     const fetchData = async () => {
       try {
         const [statsRes, activeRes, findingsRes] = await Promise.all([
-          axios.get('/api/v1/dashboard/stats'),
-          axios.get('/api/v1/dashboard/active-scans'),
-          axios.get('/api/v1/dashboard/recent-findings?limit=10'),
+          dashboardApi.getStats(),
+          dashboardApi.getActiveScans(),
+          dashboardApi.getRecentFindings(10),
         ])
         setStats(statsRes.data)
         setActiveScans(activeRes.data)
@@ -191,11 +191,11 @@ export default function Dashboard() {
       const data = JSON.parse(event.data)
       if (data.type === 'scan_started' || data.type === 'scan_completed') {
         // Refresh data
-        axios.get('/api/v1/dashboard/stats').then(r => setStats(r.data))
-        axios.get('/api/v1/dashboard/active-scans').then(r => setActiveScans(r.data))
+        dashboardApi.getStats().then(r => setStats(r.data))
+        dashboardApi.getActiveScans().then(r => setActiveScans(r.data))
       }
       if (data.type === 'finding_found') {
-        axios.get('/api/v1/dashboard/recent-findings?limit=10').then(r => setRecentFindings(r.data))
+        dashboardApi.getRecentFindings(10).then(r => setRecentFindings(r.data))
       }
     }
 

@@ -2,6 +2,7 @@
 """
 Autonomer Scan Demo - Vollständig mit Ergebnissen
 """
+
 import sys
 import os
 import json
@@ -40,7 +41,7 @@ findings = [
         "description": "Scp in OpenSSH 8.3p1 allows command injection via backtick characters in the destination argument. An attacker can execute arbitrary commands on the remote server.",
         "recommendation": "Upgrade OpenSSH to version 8.4p1 or later. Apply vendor patches immediately.",
         "port": 22,
-        "service": "ssh"
+        "service": "ssh",
     },
     {
         "id": "F-002",
@@ -51,7 +52,7 @@ findings = [
         "description": "Apache version 2.4.7 exposes server tokens in HTTP headers, revealing exact version number and operating system to potential attackers.",
         "recommendation": "Add 'ServerTokens Prod' and 'ServerSignature Off' to apache2.conf and restart Apache.",
         "port": 80,
-        "service": "http"
+        "service": "http",
     },
     {
         "id": "F-003",
@@ -62,7 +63,7 @@ findings = [
         "description": "Server accepts connections using TLS 1.0 and 1.1 which have known vulnerabilities (POODLE, BEAST attacks).",
         "recommendation": "Disable TLS 1.0/1.1 in server configuration, enable only TLS 1.2 and 1.3 with strong cipher suites.",
         "port": 443,
-        "service": "https"
+        "service": "https",
     },
     {
         "id": "F-004",
@@ -73,7 +74,7 @@ findings = [
         "description": "HTTP response missing Content-Security-Policy header, increasing risk of XSS attacks and data injection.",
         "recommendation": "Implement strict CSP header: Content-Security-Policy: default-src 'self'; script-src 'self'",
         "port": 80,
-        "service": "http"
+        "service": "http",
     },
     {
         "id": "F-005",
@@ -84,17 +85,17 @@ findings = [
         "description": "Nping echo service running on port 9929 can be used for network reconnaissance and amplification attacks.",
         "recommendation": "Restrict access to port 9929 using firewall rules or disable the service if not required.",
         "port": 9929,
-        "service": "nping-echo"
-    }
+        "service": "nping-echo",
+    },
 ]
 
 # Severity Farben
 severity_colors = {
     "critical": "\033[91m",  # Rot
-    "high": "\033[93m",      # Gelb
-    "medium": "\033[94m",    # Blau
-    "low": "\033[92m",       # Grün
-    "info": "\033[96m"       # Cyan
+    "high": "\033[93m",  # Gelb
+    "medium": "\033[94m",  # Blau
+    "low": "\033[92m",  # Grün
+    "info": "\033[96m",  # Cyan
 }
 reset = "\033[0m"
 
@@ -102,7 +103,7 @@ reset = "\033[0m"
 for i, f in enumerate(findings, 1):
     color = severity_colors.get(f["severity"].lower(), "")
     sev = f["severity"].upper()
-    
+
     print(f"\n{i}. {color}[{sev}]{reset} {f['name']}")
     print(f"   ID: {f['id']} | CVSS: {f['cvss']} | Port: {f['port']}/{f['service']}")
     print(f"   Typ: {f['type']}")
@@ -129,12 +130,9 @@ print("  -----------------------------")
 print(f"  GESAMT:               {len(findings)} findings")
 
 # Risiko-Score berechnen
-risk_score = sum([
-    severity_counts["critical"] * 10,
-    severity_counts["high"] * 7,
-    severity_counts["medium"] * 4,
-    severity_counts["low"] * 1
-])
+risk_score = sum(
+    [severity_counts["critical"] * 10, severity_counts["high"] * 7, severity_counts["medium"] * 4, severity_counts["low"] * 1]
+)
 
 risk_level = "Kritisch" if risk_score > 50 else "Hoch" if risk_score > 30 else "Mittel" if risk_score > 10 else "Niedrig"
 print(f"\n  Risiko-Score: {risk_score}/100 ({risk_level})")
@@ -143,8 +141,8 @@ print(f"\n  Risiko-Score: {risk_score}/100 ({risk_level})")
 print("\n[PHASE 4] Report-Generierung")
 print("-" * 70)
 
-os.makedirs('logs', exist_ok=True)
-timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+os.makedirs("logs", exist_ok=True)
+timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
 # JSON Report
 json_report = {
@@ -153,32 +151,32 @@ json_report = {
         "scan_type": "autonomous",
         "start_time": datetime.now().isoformat(),
         "risk_score": risk_score,
-        "risk_level": risk_level
+        "risk_level": risk_level,
     },
     "summary": severity_counts,
-    "findings": findings
+    "findings": findings,
 }
 
-json_file = f'logs/autonomous_scan_{TARGET.replace(".", "_")}_{timestamp}.json'
-with open(json_file, 'w') as f:
+json_file = f"logs/autonomous_scan_{TARGET.replace('.', '_')}_{timestamp}.json"
+with open(json_file, "w") as f:
     json.dump(json_report, f, indent=2)
 print(f"  JSON Report: {json_file}")
 
 # Markdown Report
-md_file = f'logs/autonomous_scan_{TARGET.replace(".", "_")}_{timestamp}.md'
-with open(md_file, 'w') as f:
+md_file = f"logs/autonomous_scan_{TARGET.replace('.', '_')}_{timestamp}.md"
+with open(md_file, "w") as f:
     f.write(f"# Security Scan Report: {TARGET}\n\n")
     f.write("**Scan Type:** Autonomous\n")
     f.write(f"**Date:** {datetime.now().isoformat()}\n")
     f.write(f"**Risk Score:** {risk_score}/100 ({risk_level})\n\n")
-    
+
     f.write("## Summary\n\n")
     f.write("| Severity | Count |\n")
     f.write("|----------|-------|\n")
     for sev, count in severity_counts.items():
         if count > 0:
             f.write(f"| {sev.capitalize()} | {count} |\n")
-    
+
     f.write(f"\n## Findings ({len(findings)} total)\n\n")
     for f_item in findings:
         f.write(f"### {f_item['id']}: {f_item['name']}\n\n")
@@ -193,14 +191,18 @@ print(f"  Markdown Report: {md_file}")
 # SIEM Event (wenn API läuft)
 try:
     import requests
-    r = requests.post('http://localhost:8000/api/v1/siem/events',
+
+    r = requests.post(
+        "http://localhost:8000/api/v1/siem/events",
         json={
             "severity": "info" if risk_score < 30 else "high",
             "event_type": "autonomous_scan_completed",
             "source": "zen_ai_autonomous",
             "target": TARGET,
-            "description": f"Autonomous scan found {len(findings)} vulnerabilities (Risk: {risk_level})"
-        }, timeout=5)
+            "description": f"Autonomous scan found {len(findings)} vulnerabilities (Risk: {risk_level})",
+        },
+        timeout=5,
+    )
     if r.status_code == 200:
         print("  SIEM Event: Gesendet")
 except Exception:

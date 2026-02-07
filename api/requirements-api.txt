@@ -1,0 +1,9 @@
+# Kimi Personas API Dependencies
+flask>=2.3.0
+flask-cors>=4.0.0
+flask-sock>=0.7.0
+requests>=2.31.0
+
+# Optional: Production Server
+gunicorn>=21.2.0
+eventlet>=0.33.0

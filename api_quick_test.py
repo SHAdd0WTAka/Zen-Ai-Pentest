@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Schnell-Test der API Funktionen"""
+
 import requests
 
-BASE = 'http://localhost:8000/api/v1'
+BASE = "http://localhost:8000/api/v1"
 
 print("=" * 50)
 print("API QUICK TEST")
@@ -25,21 +26,24 @@ except Exception:
 
 # 3. SIEM Events
 print("\n[3] SIEM Events senden...")
-r = requests.post(f"{BASE}/siem/events", json={
-    "severity": "info",
-    "event_type": "swagger_test",
-    "source": "browser",
-    "target": "localhost",
-    "description": "User testing API via Swagger UI"
-})
+r = requests.post(
+    f"{BASE}/siem/events",
+    json={
+        "severity": "info",
+        "event_type": "swagger_test",
+        "source": "browser",
+        "target": "localhost",
+        "description": "User testing API via Swagger UI",
+    },
+)
 print(f"    Result: {r.json()['message']}")
 
 # 4. Supported SIEMs
 print("\n[4] Unterstützte SIEMs...")
 r = requests.get(f"{BASE}/siem/supported")
 data = r.json()
-if 'siems' in data:
-    for s in data['siems'][:3]:
+if "siems" in data:
+    for s in data["siems"][:3]:
         print(f"    - {s.get('name', 'Unknown')}")
 
 print("\n" + "=" * 50)

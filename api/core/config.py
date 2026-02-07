@@ -31,9 +31,7 @@ class Settings(BaseSettings):
     CORS_ORIGINS: List[str] = ["*"]
 
     # Database
-    DATABASE_URL: str = os.getenv(
-        "DATABASE_URL", "postgresql://zenuser:password@localhost:5432/zenpentest"
-    )
+    DATABASE_URL: str = os.getenv("DATABASE_URL", "postgresql://zenuser:password@localhost:5432/zenpentest")
 
     # Redis
     REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379/0")

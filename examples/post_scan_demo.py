@@ -32,7 +32,7 @@ async def demo_post_scan_workflow():
     print("=" * 70)
     print("""
 This demo simulates what a professional penetration tester does AFTER
-running automated scanning tools. Based on PTES (Penetration Testing 
+running automated scanning tools. Based on PTES (Penetration Testing
 Execution Standard) methodology.
 
 Phases:
@@ -63,8 +63,7 @@ Phases:
             "title": "SQL Injection in Search Parameter",
             "severity": "high",
             "cvss_score": 8.6,
-            "description": "User input in search field is directly concatenated into SQL query "
-            "without parameterization.",
+            "description": "User input in search field is directly concatenated into SQL query without parameterization.",
             "port": 80,
             "service": "http",
         },
@@ -125,7 +124,7 @@ Phases:
     fp = results.get("total_false_positives", 0)
     print(f"  - Confirmed vulnerabilities: {verified}")
     print(f"  - False positives eliminated: {fp}")
-    print(f"  - Reduction rate: {fp/(verified+fp)*100:.1f}%")
+    print(f"  - Reduction rate: {fp / (verified + fp) * 100:.1f}%")
 
     print("\n[Exploitation Results]")
     exploited = results.get("total_exploited", 0)
@@ -151,9 +150,7 @@ Phases:
     agent = PostScanAgent()
     agent.report_data = report_data
     agent.evidence_dir = Path(results.get("evidence_directory", "evidence"))
-    agent.loot.screenshots = [
-        f"screenshot_{i}.png" for i in range(loot.get("screenshots", 0))
-    ]
+    agent.loot.screenshots = [f"screenshot_{i}.png" for i in range(loot.get("screenshots", 0))]
     agent.verified_findings = []  # Would be populated from results
 
     print("\n" + "=" * 70)
@@ -164,9 +161,7 @@ Phases:
     # Show first 2000 characters
     print(report_preview[:2000])
     print("\n... [truncated for display] ...")
-    print(
-        f"\n[Full report saved to: {results.get('evidence_directory', 'evidence')}/report.md]"
-    )
+    print(f"\n[Full report saved to: {results.get('evidence_directory', 'evidence')}/report.md]")
 
     print("\n" + "=" * 70)
     print("  Demo Complete!")
@@ -212,16 +207,12 @@ async def demo_individual_phases():
 
     print("\n[Phase 2: Validation]")
     print("  Purpose: Confirm exploitability")
-    validation = await agent._validate_vulnerability(
-        agent._dict_to_finding(test_finding)
-    )
+    validation = await agent._validate_vulnerability(agent._dict_to_finding(test_finding))
     print(f"  Result: {validation}")
 
     print("\n[Phase 3: Exploitation]")
     print("  Purpose: Attempt safe exploitation")
-    exploitation = await agent._attempt_exploitation(
-        agent._dict_to_finding(test_finding)
-    )
+    exploitation = await agent._attempt_exploitation(agent._dict_to_finding(test_finding))
     print(f"  Result: {exploitation}")
 
     print("\n[Phases 4-7: Post-Exploitation, Evidence, Loot, Cleanup]")
@@ -236,12 +227,8 @@ def main():
     """Main entry point"""
     import argparse
 
-    parser = argparse.ArgumentParser(
-        description="Post-Scan Workflow Demo - Professional Pentester Methodology"
-    )
-    parser.add_argument(
-        "--phases", action="store_true", help="Show individual phase details"
-    )
+    parser = argparse.ArgumentParser(description="Post-Scan Workflow Demo - Professional Pentester Methodology")
+    parser.add_argument("--phases", action="store_true", help="Show individual phase details")
 
     args = parser.parse_args()
 

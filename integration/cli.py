@@ -23,9 +23,7 @@ console = Console()
 
 
 @click.group()
-@click.option(
-    "--bridge", default="http://localhost:8080", help="Integration Bridge URL"
-)
+@click.option("--bridge", default="http://localhost:8080", help="Integration Bridge URL")
 @click.pass_context
 def cli(ctx, bridge):
     """Zen Pentest Integration CLI - Orchestrate classic tools"""
@@ -63,9 +61,7 @@ def nmap(ctx, target, scan_type, ports, wait):
 
     async def run():
         async with ToolOrchestrator(bridge_url) as orch:
-            console.print(
-                f"[bold]Starting Nmap {scan_type} scan against {target}...[/]"
-            )
+            console.print(f"[bold]Starting Nmap {scan_type} scan against {target}...[/]")
 
             result = await orch.scan_with_nmap(target, scan_type=scan_type, ports=ports)
             scan_id = result["scan_id"]
@@ -113,9 +109,7 @@ def sqlmap(ctx, url, level, risk, wait):
 
 @cli.command()
 @click.argument("target")
-@click.option(
-    "--severity", help="Filter by severity (info, low, medium, high, critical)"
-)
+@click.option("--severity", help="Filter by severity (info, low, medium, high, critical)")
 @click.option("--wait/--no-wait", default=True, help="Wait for completion")
 @click.pass_context
 def nuclei(ctx, target, severity, wait):
@@ -156,9 +150,7 @@ def gobuster(ctx, url, wordlist, extensions):
         async with ToolOrchestrator(bridge_url) as orch:
             console.print(f"[bold]Starting Gobuster scan against {url}...[/]")
 
-            result = await orch.scan_with_gobuster(
-                url, wordlist=wordlist, extensions=extensions
-            )
+            result = await orch.scan_with_gobuster(url, wordlist=wordlist, extensions=extensions)
             scan_id = result["scan_id"]
 
             console.print(f"Scan ID: [cyan]{scan_id}[/]")
@@ -206,9 +198,7 @@ def amass(ctx, domain, active):
 
 @cli.command()
 @click.argument("target")
-@click.option(
-    "--type", "scan_type", default="web", type=click.Choice(["web", "network", "full"])
-)
+@click.option("--type", "scan_type", default="web", type=click.Choice(["web", "network", "full"]))
 @click.pass_context
 def comprehensive(ctx, target, scan_type):
     """Run comprehensive multi-tool scan"""

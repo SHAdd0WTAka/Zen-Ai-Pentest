@@ -1,6 +1,7 @@
 """
 Database Module - Wrapper for CVE and Ransomware Database Access
 """
+
 import os
 import sys
 from typing import Dict, List, Any, Optional

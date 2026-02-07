@@ -1,0 +1,36 @@
+FROM python:3.12-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    postgresql-client \
+    nmap \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application code
+COPY . .
+
+# Create directories
+RUN mkdir -p /root/.config/kimi/personas
+
+# Make scripts executable
+RUN chmod +x scripts/*.sh 2>/dev/null || true
+RUN chmod +x tools/*.py
+RUN chmod +x docker-entrypoint.sh
+
+# Create non-root user
+RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
+
+# Switch to non-root user
+USER appuser
+
+# Entrypoint
+ENTRYPOINT ["./docker-entrypoint.sh"]
+CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000"]

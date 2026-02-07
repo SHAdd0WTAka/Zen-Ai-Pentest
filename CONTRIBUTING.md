@@ -1,83 +1,62 @@
 # Contributing to Zen AI Pentest
 
-Thank you for your interest in contributing to Zen AI Pentest! This document provides guidelines and instructions for contributing.
+Thank you for your interest in contributing! This document provides guidelines for contributing to the project.
 
-## Getting Started
+## 🚀 Quick Start
 
 1. Fork the repository
-2. Clone your fork: `git clone https://github.com/YOUR_USERNAME/Zen-Ai-Pentest.git`
-3. Create a branch: `git checkout -b feature/your-feature-name`
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Make your changes
+4. Commit using conventional commits (`git commit -m "feat: add amazing feature"`)
+5. Push to your fork
+6. Open a Pull Request
 
-## Development Setup
+## 📝 Commit Message Format
+
+We use [Conventional Commits](https://conventionalcommits.org/):
+
+- `feat:` - New features
+- `fix:` - Bug fixes
+- `docs:` - Documentation changes
+- `style:` - Code style changes (formatting)
+- `refactor:` - Code refactoring
+- `test:` - Adding or updating tests
+- `chore:` - Maintenance tasks
+- `security:` - Security fixes
+
+## 🧪 Testing
+
+Before submitting a PR:
 
 ```bash
-# Install dependencies
-pip install -r requirements.txt
-pip install -r requirements-dev.txt
-
-# Install pre-commit hooks
-pre-commit install
-
 # Run tests
-pytest
+pytest tests/
 
-# Run tests with coverage
-pytest --cov=modules --cov-report=html
+# Run linting
+ruff check .
+
+# Run type checking
+mypy core/ agents/
 ```
 
-## Code Style
-
-- Follow PEP 8 for Python code
-- Use type hints where possible
-- Write docstrings for all public functions
-- Maximum line length: 100 characters
-
-## Testing
-
-- Write tests for new features
-- Ensure all tests pass before submitting PR
-- Aim for >70% code coverage
-- Use pytest for unit tests
-
-## Submitting Changes
-
-1. **Commit Messages**: Use conventional commits format
-   - `feat:` New feature
-   - `fix:` Bug fix
-   - `test:` Adding tests
-   - `docs:` Documentation changes
-   - `refactor:` Code refactoring
-   - `security:` Security improvements
-
-2. **Pull Request Process**:
-   - Update README.md if needed
-   - Update documentation
-   - Add tests for new code
-   - Ensure CI passes
-   - Request review from maintainers
-
-## Reporting Issues
+## 🐛 Reporting Issues
 
 When reporting issues, please include:
-- Description of the problem
+- Clear description
 - Steps to reproduce
-- Expected behavior
-- Actual behavior
-- System information (OS, Python version)
-- Relevant logs or screenshots
+- Expected vs actual behavior
+- Environment details (OS, Python version, etc.)
 
-## Security Issues
+## 🔒 Security
 
-Please report security issues privately to the maintainers.
-Do NOT open public issues for security vulnerabilities.
+Please report security vulnerabilities privately to the maintainers.
 
-## Code of Conduct
+## 📋 Code Review Process
 
-- Be respectful and constructive
-- Welcome newcomers
-- Focus on what's best for the community
-- Show empathy towards others
+1. All PRs require review before merging
+2. CI checks must pass
+3. Documentation must be updated if needed
 
-## Questions?
+## 🙏 Thank You!
 
-Join our discussions or open an issue!
+Every contribution helps make Zen AI Pentest better!

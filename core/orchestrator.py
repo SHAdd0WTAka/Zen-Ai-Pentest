@@ -29,6 +29,7 @@ try:
     from autonomous import AutonomousAgentLoop, AgentState, AgentMemory
     from autonomous import ExploitValidator, ExploitValidatorPool, ExploitType
     from autonomous import ScopeConfig, SandboxConfig, ExploitResult
+
     AUTONOMOUS_AVAILABLE = True
 except ImportError as e:
     AUTONOMOUS_AVAILABLE = False
@@ -47,6 +48,7 @@ try:
     from risk_engine import FalsePositiveEngine, BusinessImpactCalculator
     from risk_engine import Finding, FindingStatus, ValidationResult
     from risk_engine import ConfidenceLevel, ComplianceType, DataClassification
+
     RISK_ENGINE_AVAILABLE = True
 except ImportError as e:
     RISK_ENGINE_AVAILABLE = False
@@ -62,6 +64,7 @@ except ImportError as e:
 
 try:
     from integrations import load_integrations_from_config
+
     INTEGRATIONS_AVAILABLE = True
 except ImportError:
     INTEGRATIONS_AVAILABLE = False
@@ -183,13 +186,9 @@ class ZenOrchestrator:
         self.backends.append(backend)
         # Sort by priority (lowest first = faster/free)
         self.backends.sort(key=lambda x: x.priority)
-        logger.info(
-            f"[Zen] Backend '{backend.name}' registered with priority {backend.priority}"
-        )
+        logger.info(f"[Zen] Backend '{backend.name}' registered with priority {backend.priority}")
 
-    async def process(
-        self, prompt: str, required_quality: QualityLevel = QualityLevel.MEDIUM
-    ) -> LLMResponse:
+    async def process(self, prompt: str, required_quality: QualityLevel = QualityLevel.MEDIUM) -> LLMResponse:
         """
         Process a prompt through available backends
         Tries backends in priority order with automatic fallback
@@ -197,9 +196,7 @@ class ZenOrchestrator:
         self.request_count += 1
         start_time = asyncio.get_event_loop().time()
 
-        logger.info(
-            f"[Zen] Request #{self.request_count} | Quality: {required_quality.value}"
-        )
+        logger.info(f"[Zen] Request #{self.request_count} | Quality: {required_quality.value}")
 
         # Filter candidates based on quality requirement
         if required_quality == QualityLevel.LOW:
@@ -222,11 +219,7 @@ class ZenOrchestrator:
                     quality = (
                         QualityLevel.HIGH
                         if backend.priority == 3
-                        else (
-                            QualityLevel.MEDIUM
-                            if backend.priority == 2
-                            else QualityLevel.LOW
-                        )
+                        else (QualityLevel.MEDIUM if backend.priority == 2 else QualityLevel.LOW)
                     )
 
                     logger.info(f"[Zen] Success from {backend.name} in {latency:.2f}s")
@@ -236,9 +229,7 @@ class ZenOrchestrator:
                         source=backend.name,
                         latency=latency,
                         quality=quality,
-                        metadata={
-                            "model": getattr(backend, "current_model", "unknown")
-                        },
+                        metadata={"model": getattr(backend, "current_model", "unknown")},
                     )
 
             except Exception as e:
@@ -280,12 +271,7 @@ class ZenOrchestrator:
 
     # ==================== NEW METHODS ====================
 
-    async def run_autonomous_scan(
-        self,
-        target: str,
-        goal: str,
-        scope: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
+    async def run_autonomous_scan(self, target: str, goal: str, scope: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """
         Run an autonomous scan using the AutonomousAgentLoop.
 
@@ -298,44 +284,27 @@ class ZenOrchestrator:
             Scan results with findings and execution details
         """
         if not AUTONOMOUS_AVAILABLE or not self._autonomous_loop:
-            return {
-                "success": False,
-                "error": "Autonomous Agent Loop not available",
-                "findings": []
-            }
+            return {"success": False, "error": "Autonomous Agent Loop not available", "findings": []}
 
         logger.info(f"[Zen] Starting autonomous scan on {target}")
 
         try:
-            result = await self._autonomous_loop.run(
-                goal=goal,
-                target=target,
-                scope=scope or {}
-            )
+            result = await self._autonomous_loop.run(goal=goal, target=target, scope=scope or {})
 
             logger.info(f"[Zen] Autonomous scan completed: {result.get('state', 'unknown')}")
 
             # Validate findings if risk engine is available
-            if RISK_ENGINE_AVAILABLE and self._fp_engine and result.get('findings'):
-                validated_findings = await self.validate_findings(
-                    result['findings'].get('items', [])
-                )
-                result['validated_findings'] = validated_findings
+            if RISK_ENGINE_AVAILABLE and self._fp_engine and result.get("findings"):
+                validated_findings = await self.validate_findings(result["findings"].get("items", []))
+                result["validated_findings"] = validated_findings
 
             return result
 
         except Exception as e:
             logger.error(f"[Zen] Autonomous scan failed: {e}")
-            return {
-                "success": False,
-                "error": str(e),
-                "findings": []
-            }
+            return {"success": False, "error": str(e), "findings": []}
 
-    async def validate_findings(
-        self,
-        findings: List[Dict[str, Any]]
-    ) -> List[Dict[str, Any]]:
+    async def validate_findings(self, findings: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """
         Validate findings using the False Positive Engine.
 
@@ -355,45 +324,37 @@ class ZenOrchestrator:
             try:
                 # Convert dict to Finding object
                 finding = Finding(
-                    id=finding_data.get('id', ''),
-                    title=finding_data.get('title', 'Unknown'),
-                    description=finding_data.get('description', ''),
-                    severity=finding_data.get('severity', 'medium'),
-                    target=finding_data.get('target', ''),
-                    source=finding_data.get('source', ''),
+                    id=finding_data.get("id", ""),
+                    title=finding_data.get("title", "Unknown"),
+                    description=finding_data.get("description", ""),
+                    severity=finding_data.get("severity", "medium"),
+                    target=finding_data.get("target", ""),
+                    source=finding_data.get("source", ""),
                 )
 
                 # Validate
                 result = await self._fp_engine.validate_finding(finding)
 
-                validated.append({
-                    "original": finding_data,
-                    "validation": result.to_dict() if hasattr(result, 'to_dict') else result,
-                    "is_false_positive": getattr(result, 'is_false_positive', False),
-                    "confidence": getattr(result, 'confidence', 0.0),
-                    "priority": getattr(result, 'priority', 999)
-                })
+                validated.append(
+                    {
+                        "original": finding_data,
+                        "validation": result.to_dict() if hasattr(result, "to_dict") else result,
+                        "is_false_positive": getattr(result, "is_false_positive", False),
+                        "confidence": getattr(result, "confidence", 0.0),
+                        "priority": getattr(result, "priority", 999),
+                    }
+                )
 
             except Exception as e:
                 logger.error(f"[Zen] Finding validation failed: {e}")
-                validated.append({
-                    "original": finding_data,
-                    "validation": None,
-                    "is_false_positive": False,
-                    "error": str(e)
-                })
+                validated.append({"original": finding_data, "validation": None, "is_false_positive": False, "error": str(e)})
 
         # Sort by priority (highest first)
-        validated.sort(key=lambda x: x.get('priority', 999))
+        validated.sort(key=lambda x: x.get("priority", 999))
 
         return validated
 
-    async def execute_exploit(
-        self,
-        exploit: Dict[str, Any],
-        target: str,
-        safe_mode: bool = True
-    ) -> Dict[str, Any]:
+    async def execute_exploit(self, exploit: Dict[str, Any], target: str, safe_mode: bool = True) -> Dict[str, Any]:
         """
         Execute an exploit with validation and safety controls.
 
@@ -406,10 +367,7 @@ class ZenOrchestrator:
             Exploit execution result with evidence
         """
         if not AUTONOMOUS_AVAILABLE or not ExploitValidator:
-            return {
-                "success": False,
-                "error": "Exploit Validator not available"
-            }
+            return {"success": False, "error": "Exploit Validator not available"}
 
         logger.info(f"[Zen] Executing exploit on {target} (safe_mode={safe_mode})")
 
@@ -421,31 +379,27 @@ class ZenOrchestrator:
                 scope_config=ScopeConfig(allowed_hosts=[target]),
                 sandbox_config=SandboxConfig(
                     use_docker=False,  # Default to local for compatibility
-                    timeout=300
-                )
+                    timeout=300,
+                ),
             )
 
             # Get exploit details
-            exploit_code = exploit.get('code', '')
-            exploit_type_str = exploit.get('type', 'web_rce')
+            exploit_code = exploit.get("code", "")
+            exploit_type_str = exploit.get("type", "web_rce")
 
             # Map string to enum
             type_map = {
-                'sqli': ExploitType.WEB_SQLI,
-                'sql_injection': ExploitType.WEB_SQLI,
-                'xss': ExploitType.WEB_XSS,
-                'rce': ExploitType.WEB_RCE,
-                'lfi': ExploitType.WEB_LFI,
-                'command_injection': ExploitType.WEB_CMD_INJECTION,
+                "sqli": ExploitType.WEB_SQLI,
+                "sql_injection": ExploitType.WEB_SQLI,
+                "xss": ExploitType.WEB_XSS,
+                "rce": ExploitType.WEB_RCE,
+                "lfi": ExploitType.WEB_LFI,
+                "command_injection": ExploitType.WEB_CMD_INJECTION,
             }
             exploit_type = type_map.get(exploit_type_str.lower(), ExploitType.WEB_RCE)
 
             # Execute
-            result = await validator.validate(
-                exploit_code=exploit_code,
-                target=target,
-                exploit_type=exploit_type
-            )
+            result = await validator.validate(exploit_code=exploit_code, target=target, exploit_type=exploit_type)
 
             return {
                 "success": result.success,
@@ -455,21 +409,15 @@ class ZenOrchestrator:
                 "error": result.error,
                 "severity": result.severity,
                 "remediation": result.remediation,
-                "execution_time": result.execution_time
+                "execution_time": result.execution_time,
             }
 
         except Exception as e:
             logger.error(f"[Zen] Exploit execution failed: {e}")
-            return {
-                "success": False,
-                "error": str(e),
-                "exploitable": False
-            }
+            return {"success": False, "error": str(e), "exploitable": False}
 
     async def calculate_business_impact(
-        self,
-        finding: Dict[str, Any],
-        asset_context: Optional[Dict[str, Any]] = None
+        self, finding: Dict[str, Any], asset_context: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         """
         Calculate business impact for a finding.
@@ -482,10 +430,7 @@ class ZenOrchestrator:
             Business impact assessment
         """
         if not RISK_ENGINE_AVAILABLE or not self._business_impact:
-            return {
-                "error": "Business Impact Calculator not available",
-                "overall_score": 0.5
-            }
+            return {"error": "Business Impact Calculator not available", "overall_score": 0.5}
 
         try:
             from risk_engine import AssetContext, AssetCriticality, DataClassification
@@ -493,14 +438,14 @@ class ZenOrchestrator:
             # Create asset context
             if asset_context:
                 ctx = AssetContext(
-                    asset_id=asset_context.get('id', 'unknown'),
-                    asset_name=asset_context.get('name', 'Unknown Asset'),
-                    asset_type=asset_context.get('type', 'unknown'),
-                    criticality=AssetCriticality[asset_context.get('criticality', 'MEDIUM')],
-                    data_classification=DataClassification[asset_context.get('data_classification', 'INTERNAL')],
-                    internet_exposed=asset_context.get('internet_exposed', False),
-                    user_count=asset_context.get('user_count', 0),
-                    revenue_dependency=asset_context.get('revenue_dependency', 0.0)
+                    asset_id=asset_context.get("id", "unknown"),
+                    asset_name=asset_context.get("name", "Unknown Asset"),
+                    asset_type=asset_context.get("type", "unknown"),
+                    criticality=AssetCriticality[asset_context.get("criticality", "MEDIUM")],
+                    data_classification=DataClassification[asset_context.get("data_classification", "INTERNAL")],
+                    internet_exposed=asset_context.get("internet_exposed", False),
+                    user_count=asset_context.get("user_count", 0),
+                    revenue_dependency=asset_context.get("revenue_dependency", 0.0),
                 )
             else:
                 ctx = AssetContext(
@@ -508,13 +453,11 @@ class ZenOrchestrator:
                     asset_name="Unknown Asset",
                     asset_type="unknown",
                     criticality=AssetCriticality.MEDIUM,
-                    data_classification=DataClassification.INTERNAL
+                    data_classification=DataClassification.INTERNAL,
                 )
 
             result = self._business_impact.calculate_overall_impact(
-                asset_context=ctx,
-                finding_type=finding.get('type', 'unknown'),
-                severity=finding.get('severity', 'medium')
+                asset_context=ctx, finding_type=finding.get("type", "unknown"), severity=finding.get("severity", "medium")
             )
 
             return {
@@ -528,23 +471,16 @@ class ZenOrchestrator:
                 "compliance_impact": {
                     "frameworks": [f.name for f in result.compliance_impact.frameworks],
                     "violated_controls": result.compliance_impact.violated_controls[:5],
-                    "max_fine": result.compliance_impact.get_max_fine()
+                    "max_fine": result.compliance_impact.get_max_fine(),
                 },
-                "recommendations": result.get_prioritized_remediation()
+                "recommendations": result.get_prioritized_remediation(),
             }
 
         except Exception as e:
             logger.error(f"[Zen] Business impact calculation failed: {e}")
-            return {
-                "error": str(e),
-                "overall_score": 0.5
-            }
+            return {"error": str(e), "overall_score": 0.5}
 
-    async def notify_integrations(
-        self,
-        event: str,
-        data: Dict[str, Any]
-    ) -> Dict[str, bool]:
+    async def notify_integrations(self, event: str, data: Dict[str, Any]) -> Dict[str, bool]:
         """
         Send notifications to configured integrations.
 
@@ -559,21 +495,17 @@ class ZenOrchestrator:
 
         for name, integration in self._integrations.items():
             try:
-                if event == "scan_started" and hasattr(integration, 'notify_scan_started'):
+                if event == "scan_started" and hasattr(integration, "notify_scan_started"):
                     await integration.notify_scan_started(
-                        target=data.get('target', 'unknown'),
-                        scan_type=data.get('scan_type', 'security')
+                        target=data.get("target", "unknown"), scan_type=data.get("scan_type", "security")
                     )
                     results[name] = True
 
-                elif event == "scan_completed" and hasattr(integration, 'notify_scan_completed'):
-                    await integration.notify_scan_completed(
-                        results=data,
-                        target=data.get('target', 'unknown')
-                    )
+                elif event == "scan_completed" and hasattr(integration, "notify_scan_completed"):
+                    await integration.notify_scan_completed(results=data, target=data.get("target", "unknown"))
                     results[name] = True
 
-                elif event == "finding" and hasattr(integration, 'notify_finding'):
+                elif event == "finding" and hasattr(integration, "notify_finding"):
                     await integration.notify_finding(data)
                     results[name] = True
 
@@ -595,7 +527,7 @@ class ZenOrchestrator:
             "autonomous_available": AUTONOMOUS_AVAILABLE,
             "risk_engine_available": RISK_ENGINE_AVAILABLE,
             "integrations_available": INTEGRATIONS_AVAILABLE,
-            "integrations_loaded": list(self._integrations.keys())
+            "integrations_loaded": list(self._integrations.keys()),
         }
 
     def get_capabilities(self) -> Dict[str, bool]:

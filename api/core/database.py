@@ -1,4 +1,5 @@
 """API Database Module (Stub)"""
+
 from typing import Generator
 
 
@@ -14,25 +15,25 @@ def close_db() -> None:
 
 class DatabaseSession:
     """Stub database session"""
-    
+
     def query(self, *args, **kwargs):
         return self
-    
+
     def filter(self, *args, **kwargs):
         return self
-    
+
     def all(self):
         return []
-    
+
     def first(self):
         return None
-    
+
     def commit(self):
         pass
-    
+
     def rollback(self):
         pass
-    
+
     def close(self):
         pass
 

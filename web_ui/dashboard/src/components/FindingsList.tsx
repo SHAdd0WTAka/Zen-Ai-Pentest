@@ -8,8 +8,8 @@ import {
   CheckCircle2,
   XCircle
 } from 'lucide-react'
-import { formatDistanceToNow } from 'date-fns'
-import axios from 'axios'
+import { formatDistanceToNow, format } from 'date-fns'
+import { findingsApi } from '../api/client'
 import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 
@@ -105,7 +105,7 @@ function FindingDetailModal({
 
   const handleVerify = async (status: number) => {
     try {
-      await axios.patch(`/api/findings/${finding.id}`, { verified: status })
+      await findingsApi.update(finding.id, { verified: status })
       setVerified(status)
     } catch (error) {
       console.error('Failed to update finding:', error)
@@ -367,13 +367,13 @@ export default function FindingsList() {
     return matchesSearch && matchesSeverity && matchesVerified
   })
 
-  const handleExport = (format: 'json' | 'csv') => {
+  const handleExport = (exportFormat: 'json' | 'csv') => {
     const data = JSON.stringify(filteredFindings, null, 2)
     const blob = new Blob([data], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `findings-export-${format(new Date(), 'yyyy-MM-dd')}.json`
+    a.download = `findings-export-${format(new Date(), 'yyyy-MM-dd')}.${exportFormat}`
     a.click()
   }
 

@@ -54,16 +54,12 @@ class PromptInjectionDetector:
             "description": "Role-playing attack",
         },
         "jailbreak_dan": {
-            "pattern": re.compile(
-                r"(?i)(DAN|do\s+anything\s+now|jailbreak|)\s*:?", re.IGNORECASE
-            ),
+            "pattern": re.compile(r"(?i)(DAN|do\s+anything\s+now|jailbreak|)\s*:?", re.IGNORECASE),
             "severity": "high",
             "description": "Known jailbreak pattern",
         },
         "delimiter_manipulation": {
-            "pattern": re.compile(
-                r'["\']\s*\n\s*(?:user|assistant|system)\s*:', re.IGNORECASE
-            ),
+            "pattern": re.compile(r'["\']\s*\n\s*(?:user|assistant|system)\s*:', re.IGNORECASE),
             "severity": "critical",
             "description": "Delimiter manipulation to inject roles",
         },
@@ -92,9 +88,7 @@ class PromptInjectionDetector:
             "description": "Instruction override attempt",
         },
         "xml_tag_injection": {
-            "pattern": re.compile(
-                r"<\s*(?:system|user|assistant|instructions?)\s*>", re.IGNORECASE
-            ),
+            "pattern": re.compile(r"<\s*(?:system|user|assistant|instructions?)\s*>", re.IGNORECASE),
             "severity": "critical",
             "description": "XML tag injection",
         },

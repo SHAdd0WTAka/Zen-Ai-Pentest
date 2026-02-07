@@ -146,9 +146,7 @@ class PentestLoot:
     database_dumps: List[str] = field(default_factory=list)
     screenshots: List[str] = field(default_factory=list)
 
-    def add_credential(
-        self, host: str, username: str, password: str, credential_type: str = "password"
-    ):
+    def add_credential(self, host: str, username: str, password: str, credential_type: str = "password"):
         self.credentials.append(
             {
                 "host": host,
@@ -187,9 +185,7 @@ class PostScanAgent(BaseAgent):
         self.evidence_dir = Path("evidence")
         self.report_data: Dict[str, Any] = {}
 
-    async def run(
-        self, target: str, initial_findings: List[Dict[str, Any]], **kwargs
-    ) -> Dict[str, Any]:
+    async def run(self, target: str, initial_findings: List[Dict[str, Any]], **kwargs) -> Dict[str, Any]:
         """
         Execute complete post-scan workflow
 
@@ -201,16 +197,14 @@ class PostScanAgent(BaseAgent):
             Complete post-scan results ready for reporting
         """
         self.log_action(f"Starting post-scan workflow for {target}")
-        print(f"\n[{'='*60}")
+        print(f"\n[{'=' * 60}")
         print("  Post-Scan Pentest Workflow")
         print(f"  Target: {target}")
         print(f"  Initial Findings: {len(initial_findings)}")
-        print(f"{'='*60}\n")
+        print(f"{'=' * 60}\n")
 
         # Create evidence directory
-        self.evidence_dir = Path(
-            f"evidence/{target}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-        )
+        self.evidence_dir = Path(f"evidence/{target}_{datetime.now().strftime('%Y%m%d_%H%M%S')}")
         self.evidence_dir.mkdir(parents=True, exist_ok=True)
 
         # Phase 1: Manual Verification
@@ -241,19 +235,9 @@ class PostScanAgent(BaseAgent):
             "target": target,
             "phases_completed": list(self.phase_results.keys()),
             "verified_findings": [f.to_dict() for f in self.verified_findings],
-            "total_verified": len(
-                [
-                    f
-                    for f in self.verified_findings
-                    if f.verified and not f.false_positive
-                ]
-            ),
-            "total_false_positives": len(
-                [f for f in self.verified_findings if f.false_positive]
-            ),
-            "total_exploited": len(
-                [f for f in self.verified_findings if f.exploitation_successful]
-            ),
+            "total_verified": len([f for f in self.verified_findings if f.verified and not f.false_positive]),
+            "total_false_positives": len([f for f in self.verified_findings if f.false_positive]),
+            "total_exploited": len([f for f in self.verified_findings if f.exploitation_successful]),
             "loot_summary": {
                 "credentials": len(self.loot.credentials),
                 "screenshots": len(self.loot.screenshots),
@@ -263,9 +247,7 @@ class PostScanAgent(BaseAgent):
             "report_data": self.report_data,
         }
 
-    async def _phase_verification(
-        self, target: str, initial_findings: List[Dict[str, Any]]
-    ):
+    async def _phase_verification(self, target: str, initial_findings: List[Dict[str, Any]]):
         """Phase 1: Manual verification of findings - eliminate false positives"""
         self.current_phase = PostScanPhase.VERIFICATION
         print(f"[Phase 1/8] Manual Verification of {len(initial_findings)} findings...")
@@ -308,12 +290,8 @@ class PostScanAgent(BaseAgent):
             "requires_validation": verified_count,
         }
 
-        print(
-            f"  [OK] Verified: {verified_count}, False Positives: {false_positive_count}"
-        )
-        self.log_action(
-            f"Verification complete: {verified_count} valid, {false_positive_count} FP"
-        )
+        print(f"  [OK] Verified: {verified_count}, False Positives: {false_positive_count}")
+        self.log_action(f"Verification complete: {verified_count} valid, {false_positive_count} FP")
 
     async def _verify_finding(self, finding: VerifiedFinding) -> Dict[str, Any]:
         """Verify a single finding for false positives"""
@@ -397,11 +375,7 @@ class PostScanAgent(BaseAgent):
         exploitation_results = []
 
         # Prioritize by severity
-        critical_findings = [
-            f
-            for f in self.verified_findings
-            if f.severity in ["critical", "high"] and f.verified
-        ]
+        critical_findings = [f for f in self.verified_findings if f.severity in ["critical", "high"] and f.verified]
 
         for finding in critical_findings[:5]:  # Limit attempts for safety
             result = await self._attempt_exploitation(finding)
@@ -421,9 +395,7 @@ class PostScanAgent(BaseAgent):
             "methods_used": list(set(r["method"] for r in exploitation_results)),
         }
 
-        print(
-            f"  [OK] Attempted: {len(exploitation_results)}, Successful: {successful}"
-        )
+        print(f"  [OK] Attempted: {len(exploitation_results)}, Successful: {successful}")
 
     async def _attempt_exploitation(self, finding: VerifiedFinding) -> Dict[str, Any]:
         """Safely attempt exploitation of a finding"""
@@ -466,9 +438,7 @@ class PostScanAgent(BaseAgent):
         self.current_phase = PostScanPhase.POST_EXPLOITATION
         print("[Phase 4/8] Post-Exploitation Analysis...")
 
-        successful_exploits = [
-            f for f in self.verified_findings if f.exploitation_successful
-        ]
+        successful_exploits = [f for f in self.verified_findings if f.exploitation_successful]
 
         for finding in successful_exploits:
             # Assess privilege level
@@ -494,12 +464,8 @@ class PostScanAgent(BaseAgent):
 
         self.phase_results["post_exploitation"] = {
             "systems_compromised": len(successful_exploits),
-            "privilege_levels": list(
-                set(f.privileges_obtained for f in successful_exploits)
-            ),
-            "lateral_movement_opportunities": sum(
-                1 for f in successful_exploits if f.lateral_movement_possible
-            ),
+            "privilege_levels": list(set(f.privileges_obtained for f in successful_exploits)),
+            "lateral_movement_opportunities": sum(1 for f in successful_exploits if f.lateral_movement_possible),
         }
 
         print(f"  [OK] Analyzed {len(successful_exploits)} compromised systems")
@@ -524,9 +490,7 @@ class PostScanAgent(BaseAgent):
             "method": "pass_the_hash",
         }
 
-    async def _harvest_credentials(
-        self, finding: VerifiedFinding
-    ) -> List[Dict[str, str]]:
+    async def _harvest_credentials(self, finding: VerifiedFinding) -> List[Dict[str, str]]:
         """Harvest credentials from compromised system"""
         # In real implementation:
         # - Dump password hashes
@@ -621,9 +585,7 @@ class PostScanAgent(BaseAgent):
             "loot_file": str(loot_file),
         }
 
-        print(
-            f"  [OK] Documented {len(self.loot.credentials)} credentials, {len(self.loot.screenshots)} screenshots"
-        )
+        print(f"  [OK] Documented {len(self.loot.credentials)} credentials, {len(self.loot.screenshots)} screenshots")
 
     async def _phase_cleanup(self, target: str):
         """Phase 7: Cleanup - remove backdoors, restore systems"""
@@ -690,19 +652,9 @@ class PostScanAgent(BaseAgent):
             "target": target,
             "test_date": datetime.now().strftime("%Y-%m-%d"),
             "total_findings": len(self.verified_findings),
-            "confirmed_vulnerabilities": len(
-                [
-                    f
-                    for f in self.verified_findings
-                    if f.verified and not f.false_positive
-                ]
-            ),
-            "false_positives": len(
-                [f for f in self.verified_findings if f.false_positive]
-            ),
-            "exploited_systems": len(
-                [f for f in self.verified_findings if f.exploitation_successful]
-            ),
+            "confirmed_vulnerabilities": len([f for f in self.verified_findings if f.verified and not f.false_positive]),
+            "false_positives": len([f for f in self.verified_findings if f.false_positive]),
+            "exploited_systems": len([f for f in self.verified_findings if f.exploitation_successful]),
             "critical_count": len(by_severity["critical"]),
             "high_count": len(by_severity["high"]),
             "medium_count": len(by_severity["medium"]),
@@ -712,11 +664,7 @@ class PostScanAgent(BaseAgent):
         }
 
         # Technical findings
-        technical_findings = [
-            f.to_dict()
-            for f in self.verified_findings
-            if f.verified and not f.false_positive
-        ]
+        technical_findings = [f.to_dict() for f in self.verified_findings if f.verified and not f.false_positive]
 
         # Remediation priorities
         remediation = {
@@ -760,16 +708,8 @@ class PostScanAgent(BaseAgent):
 
     def _calculate_overall_risk(self) -> str:
         """Calculate overall risk rating"""
-        critical = len(
-            [
-                f
-                for f in self.verified_findings
-                if f.severity == "critical" and f.verified
-            ]
-        )
-        high = len(
-            [f for f in self.verified_findings if f.severity == "high" and f.verified]
-        )
+        critical = len([f for f in self.verified_findings if f.severity == "critical" and f.verified])
+        high = len([f for f in self.verified_findings if f.severity == "high" and f.verified])
 
         if critical > 0:
             return "CRITICAL"
@@ -784,26 +724,18 @@ class PostScanAgent(BaseAgent):
         """Generate key recommendations based on findings"""
         recommendations = []
 
-        critical_findings = [
-            f for f in self.verified_findings if f.severity == "critical" and f.verified
-        ]
+        critical_findings = [f for f in self.verified_findings if f.severity == "critical" and f.verified]
 
         if any("sql" in f.title.lower() for f in critical_findings):
-            recommendations.append(
-                "Implement parameterized queries and input validation"
-            )
+            recommendations.append("Implement parameterized queries and input validation")
 
         if any("default" in f.title.lower() for f in critical_findings):
             recommendations.append("Change all default credentials immediately")
 
         if any(f.exploitation_successful for f in self.verified_findings):
-            recommendations.append(
-                "Deploy endpoint detection and response (EDR) solutions"
-            )
+            recommendations.append("Deploy endpoint detection and response (EDR) solutions")
 
-        recommendations.append(
-            "Conduct regular security assessments and penetration tests"
-        )
+        recommendations.append("Conduct regular security assessments and penetration tests")
         recommendations.append("Implement defense-in-depth security architecture")
 
         return recommendations
@@ -832,24 +764,24 @@ class PostScanAgent(BaseAgent):
 
 ## Executive Summary
 
-**Target:** {es.get('target', 'N/A')}  
-**Test Date:** {es.get('test_date', 'N/A')}  
-**Overall Risk Rating:** {es.get('overall_risk', 'N/A')}
+**Target:** {es.get("target", "N/A")}
+**Test Date:** {es.get("test_date", "N/A")}
+**Overall Risk Rating:** {es.get("overall_risk", "N/A")}
 
 ### Findings Overview
 
 | Severity | Count |
 |----------|-------|
-| Critical | {es.get('critical_count', 0)} |
-| High | {es.get('high_count', 0)} |
-| Medium | {es.get('medium_count', 0)} |
-| Low | {es.get('low_count', 0)} |
-| **Total Confirmed** | **{es.get('confirmed_vulnerabilities', 0)}** |
+| Critical | {es.get("critical_count", 0)} |
+| High | {es.get("high_count", 0)} |
+| Medium | {es.get("medium_count", 0)} |
+| Low | {es.get("low_count", 0)} |
+| **Total Confirmed** | **{es.get("confirmed_vulnerabilities", 0)}** |
 
 ### Key Findings
 
-- **{es.get('exploited_systems', 0)}** systems were successfully compromised
-- **{es.get('false_positives', 0)}** findings were identified as false positives
+- **{es.get("exploited_systems", 0)}** systems were successfully compromised
+- **{es.get("false_positives", 0)}** findings were identified as false positives
 - Evidence and logs collected in: `{self.evidence_dir}`
 
 ### Key Recommendations
@@ -878,12 +810,12 @@ This assessment followed the Penetration Testing Execution Standard (PTES):
 
         # Add finding details
         for finding in self.report_data.get("technical_findings", []):
-            template += f"""### {finding['id']}: {finding['title']}
+            template += f"""### {finding["id"]}: {finding["title"]}
 
-**Severity:** {finding['severity']} | **CVSS:** {finding['cvss_score']}
+**Severity:** {finding["severity"]} | **CVSS:** {finding["cvss_score"]}
 
 **Description:**
-{finding['description']}
+{finding["description"]}
 
 **Evidence:**
 """
@@ -893,9 +825,9 @@ This assessment followed the Penetration Testing Execution Standard (PTES):
             if finding.get("exploitation", {}).get("successful"):
                 template += f"""
 **Exploitation:**
-- Method: {finding['exploitation'].get('method', 'N/A')}
+- Method: {finding["exploitation"].get("method", "N/A")}
 - Successful: Yes
-- Privileges Obtained: {finding.get('post_exploitation', {}).get('privileges', 'N/A')}
+- Privileges Obtained: {finding.get("post_exploitation", {}).get("privileges", "N/A")}
 
 """
 
@@ -923,9 +855,7 @@ Address as part of regular maintenance
 
 
 # Convenience function for direct use
-async def run_post_scan_workflow(
-    target: str, findings: List[Dict[str, Any]]
-) -> Dict[str, Any]:
+async def run_post_scan_workflow(target: str, findings: List[Dict[str, Any]]) -> Dict[str, Any]:
     """
     Standalone function to run the complete post-scan workflow
 

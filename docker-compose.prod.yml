@@ -1,0 +1,28 @@
+# Production Docker Compose mit HTTPS
+version: '3.8'
+
+services:
+  nginx:
+    image: nginx:alpine
+    container_name: zen-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx_ssl.conf:/etc/nginx/nginx.conf:ro
+      - ./certs:/etc/nginx/certs:ro
+    depends_on:
+      - api
+      - frontend
+    networks:
+      - zen-network
+    restart: unless-stopped
+    profiles:
+      - production
+
+  # API, Frontend, DB, Redis wie in docker-compose.yml
+  # ... (referenziert docker-compose.yml)
+
+networks:
+  zen-network:
+    external: true

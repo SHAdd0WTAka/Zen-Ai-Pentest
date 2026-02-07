@@ -21,7 +21,7 @@ openai==1.8.0
 websockets==12.0
 
 # HTTP Client
-requests==2.31.0
+requests==2.32.0  # SECURITY FIX: CVE-2024-35195
 httpx==0.26.0
 aiohttp==3.13.3  # SECURITY FIX: CVE-2025-69223, CVE-2024-30251, CVE-2024-23334
 
@@ -31,7 +31,7 @@ redis==5.0.1
 
 # Report Generation
 # weasyprint==60.2 <-- Often causes issues on Windows without GTK
-jinja2==3.1.3
+jinja2==3.1.5  # SECURITY FIX: CVE-2024-56201, CVE-2024-56326, CVE-2024-34064
 
 # Utilities
 python-dotenv==1.0.0
@@ -41,7 +41,7 @@ typer==0.9.0
 rich==13.7.0
 
 # Security
-cryptography==42.0.4  # SECURITY FIX: CVE-2024-26130
+cryptography==43.0.1  # SECURITY FIX: CVE-2024-26130, CVE-2024-41985, CVE-2024-25185
 
 # Testing
 pytest==7.4.3

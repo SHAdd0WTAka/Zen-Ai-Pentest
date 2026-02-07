@@ -12,7 +12,7 @@ import {
   Terminal
 } from 'lucide-react'
 import { format, formatDistanceToNow } from 'date-fns'
-import axios from 'axios'
+import { scansApi } from '../api/client'
 import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 import toast from 'react-hot-toast'
@@ -230,7 +230,7 @@ function ScanLogsPanel({
     if (!scanId || !isOpen) return
 
     // Fetch existing logs
-    axios.get(`/api/v1/scans/${scanId}/logs?limit=100`).then((res) => {
+    scansApi.getLogsLegacy(scanId).then((res) => {
       setLogs(res.data.logs.reverse())
     })
 
@@ -321,7 +321,7 @@ export default function ScanManager() {
 
   const fetchScans = useCallback(async () => {
     try {
-      const res = await axios.get('/api/v1/scans-extended/')
+      const res = await scansApi.getAll()
       setScans(res.data)
     } catch (error) {
       console.error('Failed to fetch scans:', error)
@@ -338,7 +338,7 @@ export default function ScanManager() {
   }, [fetchScans])
 
   const handleCreateScan = async (form: NewScanForm) => {
-    const res = await axios.post('/api/v1/scans/', form)
+    const res = await scansApi.createLegacy(form)
     toast.success('Scan created successfully')
     fetchScans()
     return res.data
@@ -346,7 +346,7 @@ export default function ScanManager() {
 
   const handleStopScan = async (scanId: number) => {
     try {
-      await axios.post(`/api/v1/scans/${scanId}/action`, { action: 'stop', reason: 'User requested' })
+      await scansApi.stopLegacy(scanId)
       toast.success('Scan stopped')
       fetchScans()
     } catch (error) {
@@ -356,7 +356,7 @@ export default function ScanManager() {
 
   const handleRestartScan = async (scanId: number) => {
     try {
-      await axios.post(`/api/v1/scans/${scanId}/action`, { action: 'restart' })
+      await scansApi.restart(scanId)
       toast.success('Scan restarted')
       fetchScans()
     } catch (error) {

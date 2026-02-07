@@ -42,9 +42,7 @@ async def demo_integration():
         healthy = await orch.health_check()
         if not healthy:
             console.print("[red]✗ Bridge not available![/]")
-            console.print(
-                "[dim]Make sure to run: docker-compose -f docker-compose.pentest.yml up -d[/]"
-            )
+            console.print("[dim]Make sure to run: docker-compose -f docker-compose.pentest.yml up -d[/]")
             return
         console.print("[green]✓ Bridge is healthy[/]")
 
@@ -56,9 +54,7 @@ async def demo_integration():
 
         # Run Nmap scan
         console.print("[bold]3. Running Nmap port scan...[/]")
-        nmap_result = await orch.scan_with_nmap(
-            target=target, scan_type="tcp_syn", ports="top-100"
-        )
+        nmap_result = await orch.scan_with_nmap(target=target, scan_type="tcp_syn", ports="top-100")
         console.print(f"   Scan ID: [cyan]{nmap_result['scan_id']}[/]")
 
         with Progress(
@@ -82,9 +78,7 @@ async def demo_integration():
                 open_ports = [p for p in ports if p.get("state") == "open"]
                 console.print(f"   Open ports: [green]{len(open_ports)}[/]")
                 for port in open_ports[:5]:  # Show first 5
-                    console.print(
-                        f"     • Port {port['port']}/{port['protocol']}: {port.get('service', 'unknown')}"
-                    )
+                    console.print(f"     • Port {port['port']}/{port['protocol']}: {port.get('service', 'unknown')}")
 
         # Run subdomain enumeration (different target)
         console.print("\n[bold]4. Running Amass subdomain enumeration...[/]")
@@ -98,9 +92,7 @@ async def demo_integration():
         web_target = "http://testphp.vulnweb.com"  # Intentionally vulnerable test site
         console.print(f"   Target: [dim]{web_target}[/]")
 
-        nuclei_result = await orch.scan_with_nuclei(
-            target=web_target, severity="high,critical"
-        )
+        nuclei_result = await orch.scan_with_nuclei(target=web_target, severity="high,critical")
         console.print(f"   Scan ID: [cyan]{nuclei_result['scan_id']}[/]")
 
         with Progress(
@@ -108,12 +100,8 @@ async def demo_integration():
             TextColumn("[progress.description]{task.description}"),
             console=console,
         ) as progress:
-            task = progress.add_task(
-                "[cyan]Scanning for vulnerabilities...", total=None
-            )
-            nuclei_status = await orch.wait_for_scan(
-                nuclei_result["scan_id"], timeout=600
-            )
+            task = progress.add_task("[cyan]Scanning for vulnerabilities...", total=None)
+            nuclei_status = await orch.wait_for_scan(nuclei_result["scan_id"], timeout=600)
             progress.update(task, completed=True)
 
         console.print(f"   Status: [green]{nuclei_status['status']}[/]")
@@ -121,9 +109,7 @@ async def demo_integration():
         if nuclei_status["status"] == "completed":
             nuclei_results = await orch.get_scan_results(nuclei_result["scan_id"])
             findings = nuclei_results.get("results", [])
-            console.print(
-                f"   Found [yellow]{len(findings)}[/] vulnerability template(s)"
-            )
+            console.print(f"   Found [yellow]{len(findings)}[/] vulnerability template(s)")
 
             for finding in findings[:3]:  # Show first 3
                 severity = finding.get("info", {}).get("severity", "unknown")
@@ -146,9 +132,7 @@ async def demo_integration():
 
         table.add_row("Nmap", target, nmap_status["status"], nmap_result["scan_id"][:8])
         table.add_row("Amass", domain, "triggered", amass_result["scan_id"][:8])
-        table.add_row(
-            "Nuclei", web_target, nuclei_status["status"], nuclei_result["scan_id"][:8]
-        )
+        table.add_row("Nuclei", web_target, nuclei_status["status"], nuclei_result["scan_id"][:8])
 
         console.print(table)
 
@@ -162,20 +146,12 @@ async def demo_integration():
                 "nmap": {
                     "scan_id": nmap_result["scan_id"],
                     "status": nmap_status["status"],
-                    "results": (
-                        nmap_results.get("results", {})
-                        if nmap_status["status"] == "completed"
-                        else None
-                    ),
+                    "results": (nmap_results.get("results", {}) if nmap_status["status"] == "completed" else None),
                 },
                 "nuclei": {
                     "scan_id": nuclei_result["scan_id"],
                     "status": nuclei_status["status"],
-                    "results": (
-                        nuclei_results.get("results", [])
-                        if nuclei_status["status"] == "completed"
-                        else None
-                    ),
+                    "results": (nuclei_results.get("results", []) if nuclei_status["status"] == "completed" else None),
                 },
             },
         }
@@ -200,18 +176,12 @@ async def demo_comprehensive_scan():
     """
     bridge_url = "http://localhost:8080"
 
-    console.print(
-        Panel.fit(
-            "[bold cyan]Comprehensive Multi-Tool Scan Demo[/]", border_style="cyan"
-        )
-    )
+    console.print(Panel.fit("[bold cyan]Comprehensive Multi-Tool Scan Demo[/]", border_style="cyan"))
 
     target = "scanme.nmap.org"
 
     async with ToolOrchestrator(bridge_url) as orch:
-        console.print(
-            f"\n[bold]Running comprehensive network scan against {target}...[/]\n"
-        )
+        console.print(f"\n[bold]Running comprehensive network scan against {target}...[/]\n")
 
         results = await orch.run_comprehensive_scan(target=target, scan_type="network")
 

@@ -11,12 +11,12 @@ from .storage import SQLiteStorage, RedisStorage
 from .manager import MemoryManager
 
 __all__ = [
-    'BaseMemory',
-    'MemoryType', 
-    'ConversationMemory',
-    'SQLiteStorage',
-    'RedisStorage',
-    'MemoryManager',
+    "BaseMemory",
+    "MemoryType",
+    "ConversationMemory",
+    "SQLiteStorage",
+    "RedisStorage",
+    "MemoryManager",
 ]
 
-__version__ = '0.1.0'
+__version__ = "0.1.0"

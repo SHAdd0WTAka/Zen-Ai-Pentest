@@ -10,11 +10,11 @@ Dieses Paket enthält:
 Usage:
     from risk_engine import FalsePositiveEngine, BusinessImpactCalculator
     from risk_engine import Finding, RiskFactors, ConfidenceLevel
-    
+
     # False Positive Engine
     fp_engine = FalsePositiveEngine()
     result = await fp_engine.validate_finding(finding)
-    
+
     # Business Impact Calculator
     impact_calc = BusinessImpactCalculator(
         organization_size="large",
@@ -77,7 +77,6 @@ __all__ = [
     "FalsePositiveDatabase",
     "BayesianFilter",
     "LLMVotingEngine",
-    
     # Business Impact Calculator
     "BusinessImpactCalculator",
     "BusinessImpactResult",
@@ -89,7 +88,6 @@ __all__ = [
     "ComplianceImpact",
     "ReputationImpact",
     "get_calculator",
-    
     # Additional scoring modules
     "RiskScorer",
     "RiskScore",

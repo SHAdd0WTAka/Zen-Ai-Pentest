@@ -28,6 +28,7 @@ logger = logging.getLogger(__name__)
 
 class ConfidenceLevel(Enum):
     """Konfidenzlevel für Validierungen."""
+
     VERY_HIGH = 0.95
     HIGH = 0.9
     MEDIUM = 0.6
@@ -37,6 +38,7 @@ class ConfidenceLevel(Enum):
 
 class FindingStatus(Enum):
     """Status eines Security Findings."""
+
     CONFIRMED = "confirmed"
     LIKELY = "likely"
     SUSPECTED = "suspected"
@@ -47,6 +49,7 @@ class FindingStatus(Enum):
 
 class VulnerabilityType(Enum):
     """Typen von Schwachstellen."""
+
     SQL_INJECTION = "sql_injection"
     XSS = "xss"
     AUTHENTICATION_BYPASS = "authentication_bypass"
@@ -73,6 +76,7 @@ class VulnerabilityType(Enum):
 @dataclass
 class CVSSData:
     """CVSS v3.1 und v4.0 Scoring Daten."""
+
     version: str = "3.1"
     base_score: float = 0.0
     temporal_score: Optional[float] = None
@@ -118,6 +122,7 @@ class CVSSData:
 @dataclass
 class EPSSData:
     """EPSS (Exploit Prediction Scoring System) Daten."""
+
     cve_id: str
     epss_score: float  # 0-1 Wahrscheinlichkeit der Ausnutzung
     percentile: float  # Perzentil-Ranking
@@ -141,6 +146,7 @@ class EPSSData:
 @dataclass
 class RiskFactors:
     """Sammlung aller Risikofaktoren für ein Finding."""
+
     cvss_data: CVSSData = field(default_factory=CVSSData)
     epss_score: float = 0.0
     business_impact: float = 0.0
@@ -163,12 +169,12 @@ class RiskFactors:
 
         # Gewichtung der Faktoren
         weights = {
-            'cvss': 0.25,
-            'epss': 0.20,
-            'business_impact': 0.20,
-            'exploitability': 0.15,
-            'asset_criticality': 0.15,
-            'context': 0.05,
+            "cvss": 0.25,
+            "epss": 0.20,
+            "business_impact": 0.20,
+            "exploitability": 0.15,
+            "asset_criticality": 0.15,
+            "context": 0.05,
         }
 
         # Kontext-Multiplikatoren
@@ -183,11 +189,11 @@ class RiskFactors:
             context_multiplier += 0.1
 
         score = (
-            cvss_weight * weights['cvss'] +
-            self.epss_score * weights['epss'] +
-            self.business_impact * weights['business_impact'] +
-            self.exploitability * weights['exploitability'] +
-            self.asset_criticality * weights['asset_criticality']
+            cvss_weight * weights["cvss"]
+            + self.epss_score * weights["epss"]
+            + self.business_impact * weights["business_impact"]
+            + self.exploitability * weights["exploitability"]
+            + self.asset_criticality * weights["asset_criticality"]
         ) * min(2.0, context_multiplier)
 
         return min(1.0, score)
@@ -196,6 +202,7 @@ class RiskFactors:
 @dataclass
 class Finding:
     """Repräsentiert ein Security Finding."""
+
     id: str
     title: str
     description: str
@@ -235,6 +242,7 @@ class Finding:
 @dataclass
 class ValidationResult:
     """Ergebnis einer Validierung durch die FalsePositiveEngine."""
+
     finding: Finding
     is_false_positive: bool
     confidence: float
@@ -263,6 +271,7 @@ class ValidationResult:
 @dataclass
 class HistoricalFinding:
     """Repräsentiert ein historisches Finding für die FP-Datenbank."""
+
     finding_hash: str
     is_false_positive: bool
     first_seen: datetime
@@ -326,8 +335,8 @@ class BayesianFilter:
         # Einfache Tokenisierung
         words = text.lower().split()
         # Filtere kurze Wörter und häufige Stopwords
-        stopwords = {'the', 'a', 'an', 'is', 'are', 'was', 'were', 'be', 'been', 'being'}
-        return [w.strip('.,;:!?()[]{}') for w in words if len(w) > 3 and w not in stopwords]
+        stopwords = {"the", "a", "an", "is", "are", "was", "were", "be", "been", "being"}
+        return [w.strip(".,;:!?()[]{}") for w in words if len(w) > 3 and w not in stopwords]
 
 
 class FalsePositiveDatabase:
@@ -359,7 +368,7 @@ class FalsePositiveDatabase:
                 is_false_positive=is_false_positive,
                 first_seen=datetime.now(),
                 last_seen=datetime.now(),
-                user_feedback=user_feedback
+                user_feedback=user_feedback,
             )
 
         # Trainiere Bayesian Filter
@@ -411,21 +420,21 @@ class FalsePositiveDatabase:
         """Lädt die Datenbank aus dem Speicher."""
         try:
             import json
-            with open(self.storage_path, 'r') as f:
+
+            with open(self.storage_path, "r") as f:
                 data = json.load(f)
-                for item in data.get('findings', []):
+                for item in data.get("findings", []):
                     hist = HistoricalFinding(
-                        finding_hash=item['finding_hash'],
-                        is_false_positive=item['is_false_positive'],
-                        first_seen=datetime.fromisoformat(item['first_seen']),
-                        last_seen=datetime.fromisoformat(item['last_seen']),
-                        occurrence_count=item['occurrence_count'],
-                        user_feedback=item.get('user_feedback'),
+                        finding_hash=item["finding_hash"],
+                        is_false_positive=item["is_false_positive"],
+                        first_seen=datetime.fromisoformat(item["first_seen"]),
+                        last_seen=datetime.fromisoformat(item["last_seen"]),
+                        occurrence_count=item["occurrence_count"],
+                        user_feedback=item.get("user_feedback"),
                         feedback_timestamp=(
-                            datetime.fromisoformat(item['feedback_timestamp'])
-                            if item.get('feedback_timestamp') else None
+                            datetime.fromisoformat(item["feedback_timestamp"]) if item.get("feedback_timestamp") else None
                         ),
-                        feedback_user=item.get('feedback_user')
+                        feedback_user=item.get("feedback_user"),
                     )
                     self.findings[hist.finding_hash] = hist
         except Exception as e:
@@ -435,22 +444,23 @@ class FalsePositiveDatabase:
         """Speichert die Datenbank."""
         try:
             import json
+
             data = {
-                'findings': [
+                "findings": [
                     {
-                        'finding_hash': h.finding_hash,
-                        'is_false_positive': h.is_false_positive,
-                        'first_seen': h.first_seen.isoformat(),
-                        'last_seen': h.last_seen.isoformat(),
-                        'occurrence_count': h.occurrence_count,
-                        'user_feedback': h.user_feedback,
-                        'feedback_timestamp': h.feedback_timestamp.isoformat() if h.feedback_timestamp else None,
-                        'feedback_user': h.feedback_user
+                        "finding_hash": h.finding_hash,
+                        "is_false_positive": h.is_false_positive,
+                        "first_seen": h.first_seen.isoformat(),
+                        "last_seen": h.last_seen.isoformat(),
+                        "occurrence_count": h.occurrence_count,
+                        "user_feedback": h.user_feedback,
+                        "feedback_timestamp": h.feedback_timestamp.isoformat() if h.feedback_timestamp else None,
+                        "feedback_user": h.feedback_user,
                     }
                     for h in self.findings.values()
                 ]
             }
-            with open(self.storage_path, 'w') as f:
+            with open(self.storage_path, "w") as f:
                 json.dump(data, f, indent=2)
         except Exception as e:
             logger.warning(f"Konnte FP-Datenbank nicht speichern: {e}")
@@ -517,7 +527,7 @@ class LLMVotingEngine:
         try:
             # Hier würde die tatsächliche LLM-Abfrage stattfinden
             # Platzhalter für die Integration
-            if hasattr(client, 'analyze'):
+            if hasattr(client, "analyze"):
                 response = await client.analyze(prompt)
                 return self._parse_response(response)
             else:
@@ -581,10 +591,7 @@ class FalsePositiveEngine:
     """
 
     def __init__(
-        self,
-        fp_database_path: Optional[str] = None,
-        epss_api_endpoint: Optional[str] = None,
-        enable_llm_voting: bool = True
+        self, fp_database_path: Optional[str] = None, epss_api_endpoint: Optional[str] = None, enable_llm_voting: bool = True
     ):
         """
         Initialisiert die FalsePositiveEngine.
@@ -652,8 +659,7 @@ class FalsePositiveEngine:
 
         # Entscheidungsfindung
         is_fp, confidence, reasoning = self._make_decision(
-            finding, historical_result, llm_votes, llm_confidence,
-            risk_score, context_score
+            finding, historical_result, llm_votes, llm_confidence, risk_score, context_score
         )
 
         # Status aktualisieren
@@ -681,7 +687,7 @@ class FalsePositiveEngine:
             reasoning=reasoning,
             recommendations=recommendations,
             validation_methods=validation_methods,
-            llm_votes=llm_votes
+            llm_votes=llm_votes,
         )
 
         logger.info(f"Finding {finding.id} validiert: FP={is_fp}, Confidence={confidence:.2f}, Priority={priority}")
@@ -772,6 +778,7 @@ class FalsePositiveEngine:
 
             # Simuliere EPSS-Score mit etwas Zufall
             import random
+
             random.seed(cve_id)
             base_score = random.uniform(0.05, 0.8)
 
@@ -791,6 +798,7 @@ class FalsePositiveEngine:
         Returns:
             Nach Priorität sortierte Liste (höchste zuerst)
         """
+
         def get_priority_score(finding: Finding) -> float:
             # Berechne Risiko-Score
             risk = self.calculate_risk_score(finding.risk_factors)
@@ -859,7 +867,7 @@ class FalsePositiveEngine:
         llm_votes: Dict[str, bool],
         llm_confidence: float,
         risk_score: float,
-        context_score: float
+        context_score: float,
     ) -> Tuple[bool, float, str]:
         """Trifft die finale Entscheidung über FP-Status."""
 
@@ -868,7 +876,7 @@ class FalsePositiveEngine:
             return (
                 historical.user_feedback,
                 0.95,
-                f"Basierend auf historischem Feedback ({historical.occurrence_count} Vorkommen)"
+                f"Basierend auf historischem Feedback ({historical.occurrence_count} Vorkommen)",
             )
 
         # Kombinierte Bewertung
@@ -902,7 +910,7 @@ class FalsePositiveEngine:
             "consider implementing",
             "might be",
             "possibly",
-            "could potentially"
+            "could potentially",
         ]
         desc_lower = finding.description.lower()
         pattern_matches = sum(1 for p in fp_patterns if p in desc_lower)
@@ -966,12 +974,7 @@ class FalsePositiveEngine:
 
         return base_priority
 
-    def _generate_recommendations(
-        self,
-        finding: Finding,
-        is_fp: bool,
-        risk_score: float
-    ) -> List[str]:
+    def _generate_recommendations(self, finding: Finding, is_fp: bool, risk_score: float) -> List[str]:
         """Generiert Empfehlungen basierend auf dem Ergebnis."""
         recommendations = []
 
@@ -1010,10 +1013,8 @@ class FalsePositiveEngine:
 
 # Hilfsfunktionen für einfache Nutzung
 
-def create_finding_from_scan_result(
-    scan_result: Dict[str, Any],
-    asset_context: Optional[AssetContext] = None
-) -> Finding:
+
+def create_finding_from_scan_result(scan_result: Dict[str, Any], asset_context: Optional[AssetContext] = None) -> Finding:
     """
     Erstellt ein Finding-Objekt aus einem Scan-Ergebnis.
 

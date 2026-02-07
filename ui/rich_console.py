@@ -4,25 +4,25 @@ Provides beautiful, interactive CLI experience
 """
 
 import asyncio
-import time
 from dataclasses import dataclass
-from datetime import datetime
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, Optional
 
 from rich import box
 from rich.console import Console
-from rich.layout import Layout
 from rich.live import Live
-from rich.markdown import Markdown
 from rich.panel import Panel
-from rich.progress import (BarColumn, Progress, SpinnerColumn,
-                           TaskProgressColumn, TextColumn, TimeElapsedColumn,
-                           TimeRemainingColumn)
+from rich.progress import (
+    BarColumn,
+    Progress,
+    SpinnerColumn,
+    TaskProgressColumn,
+    TextColumn,
+    TimeElapsedColumn,
+    TimeRemainingColumn,
+)
 from rich.prompt import Confirm, Prompt
 from rich.status import Status
-from rich.syntax import Syntax
 from rich.table import Table
-from rich.tree import Tree
 
 console = Console()
 
@@ -66,9 +66,7 @@ class ZenTUI:
 
     def show_main_menu(self) -> str:
         """Display main menu and get selection"""
-        menu = Table(
-            title="[bold green]Main Menu[/]", box=box.ROUNDED, show_header=False
-        )
+        menu = Table(title="[bold green]Main Menu[/]", box=box.ROUNDED, show_header=False)
         menu.add_column("Option", style="cyan", justify="center")
         menu.add_column("Description", style="white")
 
@@ -98,9 +96,7 @@ class ZenTUI:
 
     def scan_config_wizard(self) -> Dict[str, Any]:
         """Interactive scan configuration wizard"""
-        self.console.print(
-            Panel.fit("[bold]New Scan Configuration[/]", border_style="green")
-        )
+        self.console.print(Panel.fit("[bold]New Scan Configuration[/]", border_style="green"))
 
         # Target input with validation
         while True:
@@ -110,9 +106,7 @@ class ZenTUI:
             self.console.print("[red]Please enter a valid target[/]")
 
         # Scan type
-        scan_type = Prompt.ask(
-            "[cyan]Scan type[/]", choices=["quick", "full", "stealth"], default="quick"
-        )
+        scan_type = Prompt.ask("[cyan]Scan type[/]", choices=["quick", "full", "stealth"], default="quick")
 
         # Port selection
         port_choice = Prompt.ask(
@@ -250,24 +244,19 @@ class ZenTUI:
             for sev in severity_order:
                 if sev in counts:
                     color = severity_colors.get(sev, "white")
-                    sev_table.add_row(
-                        f"[{color}]{sev.upper()}[/{color}]", str(counts[sev])
-                    )
+                    sev_table.add_row(f"[{color}]{sev.upper()}[/{color}]", str(counts[sev]))
 
             self.console.print(sev_table)
 
             # Show critical/high findings
-            critical = [
-                f for f in findings if f.get("severity") in ["critical", "high"]
-            ]
+            critical = [f for f in findings if f.get("severity") in ["critical", "high"]]
             if critical:
                 self.console.print()
                 self.console.print("[bold red]Critical/High Findings:[/]")
                 for finding in critical[:5]:  # Show first 5
                     self.console.print(
                         Panel(
-                            f"[bold]{finding.get('title', 'Unknown')}[/]\n"
-                            f"[dim]{finding.get('description', '')[:200]}...[/]",
+                            f"[bold]{finding.get('title', 'Unknown')}[/]\n[dim]{finding.get('description', '')[:200]}...[/]",
                             border_style="red",
                         )
                     )

@@ -6,7 +6,7 @@ Reduces noise before sending to expensive LLMs (GPT-4, Claude)
 import logging
 import re
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import Optional
 
 import aiohttp
 
@@ -174,9 +174,7 @@ EXAMPLE OUTPUT:
             try:
                 compressed = await self._llm_compress(cleaned, max_output_tokens)
                 compressed_length = len(compressed)
-                ratio = (
-                    compressed_length / original_length if original_length > 0 else 1.0
-                )
+                ratio = compressed_length / original_length if original_length > 0 else 1.0
 
                 # Estimate tokens saved (rough approximation)
                 tokens_saved = (original_length - compressed_length) // 4
@@ -270,9 +268,7 @@ EXAMPLE OUTPUT:
                 continue
 
             # Keep lines matching important patterns
-            if any(
-                re.search(pattern, line, re.IGNORECASE) for pattern in tool_patterns
-            ):
+            if any(re.search(pattern, line, re.IGNORECASE) for pattern in tool_patterns):
                 filtered.append(line)
                 continue
 
@@ -318,9 +314,7 @@ EXAMPLE OUTPUT:
             return False
 
         try:
-            async with self.session.get(
-                f"{self.endpoint}/health", timeout=aiohttp.ClientTimeout(total=2)
-            ) as resp:
+            async with self.session.get(f"{self.endpoint}/health", timeout=aiohttp.ClientTimeout(total=2)) as resp:
                 return resp.status == 200
         except Exception:
             return False

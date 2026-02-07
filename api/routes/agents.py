@@ -86,9 +86,7 @@ async def get_agent(agent_id: str, current_user: User = Depends(get_current_user
 
 
 @router.post("/{agent_id}/start")
-async def start_agent(
-    agent_id: str, current_user: User = Depends(require_permissions(UserRole.ADMIN))
-):
+async def start_agent(agent_id: str, current_user: User = Depends(require_permissions(UserRole.ADMIN))):
     """Start an agent (admin only)"""
     agent = agent_manager.get_agent(agent_id)
     if not agent:
@@ -99,9 +97,7 @@ async def start_agent(
 
 
 @router.post("/{agent_id}/stop")
-async def stop_agent(
-    agent_id: str, current_user: User = Depends(require_permissions(UserRole.ADMIN))
-):
+async def stop_agent(agent_id: str, current_user: User = Depends(require_permissions(UserRole.ADMIN))):
     """Stop an agent (admin only)"""
     agent = agent_manager.get_agent(agent_id)
     if not agent:
@@ -163,9 +159,7 @@ async def get_agent_logs(
 
 
 @router.post("/broadcast")
-async def broadcast_message(
-    message: str, current_user: User = Depends(require_permissions(UserRole.ADMIN))
-):
+async def broadcast_message(message: str, current_user: User = Depends(require_permissions(UserRole.ADMIN))):
     """Broadcast message to all agents (admin only)"""
     await agent_manager.broadcast(message)
     return {"message": "Broadcast sent to all agents"}
@@ -176,15 +170,9 @@ async def get_system_status(current_user: User = Depends(get_current_user)):
     """Get overall agent system status"""
     return {
         "total_agents": len(agent_manager.get_all_agents()),
-        "active_agents": len(
-            [a for a in agent_manager.get_all_agents() if a.state.value == "running"]
-        ),
-        "idle_agents": len(
-            [a for a in agent_manager.get_all_agents() if a.state.value == "idle"]
-        ),
-        "error_agents": len(
-            [a for a in agent_manager.get_all_agents() if a.state.value == "error"]
-        ),
+        "active_agents": len([a for a in agent_manager.get_all_agents() if a.state.value == "running"]),
+        "idle_agents": len([a for a in agent_manager.get_all_agents() if a.state.value == "idle"]),
+        "error_agents": len([a for a in agent_manager.get_all_agents() if a.state.value == "error"]),
         "shared_context_keys": list(agent_manager.shared_context.keys()),
         "message_queue_size": len(agent_manager.message_history),
     }

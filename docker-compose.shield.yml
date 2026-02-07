@@ -1,7 +1,5 @@
-"""
-Zen Shield - Security Sanitization Stack
-Extends docker-compose.pentest.yml with data protection layer
-"""
+# Zen Shield - Security Sanitization Stack
+# Extends docker-compose.pentest.yml with data protection layer
 
 version: '3.8'
 

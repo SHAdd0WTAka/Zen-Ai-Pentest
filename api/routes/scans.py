@@ -7,8 +7,7 @@ Create, manage, and monitor penetration testing scans.
 from datetime import datetime
 from typing import List, Optional
 
-from fastapi import (APIRouter, BackgroundTasks, Depends, HTTPException, Query,
-                     status)
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
 
 from api.core.auth import get_current_user

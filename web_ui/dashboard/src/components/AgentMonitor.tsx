@@ -369,7 +369,7 @@ export default function AgentMonitor() {
           }
           break
         case 'state_change':
-          setAgents(prev => prev.map(a => 
+          setAgents((prev: Agent[]) => prev.map((a: Agent) => 
             a.id === data.agent_id 
               ? { ...a, state: data.new_state, last_activity: new Date().toISOString() }
               : a
@@ -377,12 +377,12 @@ export default function AgentMonitor() {
           break
         case 'thought':
           if (data.agent_id === selectedAgent?.id) {
-            setThoughts(prev => [...prev, data.thought])
+            setThoughts((prev: AgentThought[]) => [...prev, data.thought])
           }
           break
         case 'action':
           if (data.agent_id === selectedAgent?.id) {
-            setActions(prev => [...prev, data.action])
+            setActions((prev: AgentAction[]) => [...prev, data.action])
           }
           break
       }
