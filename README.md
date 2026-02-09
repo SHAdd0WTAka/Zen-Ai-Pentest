@@ -617,3 +617,21 @@ This project is licensed under the MIT License - see [LICENSE](LICENSE) file for
   <b>Made with ❤️ for the security community</b><br>
   <sub>© 2026 Zen-AI-Pentest. All rights reserved.</sub>
 </p>
+
+---
+
+## 💬 Community & Support
+
+Join our Discord community for real-time support, discussions, and updates:
+
+[![Discord](https://img.shields.io/discord/1470531751595086017?color=7289DA&label=Discord&logo=discord&logoColor=white)](https://discord.gg/uNyKRqeF)
+
+**Discord Server:** https://discord.gg/uNyKRqeF
+
+### Discord Features:
+- 🔴 Live CI/CD notifications
+- 🤝 Community support
+- 📢 Release announcements
+- 💡 Feature discussions
+- 🐛 Bug reporting
+
