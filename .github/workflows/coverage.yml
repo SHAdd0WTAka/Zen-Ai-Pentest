@@ -5,6 +5,7 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -12,6 +13,7 @@ concurrency:
 
 permissions:
   contents: read
+  id-token: write  # Required for tokenless upload
 
 jobs:
   test:
@@ -19,6 +21,8 @@ jobs:
     timeout-minutes: 20
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Required for proper coverage reporting
     
     - name: Set up Python
       uses: actions/setup-python@v5
@@ -42,5 +46,6 @@ jobs:
         files: ./coverage.xml
         fail_ci_if_error: false
         verbose: true
+        slug: SHAdd0WTAka/Zen-Ai-Pentest
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
