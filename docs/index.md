@@ -1,10 +1,61 @@
 # Zen AI Pentest Documentation
 
-## Overview
+Welcome to the Zen AI Pentest documentation! This guide will help you get started, deploy, and use the framework effectively.
 
-Zen AI Pentest is an autonomous red team framework that combines AI-powered reasoning with real security tool execution for comprehensive penetration testing.
+---
 
-## Quick Start
+## 📚 Documentation Index
+
+### Getting Started
+- **[Installation Guide](INSTALLATION.md)** - Complete installation instructions
+  - Docker setup (recommended)
+  - Local installation
+  - Production deployment
+  - VirtualBox VM setup
+
+### API Reference
+- **[API Documentation](API.md)** - Complete REST API reference
+  - Authentication
+  - Endpoints reference
+  - Response codes
+  - Rate limiting
+- **[API Examples](API_EXAMPLES.md)** - Code examples in multiple languages
+  - curl examples
+  - Python requests examples
+  - JavaScript fetch examples
+  - WebSocket examples
+
+### Deployment
+- **[AWS Deployment](deployment/aws-deployment.md)** - Deploy on Amazon Web Services
+  - EC2 setup, RDS PostgreSQL, EKS, S3
+- **[Azure Deployment](deployment/azure-deployment.md)** - Deploy on Microsoft Azure
+  - VMs, PostgreSQL, AKS, Blob Storage
+- **[GCP Deployment](deployment/gcp-deployment.md)** - Deploy on Google Cloud Platform
+  - Compute Engine, Cloud SQL, GKE, Cloud Armor
+
+### Architecture & Design
+- **[Architecture Overview](architecture.md)** - System architecture and design
+  - Component details
+  - Data flow
+  - Security architecture
+  - Technology stack
+
+### Troubleshooting
+- **[Troubleshooting Guide](TROUBLESHOOTING.md)** - Common issues and solutions
+  - Database connection issues
+  - API startup errors
+  - Docker problems
+  - Performance tuning
+
+### Additional Guides
+- **[Docker Setup](DOCKER_SETUP.md)** - Detailed Docker configuration
+- **[Plugin System](PLUGIN_SYSTEM.md)** - Extending with custom tools
+- **[Benchmarks](BENCHMARKS.md)** - Performance comparisons
+- **[Production Hardening](production-hardening.md)** - Security best practices
+
+---
+
+## 🚀 Quick Start
 
 ### Installation
 
@@ -24,11 +75,15 @@ pip install -e ".[dev]"
 # Build and run
 docker-compose up -d
 
-# Access web UI
-open http://localhost:8000
+# Access services
+# Web UI:      http://localhost:3000
+# API Docs:    http://localhost:8000/docs
+# API Base:    http://localhost:8000
 ```
 
-## Architecture
+---
+
+## 🏗️ Architecture Overview
 
 ```
 zen-ai-pentest/
@@ -41,29 +96,33 @@ zen-ai-pentest/
 └── modules/             # Pentest modules
 ```
 
-## Key Features
+---
 
-### 1. Autonomous Pentesting (Q1)
+## ✨ Key Features
+
+### 1. Autonomous Pentesting
 - **ReAct Loop**: Reasoning + Acting with self-correction
 - **Tool Executor**: 15+ security tools with safety controls
 - **Memory System**: Multi-layer persistent storage
 
-### 2. Risk Scoring (Q2)
+### 2. Risk Scoring
 - **Multi-Factor Formula**: CVSS×0.25 + EPSS×0.25 + Business×0.35 + Validation×0.15
 - **Severity Levels**: Critical (24h), High (72h), Medium (14d), Low (30d)
 - **Context-Aware**: Internet exposure, data sensitivity, compliance
 
-### 3. DevSecOps Integration (Q3)
+### 3. DevSecOps Integration
 - **Web UI**: Real-time scan monitoring
 - **CI/CD**: GitHub Actions, GitLab CI, Jenkins, Kubernetes
 - **API**: RESTful API with WebSocket updates
 
-### 4. Community (Q4)
-- **Benchmarks**: OWASP, WrongSecrets, DVWA, WebGoat
-- **Templates**: Web, API, Cloud, Container, Mobile
-- **Documentation**: Comprehensive guides
+### 4. Multi-Cloud Support
+- **AWS**: EC2, RDS, EKS, S3 deployment
+- **Azure**: VMs, PostgreSQL, AKS deployment
+- **GCP**: Compute Engine, Cloud SQL, GKE deployment
 
-## Usage
+---
+
+## 💻 Usage Examples
 
 ### Autonomous Agent
 
@@ -100,7 +159,22 @@ executor = ToolExecutor(safety_level=SafetyLevel.NON_DESTRUCTIVE)
 result = await executor.execute("nmap", "example.com", {"ports": "80,443"})
 ```
 
-## Testing
+### REST API
+
+```bash
+# Login
+curl -X POST http://localhost:8000/api/v1/auth/login \
+  -d "username=admin&password=admin123"
+
+# Create scan
+curl -X POST http://localhost:8000/api/v1/scans/ \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{"target": "example.com", "scan_type": "full"}'
+```
+
+---
+
+## 🧪 Testing
 
 ```bash
 # Run all tests
@@ -113,7 +187,9 @@ pytest tests/autonomous/ -v
 pytest tests/ --cov=. --cov-report=html
 ```
 
-## Configuration
+---
+
+## ⚙️ Configuration
 
 ### Environment Variables
 
@@ -127,12 +203,15 @@ MISTRAL_API_KEY=...
 ZEN_SAFETY_LEVEL=non_destructive  # read_only, non_destructive, exploit, aggressive
 ZEN_MAX_ITERATIONS=50
 
+# Database
+DATABASE_URL=postgresql://user:pass@localhost:5432/zen_pentest
+
 # Paths
 ZEN_DATA_DIR=./data
 ZEN_LOG_DIR=./logs
 ```
 
-## Safety Levels
+### Safety Levels
 
 | Level | Description | Tools Allowed |
 |-------|-------------|---------------|
@@ -141,7 +220,9 @@ ZEN_LOG_DIR=./logs
 | EXPLOIT | Controlled exploitation | sqlmap, metasploit (limited) |
 | AGGRESSIVE | Full exploitation | All tools (requires explicit approval) |
 
-## Contributing
+---
+
+## 🤝 Contributing
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
@@ -149,15 +230,42 @@ ZEN_LOG_DIR=./logs
 4. Push to branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## License
+See [CONTRIBUTING.md](../CONTRIBUTING.md) for detailed guidelines.
+
+---
+
+## 📄 License
 
 MIT License - see [LICENSE](../LICENSE) for details.
 
-## Support
+---
 
-- GitHub Issues: [github.com/SHAdd0WTAka/zen-ai-pentest/issues](https://github.com/SHAdd0WTAka/zen-ai-pentest/issues)
-- Discussions: [github.com/SHAdd0WTAka/zen-ai-pentest/discussions](https://github.com/SHAdd0WTAka/zen-ai-pentest/discussions)
+## 💬 Support
 
-## Roadmap
+| Resource | Link |
+|----------|------|
+| 🐛 Issues | [GitHub Issues](https://github.com/SHAdd0WTAka/zen-ai-pentest/issues) |
+| 💬 Discussions | [GitHub Discussions](https://github.com/SHAdd0WTAka/zen-ai-pentest/discussions) |
+| 🌐 Discord | [Discord Community](https://discord.gg/zen-ai-pentest) |
+| 📧 Email | [support@zen-ai-pentest.dev](mailto:support@zen-ai-pentest.dev) |
+| 🔧 Troubleshooting | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) |
+| 📚 Full Docs | [docs/](.) |
 
-See [ROADMAP_2026_STATUS.md](../ROADMAP_2026_STATUS.md) for detailed implementation status.
+---
+
+## 🗺️ Roadmap
+
+See [ROADMAP_2026.md](../ROADMAP_2026.md) for our detailed 2026 roadmap.
+
+Highlights:
+- **Q1 2026**: Autonomous Engine ✅
+- **Q2 2026**: Risk Framework ✅
+- **Q3 2026**: DevSecOps Integration ✅
+- **Q4 2026**: Community & Benchmarks
+
+---
+
+<p align="center">
+  <b>Zen AI Pentest - AI-Powered Penetration Testing</b><br>
+  <sub>© 2026 Zen AI Pentest. All rights reserved.</sub>
+</p>

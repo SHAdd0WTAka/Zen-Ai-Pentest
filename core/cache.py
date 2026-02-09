@@ -222,9 +222,9 @@ class RedisCache(CacheBackend):
         self.port = port
         self.db = db
         self.password = password
-        self._client: Optional[redis.Redis] = None
+        self._client: Optional[Any] = None
 
-    async def _get_client(self) -> redis.Redis:
+    async def _get_client(self) -> Any:
         if self._client is None:
             self._client = redis.Redis(
                 host=self.host,
