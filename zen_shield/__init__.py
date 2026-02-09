@@ -14,7 +14,7 @@ from .filters.secrets import SecretScrubber
 from .sanitizer import ZenSanitizer
 from .schemas import RiskLevel, SanitizerRequest, SanitizerResponse
 
-__version__ = "1.0.0"
+__version__ = "2.3.9"
 __all__ = [
     "ZenSanitizer",
     "SanitizerRequest",
