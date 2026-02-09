@@ -197,7 +197,7 @@ jobs:
         needs.dependabot-metadata.outputs.dependency-type == 'direct:development'))
     steps:
       - name: Wait for required checks
-        uses: lewagon/wait-on-check-action@v1.3.4
+        uses: lewagon/wait-on-check-action@v1.5.0
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           check-name: 'Python CI'
