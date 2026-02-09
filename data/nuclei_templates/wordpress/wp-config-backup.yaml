@@ -1,0 +1,49 @@
+id: wp-config-backup
+
+info:
+  name: WordPress Configuration File Backup Exposure
+  author: SHAdd0WTAka
+  severity: critical
+  description: |
+    WordPress configuration file backups are publicly accessible.
+    These files may contain database credentials, API keys, and other sensitive configuration data.
+  reference:
+    - https://wordpress.org/support/article/editing-wp-config-php/
+  tags: wordpress,config,backup,exposure,credentials,wp
+  metadata:
+    max-request: 5
+
+http:
+  - method: GET
+    path:
+      - "{{BaseURL}}/wp-config.php.bak"
+      - "{{BaseURL}}/wp-config.php~"
+      - "{{BaseURL}}/wp-config.php.save"
+      - "{{BaseURL}}/wp-config.php.swp"
+      - "{{BaseURL}}/wp-config.php.old"
+
+    matchers-condition: and
+    matchers:
+      - type: word
+        words:
+          - "DB_NAME"
+          - "DB_USER"
+          - "DB_PASSWORD"
+          - "DB_HOST"
+          - "WP_DEBUG"
+        condition: or
+
+      - type: status
+        status:
+          - 200
+
+    extractors:
+      - type: regex
+        name: db_name
+        regex:
+          - "define\\( *['\"]DB_NAME['\"], *['\"]([^'\"]+)['\"]"
+
+      - type: regex
+        name: db_user
+        regex:
+          - "define\\( *['\"]DB_USER['\"], *['\"]([^'\"]+)['\"]"

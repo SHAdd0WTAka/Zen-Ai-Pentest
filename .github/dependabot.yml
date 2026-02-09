@@ -1,0 +1,172 @@
+# Dependabot Configuration for Zen AI Pentest
+# Automates dependency updates for Python, Node.js, Docker, and GitHub Actions
+
+version: 2
+updates:
+  # Python dependencies (requirements.txt)
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Europe/Berlin"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "SHAdd0WTAka"
+    assignees:
+      - "SHAdd0WTAka"
+    labels:
+      - "dependencies"
+      - "python"
+    commit-message:
+      prefix: "chore(deps)"
+      prefix-development: "chore(deps-dev)"
+      include: "scope"
+    # Group related updates
+    groups:
+      production-dependencies:
+        dependency-type: "production"
+        patterns:
+          - "fastapi*"
+          - "pydantic*"
+          - "uvicorn*"
+          - "aiohttp*"
+          - "redis*"
+      security-dependencies:
+        applies-to: "security-updates"
+        patterns:
+          - "*"
+    ignore:
+      # Ignore major version updates that might break compatibility
+      - dependency-name: "python"
+        update-types: ["version-update:semver-major"]
+
+  # Node.js dependencies (postman/)
+  - package-ecosystem: "npm"
+    directory: "/postman"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Europe/Berlin"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "SHAdd0WTAka"
+    labels:
+      - "dependencies"
+      - "javascript"
+      - "postman"
+    commit-message:
+      prefix: "chore(deps)"
+      prefix-development: "chore(deps-dev)"
+      include: "scope"
+    groups:
+      newman-dependencies:
+        patterns:
+          - "newman*"
+          - "postman*"
+
+  # Docker dependencies
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Europe/Berlin"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "SHAdd0WTAka"
+    labels:
+      - "dependencies"
+      - "docker"
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+    ignore:
+      # Ignore Python major version updates in Docker
+      - dependency-name: "python"
+        update-types: ["version-update:semver-major"]
+
+  # Zen Shield Docker dependencies
+  - package-ecosystem: "docker"
+    directory: "/zen_shield"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Europe/Berlin"
+    open-pull-requests-limit: 3
+    reviewers:
+      - "SHAdd0WTAka"
+    labels:
+      - "dependencies"
+      - "docker"
+      - "zen-shield"
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Europe/Berlin"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "SHAdd0WTAka"
+    labels:
+      - "dependencies"
+      - "github-actions"
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+    groups:
+      actions-dependencies:
+        patterns:
+          - "actions/*"
+          - "aquasecurity/*"
+          - "dependency-check/*"
+
+  # Integration Bridge (if it has its own requirements)
+  - package-ecosystem: "pip"
+    directory: "/integration"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Europe/Berlin"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "SHAdd0WTAka"
+    labels:
+      - "dependencies"
+      - "python"
+      - "integration"
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+
+  # Documentation dependencies (if any)
+  - package-ecosystem: "pip"
+    directory: "/docs"
+    schedule:
+      interval: "monthly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Europe/Berlin"
+    open-pull-requests-limit: 3
+    reviewers:
+      - "SHAdd0WTAka"
+    labels:
+      - "dependencies"
+      - "python"
+      - "documentation"
+    commit-message:
+      prefix: "chore(deps)"
+      prefix-development: "chore(deps-dev)"
+      include: "scope"

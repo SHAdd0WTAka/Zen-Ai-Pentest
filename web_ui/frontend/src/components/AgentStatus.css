@@ -1,0 +1,123 @@
+.agent-status {
+  padding: 20px;
+}
+
+.agent-status h2 {
+  margin-bottom: 20px;
+  color: #2c3e50;
+}
+
+.agents-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 15px;
+}
+
+.agent-card {
+  background: white;
+  border: 1px solid #e1e8ed;
+  border-radius: 8px;
+  padding: 15px;
+  transition: all 0.3s ease;
+}
+
+.agent-card.running {
+  border-left: 4px solid #27ae60;
+}
+
+.agent-card.paused {
+  border-left: 4px solid #f39c12;
+}
+
+.agent-card.error {
+  border-left: 4px solid #e74c3c;
+}
+
+.agent-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+
+.status-icon {
+  font-size: 12px;
+}
+
+.agent-name {
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+.agent-stats {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+}
+
+.stat {
+  text-align: center;
+}
+
+.stat label {
+  display: block;
+  font-size: 11px;
+  color: #7f8c8d;
+  text-transform: uppercase;
+}
+
+.stat span {
+  font-size: 18px;
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+.current-action {
+  margin-bottom: 10px;
+}
+
+.current-action label {
+  display: block;
+  font-size: 11px;
+  color: #7f8c8d;
+  margin-bottom: 3px;
+}
+
+.current-action span {
+  font-size: 13px;
+  color: #3498db;
+}
+
+.memory-usage {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.memory-usage label {
+  font-size: 11px;
+  color: #7f8c8d;
+  width: 50px;
+}
+
+.memory-bar {
+  flex: 1;
+  height: 6px;
+  background: #ecf0f1;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.memory-fill {
+  height: 100%;
+  background: #3498db;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.memory-usage span {
+  font-size: 11px;
+  color: #555;
+  width: 35px;
+  text-align: right;
+}

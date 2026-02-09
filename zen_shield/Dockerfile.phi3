@@ -1,0 +1,32 @@
+# Zen Shield - Small LLM Service
+# Uses Phi-3 Mini 4-bit quantized for local inference
+# ~2GB RAM, runs on CPU
+
+FROM ghcr.io/ggerganov/llama.cpp:server-cuda
+
+# Download Phi-3 Mini 4-bit quantized model
+# Alternative models for different resource constraints:
+# - tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf (smaller, faster)
+# - phi-3-mini-4k-instruct.Q4_K_M.gguf (balanced)
+# - stablelm-2-zephyr-1_6b.Q4_K_M.gguf (alternative)
+
+RUN wget -O /models/phi-3-mini-4k-instruct.Q4_K_M.gguf \
+    https://huggingface.co/TheBloke/Phi-3-mini-4k-instruct-GGUF/resolve/main/phi-3-mini-4k-instruct.Q4_K_M.gguf
+
+# Expose server port
+EXPOSE 8001
+
+# Run llama.cpp server with optimized settings for compression task
+# -c 4096: context size
+# -ngl 0: no GPU layers (CPU only, remove for GPU)
+# --host 0.0.0.0: bind to all interfaces
+ENTRYPOINT ["/server", \
+    "-m", "/models/phi-3-mini-4k-instruct.Q4_K_M.gguf", \
+    "-c", "4096", \
+    "--host", "0.0.0.0", \
+    "--port", "8001", \
+    "-t", "4", \
+    "--ctx-size", "4096", \
+    "--batch-size", "512", \
+    "--ubatch-size", "512", \
+    "--log-format", "text"]

@@ -1,0 +1,30 @@
+name: PyPI Deploy Status
+
+on:
+  workflow_run:
+    workflows: ["Publish to PyPI"]
+    types:
+      - completed
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.event.workflow_run.conclusion != null
+    steps:
+      - name: Notify on success
+        if: github.event.workflow_run.conclusion == 'success'
+        run: echo "PyPI deployment successful!"
+      
+      - name: Notify on failure
+        if: github.event.workflow_run.conclusion == 'failure'
+        run: echo "PyPI deployment failed!"

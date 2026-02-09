@@ -1,0 +1,39 @@
+title: "[Q&A] "
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ❓ Have a question about Zen AI Pentest?
+        
+        Before asking, please:
+        - Check the [README](../blob/main/README.md)
+        - Search [existing discussions](../discussions)
+        - Review the [documentation](../tree/main/docs)
+        
+  - type: textarea
+    id: question
+    attributes:
+      label: Your Question
+      description: What do you need help with?
+      placeholder: |
+        I have a question about...
+    validations:
+      required: true
+      
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Provide any relevant context
+      placeholder: |
+        - What are you trying to accomplish?
+        - What have you tried so far?
+        - Any error messages?
+        
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Your operating system and Python version
+      placeholder: "Windows 11, Python 3.11"

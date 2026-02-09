@@ -1,0 +1,186 @@
+name: Branch Protection Setup Helper
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action to perform'
+        required: true
+        type: choice
+        options:
+          - check-status
+          - generate-setup-guide
+          - validate-configuration
+
+permissions:
+  contents: read
+  repository-projects: read
+
+jobs:
+  helper:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check Branch Protection Status
+        if: github.event.inputs.action == 'check-status' || github.event.inputs.action == ''
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            
+            console.log('🔍 Checking Branch Protection Status');
+            console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+            console.log(`Repository: ${owner}/${repo}`);
+            console.log('');
+            
+            const branches = ['master', 'main'];
+            
+            for (const branch of branches) {
+              try {
+                const { data: protection } = await github.rest.repos.getBranchProtection({
+                  owner: owner,
+                  repo: repo,
+                  branch: branch
+                });
+                
+                console.log(`✅ ${branch}: PROTECTED`);
+                console.log(`   - Required reviews: ${protection.required_pull_request_reviews?.required_approving_review_count || 0}`);
+                console.log(`   - Status checks: ${protection.required_status_checks?.contexts?.length || 0}`);
+                console.log(`   - Admin enforcement: ${protection.enforce_admins?.enabled ? 'Yes' : 'No'}`);
+                console.log(`   - Force pushes: ${protection.allow_force_pushes?.enabled ? 'ALLOWED ⚠️' : 'Blocked ✅'}`);
+                console.log(`   - Deletions: ${protection.allow_deletions?.enabled ? 'ALLOWED ⚠️' : 'Blocked ✅'}`);
+                console.log('');
+              } catch (error) {
+                if (error.status === 404) {
+                  console.log(`❌ ${branch}: NOT PROTECTED`);
+                  console.log('   ⚠️  This branch is vulnerable!');
+                  console.log('');
+                } else {
+                  console.log(`⚠️  ${branch}: Error checking (${error.message})`);
+                  console.log('');
+                }
+              }
+            }
+            
+            console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+            console.log('');
+            console.log('📚 Next Steps:');
+            console.log('   1. Read: docs/BRANCH_PROTECTION.md');
+            console.log('   2. Configure: Settings > Branches');
+            console.log('   3. Validate: Run this workflow again');
+
+      - name: Generate Setup Guide
+        if: github.event.inputs.action == 'generate-setup-guide'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            
+            const guide = `# 🔒 Branch Protection Quick Setup
+            
+## Step 1: Navigate to Branch Settings
+1. Go to: https://github.com/${{ github.repository }}/settings/branches
+2. Click **"Add rule"**
+
+## Step 2: Configure Pattern
+- Branch name pattern: \`master\`
+- (Repeat for \`main\` if applicable)
+
+## Step 3: Enable Protection Rules
+
+### ☑️ Require a pull request before merging
+- Required approving reviews: **1**
+- ☑️ Dismiss stale PR approvals
+- ☑️ Require review from CODEOWNERS
+- ☑️ Restrict who can dismiss reviews
+
+### ☑️ Require status checks to pass
+- ☑️ Require branches to be up to date
+- Search for and select these checks:
+  - \`test (ubuntu-latest, 3.11)\`
+  - \`test (ubuntu-latest, 3.12)\`
+  - \`Analyze Python Code\`
+  - \`dependency-review\`
+
+### ☑️ Require conversation resolution
+- ☑️ Required
+
+### ☑️ Include administrators
+- ☑️ Enforce rules for admins
+
+### ☑️ Restrict who can push
+- ☑️ Restrict pushes
+- ☑️ Allow force pushes: **No**
+- ☑️ Allow deletions: **No**
+
+## Step 4: Save
+Click **"Create"** or **"Save changes"**
+
+## Step 5: Verify
+Run this workflow with "check-status" action
+
+---
+
+## 🎯 Alternative: Use Probot Settings
+
+1. Install: https://github.com/apps/settings
+2. The \`.github/settings.yml\` file already has the config
+3. Probot will auto-apply settings
+
+---
+
+*Generated: ${new Date().toISOString()}*
+`;
+            
+            fs.writeFileSync('BRANCH_PROTECTION_SETUP.md', guide);
+            console.log(guide);
+
+      - name: Validate Configuration
+        if: github.event.inputs.action == 'validate-configuration'
+        run: |
+          echo "Validating branch protection configuration..."
+          echo ""
+          
+          # Check if CODEOWNERS exists
+          if [ -f CODEOWNERS ]; then
+            echo "✅ CODEOWNERS file exists"
+          elif [ -f .github/CODEOWNERS ]; then
+            echo "✅ .github/CODEOWNERS file exists"
+          else
+            echo "❌ CODEOWNERS file not found"
+          fi
+          
+          # Check if required workflows exist
+          workflows=(
+            ".github/workflows/python-app.yml"
+            ".github/workflows/security-scan.yml"
+            ".github/workflows/codeql.yml"
+          )
+          
+          echo ""
+          echo "Required Workflows:"
+          for workflow in "${workflows[@]}"; do
+            if [ -f "$workflow" ]; then
+              echo "  ✅ $workflow"
+            else
+              echo "  ❌ $workflow (missing)"
+            fi
+          done
+          
+          # Check settings.yml
+          echo ""
+          echo "Probot Settings:"
+          if [ -f ".github/settings.yml" ]; then
+            echo "  ✅ .github/settings.yml exists"
+          else
+            echo "  ❌ .github/settings.yml (missing)"
+          fi
+          
+          echo ""
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "Validation Complete"

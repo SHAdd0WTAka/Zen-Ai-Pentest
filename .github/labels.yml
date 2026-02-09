@@ -1,0 +1,170 @@
+# GitHub Labels Configuration
+# These labels will be automatically synced to the repository
+
+# Type Labels
+- name: "bug"
+  color: "d73a4a"
+  description: "Something isn't working"
+
+- name: "enhancement"
+  color: "a2eeef"
+  description: "New feature or request"
+
+- name: "documentation"
+  color: "0075ca"
+  description: "Improvements to documentation"
+
+- name: "security"
+  color: "d93f0b"
+  description: "Security related issues"
+
+- name: "pentest"
+  color: "b60205"
+  description: "Penetration testing findings"
+
+- name: "data-update"
+  color: "bfd4f2"
+  description: "CVE, payload, or database updates"
+
+# Priority Labels
+- name: "priority:critical"
+  color: "b60205"
+  description: "Critical priority - immediate attention required"
+
+- name: "priority:high"
+  color: "d93f0b"
+  description: "High priority"
+
+- name: "priority:medium"
+  color: "fbca04"
+  description: "Medium priority"
+
+- name: "priority:low"
+  color: "0e8a16"
+  description: "Low priority"
+
+# Component Labels
+- name: "component:core"
+  color: "1d76db"
+  description: "Core orchestrator module"
+
+- name: "component:agents"
+  color: "0052cc"
+  description: "Agent system"
+
+- name: "component:backends"
+  color: "006b75"
+  description: "LLM backends (DuckDuckGo, OpenRouter, etc.)"
+
+- name: "component:api"
+  color: "5319e7"
+  description: "API and web interface"
+
+- name: "component:database"
+  color: "c2e0c6"
+  description: "CVE and payload databases"
+
+- name: "component:docker"
+  color: "2492eb"
+  description: "Docker and containerization"
+
+# Backend Labels
+- name: "backend:duckduckgo"
+  color: "ff7619"
+  description: "DuckDuckGo backend"
+
+- name: "backend:openrouter"
+  color: "7057ff"
+  description: "OpenRouter backend"
+
+- name: "backend:chatgpt"
+  color: "10a37f"
+  description: "ChatGPT backend"
+
+- name: "backend:claude"
+  color: "d4c5f9"
+  description: "Claude backend"
+
+# Agent Labels
+- name: "agent:research"
+  color: "f9d0c4"
+  description: "ResearchBot agent"
+
+- name: "agent:analysis"
+  color: "c5def5"
+  description: "AnalysisBot agent"
+
+- name: "agent:exploit"
+  color: "f9d0c4"
+  description: "ExploitBot agent"
+
+# Status Labels
+- name: "needs-review"
+  color: "fef2c0"
+  description: "Needs maintainer review"
+
+- name: "needs-info"
+  color: "fef2c0"
+  description: "More information needed"
+
+- name: "good first issue"
+  color: "7057ff"
+  description: "Good for newcomers"
+
+- name: "help wanted"
+  color: "008672"
+  description: "Extra attention is needed"
+
+- name: "duplicate"
+  color: "cfd3d7"
+  description: "This issue or PR already exists"
+
+- name: "invalid"
+  color: "e4e669"
+  description: "This doesn't seem right"
+
+- name: "wontfix"
+  color: "ffffff"
+  description: "This won't be worked on"
+
+- name: "stale"
+  color: "cfd3d7"
+  description: "Stale issue or PR"
+
+# CI/CD Labels
+- name: "ci/cd"
+  color: "000000"
+  description: "CI/CD and automation"
+
+- name: "dependencies"
+  color: "0366d6"
+  description: "Dependency updates"
+
+# Special Labels
+- name: "breaking change"
+  color: "b60205"
+  description: "Breaking change that affects compatibility"
+
+- name: "performance"
+  color: "ff9f43"
+  description: "Performance improvements"
+
+- name: "refactor"
+  color: "9b59b6"
+  description: "Code refactoring"
+
+- name: "tests"
+  color: "2ecc71"
+  description: "Testing related"
+
+- name: "windows"
+  color: "00a4ef"
+  description: "Windows specific issue"
+
+- name: "linux"
+  color: "fcc624"
+  description: "Linux specific issue"
+
+- name: "macos"
+  color: "999999"
+  description: "macOS specific issue"

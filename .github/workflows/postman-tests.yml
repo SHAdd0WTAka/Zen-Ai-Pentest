@@ -1,0 +1,31 @@
+name: Postman API Tests
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'api/**'
+      - 'postman/**'
+  pull_request:
+    branches: [ main, master ]
+    paths:
+      - 'api/**'
+      - 'postman/**'
+  schedule:
+    # Run daily at 06:00 UTC
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to test'
+        required: true
+        default: 'local'
+        type: choice
+        options:
+          - local
+          - staging
+          - production
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true

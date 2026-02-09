@@ -1,0 +1,100 @@
+"""
+Zen Shield - Security Sanitization Stack
+Extends docker-compose.pentest.yml with data protection layer
+"""
+
+version: '3.8'
+
+services:
+  # Zen Shield Sanitizer Service
+  zen-shield:
+    build:
+      context: ./zen_shield
+      dockerfile: Dockerfile
+    container_name: zen-shield
+    hostname: zen-shield
+    environment:
+      - SMALL_LLM_URL=http://zen-phi3:8001
+      - LOG_LEVEL=INFO
+      - CIRCUIT_BREAKER_THRESHOLD=3
+      - ENABLE_COMPRESSION=true
+      - ENABLE_INJECTION_DETECTION=true
+    volumes:
+      - shield-logs:/app/logs
+    networks:
+      - pentest-network
+      - internal-network
+    ports:
+      - "9000:9000"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:9000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Optional: Small LLM (Phi-3) for compression
+  # Uncomment to enable local LLM processing
+  # Remove --profile local-llm to always start
+  zen-phi3:
+    build:
+      context: ./zen_shield
+      dockerfile: Dockerfile.phi3
+    container_name: zen-phi3
+    hostname: zen-phi3
+    environment:
+      - MODEL_PATH=/models/phi-3-mini-4k-instruct.Q4_K_M.gguf
+      - CONTEXT_SIZE=4096
+      - THREADS=4
+    volumes:
+      - phi3-models:/models
+    networks:
+      - internal-network
+    # ports:
+    #   - "8001:8001"  # Only expose if needed externally
+    restart: unless-stopped
+    profiles:
+      - local-llm
+    deploy:
+      resources:
+        limits:
+          memory: 3G
+        reservations:
+          memory: 2G
+
+  # Alternative: TinyLlama (smaller, faster)
+  zen-tinyllama:
+    build:
+      context: ./zen_shield
+      dockerfile: Dockerfile.phi3
+      args:
+        MODEL_URL: https://huggingface.co/TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF/resolve/main/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf
+        MODEL_NAME: tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf
+    container_name: zen-tinyllama
+    hostname: zen-tinyllama
+    networks:
+      - internal-network
+    restart: unless-stopped
+    profiles:
+      - tinyllama
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 1G
+
+  # Update zen-core to use shield
+  zen-core:
+    environment:
+      - ZEN_SHIELD_URL=http://zen-shield:9000
+      - USE_SHIELD=true
+    depends_on:
+      - zen-shield
+
+volumes:
+  shield-logs:
+    driver: local
+  phi3-models:
+    driver: local

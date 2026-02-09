@@ -1,0 +1,60 @@
+# Alembic Database Migrations
+
+This directory contains Alembic database migration scripts for Zen AI Pentest.
+
+## Quick Start
+
+### Initialize Database (First Time)
+```bash
+# Create initial migration
+alembic revision --autogenerate -m "Initial migration"
+
+# Apply migration
+alembic upgrade head
+```
+
+### Create New Migration
+```bash
+alembic revision --autogenerate -m "Description of changes"
+```
+
+### Apply Migrations
+```bash
+# Upgrade to latest
+alembic upgrade head
+
+# Upgrade to specific revision
+alembic upgrade <revision>
+
+# Upgrade +1
+alembic upgrade +1
+```
+
+### Rollback Migrations
+```bash
+# Downgrade by 1
+alembic downgrade -1
+
+# Downgrade to specific revision
+alembic downgrade <revision>
+
+# Downgrade to beginning
+alembic downgrade base
+```
+
+### View History
+```bash
+# Current revision
+alembic current
+
+# History
+alembic history --verbose
+```
+
+## Best Practices
+
+1. **Always review auto-generated migrations** before applying
+2. **Test migrations** on a copy of production data
+3. **Never delete migration files** after they've been applied
+4. **Use descriptive names** for migration messages
+5. **One change per migration** - keep migrations focused

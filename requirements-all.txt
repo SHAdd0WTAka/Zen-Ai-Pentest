@@ -1,0 +1,123 @@
+# Zen AI Pentest - Complete Dependencies
+# Includes core, dev, and optional dependencies
+# Install with: pip install -r requirements-all.txt
+
+# ==================== CORE ====================
+
+# HTTP and API
+requests>=2.31.0
+aiohttp>=3.13.3  # SECURITY FIX: CVE-2025-69223, CVE-2024-30251, CVE-2024-23334
+websockets>=12.0
+
+# Configuration and Environment
+python-dotenv>=1.0.0
+pydantic>=2.0.0
+pyyaml>=6.0.1
+
+# Web Framework (for API)
+fastapi>=0.104.0
+uvicorn>=0.24.0
+
+# CLI and UI
+click>=8.1.0
+rich>=13.0.0
+colorama>=0.4.6
+typer>=0.9.0
+
+# Security and Cryptography
+cryptography>=42.0.4  # SECURITY FIX: CVE-2024-26130
+cryptography>=41.0.0
+python-jose>=3.4.0  # SECURITY FIX: CVE-2024-33663
+passlib>=1.7.4
+
+# Database
+sqlalchemy>=2.0.0
+alembic>=1.12.0
+aiosqlite>=0.19.0
+
+# Container Integration
+docker>=6.1.0
+
+# Async support
+asyncio-mqtt>=0.13.0
+aiofiles>=23.0.0
+
+# Data Processing
+pandas>=2.0.0
+numpy>=1.24.0
+
+# Reporting
+jinja2>=3.1.0
+markdown>=3.5.0
+weasyprint>=60.0; platform_system != "Windows"
+
+# Utilities
+tenacity>=8.2.0
+python-dateutil>=2.8.0
+
+# ==================== OPTIONAL FEATURES ====================
+
+# Screenshot and Browser Automation (for Exploit Validator)
+playwright>=1.40.0
+
+# Charts and Visualization (for Benchmarks)
+matplotlib>=3.8.0
+seaborn>=0.13.0
+plotly>=5.18.0
+
+# Machine Learning (for advanced features)
+scikit-learn>=1.3.0
+# torch>=2.1.0  # Uncomment if needed
+# transformers>=4.35.0  # Uncomment if needed
+
+# Vector Database (for advanced memory)
+# chromadb>=0.4.0  # Uncomment if needed
+
+# ==================== DEVELOPMENT ====================
+
+# Testing
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+pytest-cov>=4.1.0
+pytest-xdist>=3.3.0
+pytest-mock>=3.11.0
+hypothesis>=6.88.0
+factory-boy>=3.3.0
+
+# Code Quality
+black>=23.0.0
+isort>=5.12.0
+flake8>=6.1.0
+pylint>=3.0.0
+mypy>=1.5.0
+bandit>=1.7.0
+safety>=2.3.0
+
+# Documentation
+sphinx>=7.0.0
+sphinx-rtd-theme>=1.3.0
+sphinx-autodoc-typehints>=1.24.0
+myst-parser>=2.0.0
+
+# Debugging
+ipdb>=0.13.0
+pdb++>=0.10.0
+icecream>=2.1.0
+
+# Profiling
+memory-profiler>=0.61.0
+line-profiler>=4.1.0
+py-spy>=0.3.0
+
+# Jupyter (for analysis)
+jupyter>=1.0.0
+ipython>=8.16.0
+
+# Pre-commit hooks
+pre-commit>=3.4.0
+
+# Build tools
+build>=0.10.0
+twine>=4.0.0
+setuptools>=68.0.0
+wheel>=0.41.0

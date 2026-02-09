@@ -1,0 +1,32 @@
+title: ""
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        👋 Welcome to Zen AI Pentest Discussions!
+        
+        Use this category for general questions, ideas, or community discussions.
+        
+  - type: textarea
+    id: discussion
+    attributes:
+      label: Discussion Topic
+      description: What would you like to discuss?
+      placeholder: |
+        Share your thoughts, questions, or ideas here...
+    validations:
+      required: true
+      
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      description: What type of discussion is this?
+      options:
+        - Question
+        - Idea
+        - Show and Tell
+        - General
+    validations:
+      required: true

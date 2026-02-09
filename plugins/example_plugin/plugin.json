@@ -1,0 +1,22 @@
+{
+  "name": "example_plugin",
+  "version": "1.0.0",
+  "description": "Example plugin demonstrating the plugin system",
+  "author": "SHAdd0WTAka",
+  "type": "tool",
+  "dependencies": [],
+  "hooks": ["scan_complete"],
+  "config_schema": {
+    "api_key": {
+      "type": "string",
+      "description": "API key for external service",
+      "required": false
+    },
+    "timeout": {
+      "type": "integer",
+      "description": "Request timeout in seconds",
+      "default": 30,
+      "required": false
+    }
+  }
+}

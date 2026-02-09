@@ -1,0 +1,157 @@
+title: "🎉 [SHOWCASE] "
+labels: ["showcase", "community", "highlight"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        # 🎉 Show and Tell
+        
+        Share what you've built with Zen AI Pentest! We love seeing community projects, integrations, and creative uses.
+
+  - type: dropdown
+    id: showcase-type
+    attributes:
+      label: Showcase Type
+      description: What are you sharing?
+      options:
+        - Project / Integration
+        - Tutorial / Guide
+        - Bug Bounty Write-up
+        - CTF Walkthrough
+        - Tool Enhancement
+        - Creative Use Case
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: title
+    attributes:
+      label: Project/Content Title
+      description: Give your showcase a catchy title
+      placeholder: "Automated CI/CD Security Pipeline with Zen AI"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Tell us about your project or content
+      placeholder: |
+        Describe what you've built or discovered:
+        - What problem does it solve?
+        - What makes it interesting or unique?
+        - What technologies did you use?
+    validations:
+      required: true
+
+  - type: textarea
+    id: highlights
+    attributes:
+      label: Key Highlights
+      description: What are the most impressive aspects?
+      placeholder: |
+        - Automated discovery of X vulnerabilities
+        - Integration with Y tool
+        - Reduced testing time by Z%
+        - Novel approach to...
+
+  - type: input
+    id: demo-link
+    attributes:
+      label: Demo / Live Link
+      description: URL to live demo, if available
+      placeholder: "https://example.com/demo"
+
+  - type: input
+    id: repo-link
+    attributes:
+      label: Repository / Source Code
+      description: Link to code repository, if public
+      placeholder: "https://github.com/username/project"
+
+  - type: input
+    id: blog-link
+    attributes:
+      label: Blog Post / Write-up
+      description: Link to detailed write-up or blog post
+      placeholder: "https://blog.example.com/my-zen-ai-project"
+
+  - type: textarea
+    id: media
+    attributes:
+      label: Screenshots / Media
+      description: Share screenshots, diagrams, or videos
+      placeholder: |
+        You can paste images directly here or describe what media you'd like to share.
+        
+        Suggestions:
+        - Screenshot of your setup
+        - Demo video (link to YouTube, etc.)
+        - Architecture diagram
+        - Results/output examples
+
+  - type: textarea
+    id: learnings
+    attributes:
+      label: Learnings & Insights
+      description: What did you learn from this project?
+      placeholder: |
+        Share insights that could help others:
+        - Challenges you overcame
+        - Tips for similar projects
+        - Unexpected discoveries
+        - Performance considerations
+
+  - type: textarea
+    id: future
+    attributes:
+      label: Future Plans
+      description: What's next for this project?
+      placeholder: |
+        - Planned improvements
+        - Additional features
+        - Community contributions welcome?
+
+  - type: textarea
+    id: credits
+    attributes:
+      label: Credits & Attribution
+      description: Acknowledge contributors or inspiration
+      placeholder: |
+        - Team members
+        - Open source projects used
+        - Mentions or inspiration
+
+  - type: checkboxes
+    id: permissions
+    attributes:
+      label: Sharing Permissions
+      description: Can we share your showcase?
+      options:
+        - label: I give permission to feature this on social media
+        - label: I give permission to include this in the README/docs
+        - label: I give permission to showcase this in community calls
+
+  - type: input
+    id: contact
+    attributes:
+      label: Contact / Social Media
+      description: How can people reach you or follow your work?
+      placeholder: "@YourHandle on Twitter/GitHub or your website"
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        
+        🌟 **Thank you for sharing with our community!**
+        
+        🏆 Outstanding showcases may be:
+        - Featured in our monthly community call
+        - Shared on our social media channels
+        - Added to our [Community Projects](https://github.com/SHAdd0WTAka/zen-ai-pentest/discussions/categories/show-and-tell) collection
+        - Highlighted in the README
+        
+        💬 Community members are encouraged to ask questions and provide feedback!

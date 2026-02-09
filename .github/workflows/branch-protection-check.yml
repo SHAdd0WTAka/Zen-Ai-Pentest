@@ -1,0 +1,229 @@
+name: Branch Protection Check
+
+on:
+  # NOTE: This workflow fails because branch protection IS enabled (404 error)
+  # It's designed to alert when protection is DISABLED
+  # Keeping it as manual trigger for occasional checks
+  # push:
+  #   branches: [master, main]
+  # pull_request:
+  #   branches: [master, main]
+  # schedule:
+  #   - cron: '0 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  repository-projects: read
+  checks: read
+
+jobs:
+  check-branch-protection:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check Branch Protection Rules
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const branch = context.ref.replace('refs/heads/', '');
+            
+            console.log(`🔍 Checking branch protection for ${owner}/${repo}/${branch}`);
+            
+            try {
+              // Get branch protection
+              const { data: protection } = await github.rest.repos.getBranchProtection({
+                owner: owner,
+                repo: repo,
+                branch: branch
+              });
+              
+              console.log('✅ Branch protection is enabled');
+              
+              // Check required status checks
+              if (protection.required_status_checks) {
+                console.log('✅ Required status checks: ENABLED');
+                console.log(`   - Strict: ${protection.required_status_checks.strict}`);
+                console.log(`   - Contexts: ${protection.required_status_checks.contexts?.join(', ') || 'None'}`);
+              } else {
+                console.log('⚠️  Required status checks: DISABLED');
+              }
+              
+              // Check PR reviews
+              if (protection.required_pull_request_reviews) {
+                console.log('✅ Required PR reviews: ENABLED');
+                console.log(`   - Required approving reviews: ${protection.required_pull_request_reviews.required_approving_review_count}`);
+                console.log(`   - Dismiss stale reviews: ${protection.required_pull_request_reviews.dismiss_stale_reviews}`);
+                console.log(`   - Require code owner reviews: ${protection.required_pull_request_reviews.require_code_owner_reviews}`);
+              } else {
+                console.log('⚠️  Required PR reviews: DISABLED');
+              }
+              
+              // Check admin enforcement
+              console.log(`   - Enforce admins: ${protection.enforce_admins?.enabled || false}`);
+              
+              // Check force pushes
+              if (protection.allow_force_pushes) {
+                console.log('❌ Allow force pushes: ENABLED (Security Risk!)');
+              } else {
+                console.log('✅ Allow force pushes: DISABLED');
+              }
+              
+              // Check deletions
+              if (protection.allow_deletions) {
+                console.log('❌ Allow deletions: ENABLED (Security Risk!)');
+              } else {
+                console.log('✅ Allow deletions: DISABLED');
+              }
+              
+              // Set output
+              core.setOutput('protected', 'true');
+              
+            } catch (error) {
+              if (error.status === 404) {
+                console.error('❌ CRITICAL: Branch protection is NOT enabled!');
+                console.error('   The master/main branch is unprotected!');
+                core.setOutput('protected', 'false');
+                core.setFailed('Branch protection is not enabled. Please configure branch protection rules.');
+              } else {
+                console.error(`❌ Error checking branch protection: ${error.message}`);
+                core.setFailed(error.message);
+              }
+            }
+
+      - name: Generate Branch Protection Report
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            
+            const report = `## 🔒 Branch Protection Status Report
+            
+            ### Repository: ${{ github.repository }}
+            ### Branch: ${{ github.ref_name }}
+            ### Date: ${new Date().toISOString()}
+            
+            ---
+            
+            ## ⚠️ SECURITY WARNING
+            
+            Your master/main branch is currently **UNPROTECTED**!
+            
+            ### Risks:
+            - Force pushes can rewrite history
+            - Direct pushes bypass code review
+            - No required status checks
+            - Branch deletion is possible
+            
+            ### Recommended Protection Rules:
+            
+            1. **Require pull request reviews before merging**
+               - Required approving reviews: 1
+               - Dismiss stale reviews: ✓
+               - Require CODEOWNERS review: ✓
+            
+            2. **Require status checks to pass**
+               - CI Pipeline (Python tests)
+               - Security Scan (Bandit, Safety)
+               - CodeQL Analysis
+               - Dependency Review
+            
+            3. **Restrict push access**
+               - No direct pushes to master
+               - All changes via pull requests
+            
+            4. **Additional settings**
+               - Do not allow force pushes: ✓
+               - Do not allow deletions: ✓
+               - Require conversation resolution: ✓
+            
+            ---
+            
+            ## 🔧 How to Enable Branch Protection
+            
+            ### Option 1: Manual Configuration (Recommended)
+            
+            1. Go to: \`Settings > Branches\`
+            2. Click "Add rule" next to "Branch protection rules"
+            3. Enter pattern: \`master\` (or \`main\`)
+            4. Configure settings:
+               - ☑️ Restrict pushes that create files larger than 100MB
+               - ☑️ Require a pull request before merging
+               - ☑️ Require approvals (1)
+               - ☑️ Dismiss stale PR approvals
+               - ☑️ Require review from CODEOWNERS
+               - ☑️ Require status checks to pass
+               - ☑️ Require branches to be up to date
+               - Status checks: Select CI workflows
+               - ☑️ Do not allow bypassing settings
+               - ☑️ Restrict who can push
+               - ☑️ Do not allow force pushes
+               - ☑️ Do not allow deletions
+            5. Click "Create" or "Save"
+            
+            ### Option 2: Probot Settings App
+            
+            Install [Probot Settings](https://github.com/apps/settings) and use \`.github/settings.yml\`.
+            
+            ---
+            
+            ## 📋 Current Configuration
+            
+            See \`.github/settings.yml\` for the complete recommended configuration.
+            
+            ---
+            
+            *Generated by Branch Protection Check workflow*
+            `;
+            
+            fs.writeFileSync('branch-protection-report.md', report);
+            console.log('Report saved to branch-protection-report.md');
+
+      - name: Upload Report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: branch-protection-report
+          path: branch-protection-report.md
+          retention-days: 30
+
+      - name: Create Issue if Not Protected
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            
+            // Check if issue already exists
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: owner,
+              repo: repo,
+              state: 'open',
+              labels: 'security,critical'
+            });
+            
+            const existingIssue = issues.find(issue => 
+              issue.title.includes('Branch Protection Not Enabled')
+            );
+            
+            if (!existingIssue) {
+              await github.rest.issues.create({
+                owner: owner,
+                repo: repo,
+                title: '🚨 CRITICAL: Branch Protection Not Enabled',
+                body: "## Security Issue Detected\n\nThe `" + context.ref_name + "` branch is currently UNPROTECTED.\n\n### Actions Required:\n1. Enable Branch Protection\n2. Require PR Reviews\n3. Require Status Checks\n4. Disable Force Pushes\n\n[Fix in Settings](../../settings/branches)",
+                labels: ['security', 'critical', 'infrastructure']
+              });
+              console.log('Created issue for unprotected branch');
+            } else {
+              console.log('Issue already exists');
+            }

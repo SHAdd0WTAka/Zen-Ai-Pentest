@@ -1,0 +1,333 @@
+# =============================================================================
+# ZenScan CRD (Simplified for CI/CD Integration)
+# =============================================================================
+# Description: Custom Resource Definition for ZenScan resources
+# Version: 2.0.0
+# This is a streamlined CRD focused on CI/CD use cases
+# =============================================================================
+
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: zenscans.security.zen.io
+  labels:
+    app.kubernetes.io/name: zen-scan-crd
+    app.kubernetes.io/component: crd
+    app.kubernetes.io/version: "2.0.0"
+spec:
+  group: security.zen.io
+  names:
+    kind: ZenScan
+    listKind: ZenScanList
+    plural: zenscans
+    singular: zenscan
+    shortNames:
+      - zs
+      - zen
+  scope: Namespaced
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          required:
+            - spec
+          properties:
+            apiVersion:
+              type: string
+              description: 'APIVersion defines the versioned schema'
+            kind:
+              type: string
+              description: 'Kind is a string value representing the REST resource'
+            metadata:
+              type: object
+            spec:
+              type: object
+              required:
+                - target
+              properties:
+                # Target Configuration
+                target:
+                  type: string
+                  description: 'Target URL or IP address to scan'
+                  example: 'https://example.com'
+                
+                # Scan Configuration
+                scanMode:
+                  type: string
+                  enum:
+                    - recon
+                    - vuln
+                    - full
+                    - stealth
+                    - api
+                  default: full
+                  description: 'Scan mode to execute'
+                
+                intensity:
+                  type: string
+                  enum:
+                    - low
+                    - medium
+                    - high
+                  default: medium
+                  description: 'Scan intensity level'
+                
+                # Modules to enable
+                modules:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - port_scan
+                      - web_scan
+                      - ssl_scan
+                      - ai_analysis
+                      - compliance
+                      - api_scan
+                  default:
+                    - port_scan
+                    - web_scan
+                    - ssl_scan
+                  description: 'List of scan modules to enable'
+                
+                # Authentication
+                auth:
+                  type: object
+                  properties:
+                    type:
+                      type: string
+                      enum:
+                        - none
+                        - basic
+                        - bearer
+                        - apikey
+                      default: none
+                    secretRef:
+                      type: string
+                      description: 'Name of the secret containing auth credentials'
+                
+                # Output Configuration
+                output:
+                  type: object
+                  properties:
+                    formats:
+                      type: array
+                      items:
+                        type: string
+                        enum:
+                          - json
+                          - sarif
+                          - html
+                          - junit
+                          - all
+                      default:
+                        - json
+                        - sarif
+                    storage:
+                      type: string
+                      description: 'PVC name for storing results'
+                    retentionDays:
+                      type: integer
+                      default: 30
+                      minimum: 1
+                      maximum: 365
+                
+                # CI/CD Integration
+                ciConfig:
+                  type: object
+                  properties:
+                    failOn:
+                      type: string
+                      enum:
+                        - none
+                        - low
+                        - medium
+                        - high
+                        - critical
+                      default: high
+                      description: 'Fail threshold for CI/CD pipelines'
+                    uploadToGithub:
+                      type: boolean
+                      default: false
+                      description: 'Upload SARIF to GitHub Security tab'
+                    githubToken:
+                      type: string
+                      description: 'Secret name containing GitHub token'
+                
+                # Resource Limits
+                resources:
+                  type: object
+                  properties:
+                    limits:
+                      type: object
+                      properties:
+                        cpu:
+                          type: string
+                          default: 1000m
+                        memory:
+                          type: string
+                          default: 2Gi
+                    requests:
+                      type: object
+                      properties:
+                        cpu:
+                          type: string
+                          default: 250m
+                        memory:
+                          type: string
+                          default: 512Mi
+                
+                # Timeout
+                timeout:
+                  type: integer
+                  default: 3600
+                  minimum: 60
+                  maximum: 28800
+                  description: 'Scan timeout in seconds'
+                
+                # Schedule (optional - for recurring scans)
+                schedule:
+                  type: string
+                  description: 'Cron expression for scheduled scans'
+                  example: '0 2 * * 0'
+                
+                suspend:
+                  type: boolean
+                  default: false
+                  description: 'Suspend scheduled scans'
+            
+            status:
+              type: object
+              properties:
+                phase:
+                  type: string
+                  enum:
+                    - Pending
+                    - Running
+                    - Succeeded
+                    - Failed
+                    - Suspended
+                startTime:
+                  type: string
+                  format: date-time
+                completionTime:
+                  type: string
+                  format: date-time
+                scanId:
+                  type: string
+                resultsSummary:
+                  type: object
+                  properties:
+                    totalFindings:
+                      type: integer
+                    critical:
+                      type: integer
+                    high:
+                      type: integer
+                    medium:
+                      type: integer
+                    low:
+                      type: integer
+                    riskScore:
+                      type: integer
+                outputLocation:
+                  type: string
+                  description: 'Path to scan results'
+                conditions:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                      status:
+                        type: string
+                      lastTransitionTime:
+                        type: string
+                        format: date-time
+                      reason:
+                        type: string
+                      message:
+                        type: string
+      
+      additionalPrinterColumns:
+        - name: Target
+          type: string
+          jsonPath: .spec.target
+        - name: Mode
+          type: string
+          jsonPath: .spec.scanMode
+        - name: Phase
+          type: string
+          jsonPath: .status.phase
+        - name: Risk
+          type: integer
+          jsonPath: .status.resultsSummary.riskScore
+        - name: Age
+          type: date
+          jsonPath: .metadata.creationTimestamp
+
+---
+# =============================================================================
+# Namespace
+# =============================================================================
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: zen-security
+  labels:
+    app.kubernetes.io/name: zen-security
+    security.zen.io/managed: "true"
+
+---
+# =============================================================================
+# Service Account for ZenScan Jobs
+# =============================================================================
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: zen-scan-sa
+  namespace: zen-security
+  labels:
+    app.kubernetes.io/name: zen-scan
+
+---
+# =============================================================================
+# RBAC: Role for ZenScan Jobs
+# =============================================================================
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: zen-scan-role
+  namespace: zen-security
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "list"]
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get"]
+  - apiGroups: [""]
+    resources: ["persistentvolumeclaims"]
+    verbs: ["get", "list", "create", "update"]
+
+---
+# =============================================================================
+# RBAC: Role Binding
+# =============================================================================
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: zen-scan-rolebinding
+  namespace: zen-security
+subjects:
+  - kind: ServiceAccount
+    name: zen-scan-sa
+    namespace: zen-security
+roleRef:
+  kind: Role
+  name: zen-scan-role
+  apiGroup: rbac.authorization.k8s.io

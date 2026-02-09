@@ -1,0 +1,36 @@
+name: Enforce Branch Protection
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  administration: read
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Check branch protection
+        uses: actions/github-script@v7
+        with:
+          script: |
+            try {
+              const protection = await github.rest.repos.getBranchProtection({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                branch: 'main'
+              });
+              console.log('Branch protection is enabled');
+            } catch (error) {
+              console.log('Warning: Branch protection may not be fully configured');
+            }

@@ -1,0 +1,21 @@
+{
+  "backends": {
+    "openrouter_api_key": null,
+    "chatgpt_token": null,
+    "claude_session": null
+  },
+  "rate_limits": {
+    "requests_per_minute": 10,
+    "backoff_seconds": 60
+  },
+  "stealth": {
+    "delay_min": 1,
+    "delay_max": 3,
+    "random_user_agent": true
+  },
+  "output": {
+    "save_logs": true,
+    "log_level": "INFO",
+    "report_format": "markdown"
+  }
+}

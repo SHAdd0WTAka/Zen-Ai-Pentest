@@ -1,0 +1,55 @@
+id: wp-xmlrpc-pingback
+
+info:
+  name: WordPress XML-RPC Pingback Detection
+  author: SHAdd0WTAka
+  severity: high
+  description: |
+    WordPress XML-RPC interface is enabled with pingback functionality.
+    This can be abused for DDoS amplification attacks and brute force amplification.
+  reference:
+    - https://www.acunetix.com/vulnerabilities/web/wordpress-xmlrpc-pingback-enabled/
+    - https://hackerone.com/reports/406111
+  tags: wordpress,xmlrpc,pingback,ddos,wp
+  metadata:
+    max-request: 1
+
+http:
+  - method: POST
+    path:
+      - "{{BaseURL}}/xmlrpc.php"
+    headers:
+      Content-Type: text/xml
+    body: |
+      <?xml version="1.0" encoding="UTF-8"?>
+      <methodCall>
+      <methodName>pingback.ping</methodName>
+      <params>
+      <param>
+      <value><string>http://127.0.0.1/</string></value>
+      </param>
+      <param>
+      <value><string>{{BaseURL}}/test</string></value>
+      </param>
+      </params>
+      </methodCall>
+
+    matchers-condition: and
+    matchers:
+      - type: word
+        words:
+          - "faultCode"
+          - "pingback"
+          - "IXR"
+        condition: or
+
+      - type: status
+        status:
+          - 200
+
+    extractors:
+      - type: regex
+        name: pingback_response
+        group: 0
+        regex:
+          - '<string>.*?</string>'

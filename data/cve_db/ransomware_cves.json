@@ -1,0 +1,552 @@
+{
+  "metadata": {
+    "name": "Ransomware and Critical CVE Database",
+    "version": "1.0.0",
+    "last_updated": "2024-01-29",
+    "author": "SHAdd0WTAka",
+    "description": "Comprehensive database of ransomware-related and critical historical CVEs"
+  },
+  "ransomware_campaigns": {
+    "notpetya": {
+      "name": "NotPetya / Petya / GoldenEye",
+      "first_seen": "2017-06-27",
+      "type": "Wiper/Ransomware",
+      "description": "Destructive malware disguised as ransomware, primarily targeting Ukraine but spreading globally",
+      "estimated_damage_usd": 10000000000,
+      "affected_systems": "10000+",
+      "attack_vectors": [
+        "EternalBlue (SMB exploit)",
+        "EternalRomance",
+        "Modified PsExec",
+        "WMI"
+      ],
+      "cves": ["CVE-2017-0144", "CVE-2017-0145", "CVE-2017-0146", "CVE-2017-0147", "CVE-2017-0148"],
+      "kill_switch": false,
+      "decryptable": false,
+      "file_extensions": [".exe", ".dll"],
+      "ransom_note": "Oops, your important files are encrypted",
+      "ioc": {
+        "files": [
+          "C:\\Windows\\perfc.dat",
+          "C:\\Windows\\perfc.dll",
+          "%windir%\\perfc.dat"
+        ],
+        "registry": [
+          "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\perfc"
+        ],
+        "hashes": [
+          "027cc450ef5f8c5f653329641ec1fed91f694e0d229928963b30f6b0d7d3a745",
+          "64b0b58a2c2c62e3eafb18eed0fe6ab545abd1f6c4e8844ba88ce7faa3e7b0b5"
+        ],
+        "network": [
+          "traffic to 185.165.29.78",
+          "SMB scanning on port 445"
+        ]
+      },
+      "mitigation": [
+        "Apply MS17-010 patch immediately",
+        "Disable SMBv1 protocol",
+        "Block traffic on ports 445, 139, 135",
+        "Isolate infected systems from network",
+        "Create perfc.dat file in C:\\Windows (vaccine)"
+      ],
+      "detection": [
+        "Monitor for rundll32.exe running unknown DLLs",
+        "Check for creation of perfc.dat in Windows directory",
+        "Monitor for SMB scanning activity",
+        "Detect scheduled task creation"
+      ]
+    },
+    "wannacry": {
+      "name": "WannaCry / WanaCrypt0r",
+      "first_seen": "2017-05-12",
+      "type": "Ransomware",
+      "description": "Self-propagating ransomware using EternalBlue exploit, infected 200,000+ computers in 150 countries",
+      "estimated_damage_usd": 4000000000,
+      "affected_systems": "200000+",
+      "attack_vectors": [
+        "EternalBlue (CVE-2017-0144)",
+        "DoublePulsar backdoor",
+        "Phishing emails"
+      ],
+      "cves": ["CVE-2017-0144"],
+      "kill_switch": true,
+      "kill_switch_domains": [
+        "iuqerfsodp9ifjaposdfjhgosurijfaewrwergwea.com",
+        "ifferfsodp9ifjaposdfjhgosurijfaewrwergwea.com"
+      ],
+      "decryptable": false,
+      "file_extensions": [
+        ".wncry", ".wncryt", ".wncrytt", ".wncryttt"
+      ],
+      "ransom_note": "Oops, your files have been encrypted!",
+      "bitcoin_addresses": [
+        "12t9YDPgwueZ9NyMgw51p7AA8isjr6SMw",
+        "13AM4VW2dhxYgXeQepoHkHSQuy6NgaEb94",
+        "115p7UMMngoj1pMvkpHijcRdfJNXj6LrLn"
+      ],
+      "ioc": {
+        "files": [
+          "%temp%\\tasksche.exe",
+          "C:\\ProgramData\\tasksche.exe",
+          "C:\\Windows\\tasksche.exe",
+          "%appdata%\\tasksche.exe"
+        ],
+        "registry": [
+          "HKLM\\SOFTWARE\\WanaCrypt0r",
+          "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\tasksche"
+        ],
+        "hashes": [
+          "ed01ebfbc9eb5bbea545af4d01bf5f1071661840480439c6e5babe8e080e41aa",
+          "db349b97c37d22f5ea1d1841e3c89eb4",
+          "84c82835a5d21bbcf75a61706d8ab549"
+        ],
+        "services": [
+          "mssecsvc2.0"
+        ]
+      },
+      "mitigation": [
+        "Apply MS17-010 patch immediately",
+        "Disable SMBv1 protocol",
+        "Block port 445 inbound/outbound",
+        "Register kill switch domains",
+        "Maintain offline backups"
+      ],
+      "detection": [
+        "Monitor for tasksche.exe execution",
+        "Detect SMB exploitation (EternalBlue)",
+        "Watch for mass file encryption activity",
+        "Monitor for shadow copy deletion (vssadmin delete shadows)"
+      ]
+    },
+    "petya": {
+      "name": "Petya (Original)",
+      "first_seen": "2016-03",
+      "type": "Ransomware",
+      "description": "Ransomware encrypting Master File Table (MFT), renders entire disk inaccessible",
+      "estimated_damage_usd": 10000000,
+      "affected_systems": "Unknown",
+      "attack_vectors": [
+        "Phishing emails",
+        "Cloud storage providers"
+      ],
+      "cves": [],
+      "kill_switch": false,
+      "decryptable": true,
+      "decryption_tool": "https://github.com/leo-stone/hack-petya",
+      "file_extensions": [],
+      "ransom_note": "PRESS ANY KEY! - Petya Ransomware",
+      "ioc": {
+        "files": [
+          "C:\\Windows\\Petya.exe",
+          "%temp%\\Petya.exe"
+        ],
+        "hashes": [
+          "d3bf20e35b3a8f0d29b30cb87f96e0f5b8bc54e2a7d74c3132eac9f5c91f9e5f"
+        ],
+        "boot_sector": "Modifies MBR with custom bootloader"
+      },
+      "mitigation": [
+        "User education on phishing",
+        "Email filtering",
+        "Application whitelisting"
+      ],
+      "detection": [
+        "Monitor for MBR modifications",
+        "Check for low-level disk access",
+        "Detect CHKDSK impersonation"
+      ]
+    },
+    "bad_rabbit": {
+      "name": "Bad Rabbit",
+      "first_seen": "2017-10-24",
+      "type": "Ransomware",
+      "description": "Ransomware targeting businesses in Russia and Ukraine, uses EternalRomance",
+      "estimated_damage_usd": 1000000,
+      "affected_systems": "200+",
+      "attack_vectors": [
+        "Watering hole attacks",
+        "Fake Adobe Flash updates"
+      ],
+      "cves": [],
+      "kill_switch": false,
+      "decryptable": false,
+      "file_extensions": [".encrypted"],
+      "ransom_note": "Oops! Your files have been encrypted.",
+      "bitcoin_address": "1Mz7153HMuxXTuR2R1t78mGSdzaAtNbBWX",
+      "ioc": {
+        "files": [
+          "C:\\Windows\\infpub.dat",
+          "C:\\Windows\\cscc.dat",
+          "C:\\Windows\\dispci.exe"
+        ],
+        "hashes": [
+          "630325cac09ac3fab908f903e3b00d0dadd5fdaa0875ed8496fcbb97a558d0da"
+        ],
+        "scheduled_tasks": [
+          "rhaegal",
+          "drogon",
+          "viserion"
+        ]
+      },
+      "mitigation": [
+        "Block execution from AppData/Temp",
+        "Application whitelisting",
+        "Patch SMB vulnerabilities"
+      ],
+      "detection": [
+        "Monitor for scheduled task creation with Game of Thrones references",
+        "Check for diskcryptor driver installation",
+        "Monitor for MBR modifications"
+      ]
+    },
+    "ryuk": {
+      "name": "Ryuk",
+      "first_seen": "2018-08",
+      "type": "Ransomware",
+      "description": "Enterprise-targeting ransomware often deployed after TrickBot/Emotet infections",
+      "estimated_damage_usd": 100000000,
+      "affected_systems": "Unknown",
+      "attack_vectors": [
+        "TrickBot/Emotet payload",
+        "RDP compromise",
+        "Cobalt Strike"
+      ],
+      "cves": [],
+      "kill_switch": false,
+      "decryptable": false,
+      "file_extensions": [".ryk"],
+      "ransom_note": "RyukReadMe.txt",
+      "bitcoin_addresses": [
+        "Variable per victim"
+      ],
+      "ioc": {
+        "files": [
+          "RyukReadMe.txt",
+          "UNIQUE_ID_DO_NOT_REMOVE"
+        ],
+        "processes": [
+          "rc.exe",
+          "random named .exe"
+        ],
+        "hashes": [
+          "5ac6f5c27d2c3c5ac4e7b6c8d9e0f1a2",
+          "8f7e6d5c4b3a2918f7e6d5c4b3a2918f"
+        ],
+        "network": [
+          "Uses ARP scanning for lateral movement"
+        ]
+      },
+      "mitigation": [
+        "Monitor for TrickBot/Emotet infections",
+        "Secure RDP with VPN/MFA",
+        "Network segmentation",
+        "Disable PowerShell remoting if not needed"
+      ],
+      "detection": [
+        "Monitor for volume shadow copy deletion",
+        "Detect file encryption with .ryk extension",
+        "Watch for net view / net use commands",
+        "Monitor for sc.exe and schtasks.exe usage"
+      ]
+    },
+    "sodinokibi": {
+      "name": "Sodinokibi / REvil / Sodin",
+      "first_seen": "2019-04",
+      "type": "Ransomware-as-a-Service",
+      "description": "RaaS operation that compromised major corporations including Kaseya and JBS",
+      "estimated_damage_usd": 1000000000,
+      "affected_systems": "1000+",
+      "attack_vectors": [
+        "Exploit kits",
+        "Phishing",
+        "RDP",
+        "VPN vulnerabilities"
+      ],
+      "cves": ["CVE-2019-2725", "CVE-2019-11510", "CVE-2018-13379"],
+      "kill_switch": false,
+      "decryptable": true,
+      "decryption_note": "Master key released by Russian authorities in 2022",
+      "file_extensions": [
+        ".sodinokibi", ".sodin", ".sodi", ".readme"
+      ],
+      "ransom_note": "README_EXTENSION.txt",
+      "ioc": {
+        "files": [
+          "Random 8-character extension",
+          "README_EXTENSION.txt"
+        ],
+        "registry": [
+          "HKLM\\SOFTWARE\\sodi"
+        ],
+        "hashes": [
+          "12a7b4c8d9e0f1a2b3c4d5e6f7a8b9c0"
+        ],
+        "services": [
+          "blacklivesmatter"
+        ]
+      },
+      "mitigation": [
+        "Patch Oracle WebLogic immediately",
+        "Patch VPN appliances",
+        "Network segmentation",
+        "EDR deployment"
+      ],
+      "detection": [
+        "Monitor for CVE-2019-2725 exploitation",
+        "Detect WhiteBlack RSA key usage",
+        "Watch for service creation with specific names"
+      ]
+    },
+    "darkside": {
+      "name": "DarkSide",
+      "first_seen": "2020-08",
+      "type": "Ransomware-as-a-Service",
+      "description": "RaaS operation known for Colonial Pipeline attack, shut down in May 2021",
+      "estimated_damage_usd": 50000000,
+      "affected_systems": "100+",
+      "attack_vectors": [
+        "RDP compromise",
+        "Valid credentials",
+        "Phishing"
+      ],
+      "cves": [],
+      "kill_switch": false,
+      "decryptable": true,
+      "file_extensions": [".darkside"],
+      "ransom_note": "README_UNIQUEID.txt",
+      "ioc": {
+        "files": [
+          "darkside_cmm.exe",
+          "README_*.txt"
+        ],
+        "hashes": [
+          "d3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8"
+        ],
+        "network": [
+          "Tor C2 communication",
+          "DarkLeak site"
+        ]
+      },
+      "mitigation": [
+        "Strong RDP security",
+        "Credential monitoring",
+        "Dark web monitoring for leaked data"
+      ],
+      "detection": [
+        "Monitor for Salsa20 encryption usage",
+        "Detect VM-aware behavior",
+        "Watch for language checks (excludes CIS countries)"
+      ]
+    }
+  },
+  "critical_historical_cves": {
+    "CVE-2017-0144": {
+      "name": "EternalBlue",
+      "cvss": 8.1,
+      "severity": "Critical",
+      "description": "SMBv1 remote code execution vulnerability used by WannaCry and NotPetya",
+      "affected_products": [
+        "Windows Vista",
+        "Windows Server 2008",
+        "Windows 7",
+        "Windows Server 2008 R2",
+        "Windows 8.1",
+        "Windows Server 2012",
+        "Windows Server 2012 R2",
+        "Windows RT 8.1",
+        "Windows 10",
+        "Windows Server 2016"
+      ],
+      "exploits": [
+        "EternalBlue (NSA tool leaked by Shadow Brokers)",
+        "MS17-010 exploit"
+      ],
+      "ransomware_used_by": ["WannaCry", "NotPetya", "BadRabbit", "Retefe", "Jaff"],
+      "patch": "MS17-010",
+      "mitigation": [
+        "Apply MS17-010 immediately",
+        "Disable SMBv1",
+        "Block port 445"
+      ],
+      "detection": [
+        "Monitor for DoublePulsar backdoor",
+        "Detect SMB exploitation attempts",
+        "Network traffic analysis"
+      ]
+    },
+    "CVE-2017-0145": {
+      "name": "EternalChampion",
+      "cvss": 8.1,
+      "severity": "Critical",
+      "description": "SMB remote code execution",
+      "affected_products": ["Multiple Windows versions"],
+      "patch": "MS17-010"
+    },
+    "CVE-2017-0146": {
+      "name": "EternalSynergys",
+      "cvss": 8.1,
+      "severity": "Critical",
+      "description": "SMB remote code execution",
+      "affected_products": ["Multiple Windows versions"],
+      "patch": "MS17-010"
+    },
+    "CVE-2019-2725": {
+      "name": "Oracle WebLogic RCE",
+      "cvss": 9.8,
+      "severity": "Critical",
+      "description": "Deserialization vulnerability in Oracle WebLogic Server",
+      "affected_products": [
+        "Oracle WebLogic Server 10.3.6.0.0",
+        "Oracle WebLogic Server 12.1.3.0.0",
+        "Oracle WebLogic Server 12.2.1.3.0"
+      ],
+      "ransomware_used_by": ["Sodinokibi", "GandCrab"],
+      "patch": "Oracle Critical Patch Update April 2019",
+      "mitigation": [
+        "Apply Oracle patches",
+        "Restrict WebLogic access",
+        "Network segmentation"
+      ]
+    },
+    "CVE-2019-11510": {
+      "name": "Pulse Secure VPN Arbitrary File Reading",
+      "cvss": 10.0,
+      "severity": "Critical",
+      "description": "Pre-auth arbitrary file reading in Pulse Secure VPN",
+      "affected_products": [
+        "Pulse Connect Secure 8.2",
+        "Pulse Connect Secure 8.3",
+        "Pulse Connect Secure 9.0"
+      ],
+      "ransomware_used_by": ["Sodinokibi", "REvil"],
+      "patch": "Pulse Secure SA44101",
+      "mitigation": [
+        "Upgrade to fixed versions",
+        "Rotate all credentials",
+        "Review access logs"
+      ]
+    },
+    "CVE-2018-13379": {
+      "name": "Fortinet VPN Path Traversal",
+      "cvss": 9.8,
+      "severity": "Critical",
+      "description": "Path traversal in Fortinet FortiOS SSL VPN",
+      "affected_products": [
+        "FortiOS 6.0.0 to 6.0.4",
+        "FortiOS 5.6.3 to 5.6.7",
+        "FortiOS 5.4.6 to 5.4.12"
+      ],
+      "ransomware_used_by": ["Cring", "Cring ransomware"],
+      "patch": "FortiOS 6.0.5, 5.6.8, 5.4.13",
+      "mitigation": [
+        "Upgrade FortiOS immediately",
+        "Reset VPN credentials",
+        "Enable MFA"
+      ]
+    },
+    "CVE-2021-44228": {
+      "name": "Log4Shell",
+      "cvss": 10.0,
+      "severity": "Critical",
+      "description": "Remote code execution in Apache Log4j2",
+      "affected_products": [
+        "Apache Log4j 2.0-beta9 through 2.14.1"
+      ],
+      "exploits": [
+        "JNDI injection via LDAP/RMI/DNS",
+        "Multiple public exploits available"
+      ],
+      "ransomware_used_by": ["Khonsari", "Conti"],
+      "patch": "Upgrade to Log4j 2.15.0+",
+      "mitigation": [
+        "Upgrade to Log4j 2.17.1 or later",
+        "Set log4j2.formatMsgNoLookups=true",
+        "Remove JndiLookup class"
+      ],
+      "detection": [
+        "Monitor for JNDI LDAP/RMI connections",
+        "Check for ${jndi: strings in logs",
+        "Network egress monitoring"
+      ]
+    },
+    "CVE-2021-26855": {
+      "name": "ProxyLogon",
+      "cvss": 9.8,
+      "severity": "Critical",
+      "description": "Microsoft Exchange Server SSRF vulnerability",
+      "affected_products": [
+        "Microsoft Exchange Server 2013",
+        "Microsoft Exchange Server 2016",
+        "Microsoft Exchange Server 2019"
+      ],
+      "ransomware_used_by": ["DearCry", "BlackKingdom"],
+      "patch": "KB5000871",
+      "mitigation": [
+        "Apply Exchange patches immediately",
+        "Enable EOMT (Exchange On-Premises Mitigation Tool)"
+      ]
+    },
+    "CVE-2020-1472": {
+      "name": "Zerologon",
+      "cvss": 10.0,
+      "severity": "Critical",
+      "description": "Netlogon elevation of privilege vulnerability",
+      "affected_products": [
+        "Windows Server 2008 R2",
+        "Windows Server 2012",
+        "Windows Server 2016",
+        "Windows Server 2019"
+      ],
+      "ransomware_used_by": ["Multiple APT groups"],
+      "patch": "August 2020 Security Update",
+      "mitigation": [
+        "Apply August 2020 patches",
+        "Enable DC enforcement mode"
+      ]
+    }
+  },
+  "common_exploit_chains": {
+    "trickbot_to_ryuk": {
+      "name": "TrickBot to Ryuk",
+      "stages": [
+        "Initial access via phishing/TrickBot",
+        "Credential theft and lateral movement",
+        "Cobalt Strike deployment",
+        "Ryuk ransomware deployment"
+      ],
+      "detection": [
+        "Monitor for TrickBot C2 communications",
+        "Detect credential dumping (Mimikatz)",
+        "Watch for Cobalt Strike beacons"
+      ]
+    },
+    "emotet_to_conti": {
+      "name": "Emotet to Conti",
+      "stages": [
+        "Emotet malware distribution",
+        "TrickBot or Qbot secondary payload",
+        "ProLock/Egregor/Conti ransomware"
+      ],
+      "detection": [
+        "Block Emotet spam campaigns",
+        "Monitor for macro-enabled documents",
+        "Detect Cobalt Strike usage"
+      ]
+    },
+    "vpn_to_ransomware": {
+      "name": "VPN Exploit to Ransomware",
+      "stages": [
+        "Exploit VPN vulnerability (CVE-2019-11510, CVE-2018-13379)",
+        "Steal VPN credentials",
+        "Lateral movement via RDP/PSExec",
+        "Ransomware deployment"
+      ],
+      "mitigation": [
+        "Patch VPN appliances immediately",
+        "Enable MFA on all VPN accounts",
+        "Monitor for unusual VPN locations"
+      ]
+    }
+  }
+}

@@ -1,0 +1,104 @@
+# Telegram Notifications for Zen-AI-Pentest
+# Sends build status, security alerts, and deployment notifications to Telegram
+
+name: Telegram Notifications
+
+on:
+  # DISABLED: Requires TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID secrets
+  # workflow_run:
+  #   workflows: ["Python application", "Repository Health Check"]
+  #   types: [completed]
+  # push:
+  #   branches: [master, main]
+  # issues:
+  #   types: [opened, closed, reopened]
+  # pull_request:
+  #   types: [opened, closed, reopened]
+  workflow_dispatch:
+    inputs:
+      message:
+        description: 'Test message'
+        required: false
+        default: 'Test notification from Zen-AI-Pentest'
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+      - name: Send Telegram Notification
+        if: ${{ env.TELEGRAM_BOT_TOKEN != '' && env.TELEGRAM_CHAT_ID != '' }}
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          # Determine notification type and message
+          if [ "${{ github.event_name }}" == "workflow_run" ]; then
+            WORKFLOW_NAME="${{ github.event.workflow_run.name }}"
+            CONCLUSION="${{ github.event.workflow_run.conclusion }}"
+            BRANCH="${{ github.event.workflow_run.head_branch }}"
+            URL="${{ github.event.workflow_run.html_url }}"
+            
+            if [ "$CONCLUSION" == "success" ]; then
+              STATUS="✅ SUCCESS"
+            elif [ "$CONCLUSION" == "failure" ]; then
+              STATUS="❌ FAILED"
+            else
+              STATUS="⚠️ $CONCLUSION"
+            fi
+            
+            MESSAGE="<b>Workflow $STATUS</b> - Name: $WORKFLOW_NAME, Branch: $BRANCH, Repo: ${{ github.repository }} - $URL"
+          
+          elif [ "${{ github.event_name }}" == "issues" ]; then
+            ISSUE_TITLE="${{ github.event.issue.title }}"
+            ISSUE_URL="${{ github.event.issue.html_url }}"
+            ACTION="${{ github.event.action }}"
+            
+            if [ "$ACTION" == "opened" ]; then
+              ICON="📋"
+            elif [ "$ACTION" == "closed" ]; then
+              ICON="✅"
+            else
+              ICON="📝"
+            fi
+            
+            MESSAGE="<b>$ICON Issue $ACTION</b> - $ISSUE_TITLE - ${{ github.repository }} - $ISSUE_URL"
+          
+          elif [ "${{ github.event_name }}" == "pull_request" ]; then
+            PR_TITLE="${{ github.event.pull_request.title }}"
+            PR_URL="${{ github.event.pull_request.html_url }}"
+            ACTION="${{ github.event.action }}"
+            
+            if [ "$ACTION" == "opened" ]; then
+              ICON="🔀"
+            elif [ "$ACTION" == "closed" ]; then
+              ICON="✅"
+            else
+              ICON="📝"
+            fi
+            
+            MESSAGE="<b>$ICON PR $ACTION</b> - $PR_TITLE - ${{ github.repository }} - $PR_URL"
+          
+          elif [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            MESSAGE="<b>🧪 Test Notification</b> - ${{ github.event.inputs.message }} - ${{ github.repository }} by ${{ github.actor }}"
+          
+          else
+            MESSAGE="<b>🔔 Repository Event</b> - ${{ github.event_name }} - ${{ github.repository }} - ${{ github.ref_name }} by ${{ github.actor }}"
+          fi
+          
+          # Send Telegram message
+          curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            -d "chat_id=${TELEGRAM_CHAT_ID}" \
+            -d "text=$MESSAGE" \
+            -d "parse_mode=HTML" \
+            -d "disable_web_page_preview=true"
+      
+      - name: Skip Notification (No Secrets)
+        if: ${{ env.TELEGRAM_BOT_TOKEN == '' || env.TELEGRAM_CHAT_ID == '' }}
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          echo "Telegram secrets not configured. Skipping notification."
+          echo "To enable: Add TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID to repository secrets."

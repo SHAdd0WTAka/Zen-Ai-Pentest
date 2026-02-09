@@ -1,0 +1,46 @@
+id: wp-debug-log
+
+info:
+  name: WordPress Debug Log Exposure
+  author: SHAdd0WTAka
+  severity: high
+  description: |
+    WordPress debug log file is publicly accessible, potentially exposing
+    sensitive information including paths, database queries, and error messages.
+  reference:
+    - https://wordpress.org/support/article/debugging-in-wordpress/
+  tags: wordpress,debug,log,exposure,wp,sensitive
+  metadata:
+    max-request: 1
+
+http:
+  - method: GET
+    path:
+      - "{{BaseURL}}/wp-content/debug.log"
+      - "{{BaseURL}}/debug.log"
+
+    matchers-condition: and
+    matchers:
+      - type: word
+        words:
+          - "PHP Notice"
+          - "PHP Warning"
+          - "PHP Fatal error"
+          - "Stack trace:"
+          - "wpdb"
+        condition: or
+
+      - type: status
+        status:
+          - 200
+
+      - type: word
+        part: header
+        words:
+          - "text/plain"
+
+    extractors:
+      - type: regex
+        name: error_messages
+        regex:
+          - "PHP (Notice|Warning|Fatal error).*"

@@ -1,0 +1,172 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "zen-ai-pentest"
+version = "2.3.9"
+description = "Advanced AI-Powered Penetration Testing Framework with Multi-Agent Orchestration"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.9"
+authors = [
+    {name = "SHAdd0WTAka", email = "shadd0wtaka@example.com"}
+]
+keywords = [
+    "penetration-testing",
+    "security",
+    "ai",
+    "llm",
+    "multi-agent",
+    "cve",
+    "vulnerability-scanner",
+    "pentest"
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Information Technology",
+    "Topic :: Security",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Operating System :: OS Independent",
+]
+
+dependencies = [
+    "requests>=2.31.0",
+    "aiohttp>=3.9.0",
+    "python-dotenv>=1.0.0",
+    "pydantic>=2.0.0",
+    "fastapi>=0.104.0",
+    "uvicorn>=0.24.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.1.0",
+    "black>=23.0.0",
+    "isort>=5.12.0",
+    "flake8>=6.1.0",
+    "bandit>=1.7.5",
+    "safety>=2.3.0",
+    "mypy>=1.5.0",
+    "pre-commit>=3.5.0",
+]
+docs = [
+    "mkdocs>=1.5.0",
+    "mkdocs-material>=9.4.0",
+    "mkdocstrings[python]>=0.23.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/SHAdd0WTAka/zen-ai-pentest"
+Documentation = "https://github.com/SHAdd0WTAka/zen-ai-pentest/tree/main/docs"
+Repository = "https://github.com/SHAdd0WTAka/zen-ai-pentest.git"
+"Bug Tracker" = "https://github.com/SHAdd0WTAka/zen-ai-pentest/issues"
+Changelog = "https://github.com/SHAdd0WTAka/zen-ai-pentest/releases"
+Marketplace = "https://github.com/marketplace/actions/zen-ai-pentest"
+Discussions = "https://github.com/SHAdd0WTAka/zen-ai-pentest/discussions"
+
+[project.scripts]
+zen-ai-pentest = "zen_ai_pentest:main"
+
+[tool.setuptools]
+packages = ["core", "agents", "backends", "modules", "api", "autonomous", "risk_engine", "web_ui.backend", "ci_cd", "benchmarks"]
+
+[tool.black]
+line-length = 127
+target-version = ['py311']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+  | logs
+  | evidence
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 127
+skip_gitignore = true
+skip_glob = ["logs/*", "evidence/*", "venv/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = "--cov=core --cov=agents --cov=backends --cov=autonomous --cov=risk_engine --cov=web_ui.backend --cov-report=term-missing"
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+]
+
+[tool.bandit]
+exclude_dirs = ["tests", "venv", "env", ".venv", ".github"]
+# B101: assert_used - acceptable in non-production code
+# B104: hardcoded_bind_all_interfaces (0.0.0.0) - required for API server
+# B105: hardcoded_password_string - some test/config passwords are hardcoded
+# B110: try_except_pass - sometimes needed for graceful degradation
+# B311: random - acceptable for non-cryptographic uses
+# B324: hashlib_md5 - needed for compatibility with some systems
+# B404: import_subprocess - required for tool execution
+# B603: subprocess_without_shell_equals_true - we use shell=False where possible
+# B607: start_process_with_partial_path - tools are in PATH
+# B107: hardcoded_password_default - default/placeholder passwords in tools
+# B108: hardcoded_tmp_directory - temp directories for tool output
+# B112: try_except_continue - error handling patterns
+# B113: request_without_timeout - TODO: add timeouts
+# B301: pickle - used for caching trusted data
+# B310: urllib_urlopen - used in setup scripts
+# B314/B318: xml_parsing - used for report generation with trusted input
+# B403/B405/B408: xml_module imports - required for report parsing
+# B501: ssl_with_no_version - Burp Suite local API uses self-signed certs
+skips = ["B101", "B104", "B105", "B107", "B108", "B110", "B112", "B113", "B301", "B310", "B311", "B314", "B318", "B324", "B403", "B404", "B405", "B408", "B501", "B603", "B607"]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+ignore_missing_imports = true
+exclude = ["venv", "env", ".venv", "logs", "evidence"]
+
+[tool.coverage.run]
+source = ["core", "agents", "backends", "modules", "autonomous", "risk_engine", "web_ui.backend", "benchmarks", "ci_cd"]
+omit = ["*/tests/*", "*/venv/*", "*/env/*", "*/__pycache__/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
+
+[tool.ruff]
+line-length = 127
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W"]
+ignore = ["E402", "I001", "E501"]  # E402: imports not at top, I001: import sorting, E501: line too long
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"

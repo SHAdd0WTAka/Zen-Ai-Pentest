@@ -1,0 +1,17 @@
+include README.md
+include LICENSE
+include requirements.txt
+include CONTRIBUTING.md
+include CONTRIBUTORS.md
+
+recursive-include templates *.md *.html *.json
+recursive-include core *.json *.yaml *.sql
+recursive-include modules *.json *.yaml
+
+graft docs
+prune docs/_site
+prune tests
+
+global-exclude *.pyc
+global-exclude __pycache__
+global-exclude .DS_Store

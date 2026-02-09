@@ -1,0 +1,101 @@
+name: Sync Documentation to Wiki
+
+on:
+  push:
+    branches: [master, main]
+    paths:
+      - 'docs/**'
+      - 'wiki/**'
+      - 'README.md'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync-wiki:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Checkout Wiki
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository }}.wiki
+          path: wiki-content
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Sync Documentation to Wiki
+        run: |
+          echo "Syncing documentation to wiki..."
+          
+          # Create wiki structure
+          mkdir -p wiki-content/Home
+          mkdir -p wiki-content/Guides
+          mkdir -p wiki-content/API
+          mkdir -p wiki-content/Security
+          
+          # Copy main README as Home
+          cp README.md wiki-content/Home.md
+          
+          # Copy docs folder content
+          if [ -d "docs" ]; then
+            for file in docs/*.md; do
+              if [ -f "$file" ]; then
+                filename=$(basename "$file" .md)
+                cp "$file" "wiki-content/${filename}.md"
+                echo "Synced: $file"
+              fi
+            done
+          fi
+          
+          # Create sidebar
+          cat > wiki-content/_Sidebar.md << 'EOF'
+## Zen AI Pentest Wiki
+
+### Getting Started
+- [Home](Home)
+- [Installation](Installation)
+- [Quick Start](Quick-Start)
+
+### Guides
+- [Architecture](Architecture)
+- [Contributing](Contributing)
+- [API Documentation](API_DOCUMENTATION)
+- [Docker Setup](DOCKER_SETUP)
+
+### Security
+- [Security Policy](SECURITY)
+- [Branch Protection](BRANCH_PROTECTION)
+- [CVE Database](CVE_Database)
+
+### Development
+- [Plugin System](PLUGIN_SYSTEM)
+- [Post Scan Agent](POST_SCAN_AGENT)
+- [OSINT Module](OSINT_MODULE)
+
+### External Links
+- [GitHub Repo](https://github.com/SHAdd0WTAka/zen-ai-pentest)
+- [Issues](https://github.com/SHAdd0WTAka/zen-ai-pentest/issues)
+- [Discussions](https://github.com/SHAdd0WTAka/zen-ai-pentest/discussions)
+EOF
+          
+          # Create footer
+          cat > wiki-content/_Footer.md << 'EOF'
+🛡️ [Zen AI Pentest](https://github.com/SHAdd0WTAka/zen-ai-pentest) - AI-Powered Penetration Testing Framework
+
+Last updated: $(date -u +"%Y-%m-%d %H:%M UTC")
+EOF
+          
+          echo "Wiki content prepared"
+
+      - name: Commit and Push to Wiki
+        run: |
+          cd wiki-content
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          
+          git add -A
+          git diff --staged --quiet || git commit -m "docs: sync documentation to wiki [skip ci]"
+          git push || echo "Nothing to push"

@@ -1,0 +1,61 @@
+# Zen AI Pentest - Core Dependencies
+# Install with: pip install -r requirements.txt
+
+# HTTP and API
+requests>=2.32.0  # SECURITY FIX: CVE-2024-35195
+aiohttp>=3.13.3  # SECURITY FIX: CVE-2025-69223, CVE-2024-30251, CVE-2024-23334
+websockets>=12.0
+urllib3>=2.6.3
+
+# File locking (security fix)
+filelock>=3.20.3
+
+# Configuration and Environment
+python-dotenv>=1.0.0
+pydantic>=2.0.0
+pyyaml>=6.0.1
+
+# Web Framework (for API)
+fastapi>=0.115.8  # SECURITY: Latest stable with security fixes
+uvicorn>=0.34.0  # SECURITY: Latest with security fixes
+python-multipart>=0.0.18  # SECURITY FIX: CVE-2024-53981
+
+# CLI and UI
+click>=8.1.0
+rich>=13.0.0
+colorama>=0.4.6
+typer>=0.9.0
+
+# Security and Cryptography
+cryptography>=43.0.1  # SECURITY FIX: CVE-2024-26130, CVE-2024-41985, CVE-2024-25185
+python-jose>=3.4.0  # SECURITY: Algorithm confusion fix (CVE-2024-33663)
+passlib>=1.7.4
+
+# Database
+sqlalchemy>=2.0.0
+alembic>=1.12.0
+aiosqlite>=0.19.0
+
+# Container Integration (optional but recommended)
+docker>=6.1.0
+
+# Async support
+asyncio-mqtt>=0.13.0
+aiofiles>=23.0.0
+
+# AI / LLM Integration
+langchain-core>=0.3.33  # SECURITY: Fix serialization vulnerability (CVE-2024-6239)
+langchain>=0.3.17  # SECURITY: Latest with security fixes
+
+# Data Processing
+pandas>=2.0.0
+numpy>=1.24.0
+
+# Reporting
+jinja2>=3.1.5  # SECURITY FIX: CVE-2024-56201, CVE-2024-56326, CVE-2024-34064
+markdown>=3.5.0
+weasyprint>=61.0; platform_system != "Windows"  # SECURITY FIX: CVE-2024-45492
+
+# Utilities
+tenacity>=8.2.0
+python-dateutil>=2.8.0

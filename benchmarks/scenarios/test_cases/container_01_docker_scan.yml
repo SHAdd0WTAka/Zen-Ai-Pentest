@@ -1,0 +1,335 @@
+# Test Case: container_01_docker_scan
+# Category: Container Security - Docker Image and Configuration Scan
+# Description: Docker container and image security assessment
+
+id: container_01_docker_scan
+name: Docker Container Security Scan
+description: |
+  Comprehensive Docker security testing including:
+  - Image vulnerability scanning
+  - Dockerfile best practices
+  - Container runtime configuration
+  - Secrets and credential detection
+  - Privilege escalation vectors
+  - Network exposure analysis
+  
+  Tests both static image analysis and runtime security.
+
+category: container_security
+target_type: container
+difficulty: medium
+version: "1.0"
+tags:
+  - docker
+  - container
+  - image-scan
+  - vulnerability
+  - secrets
+  - cis-benchmark
+  - runtime-security
+owasp_categories:
+  - "A05:2021-Security Misconfiguration"
+  - "A06:2021-Vulnerable and Outdated Components"
+  - "A07:2021-Identification and Authentication Failures"
+
+cwe_ids:
+  - "CWE-1104"
+  - "CWE-250"
+  - "CWE-276"
+  - "CWE-798"
+
+# Target Configuration
+target_images:
+  - name: "vulnerable-app:latest"
+    dockerfile: true
+    runtime: true
+    
+  - name: "old-nginx:1.14"
+    dockerfile: false
+    runtime: true
+    
+  - name: "dev-mysql:5.7"
+    dockerfile: true
+    runtime: true
+
+# Dockerfile Issues
+dockerfile_issues:
+  - issue: "latest_tag"
+    line: 1
+    severity: medium
+    description: "Using 'latest' tag for base image"
+    
+  - issue: "no_user"
+    severity: high
+    description: "No USER instruction - running as root"
+    
+  - issue: "secrets_in_env"
+    line: 8
+    severity: critical
+    description: "Hardcoded credentials in ENV"
+    
+  - issue: "no_healthcheck"
+    severity: low
+    description: "No HEALTHCHECK instruction"
+    
+  - issue: "sensitive_mounts"
+    line: 12
+    severity: high
+    description: "Sensitive host paths mounted"
+    
+  - issue: "privileged_ports"
+    severity: medium
+    description: "Using privileged ports (80, 443)"
+
+# Expected Findings
+expected_findings:
+  - vuln_type: container_running_as_root
+    severity: high
+    location: "Dockerfile"
+    cwe_id: "CWE-250"
+    confidence: 0.95
+    description: |
+      Container runs as root user (UID 0).
+      Privilege escalation risk if container is compromised.
+    verification_method: "dockerfile_scan"
+    exploit_available: true
+    
+  - vuln_type: hardcoded_credentials
+    severity: critical
+    location: "Dockerfile ENV"
+    cwe_id: "CWE-798"
+    confidence: 0.98
+    description: |
+      Hardcoded database password found in Dockerfile:
+      ENV DB_PASSWORD=SuperSecret123!
+    verification_method: "secret_scan"
+    exploit_available: true
+    
+  - vuln_type: outdated_base_image
+    severity: high
+    location: "FROM instruction"
+    cwe_id: "CWE-1104"
+    confidence: 0.90
+    description: |
+      Base image alpine:3.10 has known vulnerabilities.
+      45 CVEs found including critical ones.
+    verification_method: "image_scan"
+    exploit_available: true
+    
+  - vuln_type: vulnerable_package
+    severity: critical
+    location: "container filesystem"
+    cwe_id: "CWE-1104"
+    confidence: 0.92
+    description: |
+      OpenSSL 1.1.1k with CVE-2021-3711 (critical)
+      Remote code execution vulnerability.
+    verification_method: "vuln_scan"
+    exploit_available: true
+    
+  - vuln_type: privileged_container
+    severity: critical
+    location: "docker run command"
+    cwe_id: "CWE-250"
+    confidence: 0.99
+    description: |
+      Container running in privileged mode.
+      Full host access possible.
+    verification_method: "runtime_scan"
+    exploit_available: true
+    
+  - vuln_type: sensitive_host_mount
+    severity: high
+    location: "volume mounts"
+    cwe_id: "CWE-276"
+    confidence: 0.95
+    description: |
+      Sensitive host directory mounted:
+      - /etc mounted as read-write
+      - Docker socket mounted
+    verification_method: "runtime_scan"
+    exploit_available: true
+    
+  - vuln_type: exposed_docker_socket
+    severity: critical
+    location: "volume mounts"
+    cwe_id: "CWE-250"
+    confidence: 0.98
+    description: |
+      Docker socket /var/run/docker.sock mounted.
+      Container escape trivial via docker API.
+    verification_method: "runtime_scan"
+    exploit_available: true
+    
+  - vuln_type: kernel_capability_added
+    severity: high
+    location: "runtime configuration"
+    cwe_id: "CWE-250"
+    confidence: 0.90
+    description: |
+      Additional kernel capabilities granted:
+      - CAP_SYS_ADMIN
+      - CAP_SYS_PTRACE
+    verification_method: "runtime_scan"
+    exploit_available: true
+    
+  - vuln_type: no_resource_limits
+    severity: medium
+    location: "runtime configuration"
+    cwe_id: "CWE-400"
+    confidence: 0.95
+    description: |
+      No memory or CPU limits set.
+      DoS risk via resource exhaustion.
+    verification_method: "runtime_scan"
+    exploit_available: false
+    
+  - vuln_type: writable_rootfs
+    severity: medium
+    location: "runtime configuration"
+    cwe_id: "CWE-276"
+    confidence: 0.90
+    description: |
+      Container root filesystem is writable.
+      Attackers can modify system files.
+    verification_method: "runtime_scan"
+    exploit_available: false
+    
+  - vuln_type: secrets_in_image
+    severity: high
+    location: "image layers"
+    cwe_id: "CWE-798"
+    confidence: 0.88
+    description: |
+      AWS credentials found in image layer:
+      - .aws/credentials
+      - Private SSH keys in /root/.ssh/
+    verification_method: "image_scan"
+    exploit_available: true
+
+# Test Parameters
+parameters:
+  scan_types:
+    - static_analysis
+    - image_scan
+    - runtime_scan
+    - secret_scan
+    
+  scanners:
+    - trivy
+    - clair
+    - snyk
+    - anchore
+    
+  checks:
+    - cve_vulnerabilities
+    - misconfigurations
+    - secrets
+    - malware
+    - license_compliance
+    
+  cis_benchmarks:
+    - docker_host
+    - docker_image
+    - docker_container
+
+# Success Criteria
+min_detection_rate: 0.75
+max_false_positive_rate: 0.15
+max_duration_seconds: 300
+
+# Expected Duration
+expected_duration_seconds: 120
+
+# Resource Requirements
+resource_requirements:
+  memory_mb: 2048
+  cpu_cores: 2
+  docker_access: true
+  privileged_scan: false
+
+# Docker Compose for Test Environment
+docker_compose: |
+  version: '3'
+  services:
+    vulnerable-app:
+      build:
+        context: .
+        dockerfile: Dockerfile.vulnerable
+      ports:
+        - "8080:80"
+      environment:
+        - DB_PASSWORD=SuperSecret123!
+        - API_KEY=sk_live_1234567890abcdef
+      volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
+        - /etc:/host-etc:rw
+      privileged: true
+      cap_add:
+        - SYS_ADMIN
+        - SYS_PTRACE
+      networks:
+        - container-net
+
+  networks:
+    container-net:
+      driver: bridge
+
+# Validation
+success_indicators:
+  - "Outdated packages detected"
+  - "Hardcoded secrets found"
+  - "Privilege issues identified"
+  - "Misconfigurations reported"
+
+# CIS Benchmark Checklist
+cis_checks:
+  host_configuration:
+    - "1.1.1 Ensure the container host has been hardened"
+    - "1.2.1 Ensure a separate partition for containers"
+    
+  docker_daemon_configuration:
+    - "2.1 Ensure network traffic is restricted"
+    - "2.2 Ensure logging level is set to 'info'"
+    
+  docker_daemon_configuration_files:
+    - "3.1 Ensure docker.service file permissions"
+    - "3.2 Ensure docker.socket file permissions"
+    
+  container_images:
+    - "4.1 Ensure a user is created for the container"
+    - "4.2 Ensure containers use trusted base images"
+    - "4.3 Ensure unnecessary packages are not installed"
+    
+  container_runtime:
+    - "5.1 Ensure AppArmor is enabled"
+    - "5.2 Ensure SELinux is enabled"
+    - "5.3 Ensure Linux kernel capabilities are restricted"
+    - "5.4 Ensure privileged containers are not used"
+    - "5.5 Ensure sensitive host system directories are not mounted"
+    - "5.6 Ensure sshd is not run within containers"
+    - "5.7 Ensure privileged ports are not mapped"
+    - "5.8 Ensure only needed ports are open"
+    - "5.9 Ensure host's network namespace is not shared"
+    - "5.10 Ensure memory usage is limited"
+    - "5.11 Ensure CPU priority is set"
+    - "5.12 Ensure container's root filesystem is read-only"
+    - "5.13 Ensure incoming container traffic is bound"
+    - "5.14 Ensure restart policy is set"
+    - "5.15 Ensure host's process namespace is not shared"
+    - "5.16 Ensure host's IPC namespace is not shared"
+    - "5.17 Ensure host devices are not exposed"
+    - "5.18 Ensure default ulimit is overwritten"
+    - "5.19 Ensure mount propagation mode is not shared"
+    - "5.20 Ensure host's UTS namespace is not shared"
+    - "5.21 Ensure default seccomp profile is not disabled"
+    - "5.22 Ensure docker exec commands are not used with privileged"
+    - "5.23 Ensure docker exec commands are not used with user"
+    - "5.24 Ensure cgroup usage is confirmed"
+    - "5.25 Ensure container is restricted from acquiring additional privileges"
+    - "5.26 Ensure health checks are configured"
+    - "5.27 Ensure docker commands always get the latest version of the image"
+    - "5.28 Ensure PIDs cgroup limit is used"
+    - "5.29 Ensure Docker's default bridge docker0 is not used"
+    - "5.30 Ensure host's user namespaces are not shared"
+    - "5.31 Ensure Docker socket is not mounted inside containers"

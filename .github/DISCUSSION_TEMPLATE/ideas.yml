@@ -1,0 +1,54 @@
+title: "[IDEA] "
+labels: ["enhancement", "idea"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        💡 Have an idea for improving Zen AI Pentest?
+        
+        We love hearing new ideas! Share your feature request or enhancement idea here.
+        
+  - type: textarea
+    id: idea
+    attributes:
+      label: Your Idea
+      description: Describe your idea in detail
+      placeholder: |
+        I think it would be great if Zen AI Pentest could...
+    validations:
+      required: true
+      
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: What problem does this solve?
+      placeholder: |
+        This would help users who need to...
+        
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: How do you envision this working?
+      placeholder: |
+        The feature could work like this...
+        
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Have you considered other approaches?
+      placeholder: |
+        I also thought about...
+        
+  - type: dropdown
+    id: complexity
+    attributes:
+      label: Complexity Estimate
+      description: How complex do you think this would be to implement?
+      options:
+        - Low (simple change)
+        - Medium (moderate effort)
+        - High (significant effort)
+        - Unknown

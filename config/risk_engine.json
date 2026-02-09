@@ -1,0 +1,90 @@
+{
+  "_comment": "Configuration for Risk Engine and False Positive Detection",
+  "version": "2.0.0",
+  "false_positive_engine": {
+    "enabled": true,
+    "enable_llm_voting": true,
+    "fp_confidence_threshold": 0.75,
+    "confirmed_confidence_threshold": 0.85,
+    "historical_similarity_threshold": 0.85,
+    "fp_database_path": "data/false_positive_db.json",
+    "epss_api_endpoint": "https://api.first.org/data/v1/epss"
+  },
+  "scoring_weights": {
+    "cvss": 0.25,
+    "epss": 0.20,
+    "business_impact": 0.20,
+    "exploitability": 0.15,
+    "asset_criticality": 0.15,
+    "context": 0.05
+  },
+  "context_multipliers": {
+    "internet_exposed": 0.3,
+    "exploit_code_available": 0.2,
+    "active_exploitation_observed": 0.4,
+    "no_patch_available": 0.1,
+    "no_authentication": 0.2,
+    "no_user_interaction": 0.1
+  },
+  "business_impact_calculator": {
+    "organization_size": "medium",
+    "annual_revenue": 0,
+    "industry": "technology",
+    "base_response_costs": {
+      "small": 50000,
+      "medium": 150000,
+      "large": 500000,
+      "enterprise": 2000000
+    }
+  },
+  "compliance_frameworks": {
+    "PCI_DSS": {
+      "enabled": true,
+      "base_weight": 0.95,
+      "max_fine": 100000
+    },
+    "HIPAA": {
+      "enabled": true,
+      "base_weight": 0.9,
+      "max_fine": 1500000
+    },
+    "GDPR": {
+      "enabled": true,
+      "base_weight": 0.85,
+      "max_fine": 20000000
+    },
+    "SOX": {
+      "enabled": false,
+      "base_weight": 0.8,
+      "max_fine": 5000000
+    },
+    "ISO27001": {
+      "enabled": true,
+      "base_weight": 0.75,
+      "max_fine": 50000
+    },
+    "NIST": {
+      "enabled": false,
+      "base_weight": 0.7,
+      "max_fine": 1000000
+    }
+  },
+  "priority_rules": {
+    "critical_risk": {
+      "min_score": 0.8,
+      "priority": 1
+    },
+    "high_risk": {
+      "min_score": 0.6,
+      "priority": 2
+    },
+    "medium_risk": {
+      "min_score": 0.4,
+      "priority": 3
+    },
+    "low_risk": {
+      "min_score": 0.2,
+      "priority": 4
+    }
+  }
+}

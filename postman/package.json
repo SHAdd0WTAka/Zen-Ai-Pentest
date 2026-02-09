@@ -1,0 +1,31 @@
+{
+  "name": "zen-ai-pentest-postman",
+  "version": "1.0.0",
+  "description": "Postman collection and Newman runner for Zen AI Pentest API",
+  "main": "newman-runner.js",
+  "scripts": {
+    "test": "node newman-runner.js run local",
+    "test:health": "node newman-runner.js health local",
+    "test:staging": "node newman-runner.js run staging",
+    "test:production": "node newman-runner.js run production",
+    "list": "node newman-runner.js list",
+    "test:folder": "node newman-runner.js folder local",
+    "report:serve": "npx serve reports"
+  },
+  "keywords": [
+    "postman",
+    "newman",
+    "api-testing",
+    "pentest",
+    "security"
+  ],
+  "author": "SHAdd0WTAka",
+  "license": "MIT",
+  "dependencies": {
+    "newman": "^6.0.0",
+    "newman-reporter-htmlextra": "^1.22.0"
+  },
+  "devDependencies": {
+    "serve": "^14.2.0"
+  }
+}

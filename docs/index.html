@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zen AI Pentest - AI-Powered Penetration Testing Framework</title>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #8b5cf6;
+            --bg: #0f172a;
+            --bg-light: #1e293b;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        
+        .hero {
+            background: linear-gradient(135deg, var(--bg) 0%, var(--bg-light) 100%);
+            padding: 4rem 2rem;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .hero p {
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto 2rem;
+        }
+        
+        .badges {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+        }
+        
+        .badge {
+            padding: 0.5rem 1rem;
+            background: var(--bg-light);
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background: var(--primary);
+            color: white;
+            text-decoration: none;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            margin: 0.5rem;
+        }
+        
+        .btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            border: 2px solid var(--primary);
+        }
+        
+        .features {
+            padding: 4rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .features h2 {
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        
+        .feature {
+            background: var(--bg-light);
+            padding: 2rem;
+            border-radius: 1rem;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .feature h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+        
+        .feature p {
+            color: var(--text-muted);
+        }
+        
+        .stats {
+            background: var(--bg-light);
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .stat h3 {
+            font-size: 2.5rem;
+            color: var(--primary);
+        }
+        
+        .stat p {
+            color: var(--text-muted);
+        }
+        
+        .quickstart {
+            padding: 4rem 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .quickstart h2 {
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .code-block {
+            background: #1a1a2e;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+        
+        .code-block code {
+            color: #a5b4fc;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.875rem;
+            line-height: 1.7;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 3rem 2rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            color: var(--text-muted);
+        }
+        
+        .footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+        
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+            
+            .hero p {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <section class="hero">
+        <h1>🛡️ Zen AI Pentest</h1>
+        <p>AI-Powered Multi-LLM Penetration Testing Framework with automated intelligence gathering, vulnerability scanning, and professional reporting.</p>
+        
+        <div class="badges">
+            <span class="badge">🤖 Multi-Agent AI</span>
+            <span class="badge">🔌 Multi-LLM Support</span>
+            <span class="badge">🕵️ OSINT Integration</span>
+            <span class="badge">🔒 VPN Anonymous</span>
+            <span class="badge">🐳 Docker Ready</span>
+        </div>
+        
+        <a href="https://github.com/SHAdd0WTAka/zen-ai-pentest" class="btn">View on GitHub</a>
+        <a href="#quickstart" class="btn btn-secondary">Get Started</a>
+    </section>
+    
+    <section class="stats">
+        <div class="stats-grid">
+            <div class="stat">
+                <h3>1000+</h3>
+                <p>CVEs in Database</p>
+            </div>
+            <div class="stat">
+                <h3>50+</h3>
+                <p>SQLi Payloads</p>
+            </div>
+            <div class="stat">
+                <h3>7</h3>
+                <p>Ransomware Families</p>
+            </div>
+            <div class="stat">
+                <h3>4</h3>
+                <p>LLM Backends</p>
+            </div>
+        </div>
+    </section>
+    
+    <section class="features">
+        <h2>Features</h2>
+        <div class="feature-grid">
+            <div class="feature">
+                <div class="feature-icon">🤖</div>
+                <h3>Multi-Agent System</h3>
+                <p>Clawed/Moltbot-style agents collaborate, share context, and conduct autonomous research with specialized roles.</p>
+            </div>
+            
+            <div class="feature">
+                <div class="feature-icon">🔌</div>
+                <h3>Multi-LLM Routing</h3>
+                <p>Seamlessly switches between DuckDuckGo AI, OpenRouter, ChatGPT, and Claude based on quality requirements.</p>
+            </div>
+            
+            <div class="feature">
+                <div class="feature-icon">🕵️</div>
+                <h3>OSINT Integration</h3>
+                <p>Automated email harvesting, domain reconnaissance, social media intelligence, and breach checking.</p>
+            </div>
+            
+            <div class="feature">
+                <div class="feature-icon">📊</div>
+                <h3>CVE & Ransomware DB</h3>
+                <p>Built-in databases with 1000+ CVEs, 7 ransomware families, and 50+ SQL injection payloads.</p>
+            </div>
+            
+            <div class="feature">
+                <div class="feature-icon">🔍</div>
+                <h3>Nuclei Integration</h3>
+                <p>Automated vulnerability scanning with customizable templates for WordPress and web applications.</p>
+            </div>
+            
+            <div class="feature">
+                <div class="feature-icon">🔒</div>
+                <h3>Proton VPN</h3>
+                <p>Built-in VPN integration for anonymous scanning with multi-hop Secure Core support.</p>
+            </div>
+            
+            <div class="feature">
+                <div class="feature-icon">🔌</div>
+                <h3>Plugin System</h3>
+                <p>Extensible architecture with hook system for custom scanners, exploits, and integrations.</p>
+            </div>
+            
+            <div class="feature">
+                <div class="feature-icon">🌐</div>
+                <h3>REST API</h3>
+                <p>Full-featured FastAPI with WebSocket support, JWT authentication, and automatic documentation.</p>
+            </div>
+            
+            <div class="feature">
+                <div class="feature-icon">🐳</div>
+                <h3>Docker Ready</h3>
+                <p>Production-ready Docker Compose setup with multi-stage builds and horizontal scaling.</p>
+            </div>
+        </div>
+    </section>
+    
+    <section class="quickstart" id="quickstart">
+        <h2>Quick Start</h2>
+        
+        <h3>Installation</h3>
+        <div class="code-block">
+            <code># Clone repository<br>
+git clone https://github.com/SHAdd0WTAka/zen-ai-pentest.git<br>
+cd pentest-ai<br><br>
+# Install dependencies<br>
+pip install -r requirements.txt<br><br>
+# Run setup<br>
+python -m zen_ai_pentest --help</code>
+        </div>
+        
+        <h3>Docker</h3>
+        <div class="code-block">
+            <code># Start with Docker Compose<br>
+docker-compose up -d<br><br>
+# Or use setup script<br>
+./scripts/docker-setup.sh</code>
+        </div>
+        
+        <h3>Basic Usage</h3>
+        <div class="code-block">
+            <code># Run a scan<br>
+python -m zen_ai_pentest scan target.com<br><br>
+# Start API server<br>
+python -m api.main<br><br>
+# Run OSINT demo<br>
+python examples/osint_demo.py --domain example.com</code>
+        </div>
+    </section>
+    
+    <footer class="footer">
+        <p>Created by <a href="https://github.com/SHAdd0WTAka">SHAdd0WTAka</a> with assistance from <a href="https://www.moonshot.cn/">Kimi AI</a></p>
+        <p>Licensed under MIT License</p>
+    </footer>
+</body>
+</html>

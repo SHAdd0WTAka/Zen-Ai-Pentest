@@ -1,0 +1,541 @@
+# =============================================================================
+# Zen-AI-Pentest Azure DevOps Pipeline
+# =============================================================================
+# Description: Production-ready Azure DevOps pipeline for security scanning
+# Version: 2.0.0
+# Trigger: Manual, Scheduled, CI
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# TRIGGER CONFIGURATION
+# -----------------------------------------------------------------------------
+trigger:
+  branches:
+    include:
+      - main
+      - develop
+      - release/*
+  paths:
+    exclude:
+      - '**/*.md'
+      - docs/**
+
+pr:
+  branches:
+    include:
+      - main
+      - develop
+
+# Scheduled trigger (every Sunday at 3 AM UTC)
+schedules:
+  - cron: "0 3 * * 0"
+    displayName: Weekly Security Scan
+    branches:
+      include:
+        - main
+    always: true
+
+# -----------------------------------------------------------------------------
+# VARIABLES
+# -----------------------------------------------------------------------------
+variables:
+  # Pipeline settings
+  - name: ZEN_PENTEST_VERSION
+    value: '2.0.0'
+  - name: PYTHON_VERSION
+    value: '3.11'
+  - name: REPORT_RETENTION_DAYS
+    value: '90'
+  
+  # Scan configuration (can be overridden at queue time)
+  - name: ZEN_SCAN_TARGET
+    value: $(ZEN_PENTEST_DEFAULT_TARGET)
+  - name: ZEN_SCAN_MODE
+    value: 'full'
+  - name: ZEN_SCAN_INTENSITY
+    value: 'medium'
+  
+  # Compliance thresholds
+  - name: ZEN_MAX_CRITICAL
+    value: '0'
+  - name: ZEN_MAX_HIGH
+    value: '5'
+  
+  # Agent settings
+  - name: vmImageName
+    value: 'ubuntu-latest'
+  
+  # Docker settings
+  - name: DOCKER_BUILDKIT
+    value: '1'
+
+# Link variable groups (create these in Azure DevOps Library)
+# - group: zen-pentest-secrets  # Contains API keys, tokens
+# - group: zen-pentest-config   # Contains configuration values
+
+# -----------------------------------------------------------------------------
+# STAGES
+# -----------------------------------------------------------------------------
+stages:
+  # ===========================================================================
+  # STAGE 1: Setup
+  # ===========================================================================
+  - stage: Setup
+    displayName: '⚙️ Setup'
+    jobs:
+      - job: Initialize
+        displayName: 'Initialize Environment'
+        pool:
+          vmImage: $(vmImageName)
+        steps:
+          - checkout: self
+            fetchDepth: 1
+          
+          - task: UsePythonVersion@0
+            displayName: 'Use Python $(PYTHON_VERSION)'
+            inputs:
+              versionSpec: '$(PYTHON_VERSION)'
+              addToPath: true
+          
+          - bash: |
+              echo "##[section] Pipeline Configuration"
+              echo "Scan Target: $(ZEN_SCAN_TARGET)"
+              echo "Scan Mode: $(ZEN_SCAN_MODE)"
+              echo "Intensity: $(ZEN_SCAN_INTENSITY)"
+              echo "Build Reason: $(Build.Reason)"
+              echo "Source Branch: $(Build.SourceBranch)"
+            displayName: 'Display Configuration'
+          
+          - bash: |
+              SCAN_ID="scan-$(date +%Y%m%d-%H%M%S)-$(Build.BuildId)"
+              echo "##vso[task.setvariable variable=scanId;isOutput=true]$SCAN_ID"
+              echo "Generated Scan ID: $SCAN_ID"
+            name: generateScanId
+            displayName: 'Generate Scan ID'
+
+  # ===========================================================================
+  # STAGE 2: Security Scan (Container Job)
+  # ===========================================================================
+  - stage: SecurityScan
+    displayName: '🔒 Security Scan'
+    dependsOn: Setup
+    variables:
+      scanId: $[ stageDependencies.Setup.Initialize.outputs['generateScanId.scanId'] ]
+    jobs:
+      - job: RunScan
+        displayName: 'Run Zen-AI-Pentest'
+        pool:
+          vmImage: $(vmImageName)
+        
+        # Container job for isolation
+        container:
+          image: zenai/zen-pentest:$(ZEN_PENTEST_VERSION)
+          endpoint: docker-hub-connection  # Service connection for Docker Hub
+        
+        steps:
+          - checkout: self
+            fetchDepth: 1
+          
+          # Configure Zen-AI-Pentest
+          - bash: |
+              mkdir -p ~/.config/zen-pentest
+              cat > ~/.config/zen-pentest/config.yaml << EOF
+              core:
+                threads: 10
+                timeout: 300
+                verbose: true
+                log_level: INFO
+              
+              ai:
+                provider: openai
+                model: gpt-4
+                api_key: "$(OPENAI_API_KEY)"
+              
+              reporting:
+                formats:
+                  - json
+                  - html
+                  - sarif
+                output_dir: $(Build.ArtifactStagingDirectory)/reports
+                include_screenshots: true
+              
+              azure:
+                organization: "$(System.TeamFoundationCollectionUri)"
+                project: "$(System.TeamProject)"
+                pat: "$(AZURE_DEVOPS_PAT)"
+              EOF
+              
+              echo "Configuration created successfully"
+            displayName: 'Configure Zen-AI-Pentest'
+            env:
+              OPENAI_API_KEY: $(OPENAI_API_KEY)  # From variable group
+          
+          # Cache dependencies
+          - task: Cache@2
+            displayName: 'Cache Dependencies'
+            inputs:
+              key: 'zen-pentest | $(Agent.OS) | requirements.txt'
+              restoreKeys: |
+                zen-pentest | $(Agent.OS)
+              path: |
+                $(Pipeline.Workspace)/.cache/pip
+                $(Pipeline.Workspace)/.cache/zen-pentest
+          
+          # Run security scan
+          - bash: |
+              echo "##[section] Starting Zen-AI-Pentest Security Scan"
+              echo "Scan ID: $(scanId)"
+              echo "Target: $(ZEN_SCAN_TARGET)"
+              echo "Mode: $(ZEN_SCAN_MODE)"
+              
+              mkdir -p $(Build.ArtifactStagingDirectory)/reports
+              
+              # Execute scan
+              zen-pentest scan \
+                --target "$(ZEN_SCAN_TARGET)" \
+                --mode "$(ZEN_SCAN_MODE)" \
+                --intensity "$(ZEN_SCAN_INTENSITY)" \
+                --output-dir "$(Build.ArtifactStagingDirectory)/reports" \
+                --format json,html,sarif \
+                --scan-id "$(scanId)" \
+                --ci-mode 2>&1 | tee $(Build.ArtifactStagingDirectory)/reports/scan-log.txt
+              
+              SCAN_EXIT_CODE=${PIPESTATUS[0]}
+              echo "##vso[task.setvariable variable=scanExitCode;isOutput=true]$SCAN_EXIT_CODE"
+              
+              if [ $SCAN_EXIT_CODE -eq 0 ]; then
+                echo "##[section] Scan completed successfully"
+              elif [ $SCAN_EXIT_CODE -eq 1 ]; then
+                echo "##[warning] Scan completed with findings"
+              else
+                echo "##[error] Scan failed with exit code $SCAN_EXIT_CODE"
+                exit $SCAN_EXIT_CODE
+              fi
+            displayName: 'Execute Security Scan'
+            timeoutInMinutes: 60
+          
+          # Parse results
+          - bash: |
+              REPORT_FILE="$(Build.ArtifactStagingDirectory)/reports/scan-results.json"
+              
+              if [ -f "$REPORT_FILE" ]; then
+                CRITICAL=$(jq '.summary.critical // 0' "$REPORT_FILE")
+                HIGH=$(jq '.summary.high // 0' "$REPORT_FILE")
+                MEDIUM=$(jq '.summary.medium // 0' "$REPORT_FILE")
+                LOW=$(jq '.summary.low // 0' "$REPORT_FILE")
+                RISK_SCORE=$(jq '.summary.risk_score // 0' "$REPORT_FILE")
+                
+                echo "##vso[task.setvariable variable=criticalCount;isOutput=true]$CRITICAL"
+                echo "##vso[task.setvariable variable=highCount;isOutput=true]$HIGH"
+                echo "##vso[task.setvariable variable=mediumCount;isOutput=true]$MEDIUM"
+                echo "##vso[task.setvariable variable=lowCount;isOutput=true]$LOW"
+                echo "##vso[task.setvariable variable=riskScore;isOutput=true]$RISK_SCORE"
+                
+                echo "##[section] Vulnerability Summary"
+                echo "Critical: $CRITICAL"
+                echo "High: $HIGH"
+                echo "Medium: $MEDIUM"
+                echo "Low: $LOW"
+                echo "Risk Score: $RISK_SCORE"
+              else
+                echo "##[warning] Report file not found"
+                echo "##vso[task.setvariable variable=criticalCount;isOutput=true]0"
+                echo "##vso[task.setvariable variable=highCount;isOutput=true]0"
+                echo "##vso[task.setvariable variable=riskScore;isOutput=true]0"
+              fi
+            displayName: 'Parse Results'
+            name: parseResults
+          
+          # Publish SARIF results to Azure DevOps Security tab
+          - task: PublishTestResults@2
+            displayName: 'Publish Test Results'
+            condition: succeededOrFailed()
+            inputs:
+              testResultsFormat: 'JUnit'
+              testResultsFiles: '$(Build.ArtifactStagingDirectory)/reports/junit-results.xml'
+              mergeTestResults: true
+              testRunTitle: 'Zen-AI-Pentest Security Scan'
+              failTaskOnFailedTests: false
+          
+          # Publish artifacts
+          - task: PublishBuildArtifacts@1
+            displayName: 'Publish Reports'
+            condition: succeededOrFailed()
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)/reports'
+              ArtifactName: 'zen-pentest-reports'
+              publishLocation: 'Container'
+              StoreAsTar: false
+
+  # ===========================================================================
+  # STAGE 3: Compliance Gate
+  # ===========================================================================
+  - stage: ComplianceGate
+    displayName: '🛡️ Compliance Gate'
+    dependsOn: SecurityScan
+    condition: succeededOrFailed()
+    variables:
+      criticalCount: $[ stageDependencies.SecurityScan.RunScan.outputs['parseResults.criticalCount'] ]
+      highCount: $[ stageDependencies.SecurityScan.RunScan.outputs['parseResults.highCount'] ]
+      riskScore: $[ stageDependencies.SecurityScan.RunScan.outputs['parseResults.riskScore'] ]
+    jobs:
+      - job: CheckThresholds
+        displayName: 'Check Compliance Thresholds'
+        pool:
+          vmImage: $(vmImageName)
+        steps:
+          - bash: |
+              echo "##[section] Checking Compliance Thresholds"
+              
+              CRITICAL=$(criticalCount)
+              HIGH=$(highCount)
+              RISK=$(riskScore)
+              
+              echo "Critical: $CRITICAL (max: $(ZEN_MAX_CRITICAL))"
+              echo "High: $HIGH (max: $(ZEN_MAX_HIGH))"
+              echo "Risk Score: $RISK"
+              
+              FAILED=0
+              
+              if [ "$CRITICAL" -gt "$(ZEN_MAX_CRITICAL)" ]; then
+                echo "##[error] Critical threshold exceeded: $CRITICAL > $(ZEN_MAX_CRITICAL)"
+                FAILED=1
+              fi
+              
+              if [ "$HIGH" -gt "$(ZEN_MAX_HIGH)" ]; then
+                echo "##[error] High threshold exceeded: $HIGH > $(ZEN_MAX_HIGH)"
+                FAILED=1
+              fi
+              
+              if [ $FAILED -eq 1 ]; then
+                echo "##[error] Compliance gate failed!"
+                exit 1
+              fi
+              
+              echo "##[section] ✅ All compliance thresholds passed"
+            displayName: 'Evaluate Thresholds'
+
+  # ===========================================================================
+  # STAGE 4: Reporting
+  # ===========================================================================
+  - stage: Reporting
+    displayName: '📊 Reporting'
+    dependsOn: 
+      - SecurityScan
+      - ComplianceGate
+    condition: succeededOrFailed()
+    variables:
+      scanId: $[ stageDependencies.Setup.Initialize.outputs['generateScanId.scanId'] ]
+      criticalCount: $[ stageDependencies.SecurityScan.RunScan.outputs['parseResults.criticalCount'] ]
+      highCount: $[ stageDependencies.SecurityScan.RunScan.outputs['parseResults.highCount'] ]
+    jobs:
+      - job: CreateWorkItems
+        displayName: 'Create Work Items'
+        pool:
+          vmImage: $(vmImageName)
+        condition: gt(variables['criticalCount'], 0)
+        steps:
+          # Download artifacts
+          - task: DownloadBuildArtifacts@1
+            displayName: 'Download Reports'
+            inputs:
+              buildType: 'current'
+              downloadType: 'single'
+              artifactName: 'zen-pentest-reports'
+              downloadPath: '$(System.ArtifactsDirectory)'
+          
+          # Create Azure DevOps Work Items for critical findings
+          - task: PythonScript@0
+            displayName: 'Create Work Items'
+            inputs:
+              scriptSource: 'inline'
+              script: |
+                import json
+                import requests
+                import os
+                
+                # Azure DevOps configuration
+                organization = "$(System.TeamFoundationCollectionUri)"
+                project = "$(System.TeamProject)"
+                pat = "$(AZURE_DEVOPS_PAT)"
+                
+                # Read scan results
+                report_path = "$(System.ArtifactsDirectory)/zen-pentest-reports/scan-results.json"
+                
+                try:
+                    with open(report_path, 'r') as f:
+                        results = json.load(f)
+                    
+                    # Filter critical and high vulnerabilities
+                    critical_vulns = [v for v in results.get('vulnerabilities', []) 
+                                      if v.get('severity') in ['critical', 'high']]
+                    
+                    for vuln in critical_vulns[:5]:  # Limit to 5 work items
+                        work_item = {
+                            "op": "add",
+                            "path": "/fields/System.Title",
+                            "value": f"[SECURITY] [{vuln['severity'].upper()}] {vuln['name']}"
+                        }
+                        
+                        description = f"""
+                        **Security Finding Detected**
+                        
+                        - **Scan ID:** {os.environ.get('scanId', 'N/A')}
+                        - **Severity:** {vuln.get('severity', 'unknown')}
+                        - **Target:** {vuln.get('target', 'unknown')}
+                        - **Category:** {vuln.get('category', 'unknown')}
+                        
+                        **Description:**
+                        {vuln.get('description', 'No description available')}
+                        
+                        **Impact:**
+                        {vuln.get('impact', 'No impact information available')}
+                        
+                        **Remediation:**
+                        {vuln.get('remediation', 'No remediation steps available')}
+                        
+                        ---
+                        *Automatically created by Zen-AI-Pentest Pipeline*
+                        """
+                        
+                        print(f"Creating work item for: {vuln['name']}")
+                        # API call to create work item would go here
+                        
+                except Exception as e:
+                    print(f"Error processing results: {e}")
+            env:
+              AZURE_DEVOPS_PAT: $(AZURE_DEVOPS_PAT)
+          
+          # Create dashboard widget
+          - bash: |
+              echo "##[section] Pipeline Summary"
+              echo "| Metric | Value |"
+              echo "|--------|-------|"
+              echo "| Scan ID | $(scanId) |"
+              echo "| Critical | $(criticalCount) |"
+              echo "| High | $(highCount) |"
+            displayName: 'Display Summary'
+
+  # ===========================================================================
+  # STAGE 5: Notifications
+  # ===========================================================================
+  - stage: Notifications
+    displayName: '📢 Notifications'
+    dependsOn: 
+      - SecurityScan
+      - ComplianceGate
+    condition: succeededOrFailed()
+    variables:
+      criticalCount: $[ stageDependencies.SecurityScan.RunScan.outputs['parseResults.criticalCount'] ]
+      highCount: $[ stageDependencies.SecurityScan.RunScan.outputs['parseResults.highCount'] ]
+      mediumCount: $[ stageDependencies.SecurityScan.RunScan.outputs['parseResults.mediumCount'] ]
+      lowCount: $[ stageDependencies.SecurityScan.RunScan.outputs['parseResults.lowCount'] ]
+      riskScore: $[ stageDependencies.SecurityScan.RunScan.outputs['parseResults.riskScore'] ]
+    jobs:
+      - job: SendNotifications
+        displayName: 'Send Notifications'
+        pool:
+          vmImage: $(vmImageName)
+        steps:
+          # Microsoft Teams notification
+          - task: PowerShell@2
+            displayName: 'Send Teams Notification'
+            condition: ne(variables['TEAMS_WEBHOOK_URL'], '')
+            inputs:
+              targetType: 'inline'
+              script: |
+                $webhookUrl = "$(TEAMS_WEBHOOK_URL)"
+                
+                $color = if ($(criticalCount) -gt 0) { "ff0000" } 
+                       elseif ($(highCount) -gt 0) { "ff9900" } 
+                       else { "00ff00" }
+                
+                $body = @{
+                    "@type" = "MessageCard"
+                    "@context" = "https://schema.org/extensions"
+                    "themeColor" = $color
+                    "summary" = "Zen-AI-Pentest Scan Completed"
+                    "sections" = @(
+                        @{
+                            "activityTitle" = "🔒 Zen-AI-Pentest Security Scan"
+                            "activitySubtitle" = "Build: $(Build.BuildNumber)"
+                            "facts" = @(
+                                @{ "name" = "Project:"; "value" = "$(System.TeamProject)" }
+                                @{ "name" = "Branch:"; "value" = "$(Build.SourceBranchName)" }
+                                @{ "name" = "Critical:"; "value" = "$(criticalCount)" }
+                                @{ "name" = "High:"; "value" = "$(highCount)" }
+                                @{ "name" = "Medium:"; "value" = "$(mediumCount)" }
+                                @{ "name" = "Low:"; "value" = "$(lowCount)" }
+                                @{ "name" = "Risk Score:"; "value" = "$(riskScore)" }
+                            )
+                            "markdown" = $true
+                        }
+                    )
+                    "potentialAction" = @(
+                        @{
+                            "@type" = "OpenUri"
+                            "name" = "View Report"
+                            "targets" = @(
+                                @{ "os" = "default"; "uri" = "$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" }
+                            )
+                        }
+                    )
+                } | ConvertTo-Json -Depth 10
+                
+                Invoke-RestMethod -Uri $webhookUrl -Method Post -ContentType 'application/json' -Body $body
+                Write-Host "Teams notification sent successfully"
+          
+          # Slack notification (alternative)
+          - bash: |
+              if [ -n "$(SLACK_WEBHOOK_URL)" ]; then
+                COLOR="good"
+                if [ "$(criticalCount)" -gt 0 ]; then
+                  COLOR="danger"
+                elif [ "$(highCount)" -gt 0 ]; then
+                  COLOR="warning"
+                fi
+                
+                curl -s -X POST "$(SLACK_WEBHOOK_URL)" \
+                  -H 'Content-type: application/json' \
+                  --data "{
+                    \"attachments\": [{
+                      \"color\": \"$COLOR\",
+                      \"title\": \"Zen-AI-Pentest Scan Completed\",
+                      \"fields\": [
+                        {\"title\": \"Project\", \"value\": \"$(System.TeamProject)\", \"short\": true},
+                        {\"title\": \"Branch\", \"value\": \"$(Build.SourceBranchName)\", \"short\": true},
+                        {\"title\": \"Critical\", \"value\": \"$(criticalCount)\", \"short\": true},
+                        {\"title\": \"High\", \"value\": \"$(highCount)\", \"short\": true},
+                        {\"title\": \"Medium\", \"value\": \"$(mediumCount)\", \"short\": true},
+                        {\"title\": \"Low\", \"value\": \"$(lowCount)\", \"short\": true}
+                      ],
+                      \"actions\": [{
+                        \"type\": \"button\",
+                        \"text\": \"View Report\",
+                        \"url\": \"$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)\"
+                      }]
+                    }]
+                  }"
+              fi
+            displayName: 'Send Slack Notification'
+            condition: ne(variables['SLACK_WEBHOOK_URL'], '')
+
+# -----------------------------------------------------------------------------
+# TEMPLATE EXAMPLES
+# -----------------------------------------------------------------------------
+# To use this pipeline in your project, create a file named azure-pipelines.yml
+# in your repository root with the following content:
+#
+# resources:
+#   repositories:
+#     - repository: zenPentestTemplates
+#       type: github
+#       endpoint: github-connection
+#       name: your-org/zen-ai-pentest
+#
+# extends:
+#   template: ci_cd/azure-pipelines.yml@zenPentestTemplates
+#   parameters:
+#     scanTarget: 'https://your-app.com'
+#     scanMode: 'full'
+# -----------------------------------------------------------------------------

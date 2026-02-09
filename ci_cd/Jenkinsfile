@@ -1,0 +1,698 @@
+#!/usr/bin/env groovy
+/*
+ * =============================================================================
+ * Zen-AI-Pentest Jenkins Pipeline
+ * =============================================================================
+ * Description: Production-ready Jenkins declarative pipeline for automated
+ *              security scanning with Zen-AI-Pentest Framework
+ * Version: 2.0.0
+ * Requirements: Pipeline, Docker Pipeline, HTML Publisher, JUnit plugins
+ * =============================================================================
+ */
+
+// -----------------------------------------------------------------------------
+// PIPELINE CONFIGURATION
+// -----------------------------------------------------------------------------
+
+// Global environment variables
+def ZEN_PENTEST_VERSION = '2.0.0'
+def DOCKER_IMAGE = "zenai/zen-pentest:${ZEN_PENTEST_VERSION}"
+def PYTHON_VERSION = '3.11'
+def REPORT_RETENTION_DAYS = 90
+
+def PIPELINE_START_TIME = new Date()
+
+// -----------------------------------------------------------------------------
+// PIPELINE
+// -----------------------------------------------------------------------------
+pipeline {
+    // Agent configuration - uses Docker for isolation
+    agent {
+        docker {
+            image "${DOCKER_IMAGE}"
+            args '--privileged -v /var/run/docker.sock:/var/run/docker.sock'
+            label 'docker && linux'
+        }
+    }
+    
+    // Alternative: Use any available agent
+    // agent any
+    
+    // -----------------------------------------------------------------------------
+    // OPTIONS
+    // -----------------------------------------------------------------------------
+    options {
+        // Build retention
+        buildDiscarder(logRotator(
+            numToKeepStr: '50',
+            artifactNumToKeepStr: '20'
+        ))
+        
+        // Timeout for the entire pipeline
+        timeout(time: 2, unit: 'HOURS')
+        
+        // Disable concurrent builds for the same target
+        disableConcurrentBuilds()
+        
+        // ANSI color output
+        ansiColor('xterm')
+        
+        // Preserve stashes for recovery
+        preserveStashes(buildCount: 5)
+        
+        // Timestamps in console output
+        timestamps()
+    }
+    
+    // -----------------------------------------------------------------------------
+    // PARAMETERS (Configurable at build time)
+    // -----------------------------------------------------------------------------
+    parameters {
+        // Target Configuration
+        string(
+            name: 'TARGET',
+            defaultValue: 'https://staging.example.com',
+            description: 'Target URL or IP address to scan'
+        )
+        
+        choice(
+            name: 'SCAN_MODE',
+            choices: ['full', 'recon', 'vuln', 'stealth'],
+            description: 'Scan mode to execute'
+        )
+        
+        choice(
+            name: 'INTENSITY',
+            choices: ['medium', 'low', 'high'],
+            description: 'Scan intensity level'
+        )
+        
+        // Advanced Options
+        booleanParam(
+            name: 'AUTHENTICATED_SCAN',
+            defaultValue: false,
+            description: 'Enable authenticated scanning'
+        )
+        
+        string(
+            name: 'AUTH_TOKEN',
+            defaultValue: '',
+            description: 'Authentication token (use Jenkins credentials instead)'
+        )
+        
+        booleanParam(
+            name: 'CREATE_JIRA_TICKETS',
+            defaultValue: true,
+            description: 'Create JIRA tickets for critical/high findings'
+        )
+        
+        booleanParam(
+            name: 'EMAIL_NOTIFICATION',
+            defaultValue: true,
+            description: 'Send email notifications'
+        )
+        
+        string(
+            name: 'EMAIL_RECIPIENTS',
+            defaultValue: '${DEFAULT_RECIPIENTS}',
+            description: 'Comma-separated list of email recipients'
+        )
+        
+        // Compliance Thresholds
+        string(
+            name: 'MAX_CRITICAL',
+            defaultValue: '0',
+            description: 'Maximum allowed critical vulnerabilities'
+        )
+        
+        string(
+            name: 'MAX_HIGH',
+            defaultValue: '5',
+            description: 'Maximum allowed high vulnerabilities'
+        )
+        
+        string(
+            name: 'MAX_RISK_SCORE',
+            defaultValue: '50',
+            description: 'Maximum allowed risk score'
+        )
+        
+        booleanParam(
+            name: 'FAIL_ON_THRESHOLD',
+            defaultValue: true,
+            description: 'Fail the build if thresholds are exceeded'
+        )
+        
+        // Reporting Options
+        booleanParam(
+            name: 'PUBLISH_HTML_REPORT',
+            defaultValue: true,
+            description: 'Publish HTML report'
+        )
+        
+        booleanParam(
+            name: 'UPLOAD_ARTIFACTS',
+            defaultValue: true,
+            description: 'Upload scan artifacts'
+        )
+    }
+    
+    // -----------------------------------------------------------------------------
+    // ENVIRONMENT VARIABLES
+    // -----------------------------------------------------------------------------
+    environment {
+        // Jenkins-specific
+        SCAN_ID = "scan-${BUILD_NUMBER}-${new Date().format('yyyyMMdd-HHmmss')}"
+        REPORT_DIR = "${WORKSPACE}/reports"
+        
+        // Secrets from Jenkins Credentials
+        OPENAI_API_KEY = credentials('openai-api-key')
+        GIT_TOKEN = credentials('gitlab-api-token')
+        JIRA_API_TOKEN = credentials('jira-api-token')
+        SLACK_WEBHOOK = credentials('slack-webhook-url')
+        
+        // Zen-AI-Pentest Configuration
+        ZEN_LOG_LEVEL = 'INFO'
+        ZEN_THREADS = '10'
+        ZEN_TIMEOUT = '300'
+    }
+    
+    // -----------------------------------------------------------------------------
+    // STAGES
+    // -----------------------------------------------------------------------------
+    stages {
+        // =====================================================================
+        // STAGE 1: Setup and Validation
+        // =====================================================================
+        stage('Setup') {
+            steps {
+                script {
+                    echo "🔧 Pipeline Setup"
+                    echo "======================================="
+                    echo "Scan ID: ${env.SCAN_ID}"
+                    echo "Target: ${params.TARGET}"
+                    echo "Mode: ${params.SCAN_MODE}"
+                    echo "Intensity: ${params.INTENSITY}"
+                    echo "======================================="
+                    
+                    // Validate target
+                    if (!params.TARGET?.trim()) {
+                        error "TARGET parameter is required!"
+                    }
+                    
+                    // Create report directory
+                    sh '''
+                        mkdir -p ${REPORT_DIR}/{html,json,sarif,logs}
+                        echo "Reports will be saved to: ${REPORT_DIR}"
+                    '''
+                    
+                    // Initialize Zen-AI-Pentest configuration
+                    sh '''
+                        mkdir -p ~/.config/zen-pentest
+                        cat > ~/.config/zen-pentest/config.yaml << EOF
+      core:
+        threads: ${ZEN_THREADS}
+        timeout: ${ZEN_TIMEOUT}
+        verbose: true
+        log_level: ${ZEN_LOG_LEVEL}
+      
+      ai:
+        provider: openai
+        model: gpt-4
+        api_key: "${OPENAI_API_KEY}"
+      
+      reporting:
+        formats:
+          - json
+          - html
+          - sarif
+        output_dir: ${REPORT_DIR}
+        include_screenshots: true
+      
+      compliance:
+        - owasp_top_10
+        - pci_dss
+        - iso27001
+      EOF
+                    '''
+                }
+            }
+        }
+        
+        // =====================================================================
+        // STAGE 2: Pre-Scan Checks
+        // =====================================================================
+        stage('Pre-Scan Checks') {
+            steps {
+                script {
+                    echo "🔍 Running Pre-Scan Validation"
+                    
+                    // Check target reachability
+                    def targetReachable = sh(
+                        script: """
+                            zen-pentest validate-target \\
+                                --target '${params.TARGET}' \\
+                                --timeout 30
+                        """,
+                        returnStatus: true
+                    )
+                    
+                    if (targetReachable != 0) {
+                        echo "⚠️ Target validation warning: ${params.TARGET}"
+                        // Don't fail, just warn
+                    }
+                    
+                    // Verify Zen-AI-Pentest installation
+                    sh 'zen-pentest --version'
+                }
+            }
+        }
+        
+        // =====================================================================
+        // STAGE 3: Security Scan
+        // =====================================================================
+        stage('Security Scan') {
+            steps {
+                script {
+                    echo "🚀 Starting Security Scan"
+                    
+                    def authFlag = params.AUTHENTICATED_SCAN ? "--auth-token ${params.AUTH_TOKEN}" : ""
+                    
+                    def scanResult = sh(
+                        script: """
+                            zen-pentest scan \\
+                                --target '${params.TARGET}' \\
+                                --mode ${params.SCAN_MODE} \\
+                                --intensity ${params.INTENSITY} \\
+                                --output-dir ${REPORT_DIR} \\
+                                --format json,html,sarif \\
+                                --scan-id ${SCAN_ID} \\
+                                --ci-mode \\
+                                ${authFlag} \\
+                                2>&1 | tee ${REPORT_DIR}/logs/scan-output.log
+                        """,
+                        returnStatus: true
+                    )
+                    
+                    // Archive scan output
+                    archiveArtifacts artifacts: "${REPORT_DIR}/logs/**", allowEmptyArchive: true
+                    
+                    if (scanResult == 0) {
+                        echo "✅ Scan completed successfully with no critical findings"
+                    } else if (scanResult == 1) {
+                        echo "⚠️ Scan completed with findings"
+                    } else {
+                        error "❌ Scan failed with exit code: ${scanResult}"
+                    }
+                }
+            }
+            
+            post {
+                always {
+                    // Collect scan artifacts
+                    script {
+                        if (fileExists("${REPORT_DIR}/scan-results.json")) {
+                            echo "Scan results generated successfully"
+                        }
+                    }
+                }
+            }
+        }
+        
+        // =====================================================================
+        // STAGE 4: Parse Results
+        // =====================================================================
+        stage('Parse Results') {
+            steps {
+                script {
+                    echo "📊 Parsing Scan Results"
+                    
+                    if (fileExists("${REPORT_DIR}/scan-results.json")) {
+                        def results = readJSON file: "${REPORT_DIR}/scan-results.json"
+                        
+                        // Extract summary
+                        env.CRITICAL_COUNT = results.summary?.critical?.toString() ?: '0'
+                        env.HIGH_COUNT = results.summary?.high?.toString() ?: '0'
+                        env.MEDIUM_COUNT = results.summary?.medium?.toString() ?: '0'
+                        env.LOW_COUNT = results.summary?.low?.toString() ?: '0'
+                        env.INFO_COUNT = results.summary?.info?.toString() ?: '0'
+                        env.RISK_SCORE = results.summary?.risk_score?.toString() ?: '0'
+                        
+                        // Calculate duration
+                        def duration = (new Date().getTime() - PIPELINE_START_TIME.getTime()) / 1000
+                        env.SCAN_DURATION = "${duration} seconds"
+                        
+                        echo """
+                            ========================================
+                            📊 VULNERABILITY SUMMARY
+                            ========================================
+                            🔴 Critical: ${env.CRITICAL_COUNT}
+                            🟠 High: ${env.HIGH_COUNT}
+                            🟡 Medium: ${env.MEDIUM_COUNT}
+                            🟢 Low: ${env.LOW_COUNT}
+                            ⚪ Info: ${env.INFO_COUNT}
+                            ----------------------------------------
+                            📈 Risk Score: ${env.RISK_SCORE}
+                            ⏱️ Duration: ${env.SCAN_DURATION}
+                            ========================================
+                        """
+                        
+                        // Store findings for downstream stages
+                        writeFile file: 'scan-summary.env', text: """
+                            CRITICAL_COUNT=${env.CRITICAL_COUNT}
+                            HIGH_COUNT=${env.HIGH_COUNT}
+                            MEDIUM_COUNT=${env.MEDIUM_COUNT}
+                            LOW_COUNT=${env.LOW_COUNT}
+                            RISK_SCORE=${env.RISK_SCORE}
+                        """
+                    } else {
+                        echo "⚠️ Scan results file not found"
+                        env.CRITICAL_COUNT = '0'
+                        env.HIGH_COUNT = '0'
+                        env.RISK_SCORE = '0'
+                    }
+                }
+            }
+        }
+        
+        // =====================================================================
+        // STAGE 5: Compliance Gate
+        // =====================================================================
+        stage('Compliance Gate') {
+            when {
+                expression { params.FAIL_ON_THRESHOLD }
+            }
+            steps {
+                script {
+                    echo "🛡️ Checking Compliance Thresholds"
+                    
+                    def failed = false
+                    def messages = []
+                    
+                    if (env.CRITICAL_COUNT.toInteger() > params.MAX_CRITICAL.toInteger()) {
+                        messages.add("❌ Critical threshold exceeded: ${env.CRITICAL_COUNT} > ${params.MAX_CRITICAL}")
+                        failed = true
+                    }
+                    
+                    if (env.HIGH_COUNT.toInteger() > params.MAX_HIGH.toInteger()) {
+                        messages.add("❌ High threshold exceeded: ${env.HIGH_COUNT} > ${params.MAX_HIGH}")
+                        failed = true
+                    }
+                    
+                    if (env.RISK_SCORE.toInteger() > params.MAX_RISK_SCORE.toInteger()) {
+                        messages.add("❌ Risk score threshold exceeded: ${env.RISK_SCORE} > ${params.MAX_RISK_SCORE}")
+                        failed = true
+                    }
+                    
+                    if (failed) {
+                        messages.each { echo it }
+                        error "Compliance gate failed! Vulnerability thresholds exceeded."
+                    } else {
+                        echo "✅ All compliance thresholds passed"
+                    }
+                }
+            }
+        }
+        
+        // =====================================================================
+        // STAGE 6: Publish Reports
+        // =====================================================================
+        stage('Publish Reports') {
+            when {
+                expression { params.PUBLISH_HTML_REPORT }
+            }
+            steps {
+                script {
+                    echo "📄 Publishing Reports"
+                    
+                    // Publish HTML report
+                    publishHTML([
+                        allowMissing: false,
+                        alwaysLinkToLastBuild: true,
+                        keepAll: true,
+                        reportDir: "${REPORT_DIR}/html",
+                        reportFiles: 'index.html',
+                        reportName: 'Zen-AI-Pentest Security Report',
+                        reportTitles: 'Security Scan Results'
+                    ])
+                    
+                    // Publish JUnit-style results if available
+                    if (fileExists("${REPORT_DIR}/junit-results.xml")) {
+                        junit testResults: "${REPORT_DIR}/junit-results.xml",
+                              allowEmptyResults: true
+                    }
+                    
+                    // Archive artifacts
+                    if (params.UPLOAD_ARTIFACTS) {
+                        archiveArtifacts artifacts: "${REPORT_DIR}/**/*",
+                                       allowEmptyArchive: true,
+                                       fingerprint: true
+                    }
+                }
+            }
+        }
+        
+        // =====================================================================
+        // STAGE 7: Create JIRA Tickets
+        // =====================================================================
+        stage('Create JIRA Tickets') {
+            when {
+                allOf {
+                    expression { params.CREATE_JIRA_TICKETS }
+                    expression { env.CRITICAL_COUNT.toInteger() > 0 || env.HIGH_COUNT.toInteger() > 0 }
+                }
+            }
+            steps {
+                script {
+                    echo "🎫 Creating JIRA Tickets for Findings"
+                    
+                    def jiraSite = 'JIRA' // Configured in Jenkins Manage Jenkins > Configure System
+                    
+                    if (fileExists("${REPORT_DIR}/scan-results.json")) {
+                        def results = readJSON file: "${REPORT_DIR}/scan-results.json"
+                        
+                        results.vulnerabilities?.each { vuln ->
+                            if (vuln.severity in ['critical', 'high']) {
+                                def issue = [
+                                    fields: [
+                                        project: [key: 'SEC'],
+                                        summary: "[${vuln.severity.toUpperCase()}] ${vuln.name} - ${params.TARGET}",
+                                        description: """
+                                            h2. Security Finding Detected
+                                            
+                                            *Scan ID:* ${env.SCAN_ID}
+                                            *Severity:* ${vuln.severity}
+                                            *Target:* ${vuln.target}
+                                            *Pipeline:* ${env.BUILD_URL}
+                                            
+                                            h3. Description
+                                            ${vuln.description}
+                                            
+                                            h3. Impact
+                                            ${vuln.impact}
+                                            
+                                            h3. Remediation
+                                            ${vuln.remediation}
+                                            
+                                            h3. Evidence
+                                            {code:json}
+                                            ${groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(vuln.evidence))}
+                                            {code}
+                                            
+                                            ----
+                                            _Automatically created by Zen-AI-Pentest Jenkins Pipeline_
+                                        """,
+                                        issuetype: [name: 'Bug'],
+                                        priority: [name: vuln.severity == 'critical' ? 'Highest' : 'High'],
+                                        labels: ['security', 'zen-pentest', 'automated'],
+                                        components: [[name: 'Security']]
+                                    ]
+                                ]
+                                
+                                try {
+                                    def response = jiraNewIssue issue: issue, site: jiraSite
+                                    echo "Created JIRA ticket: ${response.data.key}"
+                                } catch (Exception e) {
+                                    echo "Failed to create JIRA ticket: ${e.message}"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        // =====================================================================
+        // STAGE 8: Post-Scan Actions
+        // =====================================================================
+        stage('Post-Scan Actions') {
+            parallel {
+                stage('Slack Notification') {
+                    when {
+                        expression { env.SLACK_WEBHOOK != null }
+                    }
+                    steps {
+                        script {
+                            def color = env.CRITICAL_COUNT.toInteger() > 0 ? 'danger' : 
+                                       env.HIGH_COUNT.toInteger() > 0 ? 'warning' : 'good'
+                            
+                            slackSend(
+                                channel: '#security-alerts',
+                                color: color,
+                                message: """
+                                    🔒 Zen-AI-Pentest Scan Completed
+                                    
+                                    *Project:* ${env.JOB_NAME}
+                                    *Build:* #${env.BUILD_NUMBER}
+                                    *Target:* ${params.TARGET}
+                                    *Status:* ${currentBuild.result ?: 'SUCCESS'}
+                                    
+                                    *Vulnerabilities:*
+                                    • Critical: ${env.CRITICAL_COUNT}
+                                    • High: ${env.HIGH_COUNT}
+                                    • Medium: ${env.MEDIUM_COUNT}
+                                    • Low: ${env.LOW_COUNT}
+                                    
+                                    *Risk Score:* ${env.RISK_SCORE}
+                                    
+                                    <${env.BUILD_URL}|View Report>
+                                """,
+                                teamDomain: 'your-team',
+                                tokenCredentialId: 'slack-token'
+                            )
+                        }
+                    }
+                }
+                
+                stage('Upload to DefectDojo') {
+                    when {
+                        expression { false } // Enable when DefectDojo is configured
+                    }
+                    steps {
+                        script {
+                            echo "Uploading to DefectDojo..."
+                            // Integration code here
+                        }
+                    }
+                }
+                
+                stage('Upload to SonarQube') {
+                    when {
+                        expression { false } // Enable when SonarQube is configured
+                    }
+                    steps {
+                        script {
+                            echo "Uploading to SonarQube..."
+                            // Integration code here
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    // -----------------------------------------------------------------------------
+    // POST-BUILD ACTIONS
+    // -----------------------------------------------------------------------------
+    post {
+        always {
+            script {
+                echo "🧹 Cleanup and Finalization"
+                
+                // Clean up workspace if needed
+                // cleanWs()
+            }
+        }
+        
+        success {
+            script {
+                echo "✅ Pipeline completed successfully"
+                
+                if (params.EMAIL_NOTIFICATION) {
+                    emailext(
+                        subject: "✅ Zen-AI-Pentest: Scan Successful - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                        body: """
+                            Zen-AI-Pentest Security Scan completed successfully.
+                            
+                            Scan ID: ${env.SCAN_ID}
+                            Target: ${params.TARGET}
+                            Mode: ${params.SCAN_MODE}
+                            
+                            Summary:
+                            - Critical: ${env.CRITICAL_COUNT}
+                            - High: ${env.HIGH_COUNT}
+                            - Medium: ${env.MEDIUM_COUNT}
+                            - Low: ${env.LOW_COUNT}
+                            - Risk Score: ${env.RISK_SCORE}
+                            
+                            View Report: ${env.BUILD_URL}Zen-AI-Pentest_20Security_20Report/
+                        """,
+                        to: "${params.EMAIL_RECIPIENTS}",
+                        attachLog: true,
+                        attachmentsPattern: "${REPORT_DIR}/scan-results.pdf"
+                    )
+                }
+            }
+        }
+        
+        failure {
+            script {
+                echo "❌ Pipeline failed"
+                
+                if (params.EMAIL_NOTIFICATION) {
+                    emailext(
+                        subject: "❌ Zen-AI-Pentest: Scan Failed - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                        body: """
+                            Zen-AI-Pentest Security Scan FAILED.
+                            
+                            Scan ID: ${env.SCAN_ID}
+                            Target: ${params.TARGET}
+                            
+                            Check console output: ${env.BUILD_URL}console
+                        """,
+                        to: "${params.EMAIL_RECIPIENTS}",
+                        attachLog: true
+                    )
+                }
+            }
+        }
+        
+        unstable {
+            script {
+                echo "⚠️ Pipeline unstable - thresholds may have been exceeded"
+                
+                if (params.EMAIL_NOTIFICATION) {
+                    emailext(
+                        subject: "⚠️ Zen-AI-Pentest: Scan Unstable - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                        body: """
+                            Zen-AI-Pentest Security Scan completed with issues.
+                            
+                            Vulnerability thresholds may have been exceeded.
+                            
+                            Scan ID: ${env.SCAN_ID}
+                            Target: ${params.TARGET}
+                            
+                            View Report: ${env.BUILD_URL}Zen-AI-Pentest_20Security_20Report/
+                        """,
+                        to: "${params.EMAIL_RECIPIENTS}",
+                        attachLog: true
+                    )
+                }
+            }
+        }
+    }
+}
+
+// -----------------------------------------------------------------------------
+// HELPER FUNCTIONS
+// -----------------------------------------------------------------------------
+
+def getBuildStatus() {
+    return currentBuild.result ?: 'SUCCESS'
+}
+
+def getRiskColor(riskScore) {
+    if (riskScore > 50) return 'red'
+    if (riskScore > 20) return 'orange'
+    return 'green'
+}

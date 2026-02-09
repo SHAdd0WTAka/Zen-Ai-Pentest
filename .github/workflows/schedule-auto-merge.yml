@@ -1,0 +1,62 @@
+name: 📅 Scheduled Dependabot Merge
+
+# Runs automatically on schedule to merge Dependabot PRs
+
+on:
+  # DISABLED: Too many auto-merge workflows (use dependabot-auto-merge.yml)
+  # schedule:
+  #   - cron: '0 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  scheduled-merge:
+    runs-on: ubuntu-latest
+    if: github.repository == 'SHAdd0WTAka/zen-ai-pentest'
+    steps:
+      - name: Check for Dependabot PRs
+        id: check
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prs = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              per_page: 100
+            });
+            
+            const dependabotPRs = prs.data.filter(p => p.user.login === 'dependabot[bot]');
+            const safePRs = dependabotPRs.filter(p => {
+              // Only patch and minor updates
+              return p.title.includes('bump') && 
+                     !p.title.match(/from \d+ to \d+/) || // Not major version
+                     p.title.includes('patch');
+            });
+            
+            console.log(`Found ${dependabotPRs.length} Dependabot PRs`);
+            console.log(`${safePRs.length} are safe to auto-merge`);
+            
+            if (safePRs.length > 0) {
+              core.setOutput('has_prs', 'true');
+              core.setOutput('count', safePRs.length.toString());
+            } else {
+              core.setOutput('has_prs', 'false');
+            }
+
+      - name: Trigger Auto Merge
+        if: steps.check.outputs.has_prs == 'true'
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: auto-merge-dependabot.yml
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Notify
+        if: steps.check.outputs.has_prs == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            console.log(`Scheduled merge triggered for ${context.steps.check.outputs.count} PRs`);

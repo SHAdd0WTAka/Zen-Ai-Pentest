@@ -1,0 +1,100 @@
+name: Branch Protection Exception Request
+description: Request temporary exception to branch protection rules (requires admin approval)
+title: "[BRANCH-PROTECTION] Exception Request"
+labels: ["infrastructure", "security", "needs-admin-review"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ⚠️ **IMPORTANT**: Direct pushes to `master`/`main` are blocked by default.
+        
+        This form is for **emergency exceptions only**. Most changes should go through a normal Pull Request.
+        
+  - type: dropdown
+    id: request_type
+    attributes:
+      label: Type of Exception
+      description: Why do you need direct push access?
+      options:
+        - Emergency Security Fix
+        - Critical Bug Fix (production down)
+        - CI/CD Configuration Update
+        - Documentation Update (minor)
+        - Revert Faulty Commit
+        - Other (explain below)
+    validations:
+      required: true
+      
+  - type: textarea
+    id: justification
+    attributes:
+      label: Justification
+      description: Why can't this go through a normal PR?
+      placeholder: |
+        This is an emergency because...
+        
+        - Production is down
+        - Critical security vulnerability needs immediate fix
+        - CI pipeline is broken and blocking all PRs
+    validations:
+      required: true
+      
+  - type: textarea
+    id: changes
+    attributes:
+      label: Proposed Changes
+      description: What changes will you make?
+      placeholder: |
+        I need to push the following changes:
+        
+        1. Fix typo in config
+        2. Update CI workflow
+        3. etc.
+    validations:
+      required: true
+      
+  - type: input
+    id: commit_hash
+    attributes:
+      label: Commit Hash (if reverting)
+      description: If reverting, provide the commit hash to revert
+      placeholder: "abc123def456"
+      
+  - type: checkboxes
+    id: verification
+    attributes:
+      label: Pre-Submission Checklist
+      description: Please confirm the following
+      options:
+        - label: I have verified this cannot be done via a Pull Request
+          required: true
+        - label: I have tested these changes locally
+          required: true
+        - label: These changes will not break the build
+          required: true
+        - label: I will create a PR to document this change after the fact (if applicable)
+          required: false
+        - label: I understand this will be logged and audited
+          required: true
+          
+  - type: checkboxes
+    id: security
+    attributes:
+      label: Security Confirmation
+      description: Security-related confirmations
+      options:
+        - label: These changes do not introduce security vulnerabilities
+          required: true
+        - label: No secrets or credentials are included in these changes
+          required: true
+        - label: I have scanned the changes for sensitive data
+          required: true
+          
+  - type: input
+    id: contact
+    attributes:
+      label: Contact Information
+      description: How can we reach you for questions?
+      placeholder: "@username or email"
+    validations:
+      required: true

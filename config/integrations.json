@@ -1,0 +1,81 @@
+{
+  "_comment": "Configuration for CI/CD and External Tool Integrations",
+  "version": "2.0.0",
+  "github": {
+    "enabled": false,
+    "token": "${GITHUB_TOKEN}",
+    "base_url": "https://api.github.com",
+    "create_issues": true,
+    "create_check_runs": true,
+    "labels": ["security", "vulnerability", "zen-ai"],
+    "issue_template": "default"
+  },
+  "gitlab": {
+    "enabled": false,
+    "token": "${GITLAB_TOKEN}",
+    "base_url": "https://gitlab.com",
+    "create_issues": true,
+    "labels": ["security", "vulnerability"]
+  },
+  "jenkins": {
+    "enabled": false,
+    "url": "http://localhost:8080",
+    "username": "${JENKINS_USER}",
+    "api_token": "${JENKINS_TOKEN}",
+    "job_name": "security-scan"
+  },
+  "slack": {
+    "enabled": false,
+    "webhook_url": "${SLACK_WEBHOOK_URL}",
+    "channel": "#security-alerts",
+    "notify_on": {
+      "scan_started": false,
+      "scan_completed": true,
+      "critical_finding": true,
+      "high_finding": false
+    }
+  },
+  "jira": {
+    "enabled": false,
+    "server": "https://your-domain.atlassian.net",
+    "username": "${JIRA_USERNAME}",
+    "api_token": "${JIRA_API_TOKEN}",
+    "project_key": "SEC",
+    "issue_type": "Bug",
+    "priority_mapping": {
+      "Critical": "Highest",
+      "High": "High",
+      "Medium": "Medium",
+      "Low": "Low",
+      "Info": "Lowest"
+    },
+    "labels": ["security", "pentest", "zen-ai"]
+  },
+  "email": {
+    "enabled": false,
+    "smtp_server": "smtp.gmail.com",
+    "smtp_port": 587,
+    "username": "${EMAIL_USERNAME}",
+    "password": "${EMAIL_PASSWORD}",
+    "from_address": "security@company.com",
+    "to_addresses": ["security-team@company.com"],
+    "notify_on": {
+      "scan_completed": true,
+      "critical_finding": true
+    }
+  },
+  "webhook": {
+    "enabled": false,
+    "url": "https://your-webhook-endpoint.com/webhook",
+    "headers": {
+      "Authorization": "Bearer ${WEBHOOK_TOKEN}"
+    },
+    "events": ["scan.started", "scan.completed", "finding.detected"]
+  },
+  "sentry": {
+    "enabled": false,
+    "dsn": "${SENTRY_DSN}",
+    "environment": "production",
+    "traces_sample_rate": 0.1
+  }
+}

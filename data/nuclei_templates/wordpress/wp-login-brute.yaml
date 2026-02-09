@@ -1,0 +1,45 @@
+id: wp-login-brute
+
+info:
+  name: WordPress Login Brute Force Detection
+  author: SHAdd0WTAka
+  severity: medium
+  description: |
+    WordPress login page is accessible and may be vulnerable to brute force attacks.
+    This template checks for the presence of wp-login.php and basic protection mechanisms.
+  reference:
+    - https://wordpress.org/support/article/brute-force-attacks/
+  tags: wordpress,login,bruteforce,wp
+  metadata:
+    max-request: 2
+
+http:
+  - method: GET
+    path:
+      - "{{BaseURL}}/wp-login.php"
+      - "{{BaseURL}}/wp-admin/"
+
+    matchers-condition: and
+    matchers:
+      - type: word
+        words:
+          - "wp-login.php"
+          - "WordPress"
+          - "Lost your password?"
+        condition: or
+
+      - type: status
+        status:
+          - 200
+
+    extractors:
+      - type: regex
+        name: wordpress_version
+        group: 1
+        regex:
+          - '<meta name="generator" content="WordPress ([0-9.]+)"'
+
+      - type: xpath
+        name: login_form
+        xpath:
+          - "//form[@id='loginform']"

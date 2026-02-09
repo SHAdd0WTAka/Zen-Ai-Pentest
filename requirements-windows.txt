@@ -1,0 +1,49 @@
+# Core Framework
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+pydantic==2.5.3
+python-jose[cryptography]==3.4.0  # SECURITY FIX: CVE-2024-33663
+passlib[bcrypt]==1.7.4
+python-multipart==0.0.22  # SECURITY FIX: CVE-2026-24486, CVE-2024-53981, CVE-2024-24762
+
+# Database
+sqlalchemy==2.0.25
+# psycopg2-binary==2.9.9  <-- Disabled for Windows build issues
+alembic==1.13.1
+
+# LangChain & AI
+langchain==0.3.0
+langchain-core==0.3.81  # SECURITY FIX: CVE-2025-68664
+langgraph==0.0.10
+openai==1.8.0
+
+# WebSocket
+websockets==12.0
+
+# HTTP Client
+requests==2.32.0  # SECURITY FIX: CVE-2024-35195
+httpx==0.26.0
+aiohttp==3.13.3  # SECURITY FIX: CVE-2025-69223, CVE-2024-30251, CVE-2024-23334
+
+# Async
+celery==5.3.6
+redis==5.0.1
+
+# Report Generation
+# weasyprint==60.2 <-- Often causes issues on Windows without GTK
+jinja2==3.1.5  # SECURITY FIX: CVE-2024-56201, CVE-2024-56326, CVE-2024-34064
+
+# Utilities
+python-dotenv==1.0.0
+pyyaml==6.0.1
+click==8.1.7
+typer==0.9.0
+rich==13.7.0
+
+# Security
+cryptography==43.0.1  # SECURITY FIX: CVE-2024-26130, CVE-2024-41985, CVE-2024-25185
+
+# Testing
+pytest==7.4.3
+pytest-asyncio==0.23.2
+coverage==7.4.0

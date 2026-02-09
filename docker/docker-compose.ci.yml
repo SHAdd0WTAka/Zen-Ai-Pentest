@@ -1,0 +1,443 @@
+# =============================================================================
+# Zen-AI-Pentest Docker Compose for CI/CD Environments
+# =============================================================================
+# Description: Production-ready Docker Compose configuration for running
+#              Zen-AI-Pentest in CI/CD pipelines with caching and storage
+# Version: 2.0.0
+# Usage: docker-compose -f docker-compose.ci.yml up --abort-on-container-exit
+# =============================================================================
+
+version: "3.8"
+
+# -----------------------------------------------------------------------------
+# SERVICES
+# -----------------------------------------------------------------------------
+services:
+  # ===========================================================================
+  # Main Zen-AI-Pentest Service
+  # ===========================================================================
+  zen-pentest:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      args:
+        - ZEN_PENTEST_VERSION=${ZEN_PENTEST_VERSION:-2.0.0}
+        - PYTHON_VERSION=${PYTHON_VERSION:-3.11}
+    image: zenai/zen-pentest:${ZEN_PENTEST_VERSION:-2.0.0}
+    container_name: zen-pentest-ci
+    
+    # Environment Configuration
+    environment:
+      # Core Settings
+      - ZEN_LOG_LEVEL=${ZEN_LOG_LEVEL:-INFO}
+      - ZEN_THREADS=${ZEN_THREADS:-10}
+      - ZEN_TIMEOUT=${ZEN_TIMEOUT:-300}
+      - ZEN_CI_MODE=true
+      
+      # AI Configuration
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4}
+      
+      # Scan Configuration
+      - ZEN_SCAN_TARGET=${ZEN_SCAN_TARGET:-https://example.com}
+      - ZEN_SCAN_MODE=${ZEN_SCAN_MODE:-full}
+      - ZEN_SCAN_INTENSITY=${ZEN_SCAN_INTENSITY:-medium}
+      - ZEN_SCAN_ID=${ZEN_SCAN_ID:-ci-scan}
+      
+      # Database Connection
+      - DATABASE_URL=postgresql://zen:${POSTGRES_PASSWORD:-zenpass}@postgres:5432/zen_pentest
+      - REDIS_URL=redis://redis:6379/0
+      
+      # Reporting
+      - ZEN_REPORT_FORMATS=${ZEN_REPORT_FORMATS:-json,html,sarif}
+      - ZEN_REPORT_DIR=/app/reports
+      
+      # Notifications
+      - SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL}
+      - EMAIL_SMTP_HOST=${EMAIL_SMTP_HOST}
+      - EMAIL_SMTP_PORT=${EMAIL_SMTP_PORT:-587}
+      - EMAIL_USER=${EMAIL_USER}
+      - EMAIL_PASS=${EMAIL_PASS}
+      
+      # Security
+      - PYTHONDONTWRITEBYTECODE=1
+      - PYTHONUNBUFFERED=1
+    
+    # Volume Mounts
+    volumes:
+      # Report output directory
+      - zen-reports:/app/reports
+      # Configuration directory
+      - ./config:/app/config:ro
+      # Cache directory for faster subsequent runs
+      - zen-cache:/app/.cache
+      # Logs directory
+      - zen-logs:/app/logs
+      # Custom plugins (optional)
+      - ../custom_plugins:/app/custom_plugins:ro
+      # Evidence storage
+      - zen-evidence:/app/evidence
+    
+    # Network Configuration
+    networks:
+      - zen-network
+    
+    # Resource Limits
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4G
+        reservations:
+          cpus: '0.5'
+          memory: 1G
+    
+    # Health Check
+    healthcheck:
+      test: ["CMD", "zen-pentest", "health-check"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    
+    # Restart Policy
+    restart: "no"
+    
+    # Dependencies
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    
+    # Security Options
+    security_opt:
+      - no-new-privileges:true
+    
+    # Read-only root filesystem
+    read_only: true
+    
+    # Temporary filesystem for writable directories
+    tmpfs:
+      - /tmp:noexec,nosuid,size=500m
+    
+    # Capabilities
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_RAW  # Required for network scanning
+      - NET_BIND_SERVICE
+    
+    # User (non-root)
+    user: "1000:1000"
+
+  # ===========================================================================
+  # PostgreSQL Database for Scan Results
+  # ===========================================================================
+  postgres:
+    image: postgres:15-alpine
+    container_name: zen-pentest-postgres
+    environment:
+      - POSTGRES_USER=zen
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-zenpass}
+      - POSTGRES_DB=zen_pentest
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./init-db:/docker-entrypoint-initdb.d:ro
+    networks:
+      - zen-network
+    ports:
+      - "127.0.0.1:5432:5432"  # Bind to localhost only
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U zen -d zen_pentest"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+
+  # ===========================================================================
+  # Redis for Caching and Queue Management
+  # ===========================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: zen-pentest-redis
+    command: >
+      sh -c "redis-server
+      --appendonly yes
+      --appendfsync everysec
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+      --requirepass ${REDIS_PASSWORD:-redispass}"
+    volumes:
+      - redis-data:/data
+    networks:
+      - zen-network
+    ports:
+      - "127.0.0.1:6379:6379"  # Bind to localhost only
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.1'
+          memory: 64M
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+
+  # ===========================================================================
+  # MinIO (S3-compatible) for Report Storage
+  # ===========================================================================
+  minio:
+    image: minio/minio:latest
+    container_name: zen-pentest-minio
+    command: server /data --console-address ":9001"
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER:-minioadmin}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD:-minioadmin}
+      - MINIO_BROWSER=on
+    volumes:
+      - minio-data:/data
+    networks:
+      - zen-network
+    ports:
+      - "127.0.0.1:9000:9000"
+      - "127.0.0.1:9001:9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+    restart: unless-stopped
+    profiles:
+      - with-storage
+
+  # ===========================================================================
+  # Report Viewer (Optional Web UI)
+  # ===========================================================================
+  report-viewer:
+    image: nginx:alpine
+    container_name: zen-pentest-reports
+    volumes:
+      - zen-reports:/usr/share/nginx/html/reports:ro
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - zen-network
+    ports:
+      - "127.0.0.1:8080:80"
+    depends_on:
+      - zen-pentest
+    profiles:
+      - with-ui
+    restart: unless-stopped
+
+  # ===========================================================================
+  # Scan Scheduler (Cron-like service for recurring scans)
+  # ===========================================================================
+  scheduler:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.scheduler
+    image: zenai/zen-pentest-scheduler:${ZEN_PENTEST_VERSION:-2.0.0}
+    container_name: zen-pentest-scheduler
+    environment:
+      - DATABASE_URL=postgresql://zen:${POSTGRES_PASSWORD:-zenpass}@postgres:5432/zen_pentest
+      - REDIS_URL=redis://:${REDIS_PASSWORD:-redispass}@redis:6379/0
+      - ZEN_PENTEST_API_URL=http://zen-pentest:8080
+    volumes:
+      - ./schedules:/app/schedules:ro
+    networks:
+      - zen-network
+    depends_on:
+      - postgres
+      - redis
+    profiles:
+      - with-scheduler
+    restart: unless-stopped
+
+# -----------------------------------------------------------------------------
+# VOLUMES
+# -----------------------------------------------------------------------------
+volumes:
+  # Persistent database storage
+  postgres-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/data/postgres
+
+  # Redis persistent storage
+  redis-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/data/redis
+
+  # Scan reports storage
+  zen-reports:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/reports
+
+  # Cache directory
+  zen-cache:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/.cache
+
+  # Logs directory
+  zen-logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/logs
+
+  # Evidence storage
+  zen-evidence:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/evidence
+
+  # MinIO storage
+  minio-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/data/minio
+
+# -----------------------------------------------------------------------------
+# NETWORKS
+# -----------------------------------------------------------------------------
+networks:
+  zen-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+    internal: false  # Set to true for complete network isolation
+    labels:
+      - "zen-ai-pentest.network=true"
+
+# -----------------------------------------------------------------------------
+# EXTENSIONS (Docker Compose 3.8+)
+# -----------------------------------------------------------------------------
+x-logging: &default-logging
+  driver: "json-file"
+  options:
+    max-size: "100m"
+    max-file: "5"
+    labels: "service_name,environment"
+    env: "OS_VERSION"
+
+# Apply logging to all services
+services:
+  zen-pentest:
+    logging: *default-logging
+  postgres:
+    logging: *default-logging
+  redis:
+    logging: *default-logging
+  minio:
+    logging: *default-logging
+
+# =============================================================================
+# USAGE EXAMPLES
+# =============================================================================
+#
+# 1. Basic scan:
+#    docker-compose -f docker-compose.ci.yml up --abort-on-container-exit
+#
+# 2. With S3-compatible storage:
+#    docker-compose -f docker-compose.ci.yml --profile with-storage up
+#
+# 3. With web UI for viewing reports:
+#    docker-compose -f docker-compose.ci.yml --profile with-ui up
+#
+# 4. With scheduled scans:
+#    docker-compose -f docker-compose.ci.yml --profile with-scheduler up -d
+#
+# 5. Run specific scan with environment variables:
+#    ZEN_SCAN_TARGET=https://example.com \
+#    ZEN_SCAN_MODE=full \
+#    OPENAI_API_KEY=sk-... \
+#    docker-compose -f docker-compose.ci.yml up --abort-on-container-exit
+#
+# 6. Run scan and capture exit code:
+#    docker-compose -f docker-compose.ci.yml up --exit-code-from zen-pentest
+#
+# 7. Cleanup after scan:
+#    docker-compose -f docker-compose.ci.yml down -v
+#
+# =============================================================================
+
+# =============================================================================
+# CI/CD INTEGRATION EXAMPLES
+# =============================================================================
+#
+# GitHub Actions:
+#   - name: Run Zen-AI-Pentest
+#     run: |
+#       docker-compose -f docker-compose.ci.yml up --exit-code-from zen-pentest
+#     env:
+#       ZEN_SCAN_TARGET: ${{ secrets.SCAN_TARGET }}
+#       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+#
+# GitLab CI:
+#   scan:
+#     stage: security
+#     services:
+#       - docker:dind
+#     script:
+#       - docker-compose -f docker-compose.ci.yml up --exit-code-from zen-pentest
+#     variables:
+#       ZEN_SCAN_TARGET: $SCAN_TARGET
+#
+# Jenkins Pipeline:
+#   stage('Security Scan') {
+#     steps {
+#       sh 'docker-compose -f docker-compose.ci.yml up --exit-code-from zen-pentest'
+#     }
+#   }
+#
+# Azure DevOps:
+#   - task: DockerCompose@0
+#     inputs:
+#       dockerComposeFile: '**/docker-compose.ci.yml'
+#       action: 'Run a Docker Compose command'
+#       dockerComposeCommand: 'up --exit-code-from zen-pentest'
+#
+# =============================================================================

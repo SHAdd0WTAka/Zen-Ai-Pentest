@@ -1,0 +1,49 @@
+id: wp-users-api
+
+info:
+  name: WordPress User Enumeration via REST API
+  author: SHAdd0WTAka
+  severity: medium
+  description: |
+    WordPress REST API exposes user information through the /wp-json/wp/v2/users endpoint.
+    This allows attackers to enumerate valid usernames for brute force attacks.
+  reference:
+    - https://www.wpwhitesecurity.com/wordpress-rest-api-user-enumeration-vulnerability/
+  tags: wordpress,rest-api,enumeration,users,wp
+  metadata:
+    max-request: 1
+
+http:
+  - method: GET
+    path:
+      - "{{BaseURL}}/wp-json/wp/v2/users"
+      - "{{BaseURL}}/?rest_route=/wp/v2/users"
+
+    matchers-condition: and
+    matchers:
+      - type: word
+        words:
+          - '"id":'
+          - '"name":'
+          - '"slug":'
+        condition: and
+
+      - type: status
+        status:
+          - 200
+
+      - type: word
+        part: header
+        words:
+          - "application/json"
+
+    extractors:
+      - type: json
+        name: users
+        json:
+          - ".[].name"
+
+      - type: json
+        name: usernames
+        json:
+          - ".[].slug"

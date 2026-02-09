@@ -1,0 +1,198 @@
+# =============================================================================
+# Zen AI Pentest - CI/CD Optimized Dockerfile
+# =============================================================================
+# Description: Production-ready Docker image optimized for CI/CD pipelines
+# Version: 2.0.0
+# Features:
+#   - Multi-stage build for minimal image size
+#   - Non-root user for security
+#   - Pre-installed tools (nmap, etc.)
+#   - Health checks
+#   - GitHub/GitLab integration support
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Stage 1: Builder
+# -----------------------------------------------------------------------------
+FROM python:3.11-slim AS builder
+
+WORKDIR /build
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    g++ \
+    libffi-dev \
+    libssl-dev \
+    cargo \
+    pkg-config \
+    && rm -rf /var/lib/apt/lists/*
+
+# Upgrade pip and install build tools
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel
+
+# Copy requirements first for better caching
+COPY requirements.txt requirements-ci.txt* ./
+
+# Install Python dependencies
+RUN pip install --no-cache-dir --user -r requirements.txt \
+    && if [ -f requirements-ci.txt ]; then pip install --no-cache-dir --user -r requirements-ci.txt; fi
+
+# -----------------------------------------------------------------------------
+# Stage 2: Production
+# -----------------------------------------------------------------------------
+FROM python:3.11-slim AS production
+
+LABEL maintainer="Zen-AI-Pentest Team <security@zen-ai.dev>"
+LABEL org.opencontainers.image.title="Zen AI Pentest"
+LABEL org.opencontainers.image.description="AI-powered security scanning for CI/CD pipelines"
+LABEL org.opencontainers.image.version="2.0.0"
+LABEL org.opencontainers.image.source="https://github.com/zen-ai-pentest/zen-ai-pentest"
+LABEL org.opencontainers.image.licenses="MIT"
+
+# Security: Run as non-root
+ARG USER_ID=1000
+ARG GROUP_ID=1000
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    # Network scanning
+    nmap \
+    dnsutils \
+    iputils-ping \
+    netcat-traditional \
+    curl \
+    wget \
+    # SSL/TLS testing
+    openssl \
+    # Data processing
+    jq \
+    # Utilities
+    git \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean \
+    && nmap --version
+
+# Create non-root user
+RUN groupadd --gid ${GROUP_ID} zenuser \
+    && useradd --uid ${USER_ID} --gid ${GROUP_ID} \
+    --shell /bin/bash --create-home zenuser
+
+# Set working directory
+WORKDIR /app
+
+# Copy Python packages from builder
+COPY --from=builder /root/.local /home/zenuser/.local
+
+# Copy application code
+COPY --chown=zenuser:zenuser . .
+
+# Set environment
+ENV PATH=/home/zenuser/.local/bin:$PATH
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV ZEN_CI_MODE=true
+
+# Create required directories
+RUN mkdir -p /app/output /app/config /app/logs \
+    && chown -R zenuser:zenuser /app
+
+# Switch to non-root user
+USER zenuser
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD python -c "import zen_ai_pentest; print('OK')" || exit 1
+
+# Default entrypoint for CI usage
+ENTRYPOINT ["python", "-m", "zen_ai_pentest"]
+
+# Default command
+CMD ["--help"]
+
+# -----------------------------------------------------------------------------
+# Stage 3: CI/CD Specific (additional tools)
+# -----------------------------------------------------------------------------
+FROM production AS ci
+
+USER root
+
+# Install CI/CD specific tools
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    # GitHub CLI for SARIF uploads
+    gh \
+    # GitLab CLI
+    glab \
+    # AWS CLI (for S3 uploads)
+    awscli \
+    # Azure CLI
+    # (Optional - adds significant size)
+    # Azure CLI would require separate installation
+    && rm -rf /var/lib/apt/lists/*
+
+# Install additional Python packages for CI
+RUN pip install --no-cache-dir --user \
+    PyGithub \
+    python-gitlab
+
+USER zenuser
+
+# CI-specific labels
+LABEL org.opencontainers.image.variant="ci"
+
+# -----------------------------------------------------------------------------
+# Stage 4: Development
+# -----------------------------------------------------------------------------
+FROM production AS development
+
+USER root
+
+# Install development tools
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    vim \
+    nano \
+    less \
+    htop \
+    procps \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install dev dependencies
+COPY requirements-dev.txt* ./
+RUN if [ -f requirements-dev.txt ]; then \
+    pip install --no-cache-dir --user -r requirements-dev.txt; \
+    fi
+
+USER zenuser
+
+# Development labels
+LABEL org.opencontainers.image.variant="development"
+
+# -----------------------------------------------------------------------------
+# Stage 5: Slim (minimal size for simple scans)
+# -----------------------------------------------------------------------------
+FROM python:3.11-alpine AS slim
+
+WORKDIR /app
+
+# Install minimal dependencies
+RUN apk add --no-cache \
+    nmap \
+    nmap-scripts \
+    curl \
+    jq
+
+# Copy only necessary Python files
+COPY --chown=nobody:nobody zen_ai_pentest.py ./
+COPY --chown=nobody:nobody modules/ ./modules/
+COPY --chown=nobody:nobody requirements.txt ./
+
+# Install Python dependencies
+RUN pip install --no-cache-dir --user -r requirements.txt
+
+USER nobody
+
+# Minimal labels
+LABEL org.opencontainers.image.variant="slim"
+
+ENTRYPOINT ["python", "zen_ai_pentest.py"]

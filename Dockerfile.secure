@@ -1,0 +1,107 @@
+# =============================================================================
+# Zen AI Pentest - Secure Dockerfile
+# =============================================================================
+# Security Features:
+# - Multi-stage build for smaller image
+# - Non-root user execution
+# - Specific Python version (reproducible builds)
+# - No secrets in layers
+# - Health check
+# - Minimal attack surface
+# =============================================================================
+
+# =============================================================================
+# Stage 1: Builder
+# =============================================================================
+FROM python:3.11.7-slim-bookworm AS builder
+
+# Security: Update system packages
+RUN apt-get update && apt-get upgrade -y && \
+    apt-get install -y --no-install-recommends \
+        gcc \
+        libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create virtual environment
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Install Python dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
+
+# =============================================================================
+# Stage 2: Production
+# =============================================================================
+FROM python:3.11.7-slim-bookworm AS production
+
+# Security labels
+LABEL maintainer="Zen AI Pentest Team"
+LABEL security.scan="required"
+LABEL version="2.2.0"
+
+# Install runtime dependencies only
+RUN apt-get update && apt-get upgrade -y && \
+    apt-get install -y --no-install-recommends \
+        nmap \
+        postgresql-client \
+        libpq5 \
+        curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Copy virtual environment from builder
+COPY --from=builder /opt/venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Create non-root user
+# Security: Use fixed UID/GID
+ARG USER_ID=1000
+ARG GROUP_ID=1000
+RUN groupadd -g ${GROUP_ID} zenuser && \
+    useradd -m -u ${USER_ID} -g zenuser zenuser
+
+# Set working directory
+WORKDIR /app
+
+# Copy application code with correct ownership
+# Security: Don't copy .env or other sensitive files
+COPY --chown=zenuser:zenuser . .
+
+# Remove any accidental secret files
+RUN rm -f .env .env.local .env.production 2>/dev/null || true
+
+# Switch to non-root user
+USER zenuser
+
+# Security: Don't run as root
+# Verify user is not root
+RUN if [ "$(id -u)" -eq 0 ]; then echo "ERROR: Running as root!"; exit 1; fi
+
+# Expose port
+EXPOSE 8000
+
+# Health check
+# Security: Use non-root user for health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Security: Read-only filesystem option (commented out - enable if app supports it)
+# Note: Uncomment in docker-compose if application doesn't need write access
+# VOLUME ["/tmp", "/var/tmp"]
+
+# Run the application
+# Security: Use exec form for proper signal handling
+CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers"]
+
+# =============================================================================
+# Alternative: Distroless Image (even smaller, more secure)
+# =============================================================================
+# FROM gcr.io/distroless/python3-debian12
+# COPY --from=builder /opt/venv /opt/venv
+# COPY --chown=nonroot:nonroot . /app
+# WORKDIR /app
+# USER nonroot
+# EXPOSE 8000
+# CMD ["/opt/venv/bin/uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000"]

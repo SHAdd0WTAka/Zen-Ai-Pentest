@@ -1,0 +1,124 @@
+name: Health Check - Monitor CI Status (Fixed)
+
+on:
+  schedule:
+    # Run every 20 minutes
+    - cron: '*/20 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Debug Environment
+      run: |
+        echo "=== Debug Info ==="
+        echo "PWD: $(pwd)"
+        ls -la
+        echo "=================="
+      
+    - name: Install jq
+      run: sudo apt-get update && sudo apt-get install -y jq
+      
+    - name: Check Recent Workflow Runs
+      id: check_runs
+      continue-on-error: true
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        echo "=== Checking Recent Workflow Runs ==="
+        
+        # Get recent workflow runs
+        gh run list --limit 10 --json name,status,conclusion,startedAt,headBranch,url > runs.json || echo "[]" > runs.json
+        
+        echo "Recent runs:"
+        if command -v jq &> /dev/null; then
+          cat runs.json | jq -r '.[] | "\(.name): \(.status) - \(.conclusion // "pending")"' 2>/dev/null || echo "Could not parse runs"
+        else
+          echo "jq not available, skipping formatted output"
+        fi
+        
+        # Count failures (with fallback if jq fails)
+        if command -v jq &> /dev/null; then
+          FAILURES=$(cat runs.json | jq '[.[] | select(.conclusion == "failure")] | length' 2>/dev/null || echo "0")
+          SUCCESS=$(cat runs.json | jq '[.[] | select(.conclusion == "success")] | length' 2>/dev/null || echo "0")
+        else
+          FAILURES=0
+          SUCCESS=0
+        fi
+        
+        echo ""
+        echo "Summary:"
+        echo "  Failed runs: $FAILURES"
+        echo "  Successful runs: $SUCCESS"
+        
+        echo "failures=$FAILURES" >> $GITHUB_OUTPUT
+        echo "success=$SUCCESS" >> $GITHUB_OUTPUT
+        
+        if [ "$FAILURES" -gt 0 ]; then
+          echo "::warning::Found $FAILURES failed workflow runs!"
+        fi
+        
+    - name: Run Quick Smoke Test
+      run: |
+        echo "=== Quick Smoke Test ==="
+        python3 --version
+        
+        # Test Python syntax
+        python3 -m py_compile core/orchestrator.py 2>/dev/null && echo "[OK] core/orchestrator.py" || echo "[FAIL] core/orchestrator.py"
+        python3 -m py_compile agents/agent_base.py 2>/dev/null && echo "[OK] agents/agent_base.py" || echo "[FAIL] agents/agent_base.py"
+        python3 -m py_compile agents/post_scan_agent.py 2>/dev/null && echo "[OK] agents/post_scan_agent.py" || echo "[FAIL] agents/post_scan_agent.py"
+        
+    - name: Create Health Check Report
+      if: always()
+      run: |
+        cat > health_check_report.md << EOF
+        # Health Check Report
+        
+        **Date:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")  
+        **Commit:** ${{ github.sha }}
+        
+        ## Workflow Status
+        - Failed runs: ${{ steps.check_runs.outputs.failures }}
+        - Successful runs: ${{ steps.check_runs.outputs.success }}
+        
+        ## Status: ${{ job.status }}
+        
+        [View All Workflow Runs](https://github.com/${{ github.repository }}/actions)
+        EOF
+        
+        cat health_check_report.md
+        
+    - name: Upload Health Report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: health-check-report
+        path: health_check_report.md
+        retention-days: 7
+        
+    - name: Notify on Failure
+      if: failure()
+      uses: actions/github-script@v7
+      with:
+        script: |
+          github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: `Health Check Failed - ${new Date().toISOString()}`,
+            body: `Health check failed at ${new Date().toISOString()}\n\n[View Run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})`,
+            labels: ['ci-failure', 'health-check']
+          })

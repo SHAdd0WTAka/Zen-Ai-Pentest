@@ -1,0 +1,33 @@
+# Jekyll Configuration for GitHub Pages
+title: Zen AI Pentest
+description: AI-Powered Multi-LLM Penetration Testing Framework
+baseurl: "/zen-ai-pentest"
+url: "https://shadd0wtaka.github.io"
+
+theme: jekyll-theme-cayman
+
+plugins:
+  - jekyll-seo-tag
+  - jekyll-sitemap
+  - jekyll-feed
+
+markdown: kramdown
+kramdown:
+  input: GFM
+  hard_wrap: false
+
+defaults:
+  - scope:
+      path: ""
+      type: "pages"
+    values:
+      layout: default
+
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor/bundle/
+  - vendor/cache/
+  - vendor/gems/
+  - vendor/ruby/
