@@ -11,7 +11,7 @@ import tempfile
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional, Callable
+from typing import Any, Dict, List, Optional, Callable, Union
 import shlex
 
 
@@ -308,7 +308,7 @@ class ToolExecutor:
 
         # Build command
         try:
-            command = self._build_command(tool, parameters)
+            command_parts = self._build_command(tool, parameters)
         except Exception as e:
             return ToolResult(
                 tool=tool_name,
@@ -321,15 +321,17 @@ class ToolExecutor:
                 error_message=f"Command build failed: {str(e)}",
             )
 
-        self.logger.info(f"Executing: {command}")
+        # Log command as string for readability (but execute as list)
+        command_str = ' '.join(shlex.quote(part) for part in command_parts)
+        self.logger.info(f"Executing: {command_str}")
 
         # Execute
         start_time = datetime.now()
         try:
             if self.use_docker:
-                stdout, stderr, return_code = await self._execute_docker(tool, command, timeout or tool.timeout)
+                stdout, stderr, return_code = await self._execute_docker(tool, command_parts, timeout or tool.timeout)
             else:
-                stdout, stderr, return_code = await self._execute_local(command, timeout or tool.timeout)
+                stdout, stderr, return_code = await self._execute_local(command_parts, timeout or tool.timeout)
 
             duration = (datetime.now() - start_time).total_seconds()
 
@@ -341,7 +343,7 @@ class ToolExecutor:
             self.execution_log.append(
                 {
                     "tool": tool_name,
-                    "command": command,
+                    "command": command_str,
                     "timestamp": datetime.now().isoformat(),
                     "duration": duration,
                     "success": return_code == 0,
@@ -350,7 +352,7 @@ class ToolExecutor:
 
             return ToolResult(
                 tool=tool_name,
-                command=command,
+                command=command_str,
                 return_code=return_code,
                 stdout=stdout,
                 stderr=stderr,
@@ -364,7 +366,7 @@ class ToolExecutor:
             duration = (datetime.now() - start_time).total_seconds()
             return ToolResult(
                 tool=tool_name,
-                command=command,
+                command=command_str,
                 return_code=-1,
                 stdout="",
                 stderr=f"Timeout after {timeout or tool.timeout} seconds",
@@ -376,7 +378,7 @@ class ToolExecutor:
             duration = (datetime.now() - start_time).total_seconds()
             return ToolResult(
                 tool=tool_name,
-                command=command,
+                command=command_str,
                 return_code=-1,
                 stdout="",
                 stderr=str(e),
@@ -385,24 +387,66 @@ class ToolExecutor:
                 error_message=str(e),
             )
 
-    def _build_command(self, tool: ToolDefinition, parameters: Dict[str, Any]) -> str:
-        """Build the command string from template."""
+    def _build_command(self, tool: ToolDefinition, parameters: Dict[str, Any]) -> List[str]:
+        """Build the command list from template (shell-safe)."""
         target = parameters.get("target", "")
         options = parameters.get("options", "")
+        ports = parameters.get("ports", "1-65535")
 
-        # Sanitize inputs
-        target = shlex.quote(target) if target else ""
-
-        command = tool.command_template.format(
-            target=target, options=options, ports=parameters.get("ports", "1-65535"), **parameters
+        # Validate target - only allow safe characters (hostname, IP, URL)
+        if target:
+            import re
+            # Allow: alphanumeric, dots, dashes, slashes, colons (for ports), underscores
+            # This covers hostnames, IPs, and URLs
+            if not re.match(r'^[a-zA-Z0-9._\-:/]+$', target):
+                raise ValueError(f"Invalid target format: {target}")
+        
+        # Build command as list instead of string to avoid shell injection
+        command_parts = []
+        
+        # Parse the command template
+        template = tool.command_template
+        
+        # Simple template parsing - replace placeholders safely
+        # First, prepare the replacements with validated values
+        safe_target = shlex.quote(target) if target else ""
+        
+        # For options, we need to be careful - they should be passed as separate list items
+        # Split options by spaces but respect quoted strings
+        if options:
+            option_parts = shlex.split(options)
+        else:
+            option_parts = []
+        
+        # Format the template
+        formatted = template.format(
+            target=safe_target, 
+            options="",  # Handle separately
+            ports=shlex.quote(str(ports)),
+            **{k: shlex.quote(str(v)) for k, v in parameters.items() if k not in ('target', 'options', 'ports')}
         )
+        
+        # Split the formatted command and add option parts
+        command_parts = shlex.split(formatted)
+        
+        # Insert options at the right place (we used empty string as placeholder)
+        # Find where options should go and insert them
+        if option_parts:
+            # Insert option parts before the target (which is at the end usually)
+            # This is a heuristic - options typically come before target
+            if safe_target and safe_target in command_parts:
+                target_idx = command_parts.index(safe_target)
+                for i, opt in enumerate(option_parts):
+                    command_parts.insert(target_idx + i, opt)
+            else:
+                command_parts.extend(option_parts)
+        
+        return command_parts
 
-        return command
-
-    async def _execute_local(self, command: str, timeout: int) -> tuple:
-        """Execute command locally."""
-        process = await asyncio.create_subprocess_shell(
-            command, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+    async def _execute_local(self, command: List[str], timeout: int) -> tuple:
+        """Execute command locally using subprocess_exec (shell-safe)."""
+        process = await asyncio.create_subprocess_exec(
+            *command, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
         )
 
         try:
@@ -412,10 +456,10 @@ class ToolExecutor:
             process.kill()
             raise
 
-    async def _execute_docker(self, tool: ToolDefinition, command: str, timeout: int) -> tuple:
+    async def _execute_docker(self, tool: ToolDefinition, command: List[str], timeout: int) -> tuple:
         """Execute in Docker container."""
-        # Docker execution for isolation
-        docker_cmd = f"docker run --rm --network=host {tool.name} {command}"
+        # Docker execution for isolation - build command as list to prevent injection
+        docker_cmd = ["docker", "run", "--rm", "--network=host", tool.name] + command
         return await self._execute_local(docker_cmd, timeout)
 
     def _parse_output(self, tool_name: str, stdout: str) -> Dict[str, Any]:

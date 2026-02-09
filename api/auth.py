@@ -20,18 +20,14 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 # Configuration - Load from environment variables
 # =============================================================================
 
-# JWT Configuration
+# JWT Configuration - MUST be set via environment variable
 SECRET_KEY = os.getenv("JWT_SECRET_KEY")
-if not SECRET_KEY or SECRET_KEY == "your-super-secret-jwt-key-change-this-in-production":
-    # Generate a random key for development (not for production!)
-    import warnings
-
-    warnings.warn(
-        "JWT_SECRET_KEY not set or using default! Using random key for development. "
-        "Set JWT_SECRET_KEY environment variable for production!",
-        RuntimeWarning,
+if not SECRET_KEY:
+    raise RuntimeError(
+        "FATAL SECURITY ERROR: JWT_SECRET_KEY environment variable is not set. "
+        "The application cannot start without a properly configured JWT secret. "
+        "Please set JWT_SECRET_KEY to a secure random string (min 32 characters)."
     )
-    SECRET_KEY = secrets.token_hex(32)
 
 ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", "30"))

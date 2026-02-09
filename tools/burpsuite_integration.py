@@ -1,8 +1,8 @@
 """BurpSuite Integration"""
 
-import requests
+import os
 import logging
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -10,15 +10,44 @@ logger = logging.getLogger(__name__)
 class BurpSuiteAPI:
     """BurpSuite Enterprise/Professional API Integration"""
 
-    def __init__(self, api_url: str, api_key: str):
+    def __init__(self, api_url: str, api_key: str, verify_ssl: Optional[bool] = None, ca_bundle: Optional[str] = None):
+        """
+        Initialize BurpSuite API client.
+        
+        Args:
+            api_url: BurpSuite API URL
+            api_key: API key for authentication
+            verify_ssl: Whether to verify SSL certificates (default: True, use env BURP_VERIFY_SSL to override)
+            ca_bundle: Path to CA bundle for SSL verification
+        """
+        import requests
+        
         self.api_url = api_url.rstrip("/")
         self.api_key = api_key
         self.headers = {"Authorization": api_key, "Content-Type": "application/json"}
+        
+        # SSL verification - default to True, allow override via environment
+        env_verify = os.getenv("BURP_VERIFY_SSL", "").lower()
+        if verify_ssl is not None:
+            self.verify_ssl = verify_ssl
+        elif env_verify in ("false", "0", "no", "off"):
+            logger.warning("SSL verification disabled via BURP_VERIFY_SSL environment variable - NOT RECOMMENDED")
+            self.verify_ssl = False
+        else:
+            self.verify_ssl = True
+            
+        self.ca_bundle = ca_bundle or os.getenv("BURP_CA_BUNDLE")
 
     def get_sites(self) -> List[Dict]:
         """Listet konfigurierte Sites"""
+        import requests
         try:
-            resp = requests.get(f"{self.api_url}/v1/sites", headers=self.headers, verify=False)
+            resp = requests.get(
+                f"{self.api_url}/v1/sites", 
+                headers=self.headers, 
+                verify=self.ca_bundle if self.ca_bundle else self.verify_ssl
+            )
+            resp.raise_for_status()
             return resp.json().get("sites", [])
         except Exception as e:
             logger.error(f"Burp API Fehler: {e}")
@@ -26,9 +55,16 @@ class BurpSuiteAPI:
 
     def start_scan(self, site_id: str, scan_configuration: str = "Crawl and Audit") -> str:
         """Startet Scan auf Site"""
+        import requests
         try:
             data = {"site_id": site_id, "scan_configuration": scan_configuration}
-            resp = requests.post(f"{self.api_url}/v1/scans", headers=self.headers, json=data, verify=False)
+            resp = requests.post(
+                f"{self.api_url}/v1/scans", 
+                headers=self.headers, 
+                json=data, 
+                verify=self.ca_bundle if self.ca_bundle else self.verify_ssl
+            )
+            resp.raise_for_status()
             return resp.json().get("scan_id", "")
         except Exception as e:
             logger.error(f"Scan Start Fehler: {e}")
@@ -36,8 +72,14 @@ class BurpSuiteAPI:
 
     def get_scan_results(self, scan_id: str) -> Dict:
         """Holt Scan-Ergebnisse"""
+        import requests
         try:
-            resp = requests.get(f"{self.api_url}/v1/scans/{scan_id}/issues", headers=self.headers, verify=False)
+            resp = requests.get(
+                f"{self.api_url}/v1/scans/{scan_id}/issues", 
+                headers=self.headers, 
+                verify=self.ca_bundle if self.ca_bundle else self.verify_ssl
+            )
+            resp.raise_for_status()
             return resp.json()
         except Exception as e:
             return {"error": str(e)}
