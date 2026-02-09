@@ -31,8 +31,8 @@
 
 **Zu erledigen:**
 1. Alle Versionen auf 2.3.9 standardisieren:
-   - `setup.py`: 2.3.7 → 2.3.9
-   - `README.md`: 2.3.7 → 2.3.9
+   - `setup.py`: 2.3.9 ✅ (standardized)
+   - `README.md`: 2.3.9 ✅ (standardized)
    - `zen_ai_pentest.py`: Prüfen und fixen
 
 2. Alle Badges in README aktualisieren

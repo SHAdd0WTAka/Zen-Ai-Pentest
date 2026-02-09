@@ -85,7 +85,7 @@ class TestAppInfo:
 
     def test_init_app_info(self):
         """Test initializing app info"""
-        init_app_info(version="2.2.0", environment="testing")
+        init_app_info(version="2.3.9", environment="testing")
 
 
 class TestMetricsMiddleware:

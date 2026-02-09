@@ -48,9 +48,9 @@
 ### 5. Versions-Inkonsistenzen ⚠️ MEDIUM
 | Datei | Aktuell | Soll |
 |-------|---------|------|
-| `setup.py` | 2.3.7 | 2.3.9 |
+| `setup.py` | 2.3.9 | 2.3.9 ✅ |
 | `pyproject.toml` | 2.3.9 | 2.3.9 ✅ |
-| `README.md` | 2.3.7 | 2.3.9 |
+| `README.md` | 2.3.9 | 2.3.9 ✅ |
 | `action.yml` | 2.3.9 | 2.3.9 ✅ |
 
 ### 6. Fehlende Datei ⚠️ HIGH

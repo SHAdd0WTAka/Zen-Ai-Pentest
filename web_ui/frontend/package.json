@@ -1,6 +1,6 @@
 {
   "name": "zen-ai-dashboard",
-  "version": "2.3.7",
+  "version": "2.3.9",
   "description": "Zen AI Pentest React Dashboard",
   "private": true,
   "dependencies": {

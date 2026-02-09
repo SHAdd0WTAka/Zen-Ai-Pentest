@@ -524,4 +524,4 @@ __all__ = [
     "load_integrations_from_config",
 ]
 
-__version__ = "2.0.0"
+__version__ = "2.3.9"

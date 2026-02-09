@@ -6,7 +6,7 @@ Provides formatters for various CI/CD platforms:
 - JUnit XML (Jenkins, GitLab Test Reports)
 - HTML (Human readable reports)
 
-Version: 2.0.0
+Version: 2.3.9
 Author: Zen-AI-Pentest Team
 """
 
@@ -56,7 +56,7 @@ class ScanSummary:
     info: int
     risk_score: int
     tool_name: str = "Zen AI Pentest"
-    tool_version: str = "2.0.0"
+    tool_version: str = "2.3.9"
 
 
 class SARIFFormatter:
@@ -80,7 +80,7 @@ class SARIFFormatter:
         "info": {"level": "none", "rank": 1},
     }
 
-    def __init__(self, tool_name: str = "Zen AI Pentest", tool_version: str = "2.0.0"):
+    def __init__(self, tool_name: str = "Zen AI Pentest", tool_version: str = "2.3.9"):
         self.tool_name = tool_name
         self.tool_version = tool_version
 
@@ -420,7 +420,7 @@ class HTMLFormatter:
         "info": {"bg": "#6b7280", "text": "#ffffff", "light": "#f3f4f6"},
     }
 
-    def __init__(self, tool_name: str = "Zen AI Pentest", tool_version: str = "2.0.0"):
+    def __init__(self, tool_name: str = "Zen AI Pentest", tool_version: str = "2.3.9"):
         self.tool_name = tool_name
         self.tool_version = tool_version
 

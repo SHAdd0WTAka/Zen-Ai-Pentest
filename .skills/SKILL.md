@@ -142,9 +142,9 @@ docker-compose up -d
 
 ## Versions-Inkonsistenzen (zu fixen)
 
-- `setup.py`: Version 2.3.7
+- `setup.py`: Version 2.3.9 ✅
 - `pyproject.toml`: Version 2.3.9
-- `README.md`: Version 2.3.7
+- `README.md`: Version 2.3.9 ✅
 - `action.yml`: Version 2.3.9
 
 **Empfohlene Version: 2.3.9**

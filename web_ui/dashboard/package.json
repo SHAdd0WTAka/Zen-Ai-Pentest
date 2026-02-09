@@ -1,6 +1,6 @@
 {
   "name": "zen-ai-pentest-dashboard",
-  "version": "2.3.7",
+  "version": "2.3.9",
   "description": "Zen AI Pentest Web Dashboard - Issue #24",
   "private": true,
   "type": "module",

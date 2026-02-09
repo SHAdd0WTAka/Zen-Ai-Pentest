@@ -39,7 +39,7 @@ FROM python:3.11.7-slim-bookworm AS production
 # Security labels
 LABEL maintainer="Zen AI Pentest Team"
 LABEL security.scan="required"
-LABEL version="2.2.0"
+LABEL version="2.3.9"
 
 # Install runtime dependencies only
 RUN apt-get update && apt-get upgrade -y && \
