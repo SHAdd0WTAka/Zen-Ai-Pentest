@@ -13,9 +13,18 @@ TOOL_REGISTRY = {}
 
 # Versuche alle Tools zu importieren
 try:
-    from .nmap_integration import nmap_scan
+    from .nmap_integration import (
+        NmapScanner,
+        nmap_scan,
+        nmap_quick_scan,
+        nmap_vuln_scan,
+        ScanType,
+        TimingTemplate,
+    )
 
     TOOL_REGISTRY["nmap_scan"] = nmap_scan
+    TOOL_REGISTRY["nmap_quick_scan"] = nmap_quick_scan
+    TOOL_REGISTRY["nmap_vuln_scan"] = nmap_vuln_scan
 except ImportError as e:
     logger.warning(f"nmap_integration not available: {e}")
 
@@ -116,7 +125,13 @@ if not TOOL_REGISTRY:
     logger.warning("No real tools available, using mock tools")
     TOOL_REGISTRY["mock_scan"] = mock_scan
 
-__all__ = ["TOOL_REGISTRY", "get_all_tools"]
+__all__ = [
+    "TOOL_REGISTRY",
+    "get_all_tools",
+    "NmapScanner",
+    "ScanType",
+    "TimingTemplate",
+]
 
 
 def get_all_tools():
