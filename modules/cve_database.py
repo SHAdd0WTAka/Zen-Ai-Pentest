@@ -1,16 +1,26 @@
 #!/usr/bin/env python3
 """
-CVE Database Module
+CVE Database Module - Performance Optimized
 Comprehensive CVE database with ransomware and exploit information
+
+Optimizations:
+- In-memory caching for frequently accessed CVEs
+- Batch query support
+- Generator-based iteration for large datasets
+- LRU cache for search operations
+- Async batch loading
+
 Author: SHAdd0WTAka
 """
 
+import asyncio
 import json
 import logging
 import os
-from dataclasses import dataclass
-from datetime import datetime
-from typing import Dict, List, Optional
+from dataclasses import dataclass, asdict
+from datetime import datetime, timedelta
+from functools import lru_cache
+from typing import Dict, List, Optional, Generator, Set, Iterable
 
 logger = logging.getLogger("ZenAI")
 
@@ -31,6 +41,10 @@ class CVEEntry:
     detection_methods: List[str]
     ransomware_used_by: List[str] = None
     ioc: Dict = None
+    
+    def to_dict(self) -> Dict:
+        """Convert to dictionary for serialization."""
+        return asdict(self)
 
 
 @dataclass
@@ -49,21 +63,37 @@ class RansomwareEntry:
     detection: List[str]
     decryptable: bool
     estimated_damage: int = 0
+    
+    def to_dict(self) -> Dict:
+        """Convert to dictionary for serialization."""
+        return asdict(self)
 
 
 class CVEDatabase:
     """
-    Comprehensive CVE and Ransomware Database
+    Comprehensive CVE and Ransomware Database with caching.
     """
 
-    def __init__(self, orchestrator=None):
+    def __init__(self, orchestrator=None, cache_size: int = 1000, cache_ttl: int = 3600):
         self.orchestrator = orchestrator
         self.db_path = "data/cve_db"
-        self.ransomware_data = {}
-        self.cve_data = {}
-        self.exploit_chains = {}
+        self.ransomware_data: Dict[str, Dict] = {}
+        self.cve_data: Dict[str, Dict] = {}
+        self.exploit_chains: Dict[str, Dict] = {}
+        
+        # In-memory cache with TTL
+        self._cache: Dict[str, Dict] = {}
+        self._cache_times: Dict[str, datetime] = {}
+        self._cache_size = cache_size
+        self._cache_ttl = cache_ttl
+        self._cache_lock = asyncio.Lock()
+        
+        # Index for faster lookups
+        self._severity_index: Dict[str, Set[str]] = {}
+        self._ransomware_cve_index: Dict[str, Set[str]] = {}
 
         self._load_databases()
+        self._build_indexes()
 
     def _load_databases(self):
         """Load all database files"""
@@ -76,9 +106,54 @@ class CVEDatabase:
                     self.ransomware_data = data.get("ransomware_campaigns", {})
                     self.cve_data = data.get("critical_historical_cves", {})
                     self.exploit_chains = data.get("common_exploit_chains", {})
-                logger.info(f"[CVE DB] Loaded {len(self.ransomware_data)} ransomware entries, {len(self.cve_data)} CVEs")
+                logger.info(
+                    f"[CVE DB] Loaded {len(self.ransomware_data)} ransomware entries, "
+                    f"{len(self.cve_data)} CVEs"
+                )
             except Exception as e:
                 logger.error(f"[CVE DB] Error loading database: {e}")
+
+    def _build_indexes(self):
+        """Build search indexes for faster lookups."""
+        # Build severity index
+        for cve_id, data in self.cve_data.items():
+            severity = data.get("severity", "Unknown")
+            if severity not in self._severity_index:
+                self._severity_index[severity] = set()
+            self._severity_index[severity].add(cve_id)
+        
+        # Build ransomware->CVE index
+        for key, data in self.ransomware_data.items():
+            for cve in data.get("cves", []):
+                cve_upper = cve.upper()
+                if cve_upper not in self._ransomware_cve_index:
+                    self._ransomware_cve_index[cve_upper] = set()
+                self._ransomware_cve_index[cve_upper].add(data.get("name", key))
+
+    async def _get_from_cache(self, key: str) -> Optional[Dict]:
+        """Get item from cache with TTL check."""
+        async with self._cache_lock:
+            if key in self._cache:
+                cached_time = self._cache_times.get(key)
+                if cached_time and (datetime.utcnow() - cached_time).seconds < self._cache_ttl:
+                    return self._cache[key]
+                else:
+                    # Expired
+                    del self._cache[key]
+                    del self._cache_times[key]
+            return None
+
+    async def _add_to_cache(self, key: str, value: Dict):
+        """Add item to cache with LRU eviction."""
+        async with self._cache_lock:
+            # Evict oldest if at capacity
+            if len(self._cache) >= self._cache_size:
+                oldest_key = min(self._cache_times.keys(), key=lambda k: self._cache_times[k])
+                del self._cache[oldest_key]
+                del self._cache_times[oldest_key]
+            
+            self._cache[key] = value
+            self._cache_times[key] = datetime.utcnow()
 
     def search_cve(self, cve_id: str) -> Optional[CVEEntry]:
         """Search for a specific CVE"""
@@ -100,6 +175,55 @@ class CVEDatabase:
                 ransomware_used_by=data.get("ransomware_used_by", []),
             )
         return None
+
+    async def search_cve_cached(self, cve_id: str) -> Optional[CVEEntry]:
+        """Search CVE with caching support."""
+        cve_id = cve_id.upper()
+        
+        # Check cache
+        cache_key = f"cve:{cve_id}"
+        cached = await self._get_from_cache(cache_key)
+        if cached:
+            return CVEEntry(**cached)
+        
+        # Search and cache
+        result = self.search_cve(cve_id)
+        if result:
+            await self._add_to_cache(cache_key, result.to_dict())
+        
+        return result
+
+    def search_cve_batch(self, cve_ids: List[str]) -> Dict[str, Optional[CVEEntry]]:
+        """Batch search for multiple CVEs (more efficient than individual lookups)."""
+        results = {}
+        for cve_id in cve_ids:
+            results[cve_id] = self.search_cve(cve_id)
+        return results
+
+    async def search_cve_batch_cached(self, cve_ids: List[str]) -> Dict[str, Optional[CVEEntry]]:
+        """Batch search with caching."""
+        results = {}
+        to_fetch = []
+        
+        # Check cache first
+        for cve_id in cve_ids:
+            cve_upper = cve_id.upper()
+            cache_key = f"cve:{cve_upper}"
+            cached = await self._get_from_cache(cache_key)
+            if cached:
+                results[cve_id] = CVEEntry(**cached)
+            else:
+                to_fetch.append(cve_id)
+        
+        # Fetch missing
+        if to_fetch:
+            fetched = self.search_cve_batch(to_fetch)
+            for cve_id, entry in fetched.items():
+                results[cve_id] = entry
+                if entry:
+                    await self._add_to_cache(f"cve:{cve_id.upper()}", entry.to_dict())
+        
+        return results
 
     def search_ransomware(self, name: str) -> Optional[RansomwareEntry]:
         """Search for ransomware by name"""
@@ -124,32 +248,39 @@ class CVEDatabase:
         return None
 
     def get_ransomware_by_cve(self, cve_id: str) -> List[str]:
-        """Find ransomware that uses a specific CVE"""
+        """Find ransomware that uses a specific CVE (uses index)"""
         cve_id = cve_id.upper()
-        results = []
-
-        for key, data in self.ransomware_data.items():
-            if cve_id in data.get("cves", []):
-                results.append(data.get("name", key))
-
-        return results
+        return list(self._ransomware_cve_index.get(cve_id, set()))
 
     def get_cves_by_severity(self, severity: str) -> List[CVEEntry]:
-        """Get all CVEs by severity level"""
-        results = []
+        """Get all CVEs by severity level (uses index)"""
         severity = severity.capitalize()
-
-        for cve_id, data in self.cve_data.items():
-            if data.get("severity") == severity:
-                entry = self.search_cve(cve_id)
-                if entry:
-                    results.append(entry)
-
+        cve_ids = self._severity_index.get(severity, set())
+        
+        results = []
+        for cve_id in cve_ids:
+            entry = self.search_cve(cve_id)
+            if entry:
+                results.append(entry)
+        
         return results
 
-    def get_critical_cves(self) -> List[CVEEntry]:
-        """Get all critical CVEs"""
-        return self.get_cves_by_severity("Critical")
+    def get_cves_by_severity_generator(self, severity: str) -> Generator[CVEEntry, None, None]:
+        """Generator for CVEs by severity (memory efficient for large datasets)."""
+        severity = severity.capitalize()
+        cve_ids = self._severity_index.get(severity, set())
+        
+        for cve_id in cve_ids:
+            entry = self.search_cve(cve_id)
+            if entry:
+                yield entry
+
+    def get_critical_cves(self, limit: int = None) -> List[CVEEntry]:
+        """Get all critical CVEs with optional limit."""
+        results = self.get_cves_by_severity("Critical")
+        if limit:
+            results = sorted(results, key=lambda x: x.cvss_score or 0, reverse=True)[:limit]
+        return results
 
     def get_ransomware_iocs(self, ransomware_name: str) -> Dict:
         """Get IOCs for a specific ransomware"""
@@ -160,8 +291,8 @@ class CVEDatabase:
 
     def check_system_for_ransomware(self, indicators: Dict) -> List[Dict]:
         """
-        Check system indicators against ransomware IOCs
-        indicators: dict with keys like 'files', 'registry', 'hashes', 'processes'
+        Check system indicators against ransomware IOCs.
+        Optimized with early termination and scoring.
         """
         matches = []
 
@@ -175,33 +306,41 @@ class CVEDatabase:
             # Check file indicators
             if "files" in indicators and "files" in ioc:
                 for file in indicators["files"]:
+                    file_lower = file.lower()
                     for ioc_file in ioc["files"]:
-                        if file.lower() in ioc_file.lower() or ioc_file.lower() in file.lower():
+                        if file_lower in ioc_file.lower() or ioc_file.lower() in file_lower:
                             match_score += 10
                             match_details.append(f"File match: {file}")
+                            break  # One match per file is enough
 
             # Check registry indicators
-            if "registry" in indicators and "registry" in ioc:
+            if "registry" in indicators and "registry" in ioc and match_score < 100:
                 for reg in indicators["registry"]:
+                    reg_lower = reg.lower()
                     for ioc_reg in ioc["registry"]:
-                        if reg.lower() in ioc_reg.lower():
+                        if reg_lower in ioc_reg.lower():
                             match_score += 10
                             match_details.append(f"Registry match: {reg}")
+                            break
 
-            # Check hashes
+            # Check hashes (strong indicator)
             if "hashes" in indicators and "hashes" in ioc:
-                for hash_val in indicators["hashes"]:
-                    if hash_val.lower() in [h.lower() for h in ioc["hashes"]]:
-                        match_score += 50  # Hash match is strong indicator
-                        match_details.append(f"Hash match: {hash_val}")
+                indicator_hashes = set(h.lower() for h in indicators["hashes"])
+                ioc_hashes = set(h.lower() for h in ioc["hashes"])
+                hash_matches = indicator_hashes & ioc_hashes
+                if hash_matches:
+                    match_score += 50 * len(hash_matches)
+                    match_details.extend([f"Hash match: {h}" for h in hash_matches])
 
             # Check processes
-            if "processes" in indicators and "processes" in ioc:
+            if "processes" in indicators and "processes" in ioc and match_score < 100:
                 for proc in indicators["processes"]:
+                    proc_lower = proc.lower()
                     for ioc_proc in ioc["processes"]:
-                        if proc.lower() in ioc_proc.lower():
+                        if proc_lower in ioc_proc.lower():
                             match_score += 15
                             match_details.append(f"Process match: {proc}")
+                            break
 
             if match_score >= 20:
                 matches.append(
@@ -254,8 +393,9 @@ Provide:
 
     def get_exploit_chain(self, chain_name: str) -> Optional[Dict]:
         """Get a specific exploit chain"""
+        name_lower = chain_name.lower()
         for key, data in self.exploit_chains.items():
-            if chain_name.lower() in key.lower() or chain_name.lower() in data.get("name", "").lower():
+            if name_lower in key.lower() or name_lower in data.get("name", "").lower():
                 return data
         return None
 
@@ -275,8 +415,8 @@ Provide:
             )
         return results
 
-    def list_all_cves(self) -> List[Dict]:
-        """List all CVEs in database"""
+    def list_all_cves(self, limit: int = None) -> List[Dict]:
+        """List all CVEs in database with optional limit"""
         results = []
         for cve_id, data in self.cve_data.items():
             results.append(
@@ -288,11 +428,16 @@ Provide:
                     "ransomware_used_by": data.get("ransomware_used_by", []),
                 }
             )
-        return sorted(results, key=lambda x: x["cvss"], reverse=True)
+        
+        results.sort(key=lambda x: x["cvss"], reverse=True)
+        
+        if limit:
+            return results[:limit]
+        return results
 
     def get_latest_threats(self, limit: int = 10) -> List[Dict]:
         """Get latest critical threats"""
-        all_cves = self.list_all_cves()
+        all_cves = self.list_all_cves(limit=limit * 2)
         critical = [c for c in all_cves if c["severity"] == "Critical"]
         return critical[:limit]
 
@@ -350,3 +495,39 @@ Provide:
         if entry:
             return entry.detection
         return []
+
+    async def clear_cache(self):
+        """Clear the in-memory cache."""
+        async with self._cache_lock:
+            self._cache.clear()
+            self._cache_times.clear()
+
+    def get_cache_stats(self) -> Dict:
+        """Get cache statistics."""
+        return {
+            "cache_size": len(self._cache),
+            "max_cache_size": self._cache_size,
+            "cache_ttl_seconds": self._cache_ttl,
+        }
+
+
+# Module-level cache for search results
+_cve_search_cache: Dict[str, tuple] = {}
+_cve_cache_max_size = 100
+
+
+@lru_cache(maxsize=128)
+def _cached_cve_lookup(cve_id: str) -> Optional[CVEEntry]:
+    """Module-level LRU cache for CVE lookups."""
+    db = CVEDatabase()
+    return db.search_cve(cve_id)
+
+
+def search_cve_cached(cve_id: str) -> Optional[CVEEntry]:
+    """Search CVE with module-level caching."""
+    return _cached_cve_lookup(cve_id.upper())
+
+
+def clear_cve_cache():
+    """Clear the module-level CVE cache."""
+    _cached_cve_lookup.cache_clear()

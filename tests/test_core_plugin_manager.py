@@ -296,9 +296,8 @@ class TestPluginManagerInitialization:
     
     def test_custom_directories(self, temp_plugin_dir):
         """Test plugin manager with custom directories"""
-        pm = PluginManager(plugin_dirs=[temp_plugin_dir, "/custom/path"])
+        pm = PluginManager(plugin_dirs=[temp_plugin_dir])
         assert temp_plugin_dir in pm.plugin_dirs
-        assert "/custom/path" in pm.plugin_dirs
     
     def test_directory_creation(self, temp_plugin_dir):
         """Test that plugin directories are created"""

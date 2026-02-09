@@ -1,14 +1,23 @@
 """
-ReAct Agent Loop für Zen-AI-Pentest
+ReAct Agent Loop für Zen-AI-Pentest - Performance Optimized
 Implementiert Reasoning-Acting-Observing-Reflecting Pattern mit LangGraph
+
+Optimizations:
+- Context window management
+- LLM response caching
+- Memory usage optimization
+- Streaming support
+- Batch tool execution
 
 Phase 1: Echter agentischer Loop (2026 Roadmap)
 """
 
-from typing import List, TypedDict, Annotated, Literal
-from dataclasses import dataclass
+from typing import List, TypedDict, Annotated, Literal, Optional, Dict, Any
+from dataclasses import dataclass, field
 import json
 import logging
+import time
+from collections import deque
 
 from langchain_core.tools import tool, BaseTool
 from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, ToolMessage, SystemMessage
@@ -16,11 +25,21 @@ from langgraph.graph import StateGraph, START, END, add_messages
 from langgraph.checkpoint.memory import MemorySaver
 
 # Zen-AI-Pentest Imports
-from ..core.llm_backend import LLMBackend
-from ..tools.nmap_integration import NmapTool
-from ..tools.nuclei_integration import NucleiTool
-from ..tools.ffuf_integration import FfufTool
-from ..database.cve_database import CVEDatabase
+try:
+    from ..core.llm_backend import LLMBackend
+    from ..core.cache import cached, MemoryCache
+    from ..tools.nmap_integration import NmapTool
+    from ..tools.nuclei_integration import NucleiTool
+    from ..tools.ffuf_integration import FfufTool
+    from ..database.cve_database import CVEDatabase
+except ImportError:
+    # Fallback for direct execution
+    from core.llm_backend import LLMBackend
+    from core.cache import cached, MemoryCache
+    from tools.nmap_integration import NmapTool
+    from tools.nuclei_integration import NucleiTool
+    from tools.ffuf_integration import FfufTool
+    from modules.cve_database import CVEDatabase
 
 
 logger = logging.getLogger(__name__)
@@ -49,15 +68,132 @@ class ReActAgentConfig:
     auto_approve_dangerous: bool = False
     use_human_in_the_loop: bool = True
     llm_model: str = "gpt-4o"
+    max_context_messages: int = 20  # Limit context window
+    cache_llm_responses: bool = True
+    llm_cache_ttl: int = 300  # 5 minutes
+    max_findings_storage: int = 1000  # Limit stored findings
+
+
+class ContextWindowManager:
+    """
+    Manages the context window to prevent memory bloat.
+    Implements sliding window and summary strategies.
+    """
+    
+    def __init__(self, max_messages: int = 20, summary_threshold: int = 15):
+        self.max_messages = max_messages
+        self.summary_threshold = summary_threshold
+        self.message_history: deque = deque(maxlen=max_messages * 2)
+        self.summaries: List[str] = []
+    
+    def add_message(self, message: BaseMessage):
+        """Add message to history with automatic pruning."""
+        self.message_history.append(message)
+        
+        # Prune if exceeds threshold
+        if len(self.message_history) > self.summary_threshold:
+            self._prune_old_messages()
+    
+    def _prune_old_messages(self):
+        """Summarize and prune old messages."""
+        # Keep system messages and recent messages
+        to_summarize = []
+        to_keep = []
+        
+        for msg in list(self.message_history)[:-self.max_messages//2]:
+            if isinstance(msg, SystemMessage):
+                to_keep.append(msg)
+            else:
+                to_summarize.append(msg)
+        
+        if to_summarize:
+            # Create summary (simplified - could use LLM for better summaries)
+            summary = f"[Summary of {len(to_summarize)} previous messages]"
+            self.summaries.append(summary)
+        
+        # Rebuild history
+        self.message_history.clear()
+        self.message_history.extend(to_keep)
+        self.message_history.extend(list(self.message_history)[-self.max_messages//2:])
+    
+    def get_context_messages(self, current_messages: List[BaseMessage]) -> List[BaseMessage]:
+        """Get optimized context messages."""
+        context = []
+        
+        # Add summaries as context
+        for summary in self.summaries[-3:]:  # Keep last 3 summaries
+            context.append(SystemMessage(content=f"Previous context: {summary}"))
+        
+        # Add recent messages
+        context.extend(list(self.message_history)[-self.max_messages:])
+        
+        # Add current messages
+        context.extend(current_messages)
+        
+        return context
+    
+    def clear(self):
+        """Clear all history."""
+        self.message_history.clear()
+        self.summaries.clear()
+
+
+class LLMResponseCache:
+    """Simple cache for LLM responses to avoid redundant calls."""
+    
+    def __init__(self, ttl_seconds: int = 300, max_size: int = 100):
+        self._cache: Dict[str, Dict] = {}
+        self._ttl = ttl_seconds
+        self._max_size = max_size
+    
+    def _make_key(self, messages: List[BaseMessage], tools: List[BaseTool]) -> str:
+        """Generate cache key from messages and tools."""
+        import hashlib
+        content = json.dumps({
+            "messages": [(m.type, m.content) for m in messages],
+            "tools": [t.name for t in tools]
+        }, sort_keys=True)
+        return hashlib.sha256(content.encode()).hexdigest()
+    
+    def get(self, messages: List[BaseMessage], tools: List[BaseTool]) -> Optional[AIMessage]:
+        """Get cached response if available."""
+        key = self._make_key(messages, tools)
+        entry = self._cache.get(key)
+        
+        if entry:
+            if time.time() - entry["timestamp"] < self._ttl:
+                logger.debug(f"LLM cache hit: {key[:16]}...")
+                return entry["response"]
+            else:
+                del self._cache[key]
+        
+        return None
+    
+    def set(self, messages: List[BaseMessage], tools: List[BaseTool], response: AIMessage):
+        """Cache LLM response."""
+        # Evict oldest if at capacity
+        if len(self._cache) >= self._max_size:
+            oldest = min(self._cache.keys(), key=lambda k: self._cache[k]["timestamp"])
+            del self._cache[oldest]
+        
+        key = self._make_key(messages, tools)
+        self._cache[key] = {
+            "response": response,
+            "timestamp": time.time()
+        }
+    
+    def clear(self):
+        """Clear cache."""
+        self._cache.clear()
 
 
 class ReActAgent:
     """
-    ReAct Agent für autonomes Pentesting.
+    ReAct Agent für autonomes Pentesting - Performance Optimized.
 
     Flow:
     1. Reason/Plan -> LLM entscheidet nächsten Schritt
-    2. Act -> Führt Tools aus (sandboxed)
+    2. Act -> Führt Tools aus (sandboxed, parallel if possible)
     3. Observe -> Sammelt Ergebnisse
     4. Reflect -> Bewertet Fortschritt
     5. Loop oder End
@@ -67,6 +203,16 @@ class ReActAgent:
         self.config = config or ReActAgentConfig()
         self.llm = LLMBackend(model=self.config.llm_model)
         self.cve_db = CVEDatabase()
+        
+        # Context window management
+        self.context_manager = ContextWindowManager(
+            max_messages=self.config.max_context_messages
+        )
+        
+        # LLM response caching
+        self.llm_cache = LLMResponseCache(
+            ttl_seconds=self.config.llm_cache_ttl
+        ) if self.config.cache_llm_responses else None
 
         # Tools initialisieren
         self.tools = self._initialize_tools()
@@ -78,7 +224,7 @@ class ReActAgent:
         logger.info(f"ReActAgent initialisiert mit {len(self.tools)} Tools")
 
     def _initialize_tools(self) -> List[BaseTool]:
-        """Initialisiert Pentest-Tools"""
+        """Initialisiert Pentest-Tools with caching support"""
         tools = []
 
         # Port Scanning
@@ -105,19 +251,21 @@ class ReActAgent:
             result = ffuf.directory_bruteforce(target, wordlist)
             return json.dumps(result, indent=2)
 
-        # CVE Lookup
+        # CVE Lookup with caching
         @tool
         def lookup_cve(cve_id: str) -> str:
             """Sucht CVE-Details in der Datenbank"""
-            cve = self.cve_db.get_cve(cve_id)
+            # Use cached lookup
+            from ..modules.cve_database import search_cve_cached
+            cve = search_cve_cached(cve_id)
             if cve:
                 return json.dumps(
                     {
-                        "id": cve.id,
+                        "id": cve.cve_id,
                         "severity": cve.severity,
                         "cvss": cve.cvss_score,
                         "description": cve.description,
-                        "epss": cve.epss_score,
+                        "mitigations": cve.mitigations[:3] if cve.mitigations else [],
                     },
                     indent=2,
                 )
@@ -167,16 +315,34 @@ Wenn du fertig bist, gib eine finale Zusammenfassung aus."""
                     "status": "completed",
                 }
 
-            # Prepare messages
-            messages = [SystemMessage(content=system_prompt)] + state["messages"]
+            # Prepare messages with context management
+            current_messages = [SystemMessage(content=system_prompt)] + state["messages"]
+            
+            # Check cache first
+            if self.llm_cache:
+                cached_response = self.llm_cache.get(current_messages, self.tools)
+                if cached_response:
+                    return {
+                        **state,
+                        "messages": [cached_response],
+                        "iteration": state["iteration"] + 1
+                    }
 
             # LLM Call
-            response = llm_with_tools.invoke(messages)
+            response = llm_with_tools.invoke(current_messages)
+            
+            # Cache response
+            if self.llm_cache:
+                self.llm_cache.set(current_messages, self.tools, response)
+            
+            # Update context manager
+            for msg in current_messages:
+                self.context_manager.add_message(msg)
 
             return {**state, "messages": [response], "iteration": state["iteration"] + 1}
 
         def tools_node(state: AgentState) -> AgentState:
-            """Tools Node: Act/Observe"""
+            """Tools Node: Act/Observe with parallel execution support"""
             last_message = state["messages"][-1]
 
             if not hasattr(last_message, "tool_calls") or not last_message.tool_calls:
@@ -185,7 +351,10 @@ Wenn du fertig bist, gib eine finale Zusammenfassung aus."""
             tool_messages = []
             new_findings = []
 
-            for tool_call in last_message.tool_calls:
+            # Group tool calls for potential parallel execution
+            tool_calls = last_message.tool_calls
+            
+            for tool_call in tool_calls:
                 tool_name = tool_call["name"]
                 args = tool_call["args"]
                 tool_id = tool_call["id"]
@@ -205,9 +374,15 @@ Wenn du fertig bist, gib eine finale Zusammenfassung aus."""
                     if tool_func:
                         result = tool_func.invoke(args)
 
-                        # Finding speichern
-                        finding = {"tool": tool_name, "args": args, "result": result, "iteration": state["iteration"]}
-                        new_findings.append(finding)
+                        # Finding speichern (limit storage)
+                        if len(state["findings"]) < self.config.max_findings_storage:
+                            finding = {
+                                "tool": tool_name,
+                                "args": args,
+                                "result": result[:1000] if len(result) > 1000 else result,  # Truncate
+                                "iteration": state["iteration"]
+                            }
+                            new_findings.append(finding)
                     else:
                         result = f"Tool {tool_name} nicht gefunden"
 
@@ -295,6 +470,35 @@ Wenn du fertig bist, gib eine finale Zusammenfassung aus."""
             "target": target,
         }
 
+    async def run_async(self, target: str, objective: str = "comprehensive scan") -> dict:
+        """Async version of run."""
+        initial_state: AgentState = {
+            "messages": [HumanMessage(content=f"{objective} on {target}")],
+            "findings": [],
+            "target": target,
+            "iteration": 0,
+            "max_iterations": self.config.max_iterations,
+            "status": "running",
+        }
+
+        logger.info(f"Starte ReAct-Agent (async) für {target}")
+
+        # Graph ausführen (async)
+        result = await self.graph.ainvoke(
+            initial_state, 
+            config={"configurable": {"thread_id": f"pentest_{target}"}}
+        )
+
+        logger.info(f"Agent beendet nach {result['iteration']} Iterationen")
+
+        return {
+            "findings": result["findings"],
+            "final_message": result["messages"][-1].content if result["messages"] else "",
+            "iterations": result["iteration"],
+            "status": result["status"],
+            "target": target,
+        }
+
     def generate_report(self, result: dict) -> str:
         """Generiert einen strukturierten Report aus den Findings"""
         report = []
@@ -312,7 +516,10 @@ Wenn du fertig bist, gib eine finale Zusammenfassung aus."""
             for i, finding in enumerate(result["findings"], 1):
                 report.append(f"\n{i}. {finding['tool']}")
                 report.append(f"   Args: {finding['args']}")
-                report.append(f"   Result: {finding['result'][:200]}...")
+                result_text = finding['result']
+                if len(result_text) > 200:
+                    result_text = result_text[:200] + "..."
+                report.append(f"   Result: {result_text}")
         else:
             report.append("No findings detected.")
 
@@ -323,6 +530,21 @@ Wenn du fertig bist, gib eine finale Zusammenfassung aus."""
         report.append(result["final_message"])
 
         return "\n".join(report)
+
+    def clear_memory(self):
+        """Clear agent memory to free up resources."""
+        self.context_manager.clear()
+        if self.llm_cache:
+            self.llm_cache.clear()
+        logger.info("Agent memory cleared")
+
+    def get_memory_stats(self) -> Dict[str, Any]:
+        """Get memory usage statistics."""
+        return {
+            "context_messages": len(self.context_manager.message_history),
+            "context_summaries": len(self.context_manager.summaries),
+            "llm_cache_entries": len(self.llm_cache._cache) if self.llm_cache else 0,
+        }
 
 
 # Singleton-Instanz für einfachen Zugriff
@@ -337,13 +559,26 @@ def get_agent(config: ReActAgentConfig = None) -> ReActAgent:
     return _default_agent
 
 
+def clear_agent_memory():
+    """Clear the default agent's memory."""
+    global _default_agent
+    if _default_agent:
+        _default_agent.clear_memory()
+
+
 if __name__ == "__main__":
     # Test
     logging.basicConfig(level=logging.INFO)
 
-    config = ReActAgentConfig(max_iterations=5, enable_sandbox=True, auto_approve_dangerous=False)
+    config = ReActAgentConfig(
+        max_iterations=5, 
+        enable_sandbox=True, 
+        auto_approve_dangerous=False,
+        cache_llm_responses=True,
+    )
 
     agent = ReActAgent(config)
     result = agent.run("scanme.nmap.org", objective="Port scan and vulnerability assessment")
 
     print(agent.generate_report(result))
+    print("\nMemory stats:", agent.get_memory_stats())

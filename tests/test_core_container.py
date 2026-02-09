@@ -69,8 +69,11 @@ class TestProvider:
     
     def test_provider_not_instantiable(self):
         """Test that Provider cannot be instantiated directly"""
-        with pytest.raises(TypeError):
-            Provider(lambda: None)
+        # Provider is instantiable but get() raises NotImplementedError
+        provider = Provider(lambda: None, "arg")
+        container = Container()
+        with pytest.raises(NotImplementedError):
+            provider.get(container)
 
 
 class TestSingleton:

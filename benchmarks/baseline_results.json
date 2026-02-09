@@ -1,0 +1,240 @@
+{
+  "timestamp": "2026-02-09T20:35:46.560319",
+  "python_version": "3.13.9 (main, Oct 15 2025, 14:56:22) [GCC 15.2.0]",
+  "benchmarks": [
+    {
+      "name": "Memory Cache Operations",
+      "component": "cache",
+      "iterations": 50,
+      "total_time": 0.02287580000665912,
+      "avg_time": 0.0004575160001331824,
+      "min_time": 0.00034419999974488746,
+      "max_time": 0.0011374000005162088,
+      "median_time": 0.000403050000386429,
+      "std_dev": 0.0001470020398296746,
+      "ops_per_second": 2185.715908752702,
+      "metadata": {
+        "cache_type": "memory",
+        "operations": 200
+      }
+    },
+    {
+      "name": "Cache Key Generation",
+      "component": "cache",
+      "iterations": 1000,
+      "total_time": 0.466056405006384,
+      "avg_time": 0.000466056405006384,
+      "min_time": 0.00036840000029769726,
+      "max_time": 0.005208799999309122,
+      "median_time": 0.0004258999997546198,
+      "std_dev": 0.00019316892912432296,
+      "ops_per_second": 2145.663034040487,
+      "metadata": {
+        "operation": "key_generation"
+      }
+    },
+    {
+      "name": "Model Instantiation",
+      "component": "database",
+      "iterations": 100,
+      "total_time": 0.06926350099820411,
+      "avg_time": 0.0006926350099820411,
+      "min_time": 0.0005426000006991671,
+      "max_time": 0.0016594000007899012,
+      "median_time": 0.0006517000001622364,
+      "std_dev": 0.00018217050539909963,
+      "ops_per_second": 1443.761845110787,
+      "metadata": {
+        "model": "Scan",
+        "operations": 100
+      }
+    },
+    {
+      "name": "Finding Model Operations",
+      "component": "database",
+      "iterations": 100,
+      "total_time": 0.07894080000551185,
+      "avg_time": 0.0007894080000551185,
+      "min_time": 0.0006359999988490017,
+      "max_time": 0.0014585000008082716,
+      "median_time": 0.0007685500004299683,
+      "std_dev": 0.00012677813336846137,
+      "ops_per_second": 1266.7720620137843,
+      "metadata": {
+        "model": "Finding",
+        "operations": 100
+      }
+    },
+    {
+      "name": "Single CVE Lookup",
+      "component": "cve_database",
+      "iterations": 1000,
+      "total_time": 0.0023354000186373014,
+      "avg_time": 2.335400018637301e-06,
+      "min_time": 2.1999985619913787e-06,
+      "max_time": 1.8700000509852543e-05,
+      "median_time": 2.2999993234407157e-06,
+      "std_dev": 5.422184690472785e-07,
+      "ops_per_second": 428192.1692299621,
+      "metadata": {
+        "operation": "single_lookup",
+        "cve": "CVE-2021-44228"
+      }
+    },
+    {
+      "name": "Batch CVE Lookup (3)",
+      "component": "cve_database",
+      "iterations": 500,
+      "total_time": 0.0020138000254519284,
+      "avg_time": 4.027600050903857e-06,
+      "min_time": 2.499999027349986e-06,
+      "max_time": 4.8400001105619594e-05,
+      "median_time": 3.899999683198985e-06,
+      "std_dev": 3.534581336814255e-06,
+      "ops_per_second": 248286.81779750803,
+      "metadata": {
+        "operation": "batch_lookup",
+        "batch_size": 3
+      }
+    },
+    {
+      "name": "Severity-based Lookup",
+      "component": "cve_database",
+      "iterations": 100,
+      "total_time": 0.0012654999882215634,
+      "avg_time": 1.2654999882215634e-05,
+      "min_time": 1.1499998436192982e-05,
+      "max_time": 3.319999996165279e-05,
+      "median_time": 1.21000011858996e-05,
+      "std_dev": 3.219585771725055e-06,
+      "ops_per_second": 79020.15087375254,
+      "metadata": {
+        "operation": "severity_lookup",
+        "severity": "Critical"
+      }
+    },
+    {
+      "name": "Cached CVE Lookup",
+      "component": "cve_database",
+      "iterations": 1000,
+      "total_time": 0.0010052999914478278,
+      "avg_time": 1.0052999914478278e-06,
+      "min_time": 8.999995770864189e-07,
+      "max_time": 1.6699999832781032e-05,
+      "median_time": 1.0000003385357559e-06,
+      "std_dev": 5.000119165373698e-07,
+      "ops_per_second": 994727.9503701231,
+      "metadata": {
+        "operation": "cached_lookup"
+      }
+    },
+    {
+      "name": "Tool Registry Operations",
+      "component": "tool_execution",
+      "iterations": 100,
+      "total_time": 41.22714183599419,
+      "avg_time": 0.4122714183599419,
+      "min_time": 0.3476882039994962,
+      "max_time": 0.5299131949996081,
+      "median_time": 0.40792275500007236,
+      "std_dev": 0.031324090807575485,
+      "ops_per_second": 2.4255865322367067,
+      "metadata": {
+        "operations": "check_installed + list_tools"
+      }
+    },
+    {
+      "name": "Command Building",
+      "component": "tool_execution",
+      "iterations": 500,
+      "total_time": 1.095344715000465,
+      "avg_time": 0.00219068943000093,
+      "min_time": 0.001612399999430636,
+      "max_time": 0.007348700999500579,
+      "median_time": 0.0018892999996751314,
+      "std_dev": 0.0007920255783875128,
+      "ops_per_second": 456.4773017595541,
+      "metadata": {
+        "tool": "nmap",
+        "operations": 100
+      }
+    },
+    {
+      "name": "Tool Execution Cache",
+      "component": "tool_execution",
+      "iterations": 100,
+      "total_time": 0.07112060100007511,
+      "avg_time": 0.0007112060100007511,
+      "min_time": 0.0005445999995572492,
+      "max_time": 0.0023920000003272435,
+      "median_time": 0.0006320000002233428,
+      "std_dev": 0.00026973345311130344,
+      "ops_per_second": 1406.0623587797631,
+      "metadata": {
+        "cache_operations": 100
+      }
+    },
+    {
+      "name": "CVE DB Initialization",
+      "component": "memory",
+      "iterations": 10,
+      "total_time": 0.003275399998528883,
+      "avg_time": 0.00032753999985288826,
+      "min_time": 0.00025610000011511147,
+      "max_time": 0.00037319999864848796,
+      "median_time": 0.0003295500000604079,
+      "std_dev": 3.195852151626082e-05,
+      "ops_per_second": 3053.0622227793283,
+      "metadata": {
+        "component": "CVEDatabase"
+      }
+    },
+    {
+      "name": "Tool Executor Initialization",
+      "component": "memory",
+      "iterations": 50,
+      "total_time": 24.945996362008373,
+      "avg_time": 0.4989199272401674,
+      "min_time": 0.42160630299986224,
+      "max_time": 0.962685208000039,
+      "median_time": 0.46463198750006995,
+      "std_dev": 0.10642510249712832,
+      "ops_per_second": 2.00432964369977,
+      "metadata": {
+        "component": "ToolExecutor"
+      }
+    },
+    {
+      "name": "Sequential Async Operations",
+      "component": "async",
+      "iterations": 50,
+      "total_time": 0.6053487560056965,
+      "avg_time": 0.01210697512011393,
+      "min_time": 0.01126760499937518,
+      "max_time": 0.027562311999645317,
+      "median_time": 0.011749055000109365,
+      "std_dev": 0.0022431580398338566,
+      "ops_per_second": 82.5970145374008,
+      "metadata": {
+        "tasks": 10,
+        "pattern": "sequential"
+      }
+    },
+    {
+      "name": "Parallel Async Operations",
+      "component": "async",
+      "iterations": 50,
+      "total_time": 0.08055883499218908,
+      "avg_time": 0.0016111766998437816,
+      "min_time": 0.0013381999997363891,
+      "max_time": 0.002171501000702847,
+      "median_time": 0.0015580005001538666,
+      "std_dev": 0.00019465347878156413,
+      "ops_per_second": 620.664387771347,
+      "metadata": {
+        "tasks": 10,
+        "pattern": "parallel"
+      }
+    }
+  ]
+}
