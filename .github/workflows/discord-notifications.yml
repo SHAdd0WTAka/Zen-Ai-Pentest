@@ -1,0 +1,28 @@
+name: Discord Notifications
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    types: [opened, closed, merged]
+  release:
+    types: [published]
+  issues:
+    types: [opened, closed]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Discord Notification
+      uses: Ilshidur/action-discord@master
+      with:
+        webhook: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        message: |
+          **${{ github.event_name }}** by ${{ github.actor }}
+          Repository: ${{ github.repository }}
+          Ref: ${{ github.ref }}
+          
+          ${{ github.event.head_commit.message }}
+          
+          [View Commit](${{ github.event.head_commit.url }})
