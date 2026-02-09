@@ -1,0 +1,90 @@
+name: Automatic Release Notes
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  generate-release-notes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate Release Notes
+        id: generate
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const tag = context.ref.replace('refs/tags/', '');
+            const previousTag = '${{ github.event.before }}';
+            
+            // Get commits between tags
+            const { data: commits } = await github.rest.repos.listCommits({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: tag,
+              per_page: 50
+            });
+            
+            // Categorize commits
+            const categories = {
+              'Features': [],
+              'Bug Fixes': [],
+              'Security': [],
+              'Documentation': [],
+              'Other': []
+            };
+            
+            commits.forEach(commit => {
+              const msg = commit.commit.message.split('\n')[0];
+              const sha = commit.sha.substring(0, 7);
+              
+              if (msg.includes('feat:') || msg.includes('feature:')) {
+                categories['Features'].push(`- ${msg} (${sha})`);
+              } else if (msg.includes('fix:') || msg.includes('bugfix:')) {
+                categories['Bug Fixes'].push(`- ${msg} (${sha})`);
+              } else if (msg.includes('security:') || msg.includes('cve')) {
+                categories['Security'].push(`- ${msg} (${sha})`);
+              } else if (msg.includes('docs:')) {
+                categories['Documentation'].push(`- ${msg} (${sha})`);
+              } else {
+                categories['Other'].push(`- ${msg} (${sha})`);
+              }
+            });
+            
+            // Build release notes
+            let body = `## Release ${tag}\n\n`;
+            
+            for (const [category, items] of Object.entries(categories)) {
+              if (items.length > 0) {
+                body += `### ${category}\n`;
+                body += items.join('\n') + '\n\n';
+              }
+            }
+            
+            body += `---\n`;
+            body += `**Full Changelog**: https://github.com/${context.repo.owner}/${context.repo.repo}/compare/${previousTag}...${tag}`;
+            
+            core.setOutput('body', body);
+
+      - name: Create/Update Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          body: ${{ steps.generate.outputs.body }}
+          generate_release_notes: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

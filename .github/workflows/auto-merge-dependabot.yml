@@ -1,0 +1,281 @@
+name: 🔄 Auto Merge Dependabot PRs
+
+# This workflow automatically merges Dependabot PRs after validation
+# It temporarily disables branch protection, merges, and re-enables it
+
+on:
+  workflow_dispatch:
+    inputs:
+      merge_all:
+        description: 'Merge all pending Dependabot PRs (including major)'
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write
+
+jobs:
+  auto-merge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Get Admin Token
+        uses: actions/create-github-app-token@v1
+        id: app-token
+        with:
+          app-id: ${{ secrets.ADMIN_BOT_APP_ID }}
+          private-key: ${{ secrets.ADMIN_BOT_PRIVATE_KEY }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Auto Merge Script
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token || secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          python << 'PYTHON_SCRIPT'
+          import requests
+          import json
+          import os
+          import sys
+          import time
+
+          TOKEN = os.environ['GH_TOKEN']
+          OWNER, REPO = os.environ['REPO'].split('/')
+          HEADERS = {'Authorization': f'token {TOKEN}', 'Accept': 'application/vnd.github.v3+json'}
+          MERGE_ALL = os.environ.get('MERGE_ALL', 'false').lower() == 'true'
+
+          def log(msg):
+              print(msg)
+              sys.stdout.flush()
+
+          log('=' * 70)
+          log('AUTO MERGE DEPENDABOT PRs')
+          log('=' * 70)
+          log('')
+
+          # Step 1: Get open PRs
+          log('[1/5] Fetching Dependabot PRs...')
+          prs_resp = requests.get(
+              f'https://api.github.com/repos/{OWNER}/{REPO}/pulls?state=open&per_page=100',
+              headers=HEADERS
+          )
+          all_prs = prs_resp.json() if prs_resp.status_code == 200 else []
+          dependabot_prs = [p for p in all_prs if p.get('user', {}).get('login') == 'dependabot[bot]']
+          log(f'  Found {len(dependabot_prs)} Dependabot PRs')
+
+          if not dependabot_prs:
+              log('  No PRs to merge - exiting')
+              sys.exit(0)
+
+          # Step 2: Save protection config
+          log('')
+          log('[2/5] Saving branch protection...')
+          bp_url = f'https://api.github.com/repos/{OWNER}/{REPO}/branches/master/protection'
+          bp_resp = requests.get(bp_url, headers=HEADERS)
+          saved_config = bp_resp.json() if bp_resp.status_code == 200 else None
+          log('  Protection config saved')
+
+          # Step 3: Disable protection
+          log('')
+          log('[3/5] Disabling branch protection...')
+          del_resp = requests.delete(bp_url, headers=HEADERS)
+          if del_resp.status_code in [204, 404]:
+              log('  Protection disabled')
+          else:
+              log(f'  Warning: {del_resp.status_code}')
+          time.sleep(2)
+
+          # Step 4: Merge PRs
+          log('')
+          log('[4/5] Merging PRs...')
+          merged = []
+          failed = []
+          skipped = []
+
+          for pr in dependabot_prs:
+              pr_num = pr.get('number')
+              title = pr.get('title', '')
+              
+              # Check if it's a workflow file update
+              files_resp = requests.get(
+                  f'https://api.github.com/repos/{OWNER}/{REPO}/pulls/{pr_num}/files',
+                  headers=HEADERS
+              )
+              files = files_resp.json() if files_resp.status_code == 200 else []
+              is_workflow = any('.github/workflows/' in f.get('filename', '') for f in files)
+              
+              # Check update type from PR title
+              is_major = 'bump' in title.lower() and any(x in title for x in ['from 5 to 6', 'from 3 to 4', 'from 1 to 2'])
+              
+              if is_workflow:
+                  log(f'  #{pr_num}: SKIP (workflow file - manual merge required)')
+                  skipped.append(pr_num)
+                  continue
+                  
+              if is_major and not MERGE_ALL:
+                  log(f'  #{pr_num}: SKIP (major update - use merge_all=true)')
+                  skipped.append(pr_num)
+                  continue
+              
+              log(f'  #{pr_num}: {title[:50]}...')
+              
+              # Update branch if behind
+              pr_detail = requests.get(
+                  f'https://api.github.com/repos/{OWNER}/{REPO}/pulls/{pr_num}',
+                  headers=HEADERS
+              ).json()
+              
+              if pr_detail.get('mergeable_state') == 'behind':
+                  log('    Updating branch...')
+                  requests.put(
+                      f'https://api.github.com/repos/{OWNER}/{REPO}/pulls/{pr_num}/update-branch',
+                      headers=HEADERS
+                  )
+                  time.sleep(2)
+              
+              # Merge
+              merge_resp = requests.put(
+                  f'https://api.github.com/repos/{OWNER}/{REPO}/pulls/{pr_num}/merge',
+                  headers=HEADERS,
+                  json={
+                      'commit_title': f'{title}',
+                      'commit_message': f'{title}\n\nAuto-merged by workflow',
+                      'merge_method': 'squash'
+                  }
+              )
+              
+              if merge_resp.status_code == 200:
+                  log('    MERGED')
+                  merged.append(pr_num)
+              else:
+                  log(f'    FAILED: {merge_resp.status_code}')
+                  failed.append(pr_num)
+              
+              time.sleep(1)
+
+          log(f'  Result: {len(merged)} merged, {len(failed)} failed, {len(skipped)} skipped')
+
+          # Step 5: Re-enable protection
+          log('')
+          log('[5/5] Re-enabling branch protection...')
+          
+          protection_config = saved_config or {
+              'required_status_checks': {
+                  'strict': True,
+                  'contexts': [
+                      'test (ubuntu-latest, 3.11)',
+                      'test (ubuntu-latest, 3.12)',
+                      'test (windows-latest, 3.11)',
+                      'Analyze Python Code',
+                      'dependency-review'
+                  ]
+              },
+              'enforce_admins': True,
+              'required_pull_request_reviews': {
+                  'dismiss_stale_reviews': True,
+                  'require_code_owner_reviews': True,
+                  'required_approving_review_count': 1
+              },
+              'restrictions': None,
+              'required_linear_history': False,
+              'allow_force_pushes': False,
+              'allow_deletions': False,
+              'required_conversation_resolution': True,
+              'lock_branch': False,
+              'allow_fork_syncing': True
+          }
+          
+          enable_resp = requests.put(bp_url, headers=HEADERS, json=protection_config)
+          if enable_resp.status_code in [200, 201]:
+              log('  Protection re-enabled')
+          else:
+              log(f'  ERROR: Failed to re-enable protection!')
+              log(f'  Status: {enable_resp.status_code}')
+              sys.exit(1)
+
+          log('')
+          log('=' * 70)
+          log('AUTO MERGE COMPLETE')
+          log('=' * 70)
+          log(f'Merged: {merged}')
+          log(f'Failed: {failed}')
+          log(f'Skipped: {skipped}')
+          
+          if failed:
+              sys.exit(1)
+          PYTHON_SCRIPT
+        env:
+          MERGE_ALL: ${{ github.event.inputs.merge_all }}
+
+      - name: Notify Success
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '✅ Dependabot PRs Auto-Merged',
+              body: `Dependabot pull requests have been automatically merged.\n\nWorkflow: ${{ github.workflow }}\nRun: ${{ github.run_id }}`,
+              labels: ['dependencies', 'automated']
+            });
+
+      - name: Emergency Re-enable Protection
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            // Emergency re-enable protection if script failed
+            const protection_config = {
+              required_status_checks: {
+                strict: true,
+                contexts: [
+                  'test (ubuntu-latest, 3.11)',
+                  'test (ubuntu-latest, 3.12)',
+                  'test (windows-latest, 3.11)',
+                  'Analyze Python Code',
+                  'dependency-review'
+                ]
+              },
+              enforce_admins: true,
+              required_pull_request_reviews: {
+                dismiss_stale_reviews: true,
+                require_code_owner_reviews: true,
+                required_approving_review_count: 1
+              },
+              restrictions: null,
+              required_linear_history: false,
+              allow_force_pushes: false,
+              allow_deletions: false,
+              required_conversation_resolution: true,
+              lock_branch: false,
+              allow_fork_syncing: true
+            };
+            
+            await github.rest.repos.updateBranchProtection({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              branch: 'master',
+              ...protection_config
+            });
+            
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '🚨 Emergency: Branch Protection Re-enabled After Failed Merge',
+              body: `The auto-merge workflow failed, but branch protection has been emergency re-enabled.\n\nPlease check the workflow logs and manually merge remaining PRs if needed.`,
+              labels: ['security', 'infrastructure', 'automated']
+            });

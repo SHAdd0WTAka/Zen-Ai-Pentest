@@ -1,0 +1,29 @@
+# =============================================================================
+# Zen AI Pentest - Example GitHub Action Usage
+# =============================================================================
+# This workflow demonstrates how to use the Zen AI Pentest GitHub Action
+# in your CI/CD pipeline.
+# 
+# Features:
+# - Automated security scanning on PR and scheduled runs
+# - SARIF output for GitHub Security tab integration
+# - Multiple scan configurations for different use cases
+# - Slack notifications on findings
+# =============================================================================
+
+name: Zen AI Pentest Security Scan
+
+on:
+  # Run on pull requests
+  pull_request:
+    branches: [ main, develop, 'release/*' ]
+    paths:
+      - 'src/**'
+      - 'app/**'
+      - '**.py'
+      - '**.js'
+      - '**.ts'
+  
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true

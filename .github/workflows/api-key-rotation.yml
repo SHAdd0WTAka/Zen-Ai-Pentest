@@ -1,0 +1,21 @@
+name: API Key Health Check & Rotation
+
+on:
+  schedule:
+    # Weekly check (Sundays at 03:00 UTC)
+    - cron: '0 3 * * 0'
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action to perform'
+        required: true
+        default: 'check'
+        type: choice
+        options:
+          - check
+          - cleanup
+          - rotate-expired
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true

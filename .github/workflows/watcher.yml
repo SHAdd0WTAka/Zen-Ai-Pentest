@@ -1,0 +1,27 @@
+name: File Watcher
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Check for sensitive file changes
+        run: |
+          echo "Checking for changes to sensitive files..."
+          git diff --name-only HEAD~1 HEAD | grep -E "(password|secret|key|token|credential)" && echo "Warning: Sensitive file modified" || echo "No sensitive files changed"
