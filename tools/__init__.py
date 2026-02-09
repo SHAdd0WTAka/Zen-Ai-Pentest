@@ -113,6 +113,101 @@ try:
 except ImportError as e:
     logger.warning(f"aircrack_integration not available: {e}")
 
+# New Security Tools - 2026 Q1
+
+try:
+    from .zap_integration import (
+        ZAPScanner,
+        ZAPAlert,
+        ZAPScanResult,
+        zap_scan_url,
+        zap_quick_scan,
+        zap_spider_only,
+    )
+
+    TOOL_REGISTRY["zap_scan_url"] = zap_scan_url
+    TOOL_REGISTRY["zap_quick_scan"] = zap_quick_scan
+    TOOL_REGISTRY["zap_spider_only"] = zap_spider_only
+except ImportError as e:
+    logger.warning(f"zap_integration not available: {e}")
+
+try:
+    from .trufflehog_integration import (
+        TruffleHogScanner,
+        TruffleHogFinding,
+        TruffleHogResult,
+        trufflehog_scan_git,
+        trufflehog_scan_path,
+        trufflehog_scan_local_repo,
+    )
+
+    TOOL_REGISTRY["trufflehog_scan_git"] = trufflehog_scan_git
+    TOOL_REGISTRY["trufflehog_scan_path"] = trufflehog_scan_path
+    TOOL_REGISTRY["trufflehog_scan_local_repo"] = trufflehog_scan_local_repo
+except ImportError as e:
+    logger.warning(f"trufflehog_integration not available: {e}")
+
+try:
+    from .scout_integration import (
+        ScoutSuiteScanner,
+        ScoutFinding,
+        ScoutResult,
+        CloudProvider,
+        scoutsuite_scan_aws,
+        scoutsuite_scan_azure,
+        scoutsuite_scan_gcp,
+        scoutsuite_quick_scan,
+    )
+
+    TOOL_REGISTRY["scoutsuite_scan_aws"] = scoutsuite_scan_aws
+    TOOL_REGISTRY["scoutsuite_scan_azure"] = scoutsuite_scan_azure
+    TOOL_REGISTRY["scoutsuite_scan_gcp"] = scoutsuite_scan_gcp
+    TOOL_REGISTRY["scoutsuite_quick_scan"] = scoutsuite_quick_scan
+except ImportError as e:
+    logger.warning(f"scout_integration not available: {e}")
+
+try:
+    from .trivy_integration import (
+        TrivyScanner,
+        TrivyVulnerability,
+        TrivyMisconfiguration,
+        TrivySecret,
+        TrivyResult,
+        TrivyScanTarget,
+        TrivyScannerType,
+        trivy_scan_image,
+        trivy_scan_filesystem,
+        trivy_scan_dockerfile,
+        trivy_generate_sbom,
+    )
+
+    TOOL_REGISTRY["trivy_scan_image"] = trivy_scan_image
+    TOOL_REGISTRY["trivy_scan_filesystem"] = trivy_scan_filesystem
+    TOOL_REGISTRY["trivy_scan_dockerfile"] = trivy_scan_dockerfile
+    TOOL_REGISTRY["trivy_generate_sbom"] = trivy_generate_sbom
+except ImportError as e:
+    logger.warning(f"trivy_integration not available: {e}")
+
+try:
+    from .semgrep_integration import (
+        SemgrepScanner,
+        SemgrepFinding,
+        SemgrepResult,
+        SemgrepSeverity,
+        SemgrepConfidence,
+        semgrep_scan_code,
+        semgrep_scan_owasp,
+        semgrep_scan_secrets,
+        semgrep_scan_ci,
+    )
+
+    TOOL_REGISTRY["semgrep_scan_code"] = semgrep_scan_code
+    TOOL_REGISTRY["semgrep_scan_owasp"] = semgrep_scan_owasp
+    TOOL_REGISTRY["semgrep_scan_secrets"] = semgrep_scan_secrets
+    TOOL_REGISTRY["semgrep_scan_ci"] = semgrep_scan_ci
+except ImportError as e:
+    logger.warning(f"semgrep_integration not available: {e}")
+
 
 # Mock tools für Testzwecke
 def mock_scan(target, **kwargs):
@@ -131,6 +226,51 @@ __all__ = [
     "NmapScanner",
     "ScanType",
     "TimingTemplate",
+    # ZAP Integration
+    "ZAPScanner",
+    "ZAPAlert",
+    "ZAPScanResult",
+    "zap_scan_url",
+    "zap_quick_scan",
+    "zap_spider_only",
+    # TruffleHog Integration
+    "TruffleHogScanner",
+    "TruffleHogFinding",
+    "TruffleHogResult",
+    "trufflehog_scan_git",
+    "trufflehog_scan_path",
+    "trufflehog_scan_local_repo",
+    # ScoutSuite Integration
+    "ScoutSuiteScanner",
+    "ScoutFinding",
+    "ScoutResult",
+    "CloudProvider",
+    "scoutsuite_scan_aws",
+    "scoutsuite_scan_azure",
+    "scoutsuite_scan_gcp",
+    "scoutsuite_quick_scan",
+    # Trivy Integration
+    "TrivyScanner",
+    "TrivyVulnerability",
+    "TrivyMisconfiguration",
+    "TrivySecret",
+    "TrivyResult",
+    "TrivyScanTarget",
+    "TrivyScannerType",
+    "trivy_scan_image",
+    "trivy_scan_filesystem",
+    "trivy_scan_dockerfile",
+    "trivy_generate_sbom",
+    # Semgrep Integration
+    "SemgrepScanner",
+    "SemgrepFinding",
+    "SemgrepResult",
+    "SemgrepSeverity",
+    "SemgrepConfidence",
+    "semgrep_scan_code",
+    "semgrep_scan_owasp",
+    "semgrep_scan_secrets",
+    "semgrep_scan_ci",
 ]
 
 
