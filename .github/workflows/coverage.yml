@@ -2,9 +2,9 @@ name: Test Coverage
 
 on:
   push:
-    branches: [ master, main ]
+    branches: [ main ]
   pull_request:
-    branches: [ master, main ]
+    branches: [ main ]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -29,15 +29,18 @@ jobs:
     - name: Install dependencies
       run: |
         pip install -r requirements.txt
-        pip install -r .github/test-requirements.txt || true
+        pip install pytest pytest-cov pytest-asyncio
     
     - name: Run tests with coverage
-      run: pytest --cov=. --cov-report=xml --cov-fail-under=70 || true
-      continue-on-error: true
+      run: pytest --cov=. --cov-report=xml --cov-report=term -v
+      env:
+        PYTHONPATH: ${{ github.workspace }}
     
-    - name: Upload coverage
-      uses: codecov/codecov-action@v4
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v5
       with:
-        file: ./coverage.xml
+        files: ./coverage.xml
         fail_ci_if_error: false
-        token: ${{ secrets.CODECOV_TOKEN }}
+        verbose: true
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
