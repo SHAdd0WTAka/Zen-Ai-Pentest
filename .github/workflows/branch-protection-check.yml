@@ -18,10 +18,10 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Check Branch Protection Rules
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -94,7 +94,7 @@ jobs:
 
       - name: Generate Branch Protection Report
         if: always()
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -184,7 +184,7 @@ jobs:
 
       - name: Upload Report
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: branch-protection-report
           path: branch-protection-report.md
@@ -192,7 +192,7 @@ jobs:
 
       - name: Create Issue if Not Protected
         if: failure()
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
