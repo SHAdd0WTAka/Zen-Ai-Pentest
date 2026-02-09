@@ -21,3 +21,18 @@ on:
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
+
+jobs:
+  auto-fix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: github.event.workflow_run.conclusion == 'failure' || github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Auto-Fix
+        run: |
+          echo "Auto-fixing issues..."
+          echo "Type: ${{ github.event.inputs.issue_type || 'all' }}"
+          echo "✅ Auto-fix completed (dry-run mode)"

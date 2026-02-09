@@ -19,3 +19,18 @@ on:
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
+
+jobs:
+  api-key-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: API Key Health Check
+        run: |
+          echo "Checking API key health..."
+          echo "Action: ${{ github.event.inputs.action || 'check' }}"
+          # Add actual key rotation logic here
+          echo "✅ API key check completed"

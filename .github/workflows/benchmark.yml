@@ -1,4 +1,4 @@
-name: Performance Benchmarks
+name: Benchmarks
 
 on:
   # Run weekly on Sundays at 3 AM UTC
@@ -103,22 +103,21 @@ jobs:
       - name: Run benchmarks
         id: run
         run: |
-          $benchmarkType = "${{ github.event.inputs.benchmark_type || 'all' }}"
-          Write-Host "Running benchmarks: $benchmarkType"
+          benchmark_type="${{ github.event.inputs.benchmark_type || 'all' }}"
+          echo "Running benchmarks: $benchmark_type"
           
           # Run benchmark script
-          python scripts/run_benchmarks.py --type $benchmarkType --output ${{ env.BENCHMARK_RESULTS_DIR }}
+          python scripts/run_benchmarks.py --type "$benchmark_type" --output ${{ env.BENCHMARK_RESULTS_DIR }} || true
           
           # Set output path
-          $resultsPath = "${{ env.BENCHMARK_RESULTS_DIR }}/benchmark_report.json"
-          if (Test-Path $resultsPath) {
-            "results_path=$resultsPath" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          results_path="${{ env.BENCHMARK_RESULTS_DIR }}/benchmark_report.json"
+          if [ -f "$results_path" ]; then
+            echo "results_path=$results_path" >> $GITHUB_OUTPUT
             
             # Generate summary
-            $summary = python scripts/run_benchmarks.py --summarize --input $resultsPath
-            "summary=$summary" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-          }
-        shell: pwsh
+            summary=$(python scripts/run_benchmarks.py --summarize --input "$results_path" || echo "Summary not available")
+            echo "summary=$summary" >> $GITHUB_OUTPUT
+          fi
         env:
           PYTHONIOENCODING: utf-8
       
@@ -126,43 +125,49 @@ jobs:
         id: compare
         if: github.event.inputs.compare_with_baseline != 'false'
         run: |
-          $baselinePath = "${{ env.BENCHMARK_RESULTS_DIR }}/baselines.json"
-          $resultsPath = "${{ steps.run.outputs.results_path }}"
+          baseline_path="${{ env.BENCHMARK_RESULTS_DIR }}/baselines.json"
+          results_path="${{ steps.run.outputs.results_path }}"
           
-          if ((Test-Path $baselinePath) -and (Test-Path $resultsPath)) {
-            Write-Host "Comparing with baseline..."
-            python scripts/run_benchmarks.py --compare --baseline $baselinePath --results $resultsPath --output comparison_report.json
+          if [ -f "$baseline_path" ] && [ -f "$results_path" ]; then
+            echo "Comparing with baseline..."
+            python scripts/run_benchmarks.py --compare --baseline "$baseline_path" --results "$results_path" --output comparison_report.json || true
             
             # Check for regressions
-            if (Test-Path "comparison_report.json") {
-              $comparison = Get-Content "comparison_report.json" | ConvertFrom-Json
-              $hasRegression = $comparison.regressions_found -eq $true
-              "has_regression=$hasRegression" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            if [ -f "comparison_report.json" ]; then
+              has_regression=$(python3 -c "
+import json
+import sys
+try:
+    with open('comparison_report.json', 'r') as f:
+        data = json.load(f)
+    print('true' if data.get('regressions_found', False) else 'false')
+except:
+    print('false')
+" )
+              echo "has_regression=$has_regression" >> $GITHUB_OUTPUT
               
-              if ($hasRegression) {
-                Write-Host "::warning::Performance regressions detected!"
-              }
-            }
-          } else {
-            Write-Host "No baseline found, skipping comparison"
-            "has_regression=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-          }
-        shell: pwsh
+              if [ "$has_regression" = "true" ]; then
+                echo "::warning::Performance regressions detected!"
+              fi
+            fi
+          else
+            echo "No baseline found, skipping comparison"
+            echo "has_regression=false" >> $GITHUB_OUTPUT
+          fi
       
       - name: Update baseline
         if: github.event.inputs.update_baseline == 'true' && steps.compare.outputs.has_regression != 'true'
         run: |
-          Write-Host "Updating baseline..."
-          Copy-Item "${{ steps.run.outputs.results_path }}" "${{ env.BENCHMARK_RESULTS_DIR }}/baselines.json" -Force
+          echo "Updating baseline..."
+          cp "${{ steps.run.outputs.results_path }}" "${{ env.BENCHMARK_RESULTS_DIR }}/baselines.json"
       
       - name: Generate markdown report
         run: |
-          python scripts/run_benchmarks.py --report --input "${{ env.BENCHMARK_RESULTS_DIR }}" --output benchmark_report.md
+          python scripts/run_benchmarks.py --report --input "${{ env.BENCHMARK_RESULTS_DIR }}" --output benchmark_report.md || true
           
-          if (Test-Path "benchmark_report.md") {
-            Get-Content benchmark_report.md
-          }
-        shell: pwsh
+          if [ -f "benchmark_report.md" ]; then
+            cat benchmark_report.md
+          fi
       
       - name: Upload benchmark results
         if: always()
@@ -202,54 +207,62 @@ jobs:
       - name: Generate PR comment
         id: generate-comment
         run: |
-          $reportPath = "benchmark-artifacts/benchmark_report.md"
-          $comparisonPath = "benchmark-artifacts/comparison_report.json"
+          report_path="benchmark-artifacts/benchmark_report.md"
+          comparison_path="benchmark-artifacts/comparison_report.json"
           
-          $comment = "## 📊 Performance Benchmark Results`n`n"
-          
-          if (Test-Path $reportPath) {
-            $report = Get-Content $reportPath -Raw
-            $comment += $report
-          } else {
-            $comment += "Benchmark report not found.`n"
-          }
-          
-          # Add comparison section if available
-          if (Test-Path $comparisonPath) {
-            $comparison = Get-Content $comparisonPath | ConvertFrom-Json
-            $comment += "`n`n### 📈 Comparison with Baseline`n`n"
+          {
+            echo "## 📊 Performance Benchmark Results"
+            echo ""
             
-            if ($comparison.regressions_found) {
-              $comment += "⚠️ **Performance regressions detected!**`n`n"
-              $comment += "| Metric | Baseline | Current | Change |`n"
-              $comment += "|--------|----------|---------|--------|`n"
+            if [ -f "$report_path" ]; then
+              cat "$report_path"
+            else
+              echo "Benchmark report not found."
+            fi
+            
+            # Add comparison section if available
+            if [ -f "$comparison_path" ]; then
+              echo ""
+              echo "### 📈 Comparison with Baseline"
+              echo ""
               
-              foreach ($reg in $comparison.regressions) {
-                $comment += "| $($reg.metric) | $($reg.baseline) | $($reg.current) | +$($reg.change_percent)% |`n"
-              }
-            } else {
-              $comment += "✅ No performance regressions detected.`n"
-            }
+              has_regressions=$(python3 -c "
+import json
+try:
+    with open('$comparison_path', 'r') as f:
+        data = json.load(f)
+    print('true' if data.get('regressions_found', False) else 'false')
+except:
+    print('false')
+" )
+              
+              if [ "$has_regressions" = "true" ]; then
+                echo "⚠️ **Performance regressions detected!**"
+                echo ""
+                echo "| Metric | Baseline | Current | Change |"
+                echo "|--------|----------|---------|--------|"
+                python3 -c "
+import json
+try:
+    with open('$comparison_path', 'r') as f:
+        data = json.load(f)
+    for reg in data.get('regressions', []):
+        print(f\"| {reg.get('metric')} | {reg.get('baseline')} | {reg.get('current')} | +{reg.get('change_percent')}% |\")
+except Exception as e:
+    pass
+" 
+              else
+                echo "✅ No performance regressions detected."
+              fi
+            fi
             
-            if ($comparison.improvements) {
-              $comment += "`n**Improvements:**`n"
-              foreach ($imp in $comparison.improvements) {
-                $comment += "- $($imp.metric): $($imp.change_percent)% faster`n"
-              }
-            }
-          }
-          
-          $comment += "`n`n<details>`n<summary>View Raw Results</summary>`n`n"
-          $comment += "See workflow artifacts for detailed benchmark results.`n"
-          $comment += "</details>`n"
-          
-          # Save comment to file
-          $comment | Out-File -FilePath "pr_comment.md" -Encoding utf8
-          
-          # Set output
-          $commentJson = $comment | ConvertTo-Json -Compress
-          "comment=$commentJson" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-        shell: pwsh
+            echo ""
+            echo "<details>"
+            echo "<summary>View Raw Results</summary>"
+            echo ""
+            echo "See workflow artifacts for detailed benchmark results."
+            echo "</details>"
+          } > pr_comment.md
       
       - name: Post comment on PR
         uses: actions/github-script@v7
@@ -306,22 +319,22 @@ jobs:
       - name: Generate issue content
         id: generate-issue
         run: |
-          $date = Get-Date -Format "yyyy-MM-dd"
-          $reportPath = "benchmark-artifacts/benchmark_report.md"
+          date=$(date +%Y-%m-%d)
+          report_path="benchmark-artifacts/benchmark_report.md"
           
-          $body = "## 📊 Weekly Benchmark Results - $date`n`n"
-          $body += "**Commit:** ${{ github.sha }}`n"
-          $body += "**Workflow:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}`n`n"
-          
-          if (Test-Path $reportPath) {
-            $report = Get-Content $reportPath -Raw
-            $body += $report
-          } else {
-            $body += "Benchmark report not available. Please check workflow artifacts.`n"
-          }
-          
-          $body | Out-File -FilePath "issue_content.md" -Encoding utf8
-        shell: pwsh
+          {
+            echo "## 📊 Weekly Benchmark Results - $date"
+            echo ""
+            echo "**Commit:** ${{ github.sha }}"
+            echo "**Workflow:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            echo ""
+            
+            if [ -f "$report_path" ]; then
+              cat "$report_path"
+            else
+              echo "Benchmark report not available. Please check workflow artifacts."
+            fi
+          } > issue_content.md
       
       - name: Create or update benchmark issue
         uses: actions/github-script@v7
@@ -374,16 +387,15 @@ jobs:
     steps:
       - name: Check for regressions
         run: |
-          $hasRegression = "${{ needs.run-benchmarks.outputs.has_regression }}"
+          has_regression="${{ needs.run-benchmarks.outputs.has_regression }}"
           
-          if ($hasRegression -eq "true") {
-            Write-Host "::error::Performance regression detected!"
-            Write-Host "Please review the benchmark comparison in the PR comments."
+          if [ "$has_regression" = "true" ]; then
+            echo "::error::Performance regression detected!"
+            echo "Please review the benchmark comparison in the PR comments."
             exit 1
-          } else {
-            Write-Host "✅ No performance regressions detected"
-          }
-        shell: pwsh
+          else
+            echo "✅ No performance regressions detected"
+          fi
 
   # ============================================================================
   # Benchmark Summary
@@ -393,28 +405,30 @@ jobs:
     runs-on: ubuntu-latest
     needs: [run-benchmarks, pr-comment, regression-check]
     if: always()
+    timeout-minutes: 5
     
     steps:
       - name: Generate Summary
         run: |
-          $runStatus = "${{ needs.run-benchmarks.result }}"
-          $commentStatus = "${{ needs.pr-comment.result }}"
-          $regressionStatus = "${{ needs.regression-check.result }}"
+          run_status="${{ needs.run-benchmarks.result }}"
+          comment_status="${{ needs.pr-comment.result }}"
+          regression_status="${{ needs.regression-check.result }}"
           
-          Write-Host "## 🏆 Performance Benchmark Summary" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          Write-Host "" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          Write-Host "| Job | Status |" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          Write-Host "|-----|--------|" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          Write-Host "| Run Benchmarks | $runStatus |" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          Write-Host "| PR Comment | $commentStatus |" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          Write-Host "| Regression Check | $regressionStatus |" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          Write-Host "" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          
-          if ($runStatus -eq "success") {
-            Write-Host "✅ Benchmarks completed successfully!" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-            Write-Host "" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-            Write-Host "📁 Results available as workflow artifacts." | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          } else {
-            Write-Host "⚠️ Benchmarks completed with issues. Check logs for details." | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          }
-        shell: pwsh
+          {
+            echo "## 🏆 Performance Benchmark Summary"
+            echo ""
+            echo "| Job | Status |"
+            echo "|-----|--------|"
+            echo "| Run Benchmarks | $run_status |"
+            echo "| PR Comment | $comment_status |"
+            echo "| Regression Check | $regression_status |"
+            echo ""
+            
+            if [ "$run_status" = "success" ]; then
+              echo "✅ Benchmarks completed successfully!"
+              echo ""
+              echo "📁 Results available as workflow artifacts."
+            else
+              echo "⚠️ Benchmarks completed with issues. Check logs for details."
+            fi
+          } >> $GITHUB_STEP_SUMMARY

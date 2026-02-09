@@ -15,6 +15,7 @@ permissions:
 jobs:
   scheduled-merge:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     if: github.repository == 'SHAdd0WTAka/zen-ai-pentest'
     steps:
       - name: Check for Dependabot PRs
