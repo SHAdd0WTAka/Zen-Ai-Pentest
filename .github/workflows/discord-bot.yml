@@ -9,6 +9,7 @@ on:
     types: [published]
   issues:
     types: [opened, closed, reopened]
+  workflow_dispatch:
 
 jobs:
   notify:
@@ -27,12 +28,3 @@ jobs:
           Commit: ${{ github.event.head_commit.message }}
           
           [View on GitHub](${{ github.event.head_commit.url }})
-
-  bot-status:
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    steps:
-    - name: Update Discord Bot Status
-      run: |
-        echo "Bot would update status here with commit info"
-        # This requires the bot token to be properly set up
