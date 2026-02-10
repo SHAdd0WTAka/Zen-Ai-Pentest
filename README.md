@@ -635,3 +635,21 @@ Join our Discord community for real-time support, discussions, and updates:
 - 💡 Feature discussions
 - 🐛 Bug reporting
 
+
+---
+
+## 🎨 Art & Vision
+
+<p align="center">
+  <img src="assets/branding/kimi-ai-artwork.jpeg" width="400" alt="Kimi AI Artwork">
+</p>
+
+<p align="center">
+  <b>AI Development Partner</b><br>
+  <i>Architecture & Design</i>
+</p>
+
+**Hemisphere Sync** - Left Brain (Creative) + Right Brain (Logic) = **KIMI**
+
+Custom artwork by **SHAdd0WTAka** representing the fusion of human vision and AI capability.
+
