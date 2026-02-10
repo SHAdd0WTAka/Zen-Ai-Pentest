@@ -1,28 +1,30 @@
 name: Discord Notifications
 
 on:
+  workflow_run:
+    workflows: ["Coverage", "Test", "Security Scan", "Build"]
+    types:
+      - completed
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
     types: [opened, closed, merged]
-  release:
-    types: [published]
-  issues:
-    types: [opened, closed]
 
 jobs:
   notify:
     runs-on: ubuntu-latest
+    if: always()
     steps:
-    - name: Discord Notification
-      uses: Ilshidur/action-discord@master
-      with:
-        webhook: ${{ secrets.DISCORD_WEBHOOK_URL }}
-        message: |
-          **${{ github.event_name }}** by ${{ github.actor }}
-          Repository: ${{ github.repository }}
-          Ref: ${{ github.ref }}
-          
-          ${{ github.event.head_commit.message }}
-          
-          [View Commit](${{ github.event.head_commit.url }})
+      - name: Send Discord Notification
+        uses: sarisia/actions-status-discord@v1
+        with:
+          webhook: https://discord.com/api/webhooks/1470872093473378448/itojPo72PMHvdyoxagYPAQjndVlMRwpgokDlPDxZIR_QoWGCLePsv5q4PYE4DenYo39-
+          title: "🚀 Zen AI Pentest CI/CD"
+          description: |
+            **Workflow:** ${{ github.event.workflow_run.name || 'Push to main' }}
+            **Status:** ${{ github.event.workflow_run.conclusion || 'Running' }}
+            **Branch:** ${{ github.ref_name }}
+            **Commit:** ${{ github.event.workflow_run.head_commit.message || github.event.head_commit.message }}
+          color: ${{ github.event.workflow_run.conclusion == 'success' && '0x00ff00' || github.event.workflow_run.conclusion == 'failure' && '0xff0000' || '0xffff00' }}
+          username: "Captain Kimi CI/CD"
+          avatar_url: "https://github.com/SHAdd0WTAka.png"
