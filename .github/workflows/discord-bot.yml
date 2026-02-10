@@ -1,0 +1,38 @@
+name: Discord Bot Integration
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    types: [opened, closed, merged]
+  release:
+    types: [published]
+  issues:
+    types: [opened, closed, reopened]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Send Discord Notification
+      uses: Ilshidur/action-discord@master
+      env:
+        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+      with:
+        args: |
+          🚀 **${{ github.event_name }}** by ${{ github.actor }}
+          
+          Repository: ${{ github.repository }}
+          Branch: ${{ github.ref }}
+          Commit: ${{ github.event.head_commit.message }}
+          
+          [View on GitHub](${{ github.event.head_commit.url }})
+
+  bot-status:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+    - name: Update Discord Bot Status
+      run: |
+        echo "Bot would update status here with commit info"
+        # This requires the bot token to be properly set up
