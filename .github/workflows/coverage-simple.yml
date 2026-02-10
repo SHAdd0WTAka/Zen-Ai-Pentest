@@ -23,7 +23,6 @@ jobs:
     
     - name: Create dummy coverage
       run: |
-        # Create minimal test that passes
         echo "def test_dummy(): assert True" > dummy_test.py
         pytest dummy_test.py --cov=. --cov-report=xml
         ls -la coverage.xml
@@ -32,5 +31,5 @@ jobs:
       uses: codecov/codecov-action@v5
       with:
         files: ./coverage.xml
-        token: 5865c451-1a72-413d-aa5f-e6a3b840ed2b
+        token: ab0fa3aa-0a62-4fdf-b912-7af9e27a979d
         fail_ci_if_error: false
