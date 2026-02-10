@@ -46,9 +46,10 @@ jobs:
         if [ -f coverage.xml ]; then
           echo "✅ Coverage file found"
           ls -lh coverage.xml
+          wc -l coverage.xml
         else
-          echo "⚠️ Creating minimal coverage file"
-          echo '<?xml version="1.0"?><coverage version="1.0"><packages></packages></coverage>' > coverage.xml
+          echo "⚠️ No coverage.xml generated"
+          exit 1
         fi
     
     - name: Upload coverage to Codecov
@@ -57,3 +58,4 @@ jobs:
         files: ./coverage.xml
         fail_ci_if_error: false
         verbose: true
+        token: 5865c451-1a72-413d-aa5f-e6a3b840ed2b
