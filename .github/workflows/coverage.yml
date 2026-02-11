@@ -79,7 +79,7 @@ jobs:
           fail_ci_if_error: true
           verbose: true
         env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+          CODECOV_TOKEN: 5865c451-1a72-413d-aa5f-e6a3b840ed2b
       
       - name: Upload artifact
         if: always()
