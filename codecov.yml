@@ -1,71 +1,64 @@
 codecov:
   token: ab0fa3aa-0a62-4fdf-b912-7af9e27a979d
-  require_ci_to_pass: true
   notify:
     wait_for_ci: true
+  require_ci_to_pass: true
 
-# Path Fixing - WICHTIG für korrekte Coverage-Anzeige
-fixes:
-  # GitHub Actions spezifische Pfade
-  - "home/runner/work/Zen-Ai-Pentest/Zen-Ai-Pentest/::"
-  - "/home/runner/work/Zen-Ai-Pentest/Zen-Ai-Pentest/::"
-  # Entferne CI-spezifische Präfixe
-  - "/github/workspace/::"
-  # Windows Pfade (falls verwendet)
-  - "C:/Users/runner/work/Zen-Ai-Pentest/::"
-  - "D:/a/Zen-Ai-Pentest/Zen-Ai-Pentest/::"
-  # Allgemeine CI Pfade
-  - "/__w/Zen-Ai-Pentest/Zen-Ai-Pentest/::"
+comment:
+  behavior: default
+  layout: reach,diff,flags,tree
+  require_base: false
+  require_changes: false
+  require_head: true
 
 coverage:
   precision: 2
+  range: [60.0, 80.0]
   round: down
-  range: "60...80"
-  
   status:
     project:
       default:
-        target: 80%
-        threshold: 5%
+        target: 80.0
+        threshold: 5.0
         paths:
-          - "core/"
-          - "modules/"
-          - "api/"
+          - "core/**"
+          - "modules/**"
+          - "api/**"
     patch:
       default:
-        target: 80%
-        threshold: 5%
+        target: 80.0
+        threshold: 5.0
 
-comment:
-  layout: "reach,diff,flags,tree"
-  behavior: default
-  require_changes: false
-  require_base: false
-  require_head: true
+# Path Fixing für GitHub Actions
+fixes:
+  - "home/runner/work/Zen-Ai-Pentest/Zen-Ai-Pentest/::"
+  - "/home/runner/work/Zen-Ai-Pentest/Zen-Ai-Pentest/::"
+  - "/github/workspace/::"
+  - "/__w/Zen-Ai-Pentest/Zen-Ai-Pentest/::"
+
+# Ignorierte Pfade
+ignore:
+  - "tests/**"
+  - "**/tests/**"
+  - "test_*.py"
+  - "*_test.py"
+  - "docs/**"
+  - "examples/**"
+  - "scripts/**"
+  - "benchmarks/**"
+  - "ci_cd/**"
+  - ".github/**"
+  - "venv/**"
+  - ".venv/**"
+  - "__pycache__/**"
+  - "*.pyc"
+  - "*.pyo"
+  - "*.egg-info/**"
 
 parsers:
   gcov:
     branch_detection:
-      conditional: yes
-      loop: yes
-      method: no
-      macro: no
-
-# Ignorierte Pfade
-ignore:
-  - "tests/**/*"
-  - "test_*.py"
-  - "*_test.py"
-  - "**/tests/**"
-  - "docs/**/*"
-  - "examples/**/*"
-  - "scripts/**/*"
-  - "benchmarks/**/*"
-  - "ci_cd/**/*"
-  - ".github/**/*"
-  - "venv/**/*"
-  - ".venv/**/*"
-  - "__pycache__/**/*"
-  - "*.pyc"
-  - "*.pyo"
-  - "*.egg-info/**/*"
+      conditional: true
+      loop: true
+      method: false
+      macro: false
