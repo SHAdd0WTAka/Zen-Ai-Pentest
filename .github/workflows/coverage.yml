@@ -79,7 +79,7 @@ jobs:
           fail_ci_if_error: true
           verbose: true
         env:
-          CODECOV_TOKEN: 5865c451-1a72-413d-aa5f-e6a3b840ed2b
+          CODECOV_TOKEN: c92ff043-e4f0-4bcd-a117-6e978adfb8f7
       
       - name: Upload artifact
         if: always()
