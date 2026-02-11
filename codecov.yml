@@ -10,33 +10,37 @@ comment:
   require_base: false
   require_changes: false
   require_head: true
+  show_carryforward_flags: false
 
 coverage:
   precision: 2
-  range: [60.0, 80.0]
+  range:
+    - 60.0
+    - 80.0
   round: down
   status:
-    project:
-      default:
-        target: 80.0
-        threshold: 5.0
-        paths:
-          - "core/**"
-          - "modules/**"
-          - "api/**"
+    changes: false
+    default_rules:
+      flag_coverage_not_uploaded_behavior: include
     patch:
       default:
         target: 80.0
         threshold: 5.0
+    project:
+      default:
+        paths:
+          - "core/**"
+          - "modules/**"
+          - "api/**"
+        target: 80.0
+        threshold: 5.0
 
-# Path Fixing für GitHub Actions
 fixes:
   - "home/runner/work/Zen-Ai-Pentest/Zen-Ai-Pentest/::"
   - "/home/runner/work/Zen-Ai-Pentest/Zen-Ai-Pentest/::"
   - "/github/workspace/::"
   - "/__w/Zen-Ai-Pentest/Zen-Ai-Pentest/::"
 
-# Ignorierte Pfade
 ignore:
   - "tests/**"
   - "**/tests/**"
@@ -60,5 +64,5 @@ parsers:
     branch_detection:
       conditional: true
       loop: true
-      method: false
       macro: false
+      method: false
