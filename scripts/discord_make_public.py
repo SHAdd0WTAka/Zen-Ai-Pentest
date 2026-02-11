@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Discord Server - Make Public
-Setzt den Discord-Server auf öffentlich sichtbar
+Setzt den Discord-Server auf oeffentlich sichtbar
 """
 
 import requests
@@ -16,14 +16,14 @@ API_BASE = "https://discord.com/api/v10"
 # === FUNKTIONEN ===
 
 def update_server_settings(token):
-    """Aktualisiert die Server-Einstellungen für öffentliche Sichtbarkeit"""
+    """Aktualisiert die Server-Einstellungen fuer oeffentliche Sichtbarkeit"""
     
     headers = {
         "Authorization": f"Bot {token}",
         "Content-Type": "application/json"
     }
     
-    print("🔧 Aktualisiere Server-Einstellungen...")
+    print("[INFO] Aktualisiere Server-Einstellungen...")
     
     # 1. Server-Details abrufen
     url = f"{API_BASE}/guilds/{GUILD_ID}"
@@ -39,9 +39,9 @@ def update_server_settings(token):
     response = requests.patch(url, headers=headers, json=community_settings)
     
     if response.status_code == 200:
-        print("✅ Community-Features aktiviert")
+        print("[OK] Community-Features aktiviert")
     else:
-        print(f"⚠️ Community-Features: {response.status_code}")
+        print(f"[WARN] Community-Features: {response.status_code}")
         print(response.text)
     
     # 2. Community-Status aktivieren (für Discoverable)
@@ -57,9 +57,9 @@ def update_server_settings(token):
     response = requests.put(community_url, headers=headers, json=community_payload)
     
     if response.status_code == 200:
-        print("✅ Community-Status aktiviert")
+        print("[OK] Community-Status aktiviert")
     else:
-        print(f"⚠️ Community-Status: {response.status_code}")
+        print(f"[WARN] Community-Status: {response.status_code}")
         print(response.text)
     
     # 3. Vanity URL prüfen/aktualisieren
@@ -70,9 +70,9 @@ def update_server_settings(token):
     if response.status_code == 200:
         data = response.json()
         current_code = data.get('code', 'N/A')
-        print(f"✅ Vanity URL: discord.gg/{current_code}")
+        print(f"[OK] Vanity URL: discord.gg/{current_code}")
     else:
-        print(f"⚠️ Vanity URL konnte nicht geprüft werden: {response.status_code}")
+        print(f"[WARN] Vanity URL konnte nicht geprueft werden: {response.status_code}")
     
     return True
 
@@ -90,7 +90,7 @@ def create_invite(token, max_age=0, max_uses=0):
     response = requests.get(channels_url, headers=headers)
     
     if response.status_code != 200:
-        print(f"❌ Fehler beim Abrufen der Channels: {response.status_code}")
+        print(f"[ERROR] Fehler beim Abrufen der Channels: {response.status_code}")
         return None
     
     channels = response.json()
@@ -102,7 +102,7 @@ def create_invite(token, max_age=0, max_uses=0):
             break
     
     if not text_channel:
-        print("❌ Kein Text-Channel gefunden")
+        print("[ERROR] Kein Text-Channel gefunden")
         return None
     
     # Einladung erstellen
@@ -120,17 +120,17 @@ def create_invite(token, max_age=0, max_uses=0):
     if response.status_code == 200:
         data = response.json()
         invite_code = data['code']
-        print(f"✅ Einladungslink erstellt: https://discord.gg/{invite_code}")
+        print(f"[OK] Einladungslink erstellt: https://discord.gg/{invite_code}")
         return invite_code
     else:
-        print(f"❌ Fehler beim Erstellen der Einladung: {response.status_code}")
+        print(f"[ERROR] Fehler beim Erstellen der Einladung: {response.status_code}")
         print(response.text)
         return None
 
 
 def main():
     print("=" * 60)
-    print("🔓 Discord Server - Öffentlich machen")
+    print(">> Discord Server - Oeffentlich machen")
     print("=" * 60)
     print()
     
@@ -138,11 +138,11 @@ def main():
     token = getpass.getpass("Bot Token eingeben: ")
     
     if not token:
-        print("❌ Kein Token eingegeben")
+        print("[ERROR] Kein Token eingegeben")
         sys.exit(1)
     
     print()
-    print("🚀 Starte Konfiguration...")
+    print("[INFO] Starte Konfiguration...")
     print()
     
     try:
@@ -152,20 +152,20 @@ def main():
         print()
         
         # Permanenten Einladungslink erstellen
-        print("🔗 Erstelle permanenten Einladungslink...")
+        print("[INFO] Erstelle permanenten Einladungslink...")
         invite_code = create_invite(token, max_age=0, max_uses=0)
         
         print()
         print("=" * 60)
-        print("✅ API-Konfiguration abgeschlossen!")
+        print("[OK] API-Konfiguration abgeschlossen!")
         print("=" * 60)
         print()
         
         if invite_code:
-            print(f"🌐 Neuer Einladungslink: https://discord.gg/{invite_code}")
+            print(f"[INFO] Neuer Einladungslink: https://discord.gg/{invite_code}")
         
         print()
-        print("⚠️  WICHTIG - Manuelle Schritte erforderlich:")
+        print("[WARN] WICHTIG - Manuelle Schritte erforderlich:")
         print("   1. Discord öffnen → Server auswählen")
         print("   2. Server-Einstellungen → Community")
         print("   3. 'Server Discovery' aktivieren")
@@ -174,7 +174,7 @@ def main():
         print()
         
     except Exception as e:
-        print(f"❌ Fehler: {e}")
+        print(f"[ERROR] Fehler: {e}")
         sys.exit(1)
 
 

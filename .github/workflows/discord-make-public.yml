@@ -1,0 +1,89 @@
+name: Discord - Make Server Public
+
+on:
+  workflow_dispatch:  # Manuell auslösbar
+
+jobs:
+  make-public:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Configure Discord Server
+        env:
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          GUILD_ID: "1470531751595086017"
+        run: |
+          echo "[INFO] Configuring Discord Server..."
+          echo "[INFO] Guild ID: $GUILD_ID"
+          
+          # 1. Get current guild info
+          echo "[INFO] Fetching current guild info..."
+          curl -s -X GET "https://discord.com/api/v10/guilds/$GUILD_ID" \
+            -H "Authorization: Bot $DISCORD_BOT_TOKEN" \
+            -H "Content-Type: application/json" | jq .
+          
+          # 2. Enable Community features
+          echo "[INFO] Enabling Community features..."
+          curl -s -X PATCH "https://discord.com/api/v10/guilds/$GUILD_ID" \
+            -H "Authorization: Bot $DISCORD_BOT_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "features": ["COMMUNITY"],
+              "default_message_notifications": 0,
+              "verification_level": 1,
+              "explicit_content_filter": 2
+            }' | jq .
+          
+          echo "[OK] Community features enabled"
+          
+          # 3. Get text channels to create invite
+          echo "[INFO] Fetching channels..."
+          CHANNELS=$(curl -s -X GET "https://discord.com/api/v10/guilds/$GUILD_ID/channels" \
+            -H "Authorization: Bot $DISCORD_BOT_TOKEN" \
+            -H "Content-Type: application/json")
+          
+          # Find first text channel (type 0)
+          TEXT_CHANNEL=$(echo "$CHANNELS" | jq -r '.[] | select(.type == 0) | .id' | head -1)
+          
+          if [ -n "$TEXT_CHANNEL" ]; then
+            echo "[INFO] Found text channel: $TEXT_CHANNEL"
+            
+            # 4. Create permanent invite
+            echo "[INFO] Creating permanent invite..."
+            INVITE=$(curl -s -X POST "https://discord.com/api/v10/channels/$TEXT_CHANNEL/invites" \
+              -H "Authorization: Bot $DISCORD_BOT_TOKEN" \
+              -H "Content-Type: application/json" \
+              -d '{
+                "max_age": 0,
+                "max_uses": 0,
+                "temporary": false
+              }')
+            
+            INVITE_CODE=$(echo "$INVITE" | jq -r '.code')
+            echo "[OK] Invite created: https://discord.gg/$INVITE_CODE"
+          else
+            echo "[ERROR] No text channel found"
+          fi
+          
+          # 5. Check vanity URL
+          echo "[INFO] Checking vanity URL..."
+          VANITY=$(curl -s -X GET "https://discord.com/api/v10/guilds/$GUILD_ID/vanity-url" \
+            -H "Authorization: Bot $DISCORD_BOT_TOKEN" \
+            -H "Content-Type: application/json")
+          
+          echo "[INFO] Vanity URL response:"
+          echo "$VANITY" | jq .
+          
+          echo ""
+          echo "=========================================="
+          echo "[OK] Discord Server Configuration Complete"
+          echo "=========================================="
+          echo ""
+          echo "Next steps (MANUAL in Discord UI):"
+          echo "1. Open Discord → Server Settings → Community"
+          echo "2. Enable 'Server Discovery'"
+          echo "3. Set category to 'Developer' or 'Technology'"
+          echo "4. Add tags: cybersecurity, pentesting, AI, python"
+          echo "5. Save"
+          echo ""
+          echo "Invite Link: https://discord.gg/$INVITE_CODE"
