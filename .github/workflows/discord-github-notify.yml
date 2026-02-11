@@ -1,0 +1,111 @@
+name: Discord GitHub Notifications
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    types: [opened, closed, reopened, synchronize]
+  issues:
+    types: [opened, closed, reopened]
+  workflow_run:
+    workflows: ["CI/CD Pipeline", "Test Coverage", "Security Scan"]
+    types: [completed]
+  release:
+    types: [published]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+      - name: Send Discord Notification
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          # Determine color based on event
+          COLOR="3447003"  # Blue default
+          
+          if [ "${{ github.event_name }}" == "push" ]; then
+            COLOR="3066993"  # Green
+            TITLE="🚀 Code Pushed"
+            DESCRIPTION="**Branch:** \`${{ github.ref_name }}\`\n**Author:** ${{ github.actor }}\n**Commit:** \`${{ github.event.head_commit.message }}\`"
+            URL="${{ github.event.head_commit.url }}"
+          
+          elif [ "${{ github.event_name }}" == "pull_request" ]; then
+            if [ "${{ github.event.action }}" == "opened" ]; then
+              COLOR="3066993"  # Green
+              TITLE="🔀 Pull Request Opened"
+            elif [ "${{ github.event.action }}" == "closed" ] && [ "${{ github.event.pull_request.merged }}" == "true" ]; then
+              COLOR="15158332"  # Orange
+              TITLE="✅ Pull Request Merged"
+            else
+              COLOR="15158332"  # Orange
+              TITLE="📝 Pull Request ${{ github.event.action }}"
+            fi
+            DESCRIPTION="**#${{ github.event.pull_request.number }}:** ${{ github.event.pull_request.title }}\n**Author:** ${{ github.actor }}\n**Branch:** \`${{ github.head_ref }}\` → \`${{ github.base_ref }}\`"
+            URL="${{ github.event.pull_request.html_url }}"
+          
+          elif [ "${{ github.event_name }}" == "issues" ]; then
+            if [ "${{ github.event.action }}" == "opened" ]; then
+              COLOR="15158332"  # Orange
+              TITLE="📋 Issue Opened"
+            elif [ "${{ github.event.action }}" == "closed" ]; then
+              COLOR="3066993"  # Green
+              TITLE="✅ Issue Closed"
+            else
+              COLOR="3447003"  # Blue
+              TITLE="📝 Issue ${{ github.event.action }}"
+            fi
+            DESCRIPTION="**#${{ github.event.issue.number }}:** ${{ github.event.issue.title }}\n**Author:** ${{ github.actor }}"
+            URL="${{ github.event.issue.html_url }}"
+          
+          elif [ "${{ github.event_name }}" == "workflow_run" ]; then
+            CONCLUSION="${{ github.event.workflow_run.conclusion }}"
+            if [ "$CONCLUSION" == "success" ]; then
+              COLOR="3066993"  # Green
+              TITLE="✅ Workflow Success"
+            elif [ "$CONCLUSION" == "failure" ]; then
+              COLOR="15158332"  # Red
+              TITLE="❌ Workflow Failed"
+            else
+              COLOR="3447003"  # Blue
+              TITLE="⚠️ Workflow $CONCLUSION"
+            fi
+            DESCRIPTION="**Workflow:** ${{ github.event.workflow_run.name }}\n**Branch:** \`${{ github.event.workflow_run.head_branch }}\`\n**Run ID:** ${{ github.event.workflow_run.id }}"
+            URL="${{ github.event.workflow_run.html_url }}"
+          
+          elif [ "${{ github.event_name }}" == "release" ]; then
+            COLOR="10181046"  # Purple
+            TITLE="🎉 New Release Published"
+            DESCRIPTION="**Version:** ${{ github.event.release.tag_name }}\n**Name:** ${{ github.event.release.name }}"
+            URL="${{ github.event.release.html_url }}"
+          fi
+          
+          # Build Discord embed
+          JSON_PAYLOAD=$(cat <<EOF
+          {
+            "embeds": [{
+              "title": "$TITLE",
+              "description": "$DESCRIPTION",
+              "url": "$URL",
+              "color": $COLOR,
+              "timestamp": "${{ github.event.head_commit.timestamp || github.event.pull_request.updated_at || github.event.issue.updated_at }}",
+              "footer": {
+                "text": "${{ github.repository }}"
+              },
+              "author": {
+                "name": "${{ github.actor }}",
+                "icon_url": "https://github.com/${{ github.actor }}.png"
+              }
+            }]
+          }
+          EOF
+          )
+          
+          # Send to Discord
+          curl -s -X POST "$DISCORD_WEBHOOK" \
+            -H "Content-Type: application/json" \
+            -d "$JSON_PAYLOAD"
+          
+          echo "✅ Discord notification sent"

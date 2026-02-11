@@ -624,9 +624,9 @@ This project is licensed under the MIT License - see [LICENSE](LICENSE) file for
 
 Join our Discord community for real-time support, discussions, and updates:
 
-[![Discord](https://img.shields.io/discord/1470531751595086017?color=7289DA&label=Discord&logo=discord&logoColor=white)](https://discord.gg/uNyKRqeF)
+[![Discord](https://img.shields.io/discord/1470531751595086017?color=7289DA&label=Discord&logo=discord&logoColor=white)](https://discord.gg/zen-ai-pentest)
 
-**Discord Server:** https://discord.gg/uNyKRqeF
+**Discord Server:** https://discord.gg/zen-ai-pentest
 
 ### Discord Features:
 - 🔴 Live CI/CD notifications
