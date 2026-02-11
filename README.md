@@ -4,13 +4,21 @@
 
 [![Version](https://img.shields.io/badge/Version-2.3.9-orange)](https://github.com/SHAdd0WTAka/zen-ai-pentest/releases)
 [![Python](https://img.shields.io/badge/Python-3.9%2B-blue)](https://python.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.104%2B-teal)](https://fastapi.tiangolo.com)
 [![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
 [![PyPI](https://img.shields.io/pypi/v/zen-ai-pentest?color=green)](https://pypi.org/project/zen-ai-pentest/)
 [![Docker](https://img.shields.io/badge/Docker-Ready-blue)](docker/)
 [![CI Status](https://img.shields.io/badge/CI-Optimized-brightgreen)](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/actions/workflows/ci.yml)
 [![Security](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/actions/workflows/security.yml/badge.svg)](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/actions/workflows/security.yml)
 [![codecov](https://codecov.io/gh/SHAdd0WTAka/zen-ai-pentest/branch/main/graph/badge.svg?token=G9V7J40URC)](https://codecov.io/gh/SHAdd0WTAka/zen-ai-pentest)
+[![Tests](https://img.shields.io/badge/Tests-pytest-brightgreen)](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/actions/workflows/ci.yml)
+[![Pre-commit](https://img.shields.io/badge/Pre--commit-enabled-brightgreen)](.pre-commit-config.yaml)
+[![ISO 27001](https://img.shields.io/badge/ISO%2027001-85%25%20Compliant-blue)](docs/compliance/iso27001/)
+[![Discord](https://img.shields.io/discord/1470531751595086017?color=7289DA&label=Discord&logo=discord&logoColor=white)](https://discord.gg/zen-ai-pentest)
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/10336/badge)](https://www.bestpractices.dev/projects/10336)
+[![Code Quality](https://img.shields.io/badge/Code%20Quality-Ruff-261230)](https://github.com/astral-sh/ruff)
 [![Roadmap](https://img.shields.io/badge/Roadmap-2026-blueviolet)](ROADMAP_2026.md)
+[![Architecture](https://img.shields.io/badge/Architecture-Diagram-informational)](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest#architecture)
 
 ---
 
