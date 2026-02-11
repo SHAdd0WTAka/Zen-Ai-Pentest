@@ -5,7 +5,7 @@ Welcome to the Zen AI Pentest community! This document outlines how to get invol
 ## 🌟 Getting Started
 
 ### Join Our Community
-- **Discord**: [Join our Discord server](https://discord.gg/zen-ai-pentest)
+- **Discord**: [Join our Discord server](https://discord.gg/BSmCqjhY)
 - **Discussions**: [GitHub Discussions](https://github.com/SHAdd0WTAka/zen-ai-pentest/discussions)
 - **Twitter/X**: [@ZenAIPentest](https://twitter.com/ZenAIPentest)
 
@@ -106,7 +106,7 @@ Community input shapes our roadmap:
 
 - **Security Issues**: security@zen-ai-pentest.dev
 - **General**: [GitHub Discussions](https://github.com/SHAdd0WTAka/zen-ai-pentest/discussions)
-- **Discord**: [Join here](https://discord.gg/zen-ai-pentest)
+- **Discord**: [Join here](https://discord.gg/BSmCqjhY)
 
 ---
 

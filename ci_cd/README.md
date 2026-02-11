@@ -363,7 +363,7 @@ env:
 ### Getting Help
 
 - 📚 Documentation: https://docs.zen-pentest.io
-- 💬 Discord: https://discord.gg/zen-pentest
+- 💬 Discord: https://discord.gg/BSmCqjhY
 - 🐛 Issues: https://github.com/zenai/pentest/issues
 - 📧 Email: support@zen-pentest.io
 

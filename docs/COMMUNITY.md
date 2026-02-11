@@ -71,7 +71,7 @@ Look for issues labeled:
 |---------|---------|---------------|
 | 💬 [GitHub Discussions](https://github.com/SHAdd0WTAka/zen-ai-pentest/discussions) | Q&A, ideas, general chat | 24-48 hours |
 | 🐛 [GitHub Issues](https://github.com/SHAdd0WTAka/zen-ai-pentest/issues) | Bug reports, feature requests | 24-72 hours |
-| 🔧 [Discord](https://discord.gg/zen-ai-pentest) | Real-time chat, quick questions | Real-time |
+| 🔧 [Discord](https://discord.gg/BSmCqjhY) | Real-time chat, quick questions | Real-time |
 | 📧 [Email](mailto:security@zen-ai-pentest.dev) | Security issues (private) | 24 hours |
 
 ### Discord Channels
@@ -266,7 +266,7 @@ Have questions or suggestions about this guide?
 
 - 💬 Open a [Discussion](https://github.com/SHAdd0WTAka/zen-ai-pentest/discussions)
 - 🐛 Open an [Issue](https://github.com/SHAdd0WTAka/zen-ai-pentest/issues)
-- 💬 Join our [Discord](https://discord.gg/zen-ai-pentest)
+- 💬 Join our [Discord](https://discord.gg/BSmCqjhY)
 
 ---
 

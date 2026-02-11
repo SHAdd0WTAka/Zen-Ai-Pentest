@@ -687,7 +687,7 @@ If issues persist:
 
 4. **Contact Support:**
    - GitHub Issues: https://github.com/SHAdd0WTAka/zen-ai-pentest/issues
-   - Discord: https://discord.gg/zen-ai-pentest
+   - Discord: https://discord.gg/BSmCqjhY
    - Email: support@zen-ai-pentest.dev
 
 5. **Provide Information:**

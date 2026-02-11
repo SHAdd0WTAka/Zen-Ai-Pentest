@@ -246,7 +246,7 @@ MIT License - see [LICENSE](../LICENSE) for details.
 |----------|------|
 | 🐛 Issues | [GitHub Issues](https://github.com/SHAdd0WTAka/zen-ai-pentest/issues) |
 | 💬 Discussions | [GitHub Discussions](https://github.com/SHAdd0WTAka/zen-ai-pentest/discussions) |
-| 🌐 Discord | [Discord Community](https://discord.gg/zen-ai-pentest) |
+| 🌐 Discord | [Discord Community](https://discord.gg/BSmCqjhY) |
 | 📧 Email | [support@zen-ai-pentest.dev](mailto:support@zen-ai-pentest.dev) |
 | 🔧 Troubleshooting | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) |
 | 📚 Full Docs | [docs/](.) |

@@ -14,7 +14,7 @@
 [![Tests](https://img.shields.io/badge/Tests-pytest-brightgreen)](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/actions/workflows/ci.yml)
 [![Pre-commit](https://img.shields.io/badge/Pre--commit-enabled-brightgreen)](.pre-commit-config.yaml)
 [![ISO 27001](https://img.shields.io/badge/ISO%2027001-85%25%20Compliant-blue)](docs/compliance/iso27001/)
-[![Discord](https://img.shields.io/discord/1470531751595086017?color=7289DA&label=Discord&logo=discord&logoColor=white)](https://discord.gg/zen-ai-pentest)
+[![Discord](https://img.shields.io/discord/1470531751595086017?color=7289DA&label=Discord&logo=discord&logoColor=white)](https://discord.gg/BSmCqjhY)
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/10336/badge)](https://www.bestpractices.dev/projects/10336)
 [![Code Quality](https://img.shields.io/badge/Code%20Quality-Ruff-261230)](https://github.com/astral-sh/ruff)
 [![Roadmap](https://img.shields.io/badge/Roadmap-2026-blueviolet)](ROADMAP_2026.md)
@@ -529,7 +529,7 @@ Need help? We've got you covered:
 | 📖 Documentation | [docs/](docs/) |
 | 🐛 Issues | [GitHub Issues](https://github.com/SHAdd0WTAka/zen-ai-pentest/issues) |
 | 💬 Discussions | [GitHub Discussions](https://github.com/SHAdd0WTAka/zen-ai-pentest/discussions) |
-| 🌐 Discord | [Discord Community](https://discord.gg/zen-ai-pentest) |
+| 🌐 Discord | [Discord Community](https://discord.gg/BSmCqjhY) |
 | 📧 Email | [support@zen-ai-pentest.dev](mailto:support@zen-ai-pentest.dev) |
 
 See [SUPPORT.md](SUPPORT.md) for detailed support options.
@@ -632,9 +632,9 @@ This project is licensed under the MIT License - see [LICENSE](LICENSE) file for
 
 Join our Discord community for real-time support, discussions, and updates:
 
-[![Discord](https://img.shields.io/discord/1470531751595086017?color=7289DA&label=Discord&logo=discord&logoColor=white)](https://discord.gg/zen-ai-pentest)
+[![Discord](https://img.shields.io/discord/1470531751595086017?color=7289DA&label=Discord&logo=discord&logoColor=white)](https://discord.gg/BSmCqjhY)
 
-**Discord Server:** https://discord.gg/zen-ai-pentest
+**Discord Server:** https://discord.gg/BSmCqjhY
 
 ### Discord Features:
 - 🔴 Live CI/CD notifications

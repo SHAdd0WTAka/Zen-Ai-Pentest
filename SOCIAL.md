@@ -28,7 +28,7 @@
 
 | Platform | Link | Description |
 |----------|------|-------------|
-| 💬 **Discord** | [discord.gg/zen-ai-pentest](https://discord.gg/zen-ai-pentest) | Real-time community chat |
+| 💬 **Discord** | [discord.gg/BSmCqjhY](https://discord.gg/BSmCqjhY) | Real-time community chat |
 | 💭 **GitHub Discussions** | [github.com/SHAdd0WTAka/zen-ai-pentest/discussions](https://github.com/SHAdd0WTAka/zen-ai-pentest/discussions) | Forum-style discussions |
 | 📧 **Newsletter** | [Subscribe](https://zen-ai-pentest.dev/newsletter) | Monthly updates |
 
@@ -40,7 +40,7 @@
 
 Join our active Discord community!
 
-**[➡️ Join Discord](https://discord.gg/zen-ai-pentest)**
+**[➡️ Join Discord](https://discord.gg/BSmCqjhY)**
 
 #### Channel Overview
 
@@ -313,7 +313,7 @@ The best way to stay updated:
 
 1. ⭐ Star the [repository](https://github.com/SHAdd0WTAka/zen-ai-pentest)
 2. 👀 Watch for releases
-3. 💬 Join our [Discord](https://discord.gg/zen-ai-pentest)
+3. 💬 Join our [Discord](https://discord.gg/BSmCqjhY)
 4. 🐦 Follow on [Twitter](https://twitter.com/ZenAIPentest)
 5. 📧 Subscribe to the [newsletter](https://zen-ai-pentest.dev/newsletter)
 

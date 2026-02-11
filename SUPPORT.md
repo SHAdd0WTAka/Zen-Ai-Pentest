@@ -47,7 +47,7 @@ Join our [GitHub Discussions](https://github.com/SHAdd0WTAka/zen-ai-pentest/disc
 
 ### Discord Community
 Get real-time help from our community:
-- **Discord**: [https://discord.gg/zen-ai-pentest](https://discord.gg/zen-ai-pentest)
+- **Discord**: [https://discord.gg/BSmCqjhY](https://discord.gg/BSmCqjhY)
 - Active community of security professionals
 - Direct access to core team members
 - Channels for different topics (general, development, security)

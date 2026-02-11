@@ -1,7 +1,7 @@
 # Discord Server - Öffentlich machen
 
 > **STATUS**: ✅ Server ist jetzt öffentlich zugänglich  
-> **Einladungslink**: https://discord.gg/zen-ai-pentest  
+> **Einladungslink**: https://discord.gg/BSmCqjhY  
 > **Letzte Aktualisierung**: 2026-02-11
 
 ---
@@ -10,7 +10,7 @@
 
 | Link | Status |
 |------|--------|
-| [discord.gg/zen-ai-pentest](https://discord.gg/zen-ai-pentest) | ✅ Aktiv |
+| [discord.gg/BSmCqjhY](https://discord.gg/BSmCqjhY) | ✅ Aktiv |
 | Server Discovery | ✅ Öffentlich sichtbar |
 
 ---
@@ -75,7 +75,7 @@ Die Server-Konfiguration wurde automatisiert durchgeführt:
 
 ---
 
-## Vanity URL (discord.gg/zen-ai-pentest)
+## Vanity URL (discord.gg/BSmCqjhY)
 
 ### Voraussetzungen
 - Server Boost Level 1 (2 Boosts)
@@ -126,7 +126,7 @@ Server-Einstellungen → Community → Begrüßungsbildschirm
 ### Test: Ist der Server öffentlich?
 
 1. Inkognito-Fenster öffnen
-2. `https://discord.gg/zen-ai-pentest` aufrufen
+2. `https://discord.gg/BSmCqjhY` aufrufen
 3. **"Server beitreten"** sollte sichtbar sein
 
 ### Server Discovery Test
@@ -141,7 +141,7 @@ Server-Einstellungen → Community → Begrüßungsbildschirm
 ## Fehlerbehebung
 
 ### "Invalid Invite"
-- Vanity-URL prüfen: `discord.gg/zen-ai-pentest`
+- Vanity-URL prüfen: `discord.gg/BSmCqjhY`
 - Alternativen permanenten Link erstellen
 - In GitHub Secrets aktualisieren
 

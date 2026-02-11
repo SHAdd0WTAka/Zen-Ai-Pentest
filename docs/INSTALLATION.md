@@ -420,7 +420,7 @@ docker-compose ps
 If you encounter issues not covered here:
 
 1. Check [GitHub Issues](https://github.com/SHAdd0WTAka/zen-ai-pentest/issues)
-2. Join our [Discord Community](https://discord.gg/zen-ai-pentest)
+2. Join our [Discord Community](https://discord.gg/BSmCqjhY)
 3. Read [SUPPORT.md](../SUPPORT.md) for more options
 
 ---
