@@ -9,7 +9,7 @@
 [![Docker](https://img.shields.io/badge/Docker-Ready-blue)](docker/)
 [![CI Status](https://img.shields.io/badge/CI-Optimized-brightgreen)](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/actions/workflows/ci.yml)
 [![Security](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/actions/workflows/security.yml/badge.svg)](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/actions/workflows/security.yml)
-[![codecov](https://codecov.io/gh/SHAdd0WTAka/zen-ai-pentest/branch/main/graph/badge.svg)](https://codecov.io/gh/SHAdd0WTAka/zen-ai-pentest)
+[![codecov](https://codecov.io/gh/SHAdd0WTAka/zen-ai-pentest/branch/main/graph/badge.svg?token=G9V7J40URC)](https://codecov.io/gh/SHAdd0WTAka/zen-ai-pentest)
 [![Roadmap](https://img.shields.io/badge/Roadmap-2026-blueviolet)](ROADMAP_2026.md)
 
 ---
