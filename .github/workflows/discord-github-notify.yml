@@ -19,17 +19,184 @@ jobs:
     if: always()
     
     steps:
+      - name: Mask Secrets in Content
+        id: mask-secrets
+        run: |
+          # Sensitive patterns to mask
+          MASK_PATTERNS=(
+            # API Keys and Tokens
+            'sk-[a-zA-Z0-9]{20,}'
+            'gh[pousr]_[A-Za-z0-9_]{36,}'
+            'gho_[a-zA-Z0-9]{36}'
+            'ghs_[a-zA-Z0-9]{36}'
+            'ghu_[a-zA-Z0-9]{36}'
+            'ghp_[a-zA-Z0-9]{36}'
+            'github_pat_[a-zA-Z0-9]{22}_[a-zA-Z0-9]{59}'
+            'glpat-[a-zA-Z0-9\-]{20}'
+            'grd-[a-zA-Z0-9]{64}'
+            
+            # Discord
+            '[A-Za-z0-9_-]{24}\.[A-Za-z0-9_-]{6}\.[A-Za-z0-9_-]{27}'
+            '[0-9]{17,20}-[A-Za-z0-9_-]{32,}'
+            
+            # Telegram
+            '[0-9]{8,10}:[a-zA-Z0-9_-]{35}'
+            
+            # AWS
+            'AKIA[0-9A-Z]{16}'
+            'ASIA[0-9A-Z]{16}'
+            '[A-Za-z0-9/+=]{40}'
+            
+            # Generic Secrets
+            'password[[:space:]]*[:=][[:space:]]*[^[:space:]]+'
+            'passwd[[:space:]]*[:=][[:space:]]*[^[:space:]]+'
+            'secret[[:space:]]*[:=][[:space:]]*[^[:space:]]+'
+            'api[_-]?key[[:space:]]*[:=][[:space:]]*[^[:space:]]+'
+            'token[[:space:]]*[:=][[:space:]]*[^[:space:]]+'
+            'private[_-]?key[[:space:]]*[:=][[:space:]]*[^[:space:]]+'
+            'bearer[[:space:]]+[a-zA-Z0-9_\-\.=]+'
+            'basic[[:space:]]+[a-zA-Z0-9_\-\.=]+'
+            
+            # Private Keys
+            '-----BEGIN (RSA |DSA |EC |OPENSSH )?PRIVATE KEY-----'
+            '-----BEGIN (RSA |DSA |EC |OPENSSH )?ENCRYPTED PRIVATE KEY-----'
+            
+            # Database URLs with passwords
+            'mongodb(\+srv)?://[^:]+:[^@]+@'
+            'postgres(ql)?://[^:]+:[^@]+@'
+            'mysql://[^:]+:[^@]+@'
+            'redis://:[^@]+@'
+            
+            # JWT
+            'eyJ[a-zA-Z0-9_-]*\.eyJ[a-zA-Z0-9_-]*\.[a-zA-Z0-9_-]*'
+            
+            # Generic high-entropy strings (potential secrets)
+            '[a-zA-Z0-9]{32,64}'
+          )
+          
+          # Function to mask sensitive content
+          mask_content() {
+            local content="$1"
+            for pattern in "${MASK_PATTERNS[@]}"; do
+              content=$(echo "$content" | sed -E "s/$pattern/\*\*\*\*\*\*\*\*\*\*/gI")
+            done
+            echo "$content"
+          }
+          
+          # Export function for later use
+          echo "mask_content() {" >> $GITHUB_ENV
+          echo "  local content=\"\$1\"" >> $GITHUB_ENV
+          for pattern in "${MASK_PATTERNS[@]}"; do
+            echo "  content=\"\$(echo \"\$content\" | sed -E 's/$pattern/\*\*\*\*\*\*\*\*\*\*/gI')\"" >> $GITHUB_ENV
+          done
+          echo "  echo \"\$content\"" >> $GITHUB_ENV
+          echo "}" >> $GITHUB_ENV
+
+      - name: Prepare Safe Content
+        id: prepare
+        run: |
+          # Source the mask function
+          eval "$(cat $GITHUB_ENV)"
+          
+          # Get commit message and mask it
+          COMMIT_MSG="${{ github.event.head_commit.message }}"
+          SAFE_COMMIT_MSG=$(mask_content "$COMMIT_MSG")
+          
+          # Get PR title and mask it
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          SAFE_PR_TITLE=$(mask_content "$PR_TITLE")
+          
+          # Get issue title and mask it
+          ISSUE_TITLE="${{ github.event.issue.title }}"
+          SAFE_ISSUE_TITLE=$(mask_content "$ISSUE_TITLE")
+          
+          # Get release name and mask it
+          RELEASE_NAME="${{ github.event.release.name }}"
+          SAFE_RELEASE_NAME=$(mask_content "$RELEASE_NAME")
+          
+          # Truncate long messages
+          MAX_LENGTH=500
+          if [ ${#SAFE_COMMIT_MSG} -gt $MAX_LENGTH ]; then
+            SAFE_COMMIT_MSG="${SAFE_COMMIT_MSG:0:$MAX_LENGTH}..."
+          fi
+          if [ ${#SAFE_PR_TITLE} -gt $MAX_LENGTH ]; then
+            SAFE_PR_TITLE="${SAFE_PR_TITLE:0:$MAX_LENGTH}..."
+          fi
+          if [ ${#SAFE_ISSUE_TITLE} -gt $MAX_LENGTH ]; then
+            SAFE_ISSUE_TITLE="${SAFE_ISSUE_TITLE:0:$MAX_LENGTH}..."
+          fi
+          
+          # Output masked content
+          echo "commit_msg<<EOF" >> $GITHUB_OUTPUT
+          echo "$SAFE_COMMIT_MSG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          
+          echo "pr_title<<EOF" >> $GITHUB_OUTPUT
+          echo "$SAFE_PR_TITLE" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          
+          echo "issue_title<<EOF" >> $GITHUB_OUTPUT
+          echo "$SAFE_ISSUE_TITLE" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          
+          echo "release_name<<EOF" >> $GITHUB_OUTPUT
+          echo "$SAFE_RELEASE_NAME" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Scan for Secrets
+        id: secret-scan
+        if: github.event_name == 'push' || github.event_name == 'pull_request'
+        run: |
+          # Simple secret detection in commit messages
+          COMMIT_MSG="${{ steps.prepare.outputs.commit_msg }}"
+          
+          # Check for suspicious patterns
+          SUSPICIOUS=0
+          
+          # Check for masked content (indicates potential secret was found)
+          if echo "$COMMIT_MSG" | grep -q '\*\*\*\*\*\*\*\*\*\*'; then
+            SUSPICIOUS=1
+            echo "⚠️ WARNING: Potential secrets detected in commit message and masked"
+          fi
+          
+          # Check for high-entropy strings
+          if echo "${{ github.event.head_commit.message }}" | grep -P '[A-Za-z0-9+/]{40,}' > /dev/null 2>&1; then
+            SUSPICIOUS=1
+            echo "⚠️ WARNING: High-entropy string detected (possible secret)"
+          fi
+          
+          if [ $SUSPICIOUS -eq 1 ]; then
+            echo "🔒 Security Alert: Potential credentials detected in commit. Content has been masked."
+            echo "Please review the commit message and remove any sensitive data."
+          fi
+          
+          echo "suspicious=$SUSPICIOUS" >> $GITHUB_OUTPUT
+
       - name: Send Discord Notification
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          SAFE_COMMIT_MSG: ${{ steps.prepare.outputs.commit_msg }}
+          SAFE_PR_TITLE: ${{ steps.prepare.outputs.pr_title }}
+          SAFE_ISSUE_TITLE: ${{ steps.prepare.outputs.issue_title }}
+          SAFE_RELEASE_NAME: ${{ steps.prepare.outputs.release_name }}
+          SUSPICIOUS: ${{ steps.secret-scan.outputs.suspicious }}
         run: |
           # Determine color based on event
           COLOR="3447003"  # Blue default
+          SECURITY_WARNING=""
           
           if [ "${{ github.event_name }}" == "push" ]; then
             COLOR="3066993"  # Green
             TITLE="🚀 Code Pushed"
-            DESCRIPTION="**Branch:** \`${{ github.ref_name }}\`\n**Author:** ${{ github.actor }}\n**Commit:** \`${{ github.event.head_commit.message }}\`"
+            
+            # Add security warning if secrets were detected
+            if [ "$SUSPICIOUS" == "1" ]; then
+              SECURITY_WARNING="\n\n🔒 **Security Notice:** Potential sensitive data detected and masked in this commit."
+            fi
+            
+            # Only show first line of commit, masked
+            COMMIT_PREVIEW=$(echo "$SAFE_COMMIT_MSG" | head -n 1)
+            DESCRIPTION="**Branch:** \`${{ github.ref_name }}\`\n**Author:** ${{ github.actor }}\n**Commit:** \`${COMMIT_PREVIEW}\`${SECURITY_WARNING}"
             URL="${{ github.event.head_commit.url }}"
           
           elif [ "${{ github.event_name }}" == "pull_request" ]; then
@@ -43,7 +210,7 @@ jobs:
               COLOR="15158332"  # Orange
               TITLE="📝 Pull Request ${{ github.event.action }}"
             fi
-            DESCRIPTION="**#${{ github.event.pull_request.number }}:** ${{ github.event.pull_request.title }}\n**Author:** ${{ github.actor }}\n**Branch:** \`${{ github.head_ref }}\` → \`${{ github.base_ref }}\`"
+            DESCRIPTION="**#${{ github.event.pull_request.number }}:** $SAFE_PR_TITLE\n**Author:** ${{ github.actor }}\n**Branch:** \`${{ github.head_ref }}\` → \`${{ github.base_ref }}\`"
             URL="${{ github.event.pull_request.html_url }}"
           
           elif [ "${{ github.event_name }}" == "issues" ]; then
@@ -57,7 +224,7 @@ jobs:
               COLOR="3447003"  # Blue
               TITLE="📝 Issue ${{ github.event.action }}"
             fi
-            DESCRIPTION="**#${{ github.event.issue.number }}:** ${{ github.event.issue.title }}\n**Author:** ${{ github.actor }}"
+            DESCRIPTION="**#${{ github.event.issue.number }}:** $SAFE_ISSUE_TITLE\n**Author:** ${{ github.actor }}"
             URL="${{ github.event.issue.html_url }}"
           
           elif [ "${{ github.event_name }}" == "workflow_run" ]; then
@@ -78,19 +245,27 @@ jobs:
           elif [ "${{ github.event_name }}" == "release" ]; then
             COLOR="10181046"  # Purple
             TITLE="🎉 New Release Published"
-            DESCRIPTION="**Version:** ${{ github.event.release.tag_name }}\n**Name:** ${{ github.event.release.name }}"
+            DESCRIPTION="**Version:** ${{ github.event.release.tag_name }}\n**Name:** $SAFE_RELEASE_NAME"
             URL="${{ github.event.release.html_url }}"
           fi
+          
+          # Sanitize for JSON
+          sanitize_json() {
+            echo "$1" | sed 's/\\/\\\\/g' | sed 's/"/\\"/g' | sed 's/\n/\\n/g' | tr -d '\r'
+          }
+          
+          SAFE_DESCRIPTION=$(sanitize_json "$DESCRIPTION")
+          SAFE_TITLE=$(sanitize_json "$TITLE")
           
           # Build Discord embed
           JSON_PAYLOAD=$(cat <<EOF
           {
             "embeds": [{
-              "title": "$TITLE",
-              "description": "$DESCRIPTION",
+              "title": "$SAFE_TITLE",
+              "description": "$SAFE_DESCRIPTION",
               "url": "$URL",
               "color": $COLOR,
-              "timestamp": "${{ github.event.head_commit.timestamp || github.event.pull_request.updated_at || github.event.issue.updated_at }}",
+              "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
               "footer": {
                 "text": "${{ github.repository }}"
               },
@@ -108,4 +283,4 @@ jobs:
             -H "Content-Type: application/json" \
             -d "$JSON_PAYLOAD"
           
-          echo "✅ Discord notification sent"
+          echo "✅ Discord notification sent with secret masking enabled"
