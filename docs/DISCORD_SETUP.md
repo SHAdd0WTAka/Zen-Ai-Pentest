@@ -1,6 +1,6 @@
 # Discord Server Setup Guide
 
-## 🎮 Server: https://discord.gg/uNyKRqeF
+## 🎮 Server: https://discord.gg/zen-ai-pentest
 
 ## Einrichtung
 
