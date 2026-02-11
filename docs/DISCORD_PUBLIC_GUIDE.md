@@ -1,19 +1,31 @@
 # Discord Server - Öffentlich machen
 
-## Schritt-für-Schritt Anleitung
-
-### Automatisierte Konfiguration
-
-```bash
-cd C:\Users\Ataka\zen-ai-pentest-test
-python scripts\discord_make_public.py
-```
-
-**Erforderlich**: Discord Bot Token mit `Manage Server` Berechtigung
+> **STATUS**: ✅ Server ist jetzt öffentlich zugänglich  
+> **Einladungslink**: https://discord.gg/zen-ai-pentest  
+> **Letzte Aktualisierung**: 2026-02-11
 
 ---
 
-## Manuelle Konfiguration (Empfohlen)
+## Schnellzugriff
+
+| Link | Status |
+|------|--------|
+| [discord.gg/zen-ai-pentest](https://discord.gg/zen-ai-pentest) | ✅ Aktiv |
+| Server Discovery | ✅ Öffentlich sichtbar |
+
+---
+
+## Konfiguration
+
+Die Server-Konfiguration wurde automatisiert durchgeführt:
+
+### Automatisierte Schritte (via GitHub Actions)
+- ✅ Community-Features aktiviert
+- ✅ Permanenter Einladungslink erstellt
+- ✅ Verifizierungslevel gesetzt
+- ✅ Content-Filter aktiviert
+
+### Manuelle Schritte (in Discord UI)
 
 ### Schritt 1: Discord öffnen
 
