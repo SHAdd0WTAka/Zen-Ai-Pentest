@@ -149,8 +149,7 @@ jobs:
           name: codecov-umbrella
           fail_ci_if_error: false
           verbose: true
-        env:
-          CODECOV_TOKEN: ab0fa3aa-0a62-4fdf-b912-7af9e27a979d
+        # No token needed - Codecov App handles authentication
       
       - name: Upload test results to Codecov
         if: ${{ !cancelled() && hashFiles('junit.xml') != '' }}
@@ -158,8 +157,7 @@ jobs:
         with:
           file: ./junit.xml
           fail_ci_if_error: false
-        env:
-          CODECOV_TOKEN: ab0fa3aa-0a62-4fdf-b912-7af9e27a979d
+        # No token needed - Codecov App handles authentication
       
       - name: Upload artifacts
         if: always()
