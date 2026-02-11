@@ -13,7 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # WICHTIG für korrekte Datei-Pfade
+          fetch-depth: 0
       
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -26,12 +26,11 @@ jobs:
           pip install pytest pytest-cov
           pip install requests aiohttp pydantic fastapi uvicorn pydantic-settings email-validator
       
-      - name: Run tests with coverage
+      - name: Run tests with coverage and JUnit XML
         run: |
-          # Finde alle Python-Dateien im Repository (außer Tests)
-          echo "📊 Generiere Coverage Report..."
+          echo "📊 Generiere Coverage Report und JUnit XML..."
           
-          # Erstelle ein einfaches Test-File mit echten Imports
+          # Erstelle ein einfaches Test-File
           mkdir -p tests_ci
           cat > tests_ci/test_imports.py << 'EOF'
           import sys
@@ -45,40 +44,36 @@ jobs:
           def test_math():
               """Simple math test"""
               assert 2 + 2 == 4
+          
+          def test_string():
+              """String test"""
+              assert "hello" + " world" == "hello world"
           EOF
           
-          # Führe Tests aus mit Coverage für das gesamte Repo
+          # Führe Tests aus mit Coverage UND JUnit XML
           python -m pytest tests_ci/ \
             --cov=. \
             --cov-report=xml:coverage.xml \
             --cov-report=term-missing \
             --cov-branch \
+            --junitxml=junit.xml \
+            -o junit_family=legacy \
             -v
           
           echo ""
-          echo "📁 Coverage Report erstellt:"
-          ls -la coverage.xml
-          
-          # Zeige die ersten Zeilen des Reports (für Debugging)
-          echo ""
-          echo "📝 Erste 50 Zeilen von coverage.xml:"
-          head -50 coverage.xml
+          echo "📁 Reports erstellt:"
+          ls -la coverage.xml junit.xml
         env:
           PYTHONPATH: ${{ github.workspace }}
       
       - name: Fix coverage paths
         run: |
-          # Ersetze CI-Pfade mit relativen Pfaden
           echo "🔧 Fixe Pfade in coverage.xml..."
           sed -i "s|${GITHUB_WORKSPACE}/||g" coverage.xml
           sed -i "s|/home/runner/work/Zen-Ai-Pentest/Zen-Ai-Pentest/||g" coverage.xml
           echo "✅ Pfade angepasst"
-          
-          # Zeige die ersten Datei-Einträge
-          echo ""
-          echo "📄 Datei-Einträge im Report:"
-          grep -o 'filename="[^"]*"' coverage.xml | head -20
       
+      # Step 1: Upload coverage to Codecov
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
@@ -89,9 +84,20 @@ jobs:
           fail_ci_if_error: false
           verbose: true
       
-      - name: Upload coverage artifact
+      # Step 2: Upload test results to Codecov (Test Analytics)
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/test-results-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./junit.xml
+          fail_ci_if_error: false
+      
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-report
-          path: coverage.xml
+          name: test-reports
+          path: |
+            coverage.xml
+            junit.xml
           retention-days: 30
