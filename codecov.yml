@@ -1,0 +1,70 @@
+codecov:
+  require_ci_to_pass: true
+  notify:
+    wait_for_ci: true
+
+# Path Fixing - WICHTIG für korrekte Coverage-Anzeige
+fixes:
+  # GitHub Actions spezifische Pfade
+  - "home/runner/work/Zen-Ai-Pentest/Zen-Ai-Pentest/::"
+  - "/home/runner/work/Zen-Ai-Pentest/Zen-Ai-Pentest/::"
+  # Entferne CI-spezifische Präfixe
+  - "/github/workspace/::"
+  # Windows Pfade (falls verwendet)
+  - "C:/Users/runner/work/Zen-Ai-Pentest/::"
+  - "D:/a/Zen-Ai-Pentest/Zen-Ai-Pentest/::"
+  # Allgemeine CI Pfade
+  - "/__w/Zen-Ai-Pentest/Zen-Ai-Pentest/::"
+
+coverage:
+  precision: 2
+  round: down
+  range: "60...80"
+  
+  status:
+    project:
+      default:
+        target: 80%
+        threshold: 5%
+        paths:
+          - "core/"
+          - "modules/"
+          - "api/"
+    patch:
+      default:
+        target: 80%
+        threshold: 5%
+
+comment:
+  layout: "reach,diff,flags,tree"
+  behavior: default
+  require_changes: false
+  require_base: false
+  require_head: true
+
+parsers:
+  gcov:
+    branch_detection:
+      conditional: yes
+      loop: yes
+      method: no
+      macro: no
+
+# Ignorierte Pfade
+ignore:
+  - "tests/**/*"
+  - "test_*.py"
+  - "*_test.py"
+  - "**/tests/**"
+  - "docs/**/*"
+  - "examples/**/*"
+  - "scripts/**/*"
+  - "benchmarks/**/*"
+  - "ci_cd/**/*"
+  - ".github/**/*"
+  - "venv/**/*"
+  - ".venv/**/*"
+  - "__pycache__/**/*"
+  - "*.pyc"
+  - "*.pyo"
+  - "*.egg-info/**/*"
