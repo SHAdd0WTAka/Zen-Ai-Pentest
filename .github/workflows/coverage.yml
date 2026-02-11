@@ -73,25 +73,27 @@ jobs:
           sed -i "s|/home/runner/work/Zen-Ai-Pentest/Zen-Ai-Pentest/||g" coverage.xml
           echo "✅ Pfade angepasst"
       
-      # Step 1: Upload coverage to Codecov
+      # Upload coverage to Codecov
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
           files: ./coverage.xml
           flags: unittests
           name: codecov-umbrella
-          token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: false
           verbose: true
+        env:
+          CODECOV_TOKEN: ab0fa3aa-0a62-4fdf-b912-7af9e27a979d
       
-      # Step 2: Upload test results to Codecov (Test Analytics)
+      # Upload test results to Codecov (Test Analytics)
       - name: Upload test results to Codecov
         if: ${{ !cancelled() }}
         uses: codecov/test-results-action@v1
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
           file: ./junit.xml
           fail_ci_if_error: false
+        env:
+          CODECOV_TOKEN: ab0fa3aa-0a62-4fdf-b912-7af9e27a979d
       
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
