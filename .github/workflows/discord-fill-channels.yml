@@ -1,11 +1,22 @@
 name: Discord - Fill Channels with Content
 
 on:
-  workflow_dispatch:  # Manuell auslösbar
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action to perform'
+        required: true
+        default: 'fill-channels'
+        type: choice
+        options:
+          - fill-channels
+          - update-content
 
 jobs:
-  fill-channels:
+  manage-discord:
     runs-on: ubuntu-latest
+    # Environment with protection rules (requires manual approval)
+    environment: production
     
     steps:
       - name: Checkout repository
@@ -23,3 +34,9 @@ jobs:
         env:
           DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
         run: python scripts/discord_fill_channels.py
+      
+      - name: Update Session State
+        if: success()
+        run: |
+          echo "[INFO] Discord channels updated successfully"
+          echo "[INFO] Timestamp: $(date)"
