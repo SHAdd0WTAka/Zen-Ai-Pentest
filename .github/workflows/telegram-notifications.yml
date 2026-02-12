@@ -5,7 +5,7 @@ name: Telegram Notifications
 
 on:
   workflow_run:
-    workflows: ["Python application", "Repository Health Check", "CI/CD Pipeline", "Test Coverage"]
+    workflows: ["Python application", "Repository Health Check", "CI/CD Pipeline", "Test Coverage", "Security Scan"]
     types: [completed]
   push:
     branches: [master, main]
@@ -13,6 +13,8 @@ on:
     types: [opened, closed, reopened]
   pull_request:
     types: [opened, closed, reopened]
+  release:
+    types: [published]
   workflow_dispatch:
     inputs:
       message:
@@ -24,6 +26,8 @@ jobs:
   notify:
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    # Use GitHub Environment for secure secret management
+    environment: production
     # Only run if secrets are configured or it's a workflow_dispatch
     if: |
       always() && 
@@ -52,6 +56,12 @@ jobs:
             echo "TELEGRAM_CHAT_ID is set"
             echo "has_chat_id=true" >> $GITHUB_OUTPUT
           fi
+      
+      - name: Mask Sensitive Data
+        run: |
+          # Ensure secrets are masked in logs
+          echo "::add-mask::${{ secrets.TELEGRAM_BOT_TOKEN }}"
+          echo "::add-mask::${{ secrets.TELEGRAM_CHAT_ID }}"
       
       - name: Send Telegram Notification
         if: steps.check_secrets.outputs.has_token == 'true' && steps.check_secrets.outputs.has_chat_id == 'true'
@@ -98,13 +108,22 @@ jobs:
             
             if [ "$ACTION" == "opened" ]; then
               ICON="🔀"
+            elif [ "$ACTION" == "closed" ] && [ "${{ github.event.pull_request.merged }}" == "true" ]; then
+              ICON="✅ MERGED"
             elif [ "$ACTION" == "closed" ]; then
-              ICON="✅"
+              ICON="❌ CLOSED"
             else
               ICON="📝"
             fi
             
             MESSAGE="<b>$ICON PR $ACTION</b>%0A$PR_TITLE%0A${{ github.repository }}%0A$PR_URL"
+          
+          elif [ "${{ github.event_name }}" == "release" ]; then
+            RELEASE_TAG="${{ github.event.release.tag_name }}"
+            RELEASE_NAME="${{ github.event.release.name }}"
+            RELEASE_URL="${{ github.event.release.html_url }}"
+            
+            MESSAGE="<b>🚀 New Release</b>%0A<b>$RELEASE_TAG</b>: $RELEASE_NAME%0A${{ github.repository }}%0A$RELEASE_URL"
           
           elif [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
             MESSAGE="<b>🧪 Test Notification</b>%0A${{ github.event.inputs.message }}%0A${{ github.repository }} by ${{ github.actor }}"
@@ -140,5 +159,5 @@ jobs:
         if: steps.check_secrets.outputs.has_token != 'true' || steps.check_secrets.outputs.has_chat_id != 'true'
         run: |
           echo "⚠️ Telegram secrets not configured. Skipping notification."
-          echo "To enable: Add TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID to repository secrets."
-          echo "Setup guide: https://core.telegram.org/bots/tutorial"
+          echo "To enable: Add TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID to environment secrets."
+          echo "Setup guide: docs/TELEGRAM_SETUP.md"
