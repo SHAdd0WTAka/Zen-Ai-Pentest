@@ -95,6 +95,15 @@
 - 📊 **Comprehensive**: 20+ integrated security tools
 - 🔧 **Extensible**: Plugin system for custom tools and integrations
 - ☁️ **Cloud-Native**: Deploy on AWS, Azure, or GCP
+- 📱 **Quick Access**: Scan QR codes for instant mobile access
+
+<p align="center">
+  <a href="docs/qr_codes/index.html">
+    <img src="docs/qr_codes/qr_grid_preview.png" alt="QR Codes" width="600">
+  </a>
+  <br>
+  <sub>☝️ Click to view all QR codes or scan with your phone!</sub>
+</p>
 
 ---
 
