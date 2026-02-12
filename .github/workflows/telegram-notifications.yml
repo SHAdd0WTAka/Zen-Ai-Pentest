@@ -28,11 +28,8 @@ jobs:
     timeout-minutes: 5
     # Use GitHub Environment for secure secret management
     environment: production
-    # Only run if secrets are configured or it's a workflow_dispatch
-    if: |
-      always() && 
-      (github.event_name == 'workflow_dispatch' || 
-       secrets.TELEGRAM_BOT_TOKEN != '' && secrets.TELEGRAM_CHAT_ID != '')
+    # Only run if it's a workflow_dispatch or other triggers
+    if: always()
     
     steps:
       - name: Checkout repository
