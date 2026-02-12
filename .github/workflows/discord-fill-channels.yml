@@ -3,6 +3,15 @@ name: Discord - Fill Channels with Content
 on:
   workflow_dispatch:
     inputs:
+      bot:
+        description: 'Which bot to use'
+        required: true
+        default: 'primary'
+        type: choice
+        options:
+          - primary
+          - secondary
+          - utility
       action:
         description: 'Action to perform'
         required: true
@@ -11,6 +20,7 @@ on:
         options:
           - fill-channels
           - update-content
+          - test-connection
 
 jobs:
   manage-discord:
@@ -30,13 +40,42 @@ jobs:
       - name: Install dependencies
         run: pip install requests
       
-      - name: Fill Discord Channels
+      - name: Set Bot Token
+        id: set-token
+        run: |
+          if [ "${{ github.event.inputs.bot }}" == "primary" ]; then
+            echo "token=${{ secrets.DISCORD_BOT_TOKEN_PRIMARY }}" >> $GITHUB_OUTPUT
+            echo "[INFO] Using PRIMARY bot (Captain_Kimi)"
+          elif [ "${{ github.event.inputs.bot }}" == "secondary" ]; then
+            echo "token=${{ secrets.DISCORD_BOT_TOKEN_SECONDARY }}" >> $GITHUB_OUTPUT
+            echo "[INFO] Using SECONDARY bot (OAuth20_Bots_Rollout)"
+          elif [ "${{ github.event.inputs.bot }}" == "utility" ]; then
+            echo "token=${{ secrets.DISCORD_BOT_TOKEN_UTILITY }}" >> $GITHUB_OUTPUT
+            echo "[INFO] Using UTILITY bot (Shadowbroker)"
+          else
+            echo "[ERROR] Unknown bot selection"
+            exit 1
+          fi
+      
+      - name: Test Connection
+        if: github.event.inputs.action == 'test-connection'
         env:
-          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          DISCORD_BOT_TOKEN: ${{ steps.set-token.outputs.token }}
+        run: |
+          echo "[INFO] Testing bot connection..."
+          curl -s -X GET "https://discord.com/api/v10/users/@me" \
+            -H "Authorization: Bot $DISCORD_BOT_TOKEN" | jq '.username'
+          echo "[OK] Connection successful"
+      
+      - name: Fill Discord Channels
+        if: github.event.inputs.action == 'fill-channels'
+        env:
+          DISCORD_BOT_TOKEN: ${{ steps.set-token.outputs.token }}
         run: python scripts/discord_fill_channels.py
       
       - name: Update Session State
-        if: success()
+        if: success() && github.event.inputs.action == 'fill-channels'
         run: |
           echo "[INFO] Discord channels updated successfully"
           echo "[INFO] Timestamp: $(date)"
+          echo "[INFO] Bot used: ${{ github.event.inputs.bot }}"
