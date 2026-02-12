@@ -9,7 +9,7 @@ import json
 import os
 
 # Konfiguration
-GUILD_ID = "1470531751595086017"
+GUILD_ID = "1467204311355363485"
 API_BASE = "https://discord.com/api/v10"
 
 # Inhalte für verschiedene Channels
