@@ -1,0 +1,76 @@
+name: Discord - Setup Channels
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Welche Aktion?'
+        required: true
+        default: 'create-channels'
+        type: choice
+        options:
+          - create-channels
+          - update-permissions
+
+jobs:
+  setup-discord:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install requests
+      
+      - name: Create Discord Channels
+        env:
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN_PRIMARY }}
+        run: |
+          python << 'EOF'
+          import requests
+          import os
+          
+          GUILD_ID = "1467204311355363485"
+          BASE_URL = "https://discord.com/api/v10"
+          TOKEN = os.environ['DISCORD_BOT_TOKEN']
+          
+          headers = {
+              "Authorization": f"Bot {TOKEN}",
+              "Content-Type": "application/json"
+          }
+          
+          # Channel 1: admin-content (nur Admins/Mods)
+          print("🔒 Erstelle #admin-content...")
+          r1 = requests.post(f"{BASE_URL}/guilds/{GUILD_ID}/channels", headers=headers, json={
+              "name": "admin-content",
+              "type": 0,
+              "topic": "🔒 Exklusive Inhalte für Admins und Moderatoren. Wichtige Videos, Dokumentationen und interne Diskussionen.",
+              "permission_overwrites": [
+                  {"id": GUILD_ID, "type": 0, "deny": "1024"}  # @everyone kann nicht sehen
+              ]
+          })
+          
+          if r1.status_code == 201:
+              print(f"✅ #admin-content erstellt (ID: {r1.json()['id']})")
+              # Admin Berechtigungen hinzufügen
+              admin_perms = {"type": 0, "allow": "1024", "deny": "0"}
+              requests.put(f"{BASE_URL}/channels/{r1.json()['id']}/permissions/{GUILD_ID}", 
+                          headers=headers, json=admin_perms)
+          else:
+              print(f"❌ Fehler: {r1.status_code} - {r1.text}")
+          
+          # Channel 2: video-sharing (öffentlich)
+          print("📺 Erstelle #video-sharing...")
+          r2 = requests.post(f"{BASE_URL}/guilds/{GUILD_ID}/channels", headers=headers, json={
+              "name": "video-sharing",
+              "type": 0,
+              "topic": "🎬 Teilt interessante Videos, Tutorials und Ressourcen zur Cybersicherheit und AI! Jeder kann hier posten."
+          })
+          
+          if r2.status_code == 201:
+              print(f"✅ #video-sharing erstellt (ID: {r2.json()['id']})")
+          else:
+              print(f"❌ Fehler: {r2.status_code} - {r2.text}")
+          
+          print("\n🎉 Discord Channels erstellt!")
+          EOF
