@@ -129,7 +129,7 @@ class TestAgentMessage:
             agent_id="test",
             session_id="123",
             type="observe",
-            content=MessageContent(),
+            content=MessageContent(observation="Test"),
             targets=["target"],
             context=MessageContext(target="test", session_id="123")
         )
@@ -141,7 +141,7 @@ class TestAgentMessage:
                 agent_id="test",
                 session_id="123",
                 type="observe",
-                content=MessageContent(),
+                content=MessageContent(observation="Test"),
                 targets=["target"],
                 context=MessageContext(target="test", session_id="123")
             )
@@ -206,7 +206,7 @@ class TestAgentMessage:
             session_id="123",
             type="observe",
             priority=PriorityLevel.CRITICAL,
-            content=MessageContent(),
+            content=MessageContent(observation="Test"),
             targets=["target"],
             context=MessageContext(target="test", session_id="123")
         )
@@ -219,7 +219,7 @@ class TestAgentMessage:
             session_id="123",
             type="observe",
             priority=PriorityLevel.NORMAL,
-            content=MessageContent(),
+            content=MessageContent(observation="Test"),
             targets=["target"],
             context=MessageContext(target="test", session_id="123")
         )
@@ -234,7 +234,7 @@ class TestAgentMessage:
             session_id="123",
             type="observe",
             ttl_seconds=1,
-            content=MessageContent(),
+            content=MessageContent(observation="Test"),
             targets=["target"],
             context=MessageContext(target="test", session_id="123")
         )
@@ -249,7 +249,7 @@ class TestAgentMessage:
             session_id="123",
             type="observe",
             ttl_seconds=None,
-            content=MessageContent(),
+            content=MessageContent(observation="Test"),
             targets=["target"],
             context=MessageContext(target="test", session_id="123")
         )

@@ -93,7 +93,7 @@ class AgentMessage(BaseModel):
     """
     model_config = ConfigDict(extra="forbid")
     
-    message_id: str = Field(..., pattern=r"^msg_[a-z0-9]{8,12}$")
+    message_id: str = Field(..., pattern=r"^msg_[a-z0-9_]{8,30}$")
     version: Literal["1.1"] = "1.1"
     timestamp: datetime = Field(default_factory=datetime.utcnow)
     agent_id: str
