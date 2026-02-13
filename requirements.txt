@@ -27,7 +27,7 @@ colorama>=0.4.6
 typer>=0.9.0
 
 # Security and Cryptography
-cryptography>=44.0.1  # SECURITY FIX: CVE-2024-12797 (HIGH - Subgroup Attack), CVE-2024-26130, CVE-2024-41985, CVE-2024-25185
+cryptography>=46.0.5  # SECURITY FIX: CVE-2024-12797 (HIGH - Subgroup Attack), CVE-2024-26130, CVE-2024-41985, CVE-2024-25185, CVE-2025-XXXX
 python-jose>=3.4.0  # SECURITY: Algorithm confusion fix (CVE-2024-33663)
 passlib>=1.7.4
 
@@ -44,7 +44,7 @@ asyncio-mqtt>=0.13.0
 aiofiles>=23.0.0
 
 # AI / LLM Integration
-langchain-core>=0.3.33  # SECURITY: Fix serialization vulnerability (CVE-2024-6239), SSRF fix in image_url handling
+langchain-core>=1.2.12  # SECURITY: Fix serialization vulnerability (CVE-2024-6239), SSRF fix in image_url handling
 langchain>=0.3.17  # SECURITY: Latest with security fixes
 
 # Data Processing
