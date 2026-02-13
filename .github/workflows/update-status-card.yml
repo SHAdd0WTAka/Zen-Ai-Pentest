@@ -1,0 +1,43 @@
+name: Auto-Update Status Card
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'docs/**'
+      - '.github/workflows/**'
+      - 'scripts/**'
+      - 'README.md'
+      - 'requirements.txt'
+  workflow_dispatch:
+
+jobs:
+  update-status-card:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          pip install Pillow qrcode
+      
+      - name: Generate Status Card
+        run: |
+          python scripts/generate_repo_status_card.py
+      
+      - name: Commit and Push
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add docs/status/repo_status_card.png
+          git diff --cached --quiet || (git commit -m "chore: Auto-update status card [skip ci]" && git push)
