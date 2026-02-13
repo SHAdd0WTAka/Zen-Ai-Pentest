@@ -1,5 +1,8 @@
 # Zen-AI-Pentest
 
+![Repository Status](docs/status/repo_status_card.png)
+
+
 > 🛡️ **Professional AI-Powered Penetration Testing Framework**
 
 [![Version](https://img.shields.io/badge/Version-2.3.9-orange)](https://github.com/SHAdd0WTAka/zen-ai-pentest/releases)
