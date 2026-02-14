@@ -221,6 +221,13 @@ All tools run with **safety controls**:
 - **REST API**: Async and sync scanning endpoints
 - **CLI Tools**: Standalone scanner with comprehensive options
 
+### 🔔 Notifications & Integrations
+- **Telegram Bot**: @Zenaipenbot - Instant CI/CD notifications
+- **Discord Integration**: Automated channel updates & GitHub webhooks
+- **Slack/Email**: Enterprise notification support
+- **GitHub Actions**: Native workflow integration
+- **QR Code Gallery**: Quick access to all resources
+
 ### ☁️ Multi-Cloud & Virtualization
 - **Local**: VirtualBox VM Management
 - **Cloud**: AWS EC2, Azure VMs, Google Cloud Compute
@@ -590,15 +597,39 @@ Quick start:
 
 ---
 
-## 💬 Support
+## 🌐 Community & Support
 
-Need help? We've got you covered:
+Join our growing community!
 
+### Quick Links
+
+| Platform | Link | QR Code |
+|----------|------|---------|
+| 🎮 **Discord** | [discord.gg/BSmCqjhY](https://discord.gg/BSmCqjhY) | [📱 Scan](docs/qr_codes/04_discord.png) |
+| 💬 **GitHub Discussions** | [SHAdd0WTAka/zen-ai-pentest/discussions](https://github.com/SHAdd0WTAka/zen-ai-pentest/discussions) | [📱 Scan](docs/qr_codes/01_github_repo.png) |
+| 📦 **PyPI Package** | [pypi.org/project/zen-ai-pentest](https://pypi.org/project/zen-ai-pentest) | [📱 Scan](docs/qr_codes/06_pypi.png) |
+
+### 📱 All QR Codes
+View our complete QR code gallery: [docs/qr_codes/index.html](docs/qr_codes/index.html)
+
+### 💬 Discord Server "Zen-Ai"
+**Fully configured with 11 channels:**
+- 📢 #announcements
+- 📜 #rules
+- 💬 #general
+- 👋 #introductions
+- 📚 #knowledge-base
+- 🤖 #tools-automation
+- 🔒 #security-research
+- 🧠 #ai-ml-discussion
+- 🐛 #bug-reports
+- 💡 #feature-requests
+- 🆘 #support
+
+### 📧 Support
 - 📖 **[Documentation](docs/)** - Comprehensive guides
-- 💬 **[GitHub Discussions](https://github.com/SHAdd0WTAka/zen-ai-pentest/discussions)** - Community Q&A
 - 🐛 **[Issue Tracker](https://github.com/SHAdd0WTAka/zen-ai-pentest/issues)** - Bug reports
-- 🌐 **[Discord](https://discord.gg/zen-ai-pentest)** - Real-time chat
-- 📧 **[Email Support](mailto:support@zen-ai-pentest.dev)** - Direct contact
+- 📧 **[Email](mailto:support@zen-ai-pentest.dev)** - Direct contact
 
 See [SUPPORT.md](SUPPORT.md) for detailed support options.
 
@@ -626,6 +657,19 @@ This project is licensed under the MIT License - see [LICENSE](LICENSE) file for
 - [FastAPI](https://fastapi.tiangolo.com/) - Web framework
 - [Kali Linux](https://www.kali.org/) - Penetration testing distribution
 - All open-source security tool creators
+
+---
+
+## 🎨 Project Artwork
+
+<div align="center">
+  <img src="docs/qr_codes/hemisphere_sync.png" alt="Hemisphere Sync - Left Brain + Right Brain = KIMI" width="600"/>
+  
+  ### Hemisphere Sync
+  **Left Brain (Creative) + Right Brain (Logic) = KIMI**
+  
+  *Custom artwork by **SHAdd0WTAka** representing the fusion of human vision and AI capability.*
+</div>
 
 ---
 
