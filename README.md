@@ -25,6 +25,26 @@
 
 ---
 
+## 🎯 Real Data Execution - No Mocks!
+
+Zen-AI-Pentest executes **real security tools** - no simulations, no mocks, only actual tool execution:
+
+- ✅ **Nmap** - Real port scanning with XML output parsing
+- ✅ **Nuclei** - Real vulnerability detection with JSON output
+- ✅ **SQLMap** - Real SQL injection testing with safety controls
+- ✅ **Multi-Agent** - Researcher & Analyst agents cooperate
+- ✅ **Docker Sandbox** - Isolated tool execution for safety
+
+All tools run with **safety controls**:
+- Private IP blocking (protects internal networks)
+- Timeout management (prevents hanging)
+- Resource limits (CPU/memory constraints)
+- Read-only filesystems (Docker sandbox)
+
+📖 **Details:** [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md)
+
+---
+
 ## 🚀 Quick Start
 
 [![Version](https://img.shields.io/badge/Version-2.3.9-orange)](https://github.com/SHAdd0WTAka/zen-ai-pentest/releases)
