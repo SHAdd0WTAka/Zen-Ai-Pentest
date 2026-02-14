@@ -274,42 +274,126 @@ class NmapScanner(BaseTool):
         return True, ""
 
     async def execute(self, parameters: Dict[str, Any]) -> ToolResult:
-        """Führt Nmap Scan aus."""
+        """Führt Nmap Scan aus - ECHTE AUSFÜHRUNG."""
+        import asyncio.subprocess
+        import xml.etree.ElementTree as ET
+        
         start_time = time.time()
 
         try:
             target = parameters.get("target")
-            options = parameters.get("options", self.default_options)
+            options = parameters.get("options", "-sV -sC")
             ports = parameters.get("ports", "1-1000")
 
-            # Baue Nmap Kommando
-            cmd = f"nmap {options} -p {ports} {target}"
+            # Safety Check: Validiere Target
+            valid, error_msg = self._validate_target_safety(target)
+            if not valid:
+                return ToolResult(
+                    tool_name=self.name,
+                    success=False,
+                    error_message=f"Safety validation failed: {error_msg}",
+                    execution_time=0.0
+                )
 
-            self.logger.info(f"Executing: {cmd}")
+            # Baue Nmap Kommando mit XML Output für besseres Parsing
+            cmd = [
+                "nmap",
+                "-oX", "-",  # XML Output to stdout
+                "-p", str(ports),
+            ] + options.split() + [target]
 
-            # Führe aus (simuliert für Produktionscode)
-            # In echter Implementierung: subprocess oder async subprocess
-            await asyncio.sleep(0.5)  # Simuliere Ausführung
+            self.logger.info(f"[REAL] Executing: {' '.join(cmd)}")
 
-            # Simulierte Ausgabe
-            output = self._simulate_scan_output(target, ports)
-            parsed_data = self._parse_output(output)
+            # ECHTE AUSFÜHRUNG via subprocess
+            proc = await asyncio.create_subprocess_exec(
+                *cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE
+            )
+
+            try:
+                stdout, stderr = await asyncio.wait_for(
+                    proc.communicate(),
+                    timeout=self.timeout
+                )
+            except asyncio.TimeoutError:
+                proc.kill()
+                await proc.wait()
+                return ToolResult(
+                    tool_name=self.name,
+                    success=False,
+                    error_message=f"Nmap timeout after {self.timeout}s",
+                    execution_time=time.time() - start_time
+                )
 
             execution_time = time.time() - start_time
+            output = stdout.decode('utf-8', errors='replace')
+            stderr_text = stderr.decode('utf-8', errors='replace')
+
+            # Parse XML Output
+            parsed_data = self._parse_nmap_xml(output)
+
+            success = proc.returncode == 0 and parsed_data is not None
 
             return ToolResult(
                 tool_name=self.name,
-                success=True,
-                data=parsed_data,
+                success=success,
+                data=parsed_data or {},
                 raw_output=output,
+                error_message=stderr_text if stderr_text else None,
                 execution_time=execution_time,
-                metadata={"ports_scanned": ports, "options": options},
+                metadata={
+                    "ports_scanned": ports,
+                    "options": options,
+                    "target": target,
+                    "return_code": proc.returncode,
+                    "real_execution": True  # Mark as real (not simulated)
+                },
             )
 
+        except FileNotFoundError:
+            execution_time = time.time() - start_time
+            self.logger.error("Nmap not found. Please install nmap.")
+            return ToolResult(
+                tool_name=self.name,
+                success=False,
+                error_message="Nmap not found. Install: https://nmap.org/download.html",
+                execution_time=execution_time
+            )
         except Exception as e:
             execution_time = time.time() - start_time
             self.logger.error(f"Nmap execution failed: {str(e)}")
-            return ToolResult(tool_name=self.name, success=False, error_message=str(e), execution_time=execution_time)
+            return ToolResult(
+                tool_name=self.name,
+                success=False,
+                error_message=str(e),
+                execution_time=execution_time
+            )
+
+    def _validate_target_safety(self, target: str) -> Tuple[bool, str]:
+        """Validiert das Target für Safety (keine internen Netzwerke ohne Whitelist)."""
+        import re
+        import ipaddress
+        
+        # Blockiere private IPs ohne Whitelist
+        try:
+            ip = ipaddress.ip_address(target)
+            # Erlaube localhost für Tests, aber logge Warnung
+            if ip.is_loopback:
+                self.logger.warning(f"Scanning loopback address: {target}")
+                return True, ""
+            # Blockiere andere private IPs
+            if ip.is_private:
+                return False, f"Private IP {target} blocked. Add to whitelist if intended."
+        except ValueError:
+            # Keine IP, wahrscheinlich Domain - erlaube
+            pass
+        
+        # Blockiere gefährliche Zeichen
+        if re.search(r'[;&|<>$`]', target):
+            return False, "Invalid characters in target"
+        
+        return True, ""
 
     def _simulate_scan_output(self, target: str, ports: str) -> str:
         """Simuliert Nmap Output für Demo-Zwecke."""
@@ -329,8 +413,59 @@ Service detection performed.
 OS and Service detection performed.
 """
 
-    def _parse_output(self, output: str) -> Dict[str, Any]:
-        """Parst Nmap Output."""
+    def _parse_nmap_xml(self, xml_output: str) -> Optional[Dict[str, Any]]:
+        """Parst Nmap XML Output für strukturierte Daten."""
+        import xml.etree.ElementTree as ET
+        
+        try:
+            root = ET.fromstring(xml_output)
+            
+            open_ports = []
+            services = []
+            os_matches = []
+            
+            for host in root.findall('host'):
+                for port in host.findall('.//port'):
+                    port_id = port.get('portid')
+                    protocol = port.get('protocol')
+                    state = port.find('state')
+                    
+                    if state is not None and state.get('state') == 'open':
+                        service_elem = port.find('service')
+                        service_name = service_elem.get('name', 'unknown') if service_elem is not None else 'unknown'
+                        service_version = service_elem.get('version', '') if service_elem is not None else ''
+                        product = service_elem.get('product', '') if service_elem is not None else ''
+                        
+                        port_info = {
+                            "port": int(port_id),
+                            "protocol": protocol,
+                            "service": service_name,
+                            "version": f"{product} {service_version}".strip() or "unknown",
+                            "state": "open"
+                        }
+                        open_ports.append(port_info)
+                        services.append(service_name)
+                
+                # OS Detection
+                for osmatch in host.findall('.//osmatch'):
+                    os_matches.append({
+                        "name": osmatch.get('name', 'unknown'),
+                        "accuracy": osmatch.get('accuracy', '0')
+                    })
+            
+            return {
+                "open_ports": open_ports,
+                "services": list(set(services)),
+                "port_count": len(open_ports),
+                "os_matches": os_matches[:3]  # Top 3 OS guesses
+            }
+        except ET.ParseError as e:
+            self.logger.error(f"Failed to parse Nmap XML: {e}")
+            # Fallback zu Text-Parsing
+            return self._parse_output_fallback(xml_output)
+
+    def _parse_output_fallback(self, output: str) -> Dict[str, Any]:
+        """Fallback Text-Parsing wenn XML fehlschlägt."""
         open_ports = []
         services = []
 
