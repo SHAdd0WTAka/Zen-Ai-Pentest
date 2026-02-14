@@ -1,86 +1,88 @@
 /**
- * WebSocket Hook for Real-time Updates
- * Q2 2026 Feature
+ * WebSocket Hook für Echtzeit-Updates
  */
-
 import { useEffect, useRef, useState, useCallback } from 'react';
 
-const WS_BASE = `ws://${window.location.host}`;
-
-export function useWebSocket(room = 'dashboard') {
+export function useWebSocket(clientId) {
   const [connected, setConnected] = useState(false);
+  const [messages, setMessages] = useState([]);
   const [lastMessage, setLastMessage] = useState(null);
   const ws = useRef(null);
-  const reconnectTimeout = useRef(null);
+  const heartbeatInterval = useRef(null);
 
   const connect = useCallback(() => {
-    const wsUrl = `${WS_BASE}/ws/v2/${room}`;
-    
-    try {
-      ws.current = new WebSocket(wsUrl);
-      
-      ws.current.onopen = () => {
-        console.log(`WebSocket connected to ${room}`);
-        setConnected(true);
-        
-        // Send ping every 30s
-        ws.current.pingInterval = setInterval(() => {
-          if (ws.current?.readyState === WebSocket.OPEN) {
-            ws.current.send(JSON.stringify({ action: 'ping' }));
-          }
-        }, 30000);
-      };
-      
-      ws.current.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        setLastMessage(data);
-      };
-      
-      ws.current.onclose = () => {
-        console.log(`WebSocket disconnected from ${room}`);
-        setConnected(false);
-        clearInterval(ws.current?.pingInterval);
-        
-        // Reconnect after 5s
-        reconnectTimeout.current = setTimeout(connect, 5000);
-      };
-      
-      ws.current.onerror = (error) => {
-        console.error('WebSocket error:', error);
-      };
-      
-    } catch (error) {
-      console.error('Failed to connect WebSocket:', error);
-    }
-  }, [room]);
+    if (ws.current?.readyState === WebSocket.OPEN) return;
 
-  useEffect(() => {
-    connect();
+    const wsUrl = `ws://${window.location.hostname}:8000/ws/${clientId}`;
+    console.log('Connecting to WebSocket:', wsUrl);
     
-    return () => {
-      clearTimeout(reconnectTimeout.current);
-      clearInterval(ws.current?.pingInterval);
-      ws.current?.close();
+    ws.current = new WebSocket(wsUrl);
+
+    ws.current.onopen = () => {
+      console.log('WebSocket Connected');
+      setConnected(true);
+      
+      // Start heartbeat
+      heartbeatInterval.current = setInterval(() => {
+        if (ws.current?.readyState === WebSocket.OPEN) {
+          ws.current.send(JSON.stringify({ type: 'ping' }));
+        }
+      }, 30000);
     };
-  }, [connect]);
+
+    ws.current.onmessage = (event) => {
+      const message = JSON.parse(event.data);
+      setLastMessage(message);
+      setMessages(prev => [...prev, message]);
+    };
+
+    ws.current.onclose = () => {
+      console.log('WebSocket Disconnected');
+      setConnected(false);
+      if (heartbeatInterval.current) {
+        clearInterval(heartbeatInterval.current);
+      }
+      
+      // Auto-reconnect nach 3 Sekunden
+      setTimeout(connect, 3000);
+    };
+
+    ws.current.onerror = (error) => {
+      console.error('WebSocket Error:', error);
+    };
+  }, [clientId]);
+
+  const disconnect = useCallback(() => {
+    if (heartbeatInterval.current) {
+      clearInterval(heartbeatInterval.current);
+    }
+    if (ws.current) {
+      ws.current.close();
+    }
+  }, []);
 
   const sendMessage = useCallback((message) => {
     if (ws.current?.readyState === WebSocket.OPEN) {
       ws.current.send(JSON.stringify(message));
+    } else {
+      console.warn('WebSocket not connected');
     }
   }, []);
 
-  return { connected, lastMessage, sendMessage };
-}
+  const subscribe = useCallback((channel) => {
+    sendMessage({ type: 'subscribe', channel });
+  }, [sendMessage]);
 
-export function useScanUpdates(scanId) {
-  const { connected, lastMessage, sendMessage } = useWebSocket('scans');
-  
   useEffect(() => {
-    if (scanId && connected) {
-      sendMessage({ action: 'subscribe_scan', scan_id: scanId });
-    }
-  }, [scanId, connected, sendMessage]);
-  
-  return { connected, lastMessage };
+    connect();
+    return disconnect;
+  }, [connect, disconnect]);
+
+  return { 
+    connected, 
+    messages, 
+    lastMessage,
+    sendMessage,
+    subscribe
+  };
 }

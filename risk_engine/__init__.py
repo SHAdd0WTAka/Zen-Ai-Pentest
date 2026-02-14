@@ -96,4 +96,4 @@ __all__ = [
     "EPSSClient",
 ]
 
-__version__ = "2.3.9"
+__version__ = "2.0.0"

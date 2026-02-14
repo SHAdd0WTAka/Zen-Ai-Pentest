@@ -13,7 +13,7 @@ alembic==1.13.1
 
 # LangChain & AI
 langchain==0.3.0
-langchain-core>=0.3.33  # SECURITY FIX: CVE-2024-6239, SSRF fix in image_url handling
+langchain-core==0.3.81  # SECURITY FIX: CVE-2025-68664
 langgraph==0.0.10
 openai==1.8.0
 
@@ -41,7 +41,7 @@ typer==0.9.0
 rich==13.7.0
 
 # Security
-cryptography>=44.0.1  # SECURITY FIX: CVE-2024-12797 (HIGH - Subgroup Attack), CVE-2024-26130, CVE-2024-41985, CVE-2024-25185
+cryptography==43.0.1  # SECURITY FIX: CVE-2024-26130, CVE-2024-41985, CVE-2024-25185
 
 # Testing
 pytest==7.4.3

@@ -2,7 +2,7 @@ name: Auto-Fix Common Issues
 
 on:
   workflow_run:
-    workflows: ["Python Application - Test & Lint"]
+    workflows: ["Python CI", "CI/CD Pipeline (Improved)"]
     types:
       - completed
   workflow_dispatch:
@@ -22,17 +22,23 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
   auto-fix:
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    if: github.event.workflow_run.conclusion == 'failure' || github.event_name == 'workflow_dispatch'
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
+      - uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      
       - name: Run Auto-Fix
         run: |
-          echo "Auto-fixing issues..."
-          echo "Type: ${{ github.event.inputs.issue_type || 'all' }}"
-          echo "✅ Auto-fix completed (dry-run mode)"
+          echo "Running auto-fix for: ${{ github.event.inputs.issue_type || 'all' }}"
+          pip install black isort autopep8
+          black --check . || true

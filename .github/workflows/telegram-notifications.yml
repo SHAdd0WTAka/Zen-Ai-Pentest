@@ -4,17 +4,16 @@
 name: Telegram Notifications
 
 on:
-  workflow_run:
-    workflows: ["Python application", "Repository Health Check", "CI/CD Pipeline", "Test Coverage", "Security Scan"]
-    types: [completed]
-  push:
-    branches: [master, main]
-  issues:
-    types: [opened, closed, reopened]
-  pull_request:
-    types: [opened, closed, reopened]
-  release:
-    types: [published]
+  # DISABLED: Requires TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID secrets
+  # workflow_run:
+  #   workflows: ["Python application", "Repository Health Check"]
+  #   types: [completed]
+  # push:
+  #   branches: [master, main]
+  # issues:
+  #   types: [opened, closed, reopened]
+  # pull_request:
+  #   types: [opened, closed, reopened]
   workflow_dispatch:
     inputs:
       message:
@@ -22,49 +21,25 @@ on:
         required: false
         default: 'Test notification from Zen-AI-Pentest'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
 jobs:
   notify:
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    # Use GitHub Environment for secure secret management
-    environment: production
-    # Only run if it's a workflow_dispatch or other triggers
     if: always()
+    env:
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
     
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        
-      - name: Check Secrets
-        id: check_secrets
-        run: |
-          if [ -z "${{ secrets.TELEGRAM_BOT_TOKEN }}" ]; then
-            echo "TELEGRAM_BOT_TOKEN is not set"
-            echo "has_token=false" >> $GITHUB_OUTPUT
-          else
-            echo "TELEGRAM_BOT_TOKEN is set"
-            echo "has_token=true" >> $GITHUB_OUTPUT
-          fi
-          
-          if [ -z "${{ secrets.TELEGRAM_CHAT_ID }}" ]; then
-            echo "TELEGRAM_CHAT_ID is not set"
-            echo "has_chat_id=false" >> $GITHUB_OUTPUT
-          else
-            echo "TELEGRAM_CHAT_ID is set"
-            echo "has_chat_id=true" >> $GITHUB_OUTPUT
-          fi
-      
-      - name: Mask Sensitive Data
-        run: |
-          # Ensure secrets are masked in logs
-          echo "::add-mask::${{ secrets.TELEGRAM_BOT_TOKEN }}"
-          echo "::add-mask::${{ secrets.TELEGRAM_CHAT_ID }}"
-      
       - name: Send Telegram Notification
-        if: steps.check_secrets.outputs.has_token == 'true' && steps.check_secrets.outputs.has_chat_id == 'true'
-        env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        if: ${{ env.TELEGRAM_BOT_TOKEN != '' && env.TELEGRAM_CHAT_ID != '' }}
         run: |
           # Determine notification type and message
           if [ "${{ github.event_name }}" == "workflow_run" ]; then
@@ -81,7 +56,7 @@ jobs:
               STATUS="⚠️ $CONCLUSION"
             fi
             
-            MESSAGE="<b>Workflow $STATUS</b>%0AName: $WORKFLOW_NAME%0ABranch: $BRANCH%0ARepo: ${{ github.repository }}%0A$URL"
+            MESSAGE="<b>Workflow $STATUS</b> - Name: $WORKFLOW_NAME, Branch: $BRANCH, Repo: ${{ github.repository }} - $URL"
           
           elif [ "${{ github.event_name }}" == "issues" ]; then
             ISSUE_TITLE="${{ github.event.issue.title }}"
@@ -96,7 +71,7 @@ jobs:
               ICON="📝"
             fi
             
-            MESSAGE="<b>$ICON Issue $ACTION</b>%0A$ISSUE_TITLE%0A${{ github.repository }}%0A$ISSUE_URL"
+            MESSAGE="<b>$ICON Issue $ACTION</b> - $ISSUE_TITLE - ${{ github.repository }} - $ISSUE_URL"
           
           elif [ "${{ github.event_name }}" == "pull_request" ]; then
             PR_TITLE="${{ github.event.pull_request.title }}"
@@ -105,56 +80,30 @@ jobs:
             
             if [ "$ACTION" == "opened" ]; then
               ICON="🔀"
-            elif [ "$ACTION" == "closed" ] && [ "${{ github.event.pull_request.merged }}" == "true" ]; then
-              ICON="✅ MERGED"
             elif [ "$ACTION" == "closed" ]; then
-              ICON="❌ CLOSED"
+              ICON="✅"
             else
               ICON="📝"
             fi
             
-            MESSAGE="<b>$ICON PR $ACTION</b>%0A$PR_TITLE%0A${{ github.repository }}%0A$PR_URL"
-          
-          elif [ "${{ github.event_name }}" == "release" ]; then
-            RELEASE_TAG="${{ github.event.release.tag_name }}"
-            RELEASE_NAME="${{ github.event.release.name }}"
-            RELEASE_URL="${{ github.event.release.html_url }}"
-            
-            MESSAGE="<b>🚀 New Release</b>%0A<b>$RELEASE_TAG</b>: $RELEASE_NAME%0A${{ github.repository }}%0A$RELEASE_URL"
+            MESSAGE="<b>$ICON PR $ACTION</b> - $PR_TITLE - ${{ github.repository }} - $PR_URL"
           
           elif [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-            MESSAGE="<b>🧪 Test Notification</b>%0A${{ github.event.inputs.message }}%0A${{ github.repository }} by ${{ github.actor }}"
+            MESSAGE="<b>🧪 Test Notification</b> - ${{ github.event.inputs.message }} - ${{ github.repository }} by ${{ github.actor }}"
           
           else
-            MESSAGE="<b>🔔 Repository Event</b>%0A${{ github.event_name }}%0A${{ github.repository }}%0A${{ github.ref_name }} by ${{ github.actor }}"
+            MESSAGE="<b>🔔 Repository Event</b> - ${{ github.event_name }} - ${{ github.repository }} - ${{ github.ref_name }} by ${{ github.actor }}"
           fi
           
-          # URL encode the message properly
-          ENCODED_MESSAGE=$(echo "$MESSAGE" | sed 's/&/%26/g')
-          
-          # Send Telegram message with error handling
-          echo "Sending Telegram notification..."
-          RESPONSE=$(curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+          # Send Telegram message
+          curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
             -d "chat_id=${TELEGRAM_CHAT_ID}" \
-            -d "text=${ENCODED_MESSAGE}" \
+            -d "text=$MESSAGE" \
             -d "parse_mode=HTML" \
-            -d "disable_web_page_preview=true" \
-            -w "\n%{http_code}")
-          
-          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
-          BODY=$(echo "$RESPONSE" | sed '$d')
-          
-          if [ "$HTTP_CODE" != "200" ]; then
-            echo "❌ Telegram API error (HTTP $HTTP_CODE)"
-            echo "Response: $BODY"
-            exit 1
-          else
-            echo "✅ Telegram notification sent successfully"
-          fi
+            -d "disable_web_page_preview=true"
       
       - name: Skip Notification (No Secrets)
-        if: steps.check_secrets.outputs.has_token != 'true' || steps.check_secrets.outputs.has_chat_id != 'true'
+        if: ${{ env.TELEGRAM_BOT_TOKEN == '' || env.TELEGRAM_CHAT_ID == '' }}
         run: |
-          echo "⚠️ Telegram secrets not configured. Skipping notification."
-          echo "To enable: Add TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID to environment secrets."
-          echo "Setup guide: docs/TELEGRAM_SETUP.md"
+          echo "Telegram secrets not configured. Skipping notification."
+          echo "To enable: Add TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID to repository secrets."

@@ -80,14 +80,14 @@ extras_require = {
 
 setup(
     name="zen-ai-pentest",
-    version="2.3.9",
+    version="2.3.7",
     description="Autonomous AI-Powered Penetration Testing Framework",
     long_description=long_description,
     long_description_content_type="text/markdown",
     author="SHAdd0WTAka",
     author_email="security@zen-ai-pentest.dev",
     url="https://github.com/SHAdd0WTAka/zen-ai-pentest",
-    packages=find_packages(exclude=["tests*", "docs*", "web_ui*", "examples*"]),
+    packages=["agents", "alembic", "api", "api.core", "api.routes", "api.v1", "autonomous", "backends", "ci_cd", "core", "database", "gui", "integration", "integrations", "memory", "modules", "monitoring", "notifications", "risk", "risk_engine", "safety", "scripts", "tools", "ui", "utils", "virtualization", "zen_ai_pentest", "zen_shield", "zen_shield.filters"],
     include_package_data=True,
     package_data={
         "zen-ai-pentest": [

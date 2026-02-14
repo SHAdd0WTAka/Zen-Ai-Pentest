@@ -2,7 +2,6 @@ name: API Key Health Check & Rotation
 
 on:
   schedule:
-    # Weekly check (Sundays at 03:00 UTC)
     - cron: '0 3 * * 0'
   workflow_dispatch:
     inputs:
@@ -20,17 +19,18 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-jobs:
-  api-key-check:
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+permissions:
+  contents: read
 
-      - name: API Key Health Check
+jobs:
+  check-keys:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Check API Keys
         run: |
           echo "Checking API key health..."
           echo "Action: ${{ github.event.inputs.action || 'check' }}"
-          # Add actual key rotation logic here
-          echo "✅ API key check completed"
+          # Placeholder for actual key checking logic

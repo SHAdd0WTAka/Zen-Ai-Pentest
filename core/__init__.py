@@ -13,6 +13,6 @@ try:
 except ImportError:
     pass  # Not critical
 
-__version__ = "2.3.9"
+__version__ = "1.0.0"
 __author__ = "SHAdd0WTAka"
 __description__ = "Multi-LLM Penetration Testing Intelligence System"

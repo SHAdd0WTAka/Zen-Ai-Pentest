@@ -3,10 +3,11 @@ name: 📅 Scheduled Dependabot Merge
 # Runs automatically on schedule to merge Dependabot PRs
 
 on:
-  # DISABLED: Too many auto-merge workflows (use dependabot-auto-merge.yml)
-  # schedule:
-  #   - cron: '0 6 * * *'
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: write

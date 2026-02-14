@@ -46,7 +46,7 @@ FROM python:3.11-slim AS production
 LABEL maintainer="Zen-AI-Pentest Team <security@zen-ai.dev>"
 LABEL org.opencontainers.image.title="Zen AI Pentest"
 LABEL org.opencontainers.image.description="AI-powered security scanning for CI/CD pipelines"
-LABEL org.opencontainers.image.version="2.3.9"
+LABEL org.opencontainers.image.version="2.0.0"
 LABEL org.opencontainers.image.source="https://github.com/zen-ai-pentest/zen-ai-pentest"
 LABEL org.opencontainers.image.licenses="MIT"
 

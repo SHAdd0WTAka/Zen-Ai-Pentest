@@ -7,6 +7,9 @@ aiohttp>=3.13.3  # SECURITY FIX: CVE-2025-69223, CVE-2024-30251, CVE-2024-23334
 websockets>=12.0
 urllib3>=2.6.3
 
+# DNS resolution for subdomain scanning
+dnspython>=2.7.0
+
 # File locking (security fix)
 filelock>=3.20.3
 
@@ -27,7 +30,7 @@ colorama>=0.4.6
 typer>=0.9.0
 
 # Security and Cryptography
-cryptography>=46.0.5  # SECURITY FIX: CVE-2024-12797 (HIGH - Subgroup Attack), CVE-2024-26130, CVE-2024-41985, CVE-2024-25185, CVE-2025-XXXX
+cryptography>=43.0.1  # SECURITY FIX: CVE-2024-26130, CVE-2024-41985, CVE-2024-25185
 python-jose>=3.4.0  # SECURITY: Algorithm confusion fix (CVE-2024-33663)
 passlib>=1.7.4
 
@@ -43,8 +46,12 @@ docker>=6.1.0
 asyncio-mqtt>=0.13.0
 aiofiles>=23.0.0
 
+# Task Queue
+celery>=5.3.0
+redis>=4.5.0
+
 # AI / LLM Integration
-langchain-core>=1.2.12  # SECURITY: Fix serialization vulnerability (CVE-2024-6239), SSRF fix in image_url handling
+langchain-core>=0.3.33  # SECURITY: Fix serialization vulnerability (CVE-2024-6239)
 langchain>=0.3.17  # SECURITY: Latest with security fixes
 
 # Data Processing
@@ -59,5 +66,3 @@ weasyprint>=61.0; platform_system != "Windows"  # SECURITY FIX: CVE-2024-45492
 # Utilities
 tenacity>=8.2.0
 python-dateutil>=2.8.0
-pydantic-settings>=2.0.0
-email-validator>=2.0.0

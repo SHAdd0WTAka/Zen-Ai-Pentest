@@ -1,16 +1,11 @@
 name: Branch Protection Check
 
 on:
-  # NOTE: This workflow fails because branch protection IS enabled (404 error)
-  # It's designed to alert when protection is DISABLED
-  # Keeping it as manual trigger for occasional checks
-  # push:
-  #   branches: [master, main]
-  # pull_request:
-  #   branches: [master, main]
-  # schedule:
-  #   - cron: '0 3 * * *'
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -20,7 +15,7 @@ permissions:
 jobs:
   check-branch-protection:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

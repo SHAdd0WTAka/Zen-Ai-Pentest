@@ -44,9 +44,22 @@ from api.schemas import (
     ScheduledScanCreate,
     ScheduledScanUpdate,
     ScheduledScanResponse,
+    UserLogin,
+    UserCreate,
+    TokenResponse,
+    UserInfo,
 )
-from api.auth import verify_token, create_access_token
+from api.auth_simple import (
+    authenticate_user,
+    create_access_token,
+    verify_token,
+    require_admin,
+    create_user,
+    list_users,
+    USERS_DB
+)
 from api.websocket import ConnectionManager
+from api.websocket_manager import manager
 from api.rate_limiter import (
     check_auth_rate_limit,
     record_auth_failure,
@@ -77,7 +90,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="Zen-AI-Pentest API", description="Professional Pentesting Framework API", version="2.3.9", lifespan=lifespan
+    title="Zen-AI-Pentest API", description="Professional Pentesting Framework API", version="2.2.0", lifespan=lifespan
 )
 
 # =============================================================================
@@ -128,27 +141,39 @@ def verify_admin_credentials(username: str, password: str) -> bool:
     return hmac.compare_digest(username, ADMIN_USERNAME) and hmac.compare_digest(password, ADMIN_PASSWORD)
 
 
-@app.post("/auth/login")
-async def login(credentials: dict, request: Request):
-    """Login and get JWT token with secure credential verification and rate limiting"""
+@app.post("/auth/login", response_model=TokenResponse)
+async def login(credentials: UserLogin, request: Request):
+    """
+    Login und JWT Token erhalten
+    
+    - **username**: Username (min. 3 Zeichen)
+    - **password**: Passwort (min. 6 Zeichen)
+    
+    Returns JWT Token für authentifizierte Requests
+    """
     client_ip = request.client.host if request.client else "unknown"
-
-    # Check auth rate limit
     check_auth_rate_limit(client_ip)
-
-    username = credentials.get("username", "")
-    password = credentials.get("password", "")
-
-    if verify_admin_credentials(username, password):
-        record_auth_success(client_ip)
-        token = create_access_token({"sub": username, "role": "admin"})
-        logger.info(f"Successful login for user: {username} from {client_ip}")
-        return {"access_token": token, "token_type": "bearer"}
-
-    # Record failed attempt
-    record_auth_failure(client_ip)
-    logger.warning(f"Failed login attempt for user: {username} from {client_ip}")
-    raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    user = authenticate_user(credentials.username, credentials.password)
+    
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    access_token = create_access_token(
+        data={"sub": user["username"], "role": user["role"]}
+    )
+    
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "expires_in": 86400,  # 24 Stunden
+        "username": user["username"],
+        "role": user["role"]
+    }
 
 
 @app.get("/auth/me")
@@ -545,8 +570,50 @@ async def generate_report_task(report_id: int, scan_id: int, format: str):
 
 @app.get("/health")
 async def health_check():
-    """Health check endpoint"""
-    return {"status": "healthy", "version": "2.3.9", "timestamp": datetime.utcnow().isoformat()}
+    """
+    Health check endpoint für Docker und Monitoring
+    Prüft alle wichtigen Services
+    """
+    from sqlalchemy import text
+    import redis
+    import socket
+    
+    health_status = {
+        "status": "healthy",
+        "version": "2.2.0",
+        "timestamp": datetime.utcnow().isoformat(),
+        "services": {}
+    }
+    
+    # Check Database
+    try:
+        db = SessionLocal()
+        db.execute(text("SELECT 1"))
+        db.close()
+        health_status["services"]["database"] = {"status": "ok", "type": "postgresql"}
+    except Exception as e:
+        health_status["services"]["database"] = {"status": "error", "error": str(e)}
+        health_status["status"] = "degraded"
+    
+    # Check Redis
+    try:
+        redis_client = redis.from_url(
+            os.getenv("REDIS_URL", "redis://localhost:6379/0"),
+            socket_connect_timeout=2
+        )
+        redis_client.ping()
+        health_status["services"]["redis"] = {"status": "ok"}
+    except Exception as e:
+        health_status["services"]["redis"] = {"status": "error", "error": str(e)}
+        health_status["status"] = "degraded"
+    
+    # Check API selbst
+    health_status["services"]["api"] = {"status": "ok", "port": 8000}
+    
+    # HTTP Status Code
+    status_code = 200 if health_status["status"] == "healthy" else 503
+    
+    return health_status
 
 
 @app.get("/info")
@@ -554,10 +621,47 @@ async def api_info():
     """API information"""
     return {
         "name": "Zen-AI-Pentest API",
-        "version": "2.3.9",
+        "version": "2.0.0",
         "description": "Professional Pentesting Framework",
         "endpoints": {"scans": "/scans", "findings": "/scans/{id}/findings", "tools": "/tools", "reports": "/reports"},
     }
+
+
+@app.websocket("/ws/{client_id}")
+async def websocket_endpoint(websocket: WebSocket, client_id: str):
+    """
+    WebSocket Endpoint für Echtzeit-Updates
+    
+    Nutzung:
+    - Verbinden: wscat -c ws://localhost:8000/ws/client123
+    - Ping: {"type": "ping"}
+    - Subscribe: {"type": "subscribe", "channel": "scans"}
+    """
+    await manager.connect(websocket, client_id)
+    try:
+        while True:
+            data = await websocket.receive_text()
+            message = json.loads(data)
+            
+            if message.get("type") == "ping":
+                await manager.send_personal_message({
+                    "type": "pong",
+                    "timestamp": datetime.utcnow().isoformat()
+                }, websocket)
+            
+            elif message.get("type") == "subscribe":
+                channel = message.get("channel", "general")
+                await manager.send_personal_message({
+                    "type": "subscribed",
+                    "channel": channel,
+                    "client_id": client_id
+                }, websocket)
+                
+    except WebSocketDisconnect:
+        manager.disconnect(websocket, client_id)
+    except Exception as e:
+        print(f"WebSocket error: {e}")
+        manager.disconnect(websocket, client_id)
 
 
 # ============================================================================
@@ -1025,6 +1129,15 @@ try:
     logger.info("API v1.0 Scans endpoints loaded")
 except ImportError as e:
     logger.warning(f"Could not load Scans v1.0 endpoints: {e}")
+
+# Subdomain scanning routes
+try:
+    from api.routes.subdomain import router as subdomain_router
+
+    app.include_router(subdomain_router, prefix="/api/v1/subdomain", tags=["Subdomain"])
+    logger.info("Subdomain scanning endpoints loaded")
+except ImportError as e:
+    logger.warning(f"Could not load Subdomain endpoints: {e}")
 
 if __name__ == "__main__":
     import uvicorn

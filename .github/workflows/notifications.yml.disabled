@@ -1,0 +1,530 @@
+name: Notifications
+
+on:
+  release:
+    types: [published, created, prereleased]
+  workflow_run:
+    workflows: ["Python CI", "Security Scan", "Release"]
+    types: [completed]
+  issues:
+    types: [opened, closed]
+  pull_request:
+    types: [opened, closed]
+  discussion:
+    types: [created]
+  schedule:
+    # Weekly summary every Monday at 9 AM UTC
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+    inputs:
+      message:
+        description: 'Custom message to send'
+        required: true
+        type: string
+      channel:
+        description: 'Notification channel'
+        required: false
+        default: 'slack'
+        type: choice
+        options:
+          - slack
+          - discord
+          - both
+
+env:
+  ENABLE_SLACK: ${{ secrets.SLACK_WEBHOOK_URL != '' }}
+  ENABLE_DISCORD: ${{ secrets.DISCORD_WEBHOOK_URL != '' }}
+
+jobs:
+  # =============================================================================
+  # Release Notifications
+  # =============================================================================
+  notify-release:
+    name: Notify New Release
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: github.event_name == 'release'
+    steps:
+      - name: Slack - Release Notification
+        if: env.ENABLE_SLACK == 'true'
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          custom_payload: |
+            {
+              "attachments": [{
+                "color": "${{ github.event.release.prerelease && 'warning' || 'good' }}",
+                "pretext": "🚀 New Release Published!",
+                "title": "${{ github.event.release.name }}",
+                "title_link": "${{ github.event.release.html_url }}",
+                "text": "${{ github.event.release.body | truncate(500) }}",
+                "fields": [{
+                  "title": "Version",
+                  "value": "${{ github.event.release.tag_name }}",
+                  "short": true
+                }, {
+                  "title": "Type",
+                  "value": "${{ github.event.release.prerelease && 'Pre-release' || 'Stable' }}",
+                  "short": true
+                }, {
+                  "title": "Author",
+                  "value": "${{ github.event.release.author.login }}",
+                  "short": true
+                }],
+                "footer": "Zen AI Pentest",
+                "ts": ${{ github.event.release.published_at }}
+              }]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        continue-on-error: true
+
+      - name: Discord - Release Notification
+        if: env.ENABLE_DISCORD == 'true'
+        uses: Ilshidur/action-discord@master
+        with:
+          args: |
+            🚀 **New Release ${{ github.event.release.prerelease && '(Pre-release)' || '' }}**
+            
+            **${{ github.event.release.name }}**
+            
+            ${{ github.event.release.body | truncate(1000) }}
+            
+            🔗 [View Release](${{ github.event.release.html_url }})
+            📦 [PyPI](https://pypi.org/project/zen-ai-pentest/)
+            🐳 [Docker Hub](https://github.com/${{ github.repository }}/pkgs/container/zen-ai-pentest)
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        continue-on-error: true
+
+  # =============================================================================
+  # Build Failure Notifications
+  # =============================================================================
+  notify-build-failure:
+    name: Notify Build Failure
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: >
+      github.event_name == 'workflow_run' &&
+      github.event.workflow_run.conclusion == 'failure'
+    steps:
+      - name: Slack - Build Failure
+        if: env.ENABLE_SLACK == 'true'
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ github.event.workflow_run.conclusion }}
+          text: |
+            ❌ **Build Failed!**
+            
+            Workflow: ${{ github.event.workflow_run.name }}
+            Branch: ${{ github.event.workflow_run.head_branch }}
+            Commit: ${{ github.event.workflow_run.head_sha | substring(0, 7) }}
+            Author: ${{ github.event.workflow_run.head_commit.author.name }}
+            
+            🔍 [View Run](${{ github.event.workflow_run.html_url }})
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        continue-on-error: true
+
+      - name: Discord - Build Failure
+        if: env.ENABLE_DISCORD == 'true'
+        uses: Ilshidur/action-discord@master
+        with:
+          args: |
+            ❌ **Build Failed!**
+            
+            **Workflow:** ${{ github.event.workflow_run.name }}
+            **Branch:** ${{ github.event.workflow_run.head_branch }}
+            **Commit:** ${{ github.event.workflow_run.head_sha }}
+            **Author:** ${{ github.event.workflow_run.head_commit.author.name }}
+            
+            🔍 [View Run](${{ github.event.workflow_run.html_url }})
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        continue-on-error: true
+
+      - name: Create Issue for Repeated Failures
+        if: >
+          github.event.workflow_run.conclusion == 'failure' &&
+          github.event.workflow_run.run_attempt > 2
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const workflowName = '${{ github.event.workflow_run.name }}';
+            const branch = '${{ github.event.workflow_run.head_branch }}';
+            
+            // Check if there's already an open issue for this
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: 'ci-failure,automated',
+              state: 'open'
+            });
+            
+            const existingIssue = issues.data.find(i => 
+              i.title.includes(workflowName) && i.title.includes(branch)
+            );
+            
+            if (!existingIssue) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: `🔴 CI Failure: ${workflowName} on ${branch}`,
+                body: `## Build Failure Alert
+                
+                The workflow **${workflowName}** has failed multiple times on branch **${branch}**.
+                
+                **Details:**
+                - Run ID: ${{ github.event.workflow_run.id }}
+                - Attempt: ${{ github.event.workflow_run.run_attempt }}
+                - Commit: ${{ github.event.workflow_run.head_sha }}
+                - Author: ${{ github.event.workflow_run.head_commit.author.name }}
+                
+                🔍 [View Run](${{ github.event.workflow_run.html_url }})
+                
+                Please investigate and fix the issue.`,
+                labels: ['ci-failure', 'automated', 'priority-high']
+              });
+            }
+        continue-on-error: true
+
+  # =============================================================================
+  # Security Alert Notifications
+  # =============================================================================
+  notify-security:
+    name: Notify Security Alerts
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: >
+      github.event_name == 'workflow_run' &&
+      github.event.workflow_run.name == 'Security Scan' &&
+      github.event.workflow_run.conclusion == 'failure'
+    steps:
+      - name: Slack - Security Alert
+        if: env.ENABLE_SLACK == 'true'
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          custom_payload: |
+            {
+              "attachments": [{
+                "color": "danger",
+                "pretext": "🚨 Security Alert!",
+                "title": "Security Scan Failed",
+                "text": "Critical or high severity vulnerabilities were detected. Please review immediately.",
+                "fields": [{
+                  "title": "Repository",
+                  "value": "${{ github.repository }}",
+                  "short": true
+                }, {
+                  "title": "Branch",
+                  "value": "${{ github.event.workflow_run.head_branch }}",
+                  "short": true
+                }],
+                "actions": [{
+                  "type": "button",
+                  "text": "View Security Scan",
+                  "url": "${{ github.event.workflow_run.html_url }}"
+                }, {
+                  "type": "button",
+                  "text": "Security Tab",
+                  "url": "${{ github.server_url }}/${{ github.repository }}/security"
+                }]
+              }]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        continue-on-error: true
+
+      - name: Discord - Security Alert
+        if: env.ENABLE_DISCORD == 'true'
+        uses: Ilshidur/action-discord@master
+        with:
+          args: |
+            🚨 **SECURITY ALERT!**
+            
+            Security scan has detected critical/high severity issues!
+            
+            **Repository:** ${{ github.repository }}
+            **Branch:** ${{ github.event.workflow_run.head_branch }}
+            
+            🔍 [View Scan Results](${{ github.event.workflow_run.html_url }})
+            🔐 [Security Tab](${{ github.server_url }}/${{ github.repository }}/security)
+            
+            @here Please review immediately!
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        continue-on-error: true
+
+  # =============================================================================
+  # New Contributor Notifications
+  # =============================================================================
+  notify-new-contributor:
+    name: Welcome New Contributors
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: >
+      github.event_name == 'pull_request' &&
+      github.event.action == 'opened' &&
+      github.event.pull_request.author_association == 'FIRST_TIME_CONTRIBUTOR'
+    steps:
+      - name: Slack - New Contributor
+        if: env.ENABLE_SLACK == 'true'
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          custom_payload: |
+            {
+              "attachments": [{
+                "color": "good",
+                "pretext": "🎉 New Contributor!",
+                "title": "First PR from ${{ github.event.pull_request.user.login }}",
+                "title_link": "${{ github.event.pull_request.html_url }}",
+                "text": "${{ github.event.pull_request.title }}",
+                "fields": [{
+                  "title": "PR Number",
+                  "value": "#${{ github.event.pull_request.number }}",
+                  "short": true
+                }]
+              }]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        continue-on-error: true
+
+      - name: Discord - New Contributor
+        if: env.ENABLE_DISCORD == 'true'
+        uses: Ilshidur/action-discord@master
+        with:
+          args: |
+            🎉 **New Contributor Alert!**
+            
+            **${{ github.event.pull_request.user.login }}** has opened their first PR!
+            
+            **PR #${{ github.event.pull_request.number }}:** ${{ github.event.pull_request.title }}
+            
+            🔗 [View PR](${{ github.event.pull_request.html_url }})
+            
+            Welcome to the community! 🙌
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        continue-on-error: true
+
+  # =============================================================================
+  # Issue & Discussion Notifications
+  # =============================================================================
+  notify-issues:
+    name: Notify Issues & Discussions
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: >
+      (github.event_name == 'issues' && github.event.action == 'opened') ||
+      (github.event_name == 'discussion')
+    steps:
+      - name: Slack - New Issue/Discussion
+        if: env.ENABLE_SLACK == 'true'
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          custom_payload: |
+            {
+              "attachments": [{
+                "color": "#36a64f",
+                "pretext": "${{ github.event_name == 'issues' && '📝 New Issue' || '💬 New Discussion' }}",
+                "title": "${{ github.event.issue.title || github.event.discussion.title }}",
+                "title_link": "${{ github.event.issue.html_url || github.event.discussion.html_url }}",
+                "text": "${{ (github.event.issue.body || github.event.discussion.body) | truncate(300) }}",
+                "fields": [{
+                  "title": "Author",
+                  "value": "${{ github.event.issue.user.login || github.event.discussion.user.login }}",
+                  "short": true
+                }, {
+                  "title": "Type",
+                  "value": "${{ github.event_name == 'issues' && github.event.issue.labels.map(l => l.name).join(', ') || github.event.discussion.category.name }}",
+                  "short": true
+                }]
+              }]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        continue-on-error: true
+
+  # =============================================================================
+  # Weekly Summary
+  # =============================================================================
+  weekly-summary:
+    name: Weekly Summary
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Gather weekly stats
+        id: stats
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+            
+            // Get merged PRs
+            const prs = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'closed',
+              sort: 'updated',
+              direction: 'desc',
+              per_page: 50
+            });
+            
+            const mergedPRs = prs.data.filter(pr => 
+              pr.merged_at && new Date(pr.merged_at) > new Date(oneWeekAgo)
+            );
+            
+            // Get new issues
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'all',
+              since: oneWeekAgo,
+              per_page: 50
+            });
+            
+            const newIssues = issues.data.filter(issue => 
+              !issue.pull_request && new Date(issue.created_at) > new Date(oneWeekAgo)
+            );
+            
+            const closedIssues = issues.data.filter(issue => 
+              !issue.pull_request && issue.closed_at && new Date(issue.closed_at) > new Date(oneWeekAgo)
+            );
+            
+            // Set outputs
+            core.setOutput('merged_prs', mergedPRs.length);
+            core.setOutput('new_issues', newIssues.length);
+            core.setOutput('closed_issues', closedIssues.length);
+            core.setOutput('pr_list', mergedPRs.map(pr => `- #${pr.number}: ${pr.title}`).join('\n') || 'None');
+
+      - name: Slack - Weekly Summary
+        if: env.ENABLE_SLACK == 'true'
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          custom_payload: |
+            {
+              "attachments": [{
+                "color": "good",
+                "pretext": "📊 Weekly Repository Summary",
+                "fields": [{
+                  "title": "📥 Merged PRs",
+                  "value": "${{ steps.stats.outputs.merged_prs }}",
+                  "short": true
+                }, {
+                  "title": "📋 New Issues",
+                  "value": "${{ steps.stats.outputs.new_issues }}",
+                  "short": true
+                }, {
+                  "title": "✅ Closed Issues",
+                  "value": "${{ steps.stats.outputs.closed_issues }}",
+                  "short": true
+                }, {
+                  "title": "📝 Merged PRs",
+                  "value": "${{ steps.stats.outputs.pr_list | truncate(500) }}",
+                  "short": false
+                }],
+                "footer": "Zen AI Pentest - Weekly Digest"
+              }]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        continue-on-error: true
+
+      - name: Discord - Weekly Summary
+        if: env.ENABLE_DISCORD == 'true'
+        uses: Ilshidur/action-discord@master
+        with:
+          args: |
+            📊 **Weekly Repository Summary**
+            
+            **Activity this week:**
+            • 📥 Merged PRs: ${{ steps.stats.outputs.merged_prs }}
+            • 📋 New Issues: ${{ steps.stats.outputs.new_issues }}
+            • ✅ Closed Issues: ${{ steps.stats.outputs.closed_issues }}
+            
+            **Merged PRs:**
+            ${{ steps.stats.outputs.pr_list }}
+            
+            🔗 [View Repository](${{ github.server_url }}/${{ github.repository }})
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        continue-on-error: true
+
+  # =============================================================================
+  # Custom Message
+  # =============================================================================
+  custom-message:
+    name: Send Custom Message
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Slack - Custom Message
+        if: >
+          (github.event.inputs.channel == 'slack' || github.event.inputs.channel == 'both') &&
+          env.ENABLE_SLACK == 'true'
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          custom_payload: |
+            {
+              "text": "${{ github.event.inputs.message }}"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        continue-on-error: true
+
+      - name: Discord - Custom Message
+        if: >
+          (github.event.inputs.channel == 'discord' || github.event.inputs.channel == 'both') &&
+          env.ENABLE_DISCORD == 'true'
+        uses: Ilshidur/action-discord@master
+        with:
+          args: |
+            ${{ github.event.inputs.message }}
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        continue-on-error: true
+
+  # =============================================================================
+  # Notification Summary
+  # =============================================================================
+  notification-summary:
+    name: Notification Summary
+    runs-on: ubuntu-latest
+    needs: [notify-release, notify-build-failure, notify-security, notify-new-contributor, notify-issues, weekly-summary]
+    if: always()
+    steps:
+      - name: Generate Summary
+        run: |
+          echo "## 📢 Notification Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Event:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [[ "${{ env.ENABLE_SLACK }}" == "true" ]]; then
+            echo "✅ Slack notifications enabled" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ Slack notifications disabled (SLACK_WEBHOOK_URL not set)" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [[ "${{ env.ENABLE_DISCORD }}" == "true" ]]; then
+            echo "✅ Discord notifications enabled" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ Discord notifications disabled (DISCORD_WEBHOOK_URL not set)" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Configuration" >> $GITHUB_STEP_SUMMARY
+          echo "To enable notifications, add these secrets to your repository:" >> $GITHUB_STEP_SUMMARY
+          echo "- \`SLACK_WEBHOOK_URL\` - For Slack notifications" >> $GITHUB_STEP_SUMMARY
+          echo "- \`DISCORD_WEBHOOK_URL\` - For Discord notifications" >> $GITHUB_STEP_SUMMARY

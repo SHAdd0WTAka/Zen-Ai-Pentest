@@ -37,7 +37,7 @@ services:
   api:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.api
     container_name: zen-api
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/zen_pentest
@@ -46,15 +46,15 @@ services:
       - CORS_ORIGINS=http://localhost:3000,http://frontend:3000
     ports:
       - "8000:8000"
+    # Kein volumes Mount mehr - Code kommt aus Image
     volumes:
-      - ./:/app
-      - /app/venv
+      - ./logs:/app/logs
+      - ./uploads:/app/uploads
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_started
-    command: uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
     networks:
       - zen-network
     restart: unless-stopped
@@ -75,6 +75,7 @@ services:
       - /app/node_modules
     depends_on:
       - api
+    command: sh -c "npm ci && npm run build && npx serve -s build -l 3000"
     networks:
       - zen-network
     restart: unless-stopped
@@ -96,7 +97,7 @@ services:
         condition: service_healthy
       redis:
         condition: service_started
-    command: celery -A tasks worker --loglevel=info
+    command: python -m celery -A tasks worker --loglevel=info
     networks:
       - zen-network
     restart: unless-stopped

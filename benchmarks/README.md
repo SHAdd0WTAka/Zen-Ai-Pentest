@@ -457,4 +457,4 @@ MIT License - Siehe [LICENSE](../LICENSE)
 
 - Issues: [GitHub Issues](https://github.com/yourorg/zen-ai-pentest/issues)
 - Dokumentation: [Wiki](https://github.com/yourorg/zen-ai-pentest/wiki)
-- Discord: [Join Server](https://discord.gg/BSmCqjhY)
+- Discord: [Join Server](https://discord.gg/zen-ai-pentest)

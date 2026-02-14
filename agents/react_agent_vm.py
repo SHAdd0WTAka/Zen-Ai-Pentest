@@ -158,7 +158,7 @@ Wenn fertig, gib eine finale Zusammenfassung."""
 
             port_arg = "--top-ports 100" if ports == "top-100" else f"-p {ports}"
             exit_code, stdout, stderr = self.sandbox.execute_tool(
-                self.session_id, "nmap", f"{port_arg} {target}", self.vm_config.vm_username, self.vm_config.vm_password
+                self.session_id, "nmap", f"{port_arg} {target}", config.vm_username, config.vm_password
             )
             return stdout if exit_code == 0 else stderr
 
@@ -169,7 +169,7 @@ Wenn fertig, gib eine finale Zusammenfassung."""
                 return "Keine aktive Session"
 
             exit_code, stdout, stderr = self.sandbox.execute_tool(
-                self.session_id, "nuclei", f"-u {target} -s {severity}", self.vm_config.vm_username, self.vm_config.vm_password
+                self.session_id, "nuclei", f"-u {target} -s {severity}", config.vm_username, config.vm_password
             )
             return stdout if exit_code == 0 else stderr
 
@@ -183,15 +183,15 @@ Wenn fertig, gib eine finale Zusammenfassung."""
                 self.session_id,
                 "gobuster",
                 f"dir -u {target} -w /usr/share/wordlists/dirb/{wordlist}",
-                self.vm_config.vm_username,
-                self.vm_config.vm_password,
+                config.vm_username,
+                config.vm_password,
             )
             return stdout if exit_code == 0 else stderr
 
         @tool
         def restore_vm_snapshot(snapshot_name: str = "clean_state") -> str:
             """Stellt VM-Snapshot wieder her"""
-            success = self.vbox.restore_snapshot(self.vm_config.vm_name, snapshot_name)
+            success = self.vbox.restore_snapshot(config.vm_name, snapshot_name)
             return f"Snapshot {snapshot_name} wiederhergestellt" if success else "Fehler"
 
         return [vm_nmap_scan, vm_nuclei_scan, vm_gobuster_scan, restore_vm_snapshot]

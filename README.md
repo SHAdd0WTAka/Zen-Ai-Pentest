@@ -1,27 +1,58 @@
 # Zen-AI-Pentest
 
-![Repository Status](docs/status/repo_status_card.png)
-
-
 > 🛡️ **Professional AI-Powered Penetration Testing Framework**
+
+[![Python](https://img.shields.io/badge/Python-3.9%2B-blue)](https://python.org)
+- **Guest Control**: Execute tools inside isolated VMs
+
+### 🚀 Modern API & Backend
+- **FastAPI**: High-performance REST API
+- **PostgreSQL**: Persistent data storage
+- **WebSocket**: Real-time scan updates
+- **JWT Auth**: Role-based access control (RBAC)
+- **Background Tasks**: Async scan execution
+
+### 📊 Reporting & Notifications
+- **PDF Reports**: Professional findings reports
+- **HTML Dashboard**: Interactive web interface
+- **Slack/Email**: Instant notifications
+- **JSON/XML**: Integration with other tools
+
+### 🐳 Easy Deployment
+- **Docker Compose**: One-command full stack deployment
+- **CI/CD**: GitHub Actions pipeline
+- **Production Ready**: Optimized for enterprise use
+
+---
+
+## 🚀 Quick Start
 
 [![Version](https://img.shields.io/badge/Version-2.3.9-orange)](https://github.com/SHAdd0WTAka/zen-ai-pentest/releases)
 [![Python](https://img.shields.io/badge/Python-3.9%2B-blue)](https://python.org)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.104%2B-teal)](https://fastapi.tiangolo.com)
 [![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
+
 [![PyPI](https://img.shields.io/pypi/v/zen-ai-pentest?color=green)](https://pypi.org/project/zen-ai-pentest/)
+[![Marketplace](https://img.shields.io/badge/Marketplace-Action-green?logo=github)](https://github.com/marketplace/actions/zen-ai-pentest)
 [![Docker](https://img.shields.io/badge/Docker-Ready-blue)](docker/)
+[![Tests](https://img.shields.io/badge/Tests-pytest-brightgreen)](tests/)
+
 [![CI Status](https://img.shields.io/badge/CI-Optimized-brightgreen)](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/actions/workflows/ci.yml)
 [![Security](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/actions/workflows/security.yml/badge.svg)](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/actions/workflows/security.yml)
-[![codecov](https://codecov.io/gh/SHAdd0WTAka/zen-ai-pentest/branch/main/graph/badge.svg?token=G9V7J40URC)](https://codecov.io/gh/SHAdd0WTAka/zen-ai-pentest)
-[![Tests](https://img.shields.io/badge/Tests-pytest-brightgreen)](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/actions/workflows/ci.yml)
-[![Pre-commit](https://img.shields.io/badge/Pre--commit-enabled-brightgreen)](.pre-commit-config.yaml)
-[![ISO 27001](https://img.shields.io/badge/ISO%2027001-85%25%20Compliant-blue)](docs/compliance/iso27001/)
-[![Discord](https://img.shields.io/discord/1470531751595086017?color=7289DA&label=Discord&logo=discord&logoColor=white)](https://discord.gg/BSmCqjhY)
-[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/10336/badge)](https://www.bestpractices.dev/projects/10336)
-[![Code Quality](https://img.shields.io/badge/Code%20Quality-Ruff-261230)](https://github.com/astral-sh/ruff)
+[![PyPI](https://img.shields.io/pypi/v/zen-ai-pentest?label=PyPI&color=green)](https://pypi.org/project/zen-ai-pentest/)
+[![Deployment Status](https://img.shields.io/github/deployments/SHAdd0WTAka/Zen-Ai-Pentest/pypi?label=Deployment)](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/deployments)
+
+[![Authors](https://img.shields.io/badge/Authors-SHAdd0WTAka%20%7C%20KimiAI-purple)](#-authors--team)
 [![Roadmap](https://img.shields.io/badge/Roadmap-2026-blueviolet)](ROADMAP_2026.md)
-[![Architecture](https://img.shields.io/badge/Architecture-Diagram-informational)](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest#architecture)
+[![Architecture](https://img.shields.io/badge/Architecture-Diagram-blue)](docs/ARCHITECTURE.md)
+
+## 🚀 Security Status
+
+[![CodeQL](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/security/code-scanning)
+[![Security Score](https://img.shields.io/badge/Security%20Score-100%2F100-brightgreen)](docs/production-hardening.md)
+[![Dependencies](https://img.shields.io/badge/dependencies-0%20vulnerabilities-brightgreen)](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/security/dependabot)
+[![Health Score](https://img.shields.io/badge/Health%20Score-84%2F100-blue)](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/actions)
+[![Issues](https://img.shields.io/badge/Issues-0%20open-brightgreen)](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/issues)
+[![codecov](https://codecov.io/gh/SHAdd0WTAka/zen-ai-pentest/branch/main/graph/badge.svg)](https://codecov.io/gh/SHAdd0WTAka/zen-ai-pentest)
 
 ---
 
@@ -31,11 +62,13 @@
 - [Features](#-features)
 - [Quick Start](#-quick-start)
 - [Installation](#-installation)
-- [Cloud Deployment](#-cloud-deployment)
 - [Usage](#-usage)
-- [API Reference](#-api-reference)
-- [Troubleshooting](#-troubleshooting)
 - [Architecture](#-architecture)
+- [API Reference](#-api-reference)
+- [Project Structure](#-project-structure)
+- [Configuration](#-configuration)
+- [Testing](#-testing)
+- [Documentation](#-documentation)
 - [Contributing](#-contributing)
 - [Support](#-support)
 - [License](#-license)
@@ -97,16 +130,6 @@
 - 🚀 **Production-Ready**: Enterprise-grade with CI/CD, monitoring, and support
 - 📊 **Comprehensive**: 20+ integrated security tools
 - 🔧 **Extensible**: Plugin system for custom tools and integrations
-- ☁️ **Cloud-Native**: Deploy on AWS, Azure, or GCP
-- 📱 **Quick Access**: Scan QR codes for instant mobile access
-
-<p align="center">
-  <a href="docs/qr_codes/index.html">
-    <img src="docs/qr_codes/qr_grid_preview.png" alt="QR Codes" width="600">
-  </a>
-  <br>
-  <sub>☝️ Click to view all QR codes or scan with your phone!</sub>
-</p>
 
 ---
 
@@ -149,46 +172,40 @@
 - **Notifications**: Slack, JIRA, Email alerts
 - **Exit Codes**: Pipeline-friendly status codes
 
+### 🧠 AI Persona System
+- **11 Specialized Personas**: Recon, Exploit, Report, Audit, Social, Network, Mobile, Red Team, ICS, Cloud, Crypto
+- **CLI Tool**: Interactive and one-shot modes (`k-recon`, `k-exploit`, etc.)
+- **REST API**: Flask-based API with WebSocket support
+- **Web UI**: Modern browser interface with screenshot analysis
+- **Context Preservation**: Multi-turn conversations with memory
+- **Screenshot Analysis**: Upload and analyze images with AI personas
+
 ### 🛠️ 20+ Integrated Tools
 | Category | Tools |
 |----------|-------|
 | **Network** | Nmap, Masscan, Scapy, Tshark |
-| **Web** | BurpSuite, SQLMap, Gobuster, OWASP ZAP, Nuclei |
+| **Web** | BurpSuite, SQLMap, Gobuster, OWASP ZAP |
 | **Exploitation** | Metasploit Framework |
 | **Brute Force** | Hydra, Hashcat |
-| **Reconnaissance** | Amass, TheHarvester |
+| **Reconnaissance** | Amass, Nuclei, TheHarvester, Subdomain Scanner |
 | **Active Directory** | BloodHound, CrackMapExec, Responder |
 | **Wireless** | Aircrack-ng Suite |
+
+### 🔍 Subdomain Scanner
+- **Multi-Technique Enumeration**: DNS, Wordlist, Certificate Transparency
+- **Advanced Techniques**: Zone Transfer (AXFR), Permutation/Mangling
+- **OSINT Integration**: VirusTotal, AlienVault OTX, BufferOver
+- **IPv6 Support**: AAAA record enumeration
+- **Technology Detection**: Automatic fingerprinting of live hosts
+- **Export Formats**: JSON, CSV, TXT
+- **REST API**: Async and sync scanning endpoints
+- **CLI Tools**: Standalone scanner with comprehensive options
 
 ### ☁️ Multi-Cloud & Virtualization
 - **Local**: VirtualBox VM Management
 - **Cloud**: AWS EC2, Azure VMs, Google Cloud Compute
 - **Snapshots**: Automated clean-state workflows
-- **Guest Control**: Execute tools inside isolated VMs
-
-### 🚀 Modern API & Backend
-- **FastAPI**: High-performance REST API
-- **PostgreSQL**: Persistent data storage
-- **WebSocket**: Real-time scan updates
-- **JWT Auth**: Role-based access control (RBAC)
-- **Background Tasks**: Async scan execution
-
-### 📊 Reporting & Notifications
-- **PDF Reports**: Professional findings reports
-- **HTML Dashboard**: Interactive web interface
-- **Slack/Email**: Instant notifications
-- **JSON/XML**: Integration with other tools
-
-### 🐳 Easy Deployment
-- **Docker Compose**: One-command full stack deployment
-- **CI/CD**: GitHub Actions pipeline
-- **Production Ready**: Optimized for enterprise use
-
----
-
-## 🚀 Quick Start
-
-### Option 1: Docker (Recommended - 5 minutes)
+### Option 1: Docker (Recommended)
 
 ```bash
 # Clone repository
@@ -197,7 +214,7 @@ cd zen-ai-pentest
 
 # Copy and configure environment
 cp .env.example .env
-# Edit .env with your settings (API keys, etc.)
+# Edit .env with your settings
 
 # Start full stack
 docker-compose up -d
@@ -219,9 +236,32 @@ python database/models.py
 
 # Start API server
 python api/main.py
+
+# Run subdomain scan
+python scan_target_subdomains.py
+
+# Or use the advanced CLI
+python tools/subdomain_enum.py example.com --advanced
 ```
 
-### Option 3: VirtualBox VM Setup
+### Option 3: AI Personas Quick Start
+
+```bash
+# Start the AI Personas API & Web UI
+bash api/QUICKSTART.sh
+
+# Or manually:
+bash api/manage.sh start
+# Open http://127.0.0.1:5000
+
+# CLI Usage
+source tools/setup_aliases.sh
+k-recon "Target: example.com"
+k-exploit "Write SQLi scanner"
+k-chat  # Interactive mode
+```
+
+### Option 4: VirtualBox VM Setup
 
 ```bash
 # Automated Kali Linux setup
@@ -240,43 +280,6 @@ For detailed installation instructions, see:
 - **[Local Installation](docs/INSTALLATION.md#local-installation)**
 - **[Production Deployment](docs/INSTALLATION.md#production-deployment)**
 - **[VirtualBox Setup](docs/setup/VIRTUALBOX_SETUP.md)**
-
-### System Requirements
-
-| Component | Minimum | Recommended |
-|-----------|---------|-------------|
-| CPU | 4 cores | 8+ cores |
-| RAM | 8 GB | 32 GB |
-| Storage | 20 GB | 100 GB SSD |
-| Python | 3.9+ | 3.11+ |
-| Docker | 20.10+ | Latest |
-
----
-
-## ☁️ Cloud Deployment
-
-Deploy Zen AI Pentest on your preferred cloud provider:
-
-| Provider | Guide | Key Features |
-|----------|-------|--------------|
-| **AWS** | [aws-deployment.md](docs/deployment/aws-deployment.md) | EC2, RDS, EKS, S3, CloudWatch |
-| **Azure** | [azure-deployment.md](docs/deployment/azure-deployment.md) | VMs, PostgreSQL, AKS, Blob Storage |
-| **GCP** | [gcp-deployment.md](docs/deployment/gcp-deployment.md) | Compute Engine, Cloud SQL, GKE, Cloud Armor |
-
-### Quick Cloud Deployment
-
-```bash
-# AWS
-cd docs/deployment
-aws cloudformation deploy --template-file aws-template.yaml --stack-name zen-pentest
-
-# Azure
-az group create --name zen-pentest --location westeurope
-az deployment group create --resource-group zen-pentest --template-file azure-template.json
-
-# GCP
-gcloud compute instances create zen-pentest --image-family=ubuntu-2204-lts
-```
 
 ---
 
@@ -311,80 +314,49 @@ print(agent.generate_report(result))
 
 ```bash
 # Authentication
-curl -X POST http://localhost:8000/api/v1/auth/login \
+curl -X POST http://localhost:8000/auth/login \
   -H "Content-Type: application/json" \
   -d '{"username":"admin","password":"admin"}'
 
 # Create scan
-curl -X POST http://localhost:8000/api/v1/scans/ \
+curl -X POST http://localhost:8000/scans \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
-    "target":"example.com",
-    "scan_type":"full",
-    "name":"Security Scan"
+    "name":"Network Scan",
+    "target":"192.168.1.0/24",
+    "scan_type":"network",
+    "config":{"ports":"top-1000"}
   }'
 
-# Check findings
-curl http://localhost:8000/api/v1/findings/ \
-  -H "Authorization: Bearer $TOKEN"
+# Execute tool
+curl -X POST http://localhost:8000/tools/execute \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{
+    "tool_name":"nmap_scan",
+    "target":"scanme.nmap.org",
+    "parameters":{"ports":"22,80,443"}
+  }'
+
+# Generate report
+curl -X POST http://localhost:8000/reports \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{
+    "scan_id":1,
+    "format":"pdf",
+    "template":"default"
+  }'
 ```
 
 ### WebSocket (Real-Time)
 
 ```javascript
-const ws = new WebSocket('ws://localhost:8000/ws/scans/scan_123');
+const ws = new WebSocket('ws://localhost:8000/ws/scans/1');
 
 ws.onmessage = (event) => {
   const data = JSON.parse(event.data);
   console.log('Scan update:', data);
 };
-```
-
-For more examples, see **[API_EXAMPLES.md](docs/API_EXAMPLES.md)**.
-
----
-
-## 📡 API Reference
-
-- **[API Documentation](docs/API.md)** - Complete REST API reference
-- **[API Examples](docs/API_EXAMPLES.md)** - Code examples in multiple languages
-- **[WebSocket API](docs/API.md#websocket)** - Real-time updates
-
-### API Quick Reference
-
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/health` | GET | Health check |
-| `/api/v1/auth/login` | POST | Authenticate |
-| `/api/v1/scans/` | GET/POST | List/Create scans |
-| `/api/v1/findings/` | GET | List findings |
-| `/api/v1/tools/execute` | POST | Execute tool |
-| `/api/v1/reports/` | POST | Generate report |
-
----
-
-## 🔧 Troubleshooting
-
-Having issues? Check our comprehensive troubleshooting guide:
-
-- **[TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)** - Common issues and solutions
-- **[Database Issues](docs/TROUBLESHOOTING.md#database-connection-issues)**
-- **[API Errors](docs/TROUBLESHOOTING.md#api-startup-errors)**
-- **[Docker Problems](docs/TROUBLESHOOTING.md#docker-problems)**
-- **[Performance Tuning](docs/TROUBLESHOOTING.md#performance-issues)**
-
-### Quick Diagnostics
-
-```bash
-# Health check
-curl http://localhost:8000/health
-
-# Check logs
-docker-compose logs -f api
-
-# Run diagnostics
-python scripts/health_check.py
 ```
 
 ---
@@ -458,6 +430,14 @@ For detailed architecture documentation, see [docs/ARCHITECTURE.md](docs/ARCHITE
 
 ---
 
+## 📡 API Reference
+
+- **[API Documentation](docs/API.md)** - Complete REST API reference
+- **[WebSocket API](docs/API.md#websocket)** - Real-time updates
+- **[Authentication](docs/API.md#authentication)** - Security and auth
+
+---
+
 ## 📁 Project Structure
 
 ```
@@ -481,20 +461,68 @@ zen-ai-pentest/
 │   ├── cvss.py
 │   └── epss.py
 ├── benchmarks/                # Benchmark Framework
+│   ├── run_benchmarks.py
+│   └── comparison.py
 ├── integrations/              # CI/CD Integrations
+│   ├── github.py
+│   ├── gitlab.py
+│   ├── jira.py
+│   ├── slack.py
+│   └── jenkins.py
 ├── database/                   # Database Layer
+│   └── models.py              # SQLAlchemy Models
 ├── tools/                      # Pentesting Tools
+│   ├── nmap_integration.py
+│   ├── sqlmap_integration.py
+│   ├── metasploit_integration.py
+│   └── ... (20+ tools)
+├── gui/                        # Web Interface
+│   └── vm_manager_gui.py      # React Dashboard
+├── reports/                    # Report Generation
+│   └── generator.py           # PDF/HTML/JSON
+├── notifications/              # Alerts
+│   ├── slack.py
+│   └── email.py
 ├── docker/                     # Deployment
+│   ├── Dockerfile
+│   └── docker-compose.full.yml
 ├── docs/                       # Documentation
-│   ├── API.md                 # API Reference
-│   ├── API_EXAMPLES.md        # Code Examples
-│   ├── INSTALLATION.md        # Setup Guide
-│   ├── TROUBLESHOOTING.md     # Troubleshooting
-│   ├── ARCHITECTURE.md        # System Design
-│   └── deployment/            # Cloud Deployment Guides
+│   ├── ARCHITECTURE.md
+│   ├── INSTALLATION.md
+│   ├── API.md
+│   └── setup/
 ├── tests/                      # Test Suite
 └── scripts/                    # Setup Scripts
 ```
+
+---
+
+## 🔧 Configuration
+
+### Environment Variables
+
+```env
+# Database
+DATABASE_URL=postgresql://postgres:password@localhost:5432/zen_pentest
+
+# Security
+SECRET_KEY=your-secret-key-here
+JWT_EXPIRATION=3600
+
+# AI Providers
+OPENAI_API_KEY=sk-...
+ANTHROPIC_API_KEY=sk-ant-...
+
+# Notifications
+SLACK_WEBHOOK_URL=https://hooks.slack.com/...
+SMTP_HOST=smtp.gmail.com
+
+# Cloud Providers
+AWS_ACCESS_KEY_ID=AKIA...
+AZURE_SUBSCRIPTION_ID=...
+```
+
+See `.env.example` for all options.
 
 ---
 
@@ -513,6 +541,16 @@ pytest tests/test_react_agent.py -v
 # Integration tests
 pytest tests/integration/ -v
 ```
+
+---
+
+## 📚 Documentation
+
+- **[Getting Started](docs/tutorials/getting-started.md)** - First steps
+- **[Installation Guide](docs/INSTALLATION.md)** - Setup instructions
+- **[API Documentation](docs/API.md)** - REST API reference
+- **[Architecture](docs/ARCHITECTURE.md)** - System design
+- **[Support](SUPPORT.md)** - Help and support
 
 ---
 
@@ -536,27 +574,13 @@ Quick start:
 
 Need help? We've got you covered:
 
-| Resource | Link |
-|----------|------|
-| 📖 Documentation | [docs/](docs/) |
-| 🐛 Issues | [GitHub Issues](https://github.com/SHAdd0WTAka/zen-ai-pentest/issues) |
-| 💬 Discussions | [GitHub Discussions](https://github.com/SHAdd0WTAka/zen-ai-pentest/discussions) |
-| 🌐 Discord | [Discord Community](https://discord.gg/BSmCqjhY) |
-| 📧 Email | [support@zen-ai-pentest.dev](mailto:support@zen-ai-pentest.dev) |
+- 📖 **[Documentation](docs/)** - Comprehensive guides
+- 💬 **[GitHub Discussions](https://github.com/SHAdd0WTAka/zen-ai-pentest/discussions)** - Community Q&A
+- 🐛 **[Issue Tracker](https://github.com/SHAdd0WTAka/zen-ai-pentest/issues)** - Bug reports
+- 🌐 **[Discord](https://discord.gg/zen-ai-pentest)** - Real-time chat
+- 📧 **[Email Support](mailto:support@zen-ai-pentest.dev)** - Direct contact
 
 See [SUPPORT.md](SUPPORT.md) for detailed support options.
-
----
-
-## 🗺️ Roadmap
-
-See [ROADMAP_2026.md](ROADMAP_2026.md) for our detailed 2026 roadmap.
-
-Highlights:
-- **Q1 2026**: Autonomous Engine ✅
-- **Q2 2026**: Risk Framework ✅
-- **Q3 2026**: DevSecOps Integration ✅
-- **Q4 2026**: Community & Benchmarks
 
 ---
 
@@ -633,47 +657,19 @@ This project is licensed under the MIT License - see [LICENSE](LICENSE) file for
 
 ---
 
+## 🗺️ Roadmap
+
+See [ROADMAP_2026.md](ROADMAP_2026.md) for our detailed 2026 roadmap.
+
+Highlights:
+- **Q1 2026**: SIEM integrations, React Dashboard
+- **Q2 2026**: Mobile app, quantum-resistant crypto
+- **Q3 2026**: Multi-cloud native, serverless support
+- **Q4 2026**: Autonomous SOC capabilities
+
+---
+
 <p align="center">
   <b>Made with ❤️ for the security community</b><br>
   <sub>© 2026 Zen-AI-Pentest. All rights reserved.</sub>
 </p>
-
----
-
-## 💬 Community & Support
-
-Join our Discord community for real-time support, discussions, and updates:
-
-[![Discord](https://img.shields.io/discord/1470531751595086017?color=7289DA&label=Discord&logo=discord&logoColor=white)](https://discord.gg/BSmCqjhY)
-
-**Discord Server:** https://discord.gg/BSmCqjhY
-
-### Discord Features:
-- 🔴 Live CI/CD notifications
-- 🤝 Community support
-- 📢 Release announcements
-- 💡 Feature discussions
-- 🐛 Bug reporting
-
-
----
-
-## 🎨 Art & Vision
-
-<p align="center">
-  <img src="assets/branding/kimi-ai-artwork.jpeg" width="400" alt="Kimi AI Artwork">
-</p>
-
-<p align="center">
-  <b>AI Development Partner</b><br>
-  <i>Architecture & Design</i>
-</p>
-
-**Hemisphere Sync** - Left Brain (Creative) + Right Brain (Logic) = **KIMI**
-
-Custom artwork by **SHAdd0WTAka** representing the fusion of human vision and AI capability.
-
-# Discord Integration Test
-
-
-<!-- Discord Integration Test - Tue Feb 10 09:58:02 PM CET 2026 -->

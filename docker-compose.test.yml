@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  zen-pentest-test:
+    build: .
+    container_name: zen-pentest-test
+    volumes:
+      - .:/app
+    environment:
+      - PYTHONPATH=/app
+      - LOG_LEVEL=INFO
+    command: >
+      bash -c "
+        echo '=== Testing Kimi Integration ===' &&
+        python tools/kimi_helper.py --list &&
+        echo '' &&
+        echo '=== Testing Config ===' &&
+        python scripts/check_config.py &&
+        echo '' &&
+        echo '=== All Tests Passed ==='
+      "

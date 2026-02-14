@@ -1,4 +1,4 @@
-name: Security Scan
+name: Security Scan (Improved)
 
 on:
   push:
@@ -57,12 +57,12 @@ jobs:
           python -m pip install --upgrade pip
           pip install safety bandit pip-audit
 
-      - name: Run pip-audit
-        run: pip-audit --desc --format=markdown || true
+      - name: Run Safety check
+        run: safety check --full-report
         continue-on-error: true
 
-      - name: Run Safety check
-        run: safety check --full-report || true
+      - name: Run pip-audit
+        run: pip-audit --desc --format=markdown
         continue-on-error: true
 
       - name: Run Bandit security scan
@@ -230,7 +230,6 @@ jobs:
   security-summary:
     needs: [python-security, node-security, secret-scan, codeql]
     runs-on: ubuntu-latest
-    timeout-minutes: 5
     if: always()
     steps:
       - name: Generate Security Summary
@@ -244,21 +243,4 @@ jobs:
           echo "| Secret Scan | ${{ needs.secret-scan.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "| CodeQL Analysis | ${{ needs.codeql.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          
-          # Determine overall status - security scans are advisory
-          failed_jobs=0
-          for result in "${{ needs.python-security.result }}" "${{ needs.node-security.result }}" "${{ needs.secret-scan.result }}" "${{ needs.codeql.result }}"; do
-            if [ "$result" = "failure" ]; then
-              failed_jobs=$((failed_jobs + 1))
-            fi
-          done
-          
-          if [ $failed_jobs -eq 0 ]; then
-            echo "✅ All security scans completed successfully!" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "⚠️ $failed_jobs security scan(s) had issues. Please review the reports." >> $GITHUB_STEP_SUMMARY
-          fi
-          
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 📥 Download Reports" >> $GITHUB_STEP_SUMMARY
-          echo "Security scan reports are available as artifacts in this workflow run." >> $GITHUB_STEP_SUMMARY
+          echo "Note: Some scans may show as failed due to found issues. Check individual job logs for details." >> $GITHUB_STEP_SUMMARY

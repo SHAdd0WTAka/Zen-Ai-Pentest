@@ -21,14 +21,8 @@ class Settings(BaseSettings):
     PORT: int = int(os.getenv("PORT", "8080"))
     WORKERS: int = int(os.getenv("WORKERS", "4"))
 
-    # Security - MUST be set via environment variable
-    SECRET_KEY: str = os.getenv("SECRET_KEY")
-    if not SECRET_KEY:
-        raise RuntimeError(
-            "FATAL SECURITY ERROR: SECRET_KEY environment variable is not set. "
-            "The application cannot start without a properly configured secret key. "
-            "Please set SECRET_KEY to a secure random string (min 32 characters)."
-        )
+    # Security
+    SECRET_KEY: str = os.getenv("SECRET_KEY", "change-me-in-production")
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
