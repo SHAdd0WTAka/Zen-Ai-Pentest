@@ -80,6 +80,7 @@ All tools run with **safety controls**:
 
 - [Overview](#-overview)
 - [Features](#-features)
+  - [For AI Agents](#-for-ai-agents)
 - [Quick Start](#-quick-start)
 - [Installation](#-installation)
 - [Usage](#-usage)
@@ -90,7 +91,7 @@ All tools run with **safety controls**:
 - [Testing](#-testing)
 - [Documentation](#-documentation)
 - [Contributing](#-contributing)
-- [Support](#-support)
+- [Community & Support](#-community--support)
 - [License](#-license)
 
 ---
@@ -220,6 +221,13 @@ All tools run with **safety controls**:
 - **Export Formats**: JSON, CSV, TXT
 - **REST API**: Async and sync scanning endpoints
 - **CLI Tools**: Standalone scanner with comprehensive options
+
+### 🤖 For AI Agents
+- **[AGENTS.md](AGENTS.md)** - Essential guide for AI development partners
+- **Real Tool Execution** - No mocks, actual security tools
+- **Multi-Agent System** - Researcher, Analyst, Exploit agents
+- **Safety Controls** - 4-level sandbox system
+- **Architecture Guide** - Complete system overview
 
 ### 🔔 Notifications & Integrations
 - **Telegram Bot**: @Zenaipenbot - Instant CI/CD notifications
