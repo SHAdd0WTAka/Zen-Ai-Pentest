@@ -660,19 +660,6 @@ This project is licensed under the MIT License - see [LICENSE](LICENSE) file for
 
 ---
 
-## 🎨 Project Artwork
-
-<div align="center">
-  <img src="docs/qr_codes/hemisphere_sync.png" alt="Hemisphere Sync - Left Brain + Right Brain = KIMI" width="600"/>
-  
-  ### Hemisphere Sync
-  **Left Brain (Creative) + Right Brain (Logic) = KIMI**
-  
-  *Custom artwork by **SHAdd0WTAka** representing the fusion of human vision and AI capability.*
-</div>
-
----
-
 ## 👥 Authors & Team
 
 ### Core Development Team
@@ -721,15 +708,16 @@ This project is licensed under the MIT License - see [LICENSE](LICENSE) file for
 
 ---
 
-## 🗺️ Roadmap
+## 🎨 Project Artwork
 
-See [ROADMAP_2026.md](ROADMAP_2026.md) for our detailed 2026 roadmap.
-
-Highlights:
-- **Q1 2026**: SIEM integrations, React Dashboard
-- **Q2 2026**: Mobile app, quantum-resistant crypto
-- **Q3 2026**: Multi-cloud native, serverless support
-- **Q4 2026**: Autonomous SOC capabilities
+<div align="center">
+  <img src="docs/qr_codes/hemisphere_sync.png" alt="Hemisphere Sync - Left Brain + Right Brain = KIMI" width="600"/>
+  
+  ### Hemisphere Sync
+  **Left Brain (Creative) + Right Brain (Logic) = KIMI**
+  
+  *Custom artwork by **SHAdd0WTAka** representing the fusion of human vision and AI capability.*
+</div>
 
 ---
 
