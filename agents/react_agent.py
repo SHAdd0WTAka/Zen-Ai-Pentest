@@ -16,11 +16,19 @@ from langgraph.graph import StateGraph, START, END, add_messages
 from langgraph.checkpoint.memory import MemorySaver
 
 # Zen-AI-Pentest Imports
-from ..core.llm_backend import LLMBackend
-from ..tools.nmap_integration import NmapTool
-from ..tools.nuclei_integration import NucleiTool
-from ..tools.ffuf_integration import FfufTool
-from ..database.cve_database import CVEDatabase
+try:
+    from ..core.llm_backend import LLMBackend
+    from ..tools.nmap_integration import NmapTool
+    from ..tools.nuclei_integration import NucleiTool
+    from ..tools.ffuf_integration import FfufTool
+    from ..database.cve_database import CVEDatabase
+except ImportError:
+    # Fallback für direkte Ausführung
+    from core.llm_backend import LLMBackend
+    from tools.nmap_integration import NmapTool
+    from tools.nuclei_integration import NucleiTool
+    from tools.ffuf_integration import FfufTool
+    from database.cve_database import CVEDatabase
 
 
 logger = logging.getLogger(__name__)
