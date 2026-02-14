@@ -1,0 +1,46 @@
+# Docker image for security tools
+# Provides isolated environment for pentesting tools
+
+FROM kalilinux/kali-rolling:latest
+
+# Avoid interactive prompts
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    wget \
+    curl \
+    git \
+    python3 \
+    python3-pip \
+    nmap \
+    masscan \
+    sqlmap \
+    nikto \
+    dirb \
+    gobuster \
+    ffuf \
+    hydra \
+    john \
+    hashcat \
+    metasploit-framework \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Nuclei
+RUN wget https://github.com/projectdiscovery/nuclei/releases/download/v3.1.3/nuclei_3.1.3_linux_amd64.zip -O /tmp/nuclei.zip \
+    && unzip /tmp/nuclei.zip -d /usr/local/bin/ \
+    && chmod +x /usr/local/bin/nuclei \
+    && rm /tmp/nuclei.zip
+
+# Update Nuclei templates
+RUN nuclei -update-templates
+
+# Create workspace directory
+WORKDIR /workspace
+
+# Create non-root user for safety
+RUN useradd -m -s /bin/bash pentester
+USER pentester
+
+# Default command
+CMD ["/bin/bash"]
