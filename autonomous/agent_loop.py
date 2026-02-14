@@ -490,55 +490,148 @@ class NucleiScanner(BaseTool):
         self.default_templates = "cves,exposures,vulnerabilities"
 
     async def execute(self, parameters: Dict[str, Any]) -> ToolResult:
-        """Führt Nuclei Scan aus."""
+        """Führt Nuclei Scan aus - ECHTE AUSFÜHRUNG."""
+        import asyncio.subprocess
+        import json
+        
         start_time = time.time()
 
         try:
             target = parameters.get("target")
             templates = parameters.get("templates", self.default_templates)
             severity = parameters.get("severity", "critical,high,medium")
+            
+            # Safety Check
+            valid, error_msg = self._validate_target_safety(target)
+            if not valid:
+                return ToolResult(
+                    tool_name=self.name,
+                    success=False,
+                    error_message=f"Safety validation failed: {error_msg}",
+                    execution_time=0.0
+                )
 
-            cmd = f"nuclei -u {target} -t {templates} -severity {severity} -json"
+            # Baue Nuclei Kommando mit JSON Output
+            cmd = [
+                "nuclei",
+                "-u", target,
+                "-t", templates,
+                "-severity", severity,
+                "-json",
+                "-silent"  # Reduce noise
+            ]
 
-            self.logger.info(f"Executing: {cmd}")
-            await asyncio.sleep(0.5)  # Simuliere Ausführung
+            self.logger.info(f"[REAL] Executing: {' '.join(cmd)}")
 
-            # Simulierte Vulnerabilities
-            findings = self._simulate_findings(target)
+            # ECHTE AUSFÜHRUNG
+            proc = await asyncio.create_subprocess_exec(
+                *cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE
+            )
+
+            try:
+                stdout, stderr = await asyncio.wait_for(
+                    proc.communicate(),
+                    timeout=self.timeout
+                )
+            except asyncio.TimeoutError:
+                proc.kill()
+                await proc.wait()
+                return ToolResult(
+                    tool_name=self.name,
+                    success=False,
+                    error_message=f"Nuclei timeout after {self.timeout}s",
+                    execution_time=time.time() - start_time
+                )
 
             execution_time = time.time() - start_time
+            output = stdout.decode('utf-8', errors='replace')
+            stderr_text = stderr.decode('utf-8', errors='replace')
+
+            # Parse JSON Output (one JSON object per line)
+            findings = self._parse_nuclei_json(output)
 
             return ToolResult(
                 tool_name=self.name,
                 success=True,
                 data={"findings": findings, "count": len(findings)},
-                raw_output=json.dumps(findings, indent=2),
+                raw_output=output,
+                error_message=stderr_text if stderr_text else None,
                 execution_time=execution_time,
-                metadata={"templates": templates, "severity_filter": severity},
+                metadata={
+                    "templates": templates,
+                    "severity_filter": severity,
+                    "target": target,
+                    "return_code": proc.returncode,
+                    "real_execution": True
+                },
             )
 
+        except FileNotFoundError:
+            execution_time = time.time() - start_time
+            self.logger.error("Nuclei not found. Please install nuclei.")
+            return ToolResult(
+                tool_name=self.name,
+                success=False,
+                error_message="Nuclei not found. Install: https://github.com/projectdiscovery/nuclei",
+                execution_time=execution_time
+            )
         except Exception as e:
             execution_time = time.time() - start_time
-            return ToolResult(tool_name=self.name, success=False, error_message=str(e), execution_time=execution_time)
+            self.logger.error(f"Nuclei execution failed: {str(e)}")
+            return ToolResult(
+                tool_name=self.name,
+                success=False,
+                error_message=str(e),
+                execution_time=execution_time
+            )
 
-    def _simulate_findings(self, target: str) -> List[Dict[str, Any]]:
-        """Simuliert Nuclei Findings für Demo."""
-        return [
-            {
-                "template": "CVE-2023-1234",
-                "severity": "critical",
-                "host": target,
-                "matched": f"{target}/vulnerable-endpoint",
-                "description": "Remote Code Execution vulnerability detected",
-            },
-            {
-                "template": "exposed-panel",
-                "severity": "medium",
-                "host": target,
-                "matched": f"{target}/admin",
-                "description": "Exposed admin panel",
-            },
-        ]
+    def _parse_nuclei_json(self, output: str) -> List[Dict[str, Any]]:
+        """Parst Nuclei JSON Output (one JSON object per line)."""
+        findings = []
+        for line in output.strip().split('\n'):
+            if not line:
+                continue
+            try:
+                finding = json.loads(line)
+                # Normalize finding structure
+                normalized = {
+                    "template": finding.get("template-id", "unknown"),
+                    "severity": finding.get("info", {}).get("severity", "unknown"),
+                    "host": finding.get("host", ""),
+                    "matched": finding.get("matched-at", ""),
+                    "description": finding.get("info", {}).get("name", "No description"),
+                    "tags": finding.get("info", {}).get("tags", []),
+                    "reference": finding.get("info", {}).get("reference", []),
+                    "curl_command": finding.get("curl-command", ""),
+                    "matcher_status": finding.get("matcher-status", False),
+                    "ip": finding.get("ip", ""),
+                    "timestamp": finding.get("timestamp", ""),
+                    "type": finding.get("type", ""),
+                }
+                findings.append(normalized)
+            except json.JSONDecodeError:
+                self.logger.warning(f"Failed to parse Nuclei JSON line: {line[:100]}")
+                continue
+        return findings
+
+    def _validate_target_safety(self, target: str) -> Tuple[bool, str]:
+        """Validiert das Target für Safety."""
+        import re
+        import ipaddress
+        
+        try:
+            ip = ipaddress.ip_address(target)
+            if ip.is_private and not ip.is_loopback:
+                return False, f"Private IP {target} blocked. Add to whitelist if intended."
+        except ValueError:
+            pass
+        
+        if re.search(r'[;&|<>$`]', target):
+            return False, "Invalid characters in target"
+        
+        return True, ""
 
 
 class ExploitValidator(BaseTool):
