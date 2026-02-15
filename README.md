@@ -1,4 +1,7 @@
 # Zen-AI-Pentest
+![Repository Status](docs/status/repo_status_card.png)
+
+
 
 > 🛡️ **Professional AI-Powered Penetration Testing Framework**
 
@@ -59,6 +62,7 @@ All tools run with **safety controls**:
 [![CI Status](https://img.shields.io/badge/CI-Optimized-brightgreen)](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/actions/workflows/ci.yml)
 [![Security](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/actions/workflows/security.yml/badge.svg)](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/actions/workflows/security.yml)
 [![PyPI](https://img.shields.io/pypi/v/zen-ai-pentest?label=PyPI&color=green)](https://pypi.org/project/zen-ai-pentest/)
+[![OpenSSF](https://www.bestpractices.dev/projects/10336/badge)](https://www.bestpractices.dev/projects/10336)
 [![Deployment Status](https://img.shields.io/github/deployments/SHAdd0WTAka/Zen-Ai-Pentest/pypi?label=Deployment)](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/deployments)
 
 [![Authors](https://img.shields.io/badge/Authors-SHAdd0WTAka%20%7C%20KimiAI-purple)](#-authors--team)
@@ -151,6 +155,16 @@ All tools run with **safety controls**:
 - 🚀 **Production-Ready**: Enterprise-grade with CI/CD, monitoring, and support
 - 📊 **Comprehensive**: 20+ integrated security tools
 - 🔧 **Extensible**: Plugin system for custom tools and integrations
+- ☁️ **Cloud-Native**: Deploy on AWS, Azure, or GCP
+- 📱 **Quick Access**: Scan QR codes for instant mobile access
+
+<p align="center">
+  <a href="docs/qr_codes/index.html">
+    <img src="docs/qr_codes/qr_grid_preview.png" alt="QR Codes" width="600">
+  </a>
+  <br>
+  <sub>☝️ Click to view all QR codes or scan with your phone!</sub>
+</p>
 
 ---
 
