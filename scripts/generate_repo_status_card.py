@@ -139,8 +139,8 @@ def generate_status_card():
     draw.text((30, bottom_y), f"Security: {stats['security']}", fill=yellow_color, font=text_font)
     draw.text((30, bottom_y + 20), f"Last Update: {stats['date']}", fill=gray_color, font=small_font)
     
-    # QR Code (rechts unten)
-    qr_url = "https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/blob/main/PROJECT_STATUS_COMPLETE.md"
+    # QR Code (rechts unten) - Link to AGENTS.md for AI Agents
+    qr_url = "https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/blob/main/AGENTS.md"
     qr_img = create_qr_code(qr_url, 90)
     qr_x = width - 120
     qr_y = height - 120
