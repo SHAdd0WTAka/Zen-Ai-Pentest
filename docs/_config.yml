@@ -1,8 +1,8 @@
 # Jekyll Configuration for GitHub Pages
 title: Zen AI Pentest
 description: AI-Powered Multi-LLM Penetration Testing Framework
-baseurl: "/zen-ai-pentest"
-url: "https://shadd0wtaka.github.io"
+baseurl: ""
+url: "https://shadd0wtaka.github.io/zen-ai-pentest"
 
 theme: jekyll-theme-cayman
 
