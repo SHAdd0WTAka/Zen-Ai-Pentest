@@ -16,7 +16,7 @@
   "dependencies": {
     "@headlessui/react": "^1.7.17",
     "@tailwindcss/forms": "^0.5.7",
-    "axios": "^1.7.4",
+    "axios": "^1.8.2",
     "clsx": "^2.0.0",
     "date-fns": "^2.30.0",
     "lucide-react": "^0.294.0",
@@ -58,7 +58,8 @@
   },
   "overrides": {
     "esbuild": "^0.27.3",
-    "jsonpath": "^1.1.1",
+    "jsonpath": "^1.2.0",
+    "qs": "^6.14.0",
     "webpack-dev-server": "^5.0.4"
   }
 }

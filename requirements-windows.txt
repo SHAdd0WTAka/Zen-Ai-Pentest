@@ -41,7 +41,7 @@ typer==0.9.0
 rich==13.7.0
 
 # Security
-cryptography==43.0.1  # SECURITY FIX: CVE-2024-26130, CVE-2024-41985, CVE-2024-25185
+cryptography==44.0.0  # SECURITY FIX: CVE-2024-26130, CVE-2024-41985, CVE-2024-25185
 
 # Testing
 pytest==7.4.3
