@@ -757,7 +757,7 @@ This project is licensed under the MIT License - see [LICENSE](LICENSE) file for
      "Zwei Hälften - Ein Herz - Ein Team"
   ```
   
-  *ASCII-Art Herz erstellt von **Kimi*** ❤️🤖
+  *A fusion of human vision and AI capability*
   
   **Left Brain (Kimi - Logik) + Right Brain (Observer^^ - Kreativität) = Hemisphere_Sync**
   
