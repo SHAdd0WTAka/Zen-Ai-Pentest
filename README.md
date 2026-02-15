@@ -613,7 +613,7 @@ Join our growing community!
 
 | Platform | Link | QR Code |
 |----------|------|---------|
-| 🎮 **Discord** | [discord.gg/BSmCqjhY](https://discord.gg/BSmCqjhY) | [📱 Scan](docs/qr_codes/04_discord.png) |
+| 🎮 **Discord** | [discord.gg/zJZUJwK9AC](https://discord.gg/zJZUJwK9AC) | [📱 Scan](docs/qr_codes/04_discord.png) |
 | 💬 **GitHub Discussions** | [SHAdd0WTAka/zen-ai-pentest/discussions](https://github.com/SHAdd0WTAka/zen-ai-pentest/discussions) | [📱 Scan](docs/qr_codes/01_github_repo.png) |
 | 📦 **PyPI Package** | [pypi.org/project/zen-ai-pentest](https://pypi.org/project/zen-ai-pentest) | [📱 Scan](docs/qr_codes/06_pypi.png) |
 
