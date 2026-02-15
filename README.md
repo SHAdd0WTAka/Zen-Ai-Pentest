@@ -62,6 +62,7 @@ All tools run with **safety controls**:
 [![CI Status](https://img.shields.io/badge/CI-Optimized-brightgreen)](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/actions/workflows/ci.yml)
 [![Security](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/actions/workflows/security.yml/badge.svg)](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/actions/workflows/security.yml)
 [![PyPI](https://img.shields.io/pypi/v/zen-ai-pentest?label=PyPI&color=green)](https://pypi.org/project/zen-ai-pentest/)
+[![Discord](https://img.shields.io/discord/1467204311355363485?color=7289DA&label=Discord&logo=discord&logoColor=white)](https://discord.gg/BSmCqjhY)
 [![OpenSSF](https://www.bestpractices.dev/projects/10336/badge)](https://www.bestpractices.dev/projects/10336)
 [![Deployment Status](https://img.shields.io/github/deployments/SHAdd0WTAka/Zen-Ai-Pentest/pypi?label=Deployment)](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/deployments)
 
