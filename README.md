@@ -62,6 +62,7 @@ All tools run with **safety controls**:
 [![Deployment Status](https://img.shields.io/github/deployments/SHAdd0WTAka/Zen-Ai-Pentest/pypi?label=Deployment)](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/deployments)
 
 [![Authors](https://img.shields.io/badge/Authors-SHAdd0WTAka%20%7C%20KimiAI-purple)](#-authors--team)
+[![Discord](https://img.shields.io/discord/1467204311355363485?color=7289DA&label=Discord&logo=discord&logoColor=white)](https://discord.gg/BSmCqjhY)
 [![Roadmap](https://img.shields.io/badge/Roadmap-2026-blueviolet)](ROADMAP_2026.md)
 [![Architecture](https://img.shields.io/badge/Architecture-Diagram-blue)](docs/ARCHITECTURE.md)
 
