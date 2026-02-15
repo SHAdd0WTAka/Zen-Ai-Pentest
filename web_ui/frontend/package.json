@@ -53,14 +53,14 @@
     "nth-check": "^2.1.1",
     "postcss": "^8.4.32",
     "webpack-dev-server": "^5.2.1",
-    "jsonpath": "^1.1.1",
+    "jsonpath": "^1.2.0",
     "bfj": {
-      "jsonpath": "^1.1.1"
+      "jsonpath": "^1.2.0"
     },
     "react-scripts": {
       "webpack-dev-server": "^5.2.1",
       "bfj": {
-        "jsonpath": "^1.1.1"
+        "jsonpath": "^1.2.0"
       }
     },
     "@pmmmwh/react-refresh-webpack-plugin": {
