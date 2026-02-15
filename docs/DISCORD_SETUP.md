@@ -1,6 +1,6 @@
 # Discord Server Setup Guide
 
-## 🎮 Server: https://discord.gg/BSmCqjhY
+## 🎮 Server: https://discord.gg/zJZUJwK9AC
 
 ## Einrichtung
 

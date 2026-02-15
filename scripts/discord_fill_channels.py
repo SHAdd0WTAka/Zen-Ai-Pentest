@@ -76,7 +76,7 @@ Ein professionelles, KI-gestütztes Penetration Testing Framework für:
 ## 🔗 Links
 
 - 🌐 **GitHub**: https://github.com/SHAdd0WTAka/Zen-Ai-Pentest
-- 💬 **Discord**: https://discord.gg/BSmCqjhY
+- 💬 **Discord**: https://discord.gg/zJZUJwK9AC
 - 📦 **PyPI**: https://pypi.org/project/zen-ai-pentest/
 
 **Bleib dran für Updates!** 🔔

@@ -105,7 +105,7 @@ def main():
             "filename": "03_github_env.png"
         },
         {
-            "url": "https://discord.gg/BSmCqjhY",
+            "url": "https://discord.gg/zJZUJwK9AC",
             "label": "Discord Server",
             "filename": "04_discord.png"
         },

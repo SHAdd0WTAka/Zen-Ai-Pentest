@@ -133,7 +133,7 @@ curl -X POST "https://api.telegram.org/bot<TOKEN>/sendMessage" \
 Bei Problemen:
 1. BotFather: @BotFather
 2. GitHub Issues: https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/issues
-3. Discord: https://discord.gg/BSmCqjhY
+3. Discord: https://discord.gg/zJZUJwK9AC
 
 ---
 

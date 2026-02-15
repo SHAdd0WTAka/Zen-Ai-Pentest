@@ -285,7 +285,7 @@ Das Leaderboard wird automatisch aktualisiert:
 > *"Jeder Bug ist eine Chance, das Projekt besser zu machen!"*
 
 **Aktuelle Season:** Season 1 (Jan - Mär 2026)  
-**Leaderboard:** [Siehe Discord #leaderboard](https://discord.gg/BSmCqjhY)
+**Leaderboard:** [Siehe Discord #leaderboard](https://discord.gg/zJZUJwK9AC)
 
 ---
 

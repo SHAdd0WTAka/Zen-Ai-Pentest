@@ -118,7 +118,7 @@ Nach der Einrichtung:
 
 Bei Problemen:
 - GitHub Docs: https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment
-- Oder frage im Discord: https://discord.gg/BSmCqjhY
+- Oder frage im Discord: https://discord.gg/zJZUJwK9AC
 
 ---
 
