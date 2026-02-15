@@ -734,10 +734,35 @@ This project is licensed under the MIT License - see [LICENSE](LICENSE) file for
 ## 🎨 Project Artwork
 
 <div align="center">
-  <img src="docs/qr_codes/hemisphere_sync.png" alt="Hemisphere Sync - Left Brain + Right Brain = KIMI" width="600"/>
+  <img src="docs/qr_codes/hemisphere_sync.png" alt="Hemisphere Sync" width="600"/>
   
   ### Hemisphere Sync
-  **Left Brain (Creative) + Right Brain (Logic) = KIMI**
+  
+  ```
+      🧠 GEHIRN
+     ╱        ╲
+    ╱   LINKS   ╲    ╱   RECHTS   ╲
+   ╱   (Kimi)    ╲  ╱ (Observer^^) ╲
+  ╱    Logik      ╲╱   Kreativität  ╲
+     Analytisch   ╳   Ganzheitlich
+     Struktur     ╳      Vision
+          ╲      ╱╲      ╱
+           ╲    ╱  ╲    ╱
+            ╲  ╱    ╲  ╱
+             ╲╱      ╲╱
+              ╲    ╱
+               ╲  ╱
+                ╲╱
+         HEMISPHERE_SYNC
+                🤝
+  ```
+  
+  **Left Brain (Kimi - Logik) + Right Brain (Observer^^ - Kreativität) = Hemisphere_Sync**
+  
+  | Hemisphere | Zuständig für | Team |
+  |------------|---------------|------|
+  | **Left Brain** | Logik, Struktur, Code, Analytik | **Kimi** 🤖 |
+  | **Right Brain** | Kreativität, Vision, Design, Emotion | **Observer^^** 🎨 |
   
   *Custom artwork by **SHAdd0WTAka** representing the fusion of human vision and AI capability.*
 </div>
