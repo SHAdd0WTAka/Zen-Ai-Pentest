@@ -1,33 +1,32 @@
 ## Description
-<!-- Please include a summary of the changes and the related issue. -->
+<!-- Please provide a clear description of your changes -->
 
 Fixes # (issue)
 
 ## Type of Change
-<!-- Please delete options that are not relevant. -->
-
+<!-- Mark relevant options with an x -->
 - [ ] Bug fix (non-breaking change which fixes an issue)
 - [ ] New feature (non-breaking change which adds functionality)
 - [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
 - [ ] Documentation update
 - [ ] Performance improvement
+- [ ] Security fix
 - [ ] Code refactoring
-- [ ] CVE/Payload update
 
 ## How Has This Been Tested?
-<!-- Please describe the tests that you ran to verify your changes. -->
+<!-- Please describe the tests that you ran -->
+- [ ] Unit tests pass (`pytest tests/unit/`)
+- [ ] Integration tests pass (`pytest tests/integration/`)
+- [ ] Manual testing performed
 
-- [ ] Tested on Windows
-- [ ] Tested on Linux
-- [ ] Tested on macOS
-- [ ] Ran CVE demo
-- [ ] Ran SQLi demo
-- [ ] Ran Multi-Agent demo
+**Test Configuration**:
+- Python version:
+- Operating System:
 
 ## Checklist
-
+<!-- Mark completed items with an x -->
 - [ ] My code follows the style guidelines of this project
-- [ ] I have performed a self-review of my code
+- [ ] I have performed a self-review of my own code
 - [ ] I have commented my code, particularly in hard-to-understand areas
 - [ ] I have made corresponding changes to the documentation
 - [ ] My changes generate no new warnings
@@ -36,16 +35,11 @@ Fixes # (issue)
 - [ ] Any dependent changes have been merged and published
 
 ## Security Considerations
-
-- [ ] This change does not introduce any security vulnerabilities
-- [ ] No hardcoded credentials or API keys
-- [ ] Proper input validation is implemented
-- [ ] Safe command execution practices are followed
+<!-- If applicable, describe security implications -->
+- [ ] No hardcoded secrets or credentials
+- [ ] Input validation implemented
+- [ ] Security scanning passes (bandit, safety)
 
 ## Screenshots (if applicable)
 
-Add screenshots to help explain your changes.
-
 ## Additional Notes
-
-Add any other notes about the pull request here.

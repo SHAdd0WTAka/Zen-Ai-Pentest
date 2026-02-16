@@ -1,33 +1,11 @@
 blank_issues_enabled: false
 contact_links:
-  - name: 🤔 Questions & Help
-    url: https://github.com/SHAdd0WTAka/zen-ai-pentest/discussions/categories/q-a
-    about: Ask questions and get help from the community
-    
-  - name: 💬 General Discussion
-    url: https://github.com/SHAdd0WTAka/zen-ai-pentest/discussions/categories/general
-    about: Start a general discussion about the project
-    
-  - name: 💡 Ideas & Feature Requests
-    url: https://github.com/SHAdd0WTAka/zen-ai-pentest/discussions/categories/ideas
-    about: Share and discuss ideas before creating a feature request
-    
-  - name: 📖 Documentation
-    url: https://github.com/SHAdd0WTAka/zen-ai-pentest/tree/main/docs
-    about: Check our comprehensive documentation
-    
-  - name: 🔒 Security Vulnerability
-    url: https://github.com/SHAdd0WTAka/zen-ai-pentest/security/advisories/new
-    about: Report security vulnerabilities privately (do not open public issues)
-    
-  - name: 🌐 Discord Community
-    url: https://discord.gg/zen-ai-pentest
-    about: Join our Discord for real-time chat and support
-    
-  - name: 📧 Email Support
-    url: mailto:support@zen-ai-pentest.dev
-    about: Contact us via email for private inquiries
-    
-  - name: 🚀 Enterprise Support
-    url: mailto:enterprise@zen-ai-pentest.dev
-    about: Contact us for enterprise licensing and support
+  - name: Security Vulnerability
+    url: https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/security/advisories/new
+    about: Please report security vulnerabilities here. DO NOT open a public issue.
+  - name: Question or Discussion
+    url: https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/discussions
+    about: Ask questions and discuss with other community members
+  - name: Documentation
+    url: https://shadd0wtaka.github.io/Zen-Ai-Pentest/
+    about: Check our documentation site first

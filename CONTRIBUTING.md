@@ -13,49 +13,133 @@ If you find a bug, please report it by opening an issue on GitHub:
 3. Use the bug report template
 4. Provide as much detail as possible
 
+Include:
+- Clear description of the bug
+- Steps to reproduce
+- Expected vs actual behavior
+- Environment details (OS, Python version)
+- Error messages or screenshots
+
 ### Suggesting Features
 
 We welcome feature suggestions! To suggest a feature:
 
 1. Open a new issue
-2. Label it as "feature-request"
+2. Label it as "enhancement"
 3. Describe the feature and its use case
+4. Explain why it would be useful
 
 ### Pull Requests
 
 To submit code changes:
 
 1. **Fork** the repository
-2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
-3. **Commit** your changes (`git commit -m 'feat: Add amazing feature'`)
-4. **Push** to the branch (`git push origin feature/amazing-feature`)
-5. **Open** a Pull Request
+2. **Clone** your fork: `git clone https://github.com/YOUR_USERNAME/Zen-Ai-Pentest.git`
+3. **Create** a feature branch: `git checkout -b feature/amazing-feature`
+4. **Make** your changes
+5. **Test** your changes: `pytest tests/ -v`
+6. **Commit** your changes: `git commit -m 'feat: Add amazing feature'`
+7. **Push** to the branch: `git push origin feature/amazing-feature`
+8. **Open** a Pull Request against the `main` branch
+
+### Development Setup
+
+```bash
+# Clone the repository
+git clone https://github.com/SHAdd0WTAka/Zen-Ai-Pentest.git
+cd Zen-Ai-Pentest
+
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run tests
+pytest tests/ -v
+```
+
+See [docs/BUILD.md](docs/BUILD.md) for detailed build instructions.
 
 ### Code Standards
 
-- Follow Python PEP 8 style guidelines
-- Add tests for new features
+We use the following tools for code quality:
+
+- **Ruff**: Linting and formatting (`ruff check .`, `ruff format .`)
+- **Black**: Code formatting (line length 127)
+- **isort**: Import sorting
+- **mypy**: Type checking (optional)
+- **Bandit**: Security scanning
+
+All PRs must:
+- Follow PEP 8 style guidelines
+- Pass all automated tests
+- Include tests for new features
 - Update documentation as needed
-- Ensure all tests pass before submitting
+- Pass security scanning (Bandit)
+
+### Testing
+
+See [docs/TESTING.md](docs/TESTING.md) for detailed testing information.
+
+Quick test commands:
+```bash
+pytest tests/unit/ -v          # Unit tests only
+pytest tests/ -v --cov=.       # With coverage
+pytest -m "not slow"           # Exclude slow tests
+```
 
 ## 🛡️ Security
 
 For security issues, please **DO NOT** open a public issue. Instead:
-- Email: security@zen-ai-pentest.dev (placeholder)
-- Or contact @SHAdd0WTAka directly
+
+- Use [GitHub Security Advisories](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/security/advisories/new)
+- Or email: security@zen-ai-pentest.dev
+
+See [SECURITY.md](SECURITY.md) for details.
 
 ## 📝 Commit Message Convention
 
-We use conventional commits:
+We use [Conventional Commits](https://www.conventionalcommits.org/):
+
 - `feat:` New feature
 - `fix:` Bug fix
 - `docs:` Documentation changes
-- `test:` Adding tests
+- `test:` Adding or updating tests
 - `refactor:` Code refactoring
+- `perf:` Performance improvements
 - `security:` Security improvements
+- `chore:` Maintenance tasks
+
+Example:
+```
+feat: add nuclei integration
+
+- Add Nuclei tool wrapper
+- Implement JSON output parsing
+- Add safety controls
+
+Closes #123
+```
+
+## 📋 Review Process
+
+1. PRs require at least one maintainer review
+2. Automated checks must pass
+3. Security scanning must pass
+4. The PR description should reference related issues
 
 ## 🎉 Recognition
 
 Contributors will be recognized in our README and release notes!
 
 Thank you for helping make Zen-AI-Pentest better! 🦞
+
+## 📚 Additional Resources
+
+- [Code of Conduct](CODE_OF_CONDUCT.md)
+- [Security Policy](SECURITY.md)
+- [Build Instructions](docs/BUILD.md)
+- [Testing Guide](docs/TESTING.md)
+- [Project Governance](GOVERNANCE.md)

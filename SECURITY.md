@@ -16,11 +16,23 @@ We take security seriously. If you discover a security vulnerability, please do 
 
 ### How to Report
 
-1. **GitHub Security Advisories**: Use [GitHub's private vulnerability reporting](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/security/advisories/new)
+**Preferred Method (Private):**
+1. **GitHub Security Advisories**: Use [GitHub's private vulnerability reporting](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/security/advisories/new) - this keeps your report confidential
 
-2. **Direct Contact**: 
-   - Email: security [at] zen-ai-pentest.dev (placeholder)
-   - Contact @SHAdd0WTAka directly on GitHub
+2. **Security Email**: security@zen-ai-pentest.dev
+
+3. **Direct Contact**: Contact @SHAdd0WTAka directly on GitHub
+
+### What Happens Next
+
+1. **Acknowledgment**: We will acknowledge receipt within 48 hours
+2. **Assessment**: We will assess the vulnerability within 1 week
+3. **Fix Timeline**: We aim to fix critical vulnerabilities within 30 days
+4. **Disclosure**: After fixing, we will publicly disclose the vulnerability with credit to the reporter (unless they prefer anonymity)
+
+### Security Response Team
+
+- @SHAdd0WTAka - Security Lead
 
 ### What to Include
 
