@@ -1,0 +1,198 @@
+name: Kimi Claw Gateway - Unified Notifications
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    types: [opened, closed, synchronize]
+  issues:
+    types: [opened, closed, reopened]
+  workflow_run:
+    workflows: ["Test Coverage", "Security Scan", "CI/CD Pipeline"]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      message:
+        description: 'Custom message to send'
+        required: false
+        default: 'Manual test from GitHub Actions'
+
+env:
+  CLAW_API_URL: ${{ secrets.KIMI_CLAW_API_URL || 'https://api.moonshot.cn/v1/claw' }}
+  REPO_NAME: ${{ github.event.repository.name }}
+  ACTOR: ${{ github.actor }}
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    if: ${{ secrets.KIMI_CLAW_ENABLED == 'true' || github.event_name != 'workflow_dispatch' }}
+    steps:
+    - name: Prepare Event Data
+      id: prepare
+      run: |
+        # Determine event type and message
+        EVENT_TYPE="${{ github.event_name }}"
+        MESSAGE=""
+        SEVERITY="info"
+        
+        case "$EVENT_TYPE" in
+          push)
+            COMMIT_MSG=$(echo '${{ github.event.head_commit.message }}' | head -1)
+            MESSAGE="🚀 Push to main by ${{ github.actor }}: $COMMIT_MSG"
+            SEVERITY="info"
+            ;;
+          pull_request)
+            PR_ACTION="${{ github.event.action }}"
+            PR_TITLE="${{ github.event.pull_request.title }}"
+            PR_USER="${{ github.event.pull_request.user.login }}"
+            PR_URL="${{ github.event.pull_request.html_url }}"
+            
+            case "$PR_ACTION" in
+              opened)
+                MESSAGE="📬 New PR by $PR_USER: $PR_TITLE\n$PR_URL"
+                SEVERITY="info"
+                ;;
+              closed)
+                if [ "${{ github.event.pull_request.merged }}" == "true" ]; then
+                  MESSAGE="✅ PR merged by ${{ github.actor }}: $PR_TITLE"
+                  SEVERITY="success"
+                else
+                  MESSAGE="❌ PR closed without merge: $PR_TITLE"
+                  SEVERITY="warning"
+                fi
+                ;;
+              *)
+                MESSAGE="📝 PR updated: $PR_TITLE"
+                SEVERITY="info"
+                ;;
+            esac
+            ;;
+          issues)
+            ISSUE_ACTION="${{ github.event.action }}"
+            ISSUE_TITLE="${{ github.event.issue.title }}"
+            ISSUE_USER="${{ github.event.issue.user.login }}"
+            
+            case "$ISSUE_ACTION" in
+              opened)
+                MESSAGE="🐛 New issue by $ISSUE_USER: $ISSUE_TITLE"
+                SEVERITY="warning"
+                ;;
+              closed)
+                MESSAGE="✅ Issue resolved: $ISSUE_TITLE"
+                SEVERITY="success"
+                ;;
+              *)
+                MESSAGE="📋 Issue $ISSUE_ACTION: $ISSUE_TITLE"
+                SEVERITY="info"
+                ;;
+            esac
+            ;;
+          workflow_run)
+            WF_NAME="${{ github.event.workflow_run.name }}"
+            WF_STATUS="${{ github.event.workflow_run.conclusion }}"
+            WF_URL="${{ github.event.workflow_run.html_url }}"
+            
+            case "$WF_STATUS" in
+              success)
+                MESSAGE="✅ $WF_NAME passed"
+                SEVERITY="success"
+                ;;
+              failure)
+                MESSAGE="❌ $WF_NAME failed\n$WF_URL"
+                SEVERITY="error"
+                ;;
+              *)
+                MESSAGE="⚠️ $WF_NAME: $WF_STATUS"
+                SEVERITY="warning"
+                ;;
+            esac
+            ;;
+          workflow_dispatch)
+            MESSAGE="🔔 ${{ github.event.inputs.message }}"
+            SEVERITY="info"
+            ;;
+        esac
+        
+        # Escape for JSON
+        MESSAGE=$(echo "$MESSAGE" | sed 's/"/\\"/g' | tr '\n' ' ')
+        
+        echo "message=$MESSAGE" >> $GITHUB_OUTPUT
+        echo "severity=$SEVERITY" >> $GITHUB_OUTPUT
+        echo "event=$EVENT_TYPE" >> $GITHUB_OUTPUT
+        
+        echo "Prepared message: $MESSAGE"
+        echo "Severity: $SEVERITY"
+    
+    - name: Send to Kimi Claw
+      if: ${{ secrets.KIMI_CLAW_TOKEN != '' }}
+      run: |
+        MESSAGE="${{ steps.prepare.outputs.message }}"
+        SEVERITY="${{ steps.prepare.outputs.severity }}"
+        EVENT="${{ steps.prepare.outputs.event }}"
+        
+        # Build JSON payload
+        JSON_PAYLOAD=$(cat <<EOF
+        {
+          "event": "$EVENT",
+          "repository": "${{ github.repository }}",
+          "actor": "${{ github.actor }}",
+          "message": "$MESSAGE",
+          "severity": "$SEVERITY",
+          "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+          "url": "${{ github.event.head_commit.url || github.event.pull_request.html_url || github.event.issue.html_url || github.event.workflow_run.html_url }}",
+          "channels": {
+            "discord": ${{ secrets.KIMI_CLAW_DISCORD_ENABLED == 'true' }},
+            "telegram": ${{ secrets.KIMI_CLAW_TELEGRAM_ENABLED == 'true' }},
+            "slack": ${{ secrets.KIMI_CLAW_SLACK_ENABLED == 'true' }}
+          }
+        }
+        EOF
+        )
+        
+        # Send to Kimi Claw API
+        echo "Sending to Kimi Claw..."
+        curl -X POST "${{ env.CLAW_API_URL }}/notify" \
+          -H "Authorization: Bearer ${{ secrets.KIMI_CLAW_TOKEN }}" \
+          -H "Content-Type: application/json" \
+          -d "$JSON_PAYLOAD" \
+          --silent --show-error --fail \
+          || echo "Failed to send to Kimi Claw (this is expected if not configured)"
+      continue-on-error: true
+    
+    - name: Fallback to Discord
+      if: ${{ secrets.DISCORD_WEBHOOK_URL != '' && (secrets.KIMI_CLAW_TOKEN == '' || failure()) }}
+      uses: Ilshidur/action-discord@master
+      with:
+        args: |
+          ${{ steps.prepare.outputs.message }}
+          
+          Repository: ${{ github.repository }}
+          Event: ${{ steps.prepare.outputs.event }}
+      env:
+        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+      continue-on-error: true
+    
+    - name: Fallback to Telegram
+      if: ${{ secrets.TELEGRAM_BOT_TOKEN != '' && secrets.TELEGRAM_CHAT_ID != '' && (secrets.KIMI_CLAW_TOKEN == '' || failure()) }}
+      run: |
+        curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+          -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}" \
+          -d "text=${{ steps.prepare.outputs.message }}" \
+          -d "parse_mode=Markdown" \
+          --silent --show-error \
+          || echo "Failed to send to Telegram"
+      continue-on-error: true
+    
+    - name: Summary
+      run: |
+        echo "## Kimi Claw Gateway Notification" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Event:** ${{ steps.prepare.outputs.event }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Severity:** ${{ steps.prepare.outputs.severity }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Message:** ${{ steps.prepare.outputs.message }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        if [ "${{ secrets.KIMI_CLAW_TOKEN }}" != "" ]; then
+          echo "✅ Sent to Kimi Claw" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "⚠️ Kimi Claw not configured, used fallback channels" >> $GITHUB_STEP_SUMMARY
+        fi
