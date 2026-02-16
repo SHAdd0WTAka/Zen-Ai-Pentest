@@ -1,62 +1,61 @@
-# Contributing to Zen AI Pentest
+# Contributing to Zen-AI-Pentest
 
-Thank you for your interest in contributing! This document provides guidelines for contributing to the project.
+Thank you for your interest in contributing to Zen-AI-Pentest! This document explains how you can contribute to the project.
 
-## 🚀 Quick Start
+## 🚀 How to Contribute
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Make your changes
-4. Commit using conventional commits (`git commit -m "feat: add amazing feature"`)
-5. Push to your fork
-6. Open a Pull Request
+### Reporting Bugs
 
-## 📝 Commit Message Format
+If you find a bug, please report it by opening an issue on GitHub:
 
-We use [Conventional Commits](https://conventionalcommits.org/):
+1. Go to [Issues](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/issues)
+2. Click "New Issue"
+3. Use the bug report template
+4. Provide as much detail as possible
 
-- `feat:` - New features
-- `fix:` - Bug fixes
-- `docs:` - Documentation changes
-- `style:` - Code style changes (formatting)
-- `refactor:` - Code refactoring
-- `test:` - Adding or updating tests
-- `chore:` - Maintenance tasks
-- `security:` - Security fixes
+### Suggesting Features
 
-## 🧪 Testing
+We welcome feature suggestions! To suggest a feature:
 
-Before submitting a PR:
+1. Open a new issue
+2. Label it as "feature-request"
+3. Describe the feature and its use case
 
-```bash
-# Run tests
-pytest tests/
+### Pull Requests
 
-# Run linting
-ruff check .
+To submit code changes:
 
-# Run type checking
-mypy core/ agents/
-```
+1. **Fork** the repository
+2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
+3. **Commit** your changes (`git commit -m 'feat: Add amazing feature'`)
+4. **Push** to the branch (`git push origin feature/amazing-feature`)
+5. **Open** a Pull Request
 
-## 🐛 Reporting Issues
+### Code Standards
 
-When reporting issues, please include:
-- Clear description
-- Steps to reproduce
-- Expected vs actual behavior
-- Environment details (OS, Python version, etc.)
+- Follow Python PEP 8 style guidelines
+- Add tests for new features
+- Update documentation as needed
+- Ensure all tests pass before submitting
 
-## 🔒 Security
+## 🛡️ Security
 
-Please report security vulnerabilities privately to the maintainers.
+For security issues, please **DO NOT** open a public issue. Instead:
+- Email: security@zen-ai-pentest.dev (placeholder)
+- Or contact @SHAdd0WTAka directly
 
-## 📋 Code Review Process
+## 📝 Commit Message Convention
 
-1. All PRs require review before merging
-2. CI checks must pass
-3. Documentation must be updated if needed
+We use conventional commits:
+- `feat:` New feature
+- `fix:` Bug fix
+- `docs:` Documentation changes
+- `test:` Adding tests
+- `refactor:` Code refactoring
+- `security:` Security improvements
 
-## 🙏 Thank You!
+## 🎉 Recognition
 
-Every contribution helps make Zen AI Pentest better!
+Contributors will be recognized in our README and release notes!
+
+Thank you for helping make Zen-AI-Pentest better! 🦞
