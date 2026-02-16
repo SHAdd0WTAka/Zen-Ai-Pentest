@@ -1,0 +1,129 @@
+name: ZenClaw Discord Integration
+
+on:
+  push:
+    branches: [main]
+  issues:
+    types: [opened, closed, reopened]
+  workflow_run:
+    workflows: ["Test Coverage", "Security Scan", "CI/CD Pipeline"]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      message:
+        description: 'Test message'
+        required: true
+        default: 'ZenClaw Test Notification'
+      channel:
+        description: 'Channel type'
+        required: true
+        default: 'logs'
+        type: choice
+        options:
+        - logs
+        - alerts
+
+env:
+  DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+
+jobs:
+  notify-discord:
+    runs-on: ubuntu-latest
+    if: ${{ secrets.DISCORD_WEBHOOK_URL != '' }}
+    steps:
+    - name: Prepare Notification
+      id: prep
+      run: |
+        EVENT="${{ github.event_name }}"
+        COLOR="3447003"  # Default blue
+        TITLE="ZenClaw Alert"
+        DESCRIPTION=""
+        
+        case "$EVENT" in
+          push)
+            COLOR="3066993"  # Green
+            TITLE="🚀 Push to main"
+            DESCRIPTION="Commit: ${{ github.event.head_commit.message }}"
+            ;;
+          issues)
+            if [ "${{ github.event.action }}" == "opened" ]; then
+              COLOR="15158332"  # Red
+              TITLE="🐛 New Issue"
+            else
+              COLOR="3066993"  # Green
+              TITLE="✅ Issue Resolved"
+            fi
+            DESCRIPTION="${{ github.event.issue.title }}"
+            ;;
+          workflow_run)
+            if [ "${{ github.event.workflow_run.conclusion }}" == "success" ]; then
+              COLOR="3066993"  # Green
+              TITLE="✅ Workflow Success"
+            else
+              COLOR="15158332"  # Red
+              TITLE="❌ Workflow Failed"
+            fi
+            DESCRIPTION="${{ github.event.workflow_run.name }}"
+            ;;
+          workflow_dispatch)
+            COLOR="3447003"  # Blue
+            TITLE="🧪 Test Message"
+            DESCRIPTION="${{ github.event.inputs.message }}"
+            ;;
+        esac
+        
+        # Escape for JSON
+        DESCRIPTION=$(echo "$DESCRIPTION" | sed 's/"/\\"/g' | head -c 1000)
+        
+        echo "color=$COLOR" >> $GITHUB_OUTPUT
+        echo "title=$TITLE" >> $GITHUB_OUTPUT
+        echo "description=$DESCRIPTION" >> $GITHUB_OUTPUT
+        echo "event=$EVENT" >> $GITHUB_OUTPUT
+    
+    - name: Send to Discord
+      run: |
+        JSON_PAYLOAD=$(cat <<EOF
+        {
+          "embeds": [{
+            "title": "${{ steps.prep.outputs.title }}",
+            "description": "${{ steps.prep.outputs.description }}",
+            "color": ${{ steps.prep.outputs.color }},
+            "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "footer": {
+              "text": "ZenClaw Guardian | ${{ steps.prep.outputs.event }}"
+            },
+            "fields": [
+              {
+                "name": "Repository",
+                "value": "${{ github.repository }}",
+                "inline": true
+              },
+              {
+                "name": "Actor",
+                "value": "${{ github.actor }}",
+                "inline": true
+              }
+            ]
+          }]
+        }
+        EOF
+        )
+        
+        curl -X POST "$DISCORD_WEBHOOK" \
+          -H "Content-Type: application/json" \
+          -d "$JSON_PAYLOAD" \
+          --silent --show-error \
+          || echo "Discord notification failed (this is expected if webhook not configured)"
+      continue-on-error: true
+    
+    - name: Summary
+      run: |
+        echo "## ZenClaw Discord Notification" >> $GITHUB_STEP_SUMMARY
+        echo "Event: ${{ steps.prep.outputs.event }}" >> $GITHUB_STEP_SUMMARY
+        echo "Title: ${{ steps.prep.outputs.title }}" >> $GITHUB_STEP_SUMMARY
+        if [ "${{ secrets.DISCORD_WEBHOOK_URL }}" != "" ]; then
+          echo "Status: Webhook configured ✅" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "Status: Webhook NOT configured ⚠️" >> $GITHUB_STEP_SUMMARY
+          echo "Add DISCORD_WEBHOOK_URL to GitHub Secrets" >> $GITHUB_STEP_SUMMARY
+        fi

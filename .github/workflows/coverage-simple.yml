@@ -1,0 +1,39 @@
+name: Coverage Report
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+    
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+        pip install pytest pytest-cov
+    
+    - name: Run tests with coverage
+      run: pytest tests/ --cov=. --cov-report=term-missing
+      env:
+        JWT_SECRET_KEY: test
+        DATABASE_URL: sqlite:///./test.db
+    
+    - name: Summary
+      run: |
+        echo "## Coverage Report" >> $GITHUB_STEP_SUMMARY
+        pytest tests/ --cov=. --cov-report=term-missing >> $GITHUB_STEP_SUMMARY
+      env:
+        JWT_SECRET_KEY: test
+        DATABASE_URL: sqlite:///./test.db
