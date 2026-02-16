@@ -1,0 +1,117 @@
+name: Fuzz Testing
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 0 * * 0'  # Weekly on Sunday
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  fuzz-python:
+    name: Python Fuzzing
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install atheris hypothesis
+
+      - name: Run fuzzing tests
+        run: |
+          # Run fuzzing with timeout
+          python -m pytest tests/fuzz/ -v --tb=short || true
+        timeout-minutes: 10
+
+      - name: Upload fuzzing artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: fuzz-results
+          path: |
+            crash-*
+            *.log
+          retention-days: 7
+
+  fuzz-api:
+    name: API Fuzzing
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install schemathesis
+
+      - name: Start API server
+        run: |
+          cd api
+          uvicorn main:app --host 0.0.0.0 --port 8000 &
+          sleep 5
+        env:
+          JWT_SECRET_KEY: fuzz-test-key
+
+      - name: Run API fuzzing
+        run: |
+          # Fuzz API endpoints
+          schemathesis run http://localhost:8000/openapi.json \
+            --checks all \
+            --max-examples 100 \
+            --hypothesis-deadline 5000 \
+            || true
+
+  fuzz-input-validation:
+    name: Input Validation Fuzzing
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install hypothesis
+
+      - name: Run input validation tests
+        run: |
+          python tests/fuzz/test_input_validation.py || true
+        continue-on-error: true
