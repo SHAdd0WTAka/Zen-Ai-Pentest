@@ -13,7 +13,7 @@ alembic==1.13.1
 
 # LangChain & AI
 langchain==0.3.0
-langchain-core==0.3.81  # SECURITY FIX: CVE-2025-68664
+langchain-core==0.3.83  # SECURITY FIX: CVE-2025-XXXX
 langgraph==0.0.10
 openai==1.8.0
 
