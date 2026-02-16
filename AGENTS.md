@@ -290,13 +290,21 @@ NMAP_PATH=/usr/bin/nmap
 SQLMAP_PATH=/usr/bin/sqlmap
 NUCLEI_PATH=/usr/local/bin/nuclei
 
-# Optional: AI backends
-KIMI_API_KEY=your-key
-OPENAI_API_KEY=your-key
+# AI Backends (Kimi AI recommended for best performance)
+KIMI_API_KEY=your-kimi-api-key      # Recommended: https://platform.moonshot.cn
+DEFAULT_BACKEND=kimi                 # Default AI provider
+DEFAULT_MODEL=kimi-k2.5              # Default model
+
+# Alternative Backends (optional)
+# OPENAI_API_KEY=sk-...
+# ANTHROPIC_API_KEY=sk-ant-...
+# OPENROUTER_API_KEY=...
 
 # Docker
 DOCKER_HOST=unix:///var/run/docker.sock
 ```
+
+> 💡 **Recommendation**: Kimi AI (Moonshot) provides excellent performance for security analysis tasks with long context support and tool reasoning capabilities.
 
 ---
 
