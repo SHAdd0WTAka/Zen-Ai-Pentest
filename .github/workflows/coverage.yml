@@ -64,38 +64,38 @@ jobs:
         # If pytest didn't generate coverage, at least measure import coverage
         if [ ! -f coverage.xml ] || [ ! -s coverage.xml ]; then
           echo "Generating coverage from static analysis..."
-          python -c "
-import coverage
-import sys
-sys.path.insert(0, '.')
-
-cov = coverage.Coverage(source=['core', 'modules', 'api', 'tools'])
-cov.start()
-
-# Try to import modules to measure coverage
-try:
-    import core
-    print('Imported core')
-except Exception as e:
-    print(f'Could not import core: {e}')
-
-try:
-    import modules
-    print('Imported modules')
-except Exception as e:
-    print(f'Could not import modules: {e}')
-
-try:
-    import api
-    print('Imported api')
-except Exception as e:
-    print(f'Could not import api: {e}')
-
-cov.stop()
-cov.save()
-cov.xml_report(outfile='coverage.xml')
-print('Generated coverage.xml')
-"
+          python << 'PYTHON_SCRIPT'
+        import coverage
+        import sys
+        sys.path.insert(0, '.')
+        
+        cov = coverage.Coverage(source=['core', 'modules', 'api', 'tools'])
+        cov.start()
+        
+        # Try to import modules to measure coverage
+        try:
+            import core
+            print('Imported core')
+        except Exception as e:
+            print(f'Could not import core: {e}')
+        
+        try:
+            import modules
+            print('Imported modules')
+        except Exception as e:
+            print(f'Could not import modules: {e}')
+        
+        try:
+            import api
+            print('Imported api')
+        except Exception as e:
+            print(f'Could not import api: {e}')
+        
+        cov.stop()
+        cov.save()
+        cov.xml_report(outfile='coverage.xml')
+        print('Generated coverage.xml')
+        PYTHON_SCRIPT
         fi
       continue-on-error: true
     
@@ -109,10 +109,10 @@ print('Generated coverage.xml')
         else
           echo "[WARN] coverage.xml not found, creating minimal report..."
           echo '<?xml version="1.0" encoding="UTF-8"?>
-<coverage version="4.5.4" timestamp="'$(date +%s)'" lines-valid="1" lines-covered="0" line-rate="0.0">
-  <sources><source>.</source></sources>
-  <packages/>
-</coverage>' > coverage.xml
+        <coverage version="4.5.4" timestamp="'$(date +%s)'" lines-valid="1" lines-covered="0" line-rate="0.0">
+          <sources><source>.</source></sources>
+          <packages/>
+        </coverage>' > coverage.xml
         fi
     
     - name: Upload coverage to Codecov
