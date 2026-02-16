@@ -1,4 +1,2 @@
-# Trigger coverage 1770762636
-trigger-1770766567
-# Trigger coverage workflow
-trigger-test-analytics-1770768603
+# Trigger for coverage workflow
+# This file is used to trigger the coverage workflow on push
