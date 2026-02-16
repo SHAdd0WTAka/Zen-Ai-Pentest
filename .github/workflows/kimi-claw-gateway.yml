@@ -1,0 +1,41 @@
+name: Kimi Claw Gateway
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Prepare notification
+      id: prep
+      run: |
+        echo "event=${{ github.event_name }}" >> $GITHUB_OUTPUT
+        echo "actor=${{ github.actor }}" >> $GITHUB_OUTPUT
+        echo "repo=${{ github.repository }}" >> $GITHUB_OUTPUT
+    
+    - name: Send to Discord (fallback)
+      if: ${{ secrets.DISCORD_WEBHOOK_URL != '' }}
+      uses: Ilshidur/action-discord@master
+      with:
+        args: |
+          [Kimi Claw] ${{ steps.prep.outputs.event }} by ${{ steps.prep.outputs.actor }}
+          Repository: ${{ steps.prep.outputs.repo }}
+      env:
+        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+      continue-on-error: true
+    
+    - name: Send to Telegram (fallback)
+      if: ${{ secrets.TELEGRAM_BOT_TOKEN != '' && secrets.TELEGRAM_CHAT_ID != '' }}
+      run: |
+        curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+          -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}" \
+          -d "text=[Kimi Claw] ${{ steps.prep.outputs.event }} by ${{ steps.prep.outputs.actor }} in ${{ steps.prep.outputs.repo }}" \
+          --silent || true
+      continue-on-error: true
