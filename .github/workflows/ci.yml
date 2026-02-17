@@ -101,6 +101,8 @@ jobs:
             tests/test_cve_database_coverage.py \
             tests/test_nmap_integration_coverage.py \
             tests/test_tools_simple_coverage.py \
+            tests/test_orchestrator_coverage.py \
+            tests/test_database_models_coverage.py \
             -v --tb=short --timeout=30 \
             --cov=tools.ffuf_integration_enhanced \
             --cov=tools.whatweb_integration \
