@@ -83,7 +83,7 @@ jobs:
         name: codecov-umbrella
         fail_ci_if_error: false
         verbose: true
-        token: ${{ secrets.CODECOV_TOKEN }}
+        token: c92ff043-e4f0-4bcd-a117-6e978adfb8f7
     
     - name: Generate coverage summary
       run: |
