@@ -104,12 +104,13 @@ jobs:
           ADMIN_PASSWORD: testpass
           DATABASE_URL: sqlite:///./test.db
 
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
-        if: matrix.python-version == '3.13'
-        with:
-          file: ./coverage.xml
-          fail_ci_if_error: false
+      # Coverage upload disabled - use codecov.yml instead
+      # - name: Upload coverage to Codecov
+      #   uses: codecov/codecov-action@v4
+      #   if: matrix.python-version == '3.13'
+      #   with:
+      #     file: ./coverage.xml
+      #     fail_ci_if_error: false
 
       - name: Upload logs on failure
         if: failure()
