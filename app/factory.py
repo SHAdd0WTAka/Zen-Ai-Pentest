@@ -6,6 +6,7 @@ Creates and configures the FastAPI application with all components.
 
 import asyncio
 from contextlib import asynccontextmanager
+from datetime import datetime
 from typing import Dict, Any, Optional
 import logging
 

@@ -214,7 +214,7 @@ class DashboardWebSocket:
             await conn.send({
                 "type": "stats",
                 "data": {
-                    "connection_id": conn_id,
+                    "connection_id": connection_id,
                     "connected_at": conn.connected_at.isoformat(),
                     "subscriptions": len(conn.subscriptions)
                 }

@@ -11,10 +11,13 @@ import json
 import uuid
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union, TYPE_CHECKING
 from dataclasses import dataclass, asdict
 import asyncio
 from contextlib import asynccontextmanager
+
+if TYPE_CHECKING:
+    from .config import AuditConfig
 
 
 class LogLevel(Enum):
