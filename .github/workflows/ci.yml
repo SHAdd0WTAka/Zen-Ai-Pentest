@@ -97,6 +97,7 @@ jobs:
             tests/unit/utils/test_helpers.py \
             tests/unit/utils/test_helpers_extended.py \
             tests/unit/utils/test_stealth.py \
+            tests/test_report_gen_coverage.py \
             -v --tb=short --timeout=30 \
             --cov=tools.ffuf_integration_enhanced \
             --cov=tools.whatweb_integration \
