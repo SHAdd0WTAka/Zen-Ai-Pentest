@@ -367,7 +367,7 @@ Hilfe bei Problemen mit Zen-AI-Pentest!
 python -m venv venv
 source venv/bin/activate  # Linux/Mac
 # oder
-venv\Scripts\activate  # Windows
+venv\\Scripts\\activate  # Windows
 
 pip install zen-ai-pentest
 ```

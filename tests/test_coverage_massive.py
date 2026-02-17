@@ -139,8 +139,8 @@ class TestMassiveCoverage3:
     def test_119(self): assert not bool("")
     def test_120(self): assert not bool(0)
     def test_121(self): assert not bool(None)
-    def test_122(self): assert 1 is 1
-    def test_123(self): assert "a" is "a"
+    def test_122(self): assert 1 == 1
+    def test_123(self): assert "a" == "a"
     def test_124(self): assert None is None
     def test_125(self): assert True is True
     def test_126(self): assert False is False

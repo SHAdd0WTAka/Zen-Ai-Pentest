@@ -150,7 +150,7 @@ class TestAnalysisBot:
             
             config = AnalysisConfig(user_id="test-user")
             result = await bot.analyze(
-                target="<?php echo \$_GET['id']; ?>",
+                target=r"<?php echo \$_GET['id']; ?>",
                 target_type="code",
                 config=config
             )
