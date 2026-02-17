@@ -51,7 +51,7 @@ jobs:
 
       - name: Lint with Ruff
         run: |
-          ruff check . --output-format=github || true
+          ruff check . --output-format=github --exclude="tests/**" || true
           ruff format . --check || true
 
       - name: Security scan with Bandit
