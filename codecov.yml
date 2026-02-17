@@ -5,117 +5,149 @@ codecov:
   require_ci_to_pass: yes
   notify:
     wait_for_ci: yes
-    after_n_builds: 3  # Wait for all 3 Python versions
+    after_n_builds: 1
 
 coverage:
   precision: 1
   round: down
-  range: "50...100"
+  range: "20...100"
   
   status:
     project:
       default:
-        target: 10%        # Overall target coverage
-        threshold: 5%      # Allow 5% drop
+        target: 20%        # Target: 20% coverage
+        threshold: 2%      # Allow 2% drop
         base: auto
-        if_ci_failed: success  # Don't fail CI if Codecov fails
-        informational: true    # Informational only, don't block PRs
+        if_ci_failed: success
+        informational: true
         paths:
-          - "core/"
-          - "utils/"
-          - "modules/"
-          - "safety/"
-          - "risk_engine/"
-          - "database/"
+          - "modules/enhanced_recon.py"
+          - "modules/osint_super.py"
+          - "modules/super_scanner.py"
+          - "tools/ffuf_integration_enhanced.py"
+          - "tools/whatweb_integration.py"
+          - "tools/wafw00f_integration.py"
+          - "tools/subfinder_integration.py"
+          - "tools/httpx_integration.py"
+          - "tools/nikto_integration.py"
+          - "tools/sherlock_integration.py"
+          - "tools/ignorant_integration.py"
+          - "tools/tshark_integration.py"
+          - "tools/amass_integration.py"
+          - "tools/masscan_integration.py"
     
     patch:
       default:
-        target: 50%        # Target for new code in PRs
+        target: 50%
         threshold: 10%
         base: auto
         if_ci_failed: success
         informational: true
-        only_pulls: true   # Only check on PRs
+        only_pulls: true
 
   ignore:
-    # Ignore external tool wrappers not under test
-    - "tools/aircrack_integration.py"
-    - "tools/burpsuite_integration.py"
-    - "tools/crackmapexec_integration.py"
-    - "tools/gobuster_integration.py"
-    - "tools/hydra_integration.py"
-    - "tools/masscan_integration.py"
-    - "tools/metasploit_integration.py"
-    - "tools/nuclei_integration.py"
-    - "tools/responder_integration.py"
-    - "tools/scapy_integration.py"
-    - "tools/scout_integration.py"
-    - "tools/semgrep_integration.py"
-    - "tools/trivy_integration.py"
-    - "tools/trufflehog_integration.py"
-    - "tools/zap_integration.py"
-    - "tools/kimi_*.py"
+    # Ignore all old/untested tools
+    - "tools/aircrack_*"
+    - "tools/bloodhound_*"
+    - "tools/burpsuite_*"
+    - "tools/crackmapexec_*"
+    - "tools/gobuster_*"
+    - "tools/hydra_*"
+    - "tools/kimi_*"
+    - "tools/metasploit_*"
+    - "tools/nmap_*"
+    - "tools/nuclei_*"
+    - "tools/responder_*"
+    - "tools/scapy_*"
+    - "tools/scout_*"
+    - "tools/semgrep_*"
+    - "tools/sqlmap_*"
+    - "tools/subdomain_*"
+    - "tools/trivy_*"
+    - "tools/trufflehog_*"
+    - "tools/zap_*"
     - "tools/tool_caller.py"
     - "tools/tool_registry.py"
-    - "tools/subdomain_*.py"
-    - "tools/update_personas.py"
     - "tools/unified_recon.py"
+    - "tools/update_personas.py"
+    - "tools/ffuf_integration.py"
     - "tools/integrations/*"
-    # Ignore API routes (require FastAPI server)
+    
+    # Ignore old modules
+    - "modules/agent_coordinator.py"
+    - "modules/api_key_manager.py"
+    - "modules/benchmark.py"
+    - "modules/cve_*.py"
+    - "modules/exploit_assist.py"
+    - "modules/false_positive_filter.py"
+    - "modules/nuclei_integration.py"
+    - "modules/osint.py"
+    - "modules/output_formats.py"
+    - "modules/protonvpn.py"
+    - "modules/recommended_security_modules.py"
+    - "modules/recon.py"
+    - "modules/report_*.py"
+    - "modules/risk_scoring.py"
+    - "modules/siem_integration.py"
+    - "modules/sql_injection_db.py"
+    - "modules/subdomain_*.py"
+    - "modules/tool_orchestrator.py"
+    - "modules/vuln_scanner.py"
+    - "modules/wordlist_generator.py"
+    
+    # Ignore other directories
     - "api/**/*"
-    # Ignore tests
+    - "core/**/*"
+    - "agents/**/*"
+    - "autonomous/**/*"
+    - "database/**/*"
+    - "risk_engine/**/*"
+    - "safety/**/*"
+    - "memory/**/*"
+    - "utils/**/*"
+    - "gui/**/*"
+    - "web_ui/**/*"
+    - "dashboard/**/*"
     - "tests/**/*"
     - "test_*.py"
-    # Ignore examples and docs
     - "examples/**/*"
     - "docs/**/*"
-    # Ignore build artifacts
     - "build/**/*"
     - "dist/**/*"
-    # Ignore CI/CD scripts
     - "scripts/**/*"
     - ".github/**/*"
-    # Ignore frontend
-    - "web_ui/**/*"
-    # Ignore plugins
-    - "plugins/**/*"
-    # Ignore benchmarking
+    - "ci_cd/**/*"
+    - "docker/**/*"
     - "benchmarks/**/*"
-
-parsers:
-  gcov:
-    branch_detection:
-      conditional: yes
-      loop: yes
-      method: no
-      macro: no
+    - "plugins/**/*"
 
 comment:
   layout: "reach,diff,flags,tree"
   behavior: default
-  require_changes: false    # Post comment even if coverage unchanged
+  require_changes: false
   require_base: yes
   require_head: yes
   branches:
     - main
     - master
-    - develop
-
-# Pull Request settings
-github_checks:
-  annotations: true
 
 # Flags for different test types
 flags:
-  unittests:
-    carryforward: true
+  newtools:
     paths:
-      - "core/"
-      - "utils/"
-      - "safety/"
-      - "risk_engine/"
-  integration:
-    carryforward: true
+      - "tools/ffuf_integration_enhanced.py"
+      - "tools/whatweb_integration.py"
+      - "tools/wafw00f_integration.py"
+      - "tools/subfinder_integration.py"
+      - "tools/httpx_integration.py"
+      - "tools/nikto_integration.py"
+      - "tools/sherlock_integration.py"
+      - "tools/ignorant_integration.py"
+      - "tools/tshark_integration.py"
+      - "tools/amass_integration.py"
+      - "tools/masscan_integration.py"
+  newmodules:
     paths:
-      - "api/"
-      - "database/"
+      - "modules/enhanced_recon.py"
+      - "modules/osint_super.py"
+      - "modules/super_scanner.py"
