@@ -78,6 +78,10 @@ jobs:
             tests/test_all_imports.py \
             tests/test_async_fixes.py \
             tests/test_bulk_10.py \
+            tests/test_standalone.py \
+            tests/test_working_execution.py \
+            tests/test_working_final.py \
+            tests/test_tool_framework.py \
             -v --tb=short --timeout=30 \
             --cov=tools.ffuf_integration_enhanced \
             --cov=tools.whatweb_integration \
