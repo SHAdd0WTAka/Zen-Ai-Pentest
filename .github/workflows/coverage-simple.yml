@@ -1,46 +1,19 @@
-name: Simple Coverage
+# DEAKTIVIERT - Verwendet ci.yml oder codecov.yml stattdessen
+# Dieser Workflow lief nur tests/test_standalone.py welches nicht existiert
+# oder keine Projekt-Imports macht.
+#
+# Verwende stattdessen: ci.yml oder codecov.yml
+name: Simple Coverage (DISABLED)
 
 on:
-  push:
-    branches: [main]
+  # DISABLED: Erzeugt falsche Coverage
+  # push:
+  #   branches: [main]
   workflow_dispatch:
 
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.12'
-    
-    - name: Install pytest
-      run: pip install pytest pytest-cov
-    
-    - name: Run standalone tests only
-      run: |
-        # Run ONLY tests that don't need imports
-        pytest tests/test_standalone.py -v \
-          --cov=tools \
-          --cov=modules \
-          --cov=core \
-          --cov=agents \
-          --cov=autonomous \
-          --cov=database \
-          --cov-report=xml \
-          --cov-report=term
-      continue-on-error: true
-    
-    - name: Check coverage file
-      run: |
-        ls -la coverage.xml || echo "No coverage file"
-        cat coverage.xml | head -30 || echo "Cannot read"
-    
-    - name: Upload to Codecov
-      uses: codecov/codecov-action@v4
-      with:
-        files: ./coverage.xml
-        fail_ci_if_error: false
-        token: ${{ secrets.CODECOV_TOKEN }}
+    - name: Skipped
+      run: echo "This workflow is disabled - use ci.yml instead"
