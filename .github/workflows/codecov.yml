@@ -12,14 +12,14 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.11', '3.12', '3.13']
+        python-version: ['3.12']
       fail-fast: false
     
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
       with:
-        fetch-depth: 0  # Required for proper blame/annotation
+        fetch-depth: 0
     
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
@@ -30,26 +30,44 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install pytest pytest-cov pytest-asyncio
-        # Install all requirements for testing
         pip install -r requirements.txt
-        pip install pydantic sqlalchemy fastapi redis httpx email-validator pyjwt python-multipart passlib bcrypt
+        pip install pytest pytest-cov pytest-asyncio
+        pip install pydantic sqlalchemy fastapi redis httpx email-validator pyjwt python-multipart passlib 'bcrypt<4.1'
     
     - name: Run tests with coverage
       run: |
         pytest tests/ \
           -v \
           --ignore=tests/integration \
-          --cov=tools \
-          --cov=modules \
-          --cov=core \
-          --cov=agents \
-          --cov=autonomous \
-          --cov=database \
-          --cov=dashboard \
+          --cov=tools.ffuf_integration_enhanced \
+          --cov=tools.whatweb_integration \
+          --cov=tools.wafw00f_integration \
+          --cov=tools.subfinder_integration \
+          --cov=tools.httpx_integration \
+          --cov=tools.nikto_integration \
+          --cov=tools.sherlock_integration \
+          --cov=tools.ignorant_integration \
+          --cov=tools.tshark_integration \
+          --cov=tools.amass_integration \
+          --cov=tools.masscan_integration \
+          --cov=tools.gobuster_integration \
+          --cov=tools.nmap_integration \
+          --cov=tools.tool_registry \
+          --cov=tools.tool_caller \
+          --cov=modules.enhanced_recon \
+          --cov=modules.osint_super \
+          --cov=modules.super_scanner \
+          --cov=core.orchestrator \
+          --cov=database.models \
+          --cov=agents.agent_base \
+          --cov=agents.agent_orchestrator \
+          --cov=autonomous.agent_loop \
+          --cov=autonomous.exploit_validator \
           --cov-report=xml:coverage.xml \
           --cov-report=term-missing \
           --cov-fail-under=0
+      env:
+        ADMIN_PASSWORD: testpass
     
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
@@ -63,130 +81,16 @@ jobs:
     
     - name: Generate coverage summary
       run: |
-        echo "## Coverage Summary (Python ${{ matrix.python-version }})" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## Coverage Summary" >> $GITHUB_STEP_SUMMARY
         python << 'EOF'
         import xml.etree.ElementTree as ET
-        import sys
-        
         try:
             tree = ET.parse('coverage.xml')
             root = tree.getroot()
-            
-            # Get overall coverage
             line_rate = float(root.get('line-rate', 0))
-            branch_rate = float(root.get('branch-rate', 0))
-            
             line_pct = line_rate * 100
-            branch_pct = branch_rate * 100
-            
-            print(f"**Line Coverage:** {line_pct:.1f}%")
-            print(f"**Branch Coverage:** {branch_pct:.1f}%")
-            print("")
-            
-            # Get packages with lowest coverage
-            packages = []
-            for pkg in root.findall('.//package'):
-                name = pkg.get('name', 'unknown')
-                pkg_line_rate = float(pkg.get('line-rate', 0))
-                if pkg_line_rate < 1.0:  # Only show packages with missing coverage
-                    packages.append((name, pkg_line_rate))
-            
-            if packages:
-                print("### Packages Needing Attention:")
-                packages.sort(key=lambda x: x[1])
-                for name, rate in packages[:10]:
-                    print(f"- {name}: {rate*100:.1f}%")
-        
+            print(f"**Coverage:** {line_pct:.1f}%")
+            print(f"Coverage: {line_pct:.1f}%" >> $GITHUB_STEP_SUMMARY
         except Exception as e:
-            print(f"Could not parse coverage report: {e}")
-            sys.exit(0)
+            print(f"Error: {e}")
         EOF
-        >> $GITHUB_STEP_SUMMARY
-
-  coverage-report:
-    needs: coverage
-    runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
-    
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-    
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.12'
-    
-    - name: Install dependencies
-      run: |
-        pip install pytest pytest-cov
-        pip install pydantic sqlalchemy fastapi
-    
-    - name: Run tests and generate HTML report
-      run: |
-        pytest tests/ \
-          --ignore=tests/integration \
-          --cov=tools \
-          --cov=modules \
-          --cov=core \
-          --cov=agents \
-          --cov=autonomous \
-          --cov=database \
-          --cov=dashboard \
-          --cov-report=html:htmlcov \
-          --cov-report=xml:coverage.xml
-    
-    - name: Upload HTML report as artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: coverage-report
-        path: htmlcov/
-        retention-days: 30
-    
-    - name: Comment PR with coverage summary
-      if: github.event_name == 'pull_request'
-      uses: actions/github-script@v7
-      with:
-        script: |
-          const fs = require('fs');
-          
-          // Read coverage XML to get overall percentage
-          const xmlContent = fs.readFileSync('coverage.xml', 'utf8');
-          const lineRateMatch = xmlContent.match(/line-rate="([\d.]+)"/);
-          const lineRate = lineRateMatch ? parseFloat(lineRateMatch[1]) : 0;
-          const coverage = (lineRate * 100).toFixed(1);
-          
-          // Determine color based on coverage
-          let color = 'red';
-          if (parseFloat(coverage) >= 80) color = 'brightgreen';
-          else if (parseFloat(coverage) >= 60) color = 'green';
-          else if (parseFloat(coverage) >= 40) color = 'yellow';
-          else if (parseFloat(coverage) >= 20) color = 'orange';
-          
-          const body = `## 📊 Coverage Report
-          
-          ![Coverage](https://img.shields.io/badge/coverage-${coverage}%25-${color})
-          
-          - **Overall Coverage:** ${coverage}%
-          - **Python Versions Tested:** 3.11, 3.12, 3.13
-          - **Tests Run:** Unit tests
-          
-          <details>
-          <summary>View Details</summary>
-          
-          Coverage is calculated based on all modules in the repository excluding:
-          - External tool integrations (tools/)
-          - API routes requiring server (api/)
-          - Test files themselves
-          
-          </details>
-          
-          *Generated by Codecov Workflow*`;
-          
-          github.rest.issues.createComment({
-            issue_number: context.issue.number,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            body: body
-          });

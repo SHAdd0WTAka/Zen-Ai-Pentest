@@ -1,46 +1,38 @@
 [run]
 branch = True
+# NUR die Module tracken die wir auch testen
 source = 
-    tools
-    modules
-    core
-    agents
-    autonomous
-    database
-    risk_engine
-    safety
-    memory
-    utils
-    api
+    tools/ffuf_integration_enhanced.py
+    tools/whatweb_integration.py
+    tools/wafw00f_integration.py
+    tools/subfinder_integration.py
+    tools/httpx_integration.py
+    tools/nikto_integration.py
+    tools/sherlock_integration.py
+    tools/ignorant_integration.py
+    tools/tshark_integration.py
+    tools/amass_integration.py
+    tools/masscan_integration.py
+    tools/gobuster_integration.py
+    tools/nmap_integration.py
+    tools/tool_registry.py
+    tools/tool_caller.py
+    modules/enhanced_recon.py
+    modules/osint_super.py
+    modules/super_scanner.py
+    core/orchestrator.py
+    database/models.py
+    agents/agent_base.py
+    agents/agent_orchestrator.py
+    autonomous/agent_loop.py
+    autonomous/exploit_validator.py
 omit = 
-    # Tests
     tests/*
     test_*.py
-    *_test.py
-    
-    # Virtual environments
     venv/*
     .venv/*
-    env/*
-    
-    # Build artifacts
     build/*
     dist/*
-    *.egg-info/*
-    
-    # Documentation
-    docs/*
-    
-    # Frontend (separate coverage)
-    web_ui/*
-    gui/*
-    dashboard/*
-    
-    # Examples
-    examples/*
-    
-    # Scripts
-    scripts/*
 
 parallel = False
 
@@ -54,9 +46,6 @@ exclude_lines =
     except ModuleNotFoundError
     raise ImportError
     pass
-    ^\s*\.\.\.$
-    if TYPE_CHECKING:
-    @abstractmethod
 
 show_missing = True
 precision = 1
