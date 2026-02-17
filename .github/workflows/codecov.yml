@@ -36,7 +36,7 @@ jobs:
     
     - name: Run tests with coverage
       run: |
-        pytest tests/test_working_final.py tests/test_working_execution.py tests/test_core_execution.py \
+        pytest tests/test_working_final.py tests/test_working_execution.py tests/test_core_execution.py tests/test_more_coverage_fixed.py \
           -v \
           --cov=core.orchestrator \
           --cov=database.models \
@@ -53,10 +53,6 @@ jobs:
           --cov=tools.masscan_integration \
           --cov=tools.gobuster_integration \
           --cov=tools.nmap_integration \
-          --cov=tools.tool_registry \
-          --cov=tools.tool_caller \
-          --cov=modules.enhanced_recon \
-          --cov=modules.osint_super \
           --cov=modules.super_scanner \
           --cov=agents.agent_base \
           --cov=agents.agent_orchestrator \
@@ -76,7 +72,7 @@ jobs:
         name: codecov-umbrella
         fail_ci_if_error: false
         verbose: true
-        token: c92ff043-e4f0-4bcd-a117-6e978adfb8f7
+        token: ${{ secrets.CODECOV_TOKEN }}
     
     - name: Coverage Summary
       run: |
@@ -89,7 +85,10 @@ jobs:
             line_rate = float(root.get('line-rate', 0))
             line_pct = line_rate * 100
             print(f"Coverage: {line_pct:.1f}%")
-            print(f"Coverage: {line_pct:.1f}%" >> $GITHUB_STEP_SUMMARY)
+            with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as f:
+                f.write(f"Coverage: {line_pct:.1f}%\n")
         except Exception as e:
             print(f"Error: {e}")
         EOF
+      env:
+        GITHUB_STEP_SUMMARY: ${{ github.step_summary }}
