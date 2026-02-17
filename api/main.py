@@ -19,6 +19,7 @@ import json
 import logging
 from typing import List, Optional
 from datetime import datetime
+from urllib.parse import urlparse
 
 from database.models import init_db, get_db, SessionLocal, Report
 from database.crud import (
@@ -937,14 +938,45 @@ async def get_tool_usage(user: dict = Depends(verify_token), db=Depends(get_db))
 # ============================================================================
 
 
+def _validate_slack_webhook_url(webhook_url: str) -> str:
+    """
+    Validate that the provided webhook URL is a Slack webhook URL.
+
+    This prevents server-side request forgery by restricting outbound
+    requests to the official Slack webhook host.
+    """
+    if not webhook_url:
+        raise HTTPException(status_code=400, detail="webhook_url is required")
+
+    parsed = urlparse(webhook_url)
+
+    if parsed.scheme not in ("http", "https"):
+        raise HTTPException(status_code=400, detail="Invalid webhook URL scheme")
+
+    if not parsed.netloc:
+        raise HTTPException(status_code=400, detail="Invalid webhook URL")
+
+    # Restrict to official Slack incoming webhook host
+    # See: https://api.slack.com/messaging/webhooks
+    host = parsed.hostname or ""
+    if host != "hooks.slack.com":
+        raise HTTPException(status_code=400, detail="Webhook host is not allowed")
+
+    return webhook_url
+
+
 @app.post("/notifications/slack/test")
 async def test_slack_notification(webhook_url: str, user: dict = Depends(verify_token)):
     """Test Slack webhook configuration"""
     try:
         from notifications.slack import SlackNotifier
 
-        notifier = SlackNotifier(webhook_url)
+        safe_webhook_url = _validate_slack_webhook_url(webhook_url)
+        notifier = SlackNotifier(safe_webhook_url)
         success = notifier.send_message(
+    except HTTPException:
+        # Re-raise validation errors without wrapping in 500
+        raise
             f"Test notification from Zen AI Pentest\nUser: {user.get('sub', 'unknown')}\nTime: {datetime.utcnow().isoformat()}"
         )
         if success:
@@ -966,6 +998,9 @@ async def notify_slack_scan_complete(scan_id: int, webhook_url: str, user: dict 
         scan = db.query(Scan).filter(Scan.id == scan_id).first()
         if not scan:
             raise HTTPException(status_code=404, detail="Scan not found")
+        # Validate webhook URL to prevent SSRF
+        safe_webhook_url = _validate_slack_webhook_url(webhook_url)
+
 
         # Count findings
         findings = db.query(Finding).filter(Finding.scan_id == scan_id).all()
@@ -973,8 +1008,11 @@ async def notify_slack_scan_complete(scan_id: int, webhook_url: str, user: dict 
         critical_count = sum(1 for f in findings if f.severity == "critical")
 
         # Send notification
-        notifier = SlackNotifier(webhook_url)
+        notifier = SlackNotifier(safe_webhook_url)
         success = notifier.send_scan_completed(
+    except HTTPException:
+        # Re-raise validation errors without wrapping in 500
+        raise
             scan_id=scan_id, target=scan.target, findings_count=findings_count, critical_count=critical_count
         )
 
