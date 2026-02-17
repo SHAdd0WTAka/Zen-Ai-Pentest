@@ -1,3 +1,44 @@
+
+
+@router.get("/tools/status")
+async def get_tools_status():
+    """Get pentest tools installation status"""
+    try:
+        from tools.integrations.tool_checker import ToolChecker
+        
+        checker = ToolChecker()
+        report = checker.get_status_report()
+        
+        return report
+    except Exception as e:
+        return {
+            "ready": False,
+            "error": str(e),
+            "message": "Tool checker not available"
+        }
+
+
+@router.post("/tools/install")
+async def install_tools(background_tasks: BackgroundTasks):
+    """Trigger tool installation (runs in background)"""
+    import subprocess
+    import sys
+    
+    def run_installer():
+        try:
+            if sys.platform == "win32":
+                subprocess.Popen(["powershell", "-ExecutionPolicy", "Bypass", "-File", "scripts/install-tools.ps1"])
+            else:
+                subprocess.Popen(["bash", "scripts/install-tools.sh", "--all"])
+        except Exception as e:
+            logger.error(f"Failed to start installer: {e}")
+    
+    background_tasks.add_task(run_installer)
+    
+    return {
+        "status": "installation_started",
+        "message": "Tool installation started in background. Check /system/tools/status for progress."
+    }
 """
 System Management Endpoints
 
