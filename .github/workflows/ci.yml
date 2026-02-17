@@ -86,6 +86,12 @@ jobs:
             tests/unit/safety/test_config.py \
             tests/unit/utils/test_helpers.py \
             tests/unit/risk_engine/test_cvss.py \
+            tests/test_quick_50.py \
+            tests/test_quick_60.py \
+            tests/test_quick_70.py \
+            tests/test_quick_80.py \
+            tests/test_quick_90.py \
+            tests/test_quick_100.py \
             -v --tb=short --timeout=30 \
             --cov=tools.ffuf_integration_enhanced \
             --cov=tools.whatweb_integration \
