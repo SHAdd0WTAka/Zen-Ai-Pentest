@@ -99,6 +99,8 @@ jobs:
             tests/unit/utils/test_stealth.py \
             tests/test_report_gen_coverage.py \
             tests/test_cve_database_coverage.py \
+            tests/test_nmap_integration_coverage.py \
+            tests/test_tools_simple_coverage.py \
             -v --tb=short --timeout=30 \
             --cov=tools.ffuf_integration_enhanced \
             --cov=tools.whatweb_integration \
