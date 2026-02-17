@@ -1,0 +1,37 @@
+name: HTML Coverage Report
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  coverage-html:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+    
+    - name: Install dependencies
+      run: |
+        pip install pytest pytest-cov
+        pip install -r requirements.txt
+    
+    - name: Generate HTML report
+      run: |
+        pytest tests/test_working_final.py \
+          --cov=core.orchestrator \
+          --cov=database.models \
+          --cov=tools.ffuf_integration_enhanced \
+          --cov-report=html:htmlcov
+    
+    - name: Upload HTML report
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-html
+        path: htmlcov/
+        retention-days: 7
