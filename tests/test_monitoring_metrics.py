@@ -4,10 +4,11 @@ Tests für Monitoring Metrics
 
 import pytest
 import sys
+from pathlib import Path
 
 from unittest.mock import Mock
 
-sys.path.insert(0, "C:\\Users\\Ataka\\source\\repos\\SHAdd0WTAka\\Zen-Ai-Pentest")
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from monitoring.metrics import (
     record_scan_created,
