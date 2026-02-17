@@ -13,7 +13,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from fastapi import FastAPI, Depends, HTTPException, BackgroundTasks, WebSocket, WebSocketDisconnect, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.security import HTTPBearer
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from contextlib import asynccontextmanager
 import json
 import logging
@@ -48,10 +48,21 @@ from api.schemas import (
     UserLogin,
     TokenResponse,
 )
+# Import new auth system
+try:
+    from auth import JWTHandler, RBACManager, Role, Permission, AuthMiddleware
+    from auth import MFAHandler, PasswordHasher, AuthConfig, UserManager, get_user_manager
+    from database.auth_models import get_auth_db, init_auth_db
+    NEW_AUTH_AVAILABLE = True
+except ImportError as e:
+    print(f"Auth import error: {e}")
+    NEW_AUTH_AVAILABLE = False
+
+# Legacy auth as fallback
 from api.auth_simple import (
-    authenticate_user,
-    create_access_token,
-    verify_token
+    authenticate_user as legacy_authenticate_user,
+    create_access_token as legacy_create_access_token,
+    verify_token as legacy_verify_token
 )
 from api.websocket import ConnectionManager
 from api.websocket_manager import manager
@@ -63,8 +74,69 @@ from api.csrf_protection import csrf_protection, require_csrf
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Initialize new auth components (after logger is defined)
+_jwt_handler = None
+_rbac_manager = None
+_password_hasher = None
+_user_manager = None
+
+if NEW_AUTH_AVAILABLE:
+    try:
+        _jwt_handler = JWTHandler()
+        _rbac_manager = RBACManager()
+        _password_hasher = PasswordHasher()
+        _user_manager = UserManager(_jwt_handler, _password_hasher)
+        logger.info("✅ New auth system initialized with database support")
+    except Exception as e:
+        logger.warning(f"⚠️ Failed to initialize new auth components: {e}")
+        NEW_AUTH_AVAILABLE = False
+
 # Security
 security = HTTPBearer()
+
+
+# Create unified verify_token that works with both systems
+async def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)) -> dict:
+    """
+    Verify JWT token - uses new auth system if available, falls back to legacy
+    """
+    if not credentials:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="No authentication credentials provided",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    # Try new auth system first
+    if NEW_AUTH_AVAILABLE and _jwt_handler:
+        try:
+            from auth.jwt_handler import TokenExpiredError, TokenInvalidError
+            payload = _jwt_handler.decode_token(credentials.credentials)
+            return {
+                "sub": payload.sub,
+                "username": payload.sub,
+                "role": payload.roles[0] if payload.roles else "user",
+                "roles": payload.roles,
+                "permissions": payload.permissions,
+                "session_id": payload.session_id,
+            }
+        except TokenExpiredError:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Token has expired",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        except TokenInvalidError as e:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=f"Invalid token: {str(e)}",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+    
+    # Fallback to legacy
+    from api.auth_simple import verify_token as legacy_verify
+    return legacy_verify(credentials)
+
 
 # WebSocket Manager
 ws_manager = ConnectionManager()
@@ -77,6 +149,35 @@ async def lifespan(app: FastAPI):
     logger.info("Starting up Zen-AI-Pentest API...")
     init_db()
     logger.info("Database initialized")
+    
+    # Initialize auth database
+    if NEW_AUTH_AVAILABLE:
+        try:
+            init_auth_db()
+            logger.info("Auth database initialized")
+            
+            # Create default admin user if not exists
+            from database.auth_models import SessionLocal, create_user, get_user_by_username
+            from database.auth_models import UserRole
+            
+            db = SessionLocal()
+            try:
+                admin = get_user_by_username(db, "admin")
+                if not admin:
+                    admin_pass = os.getenv("ADMIN_PASSWORD", "admin123")
+                    create_user(
+                        db, 
+                        username="admin",
+                        email="admin@zen-pentest.local",
+                        hashed_password=_password_hasher.hash_password(admin_pass),
+                        role=UserRole.ADMIN
+                    )
+                    logger.info("Default admin user created")
+            finally:
+                db.close()
+        except Exception as e:
+            logger.warning(f"Could not initialize auth database: {e}")
+    
     yield
     # Shutdown
     logger.info("Shutting down...")
@@ -104,6 +205,10 @@ app.add_middleware(
     expose_headers=["X-Request-ID"],
     max_age=600,  # 10 minutes cache for preflight
 )
+
+# Add new auth middleware if available
+if NEW_AUTH_AVAILABLE:
+    app.add_middleware(AuthMiddleware)
 
 # ============================================================================
 # AUTHENTICATION
@@ -137,7 +242,7 @@ def verify_admin_credentials(username: str, password: str) -> bool:
 @app.post("/auth/login", response_model=TokenResponse)
 async def login(credentials: UserLogin, request: Request):
     """
-    Login und JWT Token erhalten
+    Login und JWT Token erhalten (Database-backed)
 
     - **username**: Username (min. 3 Zeichen)
     - **password**: Passwort (min. 6 Zeichen)
@@ -145,9 +250,45 @@ async def login(credentials: UserLogin, request: Request):
     Returns JWT Token für authentifizierte Requests
     """
     client_ip = request.client.host if request.client else "unknown"
+    user_agent = request.headers.get("User-Agent", "")
     check_auth_rate_limit(client_ip)
 
-    user = authenticate_user(credentials.username, credentials.password)
+    # Use database-backed auth system if available
+    if NEW_AUTH_AVAILABLE and _user_manager:
+        from database.auth_models import SessionLocal
+        
+        db = SessionLocal()
+        try:
+            # Authenticate user against database
+            user = _user_manager.authenticate_user(
+                db, credentials.username, credentials.password, client_ip, user_agent
+            )
+            
+            if not user:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Invalid username or password",
+                    headers={"WWW-Authenticate": "Bearer"},
+                )
+            
+            # Create session with tokens
+            session_data = _user_manager.create_session(
+                db, user, client_ip, user_agent
+            )
+            
+            return {
+                "access_token": session_data["access_token"],
+                "refresh_token": session_data["refresh_token"],
+                "token_type": "bearer",
+                "expires_in": 900,  # 15 minutes
+                "username": user.username,
+                "role": user.role.value
+            }
+        finally:
+            db.close()
+    
+    # Fallback to legacy auth
+    user = legacy_authenticate_user(credentials.username, credentials.password)
 
     if not user:
         raise HTTPException(
@@ -156,7 +297,7 @@ async def login(credentials: UserLogin, request: Request):
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    access_token = create_access_token(
+    access_token = legacy_create_access_token(
         data={"sub": user["username"], "role": user["role"]}
     )
 
@@ -170,9 +311,73 @@ async def login(credentials: UserLogin, request: Request):
 
 
 @app.get("/auth/me")
-async def me(user: dict = Depends(verify_token)):
+async def me(request: Request):
     """Get current user info"""
-    return user
+    # Try new auth system first
+    if NEW_AUTH_AVAILABLE and _jwt_handler:
+        auth_header = request.headers.get("Authorization", "")
+        if auth_header.startswith("Bearer "):
+            token = auth_header[7:]
+            try:
+                from auth.jwt_handler import TokenExpiredError, TokenInvalidError
+                payload = _jwt_handler.decode_token(token)
+                return {
+                    "sub": payload.sub,
+                    "roles": payload.roles,
+                    "permissions": payload.permissions,
+                    "session_id": payload.session_id,
+                }
+            except (TokenExpiredError, TokenInvalidError):
+                pass  # Fall through to legacy
+    
+    # Fallback to legacy
+    return await legacy_verify_token(request)
+
+
+@app.post("/auth/refresh")
+async def refresh_token(request: Request):
+    """
+    Refresh access token using refresh token (Database-backed)
+    
+    Header: Authorization: Bearer <refresh_token>
+    """
+    if not NEW_AUTH_AVAILABLE or not _user_manager:
+        raise HTTPException(
+            status_code=status.HTTP_501_NOT_IMPLEMENTED,
+            detail="Token refresh not available with legacy auth"
+        )
+    
+    auth_header = request.headers.get("Authorization", "")
+    if not auth_header.startswith("Bearer "):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Refresh token required",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    refresh_token = auth_header[7:]
+    client_ip = request.client.host if request.client else "unknown"
+    
+    from database.auth_models import SessionLocal
+    db = SessionLocal()
+    try:
+        # Use UserManager to refresh session
+        result = _user_manager.refresh_session(db, refresh_token, client_ip)
+        
+        if not result:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid or expired refresh token",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        
+        return {
+            "access_token": result["access_token"],
+            "token_type": "bearer",
+            "expires_in": result["expires_in"],
+        }
+    finally:
+        db.close()
 
 
 @app.get("/csrf-token")
@@ -184,6 +389,54 @@ async def get_csrf_token(response: Response):
     for all POST/PUT/DELETE requests.
     """
     return csrf_protection.set_token(response)
+
+
+@app.post("/auth/logout")
+async def logout(request: Request, user: dict = Depends(verify_token)):
+    """
+    Logout - revoke current session (Database-backed)
+    
+    Requires valid access token.
+    """
+    if NEW_AUTH_AVAILABLE and _user_manager:
+        from database.auth_models import SessionLocal
+        
+        # Get session_id from token payload
+        session_id = user.get("session_id")
+        if not session_id:
+            # Try to get from request state (set by middleware)
+            session_id = getattr(request.state, "session_id", None)
+        
+        if session_id:
+            db = SessionLocal()
+            try:
+                _user_manager.revoke_session(db, session_id, "logout")
+            finally:
+                db.close()
+    
+    return {"message": "Logged out successfully"}
+
+
+@app.post("/auth/logout-all")
+async def logout_all_devices(request: Request, user: dict = Depends(verify_token)):
+    """
+    Logout from all devices - revoke all sessions (Database-backed)
+    
+    Requires valid access token.
+    """
+    if NEW_AUTH_AVAILABLE and _user_manager:
+        from database.auth_models import SessionLocal
+        
+        user_id = user.get("sub")
+        if user_id:
+            db = SessionLocal()
+            try:
+                count = _user_manager.revoke_all_user_sessions(db, int(user_id), "logout_all")
+                return {"message": f"Logged out from {count} device(s)"}
+            finally:
+                db.close()
+    
+    return {"message": "Logged out from all devices"}
 
 
 # ============================================================================

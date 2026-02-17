@@ -57,6 +57,7 @@ class TokenResponse(BaseModel):
     expires_in: int
     username: str
     role: str
+    refresh_token: Optional[str] = None  # Optional for backward compatibility
 
 
 class UserInfo(BaseModel):

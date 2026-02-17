@@ -22,8 +22,10 @@ from .password_hasher import PasswordHasher, PasswordStrengthError
 from .rbac import RBACManager, Role, Permission
 from .mfa import MFAHandler, MFAError
 from .config import AuthConfig, JWTConfig, BcryptConfig, MFAConfig
+from .middleware import AuthMiddleware, RateLimitMiddleware, AuditLogMiddleware
+from .user_manager import UserManager, get_user_manager
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"  # Added database layer
 __author__ = "Zen-AI-Pentest Team"
 
 __all__ = [
@@ -41,4 +43,9 @@ __all__ = [
     "JWTConfig",
     "BcryptConfig",
     "MFAConfig",
+    "AuthMiddleware",
+    "RateLimitMiddleware",
+    "AuditLogMiddleware",
+    "UserManager",
+    "get_user_manager",
 ]
