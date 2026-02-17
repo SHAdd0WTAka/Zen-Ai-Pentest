@@ -44,10 +44,12 @@ jobs:
       run: |
         # Run pytest with coverage, but don't fail the workflow
         pytest tests/ -v \
-          --cov=core \
-          --cov=modules \
-          --cov=api \
           --cov=tools \
+          --cov=modules \
+          --cov=core \
+          --cov=agents \
+          --cov=autonomous \
+          --cov=database \
           --cov-report=xml \
           --cov-report=term-missing \
           --ignore=tests/integration \
@@ -69,7 +71,7 @@ jobs:
         import sys
         sys.path.insert(0, '.')
         
-        cov = coverage.Coverage(source=['core', 'modules', 'api', 'tools'])
+        cov = coverage.Coverage(source=['tools', 'modules', 'core', 'agents', 'autonomous', 'database'])
         cov.start()
         
         # Try to import modules to measure coverage
