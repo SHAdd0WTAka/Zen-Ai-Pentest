@@ -36,8 +36,16 @@ Zen-AI-Pentest executes **real security tools** - no simulations, no mocks, only
 - ✅ **Nmap** - Real port scanning with XML output parsing
 - ✅ **Nuclei** - Real vulnerability detection with JSON output
 - ✅ **SQLMap** - Real SQL injection testing with safety controls
+- ✅ **FFuF** - Blazing fast web fuzzer
+- ✅ **WhatWeb** - Technology detection (900+ plugins)
+- ✅ **WAFW00F** - WAF detection (50+ signatures)
+- ✅ **Subfinder** - Subdomain enumeration
+- ✅ **HTTPX** - Fast HTTP prober
+- ✅ **Nikto** - Web vulnerability scanner
 - ✅ **Multi-Agent** - Researcher & Analyst agents cooperate
 - ✅ **Docker Sandbox** - Isolated tool execution for safety
+
+📖 **Enhanced Tools:** [README_ENHANCED_TOOLS.md](README_ENHANCED_TOOLS.md)
 
 All tools run with **safety controls**:
 - Private IP blocking (protects internal networks)

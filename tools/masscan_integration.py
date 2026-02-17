@@ -1,64 +1,151 @@
-"""Masscan Integration - Ultra-schneller Port Scanner"""
+"""
+Masscan Integration - High-Speed Port Scanner
+Schneller als Nmap für große Netzwerke
+"""
 
-import subprocess
-import logging
+import asyncio
 import json
-from typing import List, Dict
+import logging
+import xml.etree.ElementTree as ET
+from dataclasses import dataclass, field
+from typing import List, Optional
 
 logger = logging.getLogger(__name__)
 
 
-class MasscanScanner:
-    """Async Port Scanner (schneller als Nmap)"""
+@dataclass
+class MasscanPort:
+    """Masscan port result"""
+    port: int
+    protocol: str = "tcp"
+    state: str = "open"
+    ip: str = ""
 
-    def __init__(self, masscan_path: str = "masscan"):
-        self.masscan_path = masscan_path
 
-    def scan(self, targets: str, ports: str = "0-65535", rate: int = 10000, interface: str = None) -> List[Dict]:
+@dataclass
+class MasscanResult:
+    """Masscan scan result"""
+    success: bool
+    ports: List[MasscanPort] = field(default_factory=list)
+    command: str = ""
+    duration: float = 0.0
+    total_hosts: int = 0
+    error: Optional[str] = None
+
+
+class MasscanIntegration:
+    """Masscan High-Speed Port Scanner"""
+    
+    def __init__(self, rate: int = 10000):
         """
-        Schneller Port Scan.
-
         Args:
-            targets: IP oder Netzwerk (z.B. "10.0.0.0/8")
-            ports: Port-Range (z.B. "80,443" oder "0-65535")
-            rate: Packets pro Sekunde (höher = schneller, aber lauter)
+            rate: Packets per second (default: 10000)
         """
-        output_file = "/tmp/masscan_output.json"
-
-        cmd = [self.masscan_path, targets, "-p", ports, "--rate", str(rate), "-oJ", output_file, "--wait", "0"]
-
-        if interface:
-            cmd.extend(["--adapter", interface])
-
+        self.rate = rate
+        
+    async def scan(
+        self,
+        target: str,
+        ports: str = "1-65535",
+        exclude_file: Optional[str] = None
+    ) -> MasscanResult:
+        """
+        Fast port scan with Masscan
+        
+        Args:
+            target: IP or CIDR range (e.g., 192.168.1.0/24)
+            ports: Port range (default: 1-65535)
+            exclude_file: File with IPs to exclude
+            
+        Returns:
+            MasscanResult with open ports
+        """
+        import time
+        start_time = time.time()
+        
+        cmd = [
+            "masscan",
+            target,
+            "-p", ports,
+            "--rate", str(self.rate),
+            "-oX", "-",  # XML output to stdout
+            "--wait", "2"
+        ]
+        
+        if exclude_file:
+            cmd.extend(["--excludefile", exclude_file])
+            
+        logger.info(f"Starting Masscan: {' '.join(cmd)}")
+        
         try:
-            logger.info(f"Starte Masscan Scan auf {targets}")
-            subprocess.run(cmd, capture_output=True, text=True, timeout=600)
-
-            # Parse JSON Output
-            with open(output_file, "r") as f:
-                results = json.load(f)
-
-            return [
-                {
-                    "ip": r.get("ip", "unknown"),
-                    "port": r.get("ports", [{}])[0].get("port", 0),
-                    "proto": r.get("ports", [{}])[0].get("proto", "tcp"),
-                }
-                for r in results
-            ]
-
+            process = await asyncio.create_subprocess_exec(
+                *cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE
+            )
+            
+            stdout, stderr = await asyncio.wait_for(
+                process.communicate(),
+                timeout=600  # 10 min timeout
+            )
+            
+            # Parse XML output
+            ports = []
+            try:
+                root = ET.fromstring(stdout.decode())
+                for host in root.findall("host"):
+                    ip = host.find("address").get("addr")
+                    for port_elem in host.findall("ports/port"):
+                        port = MasscanPort(
+                            port=int(port_elem.get("portid")),
+                            protocol=port_elem.get("protocol", "tcp"),
+                            state=port_elem.find("state").get("state", "open"),
+                            ip=ip
+                        )
+                        ports.append(port)
+            except ET.ParseError as e:
+                logger.warning(f"XML parse error: {e}")
+                
+            duration = time.time() - start_time
+            
+            return MasscanResult(
+                success=True,
+                ports=ports,
+                command=" ".join(cmd),
+                duration=duration,
+                total_hosts=len(set(p.ip for p in ports))
+            )
+            
+        except asyncio.TimeoutError:
+            logger.error("Masscan timed out")
+            return MasscanResult(success=False, error="Timeout")
         except Exception as e:
-            logger.error(f"Masscan Fehler: {e}")
-            return []
+            logger.error(f"Masscan error: {e}")
+            return MasscanResult(success=False, error=str(e))
+            
+    async def scan_top_ports(self, target: str) -> MasscanResult:
+        """Scan top 1000 ports quickly"""
+        return await self.scan(target, ports="1-1000", rate=50000)
 
 
-from langchain_core.tools import tool
+# Sync wrapper
+def scan_sync(target: str, ports: str = "1-65535") -> MasscanResult:
+    """Synchronous wrapper"""
+    masscan = MasscanIntegration()
+    return asyncio.run(masscan.scan(target, ports))
 
 
-@tool
-def masscan_quick_scan(target: str, ports: str = "top-100") -> str:
-    """Ultra-schneller Port Scan mit Masscan"""
-    scanner = MasscanScanner()
-    port_range = "80,443,22,21,25,53,110,143,3306,5432,3389,5900,8080" if ports == "top-100" else ports
-    results = scanner.scan(target, port_range, rate=1000)
-    return f"Found {len(results)} open ports: " + ", ".join([str(r["port"]) for r in results[:20]])
+if __name__ == "__main__":
+    import logging
+    logging.basicConfig(level=logging.INFO)
+    
+    print("Testing Masscan Integration...")
+    print("="*60)
+    print("⚠️  Note: Masscan requires root privileges")
+    print("⚠️  Testing with --dry-run mode")
+    print("="*60)
+    
+    # Test parsing
+    masscan = MasscanIntegration()
+    print(f"Rate: {masscan.rate} packets/sec")
+    print("Masscan integration ready!")

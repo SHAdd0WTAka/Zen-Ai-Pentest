@@ -1,0 +1,149 @@
+{
+  "target": "scanme.nmap.org",
+  "timestamp": "2026-02-17T05:06:10.410559",
+  "technology_scan": {
+    "success": true,
+    "technologies": [
+      {
+        "name": "\n{\"target\":\"http://scanme.nmap.org\",\"http_status\":200,\"request_config\":{\"headers\":{\"User-Agent\":\"WhatWeb/0.6.3\"}},\"plugins\":{\"Apache\":{\"version\":[\"2.4.7\"",
+        "version": "",
+        "confidence": 100,
+        "category": ""
+      },
+      {
+        "name": "\"RESERVED\"",
+        "version": "",
+        "confidence": 100,
+        "category": ""
+      },
+      {
+        "name": "\"ZZ\"",
+        "version": "",
+        "confidence": 100,
+        "category": ""
+      },
+      {
+        "name": "\"Universal\"",
+        "version": "",
+        "confidence": 100,
+        "category": ""
+      },
+      {
+        "name": "\"UA-11009417-1\"",
+        "version": "",
+        "confidence": 100,
+        "category": ""
+      },
+      {
+        "name": "\"Ubuntu Linux\"",
+        "version": "",
+        "confidence": 100,
+        "category": ""
+      },
+      {
+        "name": "\"Apache/2.4.7 ",
+        "version": "Ubuntu)\"",
+        "confidence": 100,
+        "category": ""
+      },
+      {
+        "name": "\"45.33.32.156\"",
+        "version": "",
+        "confidence": 100,
+        "category": ""
+      },
+      {
+        "name": "\"Go ahead and ScanMe!\"",
+        "version": "",
+        "confidence": 100,
+        "category": ""
+      },
+      {
+        "name": "1m\u001b[34mhttp://scanme.nmap.org\u001b[0m [200 OK",
+        "version": "",
+        "confidence": 100,
+        "category": ""
+      },
+      {
+        "name": "1mApache\u001b[0m[\u001b[1m\u001b[32m2.4.7\u001b[0m",
+        "version": "",
+        "confidence": 100,
+        "category": ""
+      },
+      {
+        "name": "1mCountry\u001b[0m[\u001b[0m\u001b[22mRESERVED\u001b[0m",
+        "version": "",
+        "confidence": 100,
+        "category": ""
+      },
+      {
+        "name": "\u001b[1m\u001b[31mZZ\u001b[0m",
+        "version": "",
+        "confidence": 100,
+        "category": ""
+      },
+      {
+        "name": "1mGoogle-Analytics\u001b[0m[\u001b[1m\u001b[32mUniversal\u001b[0m",
+        "version": "",
+        "confidence": 100,
+        "category": ""
+      },
+      {
+        "name": "\u001b[1m\u001b[36mUA-11009417-1\u001b[0m",
+        "version": "",
+        "confidence": 100,
+        "category": ""
+      },
+      {
+        "name": "1mHTML5\u001b[0m, \u001b[1mHTTPServer\u001b[0m[\u001b[1m\u001b[31mUbuntu Linux\u001b[0m",
+        "version": "",
+        "confidence": 100,
+        "category": ""
+      },
+      {
+        "name": "\u001b[1m\u001b[36mApache/2.4.7 ",
+        "version": "Ubuntu)\u001b[0m",
+        "confidence": 100,
+        "category": ""
+      },
+      {
+        "name": "1mIP\u001b[0m[\u001b[0m\u001b[22m45.33.32.156\u001b[0m",
+        "version": "",
+        "confidence": 100,
+        "category": ""
+      },
+      {
+        "name": "1mScript\u001b[0m, \u001b[1mTitle\u001b[0m[\u001b[1m\u001b[33mGo ahead and ScanMe!\u001b[0m",
+        "version": "",
+        "confidence": 100,
+        "category": ""
+      }
+    ],
+    "headers": {},
+    "error": null
+  },
+  "waf_detection": {
+    "success": true,
+    "firewall_detected": false,
+    "wafs": [],
+    "error": null
+  },
+  "directory_bruteforce": {
+    "success": true,
+    "findings": [],
+    "total_requests": 0,
+    "duration": 0.00545954704284668,
+    "error": null
+  },
+  "summary": {
+    "technologies_detected": 19,
+    "waf_detected": false,
+    "directories_found": 0,
+    "risk_level": "low",
+    "recommendations": [
+      "Consider implementing a Web Application Firewall (WAF)",
+      "Update outdated software: \"Apache/2.4.7  Ubuntu)\"",
+      "Update outdated software: \u001b[1m\u001b[36mApache/2.4.7  Ubuntu)\u001b[0m"
+    ]
+  }
+}
