@@ -1,0 +1,79 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Generate Coverage Report",
+      "type": "shell",
+      "command": "pytest",
+      "args": [
+        "tests/test_working_final.py",
+        "--cov=core.orchestrator",
+        "--cov=database.models",
+        "--cov=tools.ffuf_integration_enhanced",
+        "--cov=tools.whatweb_integration",
+        "--cov=tools.wafw00f_integration",
+        "--cov=tools.subfinder_integration",
+        "--cov=tools.httpx_integration",
+        "--cov=tools.nikto_integration",
+        "--cov=tools.sherlock_integration",
+        "--cov=tools.ignorant_integration",
+        "--cov=tools.tshark_integration",
+        "--cov=tools.amass_integration",
+        "--cov=tools.masscan_integration",
+        "--cov=tools.gobuster_integration",
+        "--cov=tools.nmap_integration",
+        "--cov=modules.super_scanner",
+        "--cov=agents.agent_base",
+        "--cov=agents.agent_orchestrator",
+        "--cov=autonomous.agent_loop",
+        "--cov=autonomous.exploit_validator",
+        "--cov-report=xml:coverage.xml",
+        "--cov-report=html:htmlcov",
+        "-v"
+      ],
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Run Tests Only",
+      "type": "shell",
+      "command": "pytest",
+      "args": [
+        "tests/test_working_final.py",
+        "-v"
+      ],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Open HTML Coverage",
+      "type": "shell",
+      "command": "python",
+      "args": [
+        "-m",
+        "webbrowser",
+        "htmlcov/index.html"
+      ],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "never",
+        "focus": false,
+        "panel": "shared"
+      }
+    }
+  ]
+}
