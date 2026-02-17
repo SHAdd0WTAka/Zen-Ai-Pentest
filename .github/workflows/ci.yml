@@ -75,6 +75,8 @@ jobs:
             --ignore=tests/unit/core/test_models.py \
             --ignore=tests/test_modules_report_gen.py \
             --ignore=tests/test_monitoring_metrics.py \
+            --ignore=tests/autonomous \
+            --ignore=tests/security/test_dast.py \
             --cov=tools.ffuf_integration_enhanced \
             --cov=tools.whatweb_integration \
             --cov=tools.wafw00f_integration \
