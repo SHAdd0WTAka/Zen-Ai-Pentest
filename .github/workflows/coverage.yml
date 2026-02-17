@@ -34,8 +34,8 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install pytest pytest-cov pytest-asyncio coverage
-        # Install required for tests
-        pip install pydantic sqlalchemy fastapi redis httpx email-validator
+        # Install all required for tests
+        pip install pydantic sqlalchemy fastapi redis httpx email-validator pyjwt python-multipart passlib bcrypt
     
     - name: Check test files exist
       run: |

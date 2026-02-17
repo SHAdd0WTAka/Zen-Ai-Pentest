@@ -195,7 +195,7 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           pip install -r requirements.txt
           pip install pytest==8.0.0 pytest-asyncio==0.23.4 pytest-cov==4.1.0 pytest-xdist==3.5.0
-          pip install redis httpx email-validator
+          pip install redis httpx email-validator pyjwt python-multipart passlib bcrypt
 
       - name: Validate Python syntax
         run: |
