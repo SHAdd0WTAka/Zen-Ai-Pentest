@@ -23,7 +23,12 @@ jobs:
       run: |
         # Run tests OUTSIDE tests/ folder to avoid conftest.py issues
         pytest test_coverage_quick.py -v \
-          --cov=. \
+          --cov=tools \
+          --cov=modules \
+          --cov=core \
+          --cov=agents \
+          --cov=autonomous \
+          --cov=database \
           --cov-report=xml \
           --cov-report=term
     
