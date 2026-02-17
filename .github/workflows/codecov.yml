@@ -36,9 +36,14 @@ jobs:
     
     - name: Run tests with coverage
       run: |
-        pytest tests/unit/ \
+        pytest tests/ \
           -v \
-          --cov \
+          --cov=tools \
+          --cov=modules \
+          --cov=core \
+          --cov=agents \
+          --cov=autonomous \
+          --cov=database \
           --cov-report=xml:coverage.xml \
           --cov-report=term-missing \
           --cov-fail-under=0
@@ -117,8 +122,13 @@ jobs:
     
     - name: Run tests and generate HTML report
       run: |
-        pytest tests/unit/ \
-          --cov \
+        pytest tests/ \
+          --cov=tools \
+          --cov=modules \
+          --cov=core \
+          --cov=agents \
+          --cov=autonomous \
+          --cov=database \
           --cov-report=html:htmlcov \
           --cov-report=xml:coverage.xml
     
