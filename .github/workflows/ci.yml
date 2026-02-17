@@ -64,8 +64,6 @@ jobs:
           safety check --full-report || true
 
       - name: Run tests with coverage
-        env:
-          PYTHONPATH: ${{ github.workspace }}
         run: |
           export PYTHONPATH="${{ github.workspace }}:$PYTHONPATH"
           pytest tests/ -v --tb=short \
@@ -111,6 +109,7 @@ jobs:
             --cov-report=xml \
             --cov-report=term || true  # Tests dürfen fehlschlagen, Coverage wird trotzdem erstellt
         env:
+          PYTHONPATH: ${{ github.workspace }}
           JWT_SECRET_KEY: test-secret-key
           ADMIN_PASSWORD: testpass
           DATABASE_URL: sqlite:///./test.db
