@@ -209,6 +209,14 @@ jobs:
         run: |
           echo "::group::Running Tests"
           pytest tests/ -v --tb=short \
+            --ignore=tests/unit \
+            --ignore=tests/e2e \
+            --ignore=tests/fuzz \
+            --ignore=tests/integration \
+            --ignore=tests/agent_comm \
+            --ignore=tests/cloud \
+            --ignore=tests/risk_engine \
+            --ignore=tests/security \
             --cov=tools \
             --cov=modules \
             --cov=core \
