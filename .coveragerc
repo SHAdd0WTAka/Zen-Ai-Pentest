@@ -1,90 +1,66 @@
-# .coveragerc - Coverage Configuration for Zen-AI-Pentest
-# https://coverage.readthedocs.io/en/latest/config.html
-
 [run]
-# Branch coverage (erfassung von if/else Pfaden)
 branch = True
-
-# Source modules to track
 source = 
     tools
     modules
-
-# Include ONLY the files we have tests for
-include = 
-    */modules/enhanced_recon.py
-    */modules/osint_super.py
-    */modules/super_scanner.py
-    */tools/ffuf_integration_enhanced.py
-    */tools/whatweb_integration.py
-    */tools/wafw00f_integration.py
-    */tools/subfinder_integration.py
-    */tools/httpx_integration.py
-    */tools/nikto_integration.py
-    */tools/sherlock_integration.py
-    */tools/ignorant_integration.py
-    */tools/tshark_integration.py
-    */tools/amass_integration.py
-    */tools/masscan_integration.py
-
-# Omit test files and config
+    core
+    agents
+    autonomous
+    database
+    risk_engine
+    safety
+    memory
+    utils
+    api
 omit = 
+    # Tests
     tests/*
     test_*.py
     *_test.py
+    
+    # Virtual environments
     venv/*
     .venv/*
     env/*
+    
+    # Build artifacts
     build/*
     dist/*
     *.egg-info/*
-    setup.py
-    conftest.py
+    
+    # Documentation
+    docs/*
+    
+    # Frontend (separate coverage)
+    web_ui/*
+    gui/*
+    dashboard/*
+    
+    # Examples
+    examples/*
+    
+    # Scripts
+    scripts/*
 
-# Parallel mode for CI
 parallel = False
 
 [report]
-# Exclude lines from coverage
 exclude_lines =
     pragma: no cover
     def __repr__
-    if self.debug:
     raise NotImplementedError
-    raise AssertionError
     if __name__ == .__main__.:
+    except ImportError
+    except ModuleNotFoundError
+    raise ImportError
+    pass
+    ^\s*\.\.\.$
     if TYPE_CHECKING:
-    if settings.DEBUG:
-    if os.environ.get("DEBUG"):
-    except ImportError:
-    except ModuleNotFoundError:
+    @abstractmethod
 
-# Sort report by name
-sort = Name
-
-# Show missing lines
 show_missing = True
-
-# Skip covered files (only show what's missing)
-skip_covered = False
-
-# Precision
 precision = 1
+skip_covered = False
 
 [html]
-# HTML report directory
 directory = htmlcov
-
-# Title
-title = Zen-AI-Pentest Coverage Report
-
-# Skip covered files in HTML
-skip_covered = False
-
-[xml]
-# XML output for CI integration
-output = coverage.xml
-
-[json]
-# JSON output for custom tooling
-output = coverage.json

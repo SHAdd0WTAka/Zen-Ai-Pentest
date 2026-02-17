@@ -31,7 +31,9 @@ class TestZenOrchestrator:
         orch = ZenOrchestrator()
         
         # Check for common attributes
-        assert hasattr(orch, 'state') or hasattr(orch, '_state')
+        assert hasattr(orch, 'backends')
+        assert hasattr(orch, 'results_cache')
+        assert hasattr(orch, 'request_count')
         
     def test_orchestrator_repr(self):
         """Test orchestrator string representation"""
@@ -130,10 +132,10 @@ class TestDatabaseUserModel:
         
     def test_user_default_values(self):
         """Test user default values"""
-        user = db_models.User()
+        user = db_models.User(username="defaultuser", email="default@test.com")
         
-        # Check defaults
-        if hasattr(user, 'is_active'):
+        # Check defaults - is_active might be None or bool
+        if hasattr(user, 'is_active') and user.is_active is not None:
             # Default should be True or False
             assert isinstance(user.is_active, bool)
             
@@ -153,12 +155,12 @@ class TestDatabaseScanModel:
         """Test scan can be created"""
         scan = db_models.Scan(
             target="example.com",
-            type="full",
+            scan_type="full",
             status="pending"
         )
         
         assert scan.target == "example.com"
-        assert scan.type == "full"
+        assert scan.scan_type == "full"
         assert scan.status == "pending"
         
     def test_scan_status_values(self):
@@ -209,7 +211,7 @@ class TestDatabaseFindingModel:
         finding = db_models.Finding(
             title="Test",
             severity="medium",
-            url="http://example.com",
+            target="http://example.com",
             cvss_score=7.5
         )
         

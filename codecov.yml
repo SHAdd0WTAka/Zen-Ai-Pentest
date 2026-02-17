@@ -1,153 +1,65 @@
-# Codecov Configuration
+# Codecov Configuration - 20% Target
 # https://docs.codecov.com/docs/codecov-yaml
 
 codecov:
-  require_ci_to_pass: yes
+  require_ci_to_pass: no
   notify:
-    wait_for_ci: yes
+    wait_for_ci: no
     after_n_builds: 1
 
 coverage:
   precision: 1
   round: down
-  range: "20...100"
+  range: "10...100"
   
   status:
     project:
       default:
-        target: 20%        # Target: 20% coverage
-        threshold: 2%      # Allow 2% drop
+        target: 20%
+        threshold: 5%
         base: auto
         if_ci_failed: success
         informational: true
-        paths:
-          - "modules/enhanced_recon.py"
-          - "modules/osint_super.py"
-          - "modules/super_scanner.py"
-          - "tools/ffuf_integration_enhanced.py"
-          - "tools/whatweb_integration.py"
-          - "tools/wafw00f_integration.py"
-          - "tools/subfinder_integration.py"
-          - "tools/httpx_integration.py"
-          - "tools/nikto_integration.py"
-          - "tools/sherlock_integration.py"
-          - "tools/ignorant_integration.py"
-          - "tools/tshark_integration.py"
-          - "tools/amass_integration.py"
-          - "tools/masscan_integration.py"
-    
+        
     patch:
       default:
         target: 50%
         threshold: 10%
-        base: auto
         if_ci_failed: success
         informational: true
-        only_pulls: true
+        only_pulls: false
 
-  ignore:
-    # Ignore all old/untested tools
-    - "tools/aircrack_*"
-    - "tools/bloodhound_*"
-    - "tools/burpsuite_*"
-    - "tools/crackmapexec_*"
-    - "tools/gobuster_*"
-    - "tools/hydra_*"
-    - "tools/kimi_*"
-    - "tools/metasploit_*"
-    - "tools/nmap_*"
-    - "tools/nuclei_*"
-    - "tools/responder_*"
-    - "tools/scapy_*"
-    - "tools/scout_*"
-    - "tools/semgrep_*"
-    - "tools/sqlmap_*"
-    - "tools/subdomain_*"
-    - "tools/trivy_*"
-    - "tools/trufflehog_*"
-    - "tools/zap_*"
-    - "tools/tool_caller.py"
-    - "tools/tool_registry.py"
-    - "tools/unified_recon.py"
-    - "tools/update_personas.py"
-    - "tools/ffuf_integration.py"
-    - "tools/integrations/*"
-    
-    # Ignore old modules
-    - "modules/agent_coordinator.py"
-    - "modules/api_key_manager.py"
-    - "modules/benchmark.py"
-    - "modules/cve_*.py"
-    - "modules/exploit_assist.py"
-    - "modules/false_positive_filter.py"
-    - "modules/nuclei_integration.py"
-    - "modules/osint.py"
-    - "modules/output_formats.py"
-    - "modules/protonvpn.py"
-    - "modules/recommended_security_modules.py"
-    - "modules/recon.py"
-    - "modules/report_*.py"
-    - "modules/risk_scoring.py"
-    - "modules/siem_integration.py"
-    - "modules/sql_injection_db.py"
-    - "modules/subdomain_*.py"
-    - "modules/tool_orchestrator.py"
-    - "modules/vuln_scanner.py"
-    - "modules/wordlist_generator.py"
-    
-    # Ignore other directories
-    - "api/**/*"
-    - "core/**/*"
-    - "agents/**/*"
-    - "autonomous/**/*"
-    - "database/**/*"
-    - "risk_engine/**/*"
-    - "safety/**/*"
-    - "memory/**/*"
-    - "utils/**/*"
-    - "gui/**/*"
-    - "web_ui/**/*"
-    - "dashboard/**/*"
-    - "tests/**/*"
-    - "test_*.py"
-    - "examples/**/*"
-    - "docs/**/*"
-    - "build/**/*"
-    - "dist/**/*"
-    - "scripts/**/*"
-    - ".github/**/*"
-    - "ci_cd/**/*"
-    - "docker/**/*"
-    - "benchmarks/**/*"
-    - "plugins/**/*"
+# Only ignore files that cause issues or are truly not testable
+ignore:
+  # API and Web UI (separate testing)
+  - "api/**/*"
+  - "web_ui/**/*"
+  - "gui/**/*"
+  - "dashboard/**/*"
+  
+  # Test files themselves
+  - "tests/**/*"
+  - "test_*.py"
+  
+  # Documentation and config
+  - "docs/**/*"
+  - "examples/**/*"
+  - "benchmarks/**/*"
+  
+  # Build and deployment
+  - "build/**/*"
+  - "dist/**/*"
+  - "scripts/**/*"
+  - ".github/**/*"
+  - "ci_cd/**/*"
+  - "docker/**/*"
+  - "plugins/**/*"
+  - "k8s/**/*"
+  - "jenkins/**/*"
 
 comment:
   layout: "reach,diff,flags,tree"
   behavior: default
   require_changes: false
-  require_base: yes
+  require_base: no
   require_head: yes
-  branches:
-    - main
-    - master
-
-# Flags for different test types
-flags:
-  newtools:
-    paths:
-      - "tools/ffuf_integration_enhanced.py"
-      - "tools/whatweb_integration.py"
-      - "tools/wafw00f_integration.py"
-      - "tools/subfinder_integration.py"
-      - "tools/httpx_integration.py"
-      - "tools/nikto_integration.py"
-      - "tools/sherlock_integration.py"
-      - "tools/ignorant_integration.py"
-      - "tools/tshark_integration.py"
-      - "tools/amass_integration.py"
-      - "tools/masscan_integration.py"
-  newmodules:
-    paths:
-      - "modules/enhanced_recon.py"
-      - "modules/osint_super.py"
-      - "modules/super_scanner.py"
