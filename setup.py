@@ -3,7 +3,7 @@ Setup script for Zen AI Pentest
 Q3 2026: PyPI Package
 """
 
-from setuptools import setup
+from setuptools import setup, find_packages
 import os
 
 here = os.path.abspath(os.path.dirname(__file__))
@@ -87,7 +87,7 @@ setup(
     author="SHAdd0WTAka",
     author_email="security@zen-ai-pentest.dev",
     url="https://github.com/SHAdd0WTAka/zen-ai-pentest",
-    packages=["agents", "alembic", "api", "api.core", "api.routes", "api.v1", "autonomous", "backends", "ci_cd", "core", "database", "gui", "integration", "integrations", "memory", "modules", "monitoring", "notifications", "risk", "risk_engine", "safety", "scripts", "tools", "ui", "utils", "virtualization", "zen_ai_pentest", "zen_shield", "zen_shield.filters"],
+    packages=find_packages(include=["agents*", "alembic*", "api*", "autonomous*", "backends*", "ci_cd*", "core*", "database*", "gui*", "integration*", "integrations*", "memory*", "modules*", "monitoring*", "notifications*", "risk*", "risk_engine*", "safety*", "scripts*", "tools*", "ui*", "utils*", "virtualization*", "zen_ai_pentest*", "zen_shield*"]),
     include_package_data=True,
     package_data={
         "zen-ai-pentest": [
