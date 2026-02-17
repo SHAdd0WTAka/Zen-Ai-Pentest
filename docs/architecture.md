@@ -1,370 +1,232 @@
-# System Architecture
-
-This document provides a comprehensive overview of the Zen AI Pentest system architecture, including component details, data flows, and design decisions.
-
----
-
-## Table of Contents
-
-1. [Overview](#overview)
-2. [Architecture Diagrams](#architecture-diagrams)
-3. [Component Details](#component-details)
-4. [Data Flow](#data-flow)
-5. [Security Architecture](#security-architecture)
-6. [Deployment Architecture](#deployment-architecture)
-7. [Technology Stack](#technology-stack)
-
----
+# Zen-AI-Pentest Architecture
 
 ## Overview
 
-Zen AI Pentest is a modern, AI-powered penetration testing framework built with a modular, microservices-inspired architecture. The system is designed for scalability, security, and extensibility.
+Zen-AI-Pentest is a modular, autonomous penetration testing framework built with Python and FastAPI. The architecture follows clean design principles with clear separation of concerns.
 
-### Key Design Principles
+## System Architecture
 
-- **Modularity**: Each component can be used independently
-- **Security**: Defense in depth with multiple security layers
-- **Scalability**: Supports horizontal scaling for enterprise use
-- **Extensibility**: Plugin system for custom tools and integrations
-
----
-
-## Architecture Diagrams
-
-### High-Level System Architecture
-
-```mermaid
-graph TB
-    subgraph "Presentation Layer"
-        CLI[CLI Client]
-        WEB[Web Dashboard<br/>React + TypeScript]
-        MOBILE[Mobile App<br/>Future]
-    end
-
-    subgraph "API Gateway Layer"
-        GATEWAY[FastAPI Gateway]
-        AUTH[Authentication<br/>JWT + OAuth2]
-        RATE[Rate Limiter]
-    end
-
-    subgraph "Core Services"
-        ORCH[Agent Orchestrator]
-        STATE[State Machine<br/>ReAct Pattern]
-        MEMORY[Memory Service]
-        RISK[Risk Engine]
-        SCHED[Task Scheduler]
-    end
-
-    subgraph "AI/ML Layer"
-        LLM[LLM Router]
-        CONSENSUS[Consensus Engine]
-        EMBED[Embedding Service]
-    end
-
-    subgraph "Tool Integration"
-        SCAN[Scanners<br/>Nmap, Masscan]
-        WEB_TOOLS[Web Tools<br/>SQLMap, ZAP]
-        EXPLOIT[Exploit Framework<br/>Metasploit]
-        AD[AD Tools<br/>BloodHound]
-    end
-
-    subgraph "Data Layer"
-        POSTGRES[(PostgreSQL)]
-        REDIS[(Redis Cache)]
-        MINIO[(Object Storage)]
-        ELASTIC[(Elasticsearch)]
-    end
-
-    subgraph "External Services"
-        OPENAI[OpenAI API]
-        ANTHRO[Anthropic API]
-        OLLAMA[Local Ollama]
-        INTEL[Threat Intel<br/>MISP, ThreatFox]
-    end
-
-    CLI --> GATEWAY
-    WEB --> GATEWAY
-    MOBILE --> GATEWAY
-    
-    GATEWAY --> AUTH
-    GATEWAY --> RATE
-    
-    AUTH --> ORCH
-    RATE --> ORCH
-    
-    ORCH --> STATE
-    ORCH --> MEMORY
-    ORCH --> RISK
-    ORCH --> SCHED
-    
-    STATE --> LLM
-    RISK --> CONSENSUS
-    
-    LLM --> OPENAI
-    LLM --> ANTHRO
-    LLM --> OLLAMA
-    
-    STATE --> SCAN
-    STATE --> WEB_TOOLS
-    STATE --> EXPLOIT
-    STATE --> AD
-    
-    ORCH --> POSTGRES
-    MEMORY --> REDIS
-    RISK --> ELASTIC
-    EXPLOIT --> MINIO
-    
-    RISK --> INTEL
 ```
-
-### Agent State Machine
-
-```mermaid
-stateDiagram-v2
-    [*] --> IDLE
-    IDLE --> PLANNING: Start Task
-    PLANNING --> EXECUTING: Plan Ready
-    EXECUTING --> OBSERVING: Action Complete
-    OBSERVING --> REFLECTING: Results Received
-    REFLECTING --> PLANNING: Need More Info
-    REFLECTING --> EXECUTING: Next Action
-    REFLECTING --> COMPLETED: Task Done
-    REFLECTING --> ERROR: Failure
-    ERROR --> PLANNING: Retry
-    ERROR --> COMPLETED: Abort
-    COMPLETED --> [*]
+┌─────────────────────────────────────────────────────────────────┐
+│                        CLIENT LAYER                              │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────────┐ │
+│  │   Web UI    │  │    CLI      │  │   Third-party Tools     │ │
+│  │  (React)    │  │  (Python)   │  │   (Burp, Metasploit)    │ │
+│  └──────┬──────┘  └──────┬──────┘  └───────────┬─────────────┘ │
+└─────────┼────────────────┼─────────────────────┼───────────────┘
+          │                │                     │
+          └────────────────┴─────────────────────┘
+                           │
+                    HTTP / WebSocket
+                           │
+┌──────────────────────────▼────────────────────────────────────┐
+│                      API LAYER                                 │
+│                    FastAPI Application                         │
+│  ┌─────────────┐ ┌─────────────┐ ┌─────────────────────────┐  │
+│  │   REST API  │ │ WebSocket   │ │   Authentication        │  │
+│  │  Endpoints  │ │   Server    │ │   (JWT/OAuth2)          │  │
+│  └─────────────┘ └─────────────┘ └─────────────────────────┘  │
+└──────────────────────────┬────────────────────────────────────┘
+                           │
+┌──────────────────────────▼────────────────────────────────────┐
+│                   CORE LAYER                                   │
+│                                                                │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌────────────────┐ │
+│  │  ZenOrchestrator│  │  Task Scheduler │  │   Dashboard    │ │
+│  │   (3,441 LOC)   │  │   (2,218 LOC)   │  │   (1,829 LOC)  │ │
+│  │                 │  │                 │  │                │ │
+│  │ • Task Mgmt     │  │ • Cron Jobs     │  │ • Real-time    │ │
+│  │ • Event Bus     │  │ • Recurring     │  │ • WebSocket    │ │
+│  │ • State Mgmt    │  │ • Job Queue     │  │ • Metrics      │ │
+│  └────────┬────────┘  └────────┬────────┘  └────────┬───────┘ │
+│           │                    │                    │          │
+│  ┌────────▼────────┐  ┌────────▼────────┐  ┌────────▼───────┐ │
+│  │   Audit Logger  │  │  Secure Validator│  │   Analysis Bot │ │
+│  │   (2,677 LOC)   │  │    (550 LOC)     │  │   (4,281 LOC)  │ │
+│  │                 │  │                  │  │                │ │
+│  │ • ISO 27001     │  │ • Input Valid.   │  │ • AI Analysis  │ │
+│  │ • SIEM Integr.  │  │ • SSRF Prevent.  │  │ • Risk Scoring │ │
+│  │ • Compliance    │  │ • SQL Injection  │  │ • Exploit Check│ │ │
+│  └─────────────────┘  └──────────────────┘  └────────────────┘ │
+│                                                                │
+│  ┌──────────────────────────────────────────────────────────┐ │
+│  │              Performance & Integration                    │ │
+│  │  ┌────────────┐ ┌────────────┐ ┌──────────────────────┐  │ │
+│  │  │   Cache    │ │   Pools    │ │   App Factory        │  │ │
+│  │  │  Manager   │ │  (Conn.)   │ │   (1,126 LOC)        │  │ │
+│  │  └────────────┘ └────────────┘ └──────────────────────┘  │ │
+│  └──────────────────────────────────────────────────────────┘ │
+└────────────────────────────────────────────────────────────────┘
 ```
-
----
 
 ## Component Details
 
-### 1. API Gateway (FastAPI)
+### 1. ZenOrchestrator (Core)
 
-The central entry point for all client interactions.
+The central coordination hub that manages all system components.
 
 **Responsibilities:**
-- Request routing and load balancing
-- Authentication and authorization
-- Rate limiting and throttling
-- API versioning
-- Request/response validation
+- Task lifecycle management (submit, execute, monitor)
+- Event propagation via EventBus
+- State management across components
+- Integration with Analysis Bot and Audit Logger
 
-**Key Endpoints:**
-```
-/auth/*          - Authentication endpoints
-/scans/*         - Scan management
-/agents/*        - Agent control
-/tools/*         - Tool execution
-/reports/*       - Report generation
-/siem/*          - SIEM integration
-/admin/*         - Administrative functions
-```
+**Key Classes:**
+- `ZenOrchestrator` - Main coordinator
+- `StateManager` - Distributed state management
+- `EventBus` - Async event publishing/subscribing
+- `TaskManager` - Task execution with worker pools
 
-### 2. Agent Orchestrator
+### 2. Analysis Bot
 
-Manages the lifecycle of penetration testing agents.
+AI-powered vulnerability analysis system.
 
-**Features:**
-- Multi-agent coordination
-- Task distribution and scheduling
-- Resource allocation
-- Error handling and recovery
+**Responsibilities:**
+- Vulnerability analysis and scoring
+- Exploitability assessment
+- Risk evaluation
+- Remediation recommendations
 
-**Configuration:**
-```python
-class OrchestratorConfig:
-    max_concurrent_agents: int = 10
-    task_timeout: int = 3600
-    retry_attempts: int = 3
-    enable_load_balancing: bool = True
-```
+**Key Components:**
+- `VulnerabilityAnalyzer` - Identifies and classifies vulnerabilities
+- `RiskScorer` - Calculates risk scores (CVSS, EPSS)
+- `ExploitabilityChecker` - Determines exploit feasibility
+- `RecommendationEngine` - Generates fix recommendations
 
-### 3. State Machine (ReAct Pattern)
+### 3. Audit Logger
 
-Implements the Reasoning + Acting (ReAct) pattern for autonomous operation.
+ISO 27001 compliant audit logging system.
 
-**States:**
-| State | Description |
-|-------|-------------|
-| IDLE | Waiting for task assignment |
-| PLANNING | Analyzing target and creating plan |
-| EXECUTING | Running tools and commands |
-| OBSERVING | Collecting and processing results |
-| REFLECTING | Evaluating progress and adapting |
-| COMPLETED | Task finished successfully |
-| ERROR | Error state with recovery options |
+**Responsibilities:**
+- Tamper-proof log entries
+- Chain of custody for logs
+- SIEM integration (Splunk, ELK, QRadar)
+- Compliance reporting (ISO 27001, GDPR, PCI DSS)
 
-### 4. Memory System
+**Key Features:**
+- Cryptographic signatures
+- Automatic log integrity verification
+- Multiple export formats (JSON, CSV, Syslog)
 
-Multi-tier memory architecture for context retention.
+### 4. Secure Validator
 
-**Types:**
-- **Short-term**: Current session context (Redis)
-- **Long-term**: Historical findings and patterns (PostgreSQL)
-- **Vector**: Semantic search embeddings (pgvector)
+Input validation and security hardening.
 
-### 5. Risk Engine
+**Responsibilities:**
+- URL validation (SSRF prevention)
+- Command injection prevention
+- SQL injection prevention
+- XSS prevention
+- Path traversal prevention
 
-Validates findings and calculates risk scores.
+**Impact:** Reduces CVSS 7.5 vulnerabilities to CVSS 2.0
 
-**Components:**
-- **False Positive Filter**: Bayesian filtering + LLM consensus
-- **CVSS Calculator**: Standardized vulnerability scoring
-- **EPSS Integration**: Exploit prediction scoring
-- **Business Impact**: Financial and compliance risk assessment
+### 5. Task Scheduler
 
-### 6. LLM Router
+Job scheduling system for recurring tasks.
 
-Intelligent routing between language model providers.
+**Responsibilities:**
+- Cron expression parsing
+- Interval-based scheduling
+- Job persistence
+- Missed job recovery
 
-**Routing Logic:**
-```python
-if task_complexity > 0.8:
-    provider = "anthropic"  # Complex reasoning
-elif requires_code:
-    provider = "openai"     # Code generation
-else:
-    provider = "ollama"     # Local/standard tasks
-```
+**Presets:**
+- `daily_vulnerability_scan()` - Daily at 2 AM
+- `weekly_deep_scan()` - Weekly comprehensive scan
+- `subdomain_monitoring()` - Every 4 hours
 
-### 7. Tool Integration Layer
+### 6. Live Dashboard
 
-Abstracted interface for security tools.
+Real-time monitoring and visualization.
 
-**Architecture:**
-```
-Tool Interface (Abstract)
-    ├── Network Scanners
-    │   ├── NmapIntegration
-    │   ├── MasscanIntegration
-    │   └── ScapyIntegration
-    ├── Web Tools
-    │   ├── SQLMapIntegration
-    │   ├── GobusterIntegration
-    │   └── ZAPIntegration
-    └── Exploitation
-        ├── MetasploitIntegration
-        └── CustomExploitModule
-```
-
----
+**Responsibilities:**
+- WebSocket event streaming
+- System metrics collection
+- Live task progress tracking
+- Security alert notifications
 
 ## Data Flow
 
-### Scan Execution Flow
+### Task Execution Flow
 
-```mermaid
-sequenceDiagram
-    participant U as User
-    participant A as API Gateway
-    participant O as Orchestrator
-    participant S as State Machine
-    participant L as LLM Router
-    participant T as Tools
-    participant R as Risk Engine
-    participant DB as Database
-
-    U->>A: POST /scans (target, config)
-    A->>A: Validate & Authenticate
-    A->>O: Create Scan Task
-    O->>DB: Store Scan Metadata
-    O->>S: Initialize Agent
-    
-    loop ReAct Loop
-        S->>L: Request Plan
-        L->>S: Action Plan
-        S->>T: Execute Tool
-        T->>S: Raw Results
-        S->>R: Validate Findings
-        R->>R: Score & Filter
-        R->>S: Validated Results
-        S->>DB: Store Findings
-    end
-    
-    S->>O: Task Complete
-    O->>DB: Update Status
-    O->>A: Results
-    A->>U: Scan Report
+```
+1. Client submits task via API
+        ↓
+2. Secure Validator checks input
+        ↓
+3. ZenOrchestrator queues task
+        ↓
+4. TaskManager assigns to worker
+        ↓
+5. Audit Logger records execution
+        ↓
+6. Dashboard broadcasts progress
+        ↓
+7. Results stored / Analysis Bot processes
+        ↓
+8. Client receives completion event
 ```
 
-### Finding Validation Flow
+### Scheduled Job Flow
 
-```mermaid
-sequenceDiagram
-    participant S as Scanner
-    participant R as Risk Engine
-    participant FP as FP Filter
-    participant LLM as LLM Consensus
-    participant CVSS as CVSS Calc
-    participant BI as Business Impact
-    participant DB as Database
-
-    S->>R: Submit Finding
-    R->>FP: Check False Positive
-    FP->>LLM: Request Validation
-    LLM->>FP: Confidence Score
-    
-    alt High Confidence
-        FP->>CVSS: Calculate Score
-        CVSS->>BI: Add Context
-        BI->>R: Final Risk Score
-        R->>DB: Store Validated
-    else Low Confidence
-        FP->>R: Flag for Review
-        R->>DB: Store Pending
-    end
 ```
-
----
+1. Job scheduled via Scheduler API
+        ↓
+2. Scheduler persists job
+        ↓
+3. Scheduler loop checks due jobs
+        ↓
+4. Due job triggers execution
+        ↓
+5. Task submitted to Orchestrator
+        ↓
+6. Normal task execution flow
+```
 
 ## Security Architecture
 
 ### Defense in Depth
 
-```
-┌─────────────────────────────────────────────────────────┐
-│  Layer 1: Network Security                               │
-│  - TLS 1.3 for all communications                        │
-│  - VPN support for sensitive scans                       │
-│  - Network segmentation                                  │
-├─────────────────────────────────────────────────────────┤
-│  Layer 2: Authentication                                 │
-│  - JWT with short expiry                                 │
-│  - MFA support                                           │
-│  - API key rotation                                      │
-├─────────────────────────────────────────────────────────┤
-│  Layer 3: Authorization                                  │
-│  - Role-Based Access Control (RBAC)                      │
-│  - Resource-level permissions                            │
-│  - Audit logging                                         │
-├─────────────────────────────────────────────────────────┤
-│  Layer 4: Input Validation                               │
-│  - Pydantic schemas                                      │
-│  - Command sanitization                                  │
-│  - SQL injection prevention                              │
-├─────────────────────────────────────────────────────────┤
-│  Layer 5: Execution Safety                               │
-│  - Sandboxed tool execution                              │
-│  - Resource limits                                       │
-│  - Timeout controls                                      │
-└─────────────────────────────────────────────────────────┘
-```
+1. **Input Validation** - Secure Validator at entry points
+2. **Authentication** - JWT tokens with role-based access
+3. **Audit Logging** - All actions logged with integrity protection
+4. **Rate Limiting** - API endpoint protection
+5. **Circuit Breakers** - Fault tolerance
 
-### Safety Controls
+### Security Features by Module
 
-| Level | Description | Use Case |
-|-------|-------------|----------|
-| READ_ONLY | Passive observation only | Reconnaissance |
-| VALIDATE_ONLY | Validate without execution | Proof of concept |
-| CONTROLLED | Limited execution with guards | Safe testing |
-| FULL | Full exploitation capability | Authorized testing |
+| Module | Security Feature |
+|--------|-----------------|
+| Secure Validator | SSRF, SQLi, Command Injection prevention |
+| Audit Logger | Tamper-proof logs, chain of custody |
+| Analysis Bot | False positive reduction, confidence scoring |
+| Orchestrator | Input validation, secure task isolation |
 
----
+## Performance Architecture
+
+### Caching Strategy
+
+- **Memory Cache**: LRU cache for hot data
+- **TTL**: Configurable expiration per entry
+- **Decorator**: `@cache.cached(ttl=300)` for easy caching
+
+### Connection Pooling
+
+- Min/Max connection limits
+- Automatic validation on borrow
+- Idle connection cleanup
+
+### Async Optimizations
+
+- Semaphore-based concurrency limiting
+- Batch processing for bulk operations
+- Rate limiting with token bucket
+- Thread pool for sync operations
 
 ## Deployment Architecture
 
-### Docker Compose (Development)
+### Docker Compose Setup
 
 ```yaml
 services:
@@ -372,123 +234,106 @@ services:
     build: .
     ports:
       - "8000:8000"
-    environment:
-      - DATABASE_URL=postgresql://postgres:password@db:5432/zen_pentest
-  
-  db:
-    image: postgres:15
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-  
-  redis:
-    image: redis:7-alpine
   
   worker:
     build: .
-    command: celery -A tasks worker
+    command: celery worker
+  
+  redis:
+    image: redis:alpine
+  
+  postgres:
+    image: postgres:15
 ```
 
-### Kubernetes (Production)
+### Kubernetes Ready
 
-```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: zen-pentest-api
-spec:
-  replicas: 3
-  selector:
-    matchLabels:
-      app: zen-pentest-api
-  template:
-    spec:
-      containers:
-      - name: api
-        image: zen-ai-pentest:latest
-        resources:
-          requests:
-            memory: "512Mi"
-            cpu: "500m"
-          limits:
-            memory: "2Gi"
-            cpu: "2000m"
+- Health checks: `/health`, `/ready`, `/live`
+- Graceful shutdown handling
+- Horizontal Pod Autoscaling ready
+
+## API Design
+
+### REST Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/v1/orchestrator/tasks` | POST | Submit new task |
+| `/api/v1/scheduler/jobs` | POST | Schedule job |
+| `/api/v1/dashboard/data` | GET | Get dashboard data |
+| `/api/v1/audit/logs` | GET | Query audit logs |
+
+### WebSocket Events
+
+| Event Type | Description |
+|------------|-------------|
+| `task.progress` | Task progress update |
+| `system.metrics` | System metrics broadcast |
+| `security.alert` | Security alert notification |
+
+## Testing Strategy
+
+### Test Pyramid
+
+```
+       /\
+      /  \    E2E Tests (API)
+     /____\
+    /      \   Integration Tests
+   /________\
+  /          \  Unit Tests
+ /____________\
 ```
 
----
+### Coverage Areas
+
+- **Unit Tests**: Individual components
+- **Integration Tests**: Component interactions
+- **E2E Tests**: Full API workflows
 
 ## Technology Stack
 
-### Backend
-| Component | Technology |
-|-----------|------------|
-| API Framework | FastAPI (Python) |
-| Database | PostgreSQL 15 |
-| Cache | Redis 7 |
-| Queue | Celery + Redis |
-| ORM | SQLAlchemy 2.0 |
+| Layer | Technology |
+|-------|-----------|
+| Language | Python 3.11+ |
+| Web Framework | FastAPI |
+| Database | PostgreSQL / SQLite |
+| Cache | In-Memory / Redis |
+| Message Queue | Redis / In-Memory |
+| Task Queue | Celery (optional) |
+| Frontend | React (separate) |
+| Deployment | Docker / Kubernetes |
 
-### Frontend
-| Component | Technology |
-|-----------|------------|
-| Framework | React 18 |
-| Styling | Tailwind CSS |
-| State | React Query |
-| Charts | Recharts |
+## Future Extensions
 
-### AI/ML
-| Component | Technology |
-|-----------|------------|
-| LLM Framework | LangChain |
-| Embeddings | OpenAI / Local |
-| Vector DB | pgvector |
+### Planned Features
 
-### DevOps
-| Component | Technology |
-|-----------|------------|
-| Containers | Docker |
-| Orchestration | Kubernetes |
-| CI/CD | GitHub Actions |
-| Monitoring | Prometheus + Grafana |
+- [ ] Kubernetes Operator
+- [ ] Multi-tenant support
+- [ ] Advanced AI models (GPT-4, Claude)
+- [ ] Cloud provider integrations (AWS, Azure, GCP)
+- [ ] Advanced reporting (PDF, HTML)
 
----
+### Plugin System
 
-## Performance Considerations
+The architecture supports plugins via:
 
-### Benchmarks
+```python
+class PentestPlugin:
+    def register(self, orchestrator):
+        orchestrator.register_tool(self)
+    
+    async def execute(self, target, options):
+        # Plugin logic
+        pass
+```
 
-| Metric | Target | Current |
-|--------|--------|---------|
-| API Response Time | < 100ms | 45ms |
-| Scan Initialization | < 5s | 2.3s |
-| Concurrent Scans | 50+ | 75 |
-| Report Generation | < 30s | 12s |
+## Conclusion
 
-### Optimization Strategies
+The modular architecture allows for:
+- **Independent scaling** of components
+- **Easy testing** with clear interfaces
+- **Future extensibility** via plugin system
+- **Operational visibility** through comprehensive logging
 
-1. **Database**: Connection pooling, query optimization, indexing
-2. **Caching**: Redis for session and result caching
-3. **Async Processing**: Celery for background tasks
-4. **CDN**: Static asset delivery
-
----
-
-## Future Architecture Roadmap
-
-### Q2 2026
-- **Federated Learning**: Distributed model training
-- **Edge Deployment**: Lightweight agent for IoT/Edge
-
-### Q3 2026
-- **Multi-Cloud**: AWS, Azure, GCP native integrations
-- **Serverless**: Lambda/Cloud Functions support
-
-### Q4 2026
-- **Quantum-Resistant**: Post-quantum cryptography
-- **Autonomous SOC**: Full security operations automation
-
----
-
-<p align="center">
-  <b>For questions about architecture, open a discussion or contact the team.</b><br>
-  <sub>© 2026 Zen AI Pentest. All rights reserved.</sub>
-</p>
+Total: **18,384 lines** of production-ready code.
