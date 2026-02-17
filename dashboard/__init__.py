@@ -23,7 +23,7 @@ Usage:
 from .manager import DashboardManager, DashboardConfig
 from .websocket import DashboardWebSocket
 from .metrics import MetricsCollector
-from .events import DashboardEvent, EventStream
+from .events import DashboardEvent, EventStream, EventType
 
 __all__ = [
     "DashboardManager",
@@ -32,6 +32,7 @@ __all__ = [
     "MetricsCollector",
     "DashboardEvent",
     "EventStream",
+    "EventType",
 ]
 
 __version__ = "1.0.0"
