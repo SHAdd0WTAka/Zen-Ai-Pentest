@@ -1580,6 +1580,23 @@ if AGENTS_V2_AVAILABLE:
     except Exception as e:
         logger.warning(f"Could not load Agent v2 endpoints: {e}")
 
+# Workflow routes - import directly to avoid circular imports
+try:
+    import importlib.util
+    import sys
+    from pathlib import Path
+    
+    workflows_path = Path(__file__).parent / "routes" / "workflows.py"
+    spec = importlib.util.spec_from_file_location("workflows", workflows_path)
+    workflows_module = importlib.util.module_from_spec(spec)
+    sys.modules["workflows"] = workflows_module
+    spec.loader.exec_module(workflows_module)
+    
+    app.include_router(workflows_module.router)
+    logger.info("✅ Workflow endpoints loaded")
+except Exception as e:
+    logger.warning(f"Could not load Workflow endpoints: {e}")
+
 if __name__ == "__main__":
     import uvicorn
 
