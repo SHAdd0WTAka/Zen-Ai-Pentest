@@ -1,0 +1,3 @@
+"""
+Auth system tests
+"""
