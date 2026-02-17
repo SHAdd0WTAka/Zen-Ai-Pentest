@@ -67,7 +67,7 @@ jobs:
       - name: Run tests with coverage
         run: |
           export PYTHONPATH="${{ github.workspace }}:$PYTHONPATH"
-          pytest tests/ -v --tb=short \
+          python -m pytest tests/ -v --tb=short \
             --ignore=tests/integration \
             --ignore=tests/fuzz/test_input_validation.py \
             --ignore=tests/test_api_routes_agents.py \
