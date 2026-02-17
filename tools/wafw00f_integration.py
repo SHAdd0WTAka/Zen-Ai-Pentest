@@ -35,42 +35,42 @@ class WAFW00FResult:
 
 class WAFW00FIntegration:
     """WAFW00F Web Application Firewall Detector"""
-    
+
     async def detect(self, target: str) -> WAFW00FResult:
         """
         Detect WAF on target
-        
+
         Args:
             target: Target URL or domain
         """
         # Validate target
         if not target.startswith(("http://", "https://")):
             target = f"http://{target}"
-            
+
         cmd = ["wafw00f", "-a", "-o", "-", target]
-        
+
         logger.info(f"Starting WAFW00F detection: {' '.join(cmd)}")
-        
+
         try:
             process = await asyncio.create_subprocess_exec(
                 *cmd,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE
             )
-            
+
             stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=60)
-            
+
             output = stdout.decode().strip()
             error = stderr.decode().strip()
-            
+
             if process.returncode != 0 and not output:
                 logger.error(f"WAFW00F error: {error}")
                 return WAFW00FResult(success=False, error=error)
-                
+
             # Parse output
             wafs = []
             firewall_detected = False
-            
+
             # Try JSON output first
             try:
                 if output.startswith('['):
@@ -91,7 +91,7 @@ class WAFW00FIntegration:
             except json.JSONDecodeError:
                 # Fallback: parse text output
                 wafs, firewall_detected = self._parse_text_output(output)
-                
+
             return WAFW00FResult(
                 success=True,
                 url=target,
@@ -99,23 +99,23 @@ class WAFW00FIntegration:
                 firewall_detected=firewall_detected,
                 raw_output=output
             )
-            
+
         except asyncio.TimeoutError:
             logger.error("WAFW00F detection timed out")
             return WAFW00FResult(success=False, error="Timeout")
         except Exception as e:
             logger.error(f"WAFW00F error: {e}")
             return WAFW00FResult(success=False, error=str(e))
-            
+
     def _parse_text_output(self, output: str) -> tuple:
         """Parse text output"""
         wafs = []
         firewall_detected = False
-        
+
         # Pattern: "The site http://... is behind X WAF"
         waf_pattern = r'behind\s+(.+?)\s+WAF'
         matches = re.findall(waf_pattern, output, re.IGNORECASE)
-        
+
         for match in matches:
             firewall_detected = True
             waf_names = match.split(" and ")
@@ -125,11 +125,11 @@ class WAFW00FIntegration:
                     detected=True,
                     confidence="high"
                 ))
-                
+
         # Check for "No WAF detected"
         if "No WAF" in output or "not behind" in output.lower():
             firewall_detected = False
-            
+
         return wafs, firewall_detected
 
 
@@ -143,16 +143,16 @@ def detect_sync(target: str) -> WAFW00FResult:
 if __name__ == "__main__":
     import logging
     logging.basicConfig(level=logging.INFO)
-    
+
     print("Testing WAFW00F Integration...")
     print("="*60)
-    
+
     result = detect_sync("http://scanme.nmap.org")
-    
+
     print(f"Success: {result.success}")
     print(f"URL: {result.url}")
     print(f"Firewall Detected: {result.firewall_detected}")
-    
+
     if result.wafs:
         print(f"\nDetected WAFs ({len(result.wafs)}):")
         for waf in result.wafs:

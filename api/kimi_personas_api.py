@@ -4,9 +4,7 @@ Kimi Personas API für Zen-Ai-Pentest
 REST API für alle 11 Pentest-Personas
 """
 
-import os
 import sys
-import json
 import logging
 from pathlib import Path
 from datetime import datetime
@@ -28,7 +26,6 @@ sock = Sock(app)
 # Request Logging
 import logging
 from logging.handlers import RotatingFileHandler
-import os
 
 # Setup request logger
 log_dir = Path(__file__).parent.parent / 'logs'
@@ -70,7 +67,7 @@ PERSONAS = {
         "skills": ["subdomain_enum", "port_scanning", "osint", "tech_detection"]
     },
     "exploit": {
-        "name": "💣 Exploit Developer", 
+        "name": "💣 Exploit Developer",
         "description": "Python-Exploits, POC-Entwicklung, Automation",
         "category": "core",
         "skills": ["python_coding", "poc_development", "automation", "tooling"]
@@ -148,21 +145,21 @@ def require_api_key(f):
     def decorated(*args, **kwargs):
         config = load_config()
         expected_key = config.get('api', {}).get('api_key') or config.get('backends', {}).get('kimi_api_key')
-        
+
         # Optional: Allow local requests without key
         if request.remote_addr in ['127.0.0.1', 'localhost', '::1']:
             if not expected_key:
                 return f(*args, **kwargs)
-        
+
         api_key = request.headers.get('X-API-Key') or request.args.get('api_key')
-        
+
         if not expected_key:
             return jsonify({"error": "API key not configured on server"}), 500
-            
+
         if not api_key or api_key != expected_key:
             logger.warning(f"Unauthorized access attempt from {request.remote_addr}")
             return jsonify({"error": "Unauthorized"}), 401
-            
+
         return f(*args, **kwargs)
     return decorated
 
@@ -174,19 +171,19 @@ def require_api_key(f):
 def log_request():
     """Log every request"""
     request.start_time = datetime.utcnow()
-    
+
 @app.after_request
 def after_request(response):
     """Log request completion"""
     if hasattr(request, 'start_time'):
         duration = (datetime.utcnow() - request.start_time).total_seconds()
-        
+
         # Update stats
         request_stats['total_requests'] += 1
         endpoint = request.endpoint or 'unknown'
         request_stats['requests_by_endpoint'][endpoint] = \
             request_stats['requests_by_endpoint'].get(endpoint, 0) + 1
-        
+
         # Log to file
         log_entry = (
             f"{request.remote_addr} | "
@@ -196,7 +193,7 @@ def after_request(response):
             f"UA: {request.user_agent.string[:50] if request.user_agent else 'Unknown'}"
         )
         request_logger.info(log_entry)
-        
+
     return response
 
 # ═════════════════════════════════════════════════════════════════════════════
@@ -222,11 +219,11 @@ def list_screenshots():
     screenshot_dir = Path.home() / 'Zen-Ai-Pentest' / 'screenshots'
     if not screenshot_dir.exists():
         return jsonify({"screenshots": [], "count": 0})
-    
+
     screenshots = []
     for ext in ['*.png', '*.jpg', '*.jpeg', '*.gif', '*.bmp']:
         screenshots.extend(screenshot_dir.glob(ext))
-    
+
     return jsonify({
         "screenshots": [s.name for s in screenshots],
         "count": len(screenshots),
@@ -238,24 +235,24 @@ def list_screenshots():
 def upload_screenshot():
     """Upload a screenshot for analysis"""
     from werkzeug.utils import secure_filename
-    
+
     if 'file' not in request.files:
         return jsonify({"error": "No file provided"}), 400
-    
+
     file = request.files['file']
     if file.filename == '':
         return jsonify({"error": "No file selected"}), 400
-    
+
     screenshot_dir = Path.home() / 'Zen-Ai-Pentest' / 'screenshots'
     screenshot_dir.mkdir(parents=True, exist_ok=True)
-    
+
     filename = secure_filename(file.filename)
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     filename = f"{timestamp}_{filename}"
-    
+
     filepath = screenshot_dir / filename
     file.save(filepath)
-    
+
     return jsonify({
         "status": "success",
         "filename": filename,
@@ -267,7 +264,7 @@ def upload_screenshot():
 def admin_dashboard():
     """Admin Dashboard (JSON)"""
     uptime = datetime.utcnow() - request_stats['start_time']
-    
+
     return jsonify({
         "status": "running",
         "uptime_seconds": int(uptime.total_seconds()),
@@ -288,14 +285,14 @@ def admin_logs():
         log_file = log_dir / 'api_requests.log'
         if not log_file.exists():
             return jsonify({"logs": [], "count": 0})
-        
+
         # Read last 100 lines
         with open(log_file, 'r') as f:
             lines = f.readlines()
-        
+
         # Get last 100 entries
         recent_logs = [line.strip() for line in lines[-100:]]
-        
+
         return jsonify({
             "logs": recent_logs,
             "count": len(recent_logs),
@@ -322,11 +319,11 @@ def health_check():
 def list_personas():
     """Liste alle verfügbaren Personas"""
     category = request.args.get('category')
-    
+
     personas = PERSONAS
     if category:
         personas = {k: v for k, v in personas.items() if v['category'] == category}
-    
+
     return jsonify({
         "count": len(personas),
         "personas": personas
@@ -337,18 +334,18 @@ def get_persona(persona_id):
     """Details einer Persona abrufen"""
     if persona_id not in PERSONAS:
         return jsonify({"error": f"Persona '{persona_id}' not found"}), 404
-    
+
     include_prompt = request.args.get('include_prompt', 'false').lower() == 'true'
-    
+
     response = PERSONAS[persona_id].copy()
-    
+
     if include_prompt:
         prompt = load_persona_content(persona_id)
         if prompt:
             response['system_prompt'] = prompt
         else:
             response['system_prompt'] = None
-    
+
     return jsonify(response)
 
 @app.route('/api/v1/personas/<persona_id>/prompt', methods=['GET'])
@@ -356,11 +353,11 @@ def get_persona_prompt(persona_id):
     """System Prompt einer Persona abrufen"""
     if persona_id not in PERSONAS:
         return jsonify({"error": f"Persona '{persona_id}' not found"}), 404
-    
+
     prompt = load_persona_content(persona_id)
     if not prompt:
         return jsonify({"error": f"Prompt file for '{persona_id}' not found"}), 404
-    
+
     # Plain text response
     return Response(prompt, mimetype='text/plain')
 
@@ -373,7 +370,7 @@ def list_categories():
         if cat not in categories:
             categories[cat] = []
         categories[cat].append(key)
-    
+
     return jsonify({
         "categories": categories,
         "core_count": len([p for p in PERSONAS.values() if p['category'] == 'core']),
@@ -385,7 +382,7 @@ def list_categories():
 def chat():
     """
     Chat mit einer Persona
-    
+
     Request Body:
     {
         "persona": "exploit",
@@ -396,38 +393,38 @@ def chat():
     }
     """
     data = request.get_json()
-    
+
     if not data:
         return jsonify({"error": "No JSON body provided"}), 400
-    
+
     persona_id = data.get('persona', 'recon')
     message = data.get('message')
-    
+
     if not message:
         return jsonify({"error": "'message' is required"}), 400
-    
+
     if persona_id not in PERSONAS:
         return jsonify({"error": f"Unknown persona: {persona_id}"}), 400
-    
+
     # Load system prompt
     system_prompt = load_persona_content(persona_id)
     if not system_prompt:
         return jsonify({"error": f"Could not load persona '{persona_id}'"}), 500
-    
+
     # Build full prompt with context
     context = data.get('context', '')
     if context:
         full_prompt = f"Context:\n{context}\n\nUser Request:\n{message}"
     else:
         full_prompt = message
-    
+
     # Log request
     logger.info(f"Chat request: persona={persona_id}, message_length={len(message)}")
-    
+
     # Update persona stats
     request_stats['requests_by_persona'][persona_id] = \
         request_stats['requests_by_persona'].get(persona_id, 0) + 1
-    
+
     # Return structured response (actual Kimi API call would happen here)
     # For now, return the prompt structure
     return jsonify({
@@ -450,48 +447,48 @@ def chat():
 def chat_complete():
     """
     Chat mit direkter Kimi API Integration
-    
+
     Benötigt KIMI_API_KEY in config.json
     """
     import requests
-    
+
     data = request.get_json()
-    
+
     if not data:
         return jsonify({"error": "No JSON body provided"}), 400
-    
+
     persona_id = data.get('persona', 'recon')
     message = data.get('message')
-    
+
     if not message:
         return jsonify({"error": "'message' is required"}), 400
-    
+
     if persona_id not in PERSONAS:
         return jsonify({"error": f"Unknown persona: {persona_id}"}), 400
-    
+
     # Load config for API key
     config = load_config()
     api_key = config.get('backends', {}).get('kimi_api_key')
-    
+
     if not api_key:
         return jsonify({"error": "KIMI_API_KEY not configured"}), 500
-    
+
     # Load system prompt
     system_prompt = load_persona_content(persona_id)
     if not system_prompt:
         return jsonify({"error": f"Could not load persona '{persona_id}'"}), 500
-    
+
     # Build messages
     messages = [
         {"role": "system", "content": system_prompt},
         {"role": "user", "content": message}
     ]
-    
+
     # Add context if provided
     context = data.get('context')
     if context:
         messages.insert(1, {"role": "user", "content": f"Context: {context}"})
-    
+
     # Kimi API request
     kimi_payload = {
         "model": data.get('model', 'kimi-k2.5'),
@@ -499,10 +496,10 @@ def chat_complete():
         "temperature": data.get('temperature', 0.7),
         "max_tokens": data.get('max_tokens', 4096)
     }
-    
+
     try:
         logger.info(f"Forwarding to Kimi API: persona={persona_id}")
-        
+
         response = requests.post(
             "https://api.moonshot.cn/v1/chat/completions",
             headers={
@@ -513,9 +510,9 @@ def chat_complete():
             timeout=120
         )
         response.raise_for_status()
-        
+
         result = response.json()
-        
+
         return jsonify({
             "status": "success",
             "persona": persona_id,
@@ -524,7 +521,7 @@ def chat_complete():
             "usage": result.get('usage', {}),
             "model": result.get('model', 'unknown')
         })
-        
+
     except requests.exceptions.Timeout:
         logger.error("Kimi API timeout")
         return jsonify({"error": "Request timeout"}), 504
@@ -537,7 +534,7 @@ def chat_complete():
 def batch_process():
     """
     Batch-Verarbeitung mehrerer Anfragen
-    
+
     Request Body:
     {
         "requests": [
@@ -547,22 +544,22 @@ def batch_process():
     }
     """
     data = request.get_json()
-    
+
     if not data or 'requests' not in data:
         return jsonify({"error": "'requests' array required"}), 400
-    
+
     requests_list = data['requests']
     if not isinstance(requests_list, list):
         return jsonify({"error": "'requests' must be an array"}), 400
-    
+
     if len(requests_list) > 10:
         return jsonify({"error": "Maximum 10 requests per batch"}), 400
-    
+
     results = []
     for idx, req in enumerate(requests_list):
         persona_id = req.get('persona', 'recon')
         message = req.get('message', '')
-        
+
         if persona_id not in PERSONAS:
             results.append({
                 "index": idx,
@@ -579,7 +576,7 @@ def batch_process():
                 "system_prompt_loaded": system_prompt is not None,
                 "message_length": len(message)
             })
-    
+
     return jsonify({
         "batch_size": len(requests_list),
         "results": results
@@ -593,30 +590,29 @@ def batch_process():
 def ws_chat(ws):
     """WebSocket für Streaming Chat"""
     import json
-    import requests
-    
+
     ws.send(json.dumps({
         "type": "system",
         "message": "WebSocket verbunden. Sende JSON: {persona: 'recon', message: '...'}"
     }))
-    
+
     while True:
         try:
             data = ws.receive()
             if not data:
                 break
-                
+
             msg = json.loads(data)
             persona_id = msg.get('persona', 'recon')
             message = msg.get('message', '')
-            
+
             if persona_id not in PERSONAS:
                 ws.send(json.dumps({
                     "type": "error",
                     "message": f"Unknown persona: {persona_id}"
                 }))
                 continue
-            
+
             # Load system prompt
             system_prompt = load_persona_content(persona_id)
             if not system_prompt:
@@ -625,25 +621,25 @@ def ws_chat(ws):
                     "message": f"Could not load persona '{persona_id}'"
                 }))
                 continue
-            
+
             # Send acknowledgment
             ws.send(json.dumps({
                 "type": "status",
                 "persona": persona_id,
                 "status": "processing"
             }))
-            
+
             # Check if we should call Kimi API
             config = load_config()
             api_key = config.get('backends', {}).get('kimi_api_key')
-            
+
             if api_key and msg.get('stream', False):
                 # Stream from Kimi API
                 ws.send(json.dumps({
                     "type": "chunk",
                     "content": "🤖 Denke nach..."
                 }))
-                
+
                 # Note: Actual streaming would require SSE or chunked response
                 # For now, send complete response
                 ws.send(json.dumps({
@@ -659,7 +655,7 @@ def ws_chat(ws):
                     "persona_name": PERSONAS[persona_id]['name'],
                     "content": f"✅ Anfrage empfangen!\n\nPersona: {PERSONAS[persona_id]['name']}\nNachricht: {message[:200]}...\n\nFür echte Antwort: API Key in config.json hinterlegen und stream=true setzen."
                 }))
-                
+
         except json.JSONDecodeError:
             ws.send(json.dumps({
                 "type": "error",
@@ -691,19 +687,19 @@ def internal_error(e):
 
 def main():
     import argparse
-    
+
     parser = argparse.ArgumentParser(description='Kimi Personas API Server')
     parser.add_argument('-H', '--host', default='127.0.0.1', help='Host to bind (default: 127.0.0.1)')
     parser.add_argument('-p', '--port', type=int, default=5000, help='Port to bind (default: 5000)')
     parser.add_argument('-d', '--debug', action='store_true', help='Debug mode')
     parser.add_argument('--no-auth', action='store_true', help='Disable API key auth (dev only!)')
-    
+
     args = parser.parse_args()
-    
+
     if args.no_auth:
         logger.warning("⚠️ API key authentication disabled!")
         app.config['DISABLE_AUTH'] = True
-    
+
     print(f"""
 🚀 Kimi Personas API Server
 ═══════════════════════════════════════════════════════════════
@@ -723,7 +719,7 @@ Endpoints:
 Start: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 ═══════════════════════════════════════════════════════════════
 """)
-    
+
     app.run(host=args.host, port=args.port, debug=args.debug)
 
 if __name__ == '__main__':

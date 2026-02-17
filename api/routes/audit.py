@@ -10,20 +10,18 @@ Provides endpoints for:
 
 from datetime import datetime
 from typing import Optional, List
-from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 
 # Import audit components
 try:
-    from audit import AuditLogger, AuditLogEntry, ComplianceReporter, SIEMIntegration
+    from audit import AuditLogger, ComplianceReporter
     from audit.config import AuditConfig, LogLevel, EventCategory
-    from audit.siem import SIEMConfig
 except ImportError:
     import sys
     sys.path.insert(0, "..")
-    from audit import AuditLogger, AuditLogEntry, ComplianceReporter, SIEMIntegration
+    from audit import AuditLogger, ComplianceReporter
     from audit.config import AuditConfig, LogLevel, EventCategory
-    from audit.siem import SIEMConfig
 
 
 router = APIRouter(prefix="/api/v1/audit", tags=["Audit Logging"])
@@ -36,12 +34,12 @@ _compliance_reporter: Optional[ComplianceReporter] = None
 def get_audit_logger() -> AuditLogger:
     """Get or create audit logger instance"""
     global _audit_logger, _compliance_reporter
-    
+
     if _audit_logger is None:
         config = AuditConfig.default()
         _audit_logger = AuditLogger(config)
         _compliance_reporter = ComplianceReporter(_audit_logger)
-    
+
     return _audit_logger
 
 
@@ -119,7 +117,7 @@ async def query_logs(
 ):
     """
     Query audit logs with filters
-    
+
     - **start_time**: Filter logs from this time (ISO 8601)
     - **end_time**: Filter logs until this time (ISO 8601)
     - **level**: Filter by log level (debug, info, warning, error, critical)
@@ -132,12 +130,12 @@ async def query_logs(
         level_enum = LogLevel(level) if level else None
     except ValueError:
         raise HTTPException(status_code=400, detail=f"Invalid level: {level}")
-    
+
     try:
         category_enum = EventCategory(category) if category else None
     except ValueError:
         raise HTTPException(status_code=400, detail=f"Invalid category: {category}")
-    
+
     entries = await logger.query(
         start_time=start_time,
         end_time=end_time,
@@ -147,7 +145,7 @@ async def query_logs(
         limit=limit,
         offset=offset
     )
-    
+
     return [LogEntryResponse(**e.to_dict()) for e in entries]
 
 
@@ -158,19 +156,19 @@ async def export_logs(
 ):
     """
     Export audit logs to various formats
-    
+
     Supports: json, csv, syslog
     """
     try:
         level_enum = LogLevel(request.level) if request.level else None
     except ValueError:
         raise HTTPException(status_code=400, detail=f"Invalid level: {request.level}")
-    
+
     try:
         category_enum = EventCategory(request.category) if request.category else None
     except ValueError:
         raise HTTPException(status_code=400, detail=f"Invalid category: {request.category}")
-    
+
     data = await logger.export(
         format=request.format,
         start_time=request.start_time,
@@ -178,14 +176,14 @@ async def export_logs(
         level=level_enum,
         category=category_enum
     )
-    
+
     # Set content type based on format
     content_types = {
         "json": "application/json",
         "csv": "text/csv",
         "syslog": "text/plain"
     }
-    
+
     from fastapi.responses import PlainTextResponse
     return PlainTextResponse(
         content=data,
@@ -202,21 +200,21 @@ async def verify_integrity(
 ):
     """
     Verify integrity of all audit logs
-    
+
     Checks:
     - Cryptographic signatures
     - Chain of custody
     - Tampering detection
     """
     result = await logger.verify_integrity()
-    
+
     return IntegrityResponse(
         total_entries=result["total_entries"],
         valid_signatures=result["valid_signatures"],
         invalid_signatures=result["invalid_signatures"],
         chain_breaks=result["chain_breaks"],
         is_valid=(
-            result["invalid_signatures"] == 0 and 
+            result["invalid_signatures"] == 0 and
             result["chain_breaks"] == 0
         ),
         errors=result["errors"]
@@ -230,7 +228,7 @@ async def generate_compliance_report(
 ):
     """
     Generate compliance report for a specific standard
-    
+
     Supported standards:
     - iso27001: ISO/IEC 27001
     - soc2: SOC 2
@@ -240,27 +238,27 @@ async def generate_compliance_report(
     - hipaa: HIPAA
     """
     from audit.compliance import ComplianceStandard
-    
+
     try:
         standard = ComplianceStandard(request.standard)
     except ValueError:
         raise HTTPException(status_code=400, detail=f"Invalid standard: {request.standard}")
-    
+
     report = await reporter.generate_report(
         standard=standard,
         start_date=request.start_date,
         end_date=request.end_date
     )
-    
+
     # Export to requested format
     if request.format != "json":
         data = await reporter.export_report(report, request.format)
-        
+
         content_types = {
             "markdown": "text/markdown",
             "csv": "text/csv"
         }
-        
+
         from fastapi.responses import PlainTextResponse
         return PlainTextResponse(
             content=data,
@@ -269,7 +267,7 @@ async def generate_compliance_report(
                 "Content-Disposition": f"attachment; filename=compliance_report.{request.format}"
             }
         )
-    
+
     return report
 
 
@@ -322,7 +320,7 @@ async def list_compliance_standards():
 async def siem_health():
     """
     Check SIEM integration health
-    
+
     Returns health status for all configured SIEM backends.
     """
     # This would check actual SIEM connections
@@ -342,23 +340,23 @@ async def get_audit_stats(
 ):
     """
     Get audit logging statistics
-    
+
     Returns summary statistics about logged events.
     """
     # Query all logs
     entries = await logger.query(limit=10000)
-    
+
     # Calculate statistics
     by_category = {}
     by_level = {}
     by_user = {}
-    
+
     for entry in entries:
         by_category[entry.category] = by_category.get(entry.category, 0) + 1
         by_level[entry.level] = by_level.get(entry.level, 0) + 1
         if entry.user_id:
             by_user[entry.user_id] = by_user.get(entry.user_id, 0) + 1
-    
+
     return {
         "total_events": len(entries),
         "time_range": {
@@ -376,19 +374,19 @@ async def get_audit_stats(
 async def audit_middleware(request, call_next):
     """
     Middleware to automatically log API requests
-    
+
     Logs all API requests with user info, IP, and response status.
     """
     logger = get_audit_logger()
-    
+
     start_time = datetime.utcnow()
-    
+
     # Process request
     response = await call_next(request)
-    
+
     # Log the request
     duration = (datetime.utcnow() - start_time).total_seconds()
-    
+
     await logger.info(
         category=EventCategory.SYSTEM,
         event_type="api_request",
@@ -403,5 +401,5 @@ async def audit_middleware(request, call_next):
             "duration_ms": round(duration * 1000, 2)
         }
     )
-    
+
     return response

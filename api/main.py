@@ -46,25 +46,17 @@ from api.schemas import (
     ScheduledScanUpdate,
     ScheduledScanResponse,
     UserLogin,
-    UserCreate,
     TokenResponse,
-    UserInfo,
 )
 from api.auth_simple import (
     authenticate_user,
     create_access_token,
-    verify_token,
-    require_admin,
-    create_user,
-    list_users,
-    USERS_DB
+    verify_token
 )
 from api.websocket import ConnectionManager
 from api.websocket_manager import manager
 from api.rate_limiter import (
     check_auth_rate_limit,
-    record_auth_failure,
-    record_auth_success,
 )
 from api.csrf_protection import csrf_protection, require_csrf
 
@@ -146,28 +138,28 @@ def verify_admin_credentials(username: str, password: str) -> bool:
 async def login(credentials: UserLogin, request: Request):
     """
     Login und JWT Token erhalten
-    
+
     - **username**: Username (min. 3 Zeichen)
     - **password**: Passwort (min. 6 Zeichen)
-    
+
     Returns JWT Token für authentifizierte Requests
     """
     client_ip = request.client.host if request.client else "unknown"
     check_auth_rate_limit(client_ip)
-    
+
     user = authenticate_user(credentials.username, credentials.password)
-    
+
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    
+
     access_token = create_access_token(
         data={"sub": user["username"], "role": user["role"]}
     )
-    
+
     return {
         "access_token": access_token,
         "token_type": "bearer",
@@ -577,15 +569,14 @@ async def health_check():
     """
     from sqlalchemy import text
     import redis
-    import socket
-    
+
     health_status = {
         "status": "healthy",
         "version": "2.2.0",
         "timestamp": datetime.utcnow().isoformat(),
         "services": {}
     }
-    
+
     # Check Database
     try:
         db = SessionLocal()
@@ -595,7 +586,7 @@ async def health_check():
     except Exception as e:
         health_status["services"]["database"] = {"status": "error", "error": str(e)}
         health_status["status"] = "degraded"
-    
+
     # Check Redis
     try:
         redis_client = redis.from_url(
@@ -607,13 +598,13 @@ async def health_check():
     except Exception as e:
         health_status["services"]["redis"] = {"status": "error", "error": str(e)}
         health_status["status"] = "degraded"
-    
+
     # Check API selbst
     health_status["services"]["api"] = {"status": "ok", "port": 8000}
-    
+
     # HTTP Status Code
     status_code = 200 if health_status["status"] == "healthy" else 503
-    
+
     return health_status
 
 
@@ -632,7 +623,7 @@ async def api_info():
 async def websocket_endpoint(websocket: WebSocket, client_id: str):
     """
     WebSocket Endpoint für Echtzeit-Updates
-    
+
     Nutzung:
     - Verbinden: wscat -c ws://localhost:8000/ws/client123
     - Ping: {"type": "ping"}
@@ -643,13 +634,13 @@ async def websocket_endpoint(websocket: WebSocket, client_id: str):
         while True:
             data = await websocket.receive_text()
             message = json.loads(data)
-            
+
             if message.get("type") == "ping":
                 await manager.send_personal_message({
                     "type": "pong",
                     "timestamp": datetime.utcnow().isoformat()
                 }, websocket)
-            
+
             elif message.get("type") == "subscribe":
                 channel = message.get("channel", "general")
                 await manager.send_personal_message({
@@ -657,7 +648,7 @@ async def websocket_endpoint(websocket: WebSocket, client_id: str):
                     "channel": channel,
                     "client_id": client_id
                 }, websocket)
-                
+
     except WebSocketDisconnect:
         manager.disconnect(websocket, client_id)
     except Exception as e:

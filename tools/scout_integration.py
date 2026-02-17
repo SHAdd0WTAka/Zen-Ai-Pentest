@@ -16,7 +16,6 @@ import asyncio
 import json
 import logging
 import os
-import re
 import shutil
 import subprocess
 from dataclasses import dataclass, field

@@ -27,7 +27,7 @@ OUTPUT:
 - Kill Chain Diagramme
 - Detection-Engineering Empfehlungen
 - Purple Team Integration""",
-    
+
     "ics.md": """Du bist ein ICS/SCADA Security Spezialist für kritische Infrastruktur.
 PROTOKOLLE:
 - Modbus TCP/RTU, DNP3, IEC 104/61850
@@ -49,7 +49,7 @@ OUTPUT:
 - Conpot-Konfigurationen für Honeypots
 - Network Architecture Reviews
 - IEC 62443 Compliance Checks""",
-    
+
     "cloud.md": """Du bist ein Cloud Security Experte für AWS, Azure und GCP.
 AWS:
 - IAM Privilege Escalation (sts:AssumeRole, lambda:Invoke)
@@ -72,7 +72,7 @@ OUTPUT:
 - Prowler/ScoutSuite Report-Interpretation
 - Terraform/Pulumi Secure Configs
 - CloudTrail/GuardDuty Detections""",
-    
+
     "crypto.md": """Du bist ein Kryptographie-Analyst für sicherheitsrelevante Reviews.
 SCHWÄCHEN:
 - Weak Randomness (predictable seeds)
@@ -95,7 +95,7 @@ OUTPUT:
 - Crypto Material Analysis (OpenSSL, keytool)
 - Remediation mit modernen Standards ( libsodium )
 - Keine eigenen Crypto-Implementierungen empfehlen""",
-    
+
     "social.md": """Du bist ein Social Engineering Spezialist für autorisierte Pentests.
 ETHIK & REGELN:
 - Nur für autorisierte Red Team Engagements
@@ -110,7 +110,7 @@ OUTPUT:
 - Defense-Strategien priorisieren
 - Email-Sicherheits-Checks
 - Awareness-Training Empfehlungen""",
-    
+
     "network.md": """Du bist ein Network Pentester für Infrastruktur-Tests.
 FOKUSBEREICHE:
 - Active Directory Enumeration (BloodHound, ldapsearch)
@@ -126,7 +126,7 @@ OUTPUT:
 - Network Diagramme (ASCII/Text)
 - Exploit Chains dokumentieren
 - Remediation: Segmentierung, ACLs, Monitoring""",
-    
+
     "mobile.md": """Du bist ein Mobile Security Experte für Android & iOS.
 ANDROID:
 - APK Decompilation (jadx, apktool)
@@ -150,10 +150,10 @@ OUTPUT:
 def update_personas():
     persona_dir = Path.home() / ".config" / "kimi" / "personas"
     persona_dir.mkdir(parents=True, exist_ok=True)
-    
+
     created = []
     skipped = []
-    
+
     for filename, content in NEW_PERSONAS.items():
         filepath = persona_dir / filename
         if filepath.exists():
@@ -161,20 +161,20 @@ def update_personas():
         else:
             filepath.write_text(content)
             created.append(filename)
-    
+
     console.print(f"[bold cyan]📁 Persona-Verzeichnis:[/bold cyan] {persona_dir}")
     console.print()
-    
+
     if created:
         console.print("[green]✅ Neue Personas erstellt:[/green]")
         for f in created:
             console.print(f"   • {f}")
-    
+
     if skipped:
         console.print(f"[dim]⏭️  Bereits vorhanden (übersprungen):[/dim]")
         for f in skipped:
             console.print(f"   • {f}")
-    
+
     console.print()
     console.print("[bold]Verfügbare Personas (11 total):[/bold]")
     personas = {

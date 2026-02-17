@@ -34,7 +34,7 @@ class PriorityLevel:
 class MessageContent(BaseModel):
     """Flexible content block - fields vary by message type"""
     model_config = ConfigDict(extra="allow")
-    
+
     reasoning: Optional[str] = None
     action: Optional[str] = None  # Tool name for 'act'
     parameters: Optional[Dict[str, Any]] = None  # Tool parameters
@@ -46,7 +46,7 @@ class MessageContent(BaseModel):
     task_description: Optional[str] = None  # For delegate_task
     assignee: Optional[Union[str, List[str]]] = None
     due_in_seconds: Optional[int] = None
-    
+
     @field_validator('confidence')
     @classmethod
     def validate_confidence(cls, v):
@@ -68,7 +68,7 @@ class MessageContext(BaseModel):
 class AgentMessage(BaseModel):
     """
     Main message model - Agent Communication Protocol v1.1
-    
+
     Example:
         {
             "message_id": "msg_k7p9m4x2",
@@ -92,7 +92,7 @@ class AgentMessage(BaseModel):
         }
     """
     model_config = ConfigDict(extra="forbid")
-    
+
     message_id: str = Field(..., pattern=r"^msg_[a-z0-9_]{8,30}$")
     version: Literal["1.1"] = "1.1"
     timestamp: datetime = Field(default_factory=datetime.utcnow)
@@ -105,38 +105,38 @@ class AgentMessage(BaseModel):
     context: MessageContext
     correlation_id: Optional[str] = None  # For request-response pairs
     ttl_seconds: Optional[int] = Field(default=3600, ge=0)  # Time-to-live
-    
+
     @field_validator('targets')
     @classmethod
     def validate_targets(cls, v: List[str]):
         if not v:
             raise ValueError("At least one target required")
         return v
-    
+
     @field_validator('content')
     @classmethod
     def validate_content_by_type(cls, v: MessageContent, info):
         values = info.data
         msg_type = values.get('type')
-        
+
         if msg_type == MessageType.ACT and not v.action:
             raise ValueError("'act' messages must have 'action' field")
-        
+
         if msg_type in (MessageType.OBSERVE, MessageType.REFLECT) and not v.observation:
             raise ValueError(f"'{msg_type}' messages should contain 'observation'")
-        
+
         if msg_type == MessageType.DELEGATE_TASK and not v.task_description:
             raise ValueError("'delegate_task' requires 'task_description'")
-        
+
         if msg_type == MessageType.ERROR and not v.error_message:
             raise ValueError("'error' messages should contain 'error_message'")
-            
+
         return v
-    
+
     def is_high_priority(self) -> bool:
         """Check if message is high priority (0 or 1)"""
         return self.priority <= PriorityLevel.HIGH
-    
+
     def is_expired(self) -> bool:
         """Check if message TTL has expired"""
         if not self.ttl_seconds:
@@ -157,7 +157,7 @@ class MessageResponse(BaseModel):
 # Pre-defined message templates for common operations
 class MessageTemplates:
     """Templates for common message types"""
-    
+
     @staticmethod
     def create_delegate_task(
         agent_id: str,
@@ -189,7 +189,7 @@ class MessageTemplates:
                 safety_level="medium_risk"
             )
         )
-    
+
     @staticmethod
     def create_status_update(
         agent_id: str,

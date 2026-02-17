@@ -12,14 +12,12 @@ from pydantic import BaseModel, Field
 # Import scheduler
 try:
     from scheduler import TaskScheduler
-    from scheduler.job import JobStatus
-    from scheduler.recurring import RecurringSchedule, SchedulePresets
+    from scheduler.recurring import SchedulePresets
 except ImportError:
     import sys
     sys.path.insert(0, "../..")
     from scheduler import TaskScheduler
-    from scheduler.job import JobStatus
-    from scheduler.recurring import RecurringSchedule, SchedulePresets
+    from scheduler.recurring import SchedulePresets
 
 
 router = APIRouter(prefix="/api/v1/scheduler", tags=["Task Scheduler"])
@@ -31,12 +29,12 @@ _scheduler: Optional[TaskScheduler] = None
 def get_scheduler() -> TaskScheduler:
     """Get or create scheduler instance"""
     global _scheduler
-    
+
     if _scheduler is None:
         from scheduler import ScheduleConfig
         config = ScheduleConfig()
         _scheduler = TaskScheduler(config)
-    
+
     return _scheduler
 
 
@@ -103,7 +101,7 @@ async def get_status(
 ):
     """Get scheduler status and statistics"""
     stats = await scheduler.get_statistics()
-    
+
     return {
         "running": scheduler._running,
         "total_jobs": stats["total_jobs"],
@@ -119,9 +117,9 @@ async def start_scheduler(
     """Start the scheduler"""
     if scheduler._running:
         return {"status": "already_running"}
-    
+
     await scheduler.start()
-    
+
     return {
         "status": "started",
         "jobs_loaded": len(scheduler._jobs)
@@ -135,9 +133,9 @@ async def stop_scheduler(
     """Stop the scheduler"""
     if not scheduler._running:
         return {"status": "not_running"}
-    
+
     await scheduler.stop()
-    
+
     return {"status": "stopped"}
 
 
@@ -150,9 +148,9 @@ async def schedule_job(
 ):
     """
     Schedule a new job
-    
+
     Provide exactly one of: cron, interval, or once_at
-    
+
     Examples:
     - Daily at 2 AM: cron="0 2 * * *"
     - Every 5 minutes: interval=5
@@ -164,19 +162,19 @@ async def schedule_job(
         1 if request.interval else 0,
         1 if request.once_at else 0
     ])
-    
+
     if schedule_count == 0:
         raise HTTPException(
             status_code=400,
             detail="Must provide exactly one of: cron, interval, or once_at"
         )
-    
+
     if schedule_count > 1:
         raise HTTPException(
             status_code=400,
             detail="Can only provide one schedule type"
         )
-    
+
     try:
         job_id = await scheduler.schedule(
             name=request.name,
@@ -190,13 +188,13 @@ async def schedule_job(
             max_retries=request.max_retries,
             timeout=request.timeout
         )
-        
+
         return {
             "job_id": job_id,
             "status": "scheduled",
             "scheduled_at": datetime.utcnow().isoformat()
         }
-        
+
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -210,7 +208,7 @@ async def list_jobs(
 ):
     """
     List scheduled jobs
-    
+
     - **status**: Filter by status (scheduled, running, paused, etc.)
     - **task_type**: Filter by task type
     - **enabled_only**: Only show enabled jobs
@@ -220,7 +218,7 @@ async def list_jobs(
         task_type=task_type,
         enabled_only=enabled_only
     )
-    
+
     return JobListResponse(
         jobs=[JobResponse(**job.to_dict()) for job in jobs],
         total=len(jobs)
@@ -234,10 +232,10 @@ async def get_job(
 ):
     """Get job details"""
     job = await scheduler.get_job(job_id)
-    
+
     if not job:
         raise HTTPException(status_code=404, detail=f"Job {job_id} not found")
-    
+
     return JobResponse(**job.to_dict())
 
 
@@ -248,10 +246,10 @@ async def delete_job(
 ):
     """Remove a scheduled job"""
     success = await scheduler.unschedule(job_id)
-    
+
     if not success:
         raise HTTPException(status_code=404, detail=f"Job {job_id} not found")
-    
+
     return {
         "job_id": job_id,
         "status": "removed"
@@ -265,10 +263,10 @@ async def pause_job(
 ):
     """Pause a job temporarily"""
     success = await scheduler.pause_job(job_id)
-    
+
     if not success:
         raise HTTPException(status_code=404, detail=f"Job {job_id} not found")
-    
+
     return {
         "job_id": job_id,
         "status": "paused"
@@ -282,10 +280,10 @@ async def resume_job(
 ):
     """Resume a paused job"""
     success = await scheduler.resume_job(job_id)
-    
+
     if not success:
         raise HTTPException(status_code=404, detail=f"Job {job_id} not found")
-    
+
     return {
         "job_id": job_id,
         "status": "resumed"
@@ -300,13 +298,13 @@ async def run_job_now(
     """Manually trigger a job to run immediately"""
     try:
         execution_id = await scheduler.run_job_now(job_id)
-        
+
         return {
             "job_id": job_id,
             "execution_id": execution_id,
             "status": "triggered"
         }
-        
+
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
 
@@ -319,7 +317,7 @@ async def get_job_executions(
 ):
     """Get execution history for a job"""
     executions = await scheduler.get_executions(job_id, limit)
-    
+
     return {
         "job_id": job_id,
         "executions": [
@@ -384,13 +382,13 @@ async def get_presets():
 async def describe_cron(cron: str):
     """Get human-readable description of a cron expression"""
     from scheduler.cron import CronParser
-    
+
     if not CronParser.is_valid(cron):
         raise HTTPException(status_code=400, detail="Invalid cron expression")
-    
+
     description = CronParser.describe(cron)
     next_run = CronParser.get_next_run(cron)
-    
+
     return {
         "cron": cron,
         "description": description,

@@ -16,16 +16,12 @@ License: MIT
 """
 
 import asyncio
-import json
 import logging
 import shutil
 import time
-import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
 from enum import Enum
-from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Union
-from urllib.parse import urljoin, urlparse
+from typing import Any, Callable, Dict, List, Optional
 
 import aiohttp
 

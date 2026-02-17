@@ -7,7 +7,6 @@ Provides endpoints for autonomous vulnerability analysis.
 from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
 from pydantic import BaseModel, Field
 from typing import List, Dict, Optional, Any
-from enum import Enum
 import logging
 
 from analysis_bot import AnalysisBot, AnalysisConfig
@@ -79,7 +78,7 @@ async def analyze_target(
 ):
     """
     Analyze a target for vulnerabilities.
-    
+
     Performs comprehensive vulnerability analysis including:
     - Static code analysis (if target is code)
     - Pattern-based vulnerability detection
@@ -87,7 +86,7 @@ async def analyze_target(
     - Risk assessment
     - Exploitability check
     - Remediation recommendations
-    
+
     Example:
         ```json
         {
@@ -101,20 +100,20 @@ async def analyze_target(
     """
     try:
         bot = get_analysis_bot()
-        
+
         # Create analysis config
         config = AnalysisConfig(
             user_id=str(current_user.id),
             **(request.config or {})
         )
-        
+
         # Run analysis
         result = await bot.analyze(
             target=request.target.value,
             target_type=request.target.type,
             config=config
         )
-        
+
         return AnalysisResponse(
             analysis_id=result.id,
             status=result.status,
@@ -142,7 +141,7 @@ async def analyze_target(
             recommendations=result.recommendations,
             completed_at=result.completed_at
         )
-        
+
     except Exception as e:
         logger.error(f"Analysis failed: {e}")
         raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
@@ -175,12 +174,12 @@ async def analyze_batch(
     """Analyze multiple targets in batch"""
     bot = get_analysis_bot()
     results = []
-    
+
     for target in targets:
         result = await bot.analyze(
             target=target.value,
             target_type=target.type
         )
         results.append(result)
-    
+
     return {"results": results}

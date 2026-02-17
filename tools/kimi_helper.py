@@ -6,10 +6,10 @@ Unified Tool: Unterstützt sowohl API-Mode als auch CLI-Mode
 Usage:
     # API Mode (Standard)
     python tools/kimi_helper.py -p recon "Scan target.com"
-    
+
     # CLI Mode (lokale kimi CLI)
     python tools/kimi_helper.py --cli -p recon
-    
+
     # Interaktiv
     python tools/kimi_helper.py -i
 """
@@ -48,7 +48,7 @@ REGELN:
     },
     "exploit": {
         "name": "[Exploit] Developer",
-        "emoji": "[E]", 
+        "emoji": "[E]",
         "desc": "Python-Exploits, POC-Entwicklung, Automation",
         "prompt": """Du bist ein Exploit-Developer für das Zen-AI-Pentest Framework.
 CODE-REGELN:
@@ -91,7 +91,7 @@ OUTPUT:
 - Fix-Vorschläge mit Diff-Format"""
     },
     "network": {
-        "name": "[Network] Pentester", 
+        "name": "[Network] Pentester",
         "emoji": "[N]",
         "desc": "Infrastruktur, AD, Lateral Movement",
         "prompt": """Du bist ein Network Penetration Tester mit Fokus auf Active Directory und Infrastruktur.
@@ -140,13 +140,13 @@ def get_api_key():
     api_key = os.environ.get('KIMI_API_KEY')
     if api_key:
         return api_key
-    
+
     # Versuche .env Datei
     env_paths = [
         Path(__file__).parent.parent / ".env",
         Path.cwd() / ".env"
     ]
-    
+
     for env_path in env_paths:
         if env_path.exists():
             content = env_path.read_text()
@@ -154,7 +154,7 @@ def get_api_key():
             match = re.search(r'export KIMI_API_KEY="([^"]+)"', content)
             if match:
                 return match.group(1)
-    
+
     return None
 
 def query_kimi_api(prompt, system_prompt, model="kimi-k2.5", temperature=0.7):
@@ -162,13 +162,13 @@ def query_kimi_api(prompt, system_prompt, model="kimi-k2.5", temperature=0.7):
     if not REQUESTS_AVAILABLE:
         console.print("[red]requests nicht installiert. Installiere: pip install requests[/red]")
         return None
-    
+
     api_key = get_api_key()
     if not api_key:
         console.print("[red]API Key nicht gesetzt![/red]")
         console.print("[dim]Führe aus: python scripts/setup_wizard.py[/dim]")
         return None
-    
+
     # Erkenne OpenRouter Keys
     if api_key.startswith("sk-or-"):
         url = "https://openrouter.ai/api/v1/chat/completions"
@@ -186,7 +186,7 @@ def query_kimi_api(prompt, system_prompt, model="kimi-k2.5", temperature=0.7):
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json"
         }
-    
+
     data = {
         "model": model,
         "messages": [
@@ -196,7 +196,7 @@ def query_kimi_api(prompt, system_prompt, model="kimi-k2.5", temperature=0.7):
         "temperature": temperature,
         "max_tokens": 4096
     }
-    
+
     try:
         with console.status("[cyan]Frage Kimi...[/cyan]"):
             response = requests.post(url, headers=headers, json=data, timeout=60)
@@ -212,15 +212,15 @@ def query_kimi_cli(prompt, persona):
         console.print("[red]kimi CLI nicht installiert![/red]")
         console.print("[dim]Installiere: pip install kimi-cli[/dim]")
         return None
-    
+
     if not check_kimi_logged_in():
         console.print("[red]Nicht bei kimi CLI eingeloggt![/red]")
         console.print("[dim]Führe aus: kimi login[/dim]")
         return None
-    
+
     system_prompt = PERSONAS.get(persona, {}).get("prompt", "")
     full_prompt = f"{system_prompt}\n\n{prompt}" if system_prompt else prompt
-    
+
     try:
         result = subprocess.run(
             ["kimi", "ask"],
@@ -245,17 +245,17 @@ def interactive_mode(use_cli=False):
         "Befehle: /recon, /exploit, /report, /audit, /network, /red, /clear, /exit",
         title="Interactive", border_style="cyan"
     ))
-    
+
     current_persona = "recon"
     history = []
-    
+
     while True:
         try:
             user_input = console.input(f"[bold cyan]{current_persona}>[/bold cyan] ").strip()
-            
+
             if user_input.startswith("/"):
                 cmd = user_input[1:].lower()
-                
+
                 if cmd == "exit":
                     break
                 elif cmd == "clear":
@@ -269,30 +269,30 @@ def interactive_mode(use_cli=False):
                 else:
                     console.print("[red]Unbekannter Befehl[/red]")
                     continue
-            
+
             if not user_input:
                 continue
-            
+
             # Füge History hinzu für Context
             context = "\n".join(history[-3:]) if history else ""
             full_prompt = f"Context:\n{context}\n\nNeue Anfrage:\n{user_input}" if context else user_input
-            
+
             system_prompt = PERSONAS[current_persona]["prompt"]
-            
+
             if use_cli:
                 response = query_kimi_cli(full_prompt, current_persona)
             else:
                 response = query_kimi_api(full_prompt, system_prompt)
-            
+
             if response:
                 console.print(Markdown(response))
                 history.append(f"Q: {user_input}\nA: {response[:200]}...")
-                    
+
         except KeyboardInterrupt:
             break
         except EOFError:
             break
-    
+
     console.print("[dim]Auf Wiedersehen![/dim]")
 
 def main():
@@ -305,18 +305,18 @@ Beispiele:
   %(prog)s -p recon "Analysiere example.com"
   %(prog)s -p exploit "SQLi-Scanner schreiben"
   %(prog)s -p report "CVSS-Bericht erstellen"
-  
+
   # CLI Mode (lokale kimi CLI)
   %(prog)s --cli -p recon
-  
+
   # Interaktiver Modus
   %(prog)s -i
   %(prog)s --cli -i
         """
     )
-    
+
     parser.add_argument("prompt", nargs="?", help="Die Anfrage/Prompt")
-    parser.add_argument("-p", "--persona", choices=list(PERSONAS.keys()), 
+    parser.add_argument("-p", "--persona", choices=list(PERSONAS.keys()),
                        default="recon", help="Pentest Persona (default: recon)")
     parser.add_argument("--cli", action="store_true",
                        help="Nutze lokale kimi CLI statt API")
@@ -332,9 +332,9 @@ Beispiele:
                        help="Status prüfen")
     parser.add_argument("--list", action="store_true",
                        help="Personas auflisten")
-    
+
     args = parser.parse_args()
-    
+
     # Login
     if args.login:
         if check_kimi_cli():
@@ -343,11 +343,11 @@ Beispiele:
         else:
             console.print("[red]kimi CLI nicht installiert: pip install kimi-cli[/red]")
         return
-    
+
     # Check
     if args.check:
         console.print(Panel("Kimi Status Check", border_style="cyan"))
-        
+
         # CLI Status
         if check_kimi_cli():
             console.print("[green]OK[/green] Kimi CLI installiert")
@@ -357,7 +357,7 @@ Beispiele:
                 console.print("[yellow]WARN[/yellow] Kimi CLI nicht eingeloggt")
         else:
             console.print("[red]ERR[/red] Kimi CLI nicht installiert")
-        
+
         # API Status
         api_key = get_api_key()
         if api_key:
@@ -366,37 +366,37 @@ Beispiele:
             console.print("[red]ERR[/red] API Key nicht konfiguriert")
             console.print("[dim]  Führe aus: python scripts/setup_wizard.py[/dim]")
         return
-    
+
     # List
     if args.list:
         console.print("[bold]Verfügbare Personas:[/bold]")
         for key, data in PERSONAS.items():
             console.print(f"  {data['emoji']} [cyan]{key:10}[/cyan] {data['name']} - {data['desc']}")
         return
-    
+
     # Interaktiver Modus
     if args.interactive:
         interactive_mode(use_cli=args.cli)
         return
-    
+
     # Normaler One-Shot Modus
     if not args.prompt:
         parser.print_help()
         return
-    
+
     system_prompt = PERSONAS[args.persona]["prompt"]
-    
+
     console.print(Panel(
         f"{PERSONAS[args.persona]['emoji']} [bold]{PERSONAS[args.persona]['name']}[/bold]\n"
         f"Mode: {'CLI' if args.cli else 'API'}",
         border_style="cyan"
     ))
-    
+
     if args.cli:
         response = query_kimi_cli(args.prompt, args.persona)
     else:
         response = query_kimi_api(args.prompt, system_prompt, model=args.model, temperature=args.temperature)
-    
+
     if response:
         console.print(Markdown(response))
 

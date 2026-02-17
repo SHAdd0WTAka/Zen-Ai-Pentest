@@ -25,45 +25,45 @@ class SubfinderResult:
 
 class SubfinderIntegration:
     """Subfinder Subdomain Discovery"""
-    
+
     def __init__(self, timeout: int = 300):
         self.timeout = timeout
-        
+
     async def enumerate(self, domain: str, recursive: bool = False) -> SubfinderResult:
         """
         Enumerate subdomains for a domain
-        
+
         Args:
             domain: Target domain (e.g., example.com)
             recursive: Enable recursive subdomain discovery
-            
+
         Returns:
             SubfinderResult with found subdomains
         """
         import time
         start_time = time.time()
-        
+
         cmd = ["subfinder", "-d", domain, "-json", "-silent"]
-        
+
         if recursive:
             cmd.append("-recursive")
-            
+
         logger.info(f"Starting Subfinder enumeration: {' '.join(cmd)}")
-        
+
         try:
             process = await asyncio.create_subprocess_exec(
                 *cmd,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE
             )
-            
+
             stdout, stderr = await asyncio.wait_for(
                 process.communicate(),
                 timeout=self.timeout
             )
-            
+
             subdomains = []
-            
+
             # Parse JSON output (one JSON object per line)
             for line in stdout.decode().strip().split('\n'):
                 if not line:
@@ -77,9 +77,9 @@ class SubfinderIntegration:
                     # Fallback: treat as plain text
                     if line and not line.startswith('['):
                         subdomains.append(line.strip())
-                        
+
             duration = time.time() - start_time
-            
+
             return SubfinderResult(
                 success=True,
                 domain=domain,
@@ -87,7 +87,7 @@ class SubfinderIntegration:
                 count=len(subdomains),
                 duration=duration
             )
-            
+
         except asyncio.TimeoutError:
             logger.error("Subfinder enumeration timed out")
             return SubfinderResult(
@@ -114,12 +114,12 @@ def enumerate_sync(domain: str, recursive: bool = False) -> SubfinderResult:
 if __name__ == "__main__":
     import logging
     logging.basicConfig(level=logging.INFO)
-    
+
     print("Testing Subfinder Integration...")
     print("="*60)
-    
+
     result = enumerate_sync("scanme.nmap.org")
-    
+
     print(f"Success: {result.success}")
     print(f"Domain: {result.domain}")
     print(f"Found {result.count} subdomains:")

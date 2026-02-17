@@ -26,57 +26,57 @@ class SherlockResult:
 class SherlockIntegration:
     """
     Sherlock Social Media OSINT Integration
-    
+
     Unterstützt 400+ Plattformen:
     - Twitter/X, Instagram, Facebook, LinkedIn
     - GitHub, GitLab, Bitbucket
     - Reddit, TikTok, YouTube
     - Und viele mehr...
     """
-    
+
     def __init__(self, timeout: int = 300):
         self.timeout = timeout
-        
+
     async def search(self, username: str, sites: Optional[List[str]] = None) -> SherlockResult:
         """
         Search username across social media platforms
-        
+
         Args:
             username: Username to search
             sites: Specific sites to check (None = all)
-            
+
         Returns:
             SherlockResult with findings
         """
         cmd = ["sherlock", username, "--json", "-o", "-"]
-        
+
         if sites:
             for site in sites:
                 cmd.extend(["--site", site])
-                
+
         logger.info(f"Starting Sherlock search: {' '.join(cmd)}")
-        
+
         try:
             process = await asyncio.create_subprocess_exec(
                 *cmd,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE
             )
-            
+
             stdout, stderr = await asyncio.wait_for(
                 process.communicate(),
                 timeout=self.timeout
             )
-            
+
             found_sites = []
             not_found_sites = []
-            
+
             # Parse JSON output
             try:
                 output = stdout.decode().strip()
                 if output:
                     data = json.loads(output)
-                    
+
                     for site_name, site_data in data.items():
                         if isinstance(site_data, dict):
                             status = site_data.get("status", {})
@@ -94,7 +94,7 @@ class SherlockIntegration:
                                 "url": f"https://{site_name}.com/{username}",
                                 "status": "found"
                             })
-                            
+
             except json.JSONDecodeError:
                 # Fallback: parse line by line
                 for line in stdout.decode().split('\n'):
@@ -104,7 +104,7 @@ class SherlockIntegration:
                             site = parts[1].replace(':', '')
                             url = parts[-1]
                             found_sites.append({"site": site, "url": url, "status": "found"})
-                            
+
             return SherlockResult(
                 username=username,
                 found_sites=found_sites,
@@ -112,21 +112,21 @@ class SherlockIntegration:
                 total_sites=len(found_sites) + len(not_found_sites),
                 success=True
             )
-            
+
         except asyncio.TimeoutError:
             logger.error("Sherlock search timed out")
             return SherlockResult(username=username, success=False, error="Timeout")
         except Exception as e:
             logger.error(f"Sherlock error: {e}")
             return SherlockResult(username=username, success=False, error=str(e))
-            
+
     async def search_multiple(self, usernames: List[str]) -> Dict[str, SherlockResult]:
         """
         Search multiple usernames
-        
+
         Args:
             usernames: List of usernames to search
-            
+
         Returns:
             Dictionary with results for each username
         """
@@ -146,13 +146,13 @@ def search_sync(username: str) -> SherlockResult:
 if __name__ == "__main__":
     import logging
     logging.basicConfig(level=logging.INFO)
-    
+
     print("Testing Sherlock Integration...")
     print("="*60)
-    
+
     # Test with a common username
     result = search_sync("admin")
-    
+
     print(f"Username: {result.username}")
     print(f"Success: {result.success}")
     print(f"Found on {len(result.found_sites)} sites:")

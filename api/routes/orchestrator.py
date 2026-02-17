@@ -29,12 +29,12 @@ _orchestrator: Optional[ZenOrchestrator] = None
 def get_orchestrator() -> ZenOrchestrator:
     """Get or create orchestrator instance"""
     global _orchestrator
-    
+
     if _orchestrator is None:
         from orchestrator import OrchestratorConfig
         config = OrchestratorConfig.default()
         _orchestrator = ZenOrchestrator(config)
-    
+
     return _orchestrator
 
 
@@ -101,9 +101,9 @@ async def start_orchestrator(
     """Start the orchestrator"""
     if orchestrator._running:
         return {"status": "already_running"}
-    
+
     success = await orchestrator.start()
-    
+
     return {
         "status": "started" if success else "failed",
         "instance_id": orchestrator.instance_id
@@ -118,9 +118,9 @@ async def stop_orchestrator(
     """Stop the orchestrator gracefully"""
     if not orchestrator._running:
         return {"status": "not_running"}
-    
+
     success = await orchestrator.stop(timeout=timeout)
-    
+
     return {
         "status": "stopped" if success else "failed"
     }
@@ -143,7 +143,7 @@ async def submit_task(
 ):
     """
     Submit a new task
-    
+
     - **type**: Task type (e.g., "vulnerability_scan", "subdomain_enum")
     - **target**: Target URL/hostname/IP
     - **options**: Task-specific options
@@ -157,27 +157,27 @@ async def submit_task(
             status_code=400,
             detail=f"Invalid priority: {request.priority}"
         )
-    
+
     # Build task data
     task_data = {
         "type": request.type,
         "target": request.target,
         "options": request.options
     }
-    
+
     try:
         task_id = await orchestrator.submit_task(
             task_data=task_data,
             priority=priority,
             metadata=request.metadata
         )
-        
+
         return {
             "task_id": task_id,
             "status": "submitted",
             "submitted_at": datetime.utcnow().isoformat()
         }
-        
+
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
@@ -191,10 +191,10 @@ async def get_task_status(
 ):
     """Get task status and details"""
     status = await orchestrator.get_task_status(task_id)
-    
+
     if not status:
         raise HTTPException(status_code=404, detail=f"Task {task_id} not found")
-    
+
     return TaskResponse(**status)
 
 
@@ -205,22 +205,22 @@ async def get_task_results(
 ):
     """Get task results (if completed)"""
     results = await orchestrator.get_task_results(task_id)
-    
+
     if results is None:
         # Check if task exists
         status = await orchestrator.get_task_status(task_id)
         if not status:
             raise HTTPException(status_code=404, detail=f"Task {task_id} not found")
-        
+
         if status["state"] != "completed":
             return {
                 "task_id": task_id,
                 "state": status["state"],
                 "results_available": False
             }
-        
+
         return {"task_id": task_id, "results": None}
-    
+
     return {
         "task_id": task_id,
         "state": "completed",
@@ -236,13 +236,13 @@ async def cancel_task(
 ):
     """Cancel a running or pending task"""
     success = await orchestrator.cancel_task(task_id)
-    
+
     if not success:
         raise HTTPException(
             status_code=400,
             detail=f"Task {task_id} not found or cannot be cancelled"
         )
-    
+
     return {
         "task_id": task_id,
         "status": "cancelled"
@@ -258,7 +258,7 @@ async def list_tasks(
 ):
     """
     List tasks with optional filtering
-    
+
     - **status**: Filter by state (pending, running, completed, failed, cancelled)
     - **task_type**: Filter by task type
     - **limit**: Maximum results (1-1000)
@@ -268,7 +268,7 @@ async def list_tasks(
         task_type=task_type,
         limit=limit
     )
-    
+
     return TaskListResponse(
         tasks=[TaskResponse(**t) for t in tasks],
         total=len(tasks)
@@ -282,9 +282,9 @@ async def get_statistics(
     """Get orchestrator statistics"""
     if not orchestrator.task_manager:
         raise HTTPException(status_code=503, detail="Task manager not initialized")
-    
+
     stats = await orchestrator.task_manager.get_statistics()
-    
+
     return OrchestratorStatsResponse(**stats)
 
 
@@ -301,12 +301,12 @@ async def get_recent_events(
         event_type_enum = EventType(event_type) if event_type else None
     except ValueError:
         raise HTTPException(status_code=400, detail=f"Invalid event type: {event_type}")
-    
+
     events = await orchestrator.event_bus.get_history(
         event_type=event_type_enum,
         limit=limit
     )
-    
+
     return {
         "events": [e.to_dict() for e in events],
         "total": len(events)
@@ -323,12 +323,12 @@ async def analyze_results(
 ):
     """
     Analyze scan results using the Analysis Bot
-    
+
     - **results**: Scan results to analyze
     - **analysis_type**: Type of analysis to perform
     """
     analysis = await orchestrator.analyze_results(results, analysis_type)
-    
+
     return {
         "analysis_type": analysis_type,
         "results": analysis,

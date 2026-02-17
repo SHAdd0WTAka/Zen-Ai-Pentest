@@ -9,10 +9,10 @@ async def get_tools_status():
     """Get pentest tools installation status"""
     try:
         from tools.integrations.tool_checker import ToolChecker
-        
+
         checker = ToolChecker()
         report = checker.get_status_report()
-        
+
         return report
     except Exception as e:
         return {
@@ -27,7 +27,7 @@ async def install_tools(background_tasks: BackgroundTasks):
     """Trigger tool installation (runs in background)"""
     import subprocess
     import sys
-    
+
     def run_installer():
         try:
             if sys.platform == "win32":
@@ -36,9 +36,9 @@ async def install_tools(background_tasks: BackgroundTasks):
                 subprocess.Popen(["bash", "scripts/install-tools.sh", "--all"])
         except Exception as e:
             logger.error(f"Failed to start installer: {e}")
-    
+
     background_tasks.add_task(run_installer)
-    
+
     return {
         "status": "installation_started",
         "message": "Tool installation started in background. Check /system/tools/status for progress."

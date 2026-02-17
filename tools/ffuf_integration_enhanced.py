@@ -4,7 +4,7 @@ Erweiterte Integration für Zen-AI-Pentest
 
 Supports:
 - Directory bruteforcing
-- Parameter fuzzing  
+- Parameter fuzzing
 - Virtual host discovery
 - POST data fuzzing
 - Filter & Matcher rules
@@ -13,10 +13,9 @@ Supports:
 import asyncio
 import json
 import logging
-import subprocess
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +45,7 @@ class FFuFResult:
 
 class FFuFIntegration:
     """FFuF Web Fuzzer Integration"""
-    
+
     def __init__(self, wordlist_dir: str = "/usr/share/wordlists"):
         self.wordlist_dir = Path(wordlist_dir)
         self.default_wordlists = {
@@ -54,7 +53,7 @@ class FFuFIntegration:
             "big": self.wordlist_dir / "dirb" / "big.txt",
             "parameters": self.wordlist_dir / "dirb" / "common.txt",
         }
-        
+
     async def directory_bruteforce(
         self,
         target: str,
@@ -65,7 +64,7 @@ class FFuFIntegration:
     ) -> FFuFResult:
         """
         Directory bruteforcing with FFuF
-        
+
         Args:
             target: Target URL (e.g., http://example.com/FUZZ)
             wordlist: Path to wordlist
@@ -75,13 +74,13 @@ class FFuFIntegration:
         """
         import time
         start_time = time.time()
-        
+
         # Validate target
         if "FUZZ" not in target:
             target = f"{target.rstrip('/')}/FUZZ"
-            
+
         wordlist_path = wordlist or str(self.default_wordlists["directories"])
-        
+
         # Build command
         cmd = [
             "ffuf",
@@ -93,35 +92,35 @@ class FFuFIntegration:
             "-mc", "200,201,204,301,302,307,401,403,405,500",  # Match codes
             "-fc", "404",  # Filter 404
         ]
-        
+
         # Add extensions if specified
         if extensions:
             cmd.extend(["-e", ",".join(f".{e.lstrip('.')}" for e in extensions)])
-            
+
         logger.info(f"Starting FFuF directory scan: {' '.join(cmd)}")
-        
+
         try:
             process = await asyncio.create_subprocess_exec(
                 *cmd,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE
             )
-            
+
             stdout, stderr = await asyncio.wait_for(
                 process.communicate(),
                 timeout=300
             )
-            
+
             findings = []
             total_requests = 0
-            
+
             # Parse JSON output (one JSON object per line)
             for line in stdout.decode().strip().split('\n'):
                 if not line:
                     continue
                 try:
                     data = json.loads(line)
-                    
+
                     # Skip config/error lines
                     if data.get("type") == "result":
                         finding = FFuFFinding(
@@ -134,15 +133,15 @@ class FFuFIntegration:
                             result_type="directory"
                         )
                         findings.append(finding)
-                        
+
                     elif data.get("type") == "summary":
                         total_requests = data.get("total", 0)
-                        
+
                 except json.JSONDecodeError:
                     continue
-                    
+
             duration = time.time() - start_time
-            
+
             return FFuFResult(
                 success=True,
                 findings=findings,
@@ -150,7 +149,7 @@ class FFuFIntegration:
                 duration=duration,
                 total_requests=total_requests
             )
-            
+
         except asyncio.TimeoutError:
             logger.error("FFuF scan timed out")
             return FFuFResult(
@@ -165,7 +164,7 @@ class FFuFIntegration:
                 error=str(e),
                 command=" ".join(cmd)
             )
-            
+
     async def parameter_fuzzing(
         self,
         target: str,
@@ -176,7 +175,7 @@ class FFuFIntegration:
     ) -> FFuFResult:
         """
         Parameter fuzzing with FFuF
-        
+
         Args:
             target: Target URL with FUZZ keyword (e.g., http://example.com/page?param=FUZZ)
             wordlist: Path to parameter wordlist
@@ -186,9 +185,9 @@ class FFuFIntegration:
         """
         import time
         start_time = time.time()
-        
+
         wordlist_path = wordlist or str(self.default_wordlists["parameters"])
-        
+
         cmd = [
             "ffuf",
             "-u", target,
@@ -198,21 +197,21 @@ class FFuFIntegration:
             "-json",
             "-mc", "200,201,204,301,302,307,401,403,500",
         ]
-        
+
         if data:
             cmd.extend(["-d", data])
-            
+
         logger.info(f"Starting FFuF parameter fuzzing: {' '.join(cmd)}")
-        
+
         try:
             process = await asyncio.create_subprocess_exec(
                 *cmd,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE
             )
-            
+
             stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=300)
-            
+
             findings = []
             for line in stdout.decode().strip().split('\n'):
                 if not line:
@@ -231,18 +230,18 @@ class FFuFIntegration:
                         findings.append(finding)
                 except json.JSONDecodeError:
                     continue
-                    
+
             return FFuFResult(
                 success=True,
                 findings=findings,
                 command=" ".join(cmd),
                 duration=time.time() - start_time
             )
-            
+
         except Exception as e:
             logger.error(f"FFuF parameter fuzzing error: {e}")
             return FFuFResult(success=False, error=str(e))
-            
+
     async def vhost_discovery(
         self,
         target: str,
@@ -251,7 +250,7 @@ class FFuFIntegration:
     ) -> FFuFResult:
         """
         Virtual host discovery
-        
+
         Args:
             target: Target IP (e.g., http://10.0.0.1)
             wordlist: Path to vhost wordlist
@@ -259,9 +258,9 @@ class FFuFIntegration:
         """
         import time
         start_time = time.time()
-        
+
         wordlist_path = wordlist or str(self.default_wordlists["directories"])
-        
+
         cmd = [
             "ffuf",
             "-u", target,
@@ -271,18 +270,18 @@ class FFuFIntegration:
             "-json",
             "-mc", "200,301,302,403",
         ]
-        
+
         logger.info(f"Starting FFuF vhost discovery: {' '.join(cmd)}")
-        
+
         try:
             process = await asyncio.create_subprocess_exec(
                 *cmd,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE
             )
-            
+
             stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=300)
-            
+
             findings = []
             for line in stdout.decode().strip().split('\n'):
                 if not line:
@@ -299,14 +298,14 @@ class FFuFIntegration:
                         findings.append(finding)
                 except json.JSONDecodeError:
                     continue
-                    
+
             return FFuFResult(
                 success=True,
                 findings=findings,
                 command=" ".join(cmd),
                 duration=time.time() - start_time
             )
-            
+
         except Exception as e:
             logger.error(f"FFuF vhost discovery error: {e}")
             return FFuFResult(success=False, error=str(e))
@@ -327,20 +326,20 @@ if __name__ == "__main__":
     # Test
     import logging
     logging.basicConfig(level=logging.INFO)
-    
+
     print("Testing FFuF Integration...")
     print("="*60)
-    
+
     # Test directory bruteforce
     result = directory_bruteforce_sync(
         "http://scanme.nmap.org/FUZZ",
         extensions=["php", "html"]
     )
-    
+
     print(f"Success: {result.success}")
     print(f"Findings: {len(result.findings)}")
     print(f"Duration: {result.duration:.2f}s")
     print(f"Total Requests: {result.total_requests}")
-    
+
     for finding in result.findings[:5]:
         print(f"  [{finding.status_code}] {finding.url} ({finding.content_length} bytes)")

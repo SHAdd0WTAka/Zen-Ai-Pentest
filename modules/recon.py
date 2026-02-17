@@ -5,11 +5,10 @@ Intelligent target reconnaissance using LLM analysis
 Author: SHAdd0WTAka
 """
 
-import asyncio
 import logging
 import socket
 import subprocess
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 # Import subdomain scanner
 try:
@@ -174,13 +173,13 @@ Return as a comma-separated list.
     ) -> Dict:
         """
         Comprehensive subdomain enumeration using SubdomainScanner
-        
+
         Args:
             domain: Target domain
             advanced: Use advanced scanning techniques
             check_http: Check HTTP/HTTPS availability
             max_workers: Concurrent workers
-            
+
         Returns:
             Dictionary with scan results and metadata
         """
@@ -193,7 +192,7 @@ Return as a comma-separated list.
             }
 
         logger.info(f"[Recon] Starting comprehensive subdomain scan for {domain}")
-        
+
         if advanced:
             scanner = AdvancedSubdomainScanner(
                 orchestrator=self.orchestrator,
@@ -212,11 +211,11 @@ Return as a comma-separated list.
                 domain=domain,
                 check_http=check_http
             )
-        
+
         # Build comprehensive result
         live_hosts = [r for r in results.values() if r.is_alive]
         dns_only = [r for r in results.values() if not r.is_alive]
-        
+
         scan_result = {
             "domain": domain,
             "total_discovered": len(results),
@@ -234,14 +233,14 @@ Return as a comma-separated list.
             },
             "method": "advanced_scan" if advanced else "standard_scan",
         }
-        
+
         logger.info(f"[Recon] Subdomain scan complete: {len(results)} found ({len(live_hosts)} live)")
         return scan_result
 
     async def discover_attack_surface(self, domain: str) -> Dict:
         """
         Complete attack surface discovery for a domain
-        
+
         Combines:
         - Subdomain enumeration
         - DNS record analysis
@@ -249,27 +248,27 @@ Return as a comma-separated list.
         - Service discovery
         """
         logger.info(f"[Recon] Discovering attack surface for {domain}")
-        
+
         # Run subdomain scan
         subdomain_data = await self.comprehensive_subdomain_scan(
             domain=domain,
             advanced=True,
             check_http=True
         )
-        
+
         # Get basic target info
         target_info = {
             "ip": await self._resolve_ip(domain),
             "dns_records": await self._get_dns_records(domain),
             "whois": await self._get_whois(domain),
         }
-        
+
         # Use LLM to analyze attack surface
         live_subdomains = [
             sub for sub, data in subdomain_data["subdomains"].items()
             if data.get("is_alive")
         ]
-        
+
         prompt = f"""
 Analyze the attack surface for penetration testing:
 
@@ -290,14 +289,14 @@ Provide:
 3. Likely vulnerability areas based on discovered services
 4. Recommended next steps (specific tools and techniques)
 """
-        
+
         try:
             llm_response = await self.orchestrator.process(prompt)
             analysis = llm_response.content
         except Exception as e:
             logger.warning(f"[Recon] LLM analysis failed: {e}")
             analysis = "LLM analysis not available"
-        
+
         return {
             "domain": domain,
             "target_info": target_info,

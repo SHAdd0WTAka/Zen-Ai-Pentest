@@ -15,13 +15,11 @@ License: MIT
 import asyncio
 import json
 import logging
-import re
 import shutil
 import subprocess
 from dataclasses import dataclass, field
-from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -94,7 +92,7 @@ class TruffleHogScanner:
         "SlackConfig": "critical",
         "SlackLegacy": "critical",
         "SlackUserToken": "critical",
-        
+
         # High - Important credentials
         "Docker": "high",
         "DockerHub": "high",
@@ -119,7 +117,7 @@ class TruffleHogScanner:
         "BearerToken": "high",
         "ApiKey": "high",
         "GenericApiKey": "high",
-        
+
         # Medium - API keys and tokens
         "Mailchimp": "medium",
         "Mailgun": "medium",
@@ -141,7 +139,7 @@ class TruffleHogScanner:
         "DropboxShort": "medium",
         "Firebase": "medium",
         "FirebaseURL": "medium",
-        
+
         # Low - Generic patterns and less critical
         "BasicAuth": "low",
         "HttpBasicAuth": "low",

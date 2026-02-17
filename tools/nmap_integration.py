@@ -19,11 +19,9 @@ import logging
 import re
 import shutil
 import subprocess
-import tempfile
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
 from enum import Enum
-from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
 logger = logging.getLogger(__name__)

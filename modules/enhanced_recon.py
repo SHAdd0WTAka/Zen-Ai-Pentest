@@ -20,36 +20,36 @@ class EnhancedReconModule:
     Erweitertes Reconnaissance Modul
     Kombiniert Nmap, FFuF, WhatWeb und WAFW00F
     """
-    
+
     def __init__(self, orchestrator: Optional[ZenOrchestrator] = None):
         self.orchestrator = orchestrator or ZenOrchestrator()
-        
+
         # Initialize tool integrations
         self.ffuf = FFuFIntegration()
         self.whatweb = WhatWebIntegration(aggression=1)
         self.wafw00f = WAFW00FIntegration()
-        
+
     def technology_detection(self, target: str) -> Dict[str, Any]:
         """
         Erkennt Technologien mit WhatWeb
-        
+
         Args:
             target: Ziel-URL oder Domain
-            
+
         Returns:
             Dictionary mit Technologie-Informationen
         """
         logger.info(f"[EnhancedRecon] Technology detection for {target}")
-        
+
         result = scan_sync(target)
-        
+
         if not result.success:
             return {
                 "success": False,
                 "error": result.error,
                 "technologies": []
             }
-            
+
         return {
             "success": True,
             "url": result.url,
@@ -64,21 +64,21 @@ class EnhancedReconModule:
             ],
             "headers": result.headers
         }
-        
+
     def waf_detection(self, target: str) -> Dict[str, Any]:
         """
         Erkennt Web Application Firewalls
-        
+
         Args:
             target: Ziel-URL oder Domain
-            
+
         Returns:
             Dictionary mit WAF-Informationen
         """
         logger.info(f"[EnhancedRecon] WAF detection for {target}")
-        
+
         result = detect_sync(target)
-        
+
         return {
             "success": result.success,
             "url": result.url,
@@ -89,7 +89,7 @@ class EnhancedReconModule:
             ],
             "error": result.error
         }
-        
+
     def directory_bruteforce(
         self,
         target: str,
@@ -98,26 +98,26 @@ class EnhancedReconModule:
     ) -> Dict[str, Any]:
         """
         Directory Bruteforce mit FFuF
-        
+
         Args:
             target: Ziel-URL mit /FUZZ
             extensions: Dateiendungen (z.B. ["php", "html"])
             wordlist: Pfad zur Wortliste
-            
+
         Returns:
             Dictionary mit gefundenen Verzeichnissen
         """
         logger.info(f"[EnhancedRecon] Directory bruteforce for {target}")
-        
+
         if not target.endswith("/FUZZ") and "/FUZZ" not in target:
             target = f"{target.rstrip('/')}/FUZZ"
-            
+
         result = directory_bruteforce_sync(
             target,
             wordlist=wordlist,
             extensions=extensions
         )
-        
+
         return {
             "success": result.success,
             "findings": [
@@ -133,53 +133,53 @@ class EnhancedReconModule:
             "duration": result.duration,
             "error": result.error
         }
-        
+
     def full_recon(self, target: str) -> Dict[str, Any]:
         """
         Komplette Reconnaissance
         Führt alle Scans aus
-        
+
         Args:
             target: Ziel-Domain oder URL
-            
+
         Returns:
             Dictionary mit allen Ergebnissen
         """
         logger.info(f"[EnhancedRecon] Full reconnaissance for {target}")
-        
+
         # Ensure URL format
         if not target.startswith(("http://", "https://")):
             target_url = f"http://{target}"
         else:
             target_url = target
             target = target.replace("http://", "").replace("https://", "").split("/")[0]
-            
+
         # Run all scans
         tech_result = self.technology_detection(target_url)
         waf_result = self.waf_detection(target_url)
         dir_result = self.directory_bruteforce(target_url)
-        
+
         # Generate summary
         risk_level = "low"
         if waf_result.get("firewall_detected"):
             risk_level = "medium"
         if len(dir_result.get("findings", [])) > 5:
             risk_level = "high"
-            
+
         # Generate recommendations
         recommendations = []
         if not waf_result.get("firewall_detected"):
             recommendations.append("Implement a Web Application Firewall (WAF)")
-            
+
         for tech in tech_result.get("technologies", []):
             if tech.get("name") in ["Apache", "nginx", "PHP"]:
                 version = tech.get("version", "")
                 if version and version.startswith(("2.4.7", "1.18.0", "7.4")):
                     recommendations.append(f"Update outdated {tech['name']} ({version})")
-                    
+
         if len(dir_result.get("findings", [])) > 5:
             recommendations.append("Restrict access to sensitive directories")
-            
+
         return {
             "target": target,
             "timestamp": str(asyncio.get_event_loop().time()),
@@ -200,7 +200,7 @@ class EnhancedReconModule:
 if __name__ == "__main__":
     import argparse
     import json
-    
+
     parser = argparse.ArgumentParser(description="Enhanced Reconnaissance Module")
     parser.add_argument("--target", "-t", required=True, help="Target domain or URL")
     parser.add_argument("--mode", "-m", choices=["tech", "waf", "dir", "full"], default="full",
@@ -209,12 +209,12 @@ if __name__ == "__main__":
                        help="File extensions for directory scan (comma-separated)")
     parser.add_argument("--output", "-o", help="Output file for JSON report")
     parser.add_argument("--quiet", "-q", action="store_true", help="Minimal output")
-    
+
     args = parser.parse_args()
-    
+
     # Initialize module
     recon = EnhancedReconModule()
-    
+
     # Run scan based on mode
     if args.mode == "tech":
         result = recon.technology_detection(args.target)
@@ -225,7 +225,7 @@ if __name__ == "__main__":
         result = recon.directory_bruteforce(args.target, extensions=extensions)
     else:  # full
         result = recon.full_recon(args.target)
-        
+
     # Output
     if args.output:
         with open(args.output, "w") as f:

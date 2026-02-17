@@ -5,8 +5,7 @@ Endpoints for cache management and performance monitoring.
 """
 
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel
+from fastapi import APIRouter, Depends, HTTPException
 
 # Import performance components
 try:
@@ -102,7 +101,7 @@ async def cleanup_pool(
     pool = pool_manager.get(name)
     if not pool:
         raise HTTPException(status_code=404, detail=f"Pool {name} not found")
-    
+
     await pool.cleanup()
     return {"cleaned": True}
 

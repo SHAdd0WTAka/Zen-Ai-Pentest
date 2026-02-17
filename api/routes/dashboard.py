@@ -7,18 +7,15 @@ REST API and WebSocket endpoints for live dashboard.
 from typing import Optional
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect, Query
-from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 # Import dashboard
 try:
     from dashboard import DashboardManager, DashboardEvent, EventType
-    from dashboard.websocket import DashboardWebSocket
 except ImportError:
     import sys
     sys.path.insert(0, "../..")
     from dashboard import DashboardManager, DashboardEvent, EventType
-    from dashboard.websocket import DashboardWebSocket
 
 
 router = APIRouter(prefix="/api/v1/dashboard", tags=["Dashboard"])
@@ -30,12 +27,12 @@ _dashboard: Optional[DashboardManager] = None
 def get_dashboard() -> DashboardManager:
     """Get or create dashboard instance"""
     global _dashboard
-    
+
     if _dashboard is None:
         from dashboard import DashboardConfig
         config = DashboardConfig()
         _dashboard = DashboardManager(config)
-    
+
     return _dashboard
 
 
@@ -68,7 +65,7 @@ async def get_status(
 ):
     """Get dashboard status and statistics"""
     stats = dashboard.get_statistics()
-    
+
     return DashboardStatusResponse(
         running=stats["running"],
         started_at=stats.get("started_at"),
@@ -110,19 +107,19 @@ async def get_recent_events(
 ):
     """
     Get recent dashboard events
-    
+
     - **limit**: Number of events to return (1-200)
     - **event_type**: Filter by event type
     """
     events = dashboard._event_buffer[-limit:]
-    
+
     if event_type:
         try:
             et = EventType(event_type)
             events = [e for e in events if e.type == et]
         except ValueError:
             raise HTTPException(status_code=400, detail=f"Invalid event type: {event_type}")
-    
+
     return {
         "events": [e.to_dict() for e in events],
         "total": len(events)
@@ -136,23 +133,23 @@ async def broadcast_event(
 ):
     """
     Broadcast a custom event to all connected clients
-    
+
     Requires admin privileges in production.
     """
     try:
         event_type = EventType(request.type)
     except ValueError:
         event_type = EventType.CUSTOM
-    
+
     event = DashboardEvent(
         type=event_type,
         data=request.data,
         priority=request.priority,
         source="api"
     )
-    
+
     count = await dashboard.broadcast(event)
-    
+
     return {
         "broadcasted": True,
         "clients_notified": count,
@@ -169,13 +166,13 @@ async def send_notification(
 ):
     """
     Send notification to all connected clients
-    
+
     - **title**: Notification title
     - **message**: Notification message
     - **level**: info, warning, error, success
     """
     count = await dashboard.broadcast_notification(title, message, level)
-    
+
     return {
         "sent": True,
         "clients_notified": count
@@ -192,43 +189,43 @@ async def dashboard_websocket(
 ):
     """
     WebSocket endpoint for real-time dashboard updates
-    
+
     Connection flow:
     1. Client connects
     2. Server sends recent events as replay
     3. Client subscribes to specific event types
     4. Server pushes matching events in real-time
-    
+
     Client messages:
     - {"action": "subscribe", "event_types": ["task.progress", "system.metrics"]}
     - {"action": "ping"}
     - {"action": "set_priority", "min_priority": 3}
     """
     await websocket.accept()
-    
+
     # Authenticate (simplified - would validate token in production)
     user_id = None
     if token:
         # Validate token and extract user_id
         pass
-    
+
     # Connect to dashboard
     try:
         connection_id = await dashboard.handle_websocket_connect(websocket, user_id)
-        
+
         try:
             while True:
                 # Receive message from client
                 message = await websocket.receive_json()
-                
+
                 # Handle message
                 await dashboard.handle_websocket_message(connection_id, message)
-                
+
         except WebSocketDisconnect:
             pass
         finally:
             await dashboard.handle_websocket_disconnect(connection_id)
-            
+
     except Exception as e:
         await websocket.close(code=1011, reason=str(e))
 
@@ -246,7 +243,7 @@ async def get_task_progress(
         if (event.type == EventType.TASK_PROGRESS and
             event.data.get("task_id") == task_id):
             return event.data
-    
+
     raise HTTPException(status_code=404, detail=f"No progress found for task {task_id}")
 
 
@@ -259,7 +256,7 @@ async def get_websocket_stats(
     """Get WebSocket connection statistics"""
     if not dashboard.websocket:
         raise HTTPException(status_code=503, detail="WebSocket not enabled")
-    
+
     return dashboard.websocket.get_statistics()
 
 
@@ -270,7 +267,7 @@ async def get_metrics_stats(
     """Get metrics collector statistics"""
     if not dashboard.metrics:
         raise HTTPException(status_code=503, detail="Metrics not enabled")
-    
+
     return dashboard.metrics.get_summary()
 
 
@@ -303,9 +300,9 @@ async def health_check(
         "websocket": dashboard.websocket._running if dashboard.websocket else False,
         "metrics": dashboard.metrics._running if dashboard.metrics else False,
     }
-    
+
     all_healthy = all(checks.values())
-    
+
     return {
         "healthy": all_healthy,
         "checks": checks,

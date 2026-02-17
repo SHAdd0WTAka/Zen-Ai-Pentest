@@ -69,23 +69,23 @@ def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)) 
             detail="Authorization header missing",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    
+
     token = credentials.credentials
-    
+
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
         role: str = payload.get("role", "user")
-        
+
         if username is None:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid token",
                 headers={"WWW-Authenticate": "Bearer"},
             )
-            
+
         return {"username": username, "role": role}
-        
+
     except jwt.ExpiredSignatureError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -115,7 +115,7 @@ def create_user(username: str, password: str, role: str = "user") -> bool:
     """Erstellt neuen User"""
     if username in USERS_DB:
         return False
-    
+
     USERS_DB[username] = {
         "password": get_password_hash(password),
         "role": role

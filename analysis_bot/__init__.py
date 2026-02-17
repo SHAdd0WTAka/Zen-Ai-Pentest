@@ -3,7 +3,7 @@ Zen-AI-Pentest Analysis Bot
 
 Autonomous vulnerability analysis system with:
 - Vulnerability Analyzer (840 lines)
-- Risk Scorer (712 lines)  
+- Risk Scorer (712 lines)
 - Exploitability Checker (822 lines)
 - Recommendation Engine (894 lines)
 
@@ -17,6 +17,6 @@ from .analysis_bot import AnalysisBot, AnalysisConfig, AnalysisResult
 
 __all__ = [
     "AnalysisBot",
-    "AnalysisConfig", 
+    "AnalysisConfig",
     "AnalysisResult",
 ]
