@@ -1,5 +1,20 @@
-# Test dependencies for Zen AI Pentest
+# Test Dependencies for Zen AI Pentest
+# Install with: pip install -r requirements-test.txt
+
+# Testing Framework
 pytest>=7.4.0
 pytest-asyncio>=0.21.0
 pytest-cov>=4.1.0
+
+# API Testing
 httpx>=0.25.0
+
+# Monitoring/Metrics
+prometheus-client>=0.17.0
+
+# Browser Automation (for exploit validator)
+playwright>=1.40.0; platform_system != "Windows"
+
+# Additional test utilities
+factory-boy>=3.3.0
+faker>=20.0.0

@@ -46,8 +46,8 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install bandit safety ruff pytest pytest-cov
-          pip install pydantic sqlalchemy fastapi redis httpx email-validator pyjwt python-multipart passlib 'bcrypt<4.1'
+          pip install -r requirements-test.txt
+          pip install bandit safety ruff
 
       - name: Lint with Ruff
         run: |
@@ -73,8 +73,7 @@ jobs:
             --ignore=tests/test_react_agent.py \
             --ignore=tests/unit/analysis_bot/test_analysis_bot.py \
             --ignore=tests/unit/core/test_models.py \
-            --ignore=tests/test_modules_report_gen.py \
-            --ignore=tests/test_monitoring_metrics.py \
+
             --ignore=tests/autonomous \
             --ignore=tests/security/test_dast.py \
             --cov=tools.ffuf_integration_enhanced \
