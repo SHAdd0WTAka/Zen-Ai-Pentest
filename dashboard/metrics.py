@@ -6,7 +6,7 @@ Collects and aggregates system metrics for dashboard display.
 
 import asyncio
 import time
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List, Optional, Callable
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 import logging

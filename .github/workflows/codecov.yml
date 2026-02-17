@@ -32,26 +32,20 @@ jobs:
         python -m pip install --upgrade pip
         pip install pytest pytest-cov pytest-asyncio
         # Install minimal requirements for testing
-        pip install pydantic sqlalchemy fastapi
+        pip install pydantic sqlalchemy fastapi redis httpx email-validator
     
     - name: Run tests with coverage
       run: |
         pytest tests/ \
           -v \
-          --ignore=tests/unit \
-          --ignore=tests/e2e \
-          --ignore=tests/fuzz \
           --ignore=tests/integration \
-          --ignore=tests/agent_comm \
-          --ignore=tests/cloud \
-          --ignore=tests/risk_engine \
-          --ignore=tests/security \
           --cov=tools \
           --cov=modules \
           --cov=core \
           --cov=agents \
           --cov=autonomous \
           --cov=database \
+          --cov=dashboard \
           --cov-report=xml:coverage.xml \
           --cov-report=term-missing \
           --cov-fail-under=0
@@ -131,20 +125,14 @@ jobs:
     - name: Run tests and generate HTML report
       run: |
         pytest tests/ \
-          --ignore=tests/unit \
-          --ignore=tests/e2e \
-          --ignore=tests/fuzz \
           --ignore=tests/integration \
-          --ignore=tests/agent_comm \
-          --ignore=tests/cloud \
-          --ignore=tests/risk_engine \
-          --ignore=tests/security \
           --cov=tools \
           --cov=modules \
           --cov=core \
           --cov=agents \
           --cov=autonomous \
           --cov=database \
+          --cov=dashboard \
           --cov-report=html:htmlcov \
           --cov-report=xml:coverage.xml
     

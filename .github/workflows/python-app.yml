@@ -195,6 +195,7 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           pip install -r requirements.txt
           pip install pytest==8.0.0 pytest-asyncio==0.23.4 pytest-cov==4.1.0 pytest-xdist==3.5.0
+          pip install redis httpx email-validator
 
       - name: Validate Python syntax
         run: |
@@ -209,20 +210,14 @@ jobs:
         run: |
           echo "::group::Running Tests"
           pytest tests/ -v --tb=short \
-            --ignore=tests/unit \
-            --ignore=tests/e2e \
-            --ignore=tests/fuzz \
             --ignore=tests/integration \
-            --ignore=tests/agent_comm \
-            --ignore=tests/cloud \
-            --ignore=tests/risk_engine \
-            --ignore=tests/security \
             --cov=tools \
             --cov=modules \
             --cov=core \
             --cov=agents \
             --cov=autonomous \
             --cov=database \
+            --cov=dashboard \
             --cov-report=xml --cov-report=term-missing --cov-report=html \
             -n auto --dist=loadgroup || echo "Tests completed with issues"
           echo "::endgroup::"
