@@ -64,7 +64,10 @@ jobs:
           safety check --full-report || true
 
       - name: Run tests with coverage
+        env:
+          PYTHONPATH: ${{ github.workspace }}
         run: |
+          export PYTHONPATH="${{ github.workspace }}:$PYTHONPATH"
           pytest tests/ -v --tb=short \
             --ignore=tests/integration \
             --ignore=tests/fuzz/test_input_validation.py \
