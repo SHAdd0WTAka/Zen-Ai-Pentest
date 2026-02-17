@@ -48,6 +48,7 @@ jobs:
           pip install -r requirements.txt
           pip install -r requirements-test.txt
           pip install bandit safety ruff
+          pip install -e .
 
       - name: Lint with Ruff
         run: |
