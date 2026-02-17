@@ -9,7 +9,7 @@ Tests the dashboard components including:
 
 import pytest
 import asyncio
-from datetime import datetime
+from datetime import datetime, timedelta
 
 # Import dashboard components
 try:

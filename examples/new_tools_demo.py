@@ -42,6 +42,7 @@ from tools.scout_integration import (
 from tools.trivy_integration import (
     TrivyScanner,
     TrivyScanTarget,
+    TrivyScannerType,
     trivy_scan_image,
     trivy_scan_filesystem,
 )

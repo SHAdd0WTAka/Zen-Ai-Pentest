@@ -5,6 +5,7 @@ Tools for optimizing async performance.
 """
 
 import asyncio
+import time
 from typing import List, Any, Callable, Coroutine, Optional
 from concurrent.futures import ThreadPoolExecutor
 import functools
