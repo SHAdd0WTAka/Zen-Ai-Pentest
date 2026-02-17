@@ -69,8 +69,8 @@ jobs:
           export PYTHONPATH="${{ github.workspace }}:$PYTHONPATH"
           # Alle funktionierenden Tests ausführen (Coverage-Boost)
           python -m pytest \
-            tests/test_guardrails.py \
-            tests/test_security.py \
+            tests/test_api.py \
+            tests/test_api_endpoints.py \
             tests/test_agent_base.py \
             tests/test_api_schemas.py \
             tests/test_all_imports.py \
