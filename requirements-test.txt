@@ -15,6 +15,9 @@ prometheus-client>=0.17.0
 # Browser Automation (for exploit validator)
 playwright>=1.40.0; platform_system != "Windows"
 
+# JWT for API auth tests
+pyjwt>=2.8.0
+
 # Additional test utilities
 factory-boy>=3.3.0
 faker>=20.0.0
