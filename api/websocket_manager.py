@@ -31,7 +31,7 @@ class ConnectionManager:
         """Nachricht an einzelnen Client"""
         try:
             await websocket.send_text(json.dumps(message))
-        except:
+        except Exception:
             pass
 
     async def broadcast(self, message: dict, client_id: str = None):
@@ -48,7 +48,7 @@ class ConnectionManager:
         for connection in connections:
             try:
                 await connection.send_text(json.dumps(message))
-            except:
+            except Exception:
                 disconnected.append(connection)
 
         # Cleanup disconnected

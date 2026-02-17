@@ -236,7 +236,7 @@ def cmd_interactive(args):
                     try:
                         current_temp = float(arg)
                         console.print(f"[green]✓ Temperature:[/green] {current_temp}")
-                    except:
+                    except Exception:
                         console.print("[red]Ungültige Temperatur[/red]")
                 elif cmd == 'prompt':
                     prompt = client.get_prompt(current_persona)

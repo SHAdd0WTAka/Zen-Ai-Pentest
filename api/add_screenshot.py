@@ -116,7 +116,7 @@ def add_from_downloads():
                 success_count += 1
 
         console.print(f"\n[green]✅ {success_count}/{len(screenshots)} Screenshots kopiert[/green]")
-        console.print(f"[blue]🌐 Web UI: http://127.0.0.1:5000 → Tab 'Screenshots'[/blue]")
+        console.print("[blue]🌐 Web UI: http://127.0.0.1:5000 → Tab 'Screenshots'[/blue]")
 
 def delete_screenshot(filename):
     """Lösche Screenshot"""
@@ -152,10 +152,10 @@ def open_screenshot_dir():
             subprocess.run(cmd, check=True)
             console.print(f"[green]📂 Geöffnet: {screenshot_dir}[/green]")
             return
-        except:
+        except Exception:
             continue
 
-    console.print(f"[yellow]⚠️  Konnte Dateimanager nicht öffnen[/yellow]")
+    console.print("[yellow]⚠️  Konnte Dateimanager nicht öffnen[/yellow]")
     console.print(f"[dim]Pfad: {screenshot_dir}[/dim]")
 
 def main():

@@ -16,7 +16,6 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from flask import Flask, request, jsonify, Response, render_template, send_from_directory
 from flask_cors import CORS
 from flask_sock import Sock
-from datetime import datetime
 from config_loader import load_config
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
@@ -24,7 +23,6 @@ CORS(app)
 sock = Sock(app)
 
 # Request Logging
-import logging
 from logging.handlers import RotatingFileHandler
 
 # Setup request logger

@@ -318,9 +318,6 @@ class RiskScorer:
         # Exposure Factor
         exposure_factor = factors.exposure / 10
 
-        # Detection Factor (inverse)
-        detection_factor = 1 - (factors.detection_difficulty / 10)
-
         # Patch Factor (inverse - wenn Patch verfÃ¼gbar, sinkt Risiko)
         patch_factor = 1 - factors.patch_availability
 

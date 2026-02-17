@@ -193,41 +193,6 @@ class ToolInfo(BaseModel):
 
 
 # ============================================================================
-# AUTH SCHEMAS
-# ============================================================================
-
-
-class UserLogin(BaseModel):
-    username: str
-    password: str
-
-
-class UserCreate(BaseModel):
-    username: str = Field(..., min_length=3, max_length=100)
-    email: str = Field(..., pattern=r"^[\w\.-]+@[\w\.-]+\.\w+$")
-    password: str = Field(..., min_length=8)
-    role: Optional[str] = "operator"
-
-
-class UserResponse(BaseModel):
-    id: int
-    username: str
-    email: str
-    role: str
-    is_active: int
-    created_at: datetime
-
-    class Config:
-        from_attributes = True
-
-
-class TokenResponse(BaseModel):
-    access_token: str
-    token_type: str = "bearer"
-    expires_in: int = 3600
-
-
-# ============================================================================
 # DASHBOARD SCHEMAS
 # ============================================================================
 

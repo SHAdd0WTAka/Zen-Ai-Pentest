@@ -602,9 +602,6 @@ async def health_check():
     # Check API selbst
     health_status["services"]["api"] = {"status": "ok", "port": 8000}
 
-    # HTTP Status Code
-    status_code = 200 if health_status["status"] == "healthy" else 503
-
     return health_status
 
 
