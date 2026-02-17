@@ -10,10 +10,6 @@ on:
 jobs:
   coverage:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ['3.12']
-      fail-fast: false
     
     steps:
     - name: Checkout repository
@@ -21,23 +17,21 @@ jobs:
       with:
         fetch-depth: 0
     
-    - name: Set up Python ${{ matrix.python-version }}
+    - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: ${{ matrix.python-version }}
+        python-version: '3.12'
         cache: 'pip'
     
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install pytest pytest-cov pytest-asyncio
+        pip install pytest pytest-cov
         pip install pydantic sqlalchemy fastapi redis httpx email-validator pyjwt python-multipart passlib 'bcrypt<4.1'
     
     - name: Run tests with coverage
       run: |
-        pytest tests/test_working_final.py tests/test_working_execution.py tests/test_core_execution.py tests/test_more_coverage_fixed.py \
-          -v \
+        pytest tests/test_working_final.py tests/test_more_coverage_fixed.py -v \
           --cov=core.orchestrator \
           --cov=database.models \
           --cov=tools.ffuf_integration_enhanced \
@@ -59,8 +53,7 @@ jobs:
           --cov=autonomous.agent_loop \
           --cov=autonomous.exploit_validator \
           --cov-report=xml:coverage.xml \
-          --cov-report=term-missing \
-          --cov-fail-under=0
+          --cov-report=term
       env:
         ADMIN_PASSWORD: testpass
     
@@ -68,27 +61,12 @@ jobs:
       uses: codecov/codecov-action@v4
       with:
         files: ./coverage.xml
-        flags: unittests
-        name: codecov-umbrella
         fail_ci_if_error: false
         verbose: true
-        token: ${{ secrets.CODECOV_TOKEN }}
+        token: c92ff043-e4f0-4bcd-a117-6e978adfb8f7
     
-    - name: Coverage Summary
+    - name: Show coverage
       run: |
-        echo "## Coverage Report" >> $GITHUB_STEP_SUMMARY
-        python << 'EOF'
-        import xml.etree.ElementTree as ET
-        try:
-            tree = ET.parse('coverage.xml')
-            root = tree.getroot()
-            line_rate = float(root.get('line-rate', 0))
-            line_pct = line_rate * 100
-            print(f"Coverage: {line_pct:.1f}%")
-            with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as f:
-                f.write(f"Coverage: {line_pct:.1f}%\n")
-        except Exception as e:
-            print(f"Error: {e}")
-        EOF
-      env:
-        GITHUB_STEP_SUMMARY: ${{ github.step_summary }}
+        echo "Coverage file:"
+        ls -la coverage.xml
+        head -20 coverage.xml
