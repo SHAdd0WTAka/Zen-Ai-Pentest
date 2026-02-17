@@ -1,0 +1,271 @@
+{
+  "info": {
+    "_postman_id": "zen-api-collection",
+    "name": "Zen-AI-Pentest API",
+    "description": "API collection for Zen-AI-Pentest",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Authorization", "value": "Bearer {{refresh_token}}"}],
+            "url": {
+              "raw": "{{base_url}}/auth/refresh",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "refresh"]
+            }
+          }
+        },
+        {
+          "name": "Get Current User",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}],
+            "url": {
+              "raw": "{{base_url}}/auth/me",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "me"]
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}],
+            "url": {
+              "raw": "{{base_url}}/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "logout"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Agent Management v2",
+      "item": [
+        {
+          "name": "Register Agent",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{access_token}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"research-agent-1\",\n  \"role\": \"researcher\",\n  \"description\": \"Network reconnaissance agent\",\n  \"expires_days\": 90\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v2/agents/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v2", "agents", "register"]
+            }
+          }
+        },
+        {
+          "name": "List Agents",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}],
+            "url": {
+              "raw": "{{base_url}}/api/v2/agents",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v2", "agents"]
+            }
+          }
+        },
+        {
+          "name": "Get Agent",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}],
+            "url": {
+              "raw": "{{base_url}}/api/v2/agents/{{agent_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v2", "agents", "{{agent_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Revoke Agent",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{access_token}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"security_breach\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v2/agents/{{agent_id}}/revoke",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v2", "agents", "{{agent_id}}", "revoke"]
+            }
+          }
+        },
+        {
+          "name": "Rotate Agent Key",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}],
+            "url": {
+              "raw": "{{base_url}}/api/v2/agents/{{agent_id}}/rotate",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v2", "agents", "{{agent_id}}", "rotate"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Scans",
+      "item": [
+        {
+          "name": "Create Scan",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{access_token}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Network Scan - DMZ\",\n  \"target\": \"192.168.1.0/24\",\n  \"scan_type\": \"network\",\n  \"config\": {\n    \"ports\": \"1-65535\",\n    \"threads\": 100\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/scans",
+              "host": ["{{base_url}}"],
+              "path": ["scans"]
+            }
+          }
+        },
+        {
+          "name": "List Scans",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}],
+            "url": {
+              "raw": "{{base_url}}/scans?skip=0&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["scans"],
+              "query": [
+                {"key": "skip", "value": "0"},
+                {"key": "limit", "value": "10"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Scan",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}],
+            "url": {
+              "raw": "{{base_url}}/scans/{{scan_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["scans", "{{scan_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Findings",
+      "item": [
+        {
+          "name": "Get Findings",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}],
+            "url": {
+              "raw": "{{base_url}}/scans/{{scan_id}}/findings?severity=critical",
+              "host": ["{{base_url}}"],
+              "path": ["scans", "{{scan_id}}", "findings"],
+              "query": [{"key": "severity", "value": "critical"}]
+            }
+          }
+        },
+        {
+          "name": "Add Finding",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{access_token}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"SQL Injection\",\n  \"description\": \"UNION-based SQL injection in search parameter\",\n  \"severity\": \"critical\",\n  \"cvss_score\": 9.8,\n  \"evidence\": \"...\",\n  \"remediation\": \"Use parameterized queries\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/scans/{{scan_id}}/findings",
+              "host": ["{{base_url}}"],
+              "path": ["scans", "{{scan_id}}", "findings"]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [""]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refresh_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "agent_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "scan_id",
+      "value": "1",
+      "type": "string"
+    }
+  ]
+}

@@ -1,450 +1,514 @@
-# API Reference Documentation
+# Zen-AI-Pentest API Reference
 
-**Project**: Zen-AI-Pentest  
-**Version**: 2.3.9  
-**Last Updated**: 2026-02-16
+Complete API reference for the authentication and agent communication systems.
 
----
-
-## Overview
-
-Zen-AI-Pentest provides a comprehensive REST API for programmatic access to all penetration testing capabilities. This document serves as the **official reference documentation** for all external interfaces.
-
-## Interactive API Documentation
-
-### Swagger UI (OpenAPI)
-When the API server is running, interactive documentation is available at:
+## Base URL
 
 ```
-http://localhost:8000/docs
+Production: https://api.zen-pentest.local
+Development: http://localhost:8000
 ```
 
-This provides:
-- ✅ Interactive endpoint testing
-- ✅ Request/response schemas
-- ✅ Authentication handling
-- ✅ Auto-generated from code
+## Authentication
 
-### ReDoc (Alternative)
-```
-http://localhost:8000/redoc
-```
-
----
-
-## Base URLs
-
-| Environment | URL | Protocol |
-|-------------|-----|----------|
-| Development | `http://localhost:8000` | HTTP |
-| Docker | `http://localhost:8000` | HTTP |
-| Production | `https://api.zen-pentest.local` | HTTPS |
-
----
-
-## Authentication Interface
-
-### Login Endpoint
-
-**URL**: `POST /auth/login`
-
-**Input:**
-```json
-{
-  "username": "string (required)",
-  "password": "string (required)"
-}
-```
-
-**Output (Success - 200):**
-```json
-{
-  "access_token": "string (JWT)",
-  "token_type": "bearer",
-  "expires_in": 3600
-}
-```
-
-**Output (Error - 401):**
-```json
-{
-  "detail": "Invalid credentials"
-}
-```
-
-### Using Authentication
-
-All protected endpoints require the Authorization header:
+All API endpoints (except login/register) require authentication via Bearer token.
 
 ```http
 Authorization: Bearer <access_token>
 ```
 
----
+## Endpoints
 
-## Core API Endpoints
+### Authentication
 
-### Health Check
+#### POST `/auth/login`
+Authenticate user and get access token.
 
-**Purpose**: Check API availability
-
-**URL**: `GET /health`
-
-**Input**: None
-
-**Output (200):**
+**Request:**
 ```json
 {
-  "status": "healthy",
-  "version": "2.3.9",
-  "timestamp": "2026-02-16T12:00:00Z"
+  "username": "admin",
+  "password": "admin123"
+}
+```
+
+**Response:**
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIs...",
+  "refresh_token": "eyJhbGciOiJIUzI1NiIs...",
+  "token_type": "bearer",
+  "expires_in": 900,
+  "username": "admin",
+  "role": "admin"
+}
+```
+
+#### POST `/auth/refresh`
+Refresh access token using refresh token.
+
+**Headers:**
+```http
+Authorization: Bearer <refresh_token>
+```
+
+**Response:**
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIs...",
+  "token_type": "bearer",
+  "expires_in": 900
+}
+```
+
+#### POST `/auth/logout`
+Revoke current session.
+
+**Response:**
+```json
+{
+  "message": "Logged out successfully"
+}
+```
+
+#### POST `/auth/logout-all`
+Revoke all user sessions.
+
+**Response:**
+```json
+{
+  "message": "Logged out from 3 device(s)"
+}
+```
+
+#### GET `/auth/me`
+Get current user info.
+
+**Response:**
+```json
+{
+  "sub": "admin",
+  "roles": ["admin"],
+  "permissions": [],
+  "session_id": "..."
 }
 ```
 
 ---
 
-### Scans Management
+### Agent Management v2
 
-#### Create Scan
+#### POST `/api/v2/agents/register`
+Register a new agent. Requires `agent:register` permission.
 
-**URL**: `POST /api/v1/scans`
-
-**Input:**
+**Request:**
 ```json
 {
-  "target": "string (required, domain/IP)",
-  "scan_type": "string (enum: quick, full, stealth)",
-  "ports": [80, 443],
-  "templates": ["string"],
-  "timeout": 300,
-  "concurrent": 5
+  "name": "research-agent-1",
+  "role": "researcher",
+  "description": "Network reconnaissance agent",
+  "expires_days": 90,
+  "rate_limit": 1000
 }
 ```
 
-**Output (201):**
+**Response:**
 ```json
 {
-  "id": "uuid",
-  "target": "example.com",
-  "status": "pending",
-  "created_at": "2026-02-16T12:00:00Z"
-}
-```
-
-#### Get Scan Status
-
-**URL**: `GET /api/v1/scans/{scan_id}`
-
-**Input**: Path parameter `scan_id` (uuid)
-
-**Output (200):**
-```json
-{
-  "id": "uuid",
-  "target": "example.com",
-  "status": "running",
-  "progress": 45,
-  "findings_count": 3,
-  "started_at": "2026-02-16T12:00:00Z",
-  "estimated_completion": "2026-02-16T12:05:00Z"
-}
-```
-
-#### List Scans
-
-**URL**: `GET /api/v1/scans`
-
-**Query Parameters**:
-- `status` (optional): Filter by status
-- `limit` (optional): Max results (default: 50)
-- `offset` (optional): Pagination offset
-
-**Output (200):**
-```json
-{
-  "items": [...],
-  "total": 100,
-  "limit": 50,
-  "offset": 0
-}
-```
-
----
-
-### Findings Management
-
-#### List Findings
-
-**URL**: `GET /api/v1/findings`
-
-**Query Parameters**:
-- `severity` (optional): critical, high, medium, low, info
-- `scan_id` (optional): Filter by scan
-- `confirmed` (optional): boolean
-
-**Output (200):**
-```json
-{
-  "items": [
-    {
-      "id": "uuid",
-      "title": "SQL Injection",
-      "severity": "critical",
-      "description": "...",
-      "remediation": "...",
-      "cvss_score": 9.8,
-      "confirmed": false,
-      "created_at": "2026-02-16T12:00:00Z"
-    }
+  "agent_id": "agt_abc123def456",
+  "api_key": "zen_xyz789uvw123",
+  "api_secret": "sec_abc123xyz789",
+  "role": "researcher",
+  "permissions": [
+    "message:send",
+    "message:receive",
+    "task:create",
+    "task:execute"
   ],
-  "total": 25
+  "created_at": "2026-02-17T16:30:00Z",
+  "expires_at": "2026-05-18T16:30:00Z",
+  "warning": "Store the api_secret securely - it will not be shown again!"
 }
 ```
 
-#### Get Finding Details
+**Roles:**
+- `researcher` - Information gathering
+- `analyst` - Data analysis
+- `exploit` - Exploit development
+- `scanner` - Vulnerability scanning
+- `reporter` - Report generation
+- `coordinator` - Multi-agent coordination
+- `admin` - Full access
 
-**URL**: `GET /api/v1/findings/{finding_id}`
+#### POST `/api/v2/agents/{agent_id}/revoke`
+Revoke agent credentials. Requires `agent:unregister` permission.
 
-**Output (200):** Full finding object with evidence
+**Request:**
+```json
+{
+  "reason": "security_breach"
+}
+```
 
----
+**Response:**
+```json
+{
+  "message": "Agent agt_abc123def456 revoked successfully",
+  "reason": "security_breach"
+}
+```
 
-### Agent Management
+#### POST `/api/v2/agents/{agent_id}/rotate`
+Rotate agent API key. Requires `agent:register` permission.
 
-#### List Agents
+**Response:**
+```json
+{
+  "agent_id": "agt_abc123def456",
+  "api_key": "zen_new789uvw456",
+  "api_secret": "sec_new456abc789",
+  "role": "researcher",
+  "expires_at": "2026-05-18T16:30:00Z",
+  "warning": "Store the api_secret securely - it will not be shown again!"
+}
+```
 
-**URL**: `GET /api/v1/agents`
+#### GET `/api/v2/agents`
+List active agents. Requires `agent:list` permission.
 
-**Output (200):**
+**Response:**
 ```json
 {
   "agents": [
     {
-      "id": "uuid",
-      "name": "react-agent",
-      "status": "idle",
-      "capabilities": ["scan", "analyze"]
+      "agent_id": "agt_abc123def456",
+      "role": "researcher",
+      "permissions": ["message:send", "task:create"],
+      "is_active": true,
+      "last_seen": "2026-02-17T16:30:00Z"
     }
-  ]
+  ],
+  "count": 1
 }
 ```
 
-#### Execute Agent
+#### GET `/api/v2/agents/{agent_id}`
+Get agent details. Requires `agent:list` permission.
 
-**URL**: `POST /api/v1/agents/{agent_id}/execute`
-
-**Input:**
+**Response:**
 ```json
 {
-  "task": "string",
-  "parameters": {},
-  "priority": "normal"
+  "agent_id": "agt_abc123def456",
+  "role": "researcher",
+  "permissions": ["message:send", "task:create"],
+  "is_active": true,
+  "last_seen": "2026-02-17T16:30:00Z"
 }
 ```
-
-**Output (202):** Accepted, returns task ID
 
 ---
 
-### WebSocket Interface
+### WebSocket Agent Communication
 
-Real-time updates via WebSocket:
+#### WS `/agents/stream`
+Real-time agent communication endpoint.
 
-**URL**: `ws://localhost:8000/ws`
+**Protocol:**
 
-**Authentication**: Token via query parameter
-```
-ws://localhost:8000/ws?token=<access_token>
-```
-
-**Events**:
-- `scan.update` - Scan progress updates
-- `finding.new` - New finding discovered
-- `agent.status` - Agent status changes
-
-**Message Format:**
+1. **Connect** to WebSocket
+2. **Authenticate** within 10 seconds:
 ```json
 {
-  "event": "scan.update",
-  "data": {
-    "scan_id": "uuid",
-    "progress": 75,
-    "status": "running"
+  "type": "auth",
+  "api_key": "zen_xyz789uvw123",
+  "api_secret": "sec_abc123xyz789"
+}
+```
+
+3. **Receive auth success**:
+```json
+{
+  "type": "auth_success",
+  "agent_id": "agt_abc123def456",
+  "role": "researcher",
+  "permissions": ["message:send", "task:create"]
+}
+```
+
+4. **Send message**:
+```json
+{
+  "type": "message",
+  "recipient": "agt_target789",  // or "broadcast"
+  "payload": {
+    "task": "scan",
+    "target": "example.com",
+    "options": {...}
   }
 }
 ```
 
----
-
-## Error Handling
-
-### Error Response Format
-
-All errors follow this format:
-
+5. **Receive acknowledgment**:
 ```json
 {
-  "detail": "Error message",
-  "code": "ERROR_CODE",
-  "timestamp": "2026-02-16T12:00:00Z"
+  "type": "ack",
+  "message_id": "msg_123",
+  "status": "delivered",
+  "timestamp": "2026-02-17T16:30:00Z"
 }
 ```
 
-### HTTP Status Codes
+6. **Receive message**:
+```json
+{
+  "type": "message",
+  "sender": "agt_source456",
+  "payload": {
+    "result": "scan_complete",
+    "findings": [...]
+  }
+}
+```
 
-| Code | Meaning | Description |
-|------|---------|-------------|
-| 200 | OK | Request successful |
-| 201 | Created | Resource created successfully |
-| 400 | Bad Request | Invalid input parameters |
-| 401 | Unauthorized | Authentication required |
-| 403 | Forbidden | Insufficient permissions |
-| 404 | Not Found | Resource does not exist |
-| 422 | Validation Error | Input validation failed |
-| 500 | Server Error | Internal server error |
+7. **Send heartbeat** (every 30s):
+```json
+{
+  "type": "heartbeat",
+  "timestamp": "2026-02-17T16:30:00Z"
+}
+```
 
 ---
 
-## Rate Limiting
+### Scans
 
-**Default Limits**:
-- 100 requests per minute for authenticated users
-- 10 requests per minute for unauthenticated users
+#### POST `/scans`
+Create a new scan.
 
-**Headers**:
+**Request:**
+```json
+{
+  "name": "Network Scan - DMZ",
+  "target": "192.168.1.0/24",
+  "scan_type": "network",
+  "config": {
+    "ports": "1-65535",
+    "threads": 100
+  }
+}
+```
+
+**Headers:**
 ```http
-X-RateLimit-Limit: 100
-X-RateLimit-Remaining: 95
-X-RateLimit-Reset: 1645012800
+X-CSRF-Token: <csrf_token>
+```
+
+**Response:**
+```json
+{
+  "id": 1,
+  "name": "Network Scan - DMZ",
+  "target": "192.168.1.0/24",
+  "scan_type": "network",
+  "status": "pending",
+  "config": {"ports": "1-65535", "threads": 100},
+  "user_id": "admin",
+  "created_at": "2026-02-17T16:30:00Z"
+}
+```
+
+#### GET `/scans`
+List scans.
+
+**Query Parameters:**
+- `skip`: Offset (default: 0)
+- `limit`: Max results (default: 100)
+- `status`: Filter by status (pending, running, completed, failed)
+
+**Response:**
+```json
+{
+  "scans": [...],
+  "total": 50
+}
+```
+
+#### GET `/scans/{scan_id}`
+Get scan details.
+
+#### DELETE `/scans/{scan_id}`
+Delete a scan.
+
+---
+
+### Findings
+
+#### GET `/scans/{scan_id}/findings`
+Get findings for a scan.
+
+**Query Parameters:**
+- `severity`: Filter by severity (critical, high, medium, low, info)
+
+#### POST `/scans/{scan_id}/findings`
+Add finding to scan.
+
+**Request:**
+```json
+{
+  "title": "SQL Injection",
+  "description": "UNION-based SQL injection in search parameter",
+  "severity": "critical",
+  "cvss_score": 9.8,
+  "evidence": "...",
+  "remediation": "Use parameterized queries"
+}
 ```
 
 ---
 
-## CLI Interface Reference
+### Reports
 
-### Command Structure
+#### POST `/reports`
+Generate report.
 
-```bash
-zen-ai-pentest [command] [options]
+**Request:**
+```json
+{
+  "scan_id": 1,
+  "format": "pdf",
+  "template": "executive"
+}
 ```
 
-### Available Commands
+#### GET `/reports`
+List reports.
 
-#### Scan Command
-```bash
-zen-ai-pentest scan [options]
-```
-
-**Options**:
-- `--target, -t`: Target URL/IP (required)
-- `--type, -T`: Scan type (quick|full|stealth)
-- `--ports, -p`: Port range (e.g., 80,443,8080)
-- `--output, -o`: Output format (json|html|pdf)
-- `--verbose, -v`: Verbose output
-
-**Example:**
-```bash
-zen-ai-pentest scan -t example.com -T full -p 80,443 -o json
-```
-
-#### Agent Command
-```bash
-zen-ai-pentest agent [subcommand]
-```
-
-**Subcommands**:
-- `list`: List available agents
-- `run <agent-id>`: Run specific agent
-- `status`: Show agent status
+#### GET `/reports/{report_id}/download`
+Download report file.
 
 ---
 
-## Python SDK Interface
+## Error Responses
 
-### Installation
-
-```bash
-pip install zen-ai-pentest
+### 400 Bad Request
+```json
+{
+  "detail": "Invalid request parameters"
+}
 ```
 
-### Usage
+### 401 Unauthorized
+```json
+{
+  "detail": "Invalid authentication credentials"
+}
+```
+
+### 403 Forbidden
+```json
+{
+  "detail": "Permission denied"
+}
+```
+
+### 404 Not Found
+```json
+{
+  "detail": "Resource not found"
+}
+```
+
+### 429 Too Many Requests
+```json
+{
+  "detail": "Rate limit exceeded",
+  "retry_after": 60
+}
+```
+
+---
+
+## Rate Limits
+
+| Endpoint | Limit |
+|----------|-------|
+| `/auth/login` | 5 requests/minute |
+| `/auth/*` | 20 requests/minute |
+| `/api/v2/agents/*` | 100 requests/minute |
+| `/scans` | 100 requests/minute |
+| `/agents/stream` | 1000 messages/minute |
+
+---
+
+## SDK Examples
+
+### Python
 
 ```python
-from zen_ai_pentest import Client
+import requests
 
-# Initialize client
-client = Client(
-    base_url="http://localhost:8000",
-    token="your-api-token"
-)
+# Login
+response = requests.post("http://localhost:8000/auth/login", json={
+    "username": "admin",
+    "password": "admin123"
+})
+tokens = response.json()
+access_token = tokens["access_token"]
 
 # Create scan
-scan = client.scans.create(
-    target="example.com",
-    scan_type="full"
+response = requests.post(
+    "http://localhost:8000/scans",
+    headers={"Authorization": f"Bearer {access_token}"},
+    json={
+        "name": "Test Scan",
+        "target": "scanme.nmap.org",
+        "scan_type": "network"
+    }
+)
+scan = response.json()
+print(f"Scan created: {scan['id']}")
+```
+
+### Agent Client
+
+```python
+from agents.v2 import AgentClient
+
+agent = AgentClient(
+    agent_id="agt_xxx",
+    api_key="zen_xxx",
+    api_secret="sec_xxx"
 )
 
-# Wait for completion
-scan.wait_for_completion()
+await agent.connect()
 
-# Get findings
-findings = scan.get_findings()
-for finding in findings:
-    print(f"{finding.severity}: {finding.title}")
+# Send message
+await agent.send_message(
+    recipient="agt_target",
+    payload={"task": "scan", "target": "example.com"}
+)
+
+# Receive messages
+async for msg in agent.receive_messages():
+    print(f"Received: {msg.payload}")
 ```
 
 ---
 
-## Data Models
+## Security
 
-### Scan Model
-
-```python
-class Scan:
-    id: UUID
-    target: str
-    status: ScanStatus
-    scan_type: ScanType
-    created_at: datetime
-    started_at: Optional[datetime]
-    completed_at: Optional[datetime]
-    findings_count: int
-```
-
-### Finding Model
-
-```python
-class Finding:
-    id: UUID
-    scan_id: UUID
-    title: str
-    description: str
-    severity: Severity
-    cvss_score: float
-    evidence: dict
-    remediation: str
-    confirmed: bool
-    created_at: datetime
-```
+- All requests must use HTTPS in production
+- Tokens expire after 15 minutes (access) or 7 days (refresh)
+- API keys should be rotated every 90 days
+- Messages between agents are end-to-end encrypted
+- All authentication events are logged for audit
 
 ---
 
-## Additional Resources
+## Changelog
 
-- **Full API Guide**: [API.md](API.md)
-- **Examples**: [API_EXAMPLES.md](API_EXAMPLES.md)
-- **Postman Collection**: Available at `/docs/postman_collection.json`
-- **OpenAPI Schema**: Available at `/openapi.json`
-
----
-
-## Document Information
-
-- **Type**: Reference Documentation
-- **Audience**: Developers, API Users
-- **Maintenance**: Auto-generated + Manual updates
-- **Last Review**: 2026-02-16
-
----
-
-*This document satisfies the OpenSSF Best Practices criterion [documentation_interface] by providing comprehensive reference documentation for all external interfaces.*
+### v2.0.0
+- Added Agent Communication v2 with end-to-end encryption
+- Added API key authentication for agents
+- Added WebSocket real-time messaging
+- Added message queue with delivery guarantees

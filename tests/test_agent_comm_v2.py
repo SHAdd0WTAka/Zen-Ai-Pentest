@@ -39,10 +39,20 @@ def encryption():
 @pytest.fixture
 def auth_manager():
     """Create authenticator with fresh database"""
-    from database.auth_models import init_auth_db
-    init_auth_db()
+    from database.auth_models import Base, engine
+    from sqlalchemy import create_engine
+    
+    # Use in-memory database for tests
+    test_engine = create_engine("sqlite:///:memory:")
+    Base.metadata.create_all(test_engine)
+    
+    # Patch the session to use test engine
+    from database.auth_models import SessionLocal
+    original_engine = engine
     
     auth = AgentAuthenticator()
+    auth.db = SessionLocal()
+    
     return auth
 
 
