@@ -974,15 +974,15 @@ async def test_slack_notification(webhook_url: str, user: dict = Depends(verify_
         safe_webhook_url = _validate_slack_webhook_url(webhook_url)
         notifier = SlackNotifier(safe_webhook_url)
         success = notifier.send_message(
-    except HTTPException:
-        # Re-raise validation errors without wrapping in 500
-        raise
             f"Test notification from Zen AI Pentest\nUser: {user.get('sub', 'unknown')}\nTime: {datetime.utcnow().isoformat()}"
         )
         if success:
             return {"status": "success", "message": "Test notification sent"}
         else:
             raise HTTPException(status_code=400, detail="Failed to send Slack notification")
+    except HTTPException:
+        # Re-raise validation errors without wrapping in 500
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -1001,7 +1001,6 @@ async def notify_slack_scan_complete(scan_id: int, webhook_url: str, user: dict 
         # Validate webhook URL to prevent SSRF
         safe_webhook_url = _validate_slack_webhook_url(webhook_url)
 
-
         # Count findings
         findings = db.query(Finding).filter(Finding.scan_id == scan_id).all()
         findings_count = len(findings)
@@ -1010,9 +1009,6 @@ async def notify_slack_scan_complete(scan_id: int, webhook_url: str, user: dict 
         # Send notification
         notifier = SlackNotifier(safe_webhook_url)
         success = notifier.send_scan_completed(
-    except HTTPException:
-        # Re-raise validation errors without wrapping in 500
-        raise
             scan_id=scan_id, target=scan.target, findings_count=findings_count, critical_count=critical_count
         )
 
@@ -1020,6 +1016,9 @@ async def notify_slack_scan_complete(scan_id: int, webhook_url: str, user: dict 
             return {"status": "success", "message": "Notification sent"}
         else:
             raise HTTPException(status_code=400, detail="Failed to send notification")
+    except HTTPException:
+        # Re-raise validation errors without wrapping in 500
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
