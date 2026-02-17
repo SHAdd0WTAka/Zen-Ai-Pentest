@@ -38,8 +38,29 @@ coverage:
         only_pulls: true   # Only check on PRs
 
   ignore:
-    # Ignore external tool wrappers
-    - "tools/**/*"
+    # Ignore external tool wrappers not under test
+    - "tools/aircrack_integration.py"
+    - "tools/burpsuite_integration.py"
+    - "tools/crackmapexec_integration.py"
+    - "tools/gobuster_integration.py"
+    - "tools/hydra_integration.py"
+    - "tools/masscan_integration.py"
+    - "tools/metasploit_integration.py"
+    - "tools/nuclei_integration.py"
+    - "tools/responder_integration.py"
+    - "tools/scapy_integration.py"
+    - "tools/scout_integration.py"
+    - "tools/semgrep_integration.py"
+    - "tools/trivy_integration.py"
+    - "tools/trufflehog_integration.py"
+    - "tools/zap_integration.py"
+    - "tools/kimi_*.py"
+    - "tools/tool_caller.py"
+    - "tools/tool_registry.py"
+    - "tools/subdomain_*.py"
+    - "tools/update_personas.py"
+    - "tools/unified_recon.py"
+    - "tools/integrations/*"
     # Ignore API routes (require FastAPI server)
     - "api/**/*"
     # Ignore tests

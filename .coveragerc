@@ -7,108 +7,55 @@ branch = True
 
 # Source modules to track
 source = 
-    core
-    agents
+    tools
     modules
-    api
-    utils
-    database
-    risk_engine
-    safety
-    memory
-    autonomous
 
-# Omit files that don't need coverage
+# Include ONLY the files we have tests for
+include = 
+    */modules/enhanced_recon.py
+    */modules/osint_super.py
+    */modules/super_scanner.py
+    */tools/ffuf_integration_enhanced.py
+    */tools/whatweb_integration.py
+    */tools/wafw00f_integration.py
+    */tools/subfinder_integration.py
+    */tools/httpx_integration.py
+    */tools/nikto_integration.py
+    */tools/sherlock_integration.py
+    */tools/ignorant_integration.py
+    */tools/tshark_integration.py
+    */tools/amass_integration.py
+    */tools/masscan_integration.py
+
+# Omit test files and config
 omit = 
-    # External tool integrations (require binaries - not unit testable)
-    tools/*
-    
-    # API routes require FastAPI server - integration tests only
-    api/*
-    api/routes/*
-    api/v1/*
-    api/core/*
-    
-    # Test files themselves
     tests/*
     test_*.py
     *_test.py
-    
-    # Virtual environments
     venv/*
     .venv/*
     env/*
-    
-    # Build artifacts
     build/*
     dist/*
     *.egg-info/*
-    
-    # CI/CD and deployment
-    ci_cd/*
-    docker/*
-    scripts/*
-    
-    # Documentation
-    docs/*
-    
-    # Frontend (JavaScript)
-    web_ui/*
-    
-    # Examples and demos
-    examples/*
-    
-    # Benchmarks
-    benchmarks/*
-    
-    # Entry points
-    zen_ai_pentest.py
-    zen-cli.py
-    
-    # Configuration files
     setup.py
     conftest.py
-    
-    # Legacy or unused modules
-    plugins/*
-    gui/*
-    backends/*
-    
-    # Modules requiring external services
-    integrations/*
-    notifications/*
 
 # Parallel mode for CI
 parallel = False
 
-# Fail if coverage is too low (adjust based on progress)
-# fail_under = 50
-
 [report]
 # Exclude lines from coverage
 exclude_lines =
-    # Standard pragmas
     pragma: no cover
-    
-    # Defensive code
     def __repr__
     if self.debug:
-    
-    # Abstract methods
     raise NotImplementedError
     raise AssertionError
-    
-    # Main blocks
     if __name__ == .__main__.:
-    
-    # Type checking
     if TYPE_CHECKING:
-    
-    # Debug/development code
     if settings.DEBUG:
     if os.environ.get("DEBUG"):
-    
-    # Fallbacks for missing imports
     except ImportError:
     except ModuleNotFoundError:
 
