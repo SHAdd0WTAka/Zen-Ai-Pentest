@@ -173,6 +173,7 @@ jobs:
           echo "suspicious=$SUSPICIOUS" >> $GITHUB_OUTPUT
 
       - name: Send Discord Notification
+        continue-on-error: true
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
           SAFE_COMMIT_MSG: ${{ steps.prepare.outputs.commit_msg }}
