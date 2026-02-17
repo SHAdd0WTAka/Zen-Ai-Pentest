@@ -67,7 +67,7 @@ jobs:
       - name: Run tests with coverage
         run: |
           export PYTHONPATH="${{ github.workspace }}:$PYTHONPATH"
-          python -m pytest tests/ -v --tb=short \
+          python -m pytest tests/ -v --tb=short --timeout=60 \
             --ignore=tests/integration \
             --ignore=tests/fuzz/test_input_validation.py \
             --ignore=tests/test_api_routes_agents.py \
