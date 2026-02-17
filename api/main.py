@@ -911,32 +911,65 @@ async def websocket_endpoint(websocket: WebSocket, client_id: str):
 # ============================================================================
 
 class SimpleAgentConnection:
-    """Simple agent connection manager for basic messaging"""
+    """Simple agent connection manager with task support"""
     
     def __init__(self):
         self.active_connections: dict[str, WebSocket] = {}
+        self.agent_info: dict[str, dict] = {}  # agent_id -> {api_key, connected_at, ...}
     
-    async def connect(self, websocket: WebSocket, agent_id: str):
+    async def connect(self, websocket: WebSocket, agent_id: str, api_key: str = None):
         await websocket.accept()
         self.active_connections[agent_id] = websocket
-        logger.info(f"Agent {agent_id} connected via WebSocket")
+        self.agent_info[agent_id] = {
+            "api_key": api_key,
+            "connected_at": datetime.utcnow().isoformat(),
+            "last_seen": datetime.utcnow().isoformat()
+        }
+        logger.info(f"✅ Agent {agent_id} connected via WebSocket")
     
     def disconnect(self, agent_id: str):
         if agent_id in self.active_connections:
             del self.active_connections[agent_id]
-            logger.info(f"Agent {agent_id} disconnected")
+        if agent_id in self.agent_info:
+            del self.agent_info[agent_id]
+        logger.info(f"🔌 Agent {agent_id} disconnected")
     
-    async def send_to_agent(self, agent_id: str, message: dict):
+    async def send_to_agent(self, agent_id: str, message: dict) -> bool:
+        """Send message to specific agent. Returns True if sent."""
         if agent_id in self.active_connections:
-            await self.active_connections[agent_id].send_json(message)
+            try:
+                await self.active_connections[agent_id].send_json(message)
+                self.agent_info[agent_id]["last_seen"] = datetime.utcnow().isoformat()
+                return True
+            except Exception as e:
+                logger.error(f"❌ Failed to send to {agent_id}: {e}")
+                return False
+        return False
+    
+    async def send_task(self, agent_id: str, task: dict) -> bool:
+        """Send task to agent"""
+        return await self.send_to_agent(agent_id, {
+            "type": "task",
+            "task": task,
+            "timestamp": datetime.utcnow().isoformat()
+        })
     
     async def broadcast(self, message: dict, exclude: Optional[str] = None):
         for agent_id, ws in self.active_connections.items():
             if agent_id != exclude:
                 try:
                     await ws.send_json(message)
+                    self.agent_info[agent_id]["last_seen"] = datetime.utcnow().isoformat()
                 except Exception as e:
-                    logger.error(f"Failed to send to {agent_id}: {e}")
+                    logger.error(f"❌ Failed to send to {agent_id}: {e}")
+    
+    def get_connected_agents(self) -> list:
+        """Get list of connected agent IDs"""
+        return list(self.active_connections.keys())
+    
+    def is_agent_connected(self, agent_id: str) -> bool:
+        """Check if agent is connected"""
+        return agent_id in self.active_connections
 
 
 agent_connection_manager = SimpleAgentConnection()
@@ -945,22 +978,19 @@ agent_connection_manager = SimpleAgentConnection()
 @app.websocket("/agents/ws")
 async def agent_websocket_endpoint(websocket: WebSocket):
     """
-    Agent Communication WebSocket Endpoint
+    Agent Communication WebSocket Endpoint with API Key Auth
     
-    Simple protocol for agent messaging:
-    1. Connect and send: {"type": "auth", "agent_id": "..."}
-    2. Server responds: {"type": "auth_success"}
-    3. Send messages: {"type": "message", "recipient": "...", "payload": {...}}
-    4. Receive broadcasts and direct messages
-    5. Send heartbeat: {"type": "heartbeat"}
-    
-    Production Note: In production, implement full AgentAuthenticator
-    with API key validation as shown in api/routes/agents_v2.py
+    Protocol:
+    1. Auth: {"type": "auth", "agent_id": "...", "api_key": "...", "api_secret": "..."}
+    2. Receive: {"type": "auth_success", "agent_id": "..."}
+    3. Receive tasks: {"type": "task", "task": {...}}
+    4. Send results: {"type": "task_result", "task_id": "...", "result": {...}}
+    5. Heartbeat: {"type": "heartbeat"} every 30s
     """
     agent_id: Optional[str] = None
+    api_key: Optional[str] = None
     
     try:
-        # Wait for auth message without accepting first
         await websocket.accept()
         
         # Receive auth message
@@ -975,6 +1005,9 @@ async def agent_websocket_endpoint(websocket: WebSocket):
             return
         
         agent_id = auth_data.get("agent_id")
+        api_key = auth_data.get("api_key")
+        api_secret = auth_data.get("api_secret")
+        
         if not agent_id:
             await websocket.send_json({
                 "type": "auth_failed",
@@ -983,8 +1016,18 @@ async def agent_websocket_endpoint(websocket: WebSocket):
             await websocket.close()
             return
         
-        # Simple auth success (production: validate API key)
-        await agent_connection_manager.connect(websocket, agent_id)
+        # Validate API Key (simple check for now)
+        # In production: Use AgentAuthenticator to validate
+        if not api_key or not api_key.startswith("zen_"):
+            await websocket.send_json({
+                "type": "auth_failed",
+                "error": "Invalid API key format"
+            })
+            await websocket.close()
+            return
+        
+        # Connect agent
+        await agent_connection_manager.connect(websocket, agent_id, api_key)
         
         await websocket.send_json({
             "type": "auth_success",
@@ -992,17 +1035,46 @@ async def agent_websocket_endpoint(websocket: WebSocket):
             "message": "Connected to Zen-AI-Pentest Agent Network"
         })
         
+        logger.info(f"🔌 Agent {agent_id} authenticated with API key {api_key[:15]}...")
+        
         # Main message loop
         while True:
             try:
                 data = await websocket.receive_json()
                 msg_type = data.get("type")
                 
-                if msg_type == "message":
+                if msg_type == "task_result":
+                    # Receive task result from agent
+                    task_id = data.get("task_id")
+                    result = data.get("result", {})
+                    
+                    logger.info(f"✅ Task result received from {agent_id}: {task_id}")
+                    
+                    # Forward to workflow orchestrator
+                    try:
+                        from agents.workflows.orchestrator import get_workflow_orchestrator
+                        orchestrator = get_workflow_orchestrator()
+                        await orchestrator.submit_task_result(task_id, result)
+                        
+                        await websocket.send_json({
+                            "type": "ack",
+                            "message_id": task_id,
+                            "status": "result_received",
+                            "timestamp": datetime.utcnow().isoformat()
+                        })
+                    except Exception as e:
+                        logger.error(f"Failed to process task result: {e}")
+                
+                elif msg_type == "task_ack":
+                    # Agent acknowledged task receipt
+                    task_id = data.get("task_id")
+                    logger.debug(f"📋 Task {task_id} acknowledged by {agent_id}")
+                
+                elif msg_type == "message":
+                    # Agent-to-agent messaging
                     recipient = data.get("recipient", "broadcast")
                     payload = data.get("payload", {})
                     
-                    # Send acknowledgment
                     await websocket.send_json({
                         "type": "ack",
                         "message_id": data.get("message_id", "unknown"),
@@ -1010,7 +1082,6 @@ async def agent_websocket_endpoint(websocket: WebSocket):
                         "timestamp": datetime.utcnow().isoformat()
                     })
                     
-                    # Route message
                     if recipient == "broadcast":
                         await agent_connection_manager.broadcast({
                             "type": "message",

@@ -372,21 +372,50 @@ class WorkflowOrchestrator:
         return tasks
     
     async def _distribute_tasks(self, workflow_id: str, tasks: List[Task]):
-        """Distribute tasks to available agents"""
+        """Distribute tasks to available agents via WebSocket"""
         workflow = self.workflows[workflow_id]
         agents = workflow.agents.copy()
         
-        # Round-robin assignment
-        for i, task in enumerate(tasks):
-            agent_id = agents[i % len(agents)]
-            task.agent_id = agent_id
-            task.status = "assigned"
+        # Import agent connection manager
+        try:
+            # Import from main API module
+            import sys
+            sys.path.insert(0, '/mnt/c/Users/Ataka/zen-ai-pentest')
+            from api.main import agent_connection_manager
             
-            # In production: Send task to agent via WebSocket
-            logger.info(f"📋 Task {task.id} assigned to agent {agent_id}")
-            
-            # Put in queue for execution
-            await self._task_queue.put(task)
+            # Round-robin assignment
+            for i, task in enumerate(tasks):
+                agent_id = agents[i % len(agents)]
+                task.agent_id = agent_id
+                task.status = "assigned"
+                
+                # Check if agent is connected
+                if agent_connection_manager.is_agent_connected(agent_id):
+                    # Send task via WebSocket
+                    success = await agent_connection_manager.send_task(
+                        agent_id, 
+                        task.to_dict()
+                    )
+                    
+                    if success:
+                        logger.info(f"📤 Task {task.id} sent to agent {agent_id}")
+                        task.status = "sent"
+                    else:
+                        logger.error(f"❌ Failed to send task {task.id} to agent {agent_id}")
+                        task.status = "failed"
+                else:
+                    logger.warning(f"⚠️  Agent {agent_id} not connected, task {task.id} queued")
+                    task.status = "queued"
+                
+                # Also put in queue for tracking
+                await self._task_queue.put(task)
+                
+        except Exception as e:
+            logger.error(f"Failed to distribute tasks: {e}")
+            # Fallback: just queue tasks
+            for task in tasks:
+                task.status = "pending"
+                await self._task_queue.put(task)
     
     async def _wait_for_tasks(self, workflow_id: str, tasks: List[Task], timeout: int) -> bool:
         """Wait for all tasks to complete"""
