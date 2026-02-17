@@ -68,7 +68,7 @@ jobs:
         run: |
           export PYTHONPATH="${{ github.workspace }}:$PYTHONPATH"
           # Nur spezifische funktionierende Tests ausführen
-          python -m pytest tests/test_config_loader.py tests/test_guardrails.py tests/test_security.py tests/test_auth.py tests/test_agent_base.py -v --tb=short --timeout=30 \
+          python -m pytest tests/test_config_loader.py tests/test_guardrails.py tests/test_security.py tests/test_auth.py tests/test_agent_base.py tests/test_api_schemas.py -v --tb=short --timeout=30 \
             --cov=tools.ffuf_integration_enhanced \
             --cov=tools.whatweb_integration \
             --cov=tools.wafw00f_integration \
