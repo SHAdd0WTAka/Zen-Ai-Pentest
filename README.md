@@ -6,6 +6,7 @@
 > 🛡️ **Professional AI-Powered Penetration Testing Framework**
 
 [![Python](https://img.shields.io/badge/Python-3.9%2B-blue)](https://python.org)
+[![codecov](https://codecov.io/gh/SHAdd0WTAka/Zen-Ai-Pentest/branch/main/graph/badge.svg)](https://codecov.io/gh/SHAdd0WTAka/Zen-Ai-Pentest)
 - **Guest Control**: Execute tools inside isolated VMs
 
 ### 🚀 Modern API & Backend

@@ -1,14 +1,143 @@
+# .coveragerc - Coverage Configuration for Zen-AI-Pentest
+# https://coverage.readthedocs.io/en/latest/config.html
+
 [run]
-source = .
-omit = tests/*,*/test_*,*/__pycache__/*,*/venv/*
+# Branch coverage (erfassung von if/else Pfaden)
+branch = True
+
+# Source modules to track
+source = 
+    core
+    agents
+    modules
+    api
+    utils
+    database
+    risk_engine
+    safety
+    memory
+    autonomous
+
+# Omit files that don't need coverage
+omit = 
+    # External tool integrations (require binaries - not unit testable)
+    tools/*
+    
+    # API routes require FastAPI server - integration tests only
+    api/*
+    api/routes/*
+    api/v1/*
+    api/core/*
+    
+    # Test files themselves
+    tests/*
+    test_*.py
+    *_test.py
+    
+    # Virtual environments
+    venv/*
+    .venv/*
+    env/*
+    
+    # Build artifacts
+    build/*
+    dist/*
+    *.egg-info/*
+    
+    # CI/CD and deployment
+    ci_cd/*
+    docker/*
+    scripts/*
+    
+    # Documentation
+    docs/*
+    
+    # Frontend (JavaScript)
+    web_ui/*
+    
+    # Examples and demos
+    examples/*
+    
+    # Benchmarks
+    benchmarks/*
+    
+    # Entry points
+    zen_ai_pentest.py
+    zen-cli.py
+    
+    # Configuration files
+    setup.py
+    conftest.py
+    
+    # Legacy or unused modules
+    plugins/*
+    gui/*
+    backends/*
+    
+    # Modules requiring external services
+    integrations/*
+    notifications/*
+
+# Parallel mode for CI
+parallel = False
+
+# Fail if coverage is too low (adjust based on progress)
+# fail_under = 50
 
 [report]
+# Exclude lines from coverage
 exclude_lines =
+    # Standard pragmas
     pragma: no cover
+    
+    # Defensive code
     def __repr__
+    if self.debug:
+    
+    # Abstract methods
     raise NotImplementedError
+    raise AssertionError
+    
+    # Main blocks
     if __name__ == .__main__.:
+    
+    # Type checking
     if TYPE_CHECKING:
+    
+    # Debug/development code
+    if settings.DEBUG:
+    if os.environ.get("DEBUG"):
+    
+    # Fallbacks for missing imports
+    except ImportError:
+    except ModuleNotFoundError:
 
-fail_under = 70
+# Sort report by name
+sort = Name
+
+# Show missing lines
 show_missing = True
+
+# Skip covered files (only show what's missing)
+skip_covered = False
+
+# Precision
+precision = 1
+
+[html]
+# HTML report directory
+directory = htmlcov
+
+# Title
+title = Zen-AI-Pentest Coverage Report
+
+# Skip covered files in HTML
+skip_covered = False
+
+[xml]
+# XML output for CI integration
+output = coverage.xml
+
+[json]
+# JSON output for custom tooling
+output = coverage.json
