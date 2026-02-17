@@ -17,12 +17,12 @@ A secure authentication system implementing:
 Compliance: ISO 27001, OWASP ASVS 2026, Zero-Trust Architecture
 """
 
-from .jwt_handler import JWTHandler, TokenType, TokenPayload
+from .config import AuthConfig, BcryptConfig, JWTConfig, MFAConfig
+from .jwt_handler import JWTHandler, TokenPayload, TokenType
+from .mfa import MFAError, MFAHandler
+from .middleware import AuditLogMiddleware, AuthMiddleware, RateLimitMiddleware
 from .password_hasher import PasswordHasher, PasswordStrengthError
-from .rbac import RBACManager, Role, Permission
-from .mfa import MFAHandler, MFAError
-from .config import AuthConfig, JWTConfig, BcryptConfig, MFAConfig
-from .middleware import AuthMiddleware, RateLimitMiddleware, AuditLogMiddleware
+from .rbac import Permission, RBACManager, Role
 from .user_manager import UserManager, get_user_manager
 
 __version__ = "1.1.0"  # Added database layer

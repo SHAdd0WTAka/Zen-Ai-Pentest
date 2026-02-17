@@ -11,65 +11,74 @@ from pathlib import Path
 # Add parent to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from fastapi import FastAPI, Depends, HTTPException, BackgroundTasks, WebSocket, WebSocketDisconnect, Request, Response, status
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from contextlib import asynccontextmanager
 import json
 import logging
-from typing import List, Optional
+from contextlib import asynccontextmanager
 from datetime import datetime
+from typing import List, Optional
 from urllib.parse import urlparse
 
-from database.models import init_db, get_db, SessionLocal, Report
-from database.crud import (
-    create_scan,
-    get_scan,
-    get_scans,
-    update_scan_status,
-    create_finding,
-    get_findings,
-    create_report,
-    get_reports,
-)
+from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, Request, Response, WebSocket, WebSocketDisconnect, status
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+
 from api.schemas import (
-    ScanCreate,
-    ScanResponse,
-    ScanUpdate,
     FindingCreate,
     FindingResponse,
     ReportCreate,
     ReportResponse,
+    ScanCreate,
+    ScanResponse,
+    ScanUpdate,
+    ScheduledScanCreate,
+    ScheduledScanResponse,
+    ScheduledScanUpdate,
+    TokenResponse,
     ToolExecuteRequest,
     ToolExecuteResponse,
-    ScheduledScanCreate,
-    ScheduledScanUpdate,
-    ScheduledScanResponse,
     UserLogin,
-    TokenResponse,
 )
+from database.crud import (
+    create_finding,
+    create_report,
+    create_scan,
+    get_findings,
+    get_reports,
+    get_scan,
+    get_scans,
+    update_scan_status,
+)
+from database.models import Report, SessionLocal, get_db, init_db
+
 # Import new auth system
 try:
-    from auth import JWTHandler, RBACManager, Role, Permission, AuthMiddleware
-    from auth import MFAHandler, PasswordHasher, AuthConfig, UserManager, get_user_manager
+    from auth import (
+        AuthConfig,
+        AuthMiddleware,
+        JWTHandler,
+        MFAHandler,
+        PasswordHasher,
+        Permission,
+        RBACManager,
+        Role,
+        UserManager,
+        get_user_manager,
+    )
     from database.auth_models import get_auth_db, init_auth_db
+
     NEW_AUTH_AVAILABLE = True
 except ImportError as e:
     print(f"Auth import error: {e}")
     NEW_AUTH_AVAILABLE = False
 
 # Legacy auth as fallback
-from api.auth_simple import (
-    authenticate_user as legacy_authenticate_user,
-    create_access_token as legacy_create_access_token,
-    verify_token as legacy_verify_token
-)
+from api.auth_simple import authenticate_user as legacy_authenticate_user
+from api.auth_simple import create_access_token as legacy_create_access_token
+from api.auth_simple import verify_token as legacy_verify_token
+from api.csrf_protection import csrf_protection, require_csrf
+from api.rate_limiter import check_auth_rate_limit
 from api.websocket import ConnectionManager
 from api.websocket_manager import manager
-from api.rate_limiter import (
-    check_auth_rate_limit,
-)
-from api.csrf_protection import csrf_protection, require_csrf
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -106,11 +115,12 @@ async def verify_token(credentials: HTTPAuthorizationCredentials = Depends(secur
             detail="No authentication credentials provided",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    
+
     # Try new auth system first
     if NEW_AUTH_AVAILABLE and _jwt_handler:
         try:
             from auth.jwt_handler import TokenExpiredError, TokenInvalidError
+
             payload = _jwt_handler.decode_token(credentials.credentials)
             return {
                 "sub": payload.sub,
@@ -132,9 +142,10 @@ async def verify_token(credentials: HTTPAuthorizationCredentials = Depends(secur
                 detail=f"Invalid token: {str(e)}",
                 headers={"WWW-Authenticate": "Bearer"},
             )
-    
+
     # Fallback to legacy
     from api.auth_simple import verify_token as legacy_verify
+
     return legacy_verify(credentials)
 
 
@@ -149,35 +160,34 @@ async def lifespan(app: FastAPI):
     logger.info("Starting up Zen-AI-Pentest API...")
     init_db()
     logger.info("Database initialized")
-    
+
     # Initialize auth database
     if NEW_AUTH_AVAILABLE:
         try:
             init_auth_db()
             logger.info("Auth database initialized")
-            
+
             # Create default admin user if not exists
-            from database.auth_models import SessionLocal, create_user, get_user_by_username
-            from database.auth_models import UserRole
-            
+            from database.auth_models import SessionLocal, UserRole, create_user, get_user_by_username
+
             db = SessionLocal()
             try:
                 admin = get_user_by_username(db, "admin")
                 if not admin:
                     admin_pass = os.getenv("ADMIN_PASSWORD", "admin123")
                     create_user(
-                        db, 
+                        db,
                         username="admin",
                         email="admin@zen-pentest.local",
                         hashed_password=_password_hasher.hash_password(admin_pass),
-                        role=UserRole.ADMIN
+                        role=UserRole.ADMIN,
                     )
                     logger.info("Default admin user created")
             finally:
                 db.close()
         except Exception as e:
             logger.warning(f"Could not initialize auth database: {e}")
-    
+
     yield
     # Shutdown
     logger.info("Shutting down...")
@@ -256,37 +266,33 @@ async def login(credentials: UserLogin, request: Request):
     # Use database-backed auth system if available
     if NEW_AUTH_AVAILABLE and _user_manager:
         from database.auth_models import SessionLocal
-        
+
         db = SessionLocal()
         try:
             # Authenticate user against database
-            user = _user_manager.authenticate_user(
-                db, credentials.username, credentials.password, client_ip, user_agent
-            )
-            
+            user = _user_manager.authenticate_user(db, credentials.username, credentials.password, client_ip, user_agent)
+
             if not user:
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED,
                     detail="Invalid username or password",
                     headers={"WWW-Authenticate": "Bearer"},
                 )
-            
+
             # Create session with tokens
-            session_data = _user_manager.create_session(
-                db, user, client_ip, user_agent
-            )
-            
+            session_data = _user_manager.create_session(db, user, client_ip, user_agent)
+
             return {
                 "access_token": session_data["access_token"],
                 "refresh_token": session_data["refresh_token"],
                 "token_type": "bearer",
                 "expires_in": 900,  # 15 minutes
                 "username": user.username,
-                "role": user.role.value
+                "role": user.role.value,
             }
         finally:
             db.close()
-    
+
     # Fallback to legacy auth
     user = legacy_authenticate_user(credentials.username, credentials.password)
 
@@ -297,16 +303,14 @@ async def login(credentials: UserLogin, request: Request):
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    access_token = legacy_create_access_token(
-        data={"sub": user["username"], "role": user["role"]}
-    )
+    access_token = legacy_create_access_token(data={"sub": user["username"], "role": user["role"]})
 
     return {
         "access_token": access_token,
         "token_type": "bearer",
         "expires_in": 86400,  # 24 Stunden
         "username": user["username"],
-        "role": user["role"]
+        "role": user["role"],
     }
 
 
@@ -320,6 +324,7 @@ async def me(request: Request):
             token = auth_header[7:]
             try:
                 from auth.jwt_handler import TokenExpiredError, TokenInvalidError
+
                 payload = _jwt_handler.decode_token(token)
                 return {
                     "sub": payload.sub,
@@ -329,7 +334,7 @@ async def me(request: Request):
                 }
             except (TokenExpiredError, TokenInvalidError):
                 pass  # Fall through to legacy
-    
+
     # Fallback to legacy
     return await legacy_verify_token(request)
 
@@ -338,15 +343,12 @@ async def me(request: Request):
 async def refresh_token(request: Request):
     """
     Refresh access token using refresh token (Database-backed)
-    
+
     Header: Authorization: Bearer <refresh_token>
     """
     if not NEW_AUTH_AVAILABLE or not _user_manager:
-        raise HTTPException(
-            status_code=status.HTTP_501_NOT_IMPLEMENTED,
-            detail="Token refresh not available with legacy auth"
-        )
-    
+        raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail="Token refresh not available with legacy auth")
+
     auth_header = request.headers.get("Authorization", "")
     if not auth_header.startswith("Bearer "):
         raise HTTPException(
@@ -354,23 +356,24 @@ async def refresh_token(request: Request):
             detail="Refresh token required",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    
+
     refresh_token = auth_header[7:]
     client_ip = request.client.host if request.client else "unknown"
-    
+
     from database.auth_models import SessionLocal
+
     db = SessionLocal()
     try:
         # Use UserManager to refresh session
         result = _user_manager.refresh_session(db, refresh_token, client_ip)
-        
+
         if not result:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid or expired refresh token",
                 headers={"WWW-Authenticate": "Bearer"},
             )
-        
+
         return {
             "access_token": result["access_token"],
             "token_type": "bearer",
@@ -395,25 +398,25 @@ async def get_csrf_token(response: Response):
 async def logout(request: Request, user: dict = Depends(verify_token)):
     """
     Logout - revoke current session (Database-backed)
-    
+
     Requires valid access token.
     """
     if NEW_AUTH_AVAILABLE and _user_manager:
         from database.auth_models import SessionLocal
-        
+
         # Get session_id from token payload
         session_id = user.get("session_id")
         if not session_id:
             # Try to get from request state (set by middleware)
             session_id = getattr(request.state, "session_id", None)
-        
+
         if session_id:
             db = SessionLocal()
             try:
                 _user_manager.revoke_session(db, session_id, "logout")
             finally:
                 db.close()
-    
+
     return {"message": "Logged out successfully"}
 
 
@@ -421,12 +424,12 @@ async def logout(request: Request, user: dict = Depends(verify_token)):
 async def logout_all_devices(request: Request, user: dict = Depends(verify_token)):
     """
     Logout from all devices - revoke all sessions (Database-backed)
-    
+
     Requires valid access token.
     """
     if NEW_AUTH_AVAILABLE and _user_manager:
         from database.auth_models import SessionLocal
-        
+
         user_id = user.get("sub")
         if user_id:
             db = SessionLocal()
@@ -435,7 +438,7 @@ async def logout_all_devices(request: Request, user: dict = Depends(verify_token
                 return {"message": f"Logged out from {count} device(s)"}
             finally:
                 db.close()
-    
+
     return {"message": "Logged out from all devices"}
 
 
@@ -820,15 +823,10 @@ async def health_check():
     Health check endpoint für Docker und Monitoring
     Prüft alle wichtigen Services
     """
-    from sqlalchemy import text
     import redis
+    from sqlalchemy import text
 
-    health_status = {
-        "status": "healthy",
-        "version": "2.2.0",
-        "timestamp": datetime.utcnow().isoformat(),
-        "services": {}
-    }
+    health_status = {"status": "healthy", "version": "2.2.0", "timestamp": datetime.utcnow().isoformat(), "services": {}}
 
     # Check Database
     try:
@@ -842,10 +840,7 @@ async def health_check():
 
     # Check Redis
     try:
-        redis_client = redis.from_url(
-            os.getenv("REDIS_URL", "redis://localhost:6379/0"),
-            socket_connect_timeout=2
-        )
+        redis_client = redis.from_url(os.getenv("REDIS_URL", "redis://localhost:6379/0"), socket_connect_timeout=2)
         redis_client.ping()
         health_status["services"]["redis"] = {"status": "ok"}
     except Exception as e:
@@ -886,18 +881,13 @@ async def websocket_endpoint(websocket: WebSocket, client_id: str):
             message = json.loads(data)
 
             if message.get("type") == "ping":
-                await manager.send_personal_message({
-                    "type": "pong",
-                    "timestamp": datetime.utcnow().isoformat()
-                }, websocket)
+                await manager.send_personal_message({"type": "pong", "timestamp": datetime.utcnow().isoformat()}, websocket)
 
             elif message.get("type") == "subscribe":
                 channel = message.get("channel", "general")
-                await manager.send_personal_message({
-                    "type": "subscribed",
-                    "channel": channel,
-                    "client_id": client_id
-                }, websocket)
+                await manager.send_personal_message(
+                    {"type": "subscribed", "channel": channel, "client_id": client_id}, websocket
+                )
 
     except WebSocketDisconnect:
         manager.disconnect(websocket, client_id)
@@ -1107,7 +1097,8 @@ async def send_slack_notification(schedule: dict, scan_id: int):
 async def get_stats_overview(user: dict = Depends(verify_token), db=Depends(get_db)):
     """Get dashboard statistics overview"""
     from sqlalchemy import func
-    from database.models import Scan, Finding
+
+    from database.models import Finding, Scan
 
     # Basic counts
     total_scans = db.query(Scan).count()
@@ -1160,6 +1151,7 @@ async def get_stats_trends(days: int = 30, user: dict = Depends(verify_token), d
 async def get_severity_stats(user: dict = Depends(verify_token), db=Depends(get_db)):
     """Get findings by severity"""
     from sqlalchemy import func
+
     from database.models import Finding
 
     severity_counts = db.query(Finding.severity, func.count(Finding.id)).group_by(Finding.severity).all()
@@ -1232,8 +1224,8 @@ async def test_slack_notification(webhook_url: str, user: dict = Depends(verify_
 async def notify_slack_scan_complete(scan_id: int, webhook_url: str, user: dict = Depends(verify_token), db=Depends(get_db)):
     """Send Slack notification for scan completion"""
     try:
+        from database.models import Finding, Scan
         from notifications.slack import SlackNotifier
-        from database.models import Scan, Finding
 
         # Get scan details
         scan = db.query(Scan).filter(Scan.id == scan_id).first()
@@ -1345,8 +1337,8 @@ async def get_jira_projects(user: dict = Depends(verify_token)):
 @app.post("/integrations/jira/create-ticket")
 async def create_jira_ticket(finding_id: int, project_key: str, user: dict = Depends(verify_token), db=Depends(get_db)):
     """Create JIRA ticket from finding"""
-    from integrations.jira_client import get_jira_client
     from database.models import Finding
+    from integrations.jira_client import get_jira_client
 
     client = get_jira_client()
     if not client:
