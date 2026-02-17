@@ -80,6 +80,16 @@ from api.rate_limiter import check_auth_rate_limit
 from api.websocket import ConnectionManager
 from api.websocket_manager import manager
 
+# Import Agent v2 routes
+try:
+    from api.routes.agents_v2 import router as agents_v2_router
+    from api.routes.agents_v2 import agent_websocket, agent_manager
+    AGENTS_V2_AVAILABLE = True
+except ImportError as e:
+    logger = logging.getLogger(__name__)
+    logger.warning(f"Agent v2 routes not available: {e}")
+    AGENTS_V2_AVAILABLE = False
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -897,6 +907,159 @@ async def websocket_endpoint(websocket: WebSocket, client_id: str):
 
 
 # ============================================================================
+# AGENT COMMUNICATION V2 WEBSOCKET
+# ============================================================================
+
+class SimpleAgentConnection:
+    """Simple agent connection manager for basic messaging"""
+    
+    def __init__(self):
+        self.active_connections: dict[str, WebSocket] = {}
+    
+    async def connect(self, websocket: WebSocket, agent_id: str):
+        await websocket.accept()
+        self.active_connections[agent_id] = websocket
+        logger.info(f"Agent {agent_id} connected via WebSocket")
+    
+    def disconnect(self, agent_id: str):
+        if agent_id in self.active_connections:
+            del self.active_connections[agent_id]
+            logger.info(f"Agent {agent_id} disconnected")
+    
+    async def send_to_agent(self, agent_id: str, message: dict):
+        if agent_id in self.active_connections:
+            await self.active_connections[agent_id].send_json(message)
+    
+    async def broadcast(self, message: dict, exclude: Optional[str] = None):
+        for agent_id, ws in self.active_connections.items():
+            if agent_id != exclude:
+                try:
+                    await ws.send_json(message)
+                except Exception as e:
+                    logger.error(f"Failed to send to {agent_id}: {e}")
+
+
+agent_connection_manager = SimpleAgentConnection()
+
+
+@app.websocket("/agents/ws")
+async def agent_websocket_endpoint(websocket: WebSocket):
+    """
+    Agent Communication WebSocket Endpoint
+    
+    Simple protocol for agent messaging:
+    1. Connect and send: {"type": "auth", "agent_id": "..."}
+    2. Server responds: {"type": "auth_success"}
+    3. Send messages: {"type": "message", "recipient": "...", "payload": {...}}
+    4. Receive broadcasts and direct messages
+    5. Send heartbeat: {"type": "heartbeat"}
+    
+    Production Note: In production, implement full AgentAuthenticator
+    with API key validation as shown in api/routes/agents_v2.py
+    """
+    agent_id: Optional[str] = None
+    
+    try:
+        # Wait for auth message without accepting first
+        await websocket.accept()
+        
+        # Receive auth message
+        auth_data = await websocket.receive_json()
+        
+        if auth_data.get("type") != "auth":
+            await websocket.send_json({
+                "type": "auth_failed",
+                "error": "Expected auth message with type 'auth'"
+            })
+            await websocket.close()
+            return
+        
+        agent_id = auth_data.get("agent_id")
+        if not agent_id:
+            await websocket.send_json({
+                "type": "auth_failed",
+                "error": "agent_id required"
+            })
+            await websocket.close()
+            return
+        
+        # Simple auth success (production: validate API key)
+        await agent_connection_manager.connect(websocket, agent_id)
+        
+        await websocket.send_json({
+            "type": "auth_success",
+            "agent_id": agent_id,
+            "message": "Connected to Zen-AI-Pentest Agent Network"
+        })
+        
+        # Main message loop
+        while True:
+            try:
+                data = await websocket.receive_json()
+                msg_type = data.get("type")
+                
+                if msg_type == "message":
+                    recipient = data.get("recipient", "broadcast")
+                    payload = data.get("payload", {})
+                    
+                    # Send acknowledgment
+                    await websocket.send_json({
+                        "type": "ack",
+                        "message_id": data.get("message_id", "unknown"),
+                        "status": "received",
+                        "timestamp": datetime.utcnow().isoformat()
+                    })
+                    
+                    # Route message
+                    if recipient == "broadcast":
+                        await agent_connection_manager.broadcast({
+                            "type": "message",
+                            "sender": agent_id,
+                            "payload": payload,
+                            "timestamp": datetime.utcnow().isoformat()
+                        }, exclude=agent_id)
+                    else:
+                        # Direct message
+                        await agent_connection_manager.send_to_agent(recipient, {
+                            "type": "message",
+                            "sender": agent_id,
+                            "payload": payload,
+                            "timestamp": datetime.utcnow().isoformat()
+                        })
+                
+                elif msg_type == "heartbeat":
+                    await websocket.send_json({
+                        "type": "heartbeat_ack",
+                        "timestamp": datetime.utcnow().isoformat()
+                    })
+                
+                elif msg_type == "disconnect":
+                    break
+                    
+            except WebSocketDisconnect:
+                break
+            except json.JSONDecodeError:
+                await websocket.send_json({
+                    "type": "error",
+                    "error": "Invalid JSON"
+                })
+            except Exception as e:
+                logger.error(f"WebSocket message error: {e}")
+                await websocket.send_json({
+                    "type": "error",
+                    "error": str(e)
+                })
+    
+    except WebSocketDisconnect:
+        logger.info(f"Agent WebSocket disconnected")
+    except Exception as e:
+        logger.error(f"Agent WebSocket error: {e}")
+    finally:
+        if agent_id:
+            agent_connection_manager.disconnect(agent_id)
+
+
+# ============================================================================
 # SCHEDULED SCANS
 # ============================================================================
 
@@ -1408,6 +1571,14 @@ try:
     logger.info("Subdomain scanning endpoints loaded")
 except ImportError as e:
     logger.warning(f"Could not load Subdomain endpoints: {e}")
+
+# Agent Communication v2 routes
+if AGENTS_V2_AVAILABLE:
+    try:
+        app.include_router(agents_v2_router, prefix="/api/v2")
+        logger.info("✅ Agent Communication v2 endpoints loaded")
+    except Exception as e:
+        logger.warning(f"Could not load Agent v2 endpoints: {e}")
 
 if __name__ == "__main__":
     import uvicorn
