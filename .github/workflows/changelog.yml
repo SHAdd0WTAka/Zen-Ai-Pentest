@@ -25,18 +25,22 @@ jobs:
       
       - name: Generate Changelog
         id: changelog
-        uses: github-changelog-generator/github-changelog-generator@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          output: CHANGELOG.md
-        continue-on-error: true
-      
-      - name: Create Changelog via git
-        if: steps.changelog.outcome == 'failure'
         run: |
           echo "# Changelog" > CHANGELOG.md
           echo "" >> CHANGELOG.md
+          echo "## Recent Changes" >> CHANGELOG.md
+          echo "" >> CHANGELOG.md
           git log --pretty=format:"- %s (%h) - %an, %ad" --date=short | head -100 >> CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          echo "Generated on $(date)" >> CHANGELOG.md
+      
+      - name: Verify Changelog
+        run: |
+          if [ ! -s CHANGELOG.md ]; then
+            echo "# Changelog" > CHANGELOG.md
+            echo "" >> CHANGELOG.md
+            git log --pretty=format:"- %s (%h) - %an, %ad" --date=short | head -100 >> CHANGELOG.md
+          fi
       
       - name: Commit Changelog
         run: |

@@ -17,6 +17,7 @@ jobs:
     steps:
     - name: Send Discord Notification
       uses: Ilshidur/action-discord@master
+      continue-on-error: true
       env:
         DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
       with:
