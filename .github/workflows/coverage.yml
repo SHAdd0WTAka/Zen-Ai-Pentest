@@ -57,7 +57,7 @@ jobs:
           --cov-report=term-missing
       env:
         JWT_SECRET_KEY: test-secret-key
-        ADMIN_PASSWORD: test-admin-password
+        ADMIN_PASSWORD: testpass
         DATABASE_URL: sqlite:///./test.db
         PYTHONPATH: ${{ github.workspace }}
     

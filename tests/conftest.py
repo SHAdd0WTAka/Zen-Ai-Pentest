@@ -76,7 +76,7 @@ def client():
     try:
         import os
         os.environ["JWT_SECRET_KEY"] = "test-secret-key-for-testing-only"
-        os.environ["ADMIN_PASSWORD"] = "test-admin-password"
+        os.environ["ADMIN_PASSWORD"] = "testpass"
         
         from fastapi.testclient import TestClient
         from api.main import app

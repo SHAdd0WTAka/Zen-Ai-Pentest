@@ -89,7 +89,7 @@ jobs:
             --cov-report=term
         env:
           JWT_SECRET_KEY: test-secret-key
-          ADMIN_PASSWORD: test-admin-password
+          ADMIN_PASSWORD: testpass
           DATABASE_URL: sqlite:///./test.db
 
       - name: Upload coverage to Codecov
