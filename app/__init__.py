@@ -5,7 +5,7 @@ Integrates all components into a unified application.
 
 Usage:
     from app import create_app
-    
+
     app = create_app()
     app.run()
 """
@@ -16,7 +16,7 @@ from .lifecycle import ApplicationLifecycle
 
 __all__ = [
     "create_app",
-    "ApplicationFactory", 
+    "ApplicationFactory",
     "DependencyContainer",
     "ApplicationLifecycle",
 ]
