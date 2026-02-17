@@ -149,7 +149,7 @@ class ScoutSuiteScanner:
 
         if not scout_path:
             raise RuntimeError(
-                f"ScoutSuite not found. Install with: pip install scoutsuite"
+                "ScoutSuite not found. Install with: pip install scoutsuite"
             )
         return scout_path
 
@@ -596,7 +596,7 @@ def scoutsuite_scan_aws(
     severity = summary.get("severity_counts", {})
 
     lines = [
-        f"ScoutSuite AWS Scan Complete",
+        "ScoutSuite AWS Scan Complete",
         f"Duration: {result.scan_time:.2f}s",
         f"Report: {result.report_path}",
         "",

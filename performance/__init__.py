@@ -5,7 +5,7 @@ Provides caching, connection pooling, and async optimizations.
 
 Usage:
     from performance import CacheManager, ConnectionPool
-    
+
     cache = CacheManager()
     await cache.set("key", value, ttl=300)
     value = await cache.get("key")

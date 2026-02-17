@@ -9,10 +9,10 @@ Advanced scheduling system with:
 
 Usage:
     from scheduler import TaskScheduler
-    
+
     scheduler = TaskScheduler()
     await scheduler.start()
-    
+
     # Schedule a daily scan
     job_id = await scheduler.schedule(
         task_type="vulnerability_scan",

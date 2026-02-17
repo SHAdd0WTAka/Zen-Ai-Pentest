@@ -11,7 +11,6 @@ from fastapi import HTTPException, BackgroundTasks
 
 # Mock dependencies
 import sys
-from unittest.mock import MagicMock
 
 mock_auth = MagicMock()
 mock_auth.get_current_user = MagicMock()
@@ -109,44 +108,44 @@ def mock_scan_create_data():
 
 class TestCreateScan:
     """Test create_scan endpoint"""
-    
+
     @pytest.mark.asyncio
     async def test_create_scan_success(self, mock_current_user, mock_scan, mock_scan_create_data):
         """Test successful scan creation"""
         with patch('api.routes.scans.Scan', mock_scan_model.Scan):
             mock_scan_model.Scan.return_value = mock_scan
-            
+
             background_tasks = BackgroundTasks()
-            
+
             result = await create_scan(mock_scan_create_data, background_tasks, mock_current_user)
-            
+
             assert result["id"] == "scan-001"
             assert result["target"] == "example.com"
             mock_scan.save.assert_called_once()
-    
+
     @pytest.mark.asyncio
     async def test_create_scan_auto_name(self, mock_current_user, mock_scan, mock_scan_create_data):
         """Test scan creation with auto-generated name"""
         with patch('api.routes.scans.Scan', mock_scan_model.Scan):
             mock_scan_create_data.name = None
             mock_scan_model.Scan.return_value = mock_scan
-            
+
             background_tasks = BackgroundTasks()
             result = await create_scan(mock_scan_create_data, background_tasks, mock_current_user)
-            
+
             # Name should be auto-generated
             assert "scan" in mock_scan.name.lower() or "Scan" in mock_scan.name
-    
+
     @pytest.mark.asyncio
     async def test_create_scan_custom_name(self, mock_current_user, mock_scan, mock_scan_create_data):
         """Test scan creation with custom name"""
         with patch('api.routes.scans.Scan', mock_scan_model.Scan):
             mock_scan_create_data.name = "My Custom Scan"
             mock_scan_model.Scan.return_value = mock_scan
-            
+
             background_tasks = BackgroundTasks()
             result = await create_scan(mock_scan_create_data, background_tasks, mock_current_user)
-            
+
             assert mock_scan.name == "My Custom Scan"
 
 
@@ -154,65 +153,65 @@ class TestCreateScan:
 
 class TestListScans:
     """Test list_scans endpoint"""
-    
+
     @pytest.mark.asyncio
     async def test_list_scans_empty(self, mock_current_user):
         """Test listing scans when none exist"""
         mock_query = AsyncMock()
         mock_query.to_list.return_value = []
         mock_scan_model.Scan.find_many.return_value.limit.return_value.skip.return_value = mock_query
-        
+
         with patch('api.routes.scans.Scan', mock_scan_model.Scan):
             result = await list_scans(None, None, 20, 0, mock_current_user)
-            
+
             assert result == []
-    
+
     @pytest.mark.asyncio
     async def test_list_scans_with_results(self, mock_current_user, mock_scan):
         """Test listing scans with results"""
         mock_query = AsyncMock()
         mock_query.to_list.return_value = [mock_scan]
         mock_scan_model.Scan.find_many.return_value.limit.return_value.skip.return_value = mock_query
-        
+
         with patch('api.routes.scans.Scan', mock_scan_model.Scan):
             result = await list_scans(None, None, 20, 0, mock_current_user)
-            
+
             assert len(result) == 1
             assert result[0]["id"] == "scan-001"
-    
+
     @pytest.mark.asyncio
     async def test_list_scans_with_status_filter(self, mock_current_user, mock_scan):
         """Test listing scans with status filter"""
         mock_query = AsyncMock()
         mock_query.to_list.return_value = [mock_scan]
         mock_scan_model.Scan.find_many.return_value.limit.return_value.skip.return_value = mock_query
-        
+
         with patch('api.routes.scans.Scan', mock_scan_model.Scan):
             result = await list_scans(mock_scan_model.ScanStatus.PENDING, None, 20, 0, mock_current_user)
-            
+
             assert len(result) == 1
-    
+
     @pytest.mark.asyncio
     async def test_list_scans_with_type_filter(self, mock_current_user, mock_scan):
         """Test listing scans with type filter"""
         mock_query = AsyncMock()
         mock_query.to_list.return_value = [mock_scan]
         mock_scan_model.Scan.find_many.return_value.limit.return_value.skip.return_value = mock_query
-        
+
         with patch('api.routes.scans.Scan', mock_scan_model.Scan):
             result = await list_scans(None, mock_scan_model.ScanType.FULL, 20, 0, mock_current_user)
-            
+
             assert len(result) == 1
-    
+
     @pytest.mark.asyncio
     async def test_list_scans_pagination(self, mock_current_user):
         """Test scan pagination"""
         mock_scan_model.Scan.find_many.return_value.limit.return_value.skip.return_value = AsyncMock()
         mock_scan_model.Scan.find_many.return_value.limit.return_value.skip.return_value.to_list.return_value = []
-        
+
         with patch('api.routes.scans.Scan', mock_scan_model.Scan):
             result = await list_scans(None, None, 10, 20, mock_current_user)
-            
+
             # Verify limit and offset were applied
             mock_scan_model.Scan.find_many.return_value.limit.assert_called_once_with(10)
 
@@ -221,39 +220,39 @@ class TestListScans:
 
 class TestGetScan:
     """Test get_scan endpoint"""
-    
+
     @pytest.mark.asyncio
     async def test_get_scan_success(self, mock_current_user, mock_scan):
         """Test getting a specific scan"""
         mock_scan_model.Scan.find_one.return_value = mock_scan
-        
+
         with patch('api.routes.scans.Scan', mock_scan_model.Scan):
             result = await get_scan("scan-001", mock_current_user)
-            
+
             assert result["id"] == "scan-001"
             assert result["target"] == "example.com"
-    
+
     @pytest.mark.asyncio
     async def test_get_scan_not_found(self, mock_current_user):
         """Test getting non-existent scan"""
         mock_scan_model.Scan.find_one.return_value = None
-        
+
         with patch('api.routes.scans.Scan', mock_scan_model.Scan):
             with pytest.raises(HTTPException) as exc_info:
                 await get_scan("nonexistent", mock_current_user)
-            
+
             assert exc_info.value.status_code == 404
             assert "not found" in exc_info.value.detail.lower()
-    
+
     @pytest.mark.asyncio
     async def test_get_scan_wrong_user(self, mock_current_user):
         """Test getting scan belonging to another user"""
         mock_scan_model.Scan.find_one.return_value = None
-        
+
         with patch('api.routes.scans.Scan', mock_scan_model.Scan):
             with pytest.raises(HTTPException) as exc_info:
                 await get_scan("scan-002", mock_current_user)
-            
+
             assert exc_info.value.status_code == 404
 
 
@@ -261,52 +260,52 @@ class TestGetScan:
 
 class TestStopScan:
     """Test stop_scan endpoint"""
-    
+
     @pytest.mark.asyncio
     async def test_stop_running_scan(self, mock_current_user, mock_scan):
         """Test stopping a running scan"""
         mock_scan.status = mock_scan_model.ScanStatus.RUNNING
         mock_scan_model.Scan.find_one.return_value = mock_scan
-        
+
         with patch('api.routes.scans.Scan', mock_scan_model.Scan):
             result = await stop_scan("scan-001", mock_current_user)
-            
+
             assert "stopped" in result["message"].lower()
             mock_scan.stop.assert_called_once()
-    
+
     @pytest.mark.asyncio
     async def test_stop_pending_scan(self, mock_current_user, mock_scan):
         """Test stopping a pending scan"""
         mock_scan.status = mock_scan_model.ScanStatus.PENDING
         mock_scan_model.Scan.find_one.return_value = mock_scan
-        
+
         with patch('api.routes.scans.Scan', mock_scan_model.Scan):
             result = await stop_scan("scan-001", mock_current_user)
-            
+
             assert "stopped" in result["message"].lower()
-    
+
     @pytest.mark.asyncio
     async def test_stop_completed_scan(self, mock_current_user, mock_scan):
         """Test stopping a completed scan (should fail)"""
         mock_scan.status = mock_scan_model.ScanStatus.COMPLETED
         mock_scan_model.Scan.find_one.return_value = mock_scan
-        
+
         with patch('api.routes.scans.Scan', mock_scan_model.Scan):
             with pytest.raises(HTTPException) as exc_info:
                 await stop_scan("scan-001", mock_current_user)
-            
+
             assert exc_info.value.status_code == 400
             assert "cannot be stopped" in exc_info.value.detail.lower()
-    
+
     @pytest.mark.asyncio
     async def test_stop_scan_not_found(self, mock_current_user):
         """Test stopping non-existent scan"""
         mock_scan_model.Scan.find_one.return_value = None
-        
+
         with patch('api.routes.scans.Scan', mock_scan_model.Scan):
             with pytest.raises(HTTPException) as exc_info:
                 await stop_scan("nonexistent", mock_current_user)
-            
+
             assert exc_info.value.status_code == 404
 
 
@@ -314,27 +313,27 @@ class TestStopScan:
 
 class TestDeleteScan:
     """Test delete_scan endpoint"""
-    
+
     @pytest.mark.asyncio
     async def test_delete_scan_success(self, mock_current_user, mock_scan):
         """Test successful scan deletion"""
         mock_scan_model.Scan.find_one.return_value = mock_scan
-        
+
         with patch('api.routes.scans.Scan', mock_scan_model.Scan):
             result = await delete_scan("scan-001", mock_current_user)
-            
+
             assert "deleted" in result["message"].lower()
             mock_scan.delete.assert_called_once()
-    
+
     @pytest.mark.asyncio
     async def test_delete_scan_not_found(self, mock_current_user):
         """Test deleting non-existent scan"""
         mock_scan_model.Scan.find_one.return_value = None
-        
+
         with patch('api.routes.scans.Scan', mock_scan_model.Scan):
             with pytest.raises(HTTPException) as exc_info:
                 await delete_scan("nonexistent", mock_current_user)
-            
+
             assert exc_info.value.status_code == 404
 
 
@@ -342,47 +341,47 @@ class TestDeleteScan:
 
 class TestRunScan:
     """Test run_scan background task"""
-    
+
     @pytest.mark.asyncio
     async def test_run_scan_success(self, mock_scan):
         """Test successful scan execution"""
         mock_scan_model.Scan.find_one.return_value = mock_scan
-        
+
         mock_vuln_scanner = MagicMock()
         mock_scanner_instance = AsyncMock()
         mock_scanner_instance.scan = AsyncMock()
         mock_scanner_instance.scan.return_value.__aiter__ = AsyncMock()
         mock_scanner_instance.scan.return_value.__aiter__.return_value = [25, 50, 75, 100]
         mock_vuln_scanner.VulnScannerModule.return_value = mock_scanner_instance
-        
+
         with patch('api.routes.scans.Scan', mock_scan_model.Scan):
             with patch.dict('sys.modules', {'modules.vuln_scanner': mock_vuln_scanner}):
                 await run_scan("scan-001")
-                
+
                 mock_scan.update_status.assert_any_call(mock_scan_model.ScanStatus.RUNNING)
                 mock_scan.update_status.assert_any_call(mock_scan_model.ScanStatus.COMPLETED)
-    
+
     @pytest.mark.asyncio
     async def test_run_scan_not_found(self):
         """Test running non-existent scan"""
         mock_scan_model.Scan.find_one.return_value = None
-        
+
         with patch('api.routes.scans.Scan', mock_scan_model.Scan):
             # Should return early without error
             await run_scan("nonexistent")
-    
+
     @pytest.mark.asyncio
     async def test_run_scan_failure(self, mock_scan):
         """Test scan execution failure"""
         mock_scan_model.Scan.find_one.return_value = mock_scan
-        
+
         with patch('api.routes.scans.Scan', mock_scan_model.Scan):
             with patch.dict('sys.modules', {'modules.vuln_scanner': MagicMock()}):
                 # Make the import fail to trigger exception handling
                 sys.modules['modules.vuln_scanner'].VulnScannerModule = Mock(side_effect=Exception("Import failed"))
-                
+
                 await run_scan("scan-001")
-                
+
                 mock_scan.update_status.assert_any_call(mock_scan_model.ScanStatus.FAILED, error=pytest.any)
 
 
@@ -390,35 +389,35 @@ class TestRunScan:
 
 class TestScanModels:
     """Test Pydantic models for scans"""
-    
+
     def test_scan_create_model(self):
         """Test ScanCreate model validation"""
         from pydantic import BaseModel, Field
         from typing import Optional
-        
+
         class ScanCreate(BaseModel):
             target: str
             scan_type: str = "full"
             name: Optional[str] = None
             description: Optional[str] = None
             options: dict = Field(default_factory=dict)
-        
+
         # Valid creation
         scan = ScanCreate(target="example.com", scan_type="quick")
         assert scan.target == "example.com"
         assert scan.scan_type == "quick"
-        
+
         # Default values
         scan2 = ScanCreate(target="example.com")
         assert scan2.scan_type == "full"
         assert scan2.options == {}
-    
+
     def test_scan_response_model(self):
         """Test ScanResponse model"""
         from pydantic import BaseModel, Field
         from datetime import datetime
         from typing import Optional
-        
+
         class ScanResponse(BaseModel):
             id: str
             name: str
@@ -431,7 +430,7 @@ class TestScanModels:
             progress: int = Field(0, ge=0, le=100)
             findings_count: int
             error_message: Optional[str]
-        
+
         response = ScanResponse(
             id="scan-001",
             name="Test",
@@ -446,7 +445,7 @@ class TestScanModels:
             error_message=None
         )
         assert response.progress == 0
-        
+
         # Test progress bounds
         with pytest.raises(Exception):
             ScanResponse(
@@ -460,7 +459,7 @@ class TestScanModels:
                 findings_count=0,
                 error_message=None
             )
-    
+
     def test_scan_status_enum(self):
         """Test scan status values"""
         assert mock_scan_model.ScanStatus.PENDING == "pending"

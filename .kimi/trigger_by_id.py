@@ -13,13 +13,13 @@ def trigger_by_id(workflow_id, branch="main"):
     token = get_installation_token()
     headers = get_headers(token)
     headers["Accept"] = "application/vnd.github.v3+json"
-    
+
     url = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/actions/workflows/{workflow_id}/dispatches"
-    
+
     data = {"ref": branch}
-    
+
     response = requests.post(url, headers=headers, json=data)
-    
+
     print(f"Status: {response.status_code}")
     if response.status_code == 204:
         print(f"[OK] Workflow {workflow_id} triggered!")

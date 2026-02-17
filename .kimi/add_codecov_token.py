@@ -15,10 +15,10 @@ def get_public_key():
     token = get_installation_token()
     headers = get_headers(token)
     headers["Accept"] = "application/vnd.github.v3+json"
-    
+
     url = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/actions/secrets/public-key"
     response = requests.get(url, headers=headers)
-    
+
     if response.status_code == 200:
         return response.json()
     else:
@@ -39,27 +39,27 @@ def create_secret(secret_name, secret_value):
     key_info = get_public_key()
     if not key_info:
         return False
-    
+
     key_id = key_info.get('key_id')
     public_key = key_info.get('key')
-    
+
     # Encrypt secret
     encrypted_value = encrypt_secret(public_key, secret_value)
-    
+
     # Create/update secret
     token = get_installation_token()
     headers = get_headers(token)
     headers["Accept"] = "application/vnd.github.v3+json"
-    
+
     url = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/actions/secrets/{secret_name}"
-    
+
     data = {
         "encrypted_value": encrypted_value,
         "key_id": key_id
     }
-    
+
     response = requests.put(url, headers=headers, json=data)
-    
+
     if response.status_code in [201, 204]:
         print(f"[OK] Secret '{secret_name}' created/updated successfully")
         return True
@@ -78,7 +78,7 @@ def main():
     print("Get it from:")
     print("  https://codecov.io/gh/SHAdd0WTAka/Zen-Ai-Pentest/settings")
     print()
-    
+
     # Note: We can't easily get user input in this environment
     # So we provide instructions instead
     print("INSTRUCTIONS:")

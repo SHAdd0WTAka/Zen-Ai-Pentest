@@ -5,8 +5,6 @@ Konfiguriert automatisch die Sicherheitseinstellungen für den Discord-Server
 """
 
 import os
-import sys
-import json
 import asyncio
 import argparse
 
@@ -34,39 +32,39 @@ def print_info(msg): print(f"{Colors.BLUE}ℹ️  {msg}{Colors.END}")
 
 class DiscordSecuritySetup:
     """Automatisches Setup der Discord-Server-Sicherheit"""
-    
+
     def __init__(self, token=None):
         self.token = token
         self.bot = None
         self.intents = discord.Intents.default()
         self.intents.guilds = True
         self.intents.members = True
-        
+
     async def setup_bot(self):
         """Initialisiert den Bot"""
         if not self.token:
             print_error("Kein Bot-Token angegeben!")
             return False
-            
+
         self.bot = commands.Bot(command_prefix='!', intents=self.intents)
-        
+
         @self.bot.event
         async def on_ready():
             print_success(f"Bot eingeloggt als {self.bot.user}")
-            
+
         try:
             await self.bot.start(self.token)
             return True
         except Exception as e:
             print_error(f"Bot-Login fehlgeschlagen: {e}")
             return False
-    
+
     async def configure_server_security(self, guild_id=None):
         """Konfiguriert die Server-Sicherheit"""
         if not self.bot:
             print_error("Bot nicht initialisiert!")
             return False
-            
+
         # Guild finden
         if guild_id:
             guild = self.bot.get_guild(int(guild_id))
@@ -83,13 +81,13 @@ class DiscordSecuritySetup:
                     print(f"  {i+1}. {g.name} (ID: {g.id})")
                 choice = int(input("Wähle Server (Nummer): ")) - 1
                 guild = guilds[choice]
-        
+
         if not guild:
             print_error("Server nicht gefunden!")
             return False
-            
+
         print_info(f"Konfiguriere Server: {guild.name}")
-        
+
         try:
             # 1. @everyone Rolle einschränken
             everyone = guild.default_role
@@ -98,7 +96,7 @@ class DiscordSecuritySetup:
                 reason="Sicherheits-Setup: @everyone einschränken"
             )
             print_success("@everyone Rolle eingeschränkt (keine Berechtigungen)")
-            
+
             # 2. Member Rolle erstellen oder updaten
             member_role = discord.utils.get(guild.roles, name="Member")
             member_perms = discord.Permissions(
@@ -118,7 +116,7 @@ class DiscordSecuritySetup:
                 stream=True,
                 video=True,
             )
-            
+
             if member_role:
                 await member_role.edit(
                     permissions=member_perms,
@@ -134,7 +132,7 @@ class DiscordSecuritySetup:
                     reason="Sicherheits-Setup: Member-Rolle erstellen"
                 )
                 print_success("Member-Rolle erstellt")
-            
+
             # 3. Moderator Rolle erstellen (optional)
             mod_role = discord.utils.get(guild.roles, name="Moderator")
             if not mod_role:
@@ -166,7 +164,7 @@ class DiscordSecuritySetup:
                     reason="Sicherheits-Setup: Moderator-Rolle erstellen"
                 )
                 print_success("Moderator-Rolle erstellt")
-            
+
             # 4. Allen Mitgliedern die Member-Rolle geben
             print_info("Weise Member-Rolle zu...")
             count = 0
@@ -175,10 +173,10 @@ class DiscordSecuritySetup:
                     try:
                         await member.add_roles(member_role, reason="Sicherheits-Setup")
                         count += 1
-                    except:
+                    except Exception:
                         pass
             print_success(f"Member-Rolle an {count} Mitglieder vergeben")
-            
+
             # 5. Channel-Berechtigungen prüfen
             print_info("Prüfe Channel-Berechtigungen...")
             for channel in guild.channels:
@@ -190,7 +188,7 @@ class DiscordSecuritySetup:
                         overwrite=None,
                         reason="Sicherheits-Setup: @everyone entfernen"
                     )
-                
+
                 # Füge Member-Rolle hinzu wenn nicht vorhanden
                 if member_role not in overwrites:
                     await channel.set_permissions(
@@ -201,9 +199,9 @@ class DiscordSecuritySetup:
                         speak=True,
                         reason="Sicherheits-Setup: Member-Rolle hinzufügen"
                     )
-            
+
             print_success("Channel-Berechtigungen aktualisiert")
-            
+
             # 6. Rollen-Hierarchie anpassen (Bot-Rolle muss über Member sein)
             bot_member = guild.get_member(self.bot.user.id)
             if bot_member:
@@ -211,7 +209,7 @@ class DiscordSecuritySetup:
                 if bot_role.position <= member_role.position:
                     print_warning("Bot-Rolle muss über Member-Rolle in der Hierarchie sein!")
                     print_info("Bitte manuell in Servereinstellungen → Rollen anpassen")
-            
+
             print("\n" + "="*50)
             print_success("SICHERHEITS-SETUP ABGESCHLOSSEN!")
             print("="*50)
@@ -221,9 +219,9 @@ class DiscordSecuritySetup:
             print("  • Moderator-Rolle: Kick, Timeout, Nachrichten löschen")
             print("  • Admin-Rolle: Unverändert (hat alle Rechte)")
             print("\nWichtig: Passe die Rollen-Hierarchie manuell an!")
-            
+
             return True
-            
+
         except discord.Forbidden:
             print_error("Bot hat nicht genügend Berechtigungen!")
             print_info("Der Bot braucht: 'Server verwalten', 'Rollen verwalten', 'Kanäle verwalten'")
@@ -231,18 +229,18 @@ class DiscordSecuritySetup:
         except Exception as e:
             print_error(f"Fehler: {e}")
             return False
-    
+
     async def run(self, guild_id=None):
         """Hauptfunktion"""
         print("\n" + "="*50)
         print("🔒 DISCORD SERVER SICHERHEITS-SETUP")
         print("="*50 + "\n")
-        
+
         if not await self.setup_bot():
             return False
-            
+
         return await self.configure_server_security(guild_id)
-    
+
     async def close(self):
         """Beendet den Bot"""
         if self.bot:
@@ -253,7 +251,7 @@ def manual_setup_guide():
     print("\n" + "="*50)
     print("📖 MANUELLE SETUP-ANLEITUNG")
     print("="*50 + "\n")
-    
+
     steps = [
         ("Schritt 1", "Öffne Discord → Server-Einstellungen → Rollen"),
         ("Schritt 2", "Bearbeite @everyone:"),
@@ -272,12 +270,12 @@ def manual_setup_guide():
         ("Schritt 4", "Weise allen Mitgliedern die Member-Rolle zu"),
         ("Schritt 5", "Prüfe jeden Channel: Entferne @everyone, füge Member hinzu"),
     ]
-    
+
     for title, content in steps:
         print(f"\n{Colors.BLUE}{title}:{Colors.END}")
         for line in content.split('\n'):
             print(f"  {line}")
-    
+
     print("\n" + "="*50)
     print("Detaillierte Anleitung:")
     print("  docs/DISCORD_SERVER_SETUP.md")
@@ -300,16 +298,16 @@ def main():
         action='store_true',
         help='Zeige manuelle Anleitung'
     )
-    
+
     args = parser.parse_args()
-    
+
     if args.manual or not DISCORD_AVAILABLE:
         manual_setup_guide()
         return
-    
+
     # Token aus Argumenten oder Umgebung
     token = args.token or os.getenv('DISCORD_BOT_TOKEN')
-    
+
     if not token:
         print_error("Kein Bot-Token angegeben!")
         print_info("Optionen:")
@@ -317,7 +315,7 @@ def main():
         print("  2. export DISCORD_BOT_TOKEN='dein_token'")
         print("  3. python setup_discord_permissions.py --manual")
         return
-    
+
     # Setup ausführen
     setup = DiscordSecuritySetup(token)
     try:

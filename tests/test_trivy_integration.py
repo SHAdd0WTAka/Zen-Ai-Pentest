@@ -7,8 +7,7 @@ including unit tests with mocked subprocess calls.
 import asyncio
 import json
 import pytest
-from unittest.mock import Mock, patch, MagicMock
-from pathlib import Path
+from unittest.mock import Mock, patch
 
 # Import the module under test
 from tools.trivy_integration import (

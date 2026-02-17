@@ -71,7 +71,7 @@ def test_boolean_logic():
     """Boolean operations"""
     assert True is True
     assert False is False
-    assert not False is True
+    assert False is not True
     assert True and True is True
     assert True or False is True
 
@@ -111,7 +111,7 @@ def test_comprehensions():
 
 def test_lambda():
     """Lambda functions"""
-    double = lambda x: x * 2
+    def double(x): return x * 2
     assert double(5) == 10
 
 
@@ -120,6 +120,6 @@ def test_map_filter():
     nums = [1, 2, 3, 4, 5]
     doubled = list(map(lambda x: x * 2, nums))
     assert doubled == [2, 4, 6, 8, 10]
-    
+
     evens = list(filter(lambda x: x % 2 == 0, nums))
     assert evens == [2, 4]

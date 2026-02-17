@@ -171,7 +171,7 @@ def update_personas():
             console.print(f"   • {f}")
 
     if skipped:
-        console.print(f"[dim]⏭️  Bereits vorhanden (übersprungen):[/dim]")
+        console.print("[dim]⏭️  Bereits vorhanden (übersprungen):[/dim]")
         for f in skipped:
             console.print(f"   • {f}")
 

@@ -2,7 +2,6 @@
 Extended Database Tests
 """
 import pytest
-from datetime import datetime
 
 
 try:
@@ -15,7 +14,7 @@ except ImportError:
 @pytest.mark.skipif(not DB_AVAILABLE, reason="Database not available")
 class TestUserExtended:
     """Erweiterte User Tests"""
-    
+
     def test_user_creation_all_fields(self):
         user = User(
             username="testuser",
@@ -27,12 +26,12 @@ class TestUserExtended:
         assert user.username == "testuser"
         assert user.email == "test@test.com"
         assert user.role == "admin"
-    
+
     def test_user_str(self):
         user = User(username="test")
         s = str(user)
         assert isinstance(s, str)
-    
+
     def test_user_default_role(self):
         user = User(username="test")
         # Role sollte default haben
@@ -42,7 +41,7 @@ class TestUserExtended:
 @pytest.mark.skipif(not DB_AVAILABLE, reason="Database not available")
 class TestScanExtended:
     """Erweiterte Scan Tests"""
-    
+
     def test_scan_all_fields(self):
         scan = Scan(
             target="example.com",
@@ -53,11 +52,11 @@ class TestScanExtended:
         )
         assert scan.target == "example.com"
         assert scan.name == "Test Scan"
-    
+
     def test_scan_timestamps(self):
         scan = Scan(target="test.com")
         assert hasattr(scan, 'created_at')
-    
+
     def test_scan_relationships(self):
         scan = Scan(target="test.com")
         assert hasattr(scan, 'findings')
@@ -67,7 +66,7 @@ class TestScanExtended:
 @pytest.mark.skipif(not DB_AVAILABLE, reason="Database not available")
 class TestFindingExtended:
     """Erweiterte Finding Tests"""
-    
+
     def test_finding_all_fields(self):
         finding = Finding(
             title="SQL Injection",
@@ -84,7 +83,7 @@ class TestFindingExtended:
         )
         assert finding.title == "SQL Injection"
         assert finding.cvss_score == 8.5
-    
+
     def test_finding_timestamps(self):
         finding = Finding(title="Test")
         assert hasattr(finding, 'created_at')
@@ -93,7 +92,7 @@ class TestFindingExtended:
 @pytest.mark.skipif(not DB_AVAILABLE, reason="Database not available")
 class TestReportExtended:
     """Erweiterte Report Tests"""
-    
+
     def test_report_all_fields(self):
         report = Report(
             format="pdf",
@@ -102,7 +101,7 @@ class TestReportExtended:
         )
         assert report.format == "pdf"
         assert report.file_path == "/tmp/report.pdf"
-    
+
     def test_report_timestamps(self):
         report = Report(format="html")
         assert hasattr(report, 'created_at')
@@ -111,13 +110,13 @@ class TestReportExtended:
 @pytest.mark.skipif(not DB_AVAILABLE, reason="Database not available")
 class TestEnums:
     """Enum Tests"""
-    
+
     def test_scan_status_values(self):
         assert ScanStatus.PENDING == "pending"
         assert ScanStatus.RUNNING == "running"
         assert ScanStatus.COMPLETED == "completed"
         assert ScanStatus.FAILED == "failed"
-    
+
     def test_severity_values(self):
         assert Severity.CRITICAL == "critical"
         assert Severity.HIGH == "high"

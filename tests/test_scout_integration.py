@@ -9,7 +9,6 @@ import json
 import os
 import pytest
 from unittest.mock import Mock, patch, MagicMock
-from pathlib import Path
 
 # Import the module under test
 from tools.scout_integration import (

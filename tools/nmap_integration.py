@@ -366,8 +366,8 @@ class NmapScanner:
                 if addr.get("addrtype") == "ipv4":
                     ip = addr.get("addr", "")
                 elif addr.get("addrtype") == "mac":
-                    mac_address = addr.get("addr", "")
-                    vendor = addr.get("vendor", "")
+                    # MAC address and vendor detected but not used in this version
+                    pass
 
             if not ip:
                 return None
@@ -887,7 +887,7 @@ def nmap_vuln_scan(target: str, ports: str = "top-100") -> str:
     if not findings:
         return f"No obvious vulnerabilities found on {target}"
 
-    return f"Potential vulnerabilities found:\n" + "\n".join(findings[:10])
+    return "Potential vulnerabilities found:\n" + "\n".join(findings[:10])
 
 
 # Tool Registry integration

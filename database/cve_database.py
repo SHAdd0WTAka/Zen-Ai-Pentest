@@ -18,9 +18,9 @@ import json
 import logging
 import os
 from dataclasses import dataclass, asdict
-from datetime import datetime, timedelta
+from datetime import datetime
 from functools import lru_cache
-from typing import Dict, List, Optional, Generator, Set, Iterable
+from typing import Dict, List, Optional, Generator, Set
 
 logger = logging.getLogger("ZenAI")
 
@@ -41,7 +41,7 @@ class CVEEntry:
     detection_methods: List[str]
     ransomware_used_by: List[str] = None
     ioc: Dict = None
-    
+
     def to_dict(self) -> Dict:
         """Convert to dictionary for serialization."""
         return asdict(self)
@@ -63,7 +63,7 @@ class RansomwareEntry:
     detection: List[str]
     decryptable: bool
     estimated_damage: int = 0
-    
+
     def to_dict(self) -> Dict:
         """Convert to dictionary for serialization."""
         return asdict(self)
@@ -80,14 +80,14 @@ class CVEDatabase:
         self.ransomware_data: Dict[str, Dict] = {}
         self.cve_data: Dict[str, Dict] = {}
         self.exploit_chains: Dict[str, Dict] = {}
-        
+
         # In-memory cache with TTL
         self._cache: Dict[str, Dict] = {}
         self._cache_times: Dict[str, datetime] = {}
         self._cache_size = cache_size
         self._cache_ttl = cache_ttl
         self._cache_lock = asyncio.Lock()
-        
+
         # Index for faster lookups
         self._severity_index: Dict[str, Set[str]] = {}
         self._ransomware_cve_index: Dict[str, Set[str]] = {}
@@ -121,7 +121,7 @@ class CVEDatabase:
             if severity not in self._severity_index:
                 self._severity_index[severity] = set()
             self._severity_index[severity].add(cve_id)
-        
+
         # Build ransomware->CVE index
         for key, data in self.ransomware_data.items():
             for cve in data.get("cves", []):
@@ -151,7 +151,7 @@ class CVEDatabase:
                 oldest_key = min(self._cache_times.keys(), key=lambda k: self._cache_times[k])
                 del self._cache[oldest_key]
                 del self._cache_times[oldest_key]
-            
+
             self._cache[key] = value
             self._cache_times[key] = datetime.utcnow()
 
@@ -179,18 +179,18 @@ class CVEDatabase:
     async def search_cve_cached(self, cve_id: str) -> Optional[CVEEntry]:
         """Search CVE with caching support."""
         cve_id = cve_id.upper()
-        
+
         # Check cache
         cache_key = f"cve:{cve_id}"
         cached = await self._get_from_cache(cache_key)
         if cached:
             return CVEEntry(**cached)
-        
+
         # Search and cache
         result = self.search_cve(cve_id)
         if result:
             await self._add_to_cache(cache_key, result.to_dict())
-        
+
         return result
 
     def search_cve_batch(self, cve_ids: List[str]) -> Dict[str, Optional[CVEEntry]]:
@@ -204,7 +204,7 @@ class CVEDatabase:
         """Batch search with caching."""
         results = {}
         to_fetch = []
-        
+
         # Check cache first
         for cve_id in cve_ids:
             cve_upper = cve_id.upper()
@@ -214,7 +214,7 @@ class CVEDatabase:
                 results[cve_id] = CVEEntry(**cached)
             else:
                 to_fetch.append(cve_id)
-        
+
         # Fetch missing
         if to_fetch:
             fetched = self.search_cve_batch(to_fetch)
@@ -222,7 +222,7 @@ class CVEDatabase:
                 results[cve_id] = entry
                 if entry:
                     await self._add_to_cache(f"cve:{cve_id.upper()}", entry.to_dict())
-        
+
         return results
 
     def search_ransomware(self, name: str) -> Optional[RansomwareEntry]:
@@ -256,20 +256,20 @@ class CVEDatabase:
         """Get all CVEs by severity level (uses index)"""
         severity = severity.capitalize()
         cve_ids = self._severity_index.get(severity, set())
-        
+
         results = []
         for cve_id in cve_ids:
             entry = self.search_cve(cve_id)
             if entry:
                 results.append(entry)
-        
+
         return results
 
     def get_cves_by_severity_generator(self, severity: str) -> Generator[CVEEntry, None, None]:
         """Generator for CVEs by severity (memory efficient for large datasets)."""
         severity = severity.capitalize()
         cve_ids = self._severity_index.get(severity, set())
-        
+
         for cve_id in cve_ids:
             entry = self.search_cve(cve_id)
             if entry:
@@ -428,9 +428,9 @@ Provide:
                     "ransomware_used_by": data.get("ransomware_used_by", []),
                 }
             )
-        
+
         results.sort(key=lambda x: x["cvss"], reverse=True)
-        
+
         if limit:
             return results[:limit]
         return results

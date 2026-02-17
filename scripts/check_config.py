@@ -13,50 +13,50 @@ console = Console()
 
 def check_config():
     env_path = Path(__file__).parent.parent / ".env"
-    
+
     console.print(Panel.fit(
         "Zen-AI Pentest - Konfigurations-Check",
         title="Setup", border_style="cyan"
     ))
-    
+
     # Prüfe ob .env existiert
     if not env_path.exists():
         console.print("[yellow].env Datei nicht gefunden![/yellow]")
         console.print("\n[bold]Erstmalige Einrichtung:[/bold]")
         console.print("  python scripts/setup_wizard.py -b kimi -m kimi-k2.5 -k YOUR_KEY")
         return False
-    
+
     with open(env_path, 'r') as f:
         content = f.read()
-    
+
     # Extrahiere Konfiguration
     config = {}
     for match in re.finditer(r'export (\w+)="([^"]*)"', content):
         config[match.group(1)] = match.group(2)
-    
+
     # Erstelle Status-Tabelle
     table = Table(title="API Konfiguration", show_header=True)
     table.add_column("Backend", style="cyan")
     table.add_column("Status", style="bold")
     table.add_column("Modell", style="dim")
-    
+
     backends = [
         ("Kimi", "KIMI_API_KEY", "DEFAULT_BACKEND", "kimi"),
         ("OpenRouter", "OPENROUTER_API_KEY", "DEFAULT_BACKEND", "openrouter"),
         ("OpenAI", "OPENAI_API_KEY", "DEFAULT_BACKEND", "openai"),
     ]
-    
+
     has_valid_key = False
     default_backend = config.get("DEFAULT_BACKEND", "")
     default_model = config.get("DEFAULT_MODEL", "nicht gesetzt")
-    
+
     for name, key_var, _, backend_id in backends:
         key = config.get(key_var, "")
         is_default = default_backend == backend_id
-        
+
         # Prüfe ob Key valide aussieht (nicht leer, nicht dummy)
         is_dummy = key in ["", "test-key-12345", "your-api-key", "xxx", "sk-xxx"]
-        
+
         if key and not is_dummy and len(key) > 20:
             status = "[green]Konfiguriert"
             if is_default:
@@ -66,12 +66,12 @@ def check_config():
             status = "[red]Dummy-Key"
         else:
             status = "[dim]Nicht konfiguriert"
-        
+
         table.add_row(name, status, default_model if is_default else "-")
-    
+
     console.print(table)
     console.print()
-    
+
     # Hinweise
     if not has_valid_key:
         console.print(Panel(

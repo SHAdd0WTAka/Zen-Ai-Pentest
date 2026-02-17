@@ -164,7 +164,7 @@ exclude_lines = [
 [tool.ruff]
 line-length = 127
 target-version = "py311"
-exclude = [".kimi", "venv", ".venv", "env", ".git", "__pycache__", "build", "dist", "logs", "evidence"]
+exclude = [".kimi", "venv", ".venv", "env", ".git", "__pycache__", "build", "dist", "logs", "evidence", "**/node_modules/**"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W"]

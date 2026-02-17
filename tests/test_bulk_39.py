@@ -1,5 +1,4 @@
 """Bulk Tests"""
-import pytest
 class TestB:
     def test_x(self): pass
     def test_y(self): pass

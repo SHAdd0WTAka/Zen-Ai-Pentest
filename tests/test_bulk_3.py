@@ -1,5 +1,4 @@
 """Bulk Tests for Coverage"""
-import pytest
 
 class TestBulk:
     def test_bulk_1(self): assert True

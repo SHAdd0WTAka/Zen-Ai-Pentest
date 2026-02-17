@@ -1,7 +1,6 @@
 """
 Massive Coverage Tests - 200+ einfache Tests
 """
-import pytest
 import sys
 from pathlib import Path
 
@@ -49,10 +48,10 @@ class TestMassiveCoverage1:
     def test_037(self): assert len([1, 2, 3]) == 3
     def test_038(self): assert len("hello") == 5
     def test_039(self): assert len({"a": 1}) == 1
-    def test_040(self): assert type(1) == int
-    def test_041(self): assert type("s") == str
-    def test_042(self): assert type([]) == list
-    def test_043(self): assert type({}) == dict
+    def test_040(self): assert isinstance(1, int)
+    def test_041(self): assert isinstance("s", str)
+    def test_042(self): assert isinstance([], list)
+    def test_043(self): assert isinstance({}, dict)
     def test_044(self): assert isinstance(1, int)
     def test_045(self): assert isinstance("s", str)
     def test_046(self): assert isinstance([], list)
@@ -144,8 +143,8 @@ class TestMassiveCoverage3:
     def test_124(self): assert None is None
     def test_125(self): assert True is True
     def test_126(self): assert False is False
-    def test_127(self): assert [] is not []
-    def test_128(self): assert {} is not {}
+    def test_127(self): assert [] != []
+    def test_128(self): assert {} != {}
     def test_129(self): assert "a" + "b" == "ab"
     def test_130(self): assert [1] + [2] == [1, 2]
     def test_131(self): assert (1,) + (2,) == (1, 2)
@@ -211,9 +210,9 @@ class TestMassiveCoverage4:
     def test_187(self): assert "{a}{b}".format(a=1, b=2) == "12"
     def test_188(self): assert f"{1+1}" == "2"
     def test_189(self): assert f"{'hello'.upper()}" == "HELLO"
-    def test_190(self): assert type(f"") == str
-    def test_191(self): assert type(r"") == str
-    def test_192(self): assert type(b"") == bytes
+    def test_190(self): assert isinstance("", str)
+    def test_191(self): assert isinstance(r"", str)
+    def test_192(self): assert isinstance(b"", bytes)
     def test_193(self): assert b"hello".decode() == "hello"
     def test_194(self): assert "hello".encode() == b"hello"
     def test_195(self): assert bytes(5) == b'\x00\x00\x00\x00\x00'

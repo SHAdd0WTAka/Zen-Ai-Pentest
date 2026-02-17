@@ -13,12 +13,12 @@ def get_latest_workflow_run(workflow_name="Test Coverage"):
     token = get_installation_token()
     headers = get_headers(token)
     headers["Accept"] = "application/vnd.github.v3+json"
-    
+
     url = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/actions/runs"
     params = {"per_page": 10}
-    
+
     response = requests.get(url, headers=headers, params=params)
-    
+
     if response.status_code == 200:
         runs = response.json().get('workflow_runs', [])
         for run in runs:
@@ -31,22 +31,22 @@ def get_run_logs(run_id):
     token = get_installation_token()
     headers = get_headers(token)
     headers["Accept"] = "application/vnd.github.v3+json"
-    
+
     # Get run details
     url = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/actions/runs/{run_id}"
     response = requests.get(url, headers=headers)
-    
+
     if response.status_code == 200:
         run = response.json()
         print(f"\nWorkflow: {run.get('name')}")
         print(f"Status: {run.get('status')}")
         print(f"Conclusion: {run.get('conclusion')}")
         print(f"URL: {run.get('html_url')}")
-        
+
         # Get jobs
         jobs_url = run.get('jobs_url')
         jobs_resp = requests.get(jobs_url, headers=headers)
-        
+
         if jobs_resp.status_code == 200:
             jobs = jobs_resp.json().get('jobs', [])
             print(f"\nJobs ({len(jobs)}):")
@@ -54,7 +54,7 @@ def get_run_logs(run_id):
                 print(f"\n  - {job.get('name')}")
                 print(f"    Status: {job.get('status')}")
                 print(f"    Conclusion: {job.get('conclusion')}")
-                
+
                 # Get steps
                 steps = job.get('steps', [])
                 for step in steps:

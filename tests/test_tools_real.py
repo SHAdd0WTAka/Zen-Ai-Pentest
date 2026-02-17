@@ -10,12 +10,11 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 class TestToolsInitReal:
     """Test tools/__init__.py wirklich"""
-    
+
     def test_tools_init_loads(self):
-        import tools
         # Sollte keine Exception werfen
         assert True
-    
+
     def test_tools_has_nmap(self):
         import tools
         # Prüfe ob nmap in __all__ oder verfügbar
@@ -24,21 +23,21 @@ class TestToolsInitReal:
 
 class TestNmapIntegrationReal:
     """Echte Nmap Tests"""
-    
+
     def test_nmap_module_imports(self):
         from tools import nmap_integration
         assert nmap_integration is not None
-    
+
     def test_nmap_has_functions(self):
         from tools import nmap_integration
         # Prüfe ob Funktionen existieren
         funcs = [x for x in dir(nmap_integration) if not x.startswith('_')]
         assert len(funcs) > 0
-    
+
     def test_nmap_create_result_dict_exists(self):
         from tools.nmap_integration import create_nmap_result_dict
         assert callable(create_nmap_result_dict)
-    
+
     def test_nmap_quick_scan_exists(self):
         from tools.nmap_integration import nmap_quick_scan
         assert callable(nmap_quick_scan)
@@ -46,14 +45,14 @@ class TestNmapIntegrationReal:
 
 class TestNucleiIntegrationReal:
     """Echte Nuclei Tests"""
-    
+
     def test_nuclei_module_imports(self):
         try:
             from tools import nuclei_integration
             assert True
         except ImportError:
             pytest.skip("nuclei_integration nicht verfügbar")
-    
+
     def test_nuclei_has_scan_function(self):
         try:
             from tools import nuclei_integration
@@ -65,7 +64,7 @@ class TestNucleiIntegrationReal:
 
 class TestSQLMapIntegrationReal:
     """Echte SQLMap Tests"""
-    
+
     def test_sqlmap_module_imports(self):
         try:
             from tools import sqlmap_integration
@@ -76,14 +75,14 @@ class TestSQLMapIntegrationReal:
 
 class TestFFuFIntegrationReal:
     """Echte FFuF Tests"""
-    
+
     def test_ffuf_enhanced_imports(self):
         try:
             from tools import ffuf_integration_enhanced
             assert True
         except ImportError as e:
             pytest.skip(f"ffuf_integration_enhanced: {e}")
-    
+
     def test_ffuf_has_finding_class(self):
         try:
             from tools.ffuf_integration_enhanced import FFuFFinding
@@ -94,7 +93,7 @@ class TestFFuFIntegrationReal:
 
 class TestWhatWebIntegrationReal:
     """Echte WhatWeb Tests"""
-    
+
     def test_whatweb_imports(self):
         try:
             from tools import whatweb_integration
@@ -105,7 +104,7 @@ class TestWhatWebIntegrationReal:
 
 class TestWAFW00FIntegrationReal:
     """Echte WAFW00F Tests"""
-    
+
     def test_wafw00f_imports(self):
         try:
             from tools import wafw00f_integration
@@ -116,7 +115,7 @@ class TestWAFW00FIntegrationReal:
 
 class TestSubfinderIntegrationReal:
     """Echte Subfinder Tests"""
-    
+
     def test_subfinder_imports(self):
         try:
             from tools import subfinder_integration
@@ -127,7 +126,7 @@ class TestSubfinderIntegrationReal:
 
 class TestHTTPXIntegrationReal:
     """Echte HTTPX Tests"""
-    
+
     def test_httpx_imports(self):
         try:
             from tools import httpx_integration
@@ -138,7 +137,7 @@ class TestHTTPXIntegrationReal:
 
 class TestNiktoIntegrationReal:
     """Echte Nikto Tests"""
-    
+
     def test_nikto_imports(self):
         try:
             from tools import nikto_integration
@@ -149,7 +148,7 @@ class TestNiktoIntegrationReal:
 
 class TestSherlockIntegrationReal:
     """Echte Sherlock Tests"""
-    
+
     def test_sherlock_imports(self):
         try:
             from tools import sherlock_integration
@@ -160,7 +159,7 @@ class TestSherlockIntegrationReal:
 
 class TestIgnorantIntegrationReal:
     """Echte Ignorant Tests"""
-    
+
     def test_ignorant_imports(self):
         try:
             from tools import ignorant_integration
@@ -171,7 +170,7 @@ class TestIgnorantIntegrationReal:
 
 class TestTSharkIntegrationReal:
     """Echte TShark Tests"""
-    
+
     def test_tshark_imports(self):
         try:
             from tools import tshark_integration
@@ -182,7 +181,7 @@ class TestTSharkIntegrationReal:
 
 class TestAmassIntegrationReal:
     """Echte Amass Tests"""
-    
+
     def test_amass_imports(self):
         try:
             from tools import amass_integration
@@ -193,7 +192,7 @@ class TestAmassIntegrationReal:
 
 class TestMasscanIntegrationReal:
     """Echte Masscan Tests"""
-    
+
     def test_masscan_imports(self):
         try:
             from tools import masscan_integration
@@ -204,7 +203,7 @@ class TestMasscanIntegrationReal:
 
 class TestGobusterIntegrationReal:
     """Echte Gobuster Tests"""
-    
+
     def test_gobuster_imports(self):
         try:
             from tools import gobuster_integration

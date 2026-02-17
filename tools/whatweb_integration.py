@@ -103,7 +103,6 @@ class WhatWebIntegration:
                     line = self._clean_ansi(line)
                     data = json.loads(line)
 
-                    url = data.get("target", target)
                     plugins_data = data.get("plugins", {})
 
                     for plugin_name, plugin_info in plugins_data.items():

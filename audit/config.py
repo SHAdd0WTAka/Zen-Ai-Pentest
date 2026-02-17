@@ -4,7 +4,7 @@ Audit Logging Configuration
 Configuration for the audit logging system following ISO 27001 standards.
 """
 
-from enum import Enum, auto
+from enum import Enum
 from dataclasses import dataclass
 from typing import Optional, List
 from datetime import timedelta
@@ -46,46 +46,46 @@ class RetentionPolicy(Enum):
 @dataclass
 class AuditConfig:
     """Configuration for audit logging system"""
-    
+
     # Storage Configuration
     storage_backend: str = "postgresql"  # postgresql, sqlite, elasticsearch
     connection_string: str = ""
     log_table: str = "audit_logs"
     archive_table: str = "audit_logs_archive"
-    
+
     # Retention Policy
     retention_policies: dict = None
     archive_enabled: bool = True
     archive_after_days: int = 90
-    
+
     # SIEM Integration
     siem_enabled: bool = False
     siem_url: str = ""
     siem_api_key: str = ""
     siem_batch_size: int = 100
     siem_flush_interval: int = 60
-    
+
     # Alerting
     alert_on_critical: bool = True
     alert_on_security: bool = True
     alert_webhook_url: str = ""
-    
+
     # Performance
     async_logging: bool = True
     buffer_size: int = 1000
     flush_interval: float = 5.0
-    
+
     # Security
     sign_logs: bool = True
     signature_key: str = ""
     encrypt_sensitive: bool = True
     hash_algorithm: str = "sha256"
-    
+
     # Compliance
     compliance_mode: str = "strict"  # strict, standard, relaxed
     include_pii: bool = False
     mask_fields: Optional[List[str]] = None
-    
+
     def __post_init__(self):
         if self.retention_policies is None:
             self.retention_policies = {
@@ -98,13 +98,13 @@ class AuditConfig:
                 LogLevel.ALERT: RetentionPolicy.PERMANENT,
                 LogLevel.EMERGENCY: RetentionPolicy.PERMANENT,
             }
-        
+
         if self.mask_fields is None:
             self.mask_fields = [
                 "password", "secret", "token", "api_key", "private_key",
                 "credit_card", "ssn", "personal_id"
             ]
-    
+
     @classmethod
     def default(cls) -> "AuditConfig":
         """Get default audit configuration"""
@@ -115,7 +115,7 @@ class AuditConfig:
             sign_logs=True,
             encrypt_sensitive=True,
         )
-    
+
     @classmethod
     def strict(cls) -> "AuditConfig":
         """Get strict compliance configuration (ISO 27001)"""

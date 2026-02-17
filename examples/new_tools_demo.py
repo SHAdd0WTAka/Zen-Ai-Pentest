@@ -15,7 +15,6 @@ Version: 1.0.0
 """
 
 import asyncio
-import json
 import sys
 from pathlib import Path
 
@@ -24,33 +23,22 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from tools.zap_integration import (
     ZAPScanner,
-    zap_scan_url,
     zap_quick_scan,
     zap_spider_only,
 )
 from tools.trufflehog_integration import (
     TruffleHogScanner,
-    trufflehog_scan_git,
-    trufflehog_scan_path,
 )
 from tools.scout_integration import (
     ScoutSuiteScanner,
     CloudProvider,
-    scoutsuite_scan_aws,
-    scoutsuite_quick_scan,
 )
 from tools.trivy_integration import (
     TrivyScanner,
-    TrivyScanTarget,
     TrivyScannerType,
-    trivy_scan_image,
-    trivy_scan_filesystem,
 )
 from tools.semgrep_integration import (
     SemgrepScanner,
-    semgrep_scan_code,
-    semgrep_scan_owasp,
-    semgrep_scan_secrets,
 )
 
 
@@ -107,7 +95,7 @@ async def demo_trufflehog():
         max_depth=100,
         exclude_paths=["node_modules", "vendor", ".git"],
     )
-    print(f"TruffleHog Scanner initialized")
+    print("TruffleHog Scanner initialized")
     print(f"Verified only: {scanner.verified_only}")
     print(f"Max depth: {scanner.max_depth}")
 
@@ -131,7 +119,7 @@ async def demo_trufflehog():
     try:
         result = await scanner.scan_filesystem(".")
         if result.success:
-            print(f"Filesystem scan completed")
+            print("Filesystem scan completed")
             print(f"Secrets found: {len(result.findings)}")
         else:
             print(f"Scan failed: {result.error}")
@@ -155,7 +143,7 @@ async def demo_scoutsuite():
             compliance=["cis", "pci-dss"],
             output_dir="./scout-reports",
         )
-        print(f"ScoutSuite AWS Scanner initialized")
+        print("ScoutSuite AWS Scanner initialized")
         print(f"Regions: {scanner.regions}")
         print(f"Services: {scanner.services}")
         print(f"Compliance: {scanner.compliance}")
@@ -166,7 +154,7 @@ async def demo_scoutsuite():
     print("\n--- Example: Azure Scanner Setup ---")
     try:
         scanner = ScoutSuiteScanner(provider=CloudProvider.AZURE)
-        print(f"ScoutSuite Azure Scanner initialized")
+        print("ScoutSuite Azure Scanner initialized")
     except Exception as e:
         print(f"Note: ScoutSuite not installed ({e})")
 
@@ -177,7 +165,7 @@ async def demo_scoutsuite():
             provider=CloudProvider.GCP,
             thread_config=8,
         )
-        print(f"ScoutSuite GCP Scanner initialized")
+        print("ScoutSuite GCP Scanner initialized")
         print(f"Threads: {scanner.thread_config}")
     except Exception as e:
         print(f"Note: ScoutSuite not installed ({e})")
@@ -197,7 +185,7 @@ async def demo_trivy():
             scanners=[TrivyScannerType.VULNERABILITY, TrivyScannerType.MISCONFIGURATION],
             cache_dir="/tmp/trivy-cache",
         )
-        print(f"Trivy Scanner initialized")
+        print("Trivy Scanner initialized")
         print(f"Severity filter: {scanner.severity}")
         print(f"Scanners: {[s.value for s in scanner.scanners]}")
     except Exception as e:
@@ -225,7 +213,7 @@ async def demo_trivy():
         scanner = TrivyScanner()
         result = await scanner.scan_filesystem(".")
         if result.success:
-            print(f"Filesystem scan completed")
+            print("Filesystem scan completed")
             print(f"Vulnerabilities: {len(result.vulnerabilities)}")
             print(f"Secrets: {len(result.secrets)}")
         else:
@@ -249,7 +237,7 @@ async def demo_semgrep():
             num_jobs=4,
             timeout=300,
         )
-        print(f"Semgrep Scanner initialized")
+        print("Semgrep Scanner initialized")
         print(f"Config: {scanner.config}")
         print(f"Jobs: {scanner.num_jobs}")
     except Exception as e:
@@ -278,7 +266,7 @@ async def demo_semgrep():
         scanner.add_secrets_rules()
         result = await scanner.scan(".")
         if result.success:
-            print(f"Secrets scan completed")
+            print("Secrets scan completed")
             print(f"Potential secrets found: {len(result.findings)}")
         else:
             print(f"Scan failed: {result.error}")

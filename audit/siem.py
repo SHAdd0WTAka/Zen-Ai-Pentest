@@ -6,7 +6,6 @@ QRadar, and custom HTTP endpoints.
 """
 
 import json
-import asyncio
 from abc import ABC, abstractmethod
 from typing import Dict, Any, List, Optional
 from datetime import datetime
@@ -34,20 +33,20 @@ class SIEMConfig:
 
 class SIEMBackend(ABC):
     """Abstract base class for SIEM backends"""
-    
+
     def __init__(self, config: SIEMConfig):
         self.config = config
-    
+
     @abstractmethod
     async def send(self, entries: List[AuditLogEntry]) -> bool:
         """Send entries to SIEM"""
         pass
-    
+
     @abstractmethod
     async def health_check(self) -> bool:
         """Check SIEM connectivity"""
         pass
-    
+
     def format_entry(self, entry: AuditLogEntry) -> Dict[str, Any]:
         """Format entry for SIEM (override in subclass)"""
         return {
@@ -66,16 +65,16 @@ class SIEMBackend(ABC):
 
 class SplunkBackend(SIEMBackend):
     """Splunk HTTP Event Collector integration"""
-    
+
     def __init__(self, config: SIEMConfig):
         super().__init__(config)
         self.hec_url = f"{config.url}/services/collector/event"
-    
+
     async def send(self, entries: List[AuditLogEntry]) -> bool:
         """Send entries to Splunk HEC"""
         if not entries:
             return True
-        
+
         events = []
         for entry in entries:
             event = {
@@ -86,14 +85,14 @@ class SplunkBackend(SIEMBackend):
                 "event": self.format_entry(entry)
             }
             events.append(json.dumps(event))
-        
+
         data = "\n".join(events)
-        
+
         headers = {
             "Authorization": f"Splunk {self.config.api_key}",
             "Content-Type": "application/json"
         }
-        
+
         async with aiohttp.ClientSession() as session:
             try:
                 async with session.post(
@@ -112,12 +111,12 @@ class SplunkBackend(SIEMBackend):
             except Exception as e:
                 print(f"Splunk send error: {e}")
                 return False
-    
+
     async def health_check(self) -> bool:
         """Check Splunk HEC health"""
         headers = {"Authorization": f"Splunk {self.config.api_key}"}
         health_url = f"{self.config.url}/services/collector/health"
-        
+
         async with aiohttp.ClientSession() as session:
             try:
                 async with session.get(
@@ -127,18 +126,18 @@ class SplunkBackend(SIEMBackend):
                     timeout=aiohttp.ClientTimeout(total=self.config.timeout)
                 ) as response:
                     return response.status == 200
-            except:
+            except Exception:
                 return False
 
 
 class ElasticsearchBackend(SIEMBackend):
     """Elasticsearch/ELK Stack integration"""
-    
+
     async def send(self, entries: List[AuditLogEntry]) -> bool:
         """Send entries to Elasticsearch via Bulk API"""
         if not entries:
             return True
-        
+
         # Build bulk request
         bulk_data = []
         for entry in entries:
@@ -151,21 +150,21 @@ class ElasticsearchBackend(SIEMBackend):
             }))
             # Document line
             bulk_data.append(json.dumps(self.format_entry(entry)))
-        
+
         data = "\n".join(bulk_data) + "\n"
-        
+
         headers = {"Content-Type": "application/x-ndjson"}
         if self.config.custom_headers:
             headers.update(self.config.custom_headers)
-        
+
         auth = None
         if self.config.username and self.config.password:
             auth = aiohttp.BasicAuth(self.config.username, self.config.password)
         elif self.config.api_key:
             headers["Authorization"] = f"ApiKey {self.config.api_key}"
-        
+
         bulk_url = f"{self.config.url}/_bulk"
-        
+
         async with aiohttp.ClientSession() as session:
             try:
                 async with session.post(
@@ -190,7 +189,7 @@ class ElasticsearchBackend(SIEMBackend):
             except Exception as e:
                 print(f"Elasticsearch send error: {e}")
                 return False
-    
+
     async def health_check(self) -> bool:
         """Check Elasticsearch cluster health"""
         async with aiohttp.ClientSession() as session:
@@ -198,7 +197,7 @@ class ElasticsearchBackend(SIEMBackend):
                 auth = None
                 if self.config.username and self.config.password:
                     auth = aiohttp.BasicAuth(self.config.username, self.config.password)
-                
+
                 async with session.get(
                     f"{self.config.url}/_cluster/health",
                     auth=auth,
@@ -209,18 +208,18 @@ class ElasticsearchBackend(SIEMBackend):
                         result = await response.json()
                         return result.get("status") in ["green", "yellow"]
                     return False
-            except:
+            except Exception:
                 return False
 
 
 class QRadarBackend(SIEMBackend):
     """IBM QRadar integration via HTTPS Receiver"""
-    
+
     async def send(self, entries: List[AuditLogEntry]) -> bool:
         """Send entries to QRadar"""
         # QRadar uses LEEF (Log Event Extended Format) or JSON
         leef_events = []
-        
+
         for entry in entries:
             # LEEF format: LEEF:2.0|vendor|product|version|event_id|attributes
             leef = (
@@ -232,13 +231,13 @@ class QRadarBackend(SIEMBackend):
                 f"msg={entry.message}"
             )
             leef_events.append(leef)
-        
+
         data = "\n".join(leef_events)
-        
+
         headers = {"Content-Type": "text/plain"}
         if self.config.api_key:
             headers["SEC"] = self.config.api_key
-        
+
         async with aiohttp.ClientSession() as session:
             try:
                 async with session.post(
@@ -252,7 +251,7 @@ class QRadarBackend(SIEMBackend):
             except Exception as e:
                 print(f"QRadar send error: {e}")
                 return False
-    
+
     def _level_to_severity(self, level: str) -> int:
         """Convert log level to QRadar severity (0-10)"""
         mapping = {
@@ -266,7 +265,7 @@ class QRadarBackend(SIEMBackend):
             "emergency": 10
         }
         return mapping.get(level, 5)
-    
+
     async def health_check(self) -> bool:
         """Check QRadar connection"""
         # QRadar doesn't have a simple health endpoint
@@ -284,24 +283,24 @@ class QRadarBackend(SIEMBackend):
 
 class GenericHTTPBackend(SIEMBackend):
     """Generic HTTP endpoint integration"""
-    
+
     async def send(self, entries: List[AuditLogEntry]) -> bool:
         """Send entries to generic HTTP endpoint"""
         if not entries:
             return True
-        
+
         data = {
             "timestamp": datetime.utcnow().isoformat(),
             "source": "zen-ai-pentest",
             "events": [self.format_entry(e) for e in entries]
         }
-        
+
         headers = {"Content-Type": "application/json"}
         if self.config.custom_headers:
             headers.update(self.config.custom_headers)
         if self.config.api_key:
             headers["X-API-Key"] = self.config.api_key
-        
+
         async with aiohttp.ClientSession() as session:
             try:
                 async with session.post(
@@ -315,7 +314,7 @@ class GenericHTTPBackend(SIEMBackend):
             except Exception as e:
                 print(f"HTTP send error: {e}")
                 return False
-    
+
     async def health_check(self) -> bool:
         """Check HTTP endpoint health"""
         async with aiohttp.ClientSession() as session:
@@ -326,17 +325,17 @@ class GenericHTTPBackend(SIEMBackend):
                     timeout=aiohttp.ClientTimeout(total=self.config.timeout)
                 ) as response:
                     return response.status < 500
-            except:
+            except Exception:
                 return False
 
 
 class SIEMIntegration:
     """
     Main SIEM integration manager
-    
+
     Supports multiple backends and handles failover.
     """
-    
+
     BACKENDS = {
         "splunk": SplunkBackend,
         "elasticsearch": ElasticsearchBackend,
@@ -344,19 +343,19 @@ class SIEMIntegration:
         "qradar": QRadarBackend,
         "http": GenericHTTPBackend,
     }
-    
+
     def __init__(self, configs: List[SIEMConfig]):
         self.backends: List[SIEMBackend] = []
-        
+
         for config in configs:
             backend_class = self._detect_backend(config)
             if backend_class:
                 self.backends.append(backend_class(config))
-    
+
     def _detect_backend(self, config: SIEMConfig) -> Optional[type]:
         """Auto-detect backend type from URL"""
         url_lower = config.url.lower()
-        
+
         if "splunk" in url_lower or ":8088" in url_lower:
             return SplunkBackend
         elif "elasticsearch" in url_lower or ":9200" in url_lower:
@@ -365,11 +364,11 @@ class SIEMIntegration:
             return QRadarBackend
         else:
             return GenericHTTPBackend
-    
+
     async def send(self, entries: List[AuditLogEntry]) -> Dict[str, bool]:
         """Send entries to all configured SIEMs"""
         results = {}
-        
+
         for backend in self.backends:
             backend_name = type(backend).__name__
             try:
@@ -378,19 +377,19 @@ class SIEMIntegration:
             except Exception as e:
                 print(f"SIEM send error ({backend_name}): {e}")
                 results[backend_name] = False
-        
+
         return results
-    
+
     async def health_check(self) -> Dict[str, bool]:
         """Check health of all SIEM backends"""
         results = {}
-        
+
         for backend in self.backends:
             backend_name = type(backend).__name__
             try:
                 healthy = await backend.health_check()
                 results[backend_name] = healthy
-            except Exception as e:
+            except Exception:
                 results[backend_name] = False
-        
+
         return results

@@ -9,10 +9,10 @@ Real-time dashboard with:
 
 Usage:
     from dashboard import DashboardManager
-    
+
     dashboard = DashboardManager()
     await dashboard.start()
-    
+
     # Stream events to connected clients
     await dashboard.broadcast({
         "type": "task_update",

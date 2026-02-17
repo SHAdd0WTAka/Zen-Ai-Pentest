@@ -76,7 +76,6 @@ class WAFW00FIntegration:
                 if output.startswith('['):
                     data = json.loads(output)
                     for item in data:
-                        url = item.get("url", target)
                         detected_wafs = item.get("firewall", "")
                         if detected_wafs and detected_wafs != "None":
                             firewall_detected = True

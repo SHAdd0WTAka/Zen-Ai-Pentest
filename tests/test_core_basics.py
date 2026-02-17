@@ -13,7 +13,7 @@ def test_import_core():
     try:
         import core
         assert True
-    except ImportError as e:
+    except ImportError:
         # Expected if dependencies missing
         pass
 
@@ -106,20 +106,20 @@ def test_python_version():
 
 class TestBasicFunctionality:
     """Test class for basic functionality"""
-    
+
     def setup_method(self):
         """Setup for each test"""
         self.test_data = {"key": "value"}
-    
+
     def test_setup_works(self):
         """Test that setup_method works"""
         assert self.test_data["key"] == "value"
-    
+
     def test_boolean_operations(self):
         """Test boolean logic"""
         assert True is True
         assert False is False
-        assert not False is True
+        assert False is not True
         assert True and True is True
         assert True or False is True
 

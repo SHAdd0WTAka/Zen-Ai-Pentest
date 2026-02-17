@@ -25,7 +25,7 @@ def db_engine():
         from sqlalchemy import create_engine
         SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
         engine = create_engine(
-            SQLALCHEMY_DATABASE_URL, 
+            SQLALCHEMY_DATABASE_URL,
             connect_args={"check_same_thread": False}
         )
         return engine
@@ -39,13 +39,13 @@ def db_session(db_engine):
     try:
         from sqlalchemy.orm import sessionmaker
         from database.models import Base
-        
+
         TestingSessionLocal = sessionmaker(
-            autocommit=False, 
-            autoflush=False, 
+            autocommit=False,
+            autoflush=False,
             bind=db_engine
         )
-        
+
         Base.metadata.create_all(bind=db_engine)
         db = TestingSessionLocal()
         try:
@@ -77,18 +77,18 @@ def client():
         import os
         os.environ["JWT_SECRET_KEY"] = "test-secret-key-for-testing-only"
         os.environ["ADMIN_PASSWORD"] = "testpass"
-        
+
         from fastapi.testclient import TestClient
         from api.main import app
         from database.models import get_db
-        
+
         # Mock DB
         mock_db = MagicMock()
         app.dependency_overrides[get_db] = lambda: mock_db
-        
+
         with TestClient(app) as c:
             yield c
-            
+
         app.dependency_overrides.clear()
     except Exception as e:
         pytest.skip(f"API nicht verfügbar: {e}")

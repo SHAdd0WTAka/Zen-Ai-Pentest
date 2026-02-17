@@ -3,7 +3,7 @@ Setup script for Zen AI Pentest
 Q3 2026: PyPI Package
 """
 
-from setuptools import setup, find_packages
+from setuptools import setup
 import os
 
 here = os.path.abspath(os.path.dirname(__file__))

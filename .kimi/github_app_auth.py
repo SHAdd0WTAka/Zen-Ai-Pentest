@@ -28,24 +28,24 @@ def generate_jwt():
         "exp": now + timedelta(minutes=10),
         "iss": APP_ID
     }
-    
+
     with open(PRIVATE_KEY_PATH, 'r') as f:
         private_key = f.read()
-    
+
     return jwt.encode(payload, private_key, algorithm="RS256")
 
 def get_installation_token():
     """Get installation access token"""
     jwt_token = generate_jwt()
-    
+
     url = f"https://api.github.com/app/installations/{INSTALLATION_ID}/access_tokens"
     headers = {
         "Authorization": f"Bearer {jwt_token}",
         "Accept": "application/vnd.github.v3+json"
     }
-    
+
     response = requests.post(url, headers=headers)
-    
+
     if response.status_code == 201:
         return response.json()["token"]
     else:
@@ -55,7 +55,7 @@ def get_headers(token=None):
     """Get headers with authentication"""
     if token is None:
         token = get_installation_token()
-    
+
     return {
         "Authorization": f"token {token}",
         "Accept": "application/vnd.github.v3+json"
@@ -66,11 +66,11 @@ if __name__ == "__main__":
     try:
         token = get_installation_token()
         headers = get_headers(token)
-        
+
         # Test API access
         url = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}"
         response = requests.get(url, headers=headers)
-        
+
         if response.status_code == 200:
             repo_info = response.json()
             print(f"✅ Authentication successful!")

@@ -276,8 +276,7 @@ class NmapScanner(BaseTool):
     async def execute(self, parameters: Dict[str, Any]) -> ToolResult:
         """Führt Nmap Scan aus - ECHTE AUSFÜHRUNG."""
         import asyncio.subprocess
-        import xml.etree.ElementTree as ET
-        
+
         start_time = time.time()
 
         try:
@@ -374,7 +373,7 @@ class NmapScanner(BaseTool):
         """Validiert das Target für Safety (keine internen Netzwerke ohne Whitelist)."""
         import re
         import ipaddress
-        
+
         # Blockiere private IPs ohne Whitelist
         try:
             ip = ipaddress.ip_address(target)
@@ -388,11 +387,11 @@ class NmapScanner(BaseTool):
         except ValueError:
             # Keine IP, wahrscheinlich Domain - erlaube
             pass
-        
+
         # Blockiere gefährliche Zeichen
         if re.search(r'[;&|<>$`]', target):
             return False, "Invalid characters in target"
-        
+
         return True, ""
 
     def _simulate_scan_output(self, target: str, ports: str) -> str:
@@ -416,26 +415,26 @@ OS and Service detection performed.
     def _parse_nmap_xml(self, xml_output: str) -> Optional[Dict[str, Any]]:
         """Parst Nmap XML Output für strukturierte Daten."""
         import xml.etree.ElementTree as ET
-        
+
         try:
             root = ET.fromstring(xml_output)
-            
+
             open_ports = []
             services = []
             os_matches = []
-            
+
             for host in root.findall('host'):
                 for port in host.findall('.//port'):
                     port_id = port.get('portid')
                     protocol = port.get('protocol')
                     state = port.find('state')
-                    
+
                     if state is not None and state.get('state') == 'open':
                         service_elem = port.find('service')
                         service_name = service_elem.get('name', 'unknown') if service_elem is not None else 'unknown'
                         service_version = service_elem.get('version', '') if service_elem is not None else ''
                         product = service_elem.get('product', '') if service_elem is not None else ''
-                        
+
                         port_info = {
                             "port": int(port_id),
                             "protocol": protocol,
@@ -445,14 +444,14 @@ OS and Service detection performed.
                         }
                         open_ports.append(port_info)
                         services.append(service_name)
-                
+
                 # OS Detection
                 for osmatch in host.findall('.//osmatch'):
                     os_matches.append({
                         "name": osmatch.get('name', 'unknown'),
                         "accuracy": osmatch.get('accuracy', '0')
                     })
-            
+
             return {
                 "open_ports": open_ports,
                 "services": list(set(services)),
@@ -492,15 +491,14 @@ class NucleiScanner(BaseTool):
     async def execute(self, parameters: Dict[str, Any]) -> ToolResult:
         """Führt Nuclei Scan aus - ECHTE AUSFÜHRUNG."""
         import asyncio.subprocess
-        import json
-        
+
         start_time = time.time()
 
         try:
             target = parameters.get("target")
             templates = parameters.get("templates", self.default_templates)
             severity = parameters.get("severity", "critical,high,medium")
-            
+
             # Safety Check
             valid, error_msg = self._validate_target_safety(target)
             if not valid:
@@ -620,17 +618,17 @@ class NucleiScanner(BaseTool):
         """Validiert das Target für Safety."""
         import re
         import ipaddress
-        
+
         try:
             ip = ipaddress.ip_address(target)
             if ip.is_private and not ip.is_loopback:
                 return False, f"Private IP {target} blocked. Add to whitelist if intended."
         except ValueError:
             pass
-        
+
         if re.search(r'[;&|<>$`]', target):
             return False, "Invalid characters in target"
-        
+
         return True, ""
 
 

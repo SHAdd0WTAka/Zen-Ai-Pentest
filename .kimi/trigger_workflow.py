@@ -14,15 +14,15 @@ def trigger_workflow(workflow_id, branch="main"):
     token = get_installation_token()
     headers = get_headers(token)
     headers["Accept"] = "application/vnd.github.v3+json"
-    
+
     url = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/actions/workflows/{workflow_id}/dispatches"
-    
+
     data = {
         "ref": branch
     }
-    
+
     response = requests.post(url, headers=headers, json=data)
-    
+
     if response.status_code == 204:
         print(f"[OK] Workflow '{workflow_id}' triggered successfully on branch '{branch}'")
         print(f"     Check status at: https://github.com/{REPO_OWNER}/{REPO_NAME}/actions")
@@ -37,11 +37,11 @@ def list_workflows():
     token = get_installation_token()
     headers = get_headers(token)
     headers["Accept"] = "application/vnd.github.v3+json"
-    
+
     url = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/actions/workflows"
-    
+
     response = requests.get(url, headers=headers)
-    
+
     if response.status_code == 200:
         workflows = response.json().get('workflows', [])
         print(f"\nAvailable workflows ({len(workflows)}):")
@@ -62,7 +62,7 @@ if __name__ == "__main__":
     parser.add_argument("--branch", default="main", help="Branch to run on")
     parser.add_argument("--list", action="store_true", help="List workflows")
     args = parser.parse_args()
-    
+
     if args.list:
         list_workflows()
     elif args.workflow:

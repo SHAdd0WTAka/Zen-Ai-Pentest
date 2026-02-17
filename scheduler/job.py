@@ -39,7 +39,7 @@ class JobExecution:
     status: str = "running"  # running, completed, failed, cancelled
     result: Optional[Dict[str, Any]] = None
     error: Optional[str] = None
-    
+
     def duration_seconds(self) -> Optional[float]:
         """Calculate execution duration"""
         if self.completed_at and self.started_at:
@@ -51,7 +51,7 @@ class JobExecution:
 class ScheduledJob:
     """
     A scheduled job definition
-    
+
     Attributes:
         id: Unique job ID
         name: Human-readable name
@@ -92,13 +92,13 @@ class ScheduledJob:
     run_count: int = 0
     fail_count: int = 0
     metadata: Dict[str, Any] = field(default_factory=dict)
-    
+
     def __post_init__(self):
         if isinstance(self.schedule_type, str):
             self.schedule_type = ScheduleType(self.schedule_type)
         if isinstance(self.status, str):
             self.status = JobStatus(self.status)
-    
+
     @classmethod
     def create(
         cls,
@@ -121,7 +121,7 @@ class ScheduledJob:
             schedule_expr=schedule_expr,
             **kwargs
         )
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary"""
         return {
@@ -145,43 +145,43 @@ class ScheduledJob:
             "fail_count": self.fail_count,
             "metadata": self.metadata
         }
-    
+
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "ScheduledJob":
         """Create from dictionary"""
         # Parse datetime fields
         datetime_fields = ["created_at", "updated_at", "last_run", "next_run"]
-        for field in datetime_fields:
-            if data.get(field):
-                data[field] = datetime.fromisoformat(data[field])
-        
+        for field_name in datetime_fields:
+            if data.get(field_name):
+                data[field_name] = datetime.fromisoformat(data[field_name])
+
         return cls(**data)
-    
+
     def record_execution(self, success: bool, result: Optional[Dict] = None, error: Optional[str] = None):
         """Record job execution result"""
         self.last_run = datetime.utcnow()
         self.run_count += 1
-        
+
         if success:
             self.status = JobStatus.SCHEDULED if self.schedule_type != ScheduleType.ONCE else JobStatus.COMPLETED
         else:
             self.fail_count += 1
             self.status = JobStatus.FAILED
-        
+
         self.updated_at = datetime.utcnow()
-    
+
     def pause(self):
         """Pause the job"""
         self.enabled = False
         self.status = JobStatus.PAUSED
         self.updated_at = datetime.utcnow()
-    
+
     def resume(self):
         """Resume the job"""
         self.enabled = True
         self.status = JobStatus.SCHEDULED
         self.updated_at = datetime.utcnow()
-    
+
     def disable(self):
         """Permanently disable the job"""
         self.enabled = False
@@ -191,7 +191,7 @@ class ScheduledJob:
 
 class JobBuilder:
     """Builder pattern for creating scheduled jobs"""
-    
+
     def __init__(self):
         self._name = ""
         self._description = ""
@@ -203,51 +203,51 @@ class JobBuilder:
         self._max_retries = 3
         self._timeout = 3600
         self._metadata = {}
-    
+
     def name(self, name: str) -> "JobBuilder":
         self._name = name
         return self
-    
+
     def description(self, description: str) -> "JobBuilder":
         self._description = description
         return self
-    
+
     def task(self, task_type: str, **task_data) -> "JobBuilder":
         self._task_type = task_type
         self._task_data = task_data
         return self
-    
+
     def cron(self, expression: str) -> "JobBuilder":
         self._schedule_type = ScheduleType.CRON
         self._schedule_expr = expression
         return self
-    
+
     def interval(self, minutes: int) -> "JobBuilder":
         self._schedule_type = ScheduleType.INTERVAL
         self._schedule_expr = str(minutes)
         return self
-    
+
     def once(self, at: datetime) -> "JobBuilder":
         self._schedule_type = ScheduleType.ONCE
         self._schedule_expr = at.isoformat()
         return self
-    
+
     def timezone(self, tz: str) -> "JobBuilder":
         self._timezone = tz
         return self
-    
+
     def retries(self, count: int) -> "JobBuilder":
         self._max_retries = count
         return self
-    
+
     def timeout(self, seconds: int) -> "JobBuilder":
         self._timeout = seconds
         return self
-    
+
     def with_metadata(self, **metadata) -> "JobBuilder":
         self._metadata = metadata
         return self
-    
+
     def build(self) -> ScheduledJob:
         """Build the scheduled job"""
         if not self._name:
@@ -256,7 +256,7 @@ class JobBuilder:
             raise ValueError("Task type is required")
         if not self._schedule_expr:
             raise ValueError("Schedule expression is required")
-        
+
         return ScheduledJob.create(
             name=self._name,
             description=self._description,

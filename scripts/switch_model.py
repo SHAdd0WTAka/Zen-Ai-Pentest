@@ -9,7 +9,6 @@ Usage:
     python switch_model.py --status     # Zeigt aktuelle Konfiguration
     python switch_model.py -b openai -m gpt-4o
 """
-import os
 import re
 import sys
 import argparse
@@ -47,28 +46,28 @@ def parse_env(env_path):
         "current_model": None,
         "available": {}
     }
-    
+
     if not env_path.exists():
         return config
-    
+
     with open(env_path, 'r') as f:
         content = f.read()
-    
+
     # Aktuelles Backend/Modell finden
     backend_match = re.search(r'export DEFAULT_BACKEND="([^"]+)"', content)
     model_match = re.search(r'export DEFAULT_MODEL="([^"]+)"', content)
-    
+
     if backend_match:
         config["current_backend"] = backend_match.group(1)
     if model_match:
         config["current_model"] = model_match.group(1)
-    
+
     # Verfuegbare Keys suchen
     for key, data in BACKENDS.items():
         key_match = re.search(rf'export {data["key_var"]}="([^"]+)"', content)
         if key_match and len(key_match.group(1)) > 10:
             config["available"][key] = key_match.group(1)
-    
+
     return config
 
 def show_status(config, env_path):
@@ -77,14 +76,14 @@ def show_status(config, env_path):
         table = Table(title="Zen-AI Aktuelle Konfiguration", show_header=True, header_style="bold cyan")
         table.add_column("Einstellung", style="dim")
         table.add_column("Wert", style="green")
-        
+
         current_backend = config.get("current_backend", "Nicht gesetzt")
         current_model = config.get("current_model", "Nicht gesetzt")
-        
+
         table.add_row("Backend", current_backend)
         table.add_row("Modell", current_model)
         table.add_row("Verfuegbare Keys", ", ".join(config["available"].keys()) or "Keine")
-        
+
         console.print(table)
     else:
         print("\n=== Zen-AI Konfiguration ===")
@@ -103,12 +102,12 @@ def list_backends(config):
         table.add_column("Env-Variable")
         table.add_column("Modelle")
         table.add_column("Status")
-        
+
         for key, data in BACKENDS.items():
             status = "[green]Konfiguriert[/green]" if key in config["available"] else "[yellow]Nicht konfiguriert[/yellow]"
             current = " [blue]<- Aktiv[/blue]" if config.get("current_backend") == key else ""
             table.add_row(key, data["name"], data["key_var"], ", ".join(data["models"]), status + current)
-        
+
         console.print(table)
     else:
         print("\n=== Verfuegbare Backends ===")
@@ -125,12 +124,12 @@ def switch_backend(config, env_path, new_backend, new_model=None):
     if new_backend not in BACKENDS:
         print_msg(f"[red]Ungueltiges Backend: {new_backend}[/red]")
         return False
-    
+
     if new_backend not in config["available"]:
         print_msg(f"[yellow]Warnung: {new_backend} ist nicht konfiguriert (kein API Key)[/yellow]")
-    
+
     backend_data = BACKENDS[new_backend]
-    
+
     # Modell bestimmen
     if new_model:
         if new_model not in backend_data["models"]:
@@ -144,7 +143,7 @@ def switch_backend(config, env_path, new_backend, new_model=None):
             new_model = current_model
         else:
             new_model = backend_data["models"][0]
-    
+
     update_env(env_path, new_backend, new_model)
     print_msg(f"[green]Gewechselt zu:[/green] {backend_data['name']} mit {new_model}")
     return True
@@ -152,21 +151,21 @@ def switch_backend(config, env_path, new_backend, new_model=None):
 def switch_model(config, env_path, new_model):
     """Wechselt das Modell fuer das aktuelle Backend"""
     current_backend = config.get("current_backend")
-    
+
     if not current_backend:
         print_msg("[red]Kein Backend konfiguriert. Nutze --backend um eines zu waehlen.[/red]")
         return False
-    
+
     backend_data = BACKENDS.get(current_backend)
     if not backend_data:
         print_msg(f"[red]Unbekanntes Backend: {current_backend}[/red]")
         return False
-    
+
     if new_model not in backend_data["models"]:
         print_msg(f"[red]Ungueltiges Modell '{new_model}' fuer {current_backend}[/red]")
         print_msg(f"Verfuegbar: {', '.join(backend_data['models'])}")
         return False
-    
+
     update_env(env_path, current_backend, new_model)
     print_msg(f"[green]Modell gewechselt zu:[/green] {new_model}")
     return True
@@ -176,10 +175,10 @@ def update_env(env_path, backend, model):
     if not env_path.exists():
         print_msg(f"[red].env nicht gefunden: {env_path}[/red]")
         return
-    
+
     with open(env_path, 'r') as f:
         lines = f.readlines()
-    
+
     new_lines = []
     for line in lines:
         if line.startswith("export DEFAULT_BACKEND="):
@@ -188,7 +187,7 @@ def update_env(env_path, backend, model):
             new_lines.append(f'export DEFAULT_MODEL="{model}"\n')
         else:
             new_lines.append(line)
-    
+
     with open(env_path, 'w') as f:
         f.writelines(new_lines)
 
@@ -201,7 +200,7 @@ def interactive_mode(config, env_path):
         print("  python switch_model.py --list")
         print("  python switch_model.py -b openai -m gpt-4o")
         return
-    
+
     if not config["available"]:
         if RICH_AVAILABLE:
             console.print(Panel.fit(
@@ -215,9 +214,9 @@ def interactive_mode(config, env_path):
             print("\nKeine API Keys gefunden!")
             print("Fuehre zuerst aus: python setup_wizard.py")
         sys.exit(1)
-    
+
     show_status(config, env_path)
-    
+
     action = questionary.select(
         "Was moechtest du tun?",
         choices=[
@@ -227,7 +226,7 @@ def interactive_mode(config, env_path):
             questionary.Choice("Beenden", value="exit")
         ]
     ).ask()
-    
+
     if action == "full":
         # Backend auswaehlen
         choices = []
@@ -238,24 +237,24 @@ def interactive_mode(config, env_path):
                 title=f"{is_active}{backend_info['name']}",
                 value=key
             ))
-        
+
         new_backend = questionary.select("Waehle Backend:", choices=choices).ask()
         if not new_backend:
             return
-        
+
         # Modell auswaehlen
         backend_data = BACKENDS[new_backend]
         current_model = config.get("current_model", "")
         default_model = current_model if current_model in backend_data["models"] else backend_data["models"][0]
-        
+
         new_model = questionary.select(
             f"Modell fuer {backend_data['name']}:",
             choices=backend_data["models"],
             default=default_model
         ).ask()
-        
+
         switch_backend(config, env_path, new_backend, new_model)
-        
+
     elif action == "backend":
         choices = [
             questionary.Choice(title=BACKENDS[k]["name"], value=k)
@@ -264,20 +263,20 @@ def interactive_mode(config, env_path):
         new_backend = questionary.select("Waehle Backend:", choices=choices).ask()
         if new_backend:
             switch_backend(config, env_path, new_backend)
-            
+
     elif action == "model":
         current_backend = config.get("current_backend")
         if not current_backend:
             print_msg("[red]Kein Backend aktiv[/red]")
             return
-        
+
         backend_data = BACKENDS[current_backend]
         new_model = questionary.select(
             "Waehle Modell:",
             choices=backend_data["models"],
             default=config.get("current_model", backend_data["models"][0])
         ).ask()
-        
+
         if new_model:
             switch_model(config, env_path, new_model)
     else:
@@ -286,7 +285,7 @@ def interactive_mode(config, env_path):
 def main():
     env_path = Path(__file__).parent.parent / ".env"
     config = parse_env(env_path)
-    
+
     parser = argparse.ArgumentParser(
         description="Zen-AI Pentest Model Switcher",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -300,7 +299,7 @@ Beispiele:
   %(prog)s -m gpt-4o-mini     # Wechsle nur das Modell
         """
     )
-    
+
     parser.add_argument("-b", "--backend", choices=list(BACKENDS.keys()),
                         help="Zu Backend wechseln")
     parser.add_argument("-m", "--model", help="Zu Modell wechseln")
@@ -308,9 +307,9 @@ Beispiele:
                         help="Verfuegbare Backends anzeigen")
     parser.add_argument("-s", "--status", action="store_true",
                         help="Aktuelle Konfiguration anzeigen")
-    
+
     args = parser.parse_args()
-    
+
     if args.list:
         list_backends(config)
     elif args.status:

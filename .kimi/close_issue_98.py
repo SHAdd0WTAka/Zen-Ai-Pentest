@@ -13,7 +13,7 @@ def close_issue_98():
     token = get_installation_token()
     headers = get_headers(token)
     headers["Accept"] = "application/vnd.github.v3+json"
-    
+
     # Add comment
     comment_url = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/issues/98/comments"
     comment_data = {
@@ -30,18 +30,18 @@ The Repository Health Check workflow is now running successfully:
 
 Closing this issue as resolved. 🦞 ZenClaw Guardian confirmed operational status."""
     }
-    
+
     response = requests.post(comment_url, headers=headers, json=comment_data)
-    
+
     if response.status_code == 201:
         print("[OK] Comment added to Issue #98")
-        
+
         # Close issue
         issue_url = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/issues/98"
         close_data = {"state": "closed"}
-        
+
         close_resp = requests.patch(issue_url, headers=headers, json=close_data)
-        
+
         if close_resp.status_code == 200:
             print("[OK] Issue #98 closed successfully")
             return True
@@ -50,7 +50,7 @@ Closing this issue as resolved. 🦞 ZenClaw Guardian confirmed operational stat
     else:
         print(f"[WARN] Could not add comment: {response.status_code}")
         print(response.text[:500])
-    
+
     return False
 
 if __name__ == "__main__":

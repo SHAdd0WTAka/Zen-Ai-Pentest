@@ -6,7 +6,6 @@ to ensure proper validation and error handling.
 """
 
 import sys
-import hypothesis
 from hypothesis import given, strategies as st, settings
 import pytest
 
@@ -21,7 +20,7 @@ except ImportError:
 
 class TestInputValidation:
     """Test input validation with fuzzing."""
-    
+
     @given(st.text())
     @settings(max_examples=100, deadline=1000)
     def test_string_input_handling(self, input_string):
@@ -31,7 +30,7 @@ class TestInputValidation:
         # Should not raise on basic operations
         _ = len(input_string)
         _ = input_string.strip()
-        
+
     @given(st.emails())
     @settings(max_examples=50, deadline=1000)
     def test_email_validation(self, email):
@@ -39,7 +38,7 @@ class TestInputValidation:
         # Test email format validation
         assert "@" in email
         assert "." in email.split("@")[-1]
-        
+
     @given(st.ip_addresses())
     @settings(max_examples=50, deadline=1000)
     def test_ip_address_handling(self, ip):
@@ -47,7 +46,7 @@ class TestInputValidation:
         ip_str = str(ip)
         # Should be valid IP format
         assert len(ip_str) > 0
-        
+
     @given(st.lists(st.integers()), st.dictionaries(st.text(), st.text()))
     @settings(max_examples=50, deadline=1000)
     def test_complex_data_structures(self, list_data, dict_data):
@@ -64,7 +63,7 @@ class TestInputValidation:
 
 class TestAPISchemaValidation:
     """Test API schema validation."""
-    
+
     @given(st.dictionaries(
         st.text(min_size=1, max_size=50),
         st.one_of(st.text(), st.integers(), st.booleans())
@@ -73,7 +72,7 @@ class TestAPISchemaValidation:
     def test_json_payload_handling(self, payload):
         """Test JSON payload handling."""
         import json
-        
+
         # Should serialize/deserialize without errors
         try:
             serialized = json.dumps(payload)
@@ -86,7 +85,7 @@ class TestAPISchemaValidation:
 
 class TestURLValidation:
     """Test URL validation fuzzing."""
-    
+
     @given(st.text(min_size=1, max_size=200))
     @settings(max_examples=100, deadline=1000)
     def test_url_like_strings(self, url_string):
@@ -101,7 +100,7 @@ def run_fuzz_tests():
     if not HYPOTHESIS_AVAILABLE:
         print("hypothesis not installed, skipping fuzz tests")
         return 0
-        
+
     import subprocess
     result = subprocess.run(
         [sys.executable, "-m", "pytest", __file__, "-v"],

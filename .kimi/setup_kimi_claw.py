@@ -28,7 +28,7 @@ def setup_kimi_claw():
     print("Claw receives all events and distributes them intelligently.")
     print()
     print("=" * 70)
-    
+
     # Check current secrets
     print("\n📊 Current Configuration:")
     secrets_needed = [
@@ -38,16 +38,16 @@ def setup_kimi_claw():
         ("KIMI_CLAW_TELEGRAM_ENABLED", "Enable Telegram output", "true/false"),
         ("KIMI_CLAW_SLACK_ENABLED", "Enable Slack output", "true/false"),
     ]
-    
+
     for secret_name, description, note in secrets_needed:
         print(f"\n  • {secret_name}")
         print(f"    Purpose: {description}")
         print(f"    Note: {note}")
-    
+
     print("\n" + "=" * 70)
     print(" SETUP INSTRUCTIONS")
     print("=" * 70)
-    
+
     print("""
 1. GET YOUR KIMI CLAW TOKEN:
    - Go to: https://claw.moonshot.cn or your Kimi Claw dashboard
@@ -57,15 +57,15 @@ def setup_kimi_claw():
 
 2. ADD SECRETS TO GITHUB:
    URL: https://github.com/{REPO_OWNER}/{REPO_NAME}/settings/secrets/actions
-   
+
    Add these secrets:
-   
+
    Name: KIMI_CLAW_TOKEN
    Value: [Your token from step 1]
-   
+
    Name: KIMI_CLAW_DISCORD_ENABLED
    Value: true
-   
+
    Name: KIMI_CLAW_TELEGRAM_ENABLED
    Value: true
 
@@ -81,7 +81,7 @@ def setup_kimi_claw():
    - Customize message formats
    - Add filters (e.g., only notify on failures)
 """.format(REPO_OWNER=REPO_OWNER, REPO_NAME=REPO_NAME))
-    
+
     print("=" * 70)
     print(" WORKFLOW FEATURES")
     print("=" * 70)
@@ -100,7 +100,7 @@ Smart Features:
 • Direct links to commits, PRs, and issues
 • Fallback to Discord/Telegram if Claw is unavailable
 """)
-    
+
     print("=" * 70)
     print(" NEXT STEPS")
     print("=" * 70)
@@ -129,7 +129,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--test", action="store_true", help="Test the setup")
     args = parser.parse_args()
-    
+
     if args.test:
         test_notification()
     else:

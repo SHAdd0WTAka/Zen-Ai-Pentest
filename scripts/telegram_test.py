@@ -14,17 +14,17 @@ def test_connection(token, chat_id):
     print(">> Telegram Bot Connection Test")
     print("=" * 60)
     print()
-    
+
     # Test 1: Bot Info abrufen
     print("[INFO] Prüfe Bot-Informationen...")
     url = f"https://api.telegram.org/bot{token}/getMe"
     response = requests.get(url)
-    
+
     if response.status_code == 200:
         data = response.json()
         if data.get('ok'):
             bot_info = data['result']
-            print(f"[OK] Bot gefunden:")
+            print("[OK] Bot gefunden:")
             print(f"     Name: {bot_info.get('first_name')}")
             print(f"     Username: @{bot_info.get('username')}")
             print(f"     ID: {bot_info.get('id')}")
@@ -34,22 +34,22 @@ def test_connection(token, chat_id):
     else:
         print(f"[ERROR] HTTP {response.status_code}: Ungültiger Token")
         return False
-    
+
     print()
-    
+
     # Test 2: Testnachricht senden
     print("[INFO] Sende Testnachricht...")
     message = (
         "🧪 <b>Telegram Integration Test</b>\n\n"
         "Dies ist eine Testnachricht von Zen-AI-Pentest.\n\n"
-        f"<b>Repository:</b> SHAdd0WTAka/Zen-Ai-Pentest\n"
-        f"<b>Status:</b> ✅ Integration funktioniert!\n\n"
+        "<b>Repository:</b> SHAdd0WTAka/Zen-Ai-Pentest\n"
+        "<b>Status:</b> ✅ Integration funktioniert!\n\n"
         "Du erhältst jetzt Benachrichtigungen für:\n"
         "• Workflow-Status\n"
         "• Issues & PRs\n"
         "• Releases"
     )
-    
+
     url = f"https://api.telegram.org/bot{token}/sendMessage"
     payload = {
         'chat_id': chat_id,
@@ -57,9 +57,9 @@ def test_connection(token, chat_id):
         'parse_mode': 'HTML',
         'disable_web_page_preview': True
     }
-    
+
     response = requests.post(url, data=payload)
-    
+
     if response.status_code == 200:
         data = response.json()
         if data.get('ok'):
@@ -73,7 +73,7 @@ def test_connection(token, chat_id):
         print(f"[ERROR] HTTP {response.status_code}")
         print(f"Response: {response.text}")
         return False
-    
+
     print()
     print("=" * 60)
     print("[OK] Alle Tests erfolgreich!")
@@ -86,13 +86,13 @@ def get_chat_id(token):
     print("[INFO] Suche nach Chat ID...")
     url = f"https://api.telegram.org/bot{token}/getUpdates"
     response = requests.get(url)
-    
+
     if response.status_code == 200:
         data = response.json()
         if data.get('ok') and data.get('result'):
             updates = data['result']
             print(f"[INFO] {len(updates)} Updates gefunden")
-            
+
             for update in updates:
                 if 'message' in update:
                     chat = update['message']['chat']
@@ -108,13 +108,13 @@ def get_chat_id(token):
             print("       Schreibe eine Nachricht an den Bot zuerst!")
     else:
         print(f"[ERROR] HTTP {response.status_code}")
-    
+
     return None
 
 
 def main():
     print()
-    
+
     # Token aus Umgebungsvariable oder Eingabe
     token = os.getenv('TELEGRAM_BOT_TOKEN')
     if not token:
@@ -124,14 +124,14 @@ def main():
         print("ODER starte den GitHub Actions Workflow:")
         print("https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/actions/workflows/telegram-notifications.yml")
         return
-    
+
     chat_id = os.getenv('TELEGRAM_CHAT_ID')
-    
+
     if not chat_id:
         print("[INFO] TELEGRAM_CHAT_ID nicht gesetzt")
         print("[INFO] Versuche Chat ID automatisch zu ermitteln...")
         chat_id = get_chat_id(token)
-        
+
         if chat_id:
             print(f"\n[INFO] Gefundene Chat ID: {chat_id}")
             print("[INFO] Speichere diese als TELEGRAM_CHAT_ID")
@@ -139,11 +139,11 @@ def main():
             print("\n[ERROR] Chat ID konnte nicht ermittelt werden")
             print("Schreibe zuerst eine Nachricht an den Bot!")
             return
-    
+
     print()
     print(f"[INFO] Verwende Chat ID: {chat_id}")
     print()
-    
+
     # Verbindung testen
     if test_connection(token, chat_id):
         print()

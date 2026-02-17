@@ -20,32 +20,32 @@ class EventType(Enum):
     TASK_COMPLETED = "task.completed"
     TASK_FAILED = "task.failed"
     TASK_CANCELLED = "task.cancelled"
-    
+
     # System Events
     SYSTEM_STATUS = "system.status"
     SYSTEM_HEALTH = "system.health"
     SYSTEM_METRICS = "system.metrics"
     SYSTEM_ALERT = "system.alert"
-    
+
     # Security Events
     SECURITY_ALERT = "security.alert"
     SECURITY_VIOLATION = "security.violation"
     SCAN_FINDING = "scan.finding"
-    
+
     # Schedule Events
     SCHEDULE_TRIGGERED = "schedule.triggered"
     SCHEDULE_COMPLETED = "schedule.completed"
-    
+
     # User Events
     USER_LOGIN = "user.login"
     USER_LOGOUT = "user.logout"
     USER_ACTION = "user.action"
-    
+
     # Analysis Events
     ANALYSIS_STARTED = "analysis.started"
     ANALYSIS_PROGRESS = "analysis.progress"
     ANALYSIS_COMPLETED = "analysis.completed"
-    
+
     # Generic
     NOTIFICATION = "notification"
     CUSTOM = "custom"
@@ -55,7 +55,7 @@ class EventType(Enum):
 class DashboardEvent:
     """
     Dashboard event message
-    
+
     Attributes:
         type: Event type
         data: Event payload
@@ -74,7 +74,7 @@ class DashboardEvent:
     priority: int = 3
     user_id: Optional[str] = None
     session_id: Optional[str] = None
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary"""
         return {
@@ -87,7 +87,7 @@ class DashboardEvent:
             "user_id": self.user_id,
             "session_id": self.session_id
         }
-    
+
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "DashboardEvent":
         """Create from dictionary"""
@@ -102,7 +102,7 @@ class DashboardEvent:
             user_id=data.get("user_id"),
             session_id=data.get("session_id")
         )
-    
+
     @classmethod
     def task_progress(
         cls,
@@ -122,7 +122,7 @@ class DashboardEvent:
             },
             source="task_manager"
         )
-    
+
     @classmethod
     def system_metrics(cls, metrics: Dict[str, Any]) -> "DashboardEvent":
         """Create system metrics event"""
@@ -132,7 +132,7 @@ class DashboardEvent:
             source="metrics_collector",
             priority=2
         )
-    
+
     @classmethod
     def security_alert(
         cls,
@@ -163,11 +163,11 @@ class DashboardEvent:
 class EventStream:
     """
     Event stream for filtering and buffering
-    
+
     Allows clients to subscribe to specific event types
     and receive buffered events on connection.
     """
-    
+
     def __init__(
         self,
         event_types: Optional[list] = None,
@@ -178,32 +178,32 @@ class EventStream:
         self.min_priority = min_priority
         self.buffer_size = buffer_size
         self._buffer: list = []
-    
+
     def matches(self, event: DashboardEvent) -> bool:
         """Check if event matches stream criteria"""
         if event.priority < self.min_priority:
             return False
-        
+
         if self.event_types and event.type not in self.event_types:
             return False
-        
+
         return True
-    
+
     def add(self, event: DashboardEvent) -> None:
         """Add event to buffer"""
         if not self.matches(event):
             return
-        
+
         self._buffer.append(event)
-        
+
         # Trim buffer
         if len(self._buffer) > self.buffer_size:
             self._buffer = self._buffer[-self.buffer_size:]
-    
+
     def get_recent(self, count: int = 10) -> list:
         """Get recent events from buffer"""
         return self._buffer[-count:]
-    
+
     def clear(self) -> None:
         """Clear buffer"""
         self._buffer.clear()

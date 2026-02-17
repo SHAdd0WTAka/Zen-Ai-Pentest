@@ -4,10 +4,8 @@ This module contains comprehensive tests for the zap_integration module,
 including unit tests with mocked API calls.
 """
 
-import asyncio
-import json
 import pytest
-from unittest.mock import Mock, patch, AsyncMock, MagicMock
+from unittest.mock import Mock, patch, AsyncMock
 
 # Import the module under test
 from tools.zap_integration import (

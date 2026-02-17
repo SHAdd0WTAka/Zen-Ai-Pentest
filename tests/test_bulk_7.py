@@ -1,5 +1,4 @@
 """Bulk Tests - Auto Generated"""
-import pytest
 
 class TestBulkAUTO:
     def test_a(self): assert True

@@ -465,14 +465,11 @@ class AuthenticationTester:
 
     async def test_mfa_bypass(self, mfa_url: str) -> AuthTestResult:
         """Test MFA bypass techniques"""
-        bypass_techniques = [
-            'response_manipulation',
-            'brute_force_otp',
-            'backup_code_reuse',
-            'session_fixation'
-        ]
-
-        # Implementation placeholder
+        # Implementation placeholder - bypass techniques to implement:
+        # - response_manipulation
+        # - brute_force_otp
+        # - backup_code_reuse
+        # - session_fixation
         return AuthTestResult(
             test_type='mfa_bypass',
             vulnerable=False,
@@ -537,9 +534,7 @@ class SessionManager:
         )
 
     async def test_cookie_security_flags(self, url: str) -> SessionTestResult:
-        """Test cookie security flags"""
-        flags_to_check = ['HttpOnly', 'Secure', 'SameSite']
-
+        """Test cookie security flags (HttpOnly, Secure, SameSite)"""
         # Implementation placeholder
         return SessionTestResult(
             test_name='cookie_security_flags',
@@ -784,24 +779,24 @@ async def main():
     print("   Unautorisierte Verwendung ist ILLEGAL.\n")
     print("=" * 80)
 
-    # CSRF Scanner
-    csrf_scanner = CSRFScanner()
+    # CSRF Scanner (example usage commented out)
+    # csrf_scanner = CSRFScanner()
     # csrf_result = await csrf_scanner.scan_form("https://example.com/login", {})
 
-    # SSRF Scanner
-    ssrf_scanner = SSRFScanner()
+    # SSRF Scanner (example usage commented out)
+    # ssrf_scanner = SSRFScanner()
     # ssrf_results = await ssrf_scanner.scan_parameter("https://example.com/fetch", "url")
 
-    # Access Control Scanner
-    access_scanner = AccessControlScanner()
+    # Access Control Scanner (example usage commented out)
+    # access_scanner = AccessControlScanner()
     # idor_findings = await access_scanner.scan_for_idor("https://example.com/api/users/123")
 
-    # Authentication Tester
-    auth_tester = AuthenticationTester()
+    # Authentication Tester (example usage commented out)
+    # auth_tester = AuthenticationTester()
     # brute_force_result = await auth_tester.test_brute_force_protection("https://example.com/login", "admin")
 
-    # Session Manager
-    session_manager = SessionManager()
+    # Session Manager (example usage commented out)
+    # session_manager = SessionManager()
     # entropy_result = await session_manager.test_session_id_entropy(["session1", "session2"])
 
     print("\n✅ Recommended modules loaded successfully!")

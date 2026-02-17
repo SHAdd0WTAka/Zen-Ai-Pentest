@@ -15,12 +15,12 @@ def get_latest_coverage_run():
     token = get_installation_token()
     headers = get_headers(token)
     headers["Accept"] = "application/vnd.github.v3+json"
-    
+
     url = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/actions/runs"
     params = {"per_page": 10}
-    
+
     response = requests.get(url, headers=headers, params=params)
-    
+
     if response.status_code == 200:
         runs = response.json().get('workflow_runs', [])
         for run in runs:
@@ -33,24 +33,24 @@ def get_job_logs(run_id):
     token = get_installation_token()
     headers = get_headers(token)
     headers["Accept"] = "application/vnd.github.v3+json"
-    
+
     # Get jobs
     url = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/actions/runs/{run_id}/jobs"
     response = requests.get(url, headers=headers)
-    
+
     if response.status_code == 200:
         jobs = response.json().get('jobs', [])
-        
+
         for job in jobs:
             print(f"\nJob: {job.get('name')}")
             print(f"Status: {job.get('status')}")
             print(f"Conclusion: {job.get('conclusion')}")
             print("\nSteps:")
-            
+
             for step in job.get('steps', []):
                 status = step.get('status', 'unknown')
                 conclusion = step.get('conclusion', 'N/A')
-                
+
                 # Status indicator
                 if conclusion == 'success':
                     icon = "[OK]"
@@ -60,9 +60,9 @@ def get_job_logs(run_id):
                     icon = "[RUNNING]"
                 else:
                     icon = "[PENDING]"
-                
+
                 print(f"  {icon} {step.get('name')}")
-                
+
                 # Show failed step details
                 if conclusion == 'failure':
                     print(f"       -> FAILED!")

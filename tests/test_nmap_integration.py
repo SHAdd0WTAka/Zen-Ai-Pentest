@@ -6,8 +6,7 @@ including unit tests with mocked subprocess calls.
 
 import asyncio
 import pytest
-import xml.etree.ElementTree as ET
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 
 # Import the module under test
 from tools.nmap_integration import (

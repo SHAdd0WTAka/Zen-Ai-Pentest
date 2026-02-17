@@ -187,7 +187,7 @@ class SecureInputValidator:
                 if parsed_ip and self._is_private_ip(parsed_ip):
                     self._log_rejection("url", cleaned, "Private IP not allowed")
                     raise ValidationError("url", "Private IP addresses not allowed")
-            except:
+            except Exception:
                 pass
 
         self.validation_stats['total_validated'] += 1
@@ -334,7 +334,7 @@ class SecureInputValidator:
                 if ip in network:
                     return True
             return False
-        except:
+        except Exception:
             return False
 
     def _extract_ip_from_url(self, url: str) -> Optional[str]:

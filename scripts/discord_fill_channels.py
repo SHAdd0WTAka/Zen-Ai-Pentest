@@ -5,7 +5,6 @@ Postet Willkommensnachrichten, Regeln und Informationen
 """
 
 import requests
-import json
 import os
 
 # Konfiguration
@@ -30,7 +29,7 @@ Willkommen in der Zen-AI-Pentest Community! 🛡️
 
 **Zen-AI-Pentest** ist ein Open-Source Framework für:
 - Automated Penetration Testing
-- Vulnerability Scanning  
+- Vulnerability Scanning
 - AI-powered Security Analysis
 - Compliance Reporting (ISO 27001, GDPR)
 
@@ -55,7 +54,7 @@ Willkommen in der Zen-AI-Pentest Community! 🛡️
 
 Ein professionelles, KI-gestütztes Penetration Testing Framework für:
 - Security Professionals
-- Bug Bounty Hunter  
+- Bug Bounty Hunter
 - Enterprise Security Teams
 - Red Teams
 
@@ -105,14 +104,14 @@ Neu im Server? Hier ist der perfekte Ort um dich vorzustellen!
 **Template (kannst du kopieren und anpassen):**
 
 ```
-👤 **Name/Handle:** 
-🌍 **Location:** 
+👤 **Name/Handle:**
+🌍 **Location:**
 💼 **Role:** (Security Researcher, Developer, Student, ...)
 🛠️ **Experience:** (Junior, Mid, Senior)
 🎯 **Interests:** (Pentesting, Bug Bounty, AI, ...)
 🔧 **Tools I use:** (Nmap, Burp, Custom scripts, ...)
-📖 **Currently learning:** 
-💡 **Why Zen-AI-Pentest?:** 
+📖 **Currently learning:**
+💡 **Why Zen-AI-Pentest?:**
 ```
 
 Wir freuen uns dich kennenzulernen! 🎉
@@ -402,9 +401,9 @@ Fehler-Log hier
 ```
 
 **Umgebung:**
-- OS: 
-- Python: 
-- Version: 
+- OS:
+- Python:
+- Version:
 ```
 
 ## 📚 Ressourcen
@@ -440,16 +439,16 @@ def send_message(channel_id, content, token):
         "Authorization": f"Bot {token}",
         "Content-Type": "application/json"
     }
-    
+
     # Discord hat ein Limit von 2000 Zeichen pro Nachricht
     # Lange Nachrichten müssen aufgeteilt werden
     max_length = 1900
-    
+
     if len(content) <= max_length:
         payload = {"content": content}
         response = requests.post(url, headers=headers, json=payload)
         if response.status_code == 200:
-            print(f"[OK] Nachricht gesendet")
+            print("[OK] Nachricht gesendet")
             return True
         else:
             print(f"[ERROR] Konnte Nachricht nicht senden: {response.status_code}")
@@ -467,7 +466,7 @@ def send_message(channel_id, content, token):
                 current_part += '\n' + line if current_part else line
         if current_part:
             parts.append(current_part)
-        
+
         for i, part in enumerate(parts):
             payload = {"content": part}
             response = requests.post(url, headers=headers, json=payload)
@@ -494,24 +493,24 @@ def main():
     print(">> Discord Channels mit Inhalt fuellen")
     print("=" * 60)
     print()
-    
+
     # Token aus Umgebungsvariable oder Datei
     token = os.getenv('DISCORD_BOT_TOKEN')
     if not token:
         print("[ERROR] DISCORD_BOT_TOKEN nicht gesetzt")
         print("Nutze: $env:DISCORD_BOT_TOKEN='dein-token'")
         return
-    
+
     print("[INFO] Lade Channels...")
     channels = get_channels(GUILD_ID, token)
-    
+
     if not channels:
         print("[ERROR] Keine Channels gefunden")
         return
-    
+
     print(f"[INFO] {len(channels)} Channels gefunden")
     print()
-    
+
     # Mapping: Content-Key -> Channel-Name-Suchbegriffe
     channel_mapping = {
         'rules': ['rules', 'regeln'],
@@ -526,35 +525,35 @@ def main():
         'feature-requests': ['feature', 'features', 'request'],
         'support': ['support', 'help', 'hilfe'],
     }
-    
+
     success_count = 0
-    
+
     for content_key, search_terms in channel_mapping.items():
         if content_key not in CHANNEL_CONTENT:
             continue
-        
+
         # Suche nach passendem Channel
         channel_id = None
         for term in search_terms:
             channel_id = find_channel_by_name(channels, term)
             if channel_id:
                 break
-        
+
         if not channel_id:
             print(f"[WARN] Kein Channel gefunden fuer: {content_key}")
             continue
-        
+
         print(f"[INFO] Fuelle Channel '{content_key}'...")
         content = CHANNEL_CONTENT[content_key]
-        
+
         if send_message(channel_id, content, token):
             success_count += 1
             print(f"[OK] {content_key} erfolgreich gefuellt")
         else:
             print(f"[ERROR] {content_key} fehlgeschlagen")
-        
+
         print()
-    
+
     print("=" * 60)
     print(f"[OK] {success_count}/{len(CHANNEL_CONTENT)} Channels gefuellt")
     print("=" * 60)

@@ -4,7 +4,7 @@ Tests for Subdomain Scanner Module
 """
 
 import pytest
-from unittest.mock import patch, MagicMock, AsyncMock
+from unittest.mock import patch
 
 from modules.subdomain_scanner import SubdomainScanner, SubdomainResult, scan_subdomains
 

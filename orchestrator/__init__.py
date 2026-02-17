@@ -10,10 +10,10 @@ The heart of Zen-AI-Pentest. Coordinates all components:
 
 Usage:
     from orchestrator import ZenOrchestrator
-    
+
     orchestrator = ZenOrchestrator()
     await orchestrator.start()
-    
+
     task_id = await orchestrator.submit_task({
         "type": "vulnerability_scan",
         "target": "example.com"

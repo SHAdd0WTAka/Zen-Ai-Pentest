@@ -1,13 +1,12 @@
 """
 Extended Agents Tests
 """
-import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 
 class TestAgentBaseExtended:
     """Erweiterte Agent Base Tests"""
-    
+
     def test_agent_message_creation(self):
         from agents.agent_base import AgentMessage
         msg = AgentMessage(
@@ -18,13 +17,13 @@ class TestAgentBaseExtended:
         assert msg.sender == "researcher"
         assert msg.content == "Test message"
         assert msg.message_type == "findings"
-    
+
     def test_agent_role_enum(self):
         from agents.agent_base import AgentRole
         assert AgentRole.RESEARCHER == "researcher"
         assert AgentRole.ANALYST == "analyst"
         assert AgentRole.EXPLOIT == "exploit"
-    
+
     def test_base_agent_creation_mock(self):
         from agents.agent_base import BaseAgent, AgentRole
         with patch.object(BaseAgent, '__abstractmethods__', set()):
@@ -35,11 +34,11 @@ class TestAgentBaseExtended:
 
 class TestResearchAgent:
     """Research Agent Tests"""
-    
+
     def test_research_agent_import(self):
         from agents.research_agent import ResearchAgent
         assert ResearchAgent is not None
-    
+
     def test_research_agent_creation_mock(self):
         from agents.research_agent import ResearchAgent
         with patch.object(ResearchAgent, '__init__', lambda self: None):
@@ -49,11 +48,11 @@ class TestResearchAgent:
 
 class TestAnalysisAgent:
     """Analysis Agent Tests"""
-    
+
     def test_analysis_agent_import(self):
         from agents.analysis_agent import AnalysisAgent
         assert AnalysisAgent is not None
-    
+
     def test_analysis_agent_creation_mock(self):
         from agents.analysis_agent import AnalysisAgent
         with patch.object(AnalysisAgent, '__init__', lambda self: None):
@@ -63,7 +62,7 @@ class TestAnalysisAgent:
 
 class TestExploitAgent:
     """Exploit Agent Tests"""
-    
+
     def test_exploit_agent_import(self):
         from agents.exploit_agent import ExploitAgent
         assert ExploitAgent is not None
@@ -71,11 +70,11 @@ class TestExploitAgent:
 
 class TestPostScanAgent:
     """Post Scan Agent Tests"""
-    
+
     def test_post_scan_agent_import(self):
         from agents.post_scan_agent import PostScanAgent
         assert PostScanAgent is not None
-    
+
     def test_verified_finding_creation(self):
         from agents.post_scan_agent import VerifiedFinding
         finding = VerifiedFinding(
@@ -89,12 +88,12 @@ class TestPostScanAgent:
 
 class TestAgentOrchestrator:
     """Agent Orchestrator Tests"""
-    
+
     def test_orchestrator_creation(self):
         from agents.agent_orchestrator import AgentOrchestrator
         orch = AgentOrchestrator()
         assert orch is not None
-    
+
     def test_orchestrator_has_agents(self):
         from agents.agent_orchestrator import AgentOrchestrator
         orch = AgentOrchestrator()

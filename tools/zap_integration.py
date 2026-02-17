@@ -205,7 +205,7 @@ class ZAPScanner:
         """Start ZAP daemon"""
         if not self._check_zap_installed():
             raise RuntimeError(
-                f"ZAP not found. Install ZAP from: https://www.zaproxy.org/download/"
+                "ZAP not found. Install ZAP from: https://www.zaproxy.org/download/"
             )
 
         if self.use_docker:
