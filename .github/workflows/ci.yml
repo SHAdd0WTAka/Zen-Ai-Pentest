@@ -82,6 +82,10 @@ jobs:
             tests/test_working_execution.py \
             tests/test_working_final.py \
             tests/test_tool_framework.py \
+            tests/unit/safety/test_confidence.py \
+            tests/unit/safety/test_config.py \
+            tests/unit/utils/test_helpers.py \
+            tests/unit/risk_engine/test_cvss.py \
             -v --tb=short --timeout=30 \
             --cov=tools.ffuf_integration_enhanced \
             --cov=tools.whatweb_integration \
