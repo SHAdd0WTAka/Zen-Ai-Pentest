@@ -116,46 +116,67 @@ All tools run with **safety controls**:
 
 ```mermaid
   graph TB
-      subgraph "User Interface"
-          CLI[CLI]
-          API[REST API]
-          WebUI[Web UI]
+      subgraph "Client Interface"
+          WebUI[🌐 Web UI]
+          CLI[💻 CLI]
+          API_Client[🔌 REST API]
       end
 
-      subgraph "Core Engine"
-          Orchestrator[Agent Orchestrator]
-          StateMachine[State Machine]
-          RiskEngine[Risk Engine]
+      subgraph "API Gateway"
+          FastAPI[FastAPI + WebSocket]
+          Auth[🔐 JWT/RBAC]
+          AgentMgr[🤖 Agent Manager]
       end
 
-      subgraph "AI Agents"
-          Recon[Reconnaissance]
-          Vuln[Vulnerability]
-          Exploit[Exploit]
-          Report[Report]
+      subgraph "Workflow Orchestrator"
+          Guardrails[🛡️ Guardrails]
+          TaskQueue[📊 Task Queue]
+          RiskLevels[⚠️ Risk Levels 0-3]
+          VPN[🔒 VPN Check]
+          State[📈 State Machine]
       end
 
-      subgraph "Tools"
-          Nmap[Nmap]
-          SQLMap[SQLMap]
-          Metasploit[Metasploit]
+      subgraph "Agent Pool"
+          Agent1[🤖 Agent #1]
+          Agent2[🤖 Agent #2]
+          AgentN[🤖 Agent #N]
       end
 
-      subgraph "External APIs"
-          OpenAI[OpenAI]
-          Anthropic[Anthropic]
-          ThreatIntel[Threat Intelligence]
+      subgraph "Security Toolkit"
+          Nmap[🔍 nmap]
+          Whois[📡 whois]
+          Dig[🌐 dig]
+          Nuclei[⚡ nuclei]
+          SQLMap[🎯 sqlmap]
       end
 
-      CLI --> API
-      WebUI --> API
-      API --> Orchestrator
-      Orchestrator --> StateMachine
-      StateMachine --> Recon
-      StateMachine --> Vuln
-      StateMachine --> Exploit
-      Exploit --> OpenAI
-      RiskEngine --> ThreatIntel
+      subgraph "Data Layer"
+          Postgres[🐘 PostgreSQL]
+          Redis[⚡ Redis Cache]
+          Storage[📁 File Storage]
+      end
+
+      WebUI --> FastAPI
+      CLI --> FastAPI
+      API_Client --> FastAPI
+      FastAPI --> Auth
+      Auth --> AgentMgr
+      AgentMgr --> Guardrails
+      Guardrails --> TaskQueue
+      TaskQueue --> RiskLevels
+      RiskLevels --> VPN
+      VPN --> State
+      State --> Agent1
+      State --> Agent2
+      State --> AgentN
+      Agent1 --> Nmap
+      Agent1 --> Whois
+      Agent2 --> Dig
+      Agent2 --> Nuclei
+      AgentN --> SQLMap
+      Nmap --> Postgres
+      Whois --> Redis
+      SQLMap --> Storage
 ```
 
 ### Key Highlights
@@ -163,7 +184,7 @@ All tools run with **safety controls**:
 - 🤖 **AI-Powered**: Leverages state-of-the-art LLMs for intelligent decision making
 - 🔒 **Security-First**: Multiple safety controls and validation layers
 - 🚀 **Production-Ready**: Enterprise-grade with CI/CD, monitoring, and support
-- 📊 **Comprehensive**: 20+ integrated security tools
+- 📊 **Comprehensive**: 40+ integrated security tools
 - 🔧 **Extensible**: Plugin system for custom tools and integrations
 - ☁️ **Cloud-Native**: Deploy on AWS, Azure, or GCP
 - 📱 **Quick Access**: Scan QR codes for instant mobile access
