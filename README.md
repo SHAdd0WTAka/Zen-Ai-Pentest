@@ -618,10 +618,31 @@ pytest tests/integration/ -v
 
 ## 🐳 Docker Deployment
 
-### Full Stack
+### Quick Setup (WSL2 + Docker)
+
+Wir empfehlen Docker in WSL2 (Ubuntu) für die beste Performance:
+
+**Option 1: Automatisches Setup**
+```bash
+# Windows: Setup-Launcher starten
+scripts\docker-setup.bat
+
+# Oder direkt in Ubuntu WSL:
+./scripts/setup_docker_wsl2.sh
+```
+
+**Option 2: Docker Desktop (Windows)**
+```powershell
+# PowerShell als Administrator:
+powershell -ExecutionPolicy Bypass -File scripts/setup_docker_windows.ps1
+```
+
+📖 **[Komplette Docker + WSL2 Anleitung](DOCKER_WSL2_SETUP.md)** - Detaillierte Schritte für beide Optionen
+
+### Full Stack Starten
 
 ```bash
-# Start everything
+# Nach Docker-Installation:
 docker-compose up -d
 
 # Check status

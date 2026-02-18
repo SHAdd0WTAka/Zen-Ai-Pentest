@@ -1,6 +1,6 @@
 {
   "name": "Zen AI Pentest Dev Environment",
-  "image": "mcr.microsoft.com/devcontainers/python:3.11",
+  "image": "mcr.microsoft.com/devcontainers/python:3.11-bookworm",
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {},
     "ghcr.io/devcontainers/features/github-cli:1": {},
@@ -67,8 +67,5 @@
   "mounts": [
     "source=${localWorkspaceFolder}/.devcontainer/bash_history,target=/home/vscode/.bash_history,type=bind,consistency=cached"
   ],
-  "runArgs": [
-    "--env-file",
-    "${localWorkspaceFolder}/.env"
-  ]
+  "runArgs": []
 }

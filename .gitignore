@@ -89,3 +89,6 @@ secrets/
 # Local tools
 tools/auth_setup.py
 tools/kimi_cli_adapter.py
+
+# Temporäres Frontend
+frontend-simple/

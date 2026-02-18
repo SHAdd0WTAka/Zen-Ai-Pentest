@@ -150,11 +150,11 @@ services:
       - api
       - dashboard
 
-  # Optional: Kali Linux VM (Headless)
+  # Optional: Ubuntu Pentest VM (Headless)
   # Requires privileged mode and host networking
-  kali:
-    image: kalilinux/kali-rolling:latest
-    container_name: zen-kali
+  pentest-vm:
+    image: ubuntu:24.04
+    container_name: zen-pentest-vm
     privileged: true
     network_mode: host
     volumes:
