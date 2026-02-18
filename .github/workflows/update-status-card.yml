@@ -20,18 +20,10 @@ jobs:
       with:
         fetch-depth: 0  # Full history for stats
 
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
-
-    - name: Install dependencies
+    - name: Generate Status Card (SVG)
       run: |
-        pip install Pillow requests
-
-    - name: Generate Status Card
-      run: |
-        python scripts/generate_status_card.py
+        chmod +x scripts/generate_status_card.sh
+        ./scripts/generate_status_card.sh
 
     - name: Commit and push changes
       run: |
@@ -39,13 +31,13 @@ jobs:
         git config --local user.name "GitHub Action"
         
         # Check if there are changes
-        if git diff --quiet HEAD -- docs/status/repo_status_card.png; then
+        if git diff --quiet HEAD -- docs/status/repo_status_card.svg 2>/dev/null; then
           echo "No changes to status card"
           exit 0
         fi
         
-        git add docs/status/repo_status_card.png
-        git commit -m "docs(status): auto-update repository status card [skip ci]"
-        git push
+        git add docs/status/repo_status_card.svg
+        git commit -m "docs(status): auto-update repository status card [skip ci]" || echo "No changes to commit"
+        git push || echo "Nothing to push"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

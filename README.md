@@ -1,5 +1,5 @@
 # Zen-AI-Pentest
-![Repository Status](docs/status/repo_status_card.png)
+![Repository Status](docs/status/repo_status_card.svg)
 
 
 
