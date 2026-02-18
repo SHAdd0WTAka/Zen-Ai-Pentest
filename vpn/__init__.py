@@ -21,12 +21,12 @@ Usage:
         print("WARNING: Scanning without VPN protection")
 """
 
-from .protonvpn import ProtonVPNManager, VPNStatus, VPNManager
-from .decorators import require_vpn, recommend_vpn
+from .decorators import recommend_vpn, require_vpn
+from .protonvpn import ProtonVPNManager, VPNManager, VPNStatus
 
 __all__ = [
     "ProtonVPNManager",
-    "VPNStatus", 
+    "VPNStatus",
     "VPNManager",
     "require_vpn",
     "recommend_vpn",

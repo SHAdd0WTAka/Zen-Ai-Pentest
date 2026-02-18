@@ -308,15 +308,15 @@ class WorkflowOrchestrator:
             except ImportError:
                 logger.debug("VPN module not available")
                 return
-            
+
             vpn = get_vpn_manager()
             status = vpn.check_before_scan(target)
-            
+
             if status["warning"]:
                 logger.warning(status["warning"])
             if status["recommendation"]:
                 logger.info(status["recommendation"])
-                
+
         except Exception as e:
             # VPN check should never block workflow
             logger.debug(f"VPN check error (non-critical): {e}")
@@ -349,7 +349,7 @@ class WorkflowOrchestrator:
             raise ValueError(f"Target validation failed: {error}")
 
         logger.info(f"🛡️  Target '{target}' passed guardrails validation")
-        
+
         # Check VPN status (optional but recommended)
         await self._check_vpn_status(target)
 
