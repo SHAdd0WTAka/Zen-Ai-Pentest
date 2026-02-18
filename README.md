@@ -93,6 +93,8 @@ All tools run with **safety controls**:
 - [Project Structure](#-project-structure)
 - [Configuration](#-configuration)
 - [Testing](#-testing)
+- [Docker Deployment](#-docker-deployment)
+- [Safety First](#-safety-first)
 - [Documentation](#-documentation)
 - [Contributing](#-contributing)
 - [Community & Support](#-community--support)
