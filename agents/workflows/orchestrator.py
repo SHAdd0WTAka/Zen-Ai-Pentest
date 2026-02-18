@@ -29,31 +29,37 @@ from typing import Any, Callable, Dict, List, Optional, Set
 
 # Import guardrails for security validation
 try:
-    from guardrails.ip_validator import validate_target as validate_ip_target
     from guardrails.domain_validator import validate_domain, validate_url
-    from guardrails.risk_levels import RiskLevel, RiskLevelManager
+    from guardrails.ip_validator import validate_target as validate_ip_target
     from guardrails.rate_limiter import check_tool_execution
+    from guardrails.risk_levels import RiskLevel, RiskLevelManager
+
     GUARDRAILS_AVAILABLE = True
 except ImportError:
     GUARDRAILS_AVAILABLE = False
+
     # Define fallback functions
     def validate_ip_target(target: str):
         class Result:
             is_valid = True
             reason = None
+
         return Result()
-    
+
     def validate_domain(domain: str):
         class Result:
             is_valid = True
             reason = None
+
         return Result()
-    
+
     def validate_url(url: str):
         class Result:
             is_valid = True
             reason = None
+
         return Result()
+
 
 logger = logging.getLogger("zen.agents.workflow")
 
@@ -208,7 +214,7 @@ class WorkflowOrchestrator:
         self._task_queue: asyncio.Queue = asyncio.Queue()
         self._event_handlers: List[Callable] = []
         self.step_timeout = step_timeout  # Configurable timeout
-        
+
         # Initialize guardrails
         if GUARDRAILS_AVAILABLE and risk_level is not None:
             self.risk_manager = RiskLevelManager(risk_level)
@@ -220,25 +226,27 @@ class WorkflowOrchestrator:
             self.risk_manager = None
             self.guardrails_enabled = False
 
-        logger.info(f"✅ WorkflowOrchestrator initialized (step_timeout={step_timeout}s, guardrails={'enabled' if self.guardrails_enabled else 'disabled'})")
+        logger.info(
+            f"✅ WorkflowOrchestrator initialized (step_timeout={step_timeout}s, guardrails={'enabled' if self.guardrails_enabled else 'disabled'})"
+        )
 
     def _validate_target(self, target: str) -> tuple[bool, Optional[str]]:
         """
         Validate target against guardrails.
-        
+
         Returns:
             (is_valid, error_message)
         """
         if not self.guardrails_enabled:
             return True, None
-        
+
         # Check if it looks like a URL
         if target.startswith(("http://", "https://", "file://")):
             result = validate_url(target)
             if not result.is_valid:
                 return False, f"URL validation failed: {result.reason}"
             return True, None
-        
+
         # Check if it's an IP address or network
         # IPv6: contains colons, CIDR: contains slash
         if "/" in target or ":" in target:
@@ -246,7 +254,7 @@ class WorkflowOrchestrator:
             if not result.is_valid:
                 return False, f"IP validation failed: {result.reason}"
             return True, None
-        
+
         # For targets with dots, try IP validation first (for IPv4)
         # If it fails because it's not an IP, try domain validation
         if "." in target:
@@ -261,29 +269,57 @@ class WorkflowOrchestrator:
                 return True, None
             # Otherwise it was a valid IP format but blocked
             return False, f"IP validation failed: {result.reason}"
-        
+
         # Assume it's a domain
         result = validate_domain(target)
         if not result.is_valid:
             return False, f"Domain validation failed: {result.reason}"
-        
+
         return True, None
 
     def _validate_tool_permission(self, tool_name: str) -> tuple[bool, Optional[str]]:
         """
         Check if tool is allowed at current risk level.
-        
+
         Returns:
             (is_allowed, error_message)
         """
         if not self.guardrails_enabled or not self.risk_manager:
             return True, None
-        
+
         if not self.risk_manager.can_run_tool(tool_name):
             blocked_tools = self.risk_manager.get_blocked_tools()
-            return False, f"Tool '{tool_name}' not allowed at risk level {self.risk_manager.get_risk_level().name}. Blocked tools: {', '.join(blocked_tools)}"
-        
+            return (
+                False,
+                f"Tool '{tool_name}' not allowed at risk level {self.risk_manager.get_risk_level().name}. Blocked tools: {', '.join(blocked_tools)}",
+            )
+
         return True, None
+
+    async def _check_vpn_status(self, target: str):
+        """
+        Check VPN status and log recommendations.
+        This is optional - workflow continues regardless.
+        """
+        try:
+            # Import VPN module (optional dependency)
+            try:
+                from vpn import get_vpn_manager
+            except ImportError:
+                logger.debug("VPN module not available")
+                return
+            
+            vpn = get_vpn_manager()
+            status = vpn.check_before_scan(target)
+            
+            if status["warning"]:
+                logger.warning(status["warning"])
+            if status["recommendation"]:
+                logger.info(status["recommendation"])
+                
+        except Exception as e:
+            # VPN check should never block workflow
+            logger.debug(f"VPN check error (non-critical): {e}")
 
     async def start_workflow(
         self, workflow_type: str, target: str, agents: List[str], parameters: Optional[Dict] = None
@@ -299,20 +335,23 @@ class WorkflowOrchestrator:
 
         Returns:
             workflow_id: Unique workflow identifier
-            
+
         Raises:
             ValueError: If target fails guardrails validation
         """
         if workflow_type not in WORKFLOW_DEFINITIONS:
             raise ValueError(f"Unknown workflow type: {workflow_type}")
-        
+
         # Validate target against guardrails
         is_valid, error = self._validate_target(target)
         if not is_valid:
             logger.error(f"🛡️  Guardrails blocked workflow: {error}")
             raise ValueError(f"Target validation failed: {error}")
-        
+
         logger.info(f"🛡️  Target '{target}' passed guardrails validation")
+        
+        # Check VPN status (optional but recommended)
+        await self._check_vpn_status(target)
 
         definition = WORKFLOW_DEFINITIONS[workflow_type]
 
@@ -473,13 +512,13 @@ class WorkflowOrchestrator:
 
         for i, definition in enumerate(definitions):
             tool_name = definition["tool"]
-            
+
             # Check if tool is allowed at current risk level
             is_allowed, error = self._validate_tool_permission(tool_name)
             if not is_allowed:
                 logger.warning(f"🛡️  Guardrails blocked tool '{tool_name}': {error}")
                 continue  # Skip this task
-            
+
             task_id = f"task_{workflow_id}_{step}_{i}"
             task = Task(
                 id=task_id,
@@ -494,7 +533,7 @@ class WorkflowOrchestrator:
             )
             tasks.append(task)
             workflow.tasks[task_id] = task
-        
+
         if not tasks and definitions:
             logger.warning(f"🛡️  All tasks for step '{step}' were blocked by guardrails")
 

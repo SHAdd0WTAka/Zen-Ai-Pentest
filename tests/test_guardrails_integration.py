@@ -7,6 +7,7 @@ and task processor.
 """
 
 import asyncio
+
 import pytest
 
 from agents.workflows.orchestrator import WorkflowOrchestrator, WorkflowState
@@ -20,14 +21,10 @@ class TestGuardrailsInOrchestrator:
     async def test_workflow_blocks_private_ip(self):
         """Workflow should block private IP targets"""
         orchestrator = WorkflowOrchestrator(step_timeout=1)
-        
+
         with pytest.raises(ValueError) as exc_info:
-            await orchestrator.start_workflow(
-                workflow_type="network_recon",
-                target="192.168.1.1",
-                agents=["agent-1"]
-            )
-        
+            await orchestrator.start_workflow(workflow_type="network_recon", target="192.168.1.1", agents=["agent-1"])
+
         assert "validation failed" in str(exc_info.value).lower()
         assert "192.168.0.0/16" in str(exc_info.value) or "blocked" in str(exc_info.value).lower()
 
@@ -35,41 +32,29 @@ class TestGuardrailsInOrchestrator:
     async def test_workflow_blocks_localhost(self):
         """Workflow should block localhost"""
         orchestrator = WorkflowOrchestrator(step_timeout=1)
-        
+
         with pytest.raises(ValueError) as exc_info:
-            await orchestrator.start_workflow(
-                workflow_type="network_recon",
-                target="localhost",
-                agents=["agent-1"]
-            )
-        
+            await orchestrator.start_workflow(workflow_type="network_recon", target="localhost", agents=["agent-1"])
+
         assert "validation failed" in str(exc_info.value).lower()
 
     @pytest.mark.asyncio
     async def test_workflow_blocks_local_domain(self):
         """Workflow should block .local domains"""
         orchestrator = WorkflowOrchestrator(step_timeout=1)
-        
+
         with pytest.raises(ValueError) as exc_info:
-            await orchestrator.start_workflow(
-                workflow_type="network_recon",
-                target="server.local",
-                agents=["agent-1"]
-            )
-        
+            await orchestrator.start_workflow(workflow_type="network_recon", target="server.local", agents=["agent-1"])
+
         assert "validation failed" in str(exc_info.value).lower()
 
     @pytest.mark.asyncio
     async def test_workflow_allows_public_ip(self):
         """Workflow should allow public IP targets"""
         orchestrator = WorkflowOrchestrator(step_timeout=1)
-        
-        workflow_id = await orchestrator.start_workflow(
-            workflow_type="network_recon",
-            target="8.8.8.8",
-            agents=["agent-1"]
-        )
-        
+
+        workflow_id = await orchestrator.start_workflow(workflow_type="network_recon", target="8.8.8.8", agents=["agent-1"])
+
         assert workflow_id is not None
         assert workflow_id.startswith("wf_")
 
@@ -77,13 +62,11 @@ class TestGuardrailsInOrchestrator:
     async def test_workflow_allows_public_domain(self):
         """Workflow should allow public domain targets"""
         orchestrator = WorkflowOrchestrator(step_timeout=1)
-        
+
         workflow_id = await orchestrator.start_workflow(
-            workflow_type="network_recon",
-            target="scanme.nmap.org",
-            agents=["agent-1"]
+            workflow_type="network_recon", target="scanme.nmap.org", agents=["agent-1"]
         )
-        
+
         assert workflow_id is not None
         assert workflow_id.startswith("wf_")
 
@@ -91,28 +74,20 @@ class TestGuardrailsInOrchestrator:
     async def test_workflow_blocks_loopback(self):
         """Workflow should block loopback addresses"""
         orchestrator = WorkflowOrchestrator(step_timeout=1)
-        
+
         with pytest.raises(ValueError) as exc_info:
-            await orchestrator.start_workflow(
-                workflow_type="network_recon",
-                target="127.0.0.1",
-                agents=["agent-1"]
-            )
-        
+            await orchestrator.start_workflow(workflow_type="network_recon", target="127.0.0.1", agents=["agent-1"])
+
         assert "validation failed" in str(exc_info.value).lower()
 
     @pytest.mark.asyncio
     async def test_workflow_blocks_private_cidr(self):
         """Workflow should block private CIDR ranges"""
         orchestrator = WorkflowOrchestrator(step_timeout=1)
-        
+
         with pytest.raises(ValueError) as exc_info:
-            await orchestrator.start_workflow(
-                workflow_type="network_recon",
-                target="192.168.0.0/24",
-                agents=["agent-1"]
-            )
-        
+            await orchestrator.start_workflow(workflow_type="network_recon", target="192.168.0.0/24", agents=["agent-1"])
+
         assert "validation failed" in str(exc_info.value).lower()
 
 
@@ -123,21 +98,19 @@ class TestGuardrailsRiskLevels:
     async def test_safe_level_blocks_nmap(self):
         """SAFE risk level should block nmap execution"""
         orchestrator = WorkflowOrchestrator(step_timeout=1, risk_level=RiskLevel.SAFE)
-        
+
         # Create workflow - target validation should pass
         workflow_id = await orchestrator.start_workflow(
-            workflow_type="network_recon",
-            target="scanme.nmap.org",
-            agents=["agent-1"]
+            workflow_type="network_recon", target="scanme.nmap.org", agents=["agent-1"]
         )
-        
+
         # Wait for workflow to complete
         for _ in range(10):
             status = orchestrator.get_workflow_status(workflow_id)
             if status["state"] in ["completed", "failed", "cancelled"]:
                 break
             await asyncio.sleep(0.5)
-        
+
         # Check that nmap tasks were not created (blocked by risk level)
         workflow = orchestrator.workflows[workflow_id]
         # Should have recon tasks (whois, dns, subdomain) but no nmap
@@ -148,16 +121,14 @@ class TestGuardrailsRiskLevels:
     async def test_normal_level_allows_nmap(self):
         """NORMAL risk level should allow nmap execution"""
         orchestrator = WorkflowOrchestrator(step_timeout=1, risk_level=RiskLevel.NORMAL)
-        
+
         workflow_id = await orchestrator.start_workflow(
-            workflow_type="network_recon",
-            target="scanme.nmap.org",
-            agents=["agent-1"]
+            workflow_type="network_recon", target="scanme.nmap.org", agents=["agent-1"]
         )
-        
+
         # Wait briefly
         await asyncio.sleep(0.5)
-        
+
         # Check that nmap tasks were created
         workflow = orchestrator.workflows[workflow_id]
         task_tools = [t.parameters.get("tool") for t in workflow.tasks.values()]
@@ -168,16 +139,14 @@ class TestGuardrailsRiskLevels:
     async def test_normal_level_blocks_sqlmap(self):
         """NORMAL risk level should block sqlmap"""
         orchestrator = WorkflowOrchestrator(step_timeout=1, risk_level=RiskLevel.NORMAL)
-        
+
         # Can run workflow (target check passes)
         workflow_id = await orchestrator.start_workflow(
-            workflow_type="targeted_attack",
-            target="scanme.nmap.org",
-            agents=["agent-1"]
+            workflow_type="targeted_attack", target="scanme.nmap.org", agents=["agent-1"]
         )
-        
+
         await asyncio.sleep(0.5)
-        
+
         # Check that exploit tools were blocked
         workflow = orchestrator.workflows[workflow_id]
         task_tools = [t.parameters.get("tool") for t in workflow.tasks.values()]
@@ -188,15 +157,13 @@ class TestGuardrailsRiskLevels:
     async def test_elevated_level_allows_exploit(self):
         """ELEVATED risk level should allow exploit tools"""
         orchestrator = WorkflowOrchestrator(step_timeout=1, risk_level=RiskLevel.ELEVATED)
-        
+
         workflow_id = await orchestrator.start_workflow(
-            workflow_type="targeted_attack",
-            target="scanme.nmap.org",
-            agents=["agent-1"]
+            workflow_type="targeted_attack", target="scanme.nmap.org", agents=["agent-1"]
         )
-        
+
         await asyncio.sleep(0.5)
-        
+
         # Check that exploit tools were created
         workflow = orchestrator.workflows[workflow_id]
         task_tools = [t.parameters.get("tool") for t in workflow.tasks.values()]
@@ -211,14 +178,10 @@ class TestGuardrailsFileURLs:
     async def test_workflow_blocks_file_url(self):
         """Workflow should block file:// URLs"""
         orchestrator = WorkflowOrchestrator(step_timeout=1)
-        
+
         with pytest.raises(ValueError) as exc_info:
-            await orchestrator.start_workflow(
-                workflow_type="web_scan",
-                target="file:///etc/passwd",
-                agents=["agent-1"]
-            )
-        
+            await orchestrator.start_workflow(workflow_type="web_scan", target="file:///etc/passwd", agents=["agent-1"])
+
         assert "validation failed" in str(exc_info.value).lower()
 
 
@@ -229,28 +192,20 @@ class TestGuardrailsIPv6:
     async def test_workflow_blocks_ipv6_loopback(self):
         """Workflow should block IPv6 loopback"""
         orchestrator = WorkflowOrchestrator(step_timeout=1)
-        
+
         with pytest.raises(ValueError) as exc_info:
-            await orchestrator.start_workflow(
-                workflow_type="network_recon",
-                target="::1",
-                agents=["agent-1"]
-            )
-        
+            await orchestrator.start_workflow(workflow_type="network_recon", target="::1", agents=["agent-1"])
+
         assert "validation failed" in str(exc_info.value).lower()
 
     @pytest.mark.asyncio
     async def test_workflow_blocks_ipv6_link_local(self):
         """Workflow should block IPv6 link-local"""
         orchestrator = WorkflowOrchestrator(step_timeout=1)
-        
+
         with pytest.raises(ValueError) as exc_info:
-            await orchestrator.start_workflow(
-                workflow_type="network_recon",
-                target="fe80::1",
-                agents=["agent-1"]
-            )
-        
+            await orchestrator.start_workflow(workflow_type="network_recon", target="fe80::1", agents=["agent-1"])
+
         assert "validation failed" in str(exc_info.value).lower()
 
 
@@ -261,28 +216,20 @@ class TestGuardrailsClassB:
     async def test_workflow_blocks_class_b_start(self):
         """Workflow should block 172.16.0.0/12 range start"""
         orchestrator = WorkflowOrchestrator(step_timeout=1)
-        
+
         with pytest.raises(ValueError) as exc_info:
-            await orchestrator.start_workflow(
-                workflow_type="network_recon",
-                target="172.16.0.1",
-                agents=["agent-1"]
-            )
-        
+            await orchestrator.start_workflow(workflow_type="network_recon", target="172.16.0.1", agents=["agent-1"])
+
         assert "validation failed" in str(exc_info.value).lower()
 
     @pytest.mark.asyncio
     async def test_workflow_blocks_class_b_end(self):
         """Workflow should block 172.16.0.0/12 range end"""
         orchestrator = WorkflowOrchestrator(step_timeout=1)
-        
+
         with pytest.raises(ValueError) as exc_info:
-            await orchestrator.start_workflow(
-                workflow_type="network_recon",
-                target="172.31.255.255",
-                agents=["agent-1"]
-            )
-        
+            await orchestrator.start_workflow(workflow_type="network_recon", target="172.31.255.255", agents=["agent-1"])
+
         assert "validation failed" in str(exc_info.value).lower()
 
 
