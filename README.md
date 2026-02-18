@@ -603,13 +603,70 @@ pytest tests/integration/ -v
 
 ---
 
+## 🐳 Docker Deployment
+
+### Full Stack
+
+```bash
+# Start everything
+docker-compose up -d
+
+# Check status
+docker-compose ps
+
+# View logs
+docker-compose logs -f api
+
+# Scale agents
+docker-compose up -d --scale agent=3
+```
+
+### Services
+
+| Service | Port | Description |
+|---------|------|-------------|
+| API | 8000 | FastAPI server |
+| PostgreSQL | 5432 | Database |
+| Redis | 6379 | Cache |
+| Agent | - | Pentest agent |
+
+📖 **[Complete Docker Guide](DOCKER.md)**
+
+---
+
+## 🛡️ Safety First
+
+### Default Protections
+
+- ✅ **Private IP Blocking** - Prevents scanning 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16
+- ✅ **Loopback Protection** - Blocks 127.x.x.x and ::1
+- ✅ **Local Domain Filter** - Prevents .local, .internal, localhost
+- ✅ **Risk Level Control** - Restricts tools by safety level
+- ✅ **Rate Limiting** - Prevents abuse
+
+### Risk Levels
+
+| Level | Tools | Description |
+|-------|-------|-------------|
+| **SAFE (0)** | whois, dns, subdomain | Reconnaissance only |
+| **NORMAL (1)** | + nmap, nuclei | Standard scanning |
+| **ELEVATED (2)** | + sqlmap, exploit | Light exploitation |
+| **AGGRESSIVE (3)** | + pivot, lateral | Full exploitation |
+
+⚠️ **Always ensure you have authorization before scanning!**
+
+---
+
 ## 📚 Documentation
 
-- **[Getting Started](docs/tutorials/getting-started.md)** - First steps
-- **[Installation Guide](docs/INSTALLATION.md)** - Setup instructions
-- **[API Documentation](docs/API.md)** - REST API reference
-- **[Architecture](docs/ARCHITECTURE.md)** - System design
-- **[Support](SUPPORT.md)** - Help and support
+| Document | Description |
+|----------|-------------|
+| [DOCKER.md](DOCKER.md) | Docker deployment guide |
+| [GUARDRAILS.md](GUARDRAILS.md) | Security guardrails documentation |
+| [GUARDRAILS_INTEGRATION.md](GUARDRAILS_INTEGRATION.md) | Guardrails integration guide |
+| [VPN_INTEGRATION.md](VPN_INTEGRATION.md) | VPN setup and usage |
+| [DEMO_E2E.md](DEMO_E2E.md) | End-to-end demo documentation |
+| [AGENTS.md](AGENTS.md) | Agent development guide |
 
 ---
 
