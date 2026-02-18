@@ -1,0 +1,73 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install system dependencies and ALL security tools
+RUN apt-get update && apt-get install -y \
+    gcc \
+    nmap \
+    whois \
+    dnsutils \
+    net-tools \
+    curl \
+    wget \
+    git \
+    # For nuclei
+    unzip \
+    # For sqlmap (if needed)
+    python3-pip \
+    # Network tools
+    traceroute \
+    iputils-ping \
+    # For building some tools
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Nuclei
+RUN curl -s https://api.github.com/repos/projectdiscovery/nuclei/releases/latest | \
+    grep "browser_download_url.*linux_amd64.zip" | \
+    cut -d '"' -f 4 | \
+    wget -qi - -O nuclei.zip && \
+    unzip nuclei.zip -d /usr/local/bin && \
+    rm nuclei.zip && \
+    chmod +x /usr/local/bin/nuclei && \
+    nuclei -update-templates
+
+# Install other ProjectDiscovery tools
+RUN curl -s https://api.github.com/repos/projectdiscovery/subfinder/releases/latest | \
+    grep "browser_download_url.*linux_amd64.zip" | \
+    cut -d '"' -f 4 | \
+    wget -qi - -O subfinder.zip && \
+    unzip subfinder.zip -d /usr/local/bin && \
+    rm subfinder.zip && \
+    chmod +x /usr/local/bin/subfinder
+
+# Install Python dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
+
+# Copy application code
+COPY . .
+
+# Install the package
+RUN pip install -e .
+
+# Create necessary directories
+RUN mkdir -p /app/agent_data /app/logs /app/tools
+
+# Create non-root user
+RUN useradd -m -u 1000 agent && \
+    chown -R agent:agent /app && \
+    # Allow agent to run nmap (requires capabilities)
+    setcap cap_net_raw,cap_net_admin,cap_net_bind_service+eip /usr/bin/nmap 2>/dev/null || true
+
+# Switch to non-root user
+USER agent
+
+# Environment
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+
+# Default command (can be overridden)
+CMD ["python", "-m", "agents.v2.worker_agent", "--help"]

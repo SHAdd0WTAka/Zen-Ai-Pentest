@@ -2,128 +2,122 @@ version: '3.8'
 
 services:
   # PostgreSQL Database
-  postgres:
+  db:
     image: postgres:15-alpine
-    container_name: zen-postgres
+    container_name: zen-pentest-db
+    restart: unless-stopped
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
       POSTGRES_DB: zen_pentest
+      POSTGRES_USER: zen_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 5s
+      test: ["CMD-SHELL", "pg_isready -U zen_user -d zen_pentest"]
+      interval: 10s
       timeout: 5s
       retries: 5
-    networks:
-      - zen-network
 
-  # Redis Cache
+  # Redis (optional, for caching and message queue)
   redis:
     image: redis:7-alpine
-    container_name: zen-redis
+    container_name: zen-pentest-redis
+    restart: unless-stopped
     ports:
       - "6379:6379"
     volumes:
       - redis_data:/data
     command: redis-server --appendonly yes
-    networks:
-      - zen-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
 
-  # FastAPI Backend
+  # Zen-AI-Pentest API Server
   api:
     build:
       context: .
-      dockerfile: Dockerfile.api
-    container_name: zen-api
+      dockerfile: Dockerfile
+    container_name: zen-pentest-api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/zen_pentest
-      - REDIS_URL=redis://redis:6379/0
-      - SECRET_KEY=your-secret-key-here-change-in-production
-      - CORS_ORIGINS=http://localhost:3000,http://frontend:3000
+      # Database
+      DATABASE_URL: postgresql://zen_user:${DB_PASSWORD:-changeme}@db:5432/zen_pentest
+      
+      # Security
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-your-secret-key-change-in-production}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin}
+      
+      # Redis
+      REDIS_URL: redis://redis:6379/0
+      
+      # Application
+      APP_ENV: production
+      LOG_LEVEL: INFO
+      
+      # Optional: VPN (ProtonVPN)
+      # VPN_ENABLED: "true"
+      # VPN_PROVIDER: protonvpn
     ports:
       - "8000:8000"
-    # Kein volumes Mount mehr - Code kommt aus Image
     volumes:
+      - ./data:/app/data
       - ./logs:/app/logs
-      - ./uploads:/app/uploads
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_started
-    networks:
-      - zen-network
-    restart: unless-stopped
+      - ./reports:/app/reports
+      - ./evidence:/app/evidence
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    command: >
+      sh -c "
+        echo 'Waiting for database...' &&
+        sleep 5 &&
+        echo 'Starting API server...' &&
+        uvicorn api.main:app --host 0.0.0.0 --port 8000 --workers 2
+      "
 
-  # React Frontend
-  frontend:
-    build:
-      context: ./web_ui/frontend
-      dockerfile: Dockerfile
-    container_name: zen-frontend
-    environment:
-      - REACT_APP_API_URL=http://localhost:8000
-      - PORT=3000
-    ports:
-      - "3000:3000"
-    volumes:
-      - ./web_ui/frontend:/app
-      - /app/node_modules
-    depends_on:
-      - api
-    command: sh -c "npm ci && npm run build && npx serve -s build -l 3000"
-    networks:
-      - zen-network
-    restart: unless-stopped
-
-  # Celery Worker (for background tasks)
-  celery:
+  # Pentest Agent (optional, can be scaled)
+  agent:
     build:
       context: .
-      dockerfile: Dockerfile.worker
-    container_name: zen-celery
-    environment:
-      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/zen_pentest
-      - REDIS_URL=redis://redis:6379/0
-      - SECRET_KEY=your-secret-key-here-change-in-production
-    volumes:
-      - ./:/app
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_started
-    command: python -m celery -A tasks worker --loglevel=info
-    networks:
-      - zen-network
+      dockerfile: Dockerfile.agent
+    container_name: zen-pentest-agent
     restart: unless-stopped
-
-  # Nginx Reverse Proxy (optional, for production)
-  nginx:
-    image: nginx:alpine
-    container_name: zen-nginx
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./docker/nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
       - api
-      - frontend
-    networks:
-      - zen-network
-    restart: unless-stopped
-    profiles:
-      - production
+    environment:
+      API_URL: http://api:8000
+      AGENT_ID: ${AGENT_ID:-docker-agent-1}
+      AGENT_API_KEY: ${AGENT_API_KEY:-}
+      AGENT_API_SECRET: ${AGENT_API_SECRET:-}
+    # Privileged mode needed for some security tools
+    privileged: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./agent_data:/app/agent_data
+    command: >
+      sh -c "
+        echo 'Waiting for API server...' &&
+        sleep 10 &&
+        echo 'Starting agent...' &&
+        python -m agents.v2.worker_agent --server ws://api:8000/agents/ws --agent-id ${AGENT_ID:-docker-agent-1}
+      "
 
 volumes:
   postgres_data:
   redis_data:
 
 networks:
-  zen-network:
-    driver: bridge
+  default:
+    name: zen-pentest-network
