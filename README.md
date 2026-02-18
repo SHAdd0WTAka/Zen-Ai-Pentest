@@ -381,40 +381,27 @@ curl -X POST http://localhost:8000/auth/login \
 curl -X POST http://localhost:8000/scans \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{
-    "name":"Network Scan",
-    "target":"192.168.1.0/24",
-    "scan_type":"network",
-    "config":{"ports":"top-1000"}
-  }'
+  -d '{"name":"Network Scan","target":"192.168.1.0/24","scan_type":"network","config":{"ports":"top-1000"}}'
 
 # Execute tool
 curl -X POST http://localhost:8000/tools/execute \
   -H "Authorization: Bearer $TOKEN" \
-  -d '{
-    "tool_name":"nmap_scan",
-    "target":"scanme.nmap.org",
-    "parameters":{"ports":"22,80,443"}
-  }'
+  -d '{"tool_name":"nmap_scan","target":"scanme.nmap.org","parameters":{"ports":"22,80,443"}}'
 
 # Generate report
 curl -X POST http://localhost:8000/reports \
   -H "Authorization: Bearer $TOKEN" \
-  -d '{
-    "scan_id":1,
-    "format":"pdf",
-    "template":"default"
-  }'
+  -d '{"scan_id":1,"format":"pdf","template":"default"}'
 ```
 
 ### WebSocket (Real-Time)
 
 ```javascript
-const ws = new WebSocket('ws://localhost:8000/ws/scans/1');
+const ws = new WebSocket("ws://localhost:8000/ws/scans/1");
 
 ws.onmessage = (event) => {
   const data = JSON.parse(event.data);
-  console.log('Scan update:', data);
+  console.log("Scan update:", data);
 };
 ```
 
