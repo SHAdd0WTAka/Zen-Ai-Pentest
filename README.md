@@ -497,57 +497,30 @@ For detailed architecture documentation, see [docs/ARCHITECTURE.md](docs/ARCHITE
 
 ```
 zen-ai-pentest/
-├── api/                        # FastAPI Backend
-│   ├── main.py                # API Server
-│   ├── schemas.py             # Pydantic Models
-│   ├── auth.py                # JWT Authentication
-│   └── websocket.py           # WebSocket Manager
-├── agents/                     # AI Agents
-│   ├── react_agent.py         # ReAct Agent
-│   └── react_agent_vm.py      # VM-based Agent
-├── autonomous/                 # Autonomous Agent System
-│   ├── agent_loop.py          # ReAct Loop Engine
-│   ├── exploit_validator.py   # Exploit Validation
-│   ├── memory.py              # Memory Management
-│   └── tool_executor.py       # Tool Execution
-├── risk_engine/               # Risk Analysis
-│   ├── false_positive_engine.py
-│   ├── business_impact_calculator.py
-│   ├── cvss.py
-│   └── epss.py
-├── benchmarks/                # Benchmark Framework
-│   ├── run_benchmarks.py
-│   └── comparison.py
-├── integrations/              # CI/CD Integrations
-│   ├── github.py
-│   ├── gitlab.py
-│   ├── jira.py
-│   ├── slack.py
-│   └── jenkins.py
-├── database/                   # Database Layer
-│   └── models.py              # SQLAlchemy Models
-├── tools/                      # Pentesting Tools
-│   ├── nmap_integration.py
-│   ├── sqlmap_integration.py
-│   ├── metasploit_integration.py
-│   └── ... (20+ tools)
-├── gui/                        # Web Interface
-│   └── vm_manager_gui.py      # React Dashboard
-├── reports/                    # Report Generation
-│   └── generator.py           # PDF/HTML/JSON
-├── notifications/              # Alerts
-│   ├── slack.py
-│   └── email.py
-├── docker/                     # Deployment
-│   ├── Dockerfile
-│   └── docker-compose.full.yml
-├── docs/                       # Documentation
-│   ├── ARCHITECTURE.md
-│   ├── INSTALLATION.md
-│   ├── API.md
-│   └── setup/
-├── tests/                      # Test Suite
-└── scripts/                    # Setup Scripts
+├── api/                   # FastAPI Backend (main.py, auth.py, websocket.py)
+├── agents/                # AI Agents (react_agent.py, react_agent_vm.py)
+├── autonomous/            # ReAct Loop (agent_loop.py, exploit_validator.py, memory.py)
+├── tools/                 # 35+ Security Tools
+│   ├── Network: nmap, masscan, scapy, tshark
+│   ├── Web: nuclei, sqlmap, nikto, zap, burpsuite, ffuf, gobuster
+│   ├── Recon: subfinder, amass, httpx, whatweb, wafw00f, subdomain_scan
+│   ├── AD: bloodhound, crackmapexec, responder
+│   ├── OSINT: sherlock, scout, ignorant
+│   ├── Secrets: trufflehog, trivy
+│   ├── Wireless: aircrack
+│   ├── Code: semgrep
+│   └── Framework: metasploit
+├── risk_engine/           # Risk Analysis (cvss.py, epss.py, false_positive_engine.py)
+├── benchmarks/            # Performance Testing
+├── integrations/          # CI/CD (github, gitlab, slack, jira, jenkins)
+├── database/              # PostgreSQL Models
+├── gui/                   # React Dashboard
+├── reports/               # PDF/HTML/JSON Generator
+├── notifications/         # Alerts (slack, email)
+├── docker/                # Deployment configs
+├── docs/                  # Documentation
+├── tests/                 # Test Suite
+└── scripts/               # Setup Scripts
 ```
 
 ---
