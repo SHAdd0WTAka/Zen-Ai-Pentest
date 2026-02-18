@@ -75,6 +75,9 @@ All tools run with **safety controls**:
 [![Discord](https://img.shields.io/badge/Discord-Join-7289DA?logo=discord&logoColor=white)](https://discord.gg/BSmCqjhY)
 [![Docs](https://img.shields.io/badge/Docs-Complete-blue)](docs/)
 [![Roadmap](https://img.shields.io/badge/Roadmap-2026-blueviolet)](ROADMAP_2026.md)
+[![OpenSSF](https://www.bestpractices.dev/projects/11957/badge)](https://www.bestpractices.dev/projects/11957)
+[![Marketplace](https://img.shields.io/badge/Marketplace-Action-green?logo=github)](https://github.com/marketplace/actions/zen-ai-pentest)
+[![Authors](https://img.shields.io/badge/Authors-SHAdd0WTAka%20%7C%20KimiAI-purple)](#-authors--team)
 
 ---
 
