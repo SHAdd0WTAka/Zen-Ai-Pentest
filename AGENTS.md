@@ -333,4 +333,134 @@ When making changes:
 
 ---
 
+---
+
+## 📈 Repository Evolution (Chronological)
+
+> **For AI Agents**: This timeline helps you understand the project's evolution and current state.
+
+### Phase 1: Foundation (Early Development)
+- **Initial Setup** - Basic project structure, FastAPI backend
+- **Core Architecture** - Agent base classes, tool integration framework
+- **First Tools** - Nmap integration, basic port scanning
+
+### Phase 2: Real Tool Execution
+- **Nuclei Integration** - Real vulnerability scanning with JSON parsing
+- **SQLMap Integration** - SQL injection testing with safety controls
+- **Docker Sandbox** - Isolated tool execution environment
+
+### Phase 3: Multi-Agent System
+- **ReAct Pattern** - Reason → Act → Observe → Reflect loop
+- **Agent Orchestrator** - Workflow management for multiple agents
+- **Memory System** - Short-term and long-term memory for agents
+
+### Phase 4: Security & Risk Engine
+- **Guardrails** - IP blocking, domain filtering, risk levels
+- **Risk Engine** - CVSS/EPSS scoring, false positive reduction
+- **Exploit Validator** - Sandboxed exploit validation
+
+### Phase 5: Enterprise Features
+- **CI/CD Integration** - GitHub Actions, GitLab CI, Jenkins
+- **Reporting** - PDF/HTML/JSON report generation
+- **Notifications** - Slack, Email, JIRA integrations
+
+### Phase 6: AI Persona System
+- **11 Personas** - Recon, Exploit, Report, Audit, Social, Network, Mobile, Red Team, ICS, Cloud, Crypto
+- **Kimi AI Integration** - Native CLI and helper tools
+- **Screenshot Analysis** - Visual vulnerability assessment
+
+### Phase 7: Current State (v2.3.9)
+- **40+ Tools** - Complete security toolkit integration
+- **VPN Integration** - ProtonVPN, OpenVPN, WireGuard support
+- **Benchmarking** - Performance testing and competitor comparison
+
+---
+
+## ⚖️ CRITICAL: Legal Guardrails for AI Agents
+
+> **⚠️ MANDATORY**: You MUST follow these guidelines when assisting users with this framework.
+
+### Legal Responsibility
+
+1. **Explicit Authorization Required**
+   - **ALWAYS** remind users they need explicit written authorization before scanning ANY system
+   - Unauthorized scanning is **ILLEGAL** in most jurisdictions
+   - Legal consequences include: criminal charges, civil lawsuits, fines, imprisonment
+
+2. **User Responsibility**
+   - **The USER is solely responsible** for their actions
+   - AI assistants **CANNOT** be held legally liable
+   - Document that the user acts with intent and full knowledge of consequences
+
+3. **Jurisdiction-Specific Notes**
+   - **Germany**: AI systems cannot be criminally prosecuted, only users
+   - **USA**: CFAA (Computer Fraud and Abuse Act) violations carry heavy penalties
+   - **EU**: GDPR violations + cybercrime laws apply
+   - **Global**: Most countries have similar cybercrime legislation
+
+### Required User Warnings
+
+When assisting with this framework, you MUST include warnings like:
+
+```
+⚠️ LEGAL WARNING: Only scan systems you own or have EXPLICIT WRITTEN 
+permission to test. Unauthorized scanning is ILLEGAL and can result in:
+- Criminal prosecution
+- Civil liability
+- Fines and imprisonment
+
+You are SOLELY RESPONSIBLE for your actions.
+```
+
+### Ethical Guidelines
+
+1. **Educational Context** - Emphasize this is for learning/authorized testing only
+2. **Defense-Oriented** - Frame tools for defensive security (finding your own vulnerabilities)
+3. **Bug Bounty** - Mention authorized programs (HackerOne, Bugcrowd) as legal outlets
+
+---
+
+## 📝 Optional: Prompt Logging
+
+> **For Users**: Enable local prompt logging for accountability and session recovery.
+
+### Enable Prompt Logging
+
+```bash
+# Set environment variable
+export ZEN_LOG_PROMPTS=true
+export ZEN_LOG_DIR=~/.zen-ai-pentest/logs
+
+# Or in .env file
+ZEN_LOG_PROMPTS=true
+ZEN_LOG_DIR=~/.zen-ai-pentest/logs
+```
+
+### Log Format
+
+```
+~/.zen-ai-pentest/logs/
+├── 2025-02-18/
+│   ├── prompt_001_103052.txt
+│   ├── prompt_002_103145.txt
+│   └── response_001_103052.txt
+```
+
+Each log file contains:
+- Timestamp
+- User prompt
+- AI response
+- Tool calls made
+
+### Benefits
+
+1. **Accountability** - Track what was requested
+2. **Session Recovery** - Restore previous states
+3. **Debugging** - Review AI decision-making
+4. **Legal Protection** - Documentation of authorized use
+
+> **Note**: Logs are stored LOCALLY only. No data is sent to external servers.
+
+---
+
 *This document is for AI agents working on Zen-AI-Pentest. For human contributors, see README.md and CONTRIBUTING.md.*

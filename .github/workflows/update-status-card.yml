@@ -1,43 +1,51 @@
-name: Auto-Update Status Card
+name: Update Repository Status Card
 
 on:
   push:
     branches: [ main, master ]
-    paths:
-      - 'docs/**'
-      - '.github/workflows/**'
-      - 'scripts/**'
-      - 'README.md'
-      - 'requirements.txt'
+  pull_request:
+    types: [ closed ]
+    branches: [ main, master ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
-  update-status-card:
+  update-status:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     
     steps:
-      - uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-      
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      
-      - name: Install dependencies
-        run: |
-          pip install Pillow qrcode
-      
-      - name: Generate Status Card
-        run: |
-          python scripts/generate_repo_status_card.py
-      
-      - name: Commit and Push
-        run: |
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
-          git add docs/status/repo_status_card.png
-          git diff --cached --quiet || (git commit -m "chore: Auto-update status card [skip ci]" && git push)
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Full history for stats
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        pip install Pillow requests
+
+    - name: Generate Status Card
+      run: |
+        python scripts/generate_status_card.py
+
+    - name: Commit and push changes
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        
+        # Check if there are changes
+        if git diff --quiet HEAD -- docs/status/repo_status_card.png; then
+          echo "No changes to status card"
+          exit 0
+        fi
+        
+        git add docs/status/repo_status_card.png
+        git commit -m "docs(status): auto-update repository status card [skip ci]"
+        git push
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
