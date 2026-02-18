@@ -500,16 +500,17 @@ zen-ai-pentest/
 ├── api/                   # FastAPI Backend (main.py, auth.py, websocket.py)
 ├── agents/                # AI Agents (react_agent.py, react_agent_vm.py)
 ├── autonomous/            # ReAct Loop (agent_loop.py, exploit_validator.py, memory.py)
-├── tools/                 # 35+ Security Tools
+├── tools/                 # 40+ Security Tools
 │   ├── Network: nmap, masscan, scapy, tshark
 │   ├── Web: nuclei, sqlmap, nikto, zap, burpsuite, ffuf, gobuster
-│   ├── Recon: subfinder, amass, httpx, whatweb, wafw00f, subdomain_scan
+│   ├── Recon: subfinder, amass, httpx, whatweb, wafw00f, subdomain_scan, unified_recon
 │   ├── AD: bloodhound, crackmapexec, responder
 │   ├── OSINT: sherlock, scout, ignorant
 │   ├── Secrets: trufflehog, trivy
 │   ├── Wireless: aircrack
 │   ├── Code: semgrep
-│   └── Framework: metasploit
+│   ├── AI/Kimi: kimi_cli, kimi_helper, update_personas
+│   └── Core: tool_caller, tool_registry
 ├── risk_engine/           # Risk Analysis (cvss.py, epss.py, false_positive_engine.py)
 ├── benchmarks/            # Performance Testing
 ├── integrations/          # CI/CD (github, gitlab, slack, jira, jenkins)
@@ -518,7 +519,7 @@ zen-ai-pentest/
 ├── reports/               # PDF/HTML/JSON Generator
 ├── notifications/         # Alerts (slack, email)
 ├── docker/                # Deployment configs
-├── docs/                  # Documentation
+├── docs/                  # Documentation (ARCHITECTURE.md, INSTALLATION.md, API.md, setup/)
 ├── tests/                 # Test Suite
 └── scripts/               # Setup Scripts
 ```
