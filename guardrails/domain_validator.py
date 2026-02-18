@@ -15,6 +15,7 @@ from urllib.parse import urlparse
 @dataclass
 class DomainValidationResult:
     """Result of domain validation"""
+
     is_valid: bool
     reason: Optional[str] = None
     blocked_patterns: List[str] = None
@@ -27,7 +28,7 @@ class DomainValidationResult:
 class DomainValidator:
     """
     Validates domain names for safe scanning.
-    
+
     Blocks:
     - localhost and variations
     - .local, .internal, .corp TLDs
@@ -56,8 +57,8 @@ class DomainValidator:
     # Blocked patterns (regex)
     BLOCKED_PATTERNS = [
         r"^\d+\.\d+\.\d+\.\d+$",  # IP addresses
-        r"^.*\.localhost$",         # *.localhost
-        r"^localhost\.\w+$",        # localhost.*
+        r"^.*\.localhost$",  # *.localhost
+        r"^localhost\.\w+$",  # localhost.*
     ]
 
     # Allowed exceptions
@@ -71,7 +72,7 @@ class DomainValidator:
     ):
         """
         Initialize domain validator.
-        
+
         Args:
             blocked_tlds: Additional TLDs to block
             blocked_domains: Additional domains to block
@@ -85,10 +86,10 @@ class DomainValidator:
     def validate_domain(self, domain: str) -> DomainValidationResult:
         """
         Validate a domain name.
-        
+
         Args:
             domain: Domain to validate (e.g., "example.com")
-            
+
         Returns:
             DomainValidationResult with is_valid status
         """
@@ -101,28 +102,20 @@ class DomainValidator:
 
         # Check exact matches
         if domain in self.blocked_domains:
-            return DomainValidationResult(
-                is_valid=False,
-                reason=f"Domain '{domain}' is blocked",
-                blocked_patterns=[domain]
-            )
+            return DomainValidationResult(is_valid=False, reason=f"Domain '{domain}' is blocked", blocked_patterns=[domain])
 
         # Check TLD
         for tld in self.blocked_tlds:
             if domain.endswith(tld):
                 return DomainValidationResult(
-                    is_valid=False,
-                    reason=f"Domain '{domain}' uses blocked TLD '{tld}'",
-                    blocked_patterns=[tld]
+                    is_valid=False, reason=f"Domain '{domain}' uses blocked TLD '{tld}'", blocked_patterns=[tld]
                 )
 
         # Check regex patterns
         for pattern, compiled in zip(self.blocked_patterns, self._compiled_patterns):
             if compiled.match(domain):
                 return DomainValidationResult(
-                    is_valid=False,
-                    reason=f"Domain '{domain}' matches blocked pattern: {pattern}",
-                    blocked_patterns=[pattern]
+                    is_valid=False, reason=f"Domain '{domain}' matches blocked pattern: {pattern}", blocked_patterns=[pattern]
                 )
 
         return DomainValidationResult(is_valid=True)
@@ -130,10 +123,10 @@ class DomainValidator:
     def validate_url(self, url: str) -> DomainValidationResult:
         """
         Validate a URL.
-        
+
         Args:
             url: URL to validate
-            
+
         Returns:
             DomainValidationResult with is_valid status
         """
@@ -143,20 +136,13 @@ class DomainValidator:
 
         # Block file:// URLs
         if url.startswith("file://"):
-            return DomainValidationResult(
-                is_valid=False,
-                reason="File:// URLs are not allowed",
-                blocked_patterns=["file://"]
-            )
+            return DomainValidationResult(is_valid=False, reason="File:// URLs are not allowed", blocked_patterns=["file://"])
 
         # Parse URL
         try:
             parsed = urlparse(url)
         except Exception as e:
-            return DomainValidationResult(
-                is_valid=False,
-                reason=f"Invalid URL format: {e}"
-            )
+            return DomainValidationResult(is_valid=False, reason=f"Invalid URL format: {e}")
 
         # Extract domain
         domain = parsed.netloc
@@ -183,10 +169,10 @@ class DomainValidator:
     def is_internal_domain(self, domain: str) -> bool:
         """
         Check if a domain is likely internal/private.
-        
+
         Args:
             domain: Domain to check
-            
+
         Returns:
             True if domain appears to be internal
         """

@@ -25,7 +25,10 @@ class TestWorkflowLifecycle:
     @pytest.fixture
     def orchestrator(self):
         """Create fresh orchestrator with short timeout for testing"""
-        return WorkflowOrchestrator(step_timeout=2)
+        orch = WorkflowOrchestrator(step_timeout=2)
+        # Disable guardrails for workflow tests (we test guardrails separately)
+        orch.guardrails_enabled = False
+        return orch
 
     @pytest.mark.asyncio
     async def test_workflow_creation(self, orchestrator):
@@ -128,7 +131,9 @@ class TestTaskDistribution:
 
     @pytest.fixture
     def orchestrator(self):
-        return WorkflowOrchestrator()
+        orch = WorkflowOrchestrator()
+        orch.guardrails_enabled = False
+        return orch
 
     @pytest.mark.asyncio
     async def test_task_creation(self, orchestrator):
@@ -248,7 +253,9 @@ class TestWorkflowListAndStatus:
 
     @pytest.fixture
     def orchestrator(self):
-        return WorkflowOrchestrator()
+        orch = WorkflowOrchestrator()
+        orch.guardrails_enabled = False
+        return orch
 
     @pytest.mark.asyncio
     async def test_list_workflows(self, orchestrator):
@@ -301,6 +308,7 @@ class TestEndToEnd:
         4. Workflow completes
         """
         orchestrator = WorkflowOrchestrator()
+        orchestrator.guardrails_enabled = False
 
         # Track events
         events = []

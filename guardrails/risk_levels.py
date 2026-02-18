@@ -6,20 +6,21 @@ Defines and enforces risk levels for security testing operations.
 Higher risk levels allow more aggressive testing but require more validation.
 """
 
-from enum import IntEnum
 from dataclasses import dataclass
+from enum import IntEnum
 from typing import Dict, List, Optional, Set
 
 
 class RiskLevel(IntEnum):
     """
     Risk levels for pentest operations.
-    
+
     0 - SAFE: Reconnaissance only, no active testing
     1 - NORMAL: Standard scanning, no exploitation
     2 - ELEVATED: Aggressive scanning, light exploitation
     3 - AGGRESSIVE: Full exploitation, all techniques
     """
+
     SAFE = 0
     NORMAL = 1
     ELEVATED = 2
@@ -29,6 +30,7 @@ class RiskLevel(IntEnum):
 @dataclass
 class ToolRiskProfile:
     """Risk profile for a security tool"""
+
     name: str
     min_risk_level: RiskLevel
     description: str
@@ -39,7 +41,7 @@ class ToolRiskProfile:
 class RiskLevelManager:
     """
     Manages risk levels and tool permissions.
-    
+
     Maps tools to minimum required risk levels and validates
     operations against current risk level.
     """
@@ -65,7 +67,6 @@ class RiskLevelManager:
             description="Subdomain discovery - passive reconnaissance",
             dangerous_flags=[],
         ),
-        
         # NORMAL tools (Risk Level 1)
         "nmap": ToolRiskProfile(
             name="nmap",
@@ -97,7 +98,6 @@ class RiskLevelManager:
             description="Vulnerability scanning - active testing",
             dangerous_flags=["-severity critical", "-tags dos"],
         ),
-        
         # ELEVATED tools (Risk Level 2)
         "sqlmap": ToolRiskProfile(
             name="sqlmap",
@@ -113,7 +113,6 @@ class RiskLevelManager:
             dangerous_flags=["--payload", "--reverse-shell"],
             requires_confirmation=True,
         ),
-        
         # AGGRESSIVE tools (Risk Level 3)
         "pivot": ToolRiskProfile(
             name="pivot",
@@ -142,7 +141,7 @@ class RiskLevelManager:
     def __init__(self, current_level: RiskLevel = RiskLevel.NORMAL):
         """
         Initialize risk level manager.
-        
+
         Args:
             current_level: Current risk level for operations
         """
@@ -161,10 +160,10 @@ class RiskLevelManager:
     def can_run_tool(self, tool_name: str) -> bool:
         """
         Check if a tool can be run at current risk level.
-        
+
         Args:
             tool_name: Name of the tool
-            
+
         Returns:
             True if tool is allowed at current risk level
         """
@@ -172,23 +171,23 @@ class RiskLevelManager:
         if not profile:
             # Unknown tool - allow at NORMAL and above, require confirmation
             return self.current_level >= RiskLevel.NORMAL
-        
+
         return self.current_level >= profile.min_risk_level
 
     def validate_tool(self, tool_name: str, flags: Optional[List[str]] = None) -> Dict:
         """
         Validate tool execution with flags.
-        
+
         Args:
             tool_name: Name of the tool
             flags: Command flags being used
-            
+
         Returns:
             Validation result dict with allowed status and warnings
         """
         flags = flags or []
         profile = self.tool_profiles.get(tool_name)
-        
+
         result = {
             "allowed": False,
             "requires_confirmation": False,
@@ -235,17 +234,11 @@ class RiskLevelManager:
 
     def get_allowed_tools(self) -> List[str]:
         """Get list of tools allowed at current risk level"""
-        return [
-            name for name, profile in self.tool_profiles.items()
-            if self.current_level >= profile.min_risk_level
-        ]
+        return [name for name, profile in self.tool_profiles.items() if self.current_level >= profile.min_risk_level]
 
     def get_blocked_tools(self) -> List[str]:
         """Get list of tools blocked at current risk level"""
-        return [
-            name for name, profile in self.tool_profiles.items()
-            if self.current_level < profile.min_risk_level
-        ]
+        return [name for name, profile in self.tool_profiles.items() if self.current_level < profile.min_risk_level]
 
     def get_risk_description(self) -> str:
         """Get description of current risk level"""

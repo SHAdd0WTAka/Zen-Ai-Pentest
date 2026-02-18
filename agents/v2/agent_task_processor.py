@@ -18,6 +18,16 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Dict, Any, Callable, Optional
 
+# Import guardrails for rate limiting
+try:
+    from guardrails.rate_limiter import check_tool_execution
+    GUARDRAILS_AVAILABLE = True
+except ImportError:
+    GUARDRAILS_AVAILABLE = False
+    
+    async def check_tool_execution(tool_name: str, target: str, user_id: Optional[str] = None):
+        return {"allowed": True, "reason": None, "wait_seconds": 0}
+
 
 logger = logging.getLogger("zen.agents.processor")
 
@@ -74,12 +84,13 @@ class TaskProcessor:
             "report": self._handle_report,
         }
     
-    async def process_task(self, task: Dict[str, Any]) -> TaskResult:
+    async def process_task(self, task: Dict[str, Any], user_id: Optional[str] = None) -> TaskResult:
         """
         Process a single task.
         
         Args:
             task: Task dictionary with tool, target, parameters
+            user_id: Optional user ID for rate limiting
             
         Returns:
             TaskResult with execution results
@@ -89,6 +100,18 @@ class TaskProcessor:
         target = task.get("target", "")
         
         logger.info(f"🔄 Processing task {task_id}: {tool} on {target}")
+        
+        # Check rate limiting
+        rate_limit_result = await check_tool_execution(tool, target, user_id)
+        if not rate_limit_result["allowed"]:
+            logger.warning(f"🛡️  Rate limit blocked task {task_id}: {rate_limit_result['reason']}")
+            return TaskResult(
+                task_id=task_id,
+                status="blocked",
+                findings=[],
+                output="",
+                error=f"Rate limited: {rate_limit_result['reason']}. Wait {rate_limit_result['wait_seconds']:.1f}s"
+            )
         
         start_time = asyncio.get_event_loop().time()
         

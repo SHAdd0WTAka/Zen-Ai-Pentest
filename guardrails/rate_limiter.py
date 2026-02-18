@@ -10,23 +10,25 @@ Limits the rate of security tool execution to prevent:
 
 import asyncio
 import time
+from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import Dict, Optional
-from collections import defaultdict
 
 
 @dataclass
 class RateLimitConfig:
     """Configuration for rate limiting"""
-    max_requests: int = 10          # Max requests per window
-    window_seconds: int = 60        # Time window in seconds
-    burst_size: int = 3             # Allow burst of N requests
-    cooldown_seconds: int = 5       # Cooldown between requests
+
+    max_requests: int = 10  # Max requests per window
+    window_seconds: int = 60  # Time window in seconds
+    burst_size: int = 3  # Allow burst of N requests
+    cooldown_seconds: int = 5  # Cooldown between requests
 
 
 @dataclass
 class RateLimitState:
     """State for rate limiting a specific key"""
+
     requests: list = field(default_factory=list)
     last_request: float = 0
     blocked_until: Optional[float] = None
@@ -35,14 +37,14 @@ class RateLimitState:
 class RateLimiter:
     """
     Token bucket rate limiter for tool execution.
-    
+
     Tracks requests per target/user and enforces limits.
     """
 
     def __init__(self, config: Optional[RateLimitConfig] = None):
         """
         Initialize rate limiter.
-        
+
         Args:
             config: Rate limiting configuration
         """
@@ -53,10 +55,10 @@ class RateLimiter:
     async def check_rate_limit(self, key: str) -> Dict:
         """
         Check if request is within rate limit.
-        
+
         Args:
             key: Unique identifier (e.g., "user_id:target")
-            
+
         Returns:
             Dict with allowed status and wait time
         """
@@ -101,7 +103,7 @@ class RateLimiter:
                 oldest_request = min(state.requests)
                 block_duration = self.config.window_seconds - (now - oldest_request)
                 state.blocked_until = now + block_duration
-                
+
                 return {
                     "allowed": False,
                     "wait_seconds": block_duration,
@@ -131,7 +133,7 @@ class RateLimiter:
     async def record_request(self, key: str):
         """
         Record a successful request.
-        
+
         Args:
             key: Unique identifier
         """
@@ -143,16 +145,16 @@ class RateLimiter:
     async def acquire(self, key: str, timeout: Optional[float] = None) -> bool:
         """
         Acquire permission to make a request, optionally waiting.
-        
+
         Args:
             key: Unique identifier
             timeout: Max time to wait (None = no wait)
-            
+
         Returns:
             True if permission acquired
         """
         result = await self.check_rate_limit(key)
-        
+
         if result["allowed"]:
             await self.record_request(key)
             return True
@@ -163,33 +165,33 @@ class RateLimiter:
         # Wait and retry
         await asyncio.sleep(result["wait_seconds"])
         result = await self.check_rate_limit(key)
-        
+
         if result["allowed"]:
             await self.record_request(key)
             return True
-        
+
         return False
 
     def get_stats(self, key: Optional[str] = None) -> Dict:
         """
         Get rate limiting statistics.
-        
+
         Args:
             key: Specific key or None for all
-            
+
         Returns:
             Statistics dict
         """
         now = time.time()
-        
+
         if key:
             state = self._states.get(key)
             if not state:
                 return {"key": key, "requests_in_window": 0, "remaining": self.config.max_requests}
-            
+
             cutoff = now - self.config.window_seconds
             active_requests = len([t for t in state.requests if t > cutoff])
-            
+
             return {
                 "key": key,
                 "requests_in_window": active_requests,
@@ -197,14 +199,11 @@ class RateLimiter:
                 "blocked": state.blocked_until is not None and now < state.blocked_until,
                 "blocked_until": state.blocked_until,
             }
-        
+
         # All stats
         total_keys = len(self._states)
-        total_blocked = sum(
-            1 for s in self._states.values()
-            if s.blocked_until and now < s.blocked_until
-        )
-        
+        total_blocked = sum(1 for s in self._states.values() if s.blocked_until and now < s.blocked_until)
+
         return {
             "total_keys": total_keys,
             "blocked_keys": total_blocked,
@@ -219,7 +218,7 @@ class RateLimiter:
     async def reset(self, key: Optional[str] = None):
         """
         Reset rate limit state.
-        
+
         Args:
             key: Specific key or None for all
         """
@@ -234,7 +233,7 @@ class RateLimiter:
 class ToolRateLimiter:
     """
     Rate limiter specifically for security tools.
-    
+
     Combines global and per-target rate limiting.
     """
 
@@ -242,27 +241,27 @@ class ToolRateLimiter:
         # Global rate limiter (all tools combined)
         self.global_limiter = RateLimiter(
             RateLimitConfig(
-                max_requests=100,      # 100 requests per hour globally
+                max_requests=100,  # 100 requests per hour globally
                 window_seconds=3600,
                 burst_size=10,
                 cooldown_seconds=1,
             )
         )
-        
+
         # Per-target rate limiter
         self.target_limiter = RateLimiter(
             RateLimitConfig(
-                max_requests=20,       # 20 requests per target per hour
+                max_requests=20,  # 20 requests per target per hour
                 window_seconds=3600,
                 burst_size=3,
                 cooldown_seconds=5,
             )
         )
-        
+
         # Per-tool rate limiter
         self.tool_limiter = RateLimiter(
             RateLimitConfig(
-                max_requests=30,       # 30 requests per tool per hour
+                max_requests=30,  # 30 requests per tool per hour
                 window_seconds=3600,
                 burst_size=5,
                 cooldown_seconds=2,
@@ -277,12 +276,12 @@ class ToolRateLimiter:
     ) -> Dict:
         """
         Check if tool execution is allowed.
-        
+
         Args:
             tool_name: Name of the tool
             target: Target being scanned
             user_id: Optional user identifier
-            
+
         Returns:
             Result dict with allowed status
         """
