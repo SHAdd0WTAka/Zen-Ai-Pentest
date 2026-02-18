@@ -225,7 +225,7 @@ All tools run with **safety controls**:
 - **Context Preservation**: Multi-turn conversations with memory
 - **Screenshot Analysis**: Upload and analyze images with AI personas
 
-### 🛠️ 20+ Integrated Tools
+### 🛠️ 40+ Integrated Tools
 | Category | Tools |
 |----------|-------|
 | **Network** | Nmap, Masscan, Scapy, Tshark |
