@@ -11,6 +11,8 @@
 
 **Execute real security tools with intelligent orchestration, safety guardrails, and multi-agent cooperation.**
 
+![Project Status](docs/screenshots/MUSTHAVE.png)
+
 [Quick Start](#-quick-start) • [Features](#-features) • [Docker](#-docker-deployment) • [Documentation](#-documentation) • [Safety](#-safety-first)
 
 ---
@@ -319,6 +321,12 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 3. Commit your changes (`git commit -m 'Add amazing feature'`)
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
+
+---
+
+## 📊 Project Activity
+
+![GitHub Activity](docs/screenshots/MUSTHAVE_2.png)
 
 ---
 
