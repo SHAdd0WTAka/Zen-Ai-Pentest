@@ -225,6 +225,30 @@ All tools run with **safety controls**:
 - **Context Preservation**: Multi-turn conversations with memory
 - **Screenshot Analysis**: Upload and analyze images with AI personas
 
+### 🛡️ Security Guardrails
+- **IP Validation** - Blocks private networks (10.x, 192.168.x, 172.16-31.x)
+- **Domain Filtering** - Prevents localhost/internal domain scanning
+- **Risk Levels** - 4 levels (SAFE → AGGRESSIVE) with tool restrictions
+- **Rate Limiting** - Prevents accidental DoS
+
+### 🤖 Multi-Agent System
+- **Workflow Orchestrator** - Manages complex pentest workflows
+- **Task Distribution** - Assigns tasks to available agents
+- **Real-time Updates** - WebSocket communication
+- **Result Aggregation** - Collects and analyzes findings
+
+### 🔒 VPN Integration (Optional)
+- **ProtonVPN Support** - Native CLI integration
+- **Generic Detection** - Works with OpenVPN, WireGuard, etc.
+- **Safety Warnings** - Alerts when scanning without VPN
+- **Strict Mode** - Can require VPN for scans
+
+### 🐳 Docker Ready
+- **One-Command Deploy** - `docker-compose up -d`
+- **Isolated Environment** - All tools pre-installed
+- **Scalable** - Run multiple agents
+- **Production Ready** - Health checks & monitoring
+
 ### 🛠️ 40+ Integrated Tools
 | Category | Tools |
 |----------|-------|
