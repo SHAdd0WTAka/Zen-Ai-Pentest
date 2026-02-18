@@ -3,14 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zen AI Pentest - AI-Powered Penetration Testing Framework</title>
+    <title>Zen AI Pentest - Professional AI-Powered Penetration Testing Framework</title>
+    <meta name="description" content="Autonomous AI-powered penetration testing framework with 40+ security tools, 11 AI personas, and real tool execution.">
     <style>
         :root {
             --primary: #6366f1;
             --primary-dark: #4f46e5;
             --secondary: #8b5cf6;
+            --accent: #22d3ee;
             --bg: #0f172a;
             --bg-light: #1e293b;
+            --bg-lighter: #334155;
             --text: #f8fafc;
             --text-muted: #94a3b8;
             --success: #22c55e;
@@ -39,9 +42,9 @@
         }
         
         .hero h1 {
-            font-size: 3rem;
+            font-size: 3.5rem;
             margin-bottom: 1rem;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            background: linear-gradient(135deg, var(--primary), var(--accent));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
@@ -49,20 +52,30 @@
         .hero p {
             font-size: 1.25rem;
             color: var(--text-muted);
-            max-width: 600px;
+            max-width: 700px;
             margin: 0 auto 2rem;
+        }
+        
+        .phase-badge {
+            display: inline-block;
+            padding: 0.5rem 1.5rem;
+            background: linear-gradient(135deg, var(--secondary), var(--primary));
+            border-radius: 9999px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
         }
         
         .badges {
             display: flex;
-            gap: 1rem;
+            gap: 0.75rem;
             justify-content: center;
             flex-wrap: wrap;
             margin-bottom: 2rem;
         }
         
         .badge {
-            padding: 0.5rem 1rem;
+            padding: 0.4rem 1rem;
             background: var(--bg-light);
             border-radius: 9999px;
             font-size: 0.875rem;
@@ -71,12 +84,12 @@
         
         .btn {
             display: inline-block;
-            padding: 0.75rem 1.5rem;
+            padding: 0.875rem 2rem;
             background: var(--primary);
             color: white;
             text-decoration: none;
             border-radius: 0.5rem;
-            font-weight: 500;
+            font-weight: 600;
             transition: all 0.2s;
             margin: 0.5rem;
         }
@@ -84,11 +97,66 @@
         .btn:hover {
             background: var(--primary-dark);
             transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
         }
         
         .btn-secondary {
             background: transparent;
             border: 2px solid var(--primary);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--primary);
+        }
+        
+        .status-card {
+            max-width: 900px;
+            margin: 2rem auto 0;
+            padding: 1rem;
+        }
+        
+        .status-card img {
+            width: 100%;
+            border-radius: 1rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        
+        .stats {
+            background: var(--bg-light);
+            padding: 4rem 2rem;
+            text-align: center;
+        }
+        
+        .stats h2 {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            color: var(--text);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 2rem;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .stat {
+            background: var(--bg);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .stat h3 {
+            font-size: 2.5rem;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
         }
         
         .features {
@@ -105,7 +173,7 @@
         
         .feature-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
             gap: 2rem;
         }
         
@@ -114,6 +182,12 @@
             padding: 2rem;
             border-radius: 1rem;
             border: 1px solid rgba(255,255,255,0.1);
+            transition: transform 0.2s, border-color 0.2s;
+        }
+        
+        .feature:hover {
+            transform: translateY(-4px);
+            border-color: var(--primary);
         }
         
         .feature-icon {
@@ -123,35 +197,55 @@
         
         .feature h3 {
             font-size: 1.25rem;
-            margin-bottom: 0.5rem;
-            color: var(--primary);
+            margin-bottom: 0.75rem;
+            color: var(--accent);
         }
         
         .feature p {
             color: var(--text-muted);
+            line-height: 1.6;
         }
         
-        .stats {
+        .tools-section {
             background: var(--bg-light);
-            padding: 3rem 2rem;
-            text-align: center;
+            padding: 4rem 2rem;
         }
         
-        .stats-grid {
+        .tools-section h2 {
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .tools-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 2rem;
-            max-width: 800px;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            max-width: 1200px;
             margin: 0 auto;
         }
         
-        .stat h3 {
-            font-size: 2.5rem;
-            color: var(--primary);
+        .tool-category {
+            background: var(--bg);
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            border: 1px solid rgba(255,255,255,0.1);
         }
         
-        .stat p {
+        .tool-category h4 {
+            color: var(--accent);
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+        
+        .tool-category ul {
+            list-style: none;
             color: var(--text-muted);
+        }
+        
+        .tool-category li {
+            padding: 0.25rem 0;
+            font-size: 0.9rem;
         }
         
         .quickstart {
@@ -164,6 +258,11 @@
             text-align: center;
             font-size: 2rem;
             margin-bottom: 2rem;
+        }
+        
+        .quickstart h3 {
+            color: var(--accent);
+            margin: 2rem 0 1rem;
         }
         
         .code-block {
@@ -182,6 +281,29 @@
             line-height: 1.7;
         }
         
+        .legal-notice {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.05));
+            border: 1px solid var(--danger);
+            border-radius: 1rem;
+            padding: 2rem;
+            max-width: 900px;
+            margin: 2rem auto;
+        }
+        
+        .legal-notice h3 {
+            color: var(--danger);
+            margin-bottom: 1rem;
+        }
+        
+        .legal-notice ul {
+            color: var(--text-muted);
+            margin-left: 1.5rem;
+        }
+        
+        .legal-notice li {
+            margin: 0.5rem 0;
+        }
+        
         .footer {
             text-align: center;
             padding: 3rem 2rem;
@@ -194,13 +316,25 @@
             text-decoration: none;
         }
         
+        .footer a:hover {
+            text-decoration: underline;
+        }
+        
         @media (max-width: 768px) {
             .hero h1 {
-                font-size: 2rem;
+                font-size: 2.5rem;
             }
             
             .hero p {
                 font-size: 1rem;
+            }
+            
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
             }
         }
     </style>
@@ -208,96 +342,177 @@
 <body>
     <section class="hero">
         <h1>🛡️ Zen AI Pentest</h1>
-        <p>AI-Powered Multi-LLM Penetration Testing Framework with automated intelligence gathering, vulnerability scanning, and professional reporting.</p>
+        <div class="phase-badge">🚀 Phase 6: AI Personas | 740+ Commits | 40+ Tools</div>
+        <p>Professional AI-powered penetration testing framework with autonomous agents, 40+ integrated security tools, and real tool execution. Built for security professionals, bug bounty hunters, and enterprise teams.</p>
         
         <div class="badges">
-            <span class="badge">🤖 Multi-Agent AI</span>
-            <span class="badge">🔌 Multi-LLM Support</span>
-            <span class="badge">🕵️ OSINT Integration</span>
-            <span class="badge">🔒 VPN Anonymous</span>
+            <span class="badge">🤖 11 AI Personas</span>
+            <span class="badge">🔧 40+ Tools</span>
             <span class="badge">🐳 Docker Ready</span>
+            <span class="badge">🛡️ Guardrails</span>
+            <span class="badge">🔒 VPN Support</span>
+            <span class="badge">📊 Auto-Status</span>
         </div>
         
-        <a href="https://github.com/SHAdd0WTAka/zen-ai-pentest" class="btn">View on GitHub</a>
-        <a href="#quickstart" class="btn btn-secondary">Get Started</a>
+        <a href="https://github.com/SHAdd0WTAka/zen-ai-pentest" class="btn">⭐ View on GitHub</a>
+        <a href="https://github.com/SHAdd0WTAka/zen-ai-pentest/blob/main/ROADMAP_2026.md" class="btn btn-secondary">📍 Roadmap 2026</a>
+        
+        <div class="status-card">
+            <img src="status/repo_status_card.svg" alt="Repository Status - Auto-updating status card showing current phase and statistics">
+        </div>
     </section>
     
     <section class="stats">
+        <h2>Project Statistics</h2>
         <div class="stats-grid">
             <div class="stat">
-                <h3>1000+</h3>
-                <p>CVEs in Database</p>
+                <h3>740+</h3>
+                <p>Commits</p>
             </div>
             <div class="stat">
-                <h3>50+</h3>
-                <p>SQLi Payloads</p>
+                <h3>40+</h3>
+                <p>Security Tools</p>
             </div>
             <div class="stat">
-                <h3>7</h3>
-                <p>Ransomware Families</p>
+                <h3>11</h3>
+                <p>AI Personas</p>
+            </div>
+            <div class="stat">
+                <h3>6</h3>
+                <p>Evolution Phase</p>
             </div>
             <div class="stat">
                 <h3>4</h3>
-                <p>LLM Backends</p>
+                <p>Risk Levels</p>
+            </div>
+            <div class="stat">
+                <h3>100%</h3>
+                <p>Open Source</p>
             </div>
         </div>
     </section>
     
     <section class="features">
-        <h2>Features</h2>
+        <h2>Key Features</h2>
         <div class="feature-grid">
+            <div class="feature">
+                <div class="feature-icon">🧠</div>
+                <h3>ReAct Agent Loop</h3>
+                <p>Reason → Act → Observe → Reflect pattern with autonomous decision making, self-correction, and memory management for complex pentest workflows.</p>
+            </div>
+            
+            <div class="feature">
+                <div class="feature-icon">👥</div>
+                <h3>11 AI Personas</h3>
+                <p>Specialized agents: Recon, Exploit, Report, Audit, Social Engineering, Network, Mobile, Red Team, ICS, Cloud, and Crypto experts.</p>
+            </div>
+            
+            <div class="feature">
+                <div class="feature-icon">🛡️</div>
+                <h3>Security Guardrails</h3>
+                <p>IP validation (blocks private networks), domain filtering, 4-level risk system (Safe to Aggressive), and rate limiting for safe operation.</p>
+            </div>
+            
             <div class="feature">
                 <div class="feature-icon">🤖</div>
                 <h3>Multi-Agent System</h3>
-                <p>Clawed/Moltbot-style agents collaborate, share context, and conduct autonomous research with specialized roles.</p>
+                <p>Workflow orchestrator manages complex pentest workflows with task distribution, real-time WebSocket updates, and result aggregation.</p>
             </div>
             
             <div class="feature">
                 <div class="feature-icon">🔌</div>
-                <h3>Multi-LLM Routing</h3>
-                <p>Seamlessly switches between DuckDuckGo AI, OpenRouter, ChatGPT, and Claude based on quality requirements.</p>
-            </div>
-            
-            <div class="feature">
-                <div class="feature-icon">🕵️</div>
-                <h3>OSINT Integration</h3>
-                <p>Automated email harvesting, domain reconnaissance, social media intelligence, and breach checking.</p>
-            </div>
-            
-            <div class="feature">
-                <div class="feature-icon">📊</div>
-                <h3>CVE & Ransomware DB</h3>
-                <p>Built-in databases with 1000+ CVEs, 7 ransomware families, and 50+ SQL injection payloads.</p>
-            </div>
-            
-            <div class="feature">
-                <div class="feature-icon">🔍</div>
-                <h3>Nuclei Integration</h3>
-                <p>Automated vulnerability scanning with customizable templates for WordPress and web applications.</p>
+                <h3>Multi-LLM Support</h3>
+                <p>Native Kimi AI integration plus OpenRouter, OpenAI, Anthropic support with intelligent routing based on task complexity.</p>
             </div>
             
             <div class="feature">
                 <div class="feature-icon">🔒</div>
-                <h3>Proton VPN</h3>
-                <p>Built-in VPN integration for anonymous scanning with multi-hop Secure Core support.</p>
-            </div>
-            
-            <div class="feature">
-                <div class="feature-icon">🔌</div>
-                <h3>Plugin System</h3>
-                <p>Extensible architecture with hook system for custom scanners, exploits, and integrations.</p>
-            </div>
-            
-            <div class="feature">
-                <div class="feature-icon">🌐</div>
-                <h3>REST API</h3>
-                <p>Full-featured FastAPI with WebSocket support, JWT authentication, and automatic documentation.</p>
+                <h3>VPN Integration</h3>
+                <p>ProtonVPN native CLI integration plus generic OpenVPN/WireGuard detection with safety warnings and strict mode options.</p>
             </div>
             
             <div class="feature">
                 <div class="feature-icon">🐳</div>
                 <h3>Docker Ready</h3>
-                <p>Production-ready Docker Compose setup with multi-stage builds and horizontal scaling.</p>
+                <p>One-command deployment with docker-compose, isolated environments, multi-agent scaling, health checks, and production-ready configuration.</p>
+            </div>
+            
+            <div class="feature">
+                <div class="feature-icon">🌐</div>
+                <h3>FastAPI Backend</h3>
+                <p>High-performance REST API with WebSocket support, JWT authentication, role-based access control, and automatic API documentation.</p>
+            </div>
+            
+            <div class="feature">
+                <div class="feature-icon">📊</div>
+                <h3>Risk Engine</h3>
+                <p>CVSS/EPSS scoring, false positive reduction, business impact calculation, and automated finding prioritization.</p>
+            </div>
+        </div>
+    </section>
+    
+    <section class="tools-section">
+        <h2>40+ Integrated Security Tools</h2>
+        <div class="tools-grid">
+            <div class="tool-category">
+                <h4>🔍 Network</h4>
+                <ul>
+                    <li>Nmap - Port scanning</li>
+                    <li>Masscan - Fast scanning</li>
+                    <li>Scapy - Packet crafting</li>
+                    <li>Tshark - Traffic analysis</li>
+                </ul>
+            </div>
+            
+            <div class="tool-category">
+                <h4>🌐 Web</h4>
+                <ul>
+                    <li>Nuclei - Vulnerability scanning</li>
+                    <li>SQLMap - SQL injection</li>
+                    <li>Nikto - Web scanner</li>
+                    <li>OWASP ZAP - Proxy/testing</li>
+                    <li>BurpSuite - Web testing</li>
+                    <li>FFuF - Web fuzzing</li>
+                    <li>Gobuster - Directory brute</li>
+                </ul>
+            </div>
+            
+            <div class="tool-category">
+                <h4>📡 Reconnaissance</h4>
+                <ul>
+                    <li>Subfinder - Subdomain enum</li>
+                    <li>Amass - Asset discovery</li>
+                    <li>HTTPX - Fast HTTP prober</li>
+                    <li>WhatWeb - Tech detection</li>
+                    <li>WAFW00F - WAF detection</li>
+                </ul>
+            </div>
+            
+            <div class="tool-category">
+                <h4>🎯 Active Directory</h4>
+                <ul>
+                    <li>BloodHound - AD mapping</li>
+                    <li>CrackMapExec - AD pentest</li>
+                    <li>Responder - LLMNR/NBT-NS</li>
+                </ul>
+            </div>
+            
+            <div class="tool-category">
+                <h4>🕵️ OSINT</h4>
+                <ul>
+                    <li>Sherlock - Username search</li>
+                    <li>Scout - Recon framework</li>
+                    <li>Ignorant - Email checker</li>
+                </ul>
+            </div>
+            
+            <div class="tool-category">
+                <h4>🔐 Secrets</h4>
+                <ul>
+                    <li>TruffleHog - Secret scanning</li>
+                    <li>Trivy - Vulnerability scanner</li>
+                    <li>Semgrep - Static analysis</li>
+                </ul>
             </div>
         </div>
     </section>
@@ -309,35 +524,63 @@
         <div class="code-block">
             <code># Clone repository<br>
 git clone https://github.com/SHAdd0WTAka/zen-ai-pentest.git<br>
-cd pentest-ai<br><br>
+cd zen-ai-pentest<br><br>
 # Install dependencies<br>
 pip install -r requirements.txt<br><br>
-# Run setup<br>
-python -m zen_ai_pentest --help</code>
+# Configure environment<br>
+cp .env.example .env<br>
+# Edit .env with your API keys</code>
         </div>
         
-        <h3>Docker</h3>
+        <h3>Docker (Recommended)</h3>
         <div class="code-block">
-            <code># Start with Docker Compose<br>
+            <code># Start full stack<br>
 docker-compose up -d<br><br>
-# Or use setup script<br>
-./scripts/docker-setup.sh</code>
+# Check status<br>
+docker-compose ps<br><br>
+# Scale agents<br>
+docker-compose up -d --scale agent=3</code>
         </div>
         
-        <h3>Basic Usage</h3>
+        <h3>Python API</h3>
         <div class="code-block">
-            <code># Run a scan<br>
-python -m zen_ai_pentest scan target.com<br><br>
-# Start API server<br>
-python -m api.main<br><br>
-# Run OSINT demo<br>
-python examples/osint_demo.py --domain example.com</code>
+            <code>from agents.react_agent import ReActAgent, ReActAgentConfig<br><br>
+# Configure agent<br>config = ReActAgentConfig(<br>
+&nbsp;&nbsp;&nbsp;&nbsp;max_iterations=10,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;use_vm=True,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;vm_name="kali-pentest"<br>
+)<br><br>
+# Create and run<br>agent = ReActAgent(config)<br>
+result = agent.run(<br>
+&nbsp;&nbsp;&nbsp;&nbsp;target="example.com",<br>
+&nbsp;&nbsp;&nbsp;&nbsp;objective="Security assessment"<br>
+)</code>
         </div>
+        
+        <h3>REST API</h3>
+        <div class="code-block">
+            <code># Start API server<br>
+uvicorn api.main:app --reload<br><br>
+# API will be available at http://localhost:8000<br>
+# Documentation at http://localhost:8000/docs</code>
+        </div>
+    </section>
+    
+    <section class="legal-notice">
+        <h3>⚖️ Legal Notice</h3>
+        <ul>
+            <li>Only scan systems you <strong>OWN</strong> or have <strong>EXPLICIT WRITTEN PERMISSION</strong> to test</li>
+            <li>Unauthorized scanning is <strong>ILLEGAL</strong> and can result in criminal prosecution, civil liability, fines, and imprisonment</li>
+            <li>The <strong>USER is solely responsible</strong> for their actions, not the AI or the framework developers</li>
+            <li>This tool is for <strong>authorized security testing</strong>, bug bounty programs, and educational purposes only</li>
+            <li>Always ensure you have proper authorization before scanning any target</li>
+        </ul>
     </section>
     
     <footer class="footer">
         <p>Created by <a href="https://github.com/SHAdd0WTAka">SHAdd0WTAka</a> with assistance from <a href="https://www.moonshot.cn/">Kimi AI</a></p>
-        <p>Licensed under MIT License</p>
+        <p><a href="https://github.com/SHAdd0WTAka/zen-ai-pentest">GitHub</a> • <a href="https://github.com/SHAdd0WTAka/zen-ai-pentest/blob/main/ROADMAP_2026.md">Roadmap</a> • <a href="https://github.com/SHAdd0WTAka/zen-ai-pentest/blob/main/AGENTS.md">For AI Agents</a></p>
+        <p style="margin-top: 1rem; font-size: 0.875rem;">Licensed under MIT License | Auto-updating Status Card | 740+ Commits and growing</p>
     </footer>
 </body>
 </html>
