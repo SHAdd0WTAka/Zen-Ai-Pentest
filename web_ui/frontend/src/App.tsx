@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Navbar } from './sections/Navbar';
 import { Hero } from './sections/Hero';
 import { Stats } from './sections/Stats';
@@ -8,9 +9,10 @@ import { Architecture } from './sections/Architecture';
 import { APIDocs } from './sections/APIDocs';
 import { GettingStarted } from './sections/GettingStarted';
 import { Footer } from './sections/Footer';
+import { Login } from './sections/Login';
 import { ParticleBackground } from './components/ParticleBackground';
 
-function App() {
+function HomePage() {
   const [scrollY, setScrollY] = useState(0);
 
   useEffect(() => {
@@ -36,6 +38,17 @@ function App() {
       </main>
       <Footer />
     </div>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/login" element={<Login />} />
+      </Routes>
+    </Router>
   );
 }
 
