@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Technische Architektur | Zen-AI-Pentest</title>
+    <meta name="description" content="Entdecken Sie die moderne, skalierbare und sichere Infrastruktur von Zen-AI-Pentest. API-Referenz, Tech Stack und Deployment-Informationen.">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'zen-dark': '#0a0a0f',
+                        'zen-panel': '#12121a',
+                        'zen-border': '#2a2a3a',
+                        'zen-cyan': '#00f0ff',
+                        'zen-cyan-dim': 'rgba(0, 240, 255, 0.1)',
+                        'zen-text': '#e0e0e0',
+                        'zen-text-muted': '#888888'
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'sans-serif'],
+                        'mono': ['JetBrains Mono', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    
+    <!-- Shared Styles -->
+    <link rel="stylesheet" href="../shared/styles.css">
+    
+    <style>
+        /* Custom Styles */
+        body {
+            background-color: #0a0a0f;
+            color: #e0e0e0;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        /* Gradient Text */
+        .gradient-text {
+            background: linear-gradient(135deg, #00f0ff 0%, #00c8ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        /* Glow Effects */
+        .glow-cyan {
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+        }
+        
+        .glow-cyan-hover:hover {
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.5);
+        }
+        
+        /* Grid Background Pattern */
+        .grid-pattern {
+            background-image: 
+                linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+        
+        /* Navigation Link Hover */
+        .nav-link {
+            position: relative;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #00f0ff;
+            transition: width 0.3s ease;
+        }
+        
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        
+        /* Tech Stack Card */
+        .tech-card {
+            background: linear-gradient(145deg, #12121a 0%, #1a1a25 100%);
+            border: 1px solid #2a2a3a;
+            transition: all 0.3s ease;
+        }
+        
+        .tech-card:hover {
+            border-color: #00f0ff;
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.3);
+            transform: translateY(-5px);
+        }
+        
+        .tech-card:hover .tech-icon {
+            color: #00f0ff;
+            transform: scale(1.1);
+        }
+        
+        .tech-icon {
+            transition: all 0.3s ease;
+        }
+        
+        /* Architecture Flow Node */
+        .arch-node {
+            background: linear-gradient(145deg, #12121a 0%, #1a1a25 100%);
+            border: 1px solid #2a2a3a;
+            transition: all 0.3s ease;
+        }
+        
+        .arch-node:hover {
+            border-color: #00f0ff;
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+        }
+        
+        .arch-node.active {
+            border-color: #00f0ff;
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+        }
+        
+        /* Flow Arrow */
+        .flow-arrow {
+            color: #00f0ff;
+            animation: pulseArrow 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulseArrow {
+            0%, 100% { opacity: 0.5; transform: translateX(0); }
+            50% { opacity: 1; transform: translateX(5px); }
+        }
+        
+        /* Code Block */
+        .code-block {
+            background: #0d0d12;
+            border: 1px solid #2a2a3a;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .code-header {
+            background: #16161f;
+            border-bottom: 1px solid #2a2a3a;
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .code-content {
+            padding: 1rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.875rem;
+            overflow-x: auto;
+        }
+        
+        .code-line {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.25rem 0;
+        }
+        
+        .code-method {
+            color: #00f0ff;
+            font-weight: 600;
+            min-width: 60px;
+        }
+        
+        .code-path {
+            color: #a0a0a0;
+        }
+        
+        .code-comment {
+            color: #666;
+        }
+        
+        /* Copy Button */
+        .copy-btn {
+            background: transparent;
+            border: 1px solid #2a2a3a;
+            color: #888;
+            padding: 0.25rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .copy-btn:hover {
+            border-color: #00f0ff;
+            color: #00f0ff;
+        }
+        
+        .copy-btn.copied {
+            border-color: #10b981;
+            color: #10b981;
+        }
+        
+        /* Database Card */
+        .db-card {
+            background: linear-gradient(145deg, #12121a 0%, #1a1a25 100%);
+            border: 1px solid #2a2a3a;
+            transition: all 0.3s ease;
+        }
+        
+        .db-card:hover {
+            border-color: #00f0ff;
+        }
+        
+        /* Deployment Section */
+        .deploy-card {
+            background: linear-gradient(145deg, #12121a 0%, #1a1a25 100%);
+            border: 1px solid #2a2a3a;
+        }
+        
+        .service-tag {
+            background: rgba(0, 240, 255, 0.1);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            color: #00f0ff;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        /* Scroll Animation Initial States */
+        .animate-on-scroll {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        
+        /* Architecture Diagram Connection Lines */
+        .connection-line {
+            stroke: #2a2a3a;
+            stroke-width: 2;
+            fill: none;
+        }
+        
+        .connection-line.active {
+            stroke: #00f0ff;
+            stroke-dasharray: 5, 5;
+            animation: dashFlow 1s linear infinite;
+        }
+        
+        @keyframes dashFlow {
+            to { stroke-dashoffset: -10; }
+        }
+    </style>
+</head>
+<body class="grid-pattern min-h-screen">
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-50 bg-zen-dark/90 backdrop-blur-md border-b border-zen-border">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo -->
+                <a href="../index.html" class="flex items-center space-x-2">
+                    <i data-lucide="shield-check" class="w-8 h-8 text-zen-cyan"></i>
+                    <span class="text-xl font-bold font-mono">
+                        <span class="text-zen-cyan">Zen</span><span class="text-white">-AI</span>
+                    </span>
+                </a>
+                
+                <!-- Desktop Navigation -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="../index.html" class="nav-link text-zen-text hover:text-zen-cyan transition-colors">Startseite</a>
+                    <a href="features.html" class="nav-link text-zen-text hover:text-zen-cyan transition-colors">Funktionen</a>
+                    <a href="tools.html" class="nav-link text-zen-text hover:text-zen-cyan transition-colors">Tools</a>
+                    <a href="architecture.html" class="nav-link text-zen-cyan font-medium">Architektur</a>
+                    <a href="docs.html" class="nav-link text-zen-text hover:text-zen-cyan transition-colors">Dokumentation</a>
+                </div>
+                
+                <!-- CTA Button -->
+                <div class="hidden md:block">
+                    <a href="demo.html" class="bg-gradient-to-r from-zen-cyan to-cyan-500 text-zen-dark font-semibold px-5 py-2 rounded-lg hover:shadow-lg hover:shadow-cyan-500/30 transition-all text-sm">
+                        Demo Starten
+                    </a>
+                </div>
+                
+                <!-- Mobile Menu Button -->
+                <button id="mobile-menu-btn" class="md:hidden text-zen-text hover:text-zen-cyan">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-zen-panel border-t border-zen-border">
+            <div class="px-4 py-4 space-y-3">
+                <a href="../index.html" class="block py-2 text-zen-text hover:text-zen-cyan">Startseite</a>
+                <a href="features.html" class="block py-2 text-zen-text hover:text-zen-cyan">Funktionen</a>
+                <a href="tools.html" class="block py-2 text-zen-text hover:text-zen-cyan">Tools</a>
+                <a href="architecture.html" class="block py-2 text-zen-cyan font-medium">Architektur</a>
+                <a href="docs.html" class="block py-2 text-zen-text hover:text-zen-cyan">Dokumentation</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="pt-16">
+        <!-- Page Header -->
+        <section class="relative py-20 lg:py-28 overflow-hidden">
+            <!-- Background Gradient -->
+            <div class="absolute inset-0 bg-gradient-to-b from-zen-cyan/5 via-transparent to-transparent"></div>
+            
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+                <div class="text-center max-w-3xl mx-auto animate-on-scroll">
+                    <!-- Badge -->
+                    <div class="inline-flex items-center gap-2 px-4 py-2 bg-zen-cyan/10 border border-zen-cyan/30 rounded-full mb-6">
+                        <i data-lucide="layers" class="w-4 h-4 text-zen-cyan"></i>
+                        <span class="text-sm text-zen-cyan font-medium">Systemarchitektur</span>
+                    </div>
+                    
+                    <!-- Title -->
+                    <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
+                        <span class="gradient-text">Technische Architektur</span>
+                    </h1>
+                    
+                    <!-- Subtitle -->
+                    <p class="text-xl text-zen-text-muted leading-relaxed">
+                        Moderne, skalierbare und sichere Infrastruktur für KI-gestütztes Penetration Testing
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Architecture Overview - Visual Flow Diagram -->
+        <section class="py-16 lg:py-24">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12 animate-on-scroll">
+                    <h2 class="text-3xl font-bold mb-4">Systemarchitektur</h2>
+                    <p class="text-zen-text-muted max-w-2xl mx-auto">
+                        Unsere modulare Architektur ermöglicht flexible Skalierung und nahtlose Integration
+                    </p>
+                </div>
+                
+                <!-- Architecture Flow Diagram -->
+                <div class="relative animate-on-scroll">
+                    <!-- Desktop Flow -->
+                    <div class="hidden lg:block">
+                        <div class="flex items-center justify-between gap-4">
+                            <!-- User -->
+                            <div class="arch-node active rounded-xl p-6 text-center w-40">
+                                <div class="w-12 h-12 mx-auto mb-3 bg-zen-cyan/10 rounded-lg flex items-center justify-center">
+                                    <i data-lucide="user" class="w-6 h-6 text-zen-cyan"></i>
+                                </div>
+                                <h3 class="font-semibold text-sm">User</h3>
+                            </div>
+                            
+                            <!-- Arrow -->
+                            <i data-lucide="chevron-right" class="w-6 h-6 text-zen-cyan flow-arrow"></i>
+                            
+                            <!-- Web UI / API -->
+                            <div class="arch-node rounded-xl p-6 text-center w-44">
+                                <div class="w-12 h-12 mx-auto mb-3 bg-zen-cyan/10 rounded-lg flex items-center justify-center">
+                                    <i data-lucide="globe" class="w-6 h-6 text-zen-cyan"></i>
+                                </div>
+                                <h3 class="font-semibold text-sm">Web UI / API</h3>
+                            </div>
+                            
+                            <!-- Arrow -->
+                            <i data-lucide="chevron-right" class="w-6 h-6 text-zen-cyan flow-arrow"></i>
+                            
+                            <!-- FastAPI -->
+                            <div class="arch-node rounded-xl p-6 text-center w-44">
+                                <div class="w-12 h-12 mx-auto mb-3 bg-zen-cyan/10 rounded-lg flex items-center justify-center">
+                                    <i data-lucide="zap" class="w-6 h-6 text-zen-cyan"></i>
+                                </div>
+                                <h3 class="font-semibold text-sm">FastAPI</h3>
+                            </div>
+                            
+                            <!-- Arrow -->
+                            <i data-lucide="chevron-right" class="w-6 h-6 text-zen-cyan flow-arrow"></i>
+                            
+                            <!-- PostgreSQL/Redis -->
+                            <div class="arch-node rounded-xl p-6 text-center w-44">
+                                <div class="w-12 h-12 mx-auto mb-3 bg-zen-cyan/10 rounded-lg flex items-center justify-center">
+                                    <i data-lucide="database" class="w-6 h-6 text-zen-cyan"></i>
+                                </div>
+                                <h3 class="font-semibold text-sm">PostgreSQL / Redis</h3>
+                            </div>
+                            
+                            <!-- Arrow -->
+                            <i data-lucide="chevron-right" class="w-6 h-6 text-zen-cyan flow-arrow"></i>
+                            
+                            <!-- Celery Workers -->
+                            <div class="arch-node rounded-xl p-6 text-center w-44">
+                                <div class="w-12 h-12 mx-auto mb-3 bg-zen-cyan/10 rounded-lg flex items-center justify-center">
+                                    <i data-lucide="cpu" class="w-6 h-6 text-zen-cyan"></i>
+                                </div>
+                                <h3 class="font-semibold text-sm">Celery Workers</h3>
+                            </div>
+                            
+                            <!-- Arrow -->
+                            <i data-lucide="chevron-right" class="w-6 h-6 text-zen-cyan flow-arrow"></i>
+                            
+                            <!-- Security Tools -->
+                            <div class="arch-node rounded-xl p-6 text-center w-44">
+                                <div class="w-12 h-12 mx-auto mb-3 bg-zen-cyan/10 rounded-lg flex items-center justify-center">
+                                    <i data-lucide="shield" class="w-6 h-6 text-zen-cyan"></i>
+                                </div>
+                                <h3 class="font-semibold text-sm">Security Tools</h3>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Mobile Flow (Vertical) -->
+                    <div class="lg:hidden space-y-4">
+                        <div class="arch-node active rounded-xl p-6 text-center">
+                            <div class="w-12 h-12 mx-auto mb-3 bg-zen-cyan/10 rounded-lg flex items-center justify-center">
+                                <i data-lucide="user" class="w-6 h-6 text-zen-cyan"></i>
+                            </div>
+                            <h3 class="font-semibold">User</h3>
+                        </div>
+                        
+                        <div class="flex justify-center">
+                            <i data-lucide="chevron-down" class="w-6 h-6 text-zen-cyan"></i>
+                        </div>
+                        
+                        <div class="arch-node rounded-xl p-6 text-center">
+                            <div class="w-12 h-12 mx-auto mb-3 bg-zen-cyan/10 rounded-lg flex items-center justify-center">
+                                <i data-lucide="globe" class="w-6 h-6 text-zen-cyan"></i>
+                            </div>
+                            <h3 class="font-semibold">Web UI / API</h3>
+                        </div>
+                        
+                        <div class="flex justify-center">
+                            <i data-lucide="chevron-down" class="w-6 h-6 text-zen-cyan"></i>
+                        </div>
+                        
+                        <div class="arch-node rounded-xl p-6 text-center">
+                            <div class="w-12 h-12 mx-auto mb-3 bg-zen-cyan/10 rounded-lg flex items-center justify-center">
+                                <i data-lucide="zap" class="w-6 h-6 text-zen-cyan"></i>
+                            </div>
+                            <h3 class="font-semibold">FastAPI</h3>
+                        </div>
+                        
+                        <div class="flex justify-center">
+                            <i data-lucide="chevron-down" class="w-6 h-6 text-zen-cyan"></i>
+                        </div>
+                        
+                        <div class="arch-node rounded-xl p-6 text-center">
+                            <div class="w-12 h-12 mx-auto mb-3 bg-zen-cyan/10 rounded-lg flex items-center justify-center">
+                                <i data-lucide="database" class="w-6 h-6 text-zen-cyan"></i>
+                            </div>
+                            <h3 class="font-semibold">PostgreSQL / Redis</h3>
+                        </div>
+                        
+                        <div class="flex justify-center">
+                            <i data-lucide="chevron-down" class="w-6 h-6 text-zen-cyan"></i>
+                        </div>
+                        
+                        <div class="arch-node rounded-xl p-6 text-center">
+                            <div class="w-12 h-12 mx-auto mb-3 bg-zen-cyan/10 rounded-lg flex items-center justify-center">
+                                <i data-lucide="cpu" class="w-6 h-6 text-zen-cyan"></i>
+                            </div>
+                            <h3 class="font-semibold">Celery Workers</h3>
+                        </div>
+                        
+                        <div class="flex justify-center">
+                            <i data-lucide="chevron-down" class="w-6 h-6 text-zen-cyan"></i>
+                        </div>
+                        
+                        <div class="arch-node rounded-xl p-6 text-center">
+                            <div class="w-12 h-12 mx-auto mb-3 bg-zen-cyan/10 rounded-lg flex items-center justify-center">
+                                <i data-lucide="shield" class="w-6 h-6 text-zen-cyan"></i>
+                            </div>
+                            <h3 class="font-semibold">Security Tools</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tech Stack -->
+        <section class="py-16 lg:py-24 bg-gradient-to-b from-transparent via-zen-cyan/5 to-transparent">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12 animate-on-scroll">
+                    <h2 class="text-3xl font-bold mb-4">Tech Stack</h2>
+                    <p class="text-zen-text-muted max-w-2xl mx-auto">
+                        Modernste Technologien für maximale Performance und Skalierbarkeit
+                    </p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- Backend -->
+                    <div class="tech-card rounded-xl p-6 animate-on-scroll">
+                        <div class="tech-icon w-14 h-14 bg-zen-cyan/10 rounded-xl flex items-center justify-center mb-4">
+                            <i data-lucide="server" class="w-7 h-7 text-zen-cyan"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3">Backend</h3>
+                        <ul class="space-y-2 text-zen-text-muted">
+                            <li class="flex items-center gap-2">
+                                <i data-lucide="check" class="w-4 h-4 text-zen-cyan"></i>
+                                <span>FastAPI</span>
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <i data-lucide="check" class="w-4 h-4 text-zen-cyan"></i>
+                                <span>PostgreSQL</span>
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <i data-lucide="check" class="w-4 h-4 text-zen-cyan"></i>
+                                <span>Redis</span>
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <i data-lucide="check" class="w-4 h-4 text-zen-cyan"></i>
+                                <span>Celery</span>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Frontend -->
+                    <div class="tech-card rounded-xl p-6 animate-on-scroll">
+                        <div class="tech-icon w-14 h-14 bg-zen-cyan/10 rounded-xl flex items-center justify-center mb-4">
+                            <i data-lucide="layout" class="w-7 h-7 text-zen-cyan"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3">Frontend</h3>
+                        <ul class="space-y-2 text-zen-text-muted">
+                            <li class="flex items-center gap-2">
+                                <i data-lucide="check" class="w-4 h-4 text-zen-cyan"></i>
+                                <span>React / TypeScript</span>
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <i data-lucide="check" class="w-4 h-4 text-zen-cyan"></i>
+                                <span>WebSocket</span>
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <i data-lucide="check" class="w-4 h-4 text-zen-cyan"></i>
+                                <span>Tailwind CSS</span>
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <i data-lucide="check" class="w-4 h-4 text-zen-cyan"></i>
+                                <span>Vite</span>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <!-- AI/ML -->
+                    <div class="tech-card rounded-xl p-6 animate-on-scroll">
+                        <div class="tech-icon w-14 h-14 bg-zen-cyan/10 rounded-xl flex items-center justify-center mb-4">
+                            <i data-lucide="brain" class="w-7 h-7 text-zen-cyan"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3">AI / ML</h3>
+                        <ul class="space-y-2 text-zen-text-muted">
+                            <li class="flex items-center gap-2">
+                                <i data-lucide="check" class="w-4 h-4 text-zen-cyan"></i>
+                                <span>LangChain</span>
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <i data-lucide="check" class="w-4 h-4 text-zen-cyan"></i>
+                                <span>OpenAI / Local LLMs</span>
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <i data-lucide="check" class="w-4 h-4 text-zen-cyan"></i>
+                                <span>ReAct Pattern</span>
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <i data-lucide="check" class="w-4 h-4 text-zen-cyan"></i>
+                                <span>RAG Pipeline</span>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Infrastructure -->
+                    <div class="tech-card rounded-xl p-6 animate-on-scroll">
+                        <div class="tech-icon w-14 h-14 bg-zen-cyan/10 rounded-xl flex items-center justify-center mb-4">
+                            <i data-lucide="container" class="w-7 h-7 text-zen-cyan"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3">Infrastruktur</h3>
+                        <ul class="space-y-2 text-zen-text-muted">
+                            <li class="flex items-center gap-2">
+                                <i data-lucide="check" class="w-4 h-4 text-zen-cyan"></i>
+                                <span>Docker</span>
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <i data-lucide="check" class="w-4 h-4 text-zen-cyan"></i>
+                                <span>Nginx</span>
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <i data-lucide="check" class="w-4 h-4 text-zen-cyan"></i>
+                                <span>GitHub Actions</span>
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <i data-lucide="check" class="w-4 h-4 text-zen-cyan"></i>
+                                <span>Let's Encrypt</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- API Reference -->
+        <section class="py-16 lg:py-24">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12 animate-on-scroll">
+                    <h2 class="text-3xl font-bold mb-4">API Referenz</h2>
+                    <p class="text-zen-text-muted max-w-2xl mx-auto">
+                        RESTful API und WebSocket-Endpunkte für nahtlose Integration
+                    </p>
+                </div>
+                
+                <div class="max-w-3xl mx-auto animate-on-scroll">
+                    <div class="code-block">
+                        <div class="code-header">
+                            <div class="flex items-center gap-2">
+                                <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                                <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                                <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                            </div>
+                            <button class="copy-btn" onclick="copyCode(this)">
+                                <i data-lucide="copy" class="w-3 h-3"></i>
+                                <span>Kopieren</span>
+                            </button>
+                        </div>
+                        <div class="code-content">
+                            <div class="code-line">
+                                <span class="code-method">POST</span>
+                                <span class="code-path">/api/v1/scans</span>
+                                <span class="code-comment"># Scan starten</span>
+                            </div>
+                            <div class="code-line">
+                                <span class="code-method">GET</span>
+                                <span class="code-path">/api/v1/scans/{id}</span>
+                                <span class="code-comment"># Scan-Status abrufen</span>
+                            </div>
+                            <div class="code-line">
+                                <span class="code-method">GET</span>
+                                <span class="code-path">/api/v1/agents</span>
+                                <span class="code-comment"># Agents auflisten</span>
+                            </div>
+                            <div class="code-line">
+                                <span class="code-method">POST</span>
+                                <span class="code-path">/api/v1/agents/tasks</span>
+                                <span class="code-comment"># Task erstellen</span>
+                            </div>
+                            <div class="code-line">
+                                <span class="code-method">WS</span>
+                                <span class="code-path">/ws/updates</span>
+                                <span class="code-comment"># Echtzeit-Updates</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- API Features -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8">
+                        <div class="bg-zen-panel border border-zen-border rounded-lg p-4 text-center">
+                            <i data-lucide="key" class="w-6 h-6 text-zen-cyan mx-auto mb-2"></i>
+                            <h4 class="font-semibold text-sm">API Key Auth</h4>
+                        </div>
+                        <div class="bg-zen-panel border border-zen-border rounded-lg p-4 text-center">
+                            <i data-lucide="file-text" class="w-6 h-6 text-zen-cyan mx-auto mb-2"></i>
+                            <h4 class="font-semibold text-sm">OpenAPI Docs</h4>
+                        </div>
+                        <div class="bg-zen-panel border border-zen-border rounded-lg p-4 text-center">
+                            <i data-lucide="activity" class="w-6 h-6 text-zen-cyan mx-auto mb-2"></i>
+                            <h4 class="font-semibold text-sm">Rate Limiting</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Database & Storage -->
+        <section class="py-16 lg:py-24 bg-gradient-to-b from-transparent via-zen-cyan/5 to-transparent">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12 animate-on-scroll">
+                    <h2 class="text-3xl font-bold mb-4">Datenbank & Storage</h2>
+                    <p class="text-zen-text-muted max-w-2xl mx-auto">
+                        Zuverlässige Datenspeicherung mit hoher Verfügbarkeit
+                    </p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+                    <!-- PostgreSQL -->
+                    <div class="db-card rounded-xl p-6 animate-on-scroll">
+                        <div class="flex items-start gap-4">
+                            <div class="w-14 h-14 bg-blue-500/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <i data-lucide="database" class="w-7 h-7 text-blue-400"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold mb-2">PostgreSQL</h3>
+                                <p class="text-zen-text-muted text-sm mb-4">
+                                    Primäre Datenbank für alle persistenten Daten
+                                </p>
+                                <ul class="space-y-2 text-sm text-zen-text-muted">
+                                    <li class="flex items-center gap-2">
+                                        <i data-lucide="check-circle" class="w-4 h-4 text-blue-400"></i>
+                                        <span>Scan-Ergebnisse</span>
+                                    </li>
+                                    <li class="flex items-center gap-2">
+                                        <i data-lucide="check-circle" class="w-4 h-4 text-blue-400"></i>
+                                        <span>Benutzerdaten</span>
+                                    </li>
+                                    <li class="flex items-center gap-2">
+                                        <i data-lucide="check-circle" class="w-4 h-4 text-blue-400"></i>
+                                        <span>Konfigurationen</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Redis -->
+                    <div class="db-card rounded-xl p-6 animate-on-scroll">
+                        <div class="flex items-start gap-4">
+                            <div class="w-14 h-14 bg-red-500/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <i data-lucide="layers" class="w-7 h-7 text-red-400"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold mb-2">Redis</h3>
+                                <p class="text-zen-text-muted text-sm mb-4">
+                                    In-Memory Store für Caching und Messaging
+                                </p>
+                                <ul class="space-y-2 text-sm text-zen-text-muted">
+                                    <li class="flex items-center gap-2">
+                                        <i data-lucide="check-circle" class="w-4 h-4 text-red-400"></i>
+                                        <span>Task Queue</span>
+                                    </li>
+                                    <li class="flex items-center gap-2">
+                                        <i data-lucide="check-circle" class="w-4 h-4 text-red-400"></i>
+                                        <span>Session Cache</span>
+                                    </li>
+                                    <li class="flex items-center gap-2">
+                                        <i data-lucide="check-circle" class="w-4 h-4 text-red-400"></i>
+                                        <span>Real-time Pub/Sub</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- File Storage -->
+                    <div class="db-card rounded-xl p-6 animate-on-scroll">
+                        <div class="flex items-start gap-4">
+                            <div class="w-14 h-14 bg-green-500/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <i data-lucide="folder" class="w-7 h-7 text-green-400"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold mb-2">File Storage</h3>
+                                <p class="text-zen-text-muted text-sm mb-4">
+                                    Persistente Speicherung für Reports und Logs
+                                </p>
+                                <ul class="space-y-2 text-sm text-zen-text-muted">
+                                    <li class="flex items-center gap-2">
+                                        <i data-lucide="check-circle" class="w-4 h-4 text-green-400"></i>
+                                        <span>PDF Reports</span>
+                                    </li>
+                                    <li class="flex items-center gap-2">
+                                        <i data-lucide="check-circle" class="w-4 h-4 text-green-400"></i>
+                                        <span>JSON Exporte</span>
+                                    </li>
+                                    <li class="flex items-center gap-2">
+                                        <i data-lucide="check-circle" class="w-4 h-4 text-green-400"></i>
+                                        <span>Log-Dateien</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Backup -->
+                    <div class="db-card rounded-xl p-6 animate-on-scroll">
+                        <div class="flex items-start gap-4">
+                            <div class="w-14 h-14 bg-purple-500/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <i data-lucide="archive" class="w-7 h-7 text-purple-400"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold mb-2">Backup</h3>
+                                <p class="text-zen-text-muted text-sm mb-4">
+                                    Automatisierte Backups für Datensicherheit
+                                </p>
+                                <ul class="space-y-2 text-sm text-zen-text-muted">
+                                    <li class="flex items-center gap-2">
+                                        <i data-lucide="check-circle" class="w-4 h-4 text-purple-400"></i>
+                                        <span>Tägliche Snapshots</span>
+                                    </li>
+                                    <li class="flex items-center gap-2">
+                                        <i data-lucide="check-circle" class="w-4 h-4 text-purple-400"></i>
+                                        <span>Point-in-Time Recovery</span>
+                                    </li>
+                                    <li class="flex items-center gap-2">
+                                        <i data-lucide="check-circle" class="w-4 h-4 text-purple-400"></i>
+                                        <span>Offsite Storage</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Deployment -->
+        <section class="py-16 lg:py-24">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12 animate-on-scroll">
+                    <h2 class="text-3xl font-bold mb-4">Deployment</h2>
+                    <p class="text-zen-text-muted max-w-2xl mx-auto">
+                        Einfache Ein-Klick-Deployment mit Docker Compose
+                    </p>
+                </div>
+                
+                <div class="max-w-3xl mx-auto animate-on-scroll">
+                    <!-- Deploy Command -->
+                    <div class="code-block mb-8">
+                        <div class="code-header">
+                            <span class="text-sm text-zen-text-muted">docker-compose.yml</span>
+                            <button class="copy-btn" onclick="copyCode(this)">
+                                <i data-lucide="copy" class="w-3 h-3"></i>
+                                <span>Kopieren</span>
+                            </button>
+                        </div>
+                        <div class="code-content">
+                            <pre class="text-zen-text-muted"># One-Command Deploy
+docker-compose up -d
+
+# Services:
+# - API (FastAPI)
+# - Frontend (React)
+# - PostgreSQL
+# - Redis
+# - Worker (Celery)</pre>
+                        </div>
+                    </div>
+                    
+                    <!-- Services -->
+                    <div class="deploy-card rounded-xl p-6">
+                        <h3 class="text-lg font-bold mb-4">Container-Services</h3>
+                        <div class="flex flex-wrap gap-3">
+                            <span class="service-tag flex items-center gap-2">
+                                <i data-lucide="zap" class="w-3 h-3"></i>
+                                API
+                            </span>
+                            <span class="service-tag flex items-center gap-2">
+                                <i data-lucide="layout" class="w-3 h-3"></i>
+                                Frontend
+                            </span>
+                            <span class="service-tag flex items-center gap-2">
+                                <i data-lucide="database" class="w-3 h-3"></i>
+                                PostgreSQL
+                            </span>
+                            <span class="service-tag flex items-center gap-2">
+                                <i data-lucide="layers" class="w-3 h-3"></i>
+                                Redis
+                            </span>
+                            <span class="service-tag flex items-center gap-2">
+                                <i data-lucide="cpu" class="w-3 h-3"></i>
+                                Worker
+                            </span>
+                        </div>
+                        
+                        <!-- Deployment Features -->
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 pt-6 border-t border-zen-border">
+                            <div class="text-center">
+                                <i data-lucide="rocket" class="w-5 h-5 text-zen-cyan mx-auto mb-1"></i>
+                                <span class="text-xs text-zen-text-muted">Auto-Deploy</span>
+                            </div>
+                            <div class="text-center">
+                                <i data-lucide="refresh-cw" class="w-5 h-5 text-zen-cyan mx-auto mb-1"></i>
+                                <span class="text-xs text-zen-text-muted">Zero-Downtime</span>
+                            </div>
+                            <div class="text-center">
+                                <i data-lucide="trending-up" class="w-5 h-5 text-zen-cyan mx-auto mb-1"></i>
+                                <span class="text-xs text-zen-text-muted">Auto-Scale</span>
+                            </div>
+                            <div class="text-center">
+                                <i data-lucide="lock" class="w-5 h-5 text-zen-cyan mx-auto mb-1"></i>
+                                <span class="text-xs text-zen-text-muted">SSL/TLS</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="py-16 lg:py-24">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="relative rounded-2xl overflow-hidden animate-on-scroll">
+                    <!-- Background -->
+                    <div class="absolute inset-0 bg-gradient-to-r from-zen-cyan/20 to-blue-500/20"></div>
+                    <div class="absolute inset-0 bg-zen-panel/80 backdrop-blur-sm"></div>
+                    
+                    <!-- Content -->
+                    <div class="relative px-8 py-16 text-center">
+                        <h2 class="text-3xl font-bold mb-4">Bereit zum Starten?</h2>
+                        <p class="text-zen-text-muted max-w-xl mx-auto mb-8">
+                            Entdecken Sie die Möglichkeiten von Zen-AI-Pentest und starten Sie Ihre erste Sicherheitsanalyse.
+                        </p>
+                        <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                            <a href="demo.html" class="bg-gradient-to-r from-zen-cyan to-cyan-500 text-zen-dark font-semibold px-8 py-3 rounded-lg hover:shadow-lg hover:shadow-cyan-500/30 transition-all">
+                                Demo Starten
+                            </a>
+                            <a href="docs.html" class="border border-zen-cyan text-zen-cyan px-8 py-3 rounded-lg hover:bg-zen-cyan/10 transition-all">
+                                Dokumentation
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-zen-panel border-t border-zen-border">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Main Footer -->
+            <div class="py-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- Brand -->
+                <div class="lg:col-span-1">
+                    <a href="../index.html" class="flex items-center space-x-2 mb-4">
+                        <i data-lucide="shield-check" class="w-8 h-8 text-zen-cyan"></i>
+                        <span class="text-xl font-bold font-mono">
+                            <span class="text-zen-cyan">Zen</span><span class="text-white">-AI</span>
+                        </span>
+                    </a>
+                    <p class="text-zen-text-muted text-sm mb-4">
+                        KI-gestütztes Penetration Testing Framework für automatisierte Sicherheitsanalysen.
+                    </p>
+                    <div class="flex items-center space-x-4">
+                        <a href="#" class="text-zen-text-muted hover:text-zen-cyan transition-colors">
+                            <i data-lucide="github" class="w-5 h-5"></i>
+                        </a>
+                        <a href="#" class="text-zen-text-muted hover:text-zen-cyan transition-colors">
+                            <i data-lucide="twitter" class="w-5 h-5"></i>
+                        </a>
+                        <a href="#" class="text-zen-text-muted hover:text-zen-cyan transition-colors">
+                            <i data-lucide="linkedin" class="w-5 h-5"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Product -->
+                <div>
+                    <h4 class="font-semibold mb-4">Produkt</h4>
+                    <ul class="space-y-2 text-sm text-zen-text-muted">
+                        <li><a href="features.html" class="hover:text-zen-cyan transition-colors">Funktionen</a></li>
+                        <li><a href="tools.html" class="hover:text-zen-cyan transition-colors">Tools</a></li>
+                        <li><a href="architecture.html" class="hover:text-zen-cyan transition-colors">Architektur</a></li>
+                        <li><a href="architecture.html">Architektur</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Resources -->
+                <div>
+                    <h4 class="font-semibold mb-4">Ressourcen</h4>
+                    <ul class="space-y-2 text-sm text-zen-text-muted">
+                        <li><a href="docs.html" class="hover:text-zen-cyan transition-colors">Dokumentation</a></li>
+                        <li><a href="api.html" class="hover:text-zen-cyan transition-colors">API Referenz</a></li>
+                        <li><a href="tutorials.html" class="hover:text-zen-cyan transition-colors">Tutorials</a></li>
+                        <li><a href="blog.html" class="hover:text-zen-cyan transition-colors">Blog</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Legal -->
+                <div>
+                    <h4 class="font-semibold mb-4">Rechtliches</h4>
+                    <ul class="space-y-2 text-sm text-zen-text-muted">
+                        <li><a href="privacy.html" class="hover:text-zen-cyan transition-colors">Datenschutz</a></li>
+                        <li><a href="terms.html" class="hover:text-zen-cyan transition-colors">Nutzungsbedingungen</a></li>
+                        <li><a href="license.html" class="hover:text-zen-cyan transition-colors">Lizenz</a></li>
+                        <li><a href="contact.html" class="hover:text-zen-cyan transition-colors">Kontakt</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Bottom Bar -->
+            <div class="py-6 border-t border-zen-border flex flex-col sm:flex-row items-center justify-between gap-4">
+                <p class="text-zen-text-muted text-sm">
+                    &copy; 2024 Zen-AI-Pentest. Alle Rechte vorbehalten.
+                </p>
+                <div class="flex items-center gap-4 text-sm text-zen-text-muted">
+                    <span class="flex items-center gap-2">
+                        <i data-lucide="code" class="w-4 h-4"></i>
+                        Entwickelt mit KI
+                    </span>
+                    <span class="flex items-center gap-2">
+                        <i data-lucide="heart" class="w-4 h-4 text-red-500"></i>
+                        Open Source
+                    </span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+        
+        // Mobile Menu Toggle
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+        
+        // Copy Code Function
+        function copyCode(btn) {
+            const codeBlock = btn.closest('.code-block');
+            const codeContent = codeBlock.querySelector('.code-content');
+            const text = codeContent.innerText;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                const originalText = btn.querySelector('span').innerText;
+                btn.classList.add('copied');
+                btn.querySelector('span').innerText = 'Kopiert!';
+                
+                setTimeout(() => {
+                    btn.classList.remove('copied');
+                    btn.querySelector('span').innerText = originalText;
+                }, 2000);
+            });
+        }
+        
+        // GSAP Scroll Animations
+        gsap.registerPlugin(ScrollTrigger);
+        
+        // Animate elements on scroll
+        const animateElements = document.querySelectorAll('.animate-on-scroll');
+        
+        animateElements.forEach((element, index) => {
+            gsap.fromTo(element, 
+                {
+                    opacity: 0,
+                    y: 30
+                },
+                {
+                    opacity: 1,
+                    y: 0,
+                    duration: 0.6,
+                    delay: index * 0.1,
+                    ease: 'power2.out',
+                    scrollTrigger: {
+                        trigger: element,
+                        start: 'top 85%',
+                        toggleActions: 'play none none none'
+                    }
+                }
+            );
+        });
+        
+        // Architecture nodes animation
+        const archNodes = document.querySelectorAll('.arch-node');
+        archNodes.forEach((node, index) => {
+            gsap.fromTo(node,
+                {
+                    opacity: 0,
+                    scale: 0.9
+                },
+                {
+                    opacity: 1,
+                    scale: 1,
+                    duration: 0.5,
+                    delay: index * 0.15,
+                    ease: 'back.out(1.7)',
+                    scrollTrigger: {
+                        trigger: node,
+                        start: 'top 85%',
+                        toggleActions: 'play none none none'
+                    }
+                }
+            );
+        });
+        
+        // Tech cards stagger animation
+        const techCards = document.querySelectorAll('.tech-card');
+        gsap.fromTo(techCards,
+            {
+                opacity: 0,
+                y: 40
+            },
+            {
+                opacity: 1,
+                y: 0,
+                duration: 0.6,
+                stagger: 0.1,
+                ease: 'power2.out',
+                scrollTrigger: {
+                    trigger: techCards[0],
+                    start: 'top 85%',
+                    toggleActions: 'play none none none'
+                }
+            }
+        );
+        
+        // DB cards stagger animation
+        const dbCards = document.querySelectorAll('.db-card');
+        gsap.fromTo(dbCards,
+            {
+                opacity: 0,
+                x: -30
+            },
+            {
+                opacity: 1,
+                x: 0,
+                duration: 0.5,
+                stagger: 0.1,
+                ease: 'power2.out',
+                scrollTrigger: {
+                    trigger: dbCards[0],
+                    start: 'top 85%',
+                    toggleActions: 'play none none none'
+                }
+            }
+        );
+    </script>
+</body>
+</html>

@@ -1,0 +1,1310 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dokumentation | Zen-AI-Pentest</title>
+    <meta name="description" content="Schnellstart und Installationsanleitung für Zen-AI-Pentest. Docker, manuelle Installation und Dev Container Setup.">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'zen-dark': '#0a0a0f',
+                        'zen-panel': '#12121a',
+                        'zen-border': '#2a2a3a',
+                        'zen-cyan': '#00f0ff',
+                        'zen-cyan-dim': 'rgba(0, 240, 255, 0.1)',
+                        'zen-text': '#e0e0e0',
+                        'zen-text-muted': '#888888'
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'sans-serif'],
+                        'mono': ['JetBrains Mono', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    
+    <!-- Shared Styles -->
+    <link rel="stylesheet" href="../shared/styles.css">
+    
+    <style>
+        /* Custom Styles */
+        body {
+            background-color: #0a0a0f;
+            color: #e0e0e0;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        /* Gradient Text */
+        .gradient-text {
+            background: linear-gradient(135deg, #00f0ff 0%, #00c8ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        /* Glow Effects */
+        .glow-cyan {
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+        }
+        
+        .glow-cyan-hover:hover {
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.5);
+        }
+        
+        /* Navigation Link Hover */
+        .nav-link {
+            position: relative;
+            color: #888888;
+            transition: color 0.3s ease;
+        }
+        
+        .nav-link:hover {
+            color: #ffffff;
+        }
+        
+        .nav-link.active {
+            color: #00f0ff;
+        }
+        
+        /* Code Block Styles */
+        .code-block {
+            background: #0d0d12;
+            border: 1px solid #2a2a3a;
+            border-radius: 0.75rem;
+            font-family: 'JetBrains Mono', monospace;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .code-block pre {
+            margin: 0;
+            padding: 1.25rem;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        
+        .code-block code {
+            color: #e0e0e0;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+        
+        .copy-btn {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            padding: 0.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #2a2a3a;
+            border-radius: 0.5rem;
+            color: #888888;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .copy-btn:hover {
+            background: rgba(0, 240, 255, 0.1);
+            border-color: #00f0ff;
+            color: #00f0ff;
+        }
+        
+        .copy-btn.copied {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: #10b981;
+            color: #10b981;
+        }
+        
+        /* Step Card */
+        .step-card {
+            background: linear-gradient(145deg, #12121a 0%, #1a1a25 100%);
+            border: 1px solid #2a2a3a;
+            transition: all 0.3s ease;
+        }
+        
+        .step-card:hover {
+            border-color: #00f0ff;
+            transform: translateY(-4px);
+        }
+        
+        .step-number {
+            background: linear-gradient(135deg, #00f0ff 0%, #00c8ff 100%);
+            color: #0a0a0f;
+            font-weight: 700;
+        }
+        
+        /* Installation Method Card */
+        .install-card {
+            background: linear-gradient(145deg, #12121a 0%, #1a1a25 100%);
+            border: 1px solid #2a2a3a;
+            transition: all 0.3s ease;
+        }
+        
+        .install-card:hover {
+            border-color: #00f0ff;
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.2);
+            transform: translateY(-4px);
+        }
+        
+        .install-card.recommended {
+            border-color: #00f0ff;
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.15);
+        }
+        
+        .recommended-badge {
+            background: linear-gradient(135deg, #00f0ff 0%, #00c8ff 100%);
+            color: #0a0a0f;
+        }
+        
+        /* Requirement Item */
+        .requirement-item {
+            background: rgba(18, 18, 26, 0.5);
+            border: 1px solid #2a2a3a;
+            transition: all 0.3s ease;
+        }
+        
+        .requirement-item:hover {
+            border-color: #00f0ff;
+            background: rgba(0, 240, 255, 0.05);
+        }
+        
+        /* Env Var Card */
+        .env-card {
+            background: linear-gradient(145deg, #12121a 0%, #1a1a25 100%);
+            border: 1px solid #2a2a3a;
+            transition: all 0.3s ease;
+        }
+        
+        .env-card:hover {
+            border-color: #00f0ff;
+        }
+        
+        /* Doc Link Card */
+        .doc-link-card {
+            background: linear-gradient(145deg, #12121a 0%, #1a1a25 100%);
+            border: 1px solid #2a2a3a;
+            transition: all 0.3s ease;
+        }
+        
+        .doc-link-card:hover {
+            border-color: #00f0ff;
+            transform: translateY(-4px);
+        }
+        
+        /* Community Card */
+        .community-card {
+            background: linear-gradient(145deg, #12121a 0%, #1a1a25 100%);
+            border: 1px solid #2a2a3a;
+            transition: all 0.3s ease;
+        }
+        
+        .community-card:hover {
+            border-color: #00f0ff;
+            transform: translateY(-4px);
+        }
+        
+        .community-card.discord:hover {
+            border-color: #5865F2;
+            box-shadow: 0 0 30px rgba(88, 101, 242, 0.2);
+        }
+        
+        .community-card.github:hover {
+            border-color: #ffffff;
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Tab Styles */
+        .tab-btn {
+            background: transparent;
+            border: 1px solid #2a2a3a;
+            color: #888888;
+            transition: all 0.3s ease;
+        }
+        
+        .tab-btn:hover {
+            border-color: #00f0ff;
+            color: #ffffff;
+        }
+        
+        .tab-btn.active {
+            background: rgba(0, 240, 255, 0.1);
+            border-color: #00f0ff;
+            color: #00f0ff;
+        }
+        
+        /* Background Grid */
+        .bg-grid {
+            background-image: 
+                linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+        
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: #12121a;
+            border: 1px solid #00f0ff;
+            border-radius: 0.75rem;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: #ffffff;
+            font-size: 0.875rem;
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.2);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        /* Scroll Reveal */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+            transition: all 0.6s ease;
+        }
+    </style>
+</head>
+<body class="bg-grid min-h-screen">
+    <!-- Navigation -->
+    <nav id="main-nav" class="fixed top-0 left-0 right-0 z-[300] transition-all duration-300 bg-[#0a0a0f]/80 backdrop-blur-xl border-b border-white/5">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16 lg:h-20">
+                
+                <!-- Logo -->
+                <a href="/" class="flex items-center gap-2 group">
+                    <div class="relative w-10 h-10 flex items-center justify-center rounded-xl bg-gradient-to-br from-[#00f0ff] to-[#00c8ff] group-hover:shadow-lg group-hover:shadow-[#00f0ff]/30 transition-all duration-300">
+                        <i data-lucide="shield-check" class="w-6 h-6 text-[#0a0a0f]"></i>
+                    </div>
+                    <span class="text-lg font-bold text-white hidden sm:block">
+                        Zen<span class="text-[#00f0ff]">-AI-</span>Pentest
+                    </span>
+                </a>
+                
+                <!-- Desktop Navigation -->
+                <div class="hidden lg:flex items-center gap-8">
+                    <a href="/" class="nav-link">Startseite</a>
+                    <a href="/features.html" class="nav-link">Funktionen</a>
+                    <a href="/tools.html" class="nav-link">Tools</a>
+                    <a href="/architecture.html" class="nav-link">Architektur</a>
+                    <a href="/docs.html" class="nav-link active">Dokumentation</a>
+                </div>
+                
+                <!-- CTA Button & Mobile Menu Toggle -->
+                <div class="flex items-center gap-4">
+                    <!-- GitHub CTA -->
+                    <a 
+                        href="https://github.com/zen-ai-pentest" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        class="hidden sm:inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 hover:border-white/20 transition-all duration-300"
+                    >
+                        <i data-lucide="github" class="w-4 h-4"></i>
+                        <span>GitHub</span>
+                    </a>
+                    
+                    <!-- Mobile Menu Button -->
+                    <button 
+                        id="mobile-menu-btn" 
+                        class="lg:hidden p-2 text-gray-400 hover:text-white transition-colors"
+                        aria-label="Menü öffnen"
+                        aria-expanded="false"
+                    >
+                        <i data-lucide="menu" class="w-6 h-6 menu-icon"></i>
+                        <i data-lucide="x" class="w-6 h-6 close-icon hidden"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile Menu -->
+        <div 
+            id="mobile-menu" 
+            class="lg:hidden hidden absolute top-full left-0 right-0 bg-[#0a0a0f]/95 backdrop-blur-xl border-b border-white/10"
+        >
+            <div class="container mx-auto px-4 py-6">
+                <div class="flex flex-col gap-4">
+                    <a href="/" class="flex items-center gap-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+                        <i data-lucide="home" class="w-5 h-5 text-[#00f0ff]"></i>
+                        <span>Startseite</span>
+                    </a>
+                    <a href="/features.html" class="flex items-center gap-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+                        <i data-lucide="sparkles" class="w-5 h-5 text-[#00f0ff]"></i>
+                        <span>Funktionen</span>
+                    </a>
+                    <a href="/tools.html" class="flex items-center gap-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+                        <i data-lucide="wrench" class="w-5 h-5 text-[#00f0ff]"></i>
+                        <span>Tools</span>
+                    </a>
+                    <a href="/architecture.html" class="flex items-center gap-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+                        <i data-lucide="layers" class="w-5 h-5 text-[#00f0ff]"></i>
+                        <span>Architektur</span>
+                    </a>
+                    <a href="/docs.html" class="flex items-center gap-3 px-4 py-3 text-white bg-white/5 rounded-lg border border-[#00f0ff]/30">
+                        <i data-lucide="book-open" class="w-5 h-5 text-[#00f0ff]"></i>
+                        <span>Dokumentation</span>
+                    </a>
+                    
+                    <div class="border-t border-white/10 my-2"></div>
+                    
+                    <a 
+                        href="https://github.com/zen-ai-pentest" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        class="flex items-center justify-center gap-2 px-4 py-3 text-[#0a0a0f] bg-gradient-to-r from-[#00f0ff] to-[#00c8ff] rounded-lg hover:shadow-lg hover:shadow-[#00f0ff]/30 transition-all"
+                    >
+                        <i data-lucide="github" class="w-5 h-5"></i>
+                        <span>Auf GitHub ansehen</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Spacer for fixed navigation -->
+    <div class="h-16 lg:h-20"></div>
+
+    <main>
+        <!-- Page Header -->
+        <section class="relative py-16 lg:py-24 overflow-hidden">
+            <!-- Background Glow -->
+            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-[#00f0ff]/10 rounded-full blur-[120px] pointer-events-none"></div>
+            
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8 relative">
+                <div class="text-center max-w-3xl mx-auto reveal">
+                    <!-- Icon -->
+                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-[#00f0ff]/20 to-[#00c8ff]/10 border border-[#00f0ff]/30 mb-6">
+                        <i data-lucide="book-open" class="w-8 h-8 text-[#00f0ff]"></i>
+                    </div>
+                    
+                    <!-- Title -->
+                    <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6">
+                        <span class="gradient-text">Dokumentation</span>
+                    </h1>
+                    
+                    <!-- Subtitle -->
+                    <p class="text-xl text-gray-400 leading-relaxed">
+                        Schnellstart und Installationsanleitung
+                    </p>
+                    
+                    <!-- Decorative Line -->
+                    <div class="flex items-center justify-center gap-4 mt-8">
+                        <div class="h-px w-16 bg-gradient-to-r from-transparent to-[#00f0ff]/50"></div>
+                        <div class="w-2 h-2 rounded-full bg-[#00f0ff]"></div>
+                        <div class="h-px w-16 bg-gradient-to-l from-transparent to-[#00f0ff]/50"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quick Start Section -->
+        <section class="py-16 lg:py-20">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="max-w-5xl mx-auto">
+                    <!-- Section Header -->
+                    <div class="text-center mb-12 reveal">
+                        <div class="inline-flex items-center gap-2 px-4 py-2 bg-[#00f0ff]/10 border border-[#00f0ff]/30 rounded-full mb-6">
+                            <i data-lucide="zap" class="w-4 h-4 text-[#00f0ff]"></i>
+                            <span class="text-sm text-[#00f0ff] font-medium">Schnellstart</span>
+                        </div>
+                        <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">
+                            In 3 Schritten starten
+                        </h2>
+                        <p class="text-gray-400 max-w-2xl mx-auto">
+                            Beginnen Sie in wenigen Minuten mit Zen-AI-Pentest. Folgen Sie diesen einfachen Schritten.
+                        </p>
+                    </div>
+
+                    <!-- Steps Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- Step 1 -->
+                        <div class="step-card rounded-2xl p-6 reveal">
+                            <div class="flex items-start gap-4">
+                                <div class="step-number w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0">
+                                    1
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <h3 class="text-white font-semibold mb-2">Repository klonen</h3>
+                                    <p class="text-gray-400 text-sm mb-4">Klonen Sie das Repository von GitHub</p>
+                                    <div class="code-block">
+                                        <button class="copy-btn" onclick="copyToClipboard(this, 'git clone https://github.com/SHAdd0WTAka/Zen-Ai-Pentest.git')">
+                                            <i data-lucide="copy" class="w-4 h-4"></i>
+                                        </button>
+                                        <pre><code>git clone https://github.com/SHAdd0WTAka/Zen-Ai-Pentest.git</code></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 2 -->
+                        <div class="step-card rounded-2xl p-6 reveal" style="transition-delay: 0.1s;">
+                            <div class="flex items-start gap-4">
+                                <div class="step-number w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0">
+                                    2
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <h3 class="text-white font-semibold mb-2">Umgebung einrichten</h3>
+                                    <p class="text-gray-400 text-sm mb-4">Wechseln Sie ins Verzeichnis und kopieren Sie die .env Datei</p>
+                                    <div class="code-block">
+                                        <button class="copy-btn" onclick="copyToClipboard(this, 'cd Zen-Ai-Pentest && cp .env.example .env')">
+                                            <i data-lucide="copy" class="w-4 h-4"></i>
+                                        </button>
+                                        <pre><code>cd Zen-Ai-Pentest && cp .env.example .env</code></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 3 -->
+                        <div class="step-card rounded-2xl p-6 reveal" style="transition-delay: 0.2s;">
+                            <div class="flex items-start gap-4">
+                                <div class="step-number w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0">
+                                    3
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <h3 class="text-white font-semibold mb-2">Container starten</h3>
+                                    <p class="text-gray-400 text-sm mb-4">Starten Sie die Anwendung mit Docker Compose</p>
+                                    <div class="code-block">
+                                        <button class="copy-btn" onclick="copyToClipboard(this, 'docker-compose up -d')">
+                                            <i data-lucide="copy" class="w-4 h-4"></i>
+                                        </button>
+                                        <pre><code>docker-compose up -d</code></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Installation Methods Section -->
+        <section class="py-16 lg:py-20 bg-gradient-to-b from-transparent via-[#00f0ff]/5 to-transparent">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="max-w-5xl mx-auto">
+                    <!-- Section Header -->
+                    <div class="text-center mb-12 reveal">
+                        <div class="inline-flex items-center gap-2 px-4 py-2 bg-[#00f0ff]/10 border border-[#00f0ff]/30 rounded-full mb-6">
+                            <i data-lucide="download" class="w-4 h-4 text-[#00f0ff]"></i>
+                            <span class="text-sm text-[#00f0ff] font-medium">Installationsmethoden</span>
+                        </div>
+                        <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">
+                            Wählen Sie Ihre Installationsmethode
+                        </h2>
+                        <p class="text-gray-400 max-w-2xl mx-auto">
+                            Zen-AI-Pentest unterstützt verschiedene Installationsmethoden für maximale Flexibilität.
+                        </p>
+                    </div>
+
+                    <!-- Installation Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- Docker (Recommended) -->
+                        <div class="install-card recommended rounded-2xl p-6 relative reveal">
+                            <div class="absolute -top-3 left-1/2 -translate-x-1/2">
+                                <span class="recommended-badge px-3 py-1 text-xs font-semibold rounded-full">Empfohlen</span>
+                            </div>
+                            
+                            <div class="text-center pt-4">
+                                <div class="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-[#00f0ff]/10 border border-[#00f0ff]/30 mb-4">
+                                    <i data-lucide="container" class="w-7 h-7 text-[#00f0ff]"></i>
+                                </div>
+                                <h3 class="text-xl font-semibold text-white mb-2">Docker</h3>
+                                <p class="text-gray-400 text-sm mb-6">Die einfachste Methode mit Docker Compose</p>
+                                
+                                <div class="code-block text-left mb-4">
+                                    <button class="copy-btn" onclick="copyToClipboard(this, 'docker-compose up -d')">
+                                        <i data-lucide="copy" class="w-4 h-4"></i>
+                                    </button>
+                                    <pre><code>docker-compose up -d</code></pre>
+                                </div>
+                                
+                                <ul class="text-left text-sm text-gray-400 space-y-2">
+                                    <li class="flex items-center gap-2">
+                                        <i data-lucide="check" class="w-4 h-4 text-[#00f0ff]"></i>
+                                        <span>Automatische Abhängigkeiten</span>
+                                    </li>
+                                    <li class="flex items-center gap-2">
+                                        <i data-lucide="check" class="w-4 h-4 text-[#00f0ff]"></i>
+                                        <span>Isolierte Umgebung</span>
+                                    </li>
+                                    <li class="flex items-center gap-2">
+                                        <i data-lucide="check" class="w-4 h-4 text-[#00f0ff]"></i>
+                                        <span>Einfaches Upgrade</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Manual -->
+                        <div class="install-card rounded-2xl p-6 reveal" style="transition-delay: 0.1s;">
+                            <div class="text-center">
+                                <div class="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-violet-500/10 border border-violet-500/30 mb-4">
+                                    <i data-lucide="terminal" class="w-7 h-7 text-violet-400"></i>
+                                </div>
+                                <h3 class="text-xl font-semibold text-white mb-2">Manuell</h3>
+                                <p class="text-gray-400 text-sm mb-6">Installation mit pip und virtueller Umgebung</p>
+                                
+                                <div class="code-block text-left mb-4">
+                                    <button class="copy-btn" onclick="copyToClipboard(this, 'pip install -r requirements.txt')">
+                                        <i data-lucide="copy" class="w-4 h-4"></i>
+                                    </button>
+                                    <pre><code>pip install -r requirements.txt</code></pre>
+                                </div>
+                                
+                                <ul class="text-left text-sm text-gray-400 space-y-2">
+                                    <li class="flex items-center gap-2">
+                                        <i data-lucide="check" class="w-4 h-4 text-violet-400"></i>
+                                        <span>Volle Kontrolle</span>
+                                    </li>
+                                    <li class="flex items-center gap-2">
+                                        <i data-lucide="check" class="w-4 h-4 text-violet-400"></i>
+                                        <span>Entwicklungsfreundlich</span>
+                                    </li>
+                                    <li class="flex items-center gap-2">
+                                        <i data-lucide="check" class="w-4 h-4 text-violet-400"></i>
+                                        <span>Anpassbar</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Dev Container -->
+                        <div class="install-card rounded-2xl p-6 reveal" style="transition-delay: 0.2s;">
+                            <div class="text-center">
+                                <div class="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-emerald-500/10 border border-emerald-500/30 mb-4">
+                                    <i data-lucide="code-2" class="w-7 h-7 text-emerald-400"></i>
+                                </div>
+                                <h3 class="text-xl font-semibold text-white mb-2">Dev Container</h3>
+                                <p class="text-gray-400 text-sm mb-6">VS Code mit Dev Containers Extension</p>
+                                
+                                <div class="code-block text-left mb-4">
+                                    <button class="copy-btn" onclick="copyToClipboard(this, 'code . && F1 > Reopen in Container')">
+                                        <i data-lucide="copy" class="w-4 h-4"></i>
+                                    </button>
+                                    <pre><code>code . && F1 > Reopen in Container</code></pre>
+                                </div>
+                                
+                                <ul class="text-left text-sm text-gray-400 space-y-2">
+                                    <li class="flex items-center gap-2">
+                                        <i data-lucide="check" class="w-4 h-4 text-emerald-400"></i>
+                                        <span>Konsistente Umgebung</span>
+                                    </li>
+                                    <li class="flex items-center gap-2">
+                                        <i data-lucide="check" class="w-4 h-4 text-emerald-400"></i>
+                                        <span>VS Code Integration</span>
+                                    </li>
+                                    <li class="flex items-center gap-2">
+                                        <i data-lucide="check" class="w-4 h-4 text-emerald-400"></i>
+                                        <span>Keine lokale Installation</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- System Requirements Section -->
+        <section class="py-16 lg:py-20">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="max-w-4xl mx-auto">
+                    <!-- Section Header -->
+                    <div class="text-center mb-12 reveal">
+                        <div class="inline-flex items-center gap-2 px-4 py-2 bg-[#00f0ff]/10 border border-[#00f0ff]/30 rounded-full mb-6">
+                            <i data-lucide="cpu" class="w-4 h-4 text-[#00f0ff]"></i>
+                            <span class="text-sm text-[#00f0ff] font-medium">Systemanforderungen</span>
+                        </div>
+                        <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">
+                            Systemvoraussetzungen
+                        </h2>
+                        <p class="text-gray-400 max-w-2xl mx-auto">
+                            Stellen Sie sicher, dass Ihr System die folgenden Mindestanforderungen erfüllt.
+                        </p>
+                    </div>
+
+                    <!-- Requirements Grid -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <!-- Docker -->
+                        <div class="requirement-item rounded-xl p-5 flex flex-col items-center text-center reveal">
+                            <div class="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center mb-4">
+                                <i data-lucide="container" class="w-6 h-6 text-blue-400"></i>
+                            </div>
+                            <h3 class="text-white font-semibold mb-1">Docker</h3>
+                            <p class="text-[#00f0ff] text-sm font-mono">20.10+</p>
+                        </div>
+
+                        <!-- Docker Compose -->
+                        <div class="requirement-item rounded-xl p-5 flex flex-col items-center text-center reveal" style="transition-delay: 0.1s;">
+                            <div class="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center mb-4">
+                                <i data-lucide="layers" class="w-6 h-6 text-blue-400"></i>
+                            </div>
+                            <h3 class="text-white font-semibold mb-1">Docker Compose</h3>
+                            <p class="text-[#00f0ff] text-sm font-mono">2.0+</p>
+                        </div>
+
+                        <!-- RAM -->
+                        <div class="requirement-item rounded-xl p-5 flex flex-col items-center text-center reveal" style="transition-delay: 0.2s;">
+                            <div class="w-12 h-12 rounded-xl bg-violet-500/10 border border-violet-500/30 flex items-center justify-center mb-4">
+                                <i data-lucide="memory-stick" class="w-6 h-6 text-violet-400"></i>
+                            </div>
+                            <h3 class="text-white font-semibold mb-1">RAM</h3>
+                            <p class="text-[#00f0ff] text-sm font-mono">4GB Minimum</p>
+                        </div>
+
+                        <!-- Disk Space -->
+                        <div class="requirement-item rounded-xl p-5 flex flex-col items-center text-center reveal" style="transition-delay: 0.3s;">
+                            <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center mb-4">
+                                <i data-lucide="hard-drive" class="w-6 h-6 text-emerald-400"></i>
+                            </div>
+                            <h3 class="text-white font-semibold mb-1">Speicherplatz</h3>
+                            <p class="text-[#00f0ff] text-sm font-mono">10GB</p>
+                        </div>
+                    </div>
+
+                    <!-- Additional Info -->
+                    <div class="mt-8 p-6 rounded-2xl bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/30 reveal">
+                        <div class="flex items-start gap-4">
+                            <div class="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center flex-shrink-0">
+                                <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-400"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-white font-semibold mb-2">Empfohlene Spezifikationen</h4>
+                                <p class="text-gray-400 text-sm leading-relaxed">
+                                    Für optimale Performance empfehlen wir 8GB RAM und SSD-Speicher. 
+                                    Die Anforderungen können je nach Scan-Umfang und gleichzeitigen Prozessen variieren.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Configuration Section -->
+        <section class="py-16 lg:py-20 bg-gradient-to-b from-transparent via-[#00f0ff]/5 to-transparent">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="max-w-4xl mx-auto">
+                    <!-- Section Header -->
+                    <div class="text-center mb-12 reveal">
+                        <div class="inline-flex items-center gap-2 px-4 py-2 bg-[#00f0ff]/10 border border-[#00f0ff]/30 rounded-full mb-6">
+                            <i data-lucide="settings" class="w-4 h-4 text-[#00f0ff]"></i>
+                            <span class="text-sm text-[#00f0ff] font-medium">Konfiguration</span>
+                        </div>
+                        <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">
+                            Umgebungsvariablen
+                        </h2>
+                        <p class="text-gray-400 max-w-2xl mx-auto">
+                            Konfigurieren Sie die Anwendung über die .env Datei. Diese Variablen sind für den Betrieb erforderlich.
+                        </p>
+                    </div>
+
+                    <!-- Environment Variables -->
+                    <div class="env-card rounded-2xl p-6 reveal">
+                        <div class="flex items-center gap-3 mb-6">
+                            <div class="w-10 h-10 rounded-xl bg-[#00f0ff]/10 border border-[#00f0ff]/30 flex items-center justify-center">
+                                <i data-lucide="file-code" class="w-5 h-5 text-[#00f0ff]"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-white font-semibold">.env Konfiguration</h3>
+                                <p class="text-gray-400 text-sm">Kopieren Sie .env.example nach .env</p>
+                            </div>
+                        </div>
+
+                        <div class="space-y-4">
+                            <!-- DATABASE_URL -->
+                            <div class="flex items-start gap-4 p-4 rounded-xl bg-[#0a0a0f] border border-[#2a2a3a]">
+                                <div class="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0">
+                                    <i data-lucide="database" class="w-4 h-4 text-blue-400"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <code class="text-[#00f0ff] font-mono text-sm">DATABASE_URL</code>
+                                        <span class="px-2 py-0.5 text-xs bg-red-500/20 text-red-400 rounded-full">Erforderlich</span>
+                                    </div>
+                                    <p class="text-gray-400 text-sm">PostgreSQL Verbindungs-URL</p>
+                                    <div class="code-block mt-3">
+                                        <button class="copy-btn" onclick="copyToClipboard(this, 'DATABASE_URL=postgresql://user:pass@localhost:5432/zenpentest')">
+                                            <i data-lucide="copy" class="w-4 h-4"></i>
+                                        </button>
+                                        <pre><code>DATABASE_URL=postgresql://user:pass@localhost:5432/zenpentest</code></pre>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- REDIS_URL -->
+                            <div class="flex items-start gap-4 p-4 rounded-xl bg-[#0a0a0f] border border-[#2a2a3a]">
+                                <div class="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center flex-shrink-0">
+                                    <i data-lucide="server" class="w-4 h-4 text-red-400"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <code class="text-[#00f0ff] font-mono text-sm">REDIS_URL</code>
+                                        <span class="px-2 py-0.5 text-xs bg-red-500/20 text-red-400 rounded-full">Erforderlich</span>
+                                    </div>
+                                    <p class="text-gray-400 text-sm">Redis Verbindungs-URL für Caching und Queues</p>
+                                    <div class="code-block mt-3">
+                                        <button class="copy-btn" onclick="copyToClipboard(this, 'REDIS_URL=redis://localhost:6379/0')">
+                                            <i data-lucide="copy" class="w-4 h-4"></i>
+                                        </button>
+                                        <pre><code>REDIS_URL=redis://localhost:6379/0</code></pre>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- OPENAI_API_KEY -->
+                            <div class="flex items-start gap-4 p-4 rounded-xl bg-[#0a0a0f] border border-[#2a2a3a]">
+                                <div class="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
+                                    <i data-lucide="key" class="w-4 h-4 text-emerald-400"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <code class="text-[#00f0ff] font-mono text-sm">OPENAI_API_KEY</code>
+                                        <span class="px-2 py-0.5 text-xs bg-amber-500/20 text-amber-400 rounded-full">Optional</span>
+                                    </div>
+                                    <p class="text-gray-400 text-sm">OpenAI API Key für KI-gestützte Analysen</p>
+                                    <div class="code-block mt-3">
+                                        <button class="copy-btn" onclick="copyToClipboard(this, 'OPENAI_API_KEY=sk-...')">
+                                            <i data-lucide="copy" class="w-4 h-4"></i>
+                                        </button>
+                                        <pre><code>OPENAI_API_KEY=sk-...</code></pre>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- JWT_SECRET -->
+                            <div class="flex items-start gap-4 p-4 rounded-xl bg-[#0a0a0f] border border-[#2a2a3a]">
+                                <div class="w-8 h-8 rounded-lg bg-violet-500/10 flex items-center justify-center flex-shrink-0">
+                                    <i data-lucide="lock" class="w-4 h-4 text-violet-400"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <code class="text-[#00f0ff] font-mono text-sm">JWT_SECRET</code>
+                                        <span class="px-2 py-0.5 text-xs bg-red-500/20 text-red-400 rounded-full">Erforderlich</span>
+                                    </div>
+                                    <p class="text-gray-400 text-sm">Geheimer Schlüssel für JWT Token-Generierung</p>
+                                    <div class="code-block mt-3">
+                                        <button class="copy-btn" onclick="copyToClipboard(this, 'JWT_SECRET=your-super-secret-jwt-key-min-32-chars')">
+                                            <i data-lucide="copy" class="w-4 h-4"></i>
+                                        </button>
+                                        <pre><code>JWT_SECRET=your-super-secret-jwt-key-min-32-chars</code></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Documentation Links Section -->
+        <section class="py-16 lg:py-20">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="max-w-4xl mx-auto">
+                    <!-- Section Header -->
+                    <div class="text-center mb-12 reveal">
+                        <div class="inline-flex items-center gap-2 px-4 py-2 bg-[#00f0ff]/10 border border-[#00f0ff]/30 rounded-full mb-6">
+                            <i data-lucide="external-link" class="w-4 h-4 text-[#00f0ff]"></i>
+                            <span class="text-sm text-[#00f0ff] font-medium">Ressourcen</span>
+                        </div>
+                        <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">
+                            Dokumentationslinks
+                        </h2>
+                        <p class="text-gray-400 max-w-2xl mx-auto">
+                            Entdecken Sie weitere Ressourcen und Dokumentationen für Zen-AI-Pentest.
+                        </p>
+                    </div>
+
+                    <!-- Documentation Links Grid -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- GitHub Repository -->
+                        <a 
+                            href="https://github.com/SHAdd0WTAka/Zen-Ai-Pentest" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            class="doc-link-card rounded-xl p-5 flex items-center gap-4 group reveal"
+                        >
+                            <div class="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:border-white/30 transition-colors">
+                                <i data-lucide="github" class="w-6 h-6 text-white"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="text-white font-semibold group-hover:text-[#00f0ff] transition-colors">GitHub Repository</h3>
+                                <p class="text-gray-400 text-sm">Quellcode und Releases</p>
+                            </div>
+                            <i data-lucide="arrow-up-right" class="w-5 h-5 text-gray-500 group-hover:text-[#00f0ff] transition-colors"></i>
+                        </a>
+
+                        <!-- API Documentation -->
+                        <a 
+                            href="/api.html" 
+                            class="doc-link-card rounded-xl p-5 flex items-center gap-4 group reveal"
+                            style="transition-delay: 0.1s;"
+                        >
+                            <div class="w-12 h-12 rounded-xl bg-[#00f0ff]/10 border border-[#00f0ff]/30 flex items-center justify-center group-hover:border-[#00f0ff] transition-colors">
+                                <i data-lucide="code" class="w-6 h-6 text-[#00f0ff]"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="text-white font-semibold group-hover:text-[#00f0ff] transition-colors">API Dokumentation</h3>
+                                <p class="text-gray-400 text-sm">REST API Referenz</p>
+                            </div>
+                            <i data-lucide="arrow-up-right" class="w-5 h-5 text-gray-500 group-hover:text-[#00f0ff] transition-colors"></i>
+                        </a>
+
+                        <!-- Contributing Guide -->
+                        <a 
+                            href="https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/blob/main/CONTRIBUTING.md" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            class="doc-link-card rounded-xl p-5 flex items-center gap-4 group reveal"
+                            style="transition-delay: 0.2s;"
+                        >
+                            <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center group-hover:border-emerald-400 transition-colors">
+                                <i data-lucide="git-pull-request" class="w-6 h-6 text-emerald-400"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="text-white font-semibold group-hover:text-emerald-400 transition-colors">Contributing Guide</h3>
+                                <p class="text-gray-400 text-sm">Wie Sie beitragen können</p>
+                            </div>
+                            <i data-lucide="arrow-up-right" class="w-5 h-5 text-gray-500 group-hover:text-emerald-400 transition-colors"></i>
+                        </a>
+
+                        <!-- Security Policy -->
+                        <a 
+                            href="https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/blob/main/SECURITY.md" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            class="doc-link-card rounded-xl p-5 flex items-center gap-4 group reveal"
+                            style="transition-delay: 0.3s;"
+                        >
+                            <div class="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center group-hover:border-amber-400 transition-colors">
+                                <i data-lucide="shield" class="w-6 h-6 text-amber-400"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="text-white font-semibold group-hover:text-amber-400 transition-colors">Security Policy</h3>
+                                <p class="text-gray-400 text-sm">Sicherheitsrichtlinien</p>
+                            </div>
+                            <i data-lucide="arrow-up-right" class="w-5 h-5 text-gray-500 group-hover:text-amber-400 transition-colors"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Community & Support Section -->
+        <section class="py-16 lg:py-20 bg-gradient-to-b from-transparent via-[#00f0ff]/5 to-transparent">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="max-w-4xl mx-auto">
+                    <!-- Section Header -->
+                    <div class="text-center mb-12 reveal">
+                        <div class="inline-flex items-center gap-2 px-4 py-2 bg-[#00f0ff]/10 border border-[#00f0ff]/30 rounded-full mb-6">
+                            <i data-lucide="users" class="w-4 h-4 text-[#00f0ff]"></i>
+                            <span class="text-sm text-[#00f0ff] font-medium">Community</span>
+                        </div>
+                        <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">
+                            Community & Support
+                        </h2>
+                        <p class="text-gray-400 max-w-2xl mx-auto">
+                            Treten Sie der Community bei und erhalten Sie Unterstützung von anderen Entwicklern.
+                        </p>
+                    </div>
+
+                    <!-- Community Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- Discord -->
+                        <a 
+                            href="https://discord.gg/zen-ai-pentest" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            class="community-card discord rounded-2xl p-6 text-center group reveal"
+                        >
+                            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[#5865F2]/10 border border-[#5865F2]/30 mb-4 group-hover:border-[#5865F2] transition-colors">
+                                <i data-lucide="message-circle" class="w-8 h-8 text-[#5865F2]"></i>
+                            </div>
+                            <h3 class="text-xl font-semibold text-white mb-2">Discord Server</h3>
+                            <p class="text-gray-400 text-sm mb-4">Tauschen Sie sich mit der Community aus</p>
+                            <span class="inline-flex items-center gap-2 text-[#5865F2] text-sm font-medium">
+                                Beitreten
+                                <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+                            </span>
+                        </a>
+
+                        <!-- GitHub Issues -->
+                        <a 
+                            href="https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/issues" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            class="community-card github rounded-2xl p-6 text-center group reveal"
+                            style="transition-delay: 0.1s;"
+                        >
+                            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/5 border border-white/10 mb-4 group-hover:border-white/30 transition-colors">
+                                <i data-lucide="alert-circle" class="w-8 h-8 text-white"></i>
+                            </div>
+                            <h3 class="text-xl font-semibold text-white mb-2">GitHub Issues</h3>
+                            <p class="text-gray-400 text-sm mb-4">Melden Sie Bugs oder fordern Sie Features an</p>
+                            <span class="inline-flex items-center gap-2 text-white text-sm font-medium">
+                                Öffnen
+                                <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+                            </span>
+                        </a>
+
+                        <!-- GitHub Discussions -->
+                        <a 
+                            href="https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/discussions" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            class="community-card github rounded-2xl p-6 text-center group reveal"
+                            style="transition-delay: 0.2s;"
+                        >
+                            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/5 border border-white/10 mb-4 group-hover:border-white/30 transition-colors">
+                                <i data-lucide="message-square" class="w-8 h-8 text-white"></i>
+                            </div>
+                            <h3 class="text-xl font-semibold text-white mb-2">Discussions</h3>
+                            <p class="text-gray-400 text-sm mb-4">Stellen Sie Fragen und diskutieren Sie Ideen</p>
+                            <span class="inline-flex items-center gap-2 text-white text-sm font-medium">
+                                Teilnehmen
+                                <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+                            </span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="relative bg-[#050508] border-t border-white/5">
+        <!-- Background Gradient -->
+        <div class="absolute inset-0 bg-gradient-to-t from-[#00f0ff]/5 to-transparent pointer-events-none"></div>
+        
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 relative">
+            <!-- Main Footer Content -->
+            <div class="py-16 lg:py-20">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 lg:gap-8">
+                    
+                    <!-- Brand Column -->
+                    <div class="lg:col-span-2">
+                        <a href="/" class="flex items-center gap-3 mb-6">
+                            <div class="w-12 h-12 flex items-center justify-center rounded-xl bg-gradient-to-br from-[#00f0ff] to-[#00c8ff]">
+                                <i data-lucide="shield-check" class="w-7 h-7 text-[#0a0a0f]"></i>
+                            </div>
+                            <span class="text-xl font-bold text-white">
+                                Zen<span class="text-[#00f0ff]">-AI-</span>Pentest
+                            </span>
+                        </a>
+                        <p class="text-gray-400 text-sm leading-relaxed max-w-sm mb-6">
+                            KI-gestütztes Penetration Testing Framework für automatisierte Sicherheitsanalysen. 
+                            Entdecken Sie Schwachstellen schneller und effizienter.
+                        </p>
+                        <div class="flex items-center gap-4">
+                            <a 
+                                href="https://github.com/zen-ai-pentest" 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                class="w-10 h-10 flex items-center justify-center rounded-lg bg-white/5 text-gray-400 hover:text-white hover:bg-white/10 transition-all"
+                                aria-label="GitHub"
+                            >
+                                <i data-lucide="github" class="w-5 h-5"></i>
+                            </a>
+                            <a 
+                                href="https://twitter.com/zenaipentest" 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                class="w-10 h-10 flex items-center justify-center rounded-lg bg-white/5 text-gray-400 hover:text-white hover:bg-white/10 transition-all"
+                                aria-label="Twitter"
+                            >
+                                <i data-lucide="twitter" class="w-5 h-5"></i>
+                            </a>
+                            <a 
+                                href="https://discord.gg/zen-ai-pentest" 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                class="w-10 h-10 flex items-center justify-center rounded-lg bg-white/5 text-gray-400 hover:text-white hover:bg-white/10 transition-all"
+                                aria-label="Discord"
+                            >
+                                <i data-lucide="message-circle" class="w-5 h-5"></i>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Produkt Column -->
+                    <div>
+                        <h3 class="text-white font-semibold mb-5">Produkt</h3>
+                        <ul class="space-y-3">
+                            <li>
+                                <a href="/features.html" class="text-gray-400 text-sm hover:text-[#00f0ff] transition-colors">
+                                    Funktionen
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/tools.html" class="text-gray-400 text-sm hover:text-[#00f0ff] transition-colors">
+                                    Tools
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/architecture.html" class="text-gray-400 text-sm hover:text-[#00f0ff] transition-colors">
+                                    Architektur
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/pricing.html" class="text-gray-400 text-sm hover:text-[#00f0ff] transition-colors">
+                                    Preise
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/changelog.html" class="text-gray-400 text-sm hover:text-[#00f0ff] transition-colors">
+                                    Changelog
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Ressourcen Column -->
+                    <div>
+                        <h3 class="text-white font-semibold mb-5">Ressourcen</h3>
+                        <ul class="space-y-3">
+                            <li>
+                                <a href="/docs.html" class="text-[#00f0ff] text-sm">
+                                    Dokumentation
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/tutorials.html" class="text-gray-400 text-sm hover:text-[#00f0ff] transition-colors">
+                                    Tutorials
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/api.html" class="text-gray-400 text-sm hover:text-[#00f0ff] transition-colors">
+                                    API Referenz
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/blog.html" class="text-gray-400 text-sm hover:text-[#00f0ff] transition-colors">
+                                    Blog
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/community.html" class="text-gray-400 text-sm hover:text-[#00f0ff] transition-colors">
+                                    Community
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Rechtlich Column -->
+                    <div>
+                        <h3 class="text-white font-semibold mb-5">Rechtlich</h3>
+                        <ul class="space-y-3">
+                            <li>
+                                <a href="/privacy.html" class="text-gray-400 text-sm hover:text-[#00f0ff] transition-colors">
+                                    Datenschutz
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/terms.html" class="text-gray-400 text-sm hover:text-[#00f0ff] transition-colors">
+                                    Nutzungsbedingungen
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/license.html" class="text-gray-400 text-sm hover:text-[#00f0ff] transition-colors">
+                                    Lizenz
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/security.html" class="text-gray-400 text-sm hover:text-[#00f0ff] transition-colors">
+                                    Sicherheit
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/contact.html" class="text-gray-400 text-sm hover:text-[#00f0ff] transition-colors">
+                                    Kontakt
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Bottom Bar -->
+            <div class="py-6 border-t border-white/5">
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <p class="text-gray-500 text-sm text-center sm:text-left">
+                        &copy; <span id="footer-year">2024</span> Zen-AI-Pentest. Alle Rechte vorbehalten.
+                    </p>
+                    <div class="flex items-center gap-6">
+                        <span class="flex items-center gap-2 text-gray-500 text-sm">
+                            <i data-lucide="code" class="w-4 h-4"></i>
+                            Entwickelt mit KI
+                        </span>
+                        <span class="flex items-center gap-2 text-gray-500 text-sm">
+                            <i data-lucide="heart" class="w-4 h-4 text-rose-500"></i>
+                            Open Source
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+        <i data-lucide="check-circle" class="w-5 h-5 text-[#00f0ff]"></i>
+        <span>In Zwischenablage kopiert!</span>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // Mobile Menu Toggle
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const menuIcon = mobileMenuBtn.querySelector('.menu-icon');
+        const closeIcon = mobileMenuBtn.querySelector('.close-icon');
+
+        mobileMenuBtn.addEventListener('click', () => {
+            const isOpen = !mobileMenu.classList.contains('hidden');
+            mobileMenu.classList.toggle('hidden');
+            menuIcon.classList.toggle('hidden');
+            closeIcon.classList.toggle('hidden');
+            mobileMenuBtn.setAttribute('aria-expanded', !isOpen);
+        });
+
+        // Copy to Clipboard Function
+        function copyToClipboard(btn, text) {
+            navigator.clipboard.writeText(text).then(() => {
+                // Show copied state on button
+                btn.classList.add('copied');
+                const originalIcon = btn.innerHTML;
+                btn.innerHTML = '<i data-lucide="check" class="w-4 h-4"></i>';
+                lucide.createIcons();
+
+                // Show toast
+                showToast();
+
+                // Reset button after 2 seconds
+                setTimeout(() => {
+                    btn.classList.remove('copied');
+                    btn.innerHTML = originalIcon;
+                    lucide.createIcons();
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+            });
+        }
+
+        // Toast Notification
+        function showToast() {
+            const toast = document.getElementById('toast');
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Scroll Reveal Animation
+        const revealElements = document.querySelectorAll('.reveal');
+
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                    revealObserver.unobserve(entry.target);
+                }
+            });
+        }, {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        });
+
+        revealElements.forEach(el => revealObserver.observe(el));
+
+        // Navigation Scroll Effect
+        const nav = document.getElementById('main-nav');
+        let lastScroll = 0;
+
+        window.addEventListener('scroll', () => {
+            const currentScroll = window.pageYOffset;
+            
+            if (currentScroll > 100) {
+                nav.classList.add('bg-[#0a0a0f]/95', 'backdrop-blur-xl');
+            } else {
+                nav.classList.remove('bg-[#0a0a0f]/95', 'backdrop-blur-xl');
+            }
+            
+            lastScroll = currentScroll;
+        });
+
+        // Update footer year
+        document.getElementById('footer-year').textContent = new Date().getFullYear();
+
+        // GSAP Animations
+        gsap.registerPlugin(ScrollTrigger);
+
+        // Animate step cards
+        gsap.utils.toArray('.step-card').forEach((card, i) => {
+            gsap.from(card, {
+                scrollTrigger: {
+                    trigger: card,
+                    start: 'top 85%',
+                    toggleActions: 'play none none none'
+                },
+                opacity: 0,
+                y: 40,
+                duration: 0.6,
+                delay: i * 0.1,
+                ease: 'power2.out'
+            });
+        });
+
+        // Animate install cards
+        gsap.utils.toArray('.install-card').forEach((card, i) => {
+            gsap.from(card, {
+                scrollTrigger: {
+                    trigger: card,
+                    start: 'top 85%',
+                    toggleActions: 'play none none none'
+                },
+                opacity: 0,
+                y: 40,
+                duration: 0.6,
+                delay: i * 0.1,
+                ease: 'power2.out'
+            });
+        });
+    </script>
+</body>
+</html>

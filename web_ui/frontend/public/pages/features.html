@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Funktionen | Zen-AI-Pentest</title>
+    <meta name="description" content="Entdecken Sie die leistungsstarken Funktionen von Zen-AI-Pentest - Autonome AI-Agenten, Risk Engine, Exploit Validation und mehr.">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'zen-dark': '#0a0a0f',
+                        'zen-panel': '#12121a',
+                        'zen-border': '#2a2a3a',
+                        'zen-cyan': '#00f0ff',
+                        'zen-cyan-dim': 'rgba(0, 240, 255, 0.1)',
+                        'zen-text': '#e0e0e0',
+                        'zen-text-muted': '#888888'
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'sans-serif'],
+                        'mono': ['JetBrains Mono', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    
+    <!-- Shared Styles -->
+    <link rel="stylesheet" href="../shared/styles.css">
+    
+    <style>
+        /* Custom Styles */
+        body {
+            background-color: #0a0a0f;
+            color: #e0e0e0;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        /* Gradient Text */
+        .gradient-text {
+            background: linear-gradient(135deg, #00f0ff 0%, #00c8ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        /* Glow Effects */
+        .glow-cyan {
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+        }
+        
+        .glow-cyan-hover:hover {
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.5);
+        }
+        
+        /* Card Styles */
+        .feature-card {
+            background: linear-gradient(145deg, #12121a 0%, #1a1a25 100%);
+            border: 1px solid #2a2a3a;
+            transition: all 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            border-color: #00f0ff;
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.3);
+            transform: translateY(-5px);
+        }
+        
+        /* Persona Badge */
+        .persona-badge {
+            background: rgba(0, 240, 255, 0.1);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .persona-badge:hover {
+            background: rgba(0, 240, 255, 0.2);
+            border-color: #00f0ff;
+            transform: scale(1.05);
+        }
+        
+        /* Navigation Link Hover */
+        .nav-link {
+            position: relative;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #00f0ff;
+            transition: width 0.3s ease;
+        }
+        
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        
+        /* Button Styles */
+        .btn-primary {
+            background: linear-gradient(135deg, #00f0ff 0%, #00c8ff 100%);
+            color: #0a0a0f;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.5);
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            border: 1px solid #00f0ff;
+            color: #00f0ff;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(0, 240, 255, 0.1);
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+        }
+        
+        /* Grid Background Pattern */
+        .grid-pattern {
+            background-image: 
+                linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+        
+        /* Safety Feature Item */
+        .safety-item {
+            border-left: 3px solid #00f0ff;
+            background: linear-gradient(90deg, rgba(0, 240, 255, 0.05) 0%, transparent 100%);
+        }
+        
+        /* CTA Section */
+        .cta-section {
+            background: linear-gradient(135deg, rgba(0, 240, 255, 0.1) 0%, rgba(0, 200, 255, 0.05) 100%);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+        }
+        
+        /* Scroll Animation Initial States */
+        .animate-on-scroll {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+    </style>
+</head>
+<body class="grid-pattern min-h-screen">
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-50 bg-zen-dark/90 backdrop-blur-md border-b border-zen-border">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo -->
+                <a href="../index.html" class="flex items-center space-x-2">
+                    <i data-lucide="shield-check" class="w-8 h-8 text-zen-cyan"></i>
+                    <span class="text-xl font-bold font-mono">
+                        <span class="text-zen-cyan">Zen</span><span class="text-white">-AI</span>
+                    </span>
+                </a>
+                
+                <!-- Desktop Navigation -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="../index.html" class="nav-link text-zen-text hover:text-zen-cyan transition-colors">Startseite</a>
+                    <a href="features.html" class="nav-link text-zen-cyan font-medium">Funktionen</a>
+                    <a href="tools.html" class="nav-link text-zen-text hover:text-zen-cyan transition-colors">Tools</a>
+                    <a href="architecture.html" class="nav-link text-zen-text hover:text-zen-cyan transition-colors">Architektur</a>
+                    <a href="docs.html" class="nav-link text-zen-text hover:text-zen-cyan transition-colors">Dokumentation</a>
+                </div>
+                
+                <!-- CTA Button -->
+                <div class="hidden md:block">
+                    <a href="docs.html" class="btn-primary px-5 py-2 rounded-lg text-sm">
+                        Jetzt Starten
+                    </a>
+                </div>
+                
+                <!-- Mobile Menu Button -->
+                <button id="mobile-menu-btn" class="md:hidden text-zen-text hover:text-zen-cyan">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-zen-panel border-t border-zen-border">
+            <div class="px-4 py-4 space-y-3">
+                <a href="index.html" class="block text-zen-text hover:text-zen-cyan py-2">Startseite</a>
+                <a href="features.html" class="block text-zen-cyan py-2">Funktionen</a>
+                <a href="demo.html" class="block text-zen-text hover:text-zen-cyan py-2">Demo</a>
+                <a href="pricing.html" class="block text-zen-text hover:text-zen-cyan py-2">Preise</a>
+                <a href="docs.html" class="block text-zen-text hover:text-zen-cyan py-2">Dokumentation</a>
+                <a href="demo.html" class="btn-primary block text-center px-5 py-2 rounded-lg mt-4">Demo Starten</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="pt-16">
+        <!-- Page Header -->
+        <section class="relative py-20 lg:py-28 overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-b from-zen-cyan-dim to-transparent opacity-50"></div>
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                <div class="text-center max-w-3xl mx-auto animate-on-scroll">
+                    <div class="inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-zen-cyan-dim border border-zen-cyan/30 mb-6">
+                        <i data-lucide="sparkles" class="w-4 h-4 text-zen-cyan"></i>
+                        <span class="text-sm text-zen-cyan font-mono">Leistungsstarke Capabilities</span>
+                    </div>
+                    <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
+                        <span class="gradient-text">Leistungsstarke</span><br>
+                        <span class="text-white">Funktionen</span>
+                    </h1>
+                    <p class="text-lg md:text-xl text-zen-text-muted leading-relaxed">
+                        Entdecken Sie die umfassenden Capabilities von Zen-AI-Pentest. 
+                        Von autonomen AI-Agenten bis zur Exploit-Validierung – 
+                        alles was Sie für modernes Penetration Testing benötigen.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Features Grid -->
+        <section class="py-16 lg:py-24">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+                    <!-- Feature 1: Autonomer AI-Agent -->
+                    <div class="feature-card rounded-2xl p-6 lg:p-8 animate-on-scroll">
+                        <div class="w-14 h-14 rounded-xl bg-zen-cyan-dim flex items-center justify-center mb-6">
+                            <i data-lucide="bot" class="w-7 h-7 text-zen-cyan"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-4">Autonomer AI-Agent</h3>
+                        <p class="text-zen-text-muted mb-6">
+                            Selbstständige Durchführung komplexer Penetration Tests mit intelligenter Entscheidungsfindung.
+                        </p>
+                        <ul class="space-y-2">
+                            <li class="flex items-center text-sm text-zen-text">
+                                <i data-lucide="check-circle" class="w-4 h-4 text-zen-cyan mr-2 flex-shrink-0"></i>
+                                <span>ReAct Pattern</span>
+                            </li>
+                            <li class="flex items-center text-sm text-zen-text">
+                                <i data-lucide="check-circle" class="w-4 h-4 text-zen-cyan mr-2 flex-shrink-0"></i>
+                                <span>State Machine</span>
+                            </li>
+                            <li class="flex items-center text-sm text-zen-text">
+                                <i data-lucide="check-circle" class="w-4 h-4 text-zen-cyan mr-2 flex-shrink-0"></i>
+                                <span>Memory System</span>
+                            </li>
+                            <li class="flex items-center text-sm text-zen-text">
+                                <i data-lucide="check-circle" class="w-4 h-4 text-zen-cyan mr-2 flex-shrink-0"></i>
+                                <span>Tool Orchestration</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Feature 2: Risk Engine -->
+                    <div class="feature-card rounded-2xl p-6 lg:p-8 animate-on-scroll">
+                        <div class="w-14 h-14 rounded-xl bg-zen-cyan-dim flex items-center justify-center mb-6">
+                            <i data-lucide="activity" class="w-7 h-7 text-zen-cyan"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-4">Risk Engine</h3>
+                        <p class="text-zen-text-muted mb-6">
+                            Intelligente Risikobewertung mit präziser Priorisierung und reduzierten Fehlalarmen.
+                        </p>
+                        <ul class="space-y-2">
+                            <li class="flex items-center text-sm text-zen-text">
+                                <i data-lucide="check-circle" class="w-4 h-4 text-zen-cyan mr-2 flex-shrink-0"></i>
+                                <span>False Positive Reduction</span>
+                            </li>
+                            <li class="flex items-center text-sm text-zen-text">
+                                <i data-lucide="check-circle" class="w-4 h-4 text-zen-cyan mr-2 flex-shrink-0"></i>
+                                <span>CVSS/EPSS Scoring</span>
+                            </li>
+                            <li class="flex items-center text-sm text-zen-text">
+                                <i data-lucide="check-circle" class="w-4 h-4 text-zen-cyan mr-2 flex-shrink-0"></i>
+                                <span>LLM Voting</span>
+                            </li>
+                            <li class="flex items-center text-sm text-zen-text">
+                                <i data-lucide="check-circle" class="w-4 h-4 text-zen-cyan mr-2 flex-shrink-0"></i>
+                                <span>Smart Priorisierung</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Feature 3: Exploit Validation -->
+                    <div class="feature-card rounded-2xl p-6 lg:p-8 animate-on-scroll">
+                        <div class="w-14 h-14 rounded-xl bg-zen-cyan-dim flex items-center justify-center mb-6">
+                            <i data-lucide="zap" class="w-7 h-7 text-zen-cyan"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-4">Exploit Validation</h3>
+                        <p class="text-zen-text-muted mb-6">
+                            Sichere Validierung von Schwachstellen in isolierten Sandbox-Umgebungen.
+                        </p>
+                        <ul class="space-y-2">
+                            <li class="flex items-center text-sm text-zen-text">
+                                <i data-lucide="check-circle" class="w-4 h-4 text-zen-cyan mr-2 flex-shrink-0"></i>
+                                <span>Docker Sandbox</span>
+                            </li>
+                            <li class="flex items-center text-sm text-zen-text">
+                                <i data-lucide="check-circle" class="w-4 h-4 text-zen-cyan mr-2 flex-shrink-0"></i>
+                                <span>Safety Controls</span>
+                            </li>
+                            <li class="flex items-center text-sm text-zen-text">
+                                <i data-lucide="check-circle" class="w-4 h-4 text-zen-cyan mr-2 flex-shrink-0"></i>
+                                <span>Evidence Collection</span>
+                            </li>
+                            <li class="flex items-center text-sm text-zen-text">
+                                <i data-lucide="check-circle" class="w-4 h-4 text-zen-cyan mr-2 flex-shrink-0"></i>
+                                <span>Proof of Concept</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Feature 4: Multi-Agent-System -->
+                    <div class="feature-card rounded-2xl p-6 lg:p-8 animate-on-scroll">
+                        <div class="w-14 h-14 rounded-xl bg-zen-cyan-dim flex items-center justify-center mb-6">
+                            <i data-lucide="users" class="w-7 h-7 text-zen-cyan"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-4">Multi-Agent-System</h3>
+                        <p class="text-zen-text-muted mb-6">
+                            Koordinierte Zusammenarbeit mehrerer spezialisierter AI-Agenten für maximale Effizienz.
+                        </p>
+                        <ul class="space-y-2">
+                            <li class="flex items-center text-sm text-zen-text">
+                                <i data-lucide="check-circle" class="w-4 h-4 text-zen-cyan mr-2 flex-shrink-0"></i>
+                                <span>Workflow Orchestrator</span>
+                            </li>
+                            <li class="flex items-center text-sm text-zen-text">
+                                <i data-lucide="check-circle" class="w-4 h-4 text-zen-cyan mr-2 flex-shrink-0"></i>
+                                <span>Real-time Updates</span>
+                            </li>
+                            <li class="flex items-center text-sm text-zen-text">
+                                <i data-lucide="check-circle" class="w-4 h-4 text-zen-cyan mr-2 flex-shrink-0"></i>
+                                <span>Task Distribution</span>
+                            </li>
+                            <li class="flex items-center text-sm text-zen-text">
+                                <i data-lucide="check-circle" class="w-4 h-4 text-zen-cyan mr-2 flex-shrink-0"></i>
+                                <span>Agent Kommunikation</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Feature 5: AI Persona System -->
+                    <div class="feature-card rounded-2xl p-6 lg:p-8 animate-on-scroll">
+                        <div class="w-14 h-14 rounded-xl bg-zen-cyan-dim flex items-center justify-center mb-6">
+                            <i data-lucide="user-cog" class="w-7 h-7 text-zen-cyan"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-4">AI Persona System</h3>
+                        <p class="text-zen-text-muted mb-6">
+                            11 spezialisierte AI-Personas für jeden Bereich des Penetration Testing.
+                        </p>
+                        <ul class="space-y-2">
+                            <li class="flex items-center text-sm text-zen-text">
+                                <i data-lucide="check-circle" class="w-4 h-4 text-zen-cyan mr-2 flex-shrink-0"></i>
+                                <span>11 Spezialisierte Personas</span>
+                            </li>
+                            <li class="flex items-center text-sm text-zen-text">
+                                <i data-lucide="check-circle" class="w-4 h-4 text-zen-cyan mr-2 flex-shrink-0"></i>
+                                <span>CLI & API Zugriff</span>
+                            </li>
+                            <li class="flex items-center text-sm text-zen-text">
+                                <i data-lucide="check-circle" class="w-4 h-4 text-zen-cyan mr-2 flex-shrink-0"></i>
+                                <span>Screenshot Analysis</span>
+                            </li>
+                            <li class="flex items-center text-sm text-zen-text">
+                                <i data-lucide="check-circle" class="w-4 h-4 text-zen-cyan mr-2 flex-shrink-0"></i>
+                                <span>Kontextbewusstsein</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Feature 6: CI/CD Integration -->
+                    <div class="feature-card rounded-2xl p-6 lg:p-8 animate-on-scroll">
+                        <div class="w-14 h-14 rounded-xl bg-zen-cyan-dim flex items-center justify-center mb-6">
+                            <i data-lucide="git-branch" class="w-7 h-7 text-zen-cyan"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-4">CI/CD Integration</h3>
+                        <p class="text-zen-text-muted mb-6">
+                            Nahtlose Integration in Ihre bestehenden DevOps-Workflows und Build-Pipelines.
+                        </p>
+                        <ul class="space-y-2">
+                            <li class="flex items-center text-sm text-zen-text">
+                                <i data-lucide="check-circle" class="w-4 h-4 text-zen-cyan mr-2 flex-shrink-0"></i>
+                                <span>GitHub Actions</span>
+                            </li>
+                            <li class="flex items-center text-sm text-zen-text">
+                                <i data-lucide="check-circle" class="w-4 h-4 text-zen-cyan mr-2 flex-shrink-0"></i>
+                                <span>GitLab CI</span>
+                            </li>
+                            <li class="flex items-center text-sm text-zen-text">
+                                <i data-lucide="check-circle" class="w-4 h-4 text-zen-cyan mr-2 flex-shrink-0"></i>
+                                <span>Jenkins</span>
+                            </li>
+                            <li class="flex items-center text-sm text-zen-text">
+                                <i data-lucide="check-circle" class="w-4 h-4 text-zen-cyan mr-2 flex-shrink-0"></i>
+                                <span>Notifications</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- AI Personas Section -->
+        <section class="py-16 lg:py-24 border-t border-zen-border">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12 animate-on-scroll">
+                    <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">
+                        11 <span class="gradient-text">Spezialisierte</span> AI-Personas
+                    </h2>
+                    <p class="text-zen-text-muted max-w-2xl mx-auto">
+                        Jedes Persona ist ein Experte in seinem Fachgebiet und arbeitet koordiniert 
+                        für umfassende Sicherheitsanalysen.
+                    </p>
+                </div>
+                
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 animate-on-scroll">
+                    <!-- Recon -->
+                    <div class="persona-badge rounded-xl p-4 text-center">
+                        <i data-lucide="search" class="w-6 h-6 text-zen-cyan mx-auto mb-2"></i>
+                        <span class="text-sm font-medium text-white">Recon</span>
+                    </div>
+                    
+                    <!-- Exploit -->
+                    <div class="persona-badge rounded-xl p-4 text-center">
+                        <i data-lucide="bug" class="w-6 h-6 text-zen-cyan mx-auto mb-2"></i>
+                        <span class="text-sm font-medium text-white">Exploit</span>
+                    </div>
+                    
+                    <!-- Report -->
+                    <div class="persona-badge rounded-xl p-4 text-center">
+                        <i data-lucide="file-text" class="w-6 h-6 text-zen-cyan mx-auto mb-2"></i>
+                        <span class="text-sm font-medium text-white">Report</span>
+                    </div>
+                    
+                    <!-- Audit -->
+                    <div class="persona-badge rounded-xl p-4 text-center">
+                        <i data-lucide="clipboard-check" class="w-6 h-6 text-zen-cyan mx-auto mb-2"></i>
+                        <span class="text-sm font-medium text-white">Audit</span>
+                    </div>
+                    
+                    <!-- Social -->
+                    <div class="persona-badge rounded-xl p-4 text-center">
+                        <i data-lucide="message-circle" class="w-6 h-6 text-zen-cyan mx-auto mb-2"></i>
+                        <span class="text-sm font-medium text-white">Social</span>
+                    </div>
+                    
+                    <!-- Network -->
+                    <div class="persona-badge rounded-xl p-4 text-center">
+                        <i data-lucide="network" class="w-6 h-6 text-zen-cyan mx-auto mb-2"></i>
+                        <span class="text-sm font-medium text-white">Network</span>
+                    </div>
+                    
+                    <!-- Mobile -->
+                    <div class="persona-badge rounded-xl p-4 text-center">
+                        <i data-lucide="smartphone" class="w-6 h-6 text-zen-cyan mx-auto mb-2"></i>
+                        <span class="text-sm font-medium text-white">Mobile</span>
+                    </div>
+                    
+                    <!-- Red Team -->
+                    <div class="persona-badge rounded-xl p-4 text-center">
+                        <i data-lucide="target" class="w-6 h-6 text-zen-cyan mx-auto mb-2"></i>
+                        <span class="text-sm font-medium text-white">Red Team</span>
+                    </div>
+                    
+                    <!-- ICS -->
+                    <div class="persona-badge rounded-xl p-4 text-center">
+                        <i data-lucide="cpu" class="w-6 h-6 text-zen-cyan mx-auto mb-2"></i>
+                        <span class="text-sm font-medium text-white">ICS</span>
+                    </div>
+                    
+                    <!-- Cloud -->
+                    <div class="persona-badge rounded-xl p-4 text-center">
+                        <i data-lucide="cloud" class="w-6 h-6 text-zen-cyan mx-auto mb-2"></i>
+                        <span class="text-sm font-medium text-white">Cloud</span>
+                    </div>
+                    
+                    <!-- Crypto -->
+                    <div class="persona-badge rounded-xl p-4 text-center">
+                        <i data-lucide="key" class="w-6 h-6 text-zen-cyan mx-auto mb-2"></i>
+                        <span class="text-sm font-medium text-white">Crypto</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Safety & Compliance Section -->
+        <section class="py-16 lg:py-24 border-t border-zen-border">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid lg:grid-cols-2 gap-12 items-center">
+                    <div class="animate-on-scroll">
+                        <h2 class="text-3xl md:text-4xl font-bold text-white mb-6">
+                            Safety & <span class="gradient-text">Compliance</span>
+                        </h2>
+                        <p class="text-zen-text-muted mb-8">
+                            Umfassende Sicherheitskontrollen und Compliance-Features für 
+                            verantwortungsvolles Penetration Testing.
+                        </p>
+                        
+                        <div class="space-y-4">
+                            <!-- IP Validation -->
+                            <div class="safety-item rounded-r-xl p-4 animate-on-scroll">
+                                <div class="flex items-start">
+                                    <div class="w-10 h-10 rounded-lg bg-zen-cyan-dim flex items-center justify-center flex-shrink-0 mr-4">
+                                        <i data-lucide="shield" class="w-5 h-5 text-zen-cyan"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold text-white mb-1">IP Validation</h4>
+                                        <p class="text-sm text-zen-text-muted">Automatische Blockierung privater Netzwerke und unautorisierter Ziele</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Domain Filtering -->
+                            <div class="safety-item rounded-r-xl p-4 animate-on-scroll">
+                                <div class="flex items-start">
+                                    <div class="w-10 h-10 rounded-lg bg-zen-cyan-dim flex items-center justify-center flex-shrink-0 mr-4">
+                                        <i data-lucide="globe" class="w-5 h-5 text-zen-cyan"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold text-white mb-1">Domain Filtering</h4>
+                                        <p class="text-sm text-zen-text-muted">Whitelist-basierte Domain-Validierung für autorisierte Tests</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Risk Levels -->
+                            <div class="safety-item rounded-r-xl p-4 animate-on-scroll">
+                                <div class="flex items-start">
+                                    <div class="w-10 h-10 rounded-lg bg-zen-cyan-dim flex items-center justify-center flex-shrink-0 mr-4">
+                                        <i data-lucide="sliders" class="w-5 h-5 text-zen-cyan"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold text-white mb-1">4 Risk Levels</h4>
+                                        <p class="text-sm text-zen-text-muted">Von SAFE bis AGGRESSIVE – volle Kontrolle über Testintensität</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Rate Limiting -->
+                            <div class="safety-item rounded-r-xl p-4 animate-on-scroll">
+                                <div class="flex items-start">
+                                    <div class="w-10 h-10 rounded-lg bg-zen-cyan-dim flex items-center justify-center flex-shrink-0 mr-4">
+                                        <i data-lucide="gauge" class="w-5 h-5 text-zen-cyan"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold text-white mb-1">Rate Limiting</h4>
+                                        <p class="text-sm text-zen-text-muted">Intelligente Ratenbegrenzung zur Vermeidung von Systemüberlastung</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Risk Levels Visualization -->
+                    <div class="animate-on-scroll">
+                        <div class="bg-zen-panel rounded-2xl p-6 lg:p-8 border border-zen-border">
+                            <h3 class="text-lg font-semibold text-white mb-6">Risk Level Matrix</h3>
+                            
+                            <div class="space-y-4">
+                                <div class="flex items-center">
+                                    <span class="w-24 text-sm text-zen-text-muted">SAFE</span>
+                                    <div class="flex-1 h-3 bg-zen-dark rounded-full overflow-hidden">
+                                        <div class="h-full w-1/4 bg-green-500 rounded-full"></div>
+                                    </div>
+                                    <span class="w-16 text-right text-sm text-green-400">Passiv</span>
+                                </div>
+                                
+                                <div class="flex items-center">
+                                    <span class="w-24 text-sm text-zen-text-muted">NORMAL</span>
+                                    <div class="flex-1 h-3 bg-zen-dark rounded-full overflow-hidden">
+                                        <div class="h-full w-2/4 bg-yellow-500 rounded-full"></div>
+                                    </div>
+                                    <span class="w-16 text-right text-sm text-yellow-400">Standard</span>
+                                </div>
+                                
+                                <div class="flex items-center">
+                                    <span class="w-24 text-sm text-zen-text-muted">AGGRESSIVE</span>
+                                    <div class="flex-1 h-3 bg-zen-dark rounded-full overflow-hidden">
+                                        <div class="h-full w-3/4 bg-orange-500 rounded-full"></div>
+                                    </div>
+                                    <span class="w-16 text-right text-sm text-orange-400">Intensiv</span>
+                                </div>
+                                
+                                <div class="flex items-center">
+                                    <span class="w-24 text-sm text-zen-text-muted">NUCLEAR</span>
+                                    <div class="flex-1 h-3 bg-zen-dark rounded-full overflow-hidden">
+                                        <div class="h-full w-full bg-red-500 rounded-full"></div>
+                                    </div>
+                                    <span class="w-16 text-right text-sm text-red-400">Maximum</span>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-6 pt-6 border-t border-zen-border">
+                                <div class="flex items-center justify-between text-sm">
+                                    <span class="text-zen-text-muted">Standard-Einstellung</span>
+                                    <span class="px-3 py-1 rounded-full bg-yellow-500/20 text-yellow-400 font-medium">NORMAL</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="py-16 lg:py-24">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="cta-section rounded-3xl p-8 md:p-12 lg:p-16 text-center animate-on-scroll">
+                    <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">
+                        Bereit für <span class="gradient-text">KI-gestütztes</span> Pentesting?
+                    </h2>
+                    <p class="text-zen-text-muted max-w-2xl mx-auto mb-8">
+                        Starten Sie jetzt Ihre erste Demo und erleben Sie die Zukunft 
+                        des automatisierten Penetration Testing.
+                    </p>
+                    <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                        <a href="demo.html" class="btn-primary px-8 py-4 rounded-xl text-base w-full sm:w-auto">
+                            <i data-lucide="play" class="w-5 h-5 inline mr-2"></i>
+                            Demo Starten
+                        </a>
+                        <a href="pricing.html" class="btn-secondary px-8 py-4 rounded-xl text-base w-full sm:w-auto">
+                            <i data-lucide="tag" class="w-5 h-5 inline mr-2"></i>
+                            Preise Ansehen
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-zen-border bg-zen-dark">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
+                <!-- Brand -->
+                <div>
+                    <a href="index.html" class="flex items-center space-x-2 mb-4">
+                        <i data-lucide="shield-check" class="w-8 h-8 text-zen-cyan"></i>
+                        <span class="text-xl font-bold font-mono">
+                            <span class="text-zen-cyan">Zen</span><span class="text-white">-AI</span>
+                        </span>
+                    </a>
+                    <p class="text-zen-text-muted text-sm mb-4">
+                        Autonome KI-gestützte Penetration Testing Plattform für moderne Sicherheitsanforderungen.
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-zen-text-muted hover:text-zen-cyan transition-colors">
+                            <i data-lucide="github" class="w-5 h-5"></i>
+                        </a>
+                        <a href="#" class="text-zen-text-muted hover:text-zen-cyan transition-colors">
+                            <i data-lucide="twitter" class="w-5 h-5"></i>
+                        </a>
+                        <a href="#" class="text-zen-text-muted hover:text-zen-cyan transition-colors">
+                            <i data-lucide="linkedin" class="w-5 h-5"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Product -->
+                <div>
+                    <h4 class="text-white font-semibold mb-4">Produkt</h4>
+                    <ul class="space-y-2">
+                        <li><a href="features.html" class="text-zen-text-muted hover:text-zen-cyan text-sm transition-colors">Funktionen</a></li>
+                        <li><a href="demo.html" class="text-zen-text-muted hover:text-zen-cyan text-sm transition-colors">Demo</a></li>
+                        <li><a href="pricing.html" class="text-zen-text-muted hover:text-zen-cyan text-sm transition-colors">Preise</a></li>
+                        <li><a href="docs.html" class="text-zen-text-muted hover:text-zen-cyan text-sm transition-colors">Dokumentation</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Resources -->
+                <div>
+                    <h4 class="text-white font-semibold mb-4">Ressourcen</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-zen-text-muted hover:text-zen-cyan text-sm transition-colors">Blog</a></li>
+                        <li><a href="#" class="text-zen-text-muted hover:text-zen-cyan text-sm transition-colors">Tutorials</a></li>
+                        <li><a href="#" class="text-zen-text-muted hover:text-zen-cyan text-sm transition-colors">API Referenz</a></li>
+                        <li><a href="#" class="text-zen-text-muted hover:text-zen-cyan text-sm transition-colors">Changelog</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Legal -->
+                <div>
+                    <h4 class="text-white font-semibold mb-4">Rechtliches</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-zen-text-muted hover:text-zen-cyan text-sm transition-colors">Impressum</a></li>
+                        <li><a href="#" class="text-zen-text-muted hover:text-zen-cyan text-sm transition-colors">Datenschutz</a></li>
+                        <li><a href="#" class="text-zen-text-muted hover:text-zen-cyan text-sm transition-colors">AGB</a></li>
+                        <li><a href="#" class="text-zen-text-muted hover:text-zen-cyan text-sm transition-colors">Responsible Disclosure</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-zen-border pt-8 flex flex-col md:flex-row items-center justify-between">
+                <p class="text-zen-text-muted text-sm">
+                    &copy; 2025 Zen-AI-Pentest. Alle Rechte vorbehalten.
+                </p>
+                <p class="text-zen-text-muted text-sm mt-2 md:mt-0">
+                    Made with <i data-lucide="heart" class="w-4 h-4 inline text-red-500"></i> in Germany
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        // Initialize Lucide Icons
+        document.addEventListener('DOMContentLoaded', function() {
+            lucide.createIcons();
+            
+            // Mobile Menu Toggle
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
+            
+            if (mobileMenuBtn && mobileMenu) {
+                mobileMenuBtn.addEventListener('click', function() {
+                    mobileMenu.classList.toggle('hidden');
+                });
+            }
+            
+            // GSAP Scroll Animations
+            gsap.registerPlugin(ScrollTrigger);
+            
+            // Animate elements on scroll with stagger
+            const animateElements = document.querySelectorAll('.animate-on-scroll');
+            
+            animateElements.forEach((element, index) => {
+                gsap.to(element, {
+                    opacity: 1,
+                    y: 0,
+                    duration: 0.6,
+                    ease: 'power2.out',
+                    scrollTrigger: {
+                        trigger: element,
+                        start: 'top 85%',
+                        toggleActions: 'play none none none'
+                    },
+                    delay: (index % 3) * 0.1
+                });
+            });
+            
+            // Feature cards stagger animation
+            const featureCards = document.querySelectorAll('.feature-card');
+            gsap.fromTo(featureCards, 
+                { opacity: 0, y: 40 },
+                {
+                    opacity: 1,
+                    y: 0,
+                    duration: 0.6,
+                    stagger: 0.1,
+                    ease: 'power2.out',
+                    scrollTrigger: {
+                        trigger: featureCards[0],
+                        start: 'top 80%'
+                    }
+                }
+            );
+            
+            // Persona badges stagger animation
+            const personaBadges = document.querySelectorAll('.persona-badge');
+            gsap.fromTo(personaBadges,
+                { opacity: 0, scale: 0.8 },
+                {
+                    opacity: 1,
+                    scale: 1,
+                    duration: 0.4,
+                    stagger: 0.05,
+                    ease: 'back.out(1.7)',
+                    scrollTrigger: {
+                        trigger: personaBadges[0],
+                        start: 'top 85%'
+                    }
+                }
+            );
+            
+            // Safety items stagger animation
+            const safetyItems = document.querySelectorAll('.safety-item');
+            gsap.fromTo(safetyItems,
+                { opacity: 0, x: -30 },
+                {
+                    opacity: 1,
+                    x: 0,
+                    duration: 0.5,
+                    stagger: 0.15,
+                    ease: 'power2.out',
+                    scrollTrigger: {
+                        trigger: safetyItems[0],
+                        start: 'top 85%'
+                    }
+                }
+            );
+            
+            // CTA section animation
+            const ctaSection = document.querySelector('.cta-section');
+            if (ctaSection) {
+                gsap.fromTo(ctaSection,
+                    { opacity: 0, y: 50 },
+                    {
+                        opacity: 1,
+                        y: 0,
+                        duration: 0.8,
+                        ease: 'power2.out',
+                        scrollTrigger: {
+                            trigger: ctaSection,
+                            start: 'top 80%'
+                        }
+                    }
+                );
+            }
+        });
+    </script>
+</body>
+</html>

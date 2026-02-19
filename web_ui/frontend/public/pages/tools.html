@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tools | CyberShield - 40+ Integrierte Security-Tools</title>
+    <meta name="description" content="Professionelle Penetration-Testing-Tools, nahtlos integriert - Netzwerk, Web, Exploitation, Brute Force, Reconnaissance und mehr.">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        cyber: {
+                            dark: '#0a0a0f',
+                            darker: '#050508',
+                            card: '#12121a',
+                            accent: '#00f0ff',
+                            accent2: '#7000ff',
+                            success: '#00ff88',
+                            warning: '#ffaa00',
+                            danger: '#ff0044',
+                        }
+                    },
+                    boxShadow: {
+                        'glow': '0 0 20px rgba(0, 240, 255, 0.3)',
+                        'glow-lg': '0 0 40px rgba(0, 240, 255, 0.4)',
+                        'glow-purple': '0 0 20px rgba(112, 0, 255, 0.3)',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            background-color: #0a0a0f;
+            color: #ffffff;
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #00f0ff 0%, #7000ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .card-glow {
+            transition: all 0.3s ease;
+        }
+        
+        .card-glow:hover {
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.25);
+            border-color: rgba(0, 240, 255, 0.5);
+            transform: translateY(-4px);
+        }
+        
+        .filter-btn {
+            transition: all 0.3s ease;
+        }
+        
+        .filter-btn.active {
+            background: linear-gradient(135deg, #00f0ff 0%, #7000ff 100%);
+            color: #0a0a0f;
+            font-weight: 600;
+        }
+        
+        .filter-btn:not(.active):hover {
+            background: rgba(0, 240, 255, 0.1);
+            border-color: rgba(0, 240, 255, 0.5);
+        }
+        
+        .tool-card {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        
+        .grid-bg {
+            background-image: 
+                linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+        
+        .nav-link {
+            position: relative;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #00f0ff, #7000ff);
+            transition: width 0.3s ease;
+        }
+        
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        
+        .category-badge {
+            font-size: 0.65rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body class="font-sans antialiased">
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-50 bg-cyber-darker/90 backdrop-blur-md border-b border-white/5">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo -->
+                <a href="../index.html" class="flex items-center space-x-2">
+                    <i data-lucide="shield-check" class="w-8 h-8 text-cyber-accent"></i>
+                    <span class="text-xl font-bold">
+                        <span class="text-white">Cyber</span><span class="text-cyber-accent">Shield</span>
+                    </span>
+                </a>
+                
+                <!-- Desktop Navigation -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="../index.html" class="nav-link text-gray-300 hover:text-white transition-colors">Home</a>
+                    <a href="tools.html" class="nav-link text-cyber-accent font-medium">Tools</a>
+                    <a href="features.html" class="nav-link text-gray-300 hover:text-white transition-colors">Features</a>
+                    <a href="architecture.html">Architektur</a>
+                    <a href="docs.html" class="nav-link text-gray-300 hover:text-white transition-colors">Docs</a>
+                </div>
+                
+                <!-- CTA Button -->
+                <div class="hidden md:block">
+                    <a href="pricing.html" class="px-5 py-2 bg-gradient-to-r from-cyber-accent to-cyber-accent2 text-cyber-darker font-semibold rounded-lg hover:shadow-glow transition-all duration-300">
+                        Jetzt Starten
+                    </a>
+                </div>
+                
+                <!-- Mobile Menu Button -->
+                <button id="mobile-menu-btn" class="md:hidden text-white p-2">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-cyber-darker border-t border-white/5">
+            <div class="px-4 py-4 space-y-3">
+                <a href="../index.html" class="block text-gray-300 hover:text-cyber-accent transition-colors py-2">Home</a>
+                <a href="tools.html" class="block text-cyber-accent font-medium py-2">Tools</a>
+                <a href="features.html" class="block text-gray-300 hover:text-cyber-accent transition-colors py-2">Features</a>
+                <a href="architecture.html">Architektur</a>
+                <a href="docs.html" class="block text-gray-300 hover:text-cyber-accent transition-colors py-2">Docs</a>
+                <a href="pricing.html" class="block px-4 py-2 bg-gradient-to-r from-cyber-accent to-cyber-accent2 text-cyber-darker font-semibold rounded-lg text-center mt-4">
+                    Jetzt Starten
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="pt-16">
+        <!-- Page Header -->
+        <section class="relative py-20 lg:py-28 overflow-hidden">
+            <div class="absolute inset-0 grid-bg opacity-50"></div>
+            <div class="absolute inset-0 bg-gradient-to-b from-cyber-accent/5 via-transparent to-transparent"></div>
+            
+            <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <div class="inline-flex items-center space-x-2 px-4 py-2 bg-cyber-accent/10 border border-cyber-accent/30 rounded-full mb-6">
+                    <i data-lucide="terminal" class="w-4 h-4 text-cyber-accent"></i>
+                    <span class="text-sm text-cyber-accent font-mono">Penetration Testing Suite</span>
+                </div>
+                
+                <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
+                    <span class="gradient-text">40+ Integrierte Security-Tools</span>
+                </h1>
+                
+                <p class="text-xl text-gray-400 max-w-2xl mx-auto mb-8">
+                    Professionelle Penetration-Testing-Tools, nahtlos integriert in eine leistungsstarke Plattform für umfassende Sicherheitsanalysen.
+                </p>
+                
+                <div class="flex flex-wrap justify-center gap-4 text-sm text-gray-500">
+                    <div class="flex items-center space-x-2">
+                        <i data-lucide="check-circle" class="w-4 h-4 text-cyber-success"></i>
+                        <span>Immer Aktuell</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <i data-lucide="check-circle" class="w-4 h-4 text-cyber-success"></i>
+                        <span>Automatisierte Scans</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <i data-lucide="check-circle" class="w-4 h-4 text-cyber-success"></i>
+                        <span>Detaillierte Reports</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tool Categories Filter -->
+        <section class="py-8 border-y border-white/5">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex flex-wrap justify-center gap-3" id="category-filters">
+                    <button class="filter-btn active px-5 py-2.5 rounded-lg border border-white/10 text-sm font-medium" data-filter="all">
+                        <span class="flex items-center space-x-2">
+                            <i data-lucide="layout-grid" class="w-4 h-4"></i>
+                            <span>Alle Tools</span>
+                        </span>
+                    </button>
+                    <button class="filter-btn px-5 py-2.5 rounded-lg border border-white/10 text-sm font-medium text-gray-300" data-filter="network">
+                        <span class="flex items-center space-x-2">
+                            <i data-lucide="network" class="w-4 h-4"></i>
+                            <span>Netzwerk</span>
+                        </span>
+                    </button>
+                    <button class="filter-btn px-5 py-2.5 rounded-lg border border-white/10 text-sm font-medium text-gray-300" data-filter="web">
+                        <span class="flex items-center space-x-2">
+                            <i data-lucide="globe" class="w-4 h-4"></i>
+                            <span>Web</span>
+                        </span>
+                    </button>
+                    <button class="filter-btn px-5 py-2.5 rounded-lg border border-white/10 text-sm font-medium text-gray-300" data-filter="exploitation">
+                        <span class="flex items-center space-x-2">
+                            <i data-lucide="zap" class="w-4 h-4"></i>
+                            <span>Exploitation</span>
+                        </span>
+                    </button>
+                    <button class="filter-btn px-5 py-2.5 rounded-lg border border-white/10 text-sm font-medium text-gray-300" data-filter="bruteforce">
+                        <span class="flex items-center space-x-2">
+                            <i data-lucide="lock" class="w-4 h-4"></i>
+                            <span>Brute Force</span>
+                        </span>
+                    </button>
+                    <button class="filter-btn px-5 py-2.5 rounded-lg border border-white/10 text-sm font-medium text-gray-300" data-filter="reconnaissance">
+                        <span class="flex items-center space-x-2">
+                            <i data-lucide="search" class="w-4 h-4"></i>
+                            <span>Reconnaissance</span>
+                        </span>
+                    </button>
+                    <button class="filter-btn px-5 py-2.5 rounded-lg border border-white/10 text-sm font-medium text-gray-300" data-filter="activedirectory">
+                        <span class="flex items-center space-x-2">
+                            <i data-lucide="users" class="w-4 h-4"></i>
+                            <span>Active Directory</span>
+                        </span>
+                    </button>
+                    <button class="filter-btn px-5 py-2.5 rounded-lg border border-white/10 text-sm font-medium text-gray-300" data-filter="wireless">
+                        <span class="flex items-center space-x-2">
+                            <i data-lucide="wifi" class="w-4 h-4"></i>
+                            <span>Wireless</span>
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tools Grid -->
+        <section class="py-16 lg:py-24">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div id="tools-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    
+                    <!-- Network Tools -->
+                    <div class="tool-card card-glow bg-cyber-card border border-white/10 rounded-xl p-6" data-category="network">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="w-12 h-12 bg-cyber-accent/10 rounded-lg flex items-center justify-center">
+                                <i data-lucide="scan-line" class="w-6 h-6 text-cyber-accent"></i>
+                            </div>
+                            <span class="category-badge px-2 py-1 bg-cyber-accent/10 text-cyber-accent rounded">Netzwerk</span>
+                        </div>
+                        <h3 class="text-lg font-semibold text-white mb-2">Nmap</h3>
+                        <p class="text-sm text-gray-400">Netzwerk-Scanner für Port-Scanning und Service-Erkennung</p>
+                    </div>
+                    
+                    <div class="tool-card card-glow bg-cyber-card border border-white/10 rounded-xl p-6" data-category="network">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="w-12 h-12 bg-cyber-accent/10 rounded-lg flex items-center justify-center">
+                                <i data-lucide="scan" class="w-6 h-6 text-cyber-accent"></i>
+                            </div>
+                            <span class="category-badge px-2 py-1 bg-cyber-accent/10 text-cyber-accent rounded">Netzwerk</span>
+                        </div>
+                        <h3 class="text-lg font-semibold text-white mb-2">Masscan</h3>
+                        <p class="text-sm text-gray-400">Ultraschneller TCP-Port-Scanner für große Netzwerke</p>
+                    </div>
+                    
+                    <div class="tool-card card-glow bg-cyber-card border border-white/10 rounded-xl p-6" data-category="network">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="w-12 h-12 bg-cyber-accent/10 rounded-lg flex items-center justify-center">
+                                <i data-lucide="code-2" class="w-6 h-6 text-cyber-accent"></i>
+                            </div>
+                            <span class="category-badge px-2 py-1 bg-cyber-accent/10 text-cyber-accent rounded">Netzwerk</span>
+                        </div>
+                        <h3 class="text-lg font-semibold text-white mb-2">Scapy</h3>
+                        <p class="text-sm text-gray-400">Leistungsfähiges Python-Tool für Paket-Manipulation</p>
+                    </div>
+                    
+                    <div class="tool-card card-glow bg-cyber-card border border-white/10 rounded-xl p-6" data-category="network">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="w-12 h-12 bg-cyber-accent/10 rounded-lg flex items-center justify-center">
+                                <i data-lucide="activity" class="w-6 h-6 text-cyber-accent"></i>
+                            </div>
+                            <span class="category-badge px-2 py-1 bg-cyber-accent/10 text-cyber-accent rounded">Netzwerk</span>
+                        </div>
+                        <h3 class="text-lg font-semibold text-white mb-2">Tshark</h3>
+                        <p class="text-sm text-gray-400">CLI-basierter Netzwerk-Protokoll-Analyzer</p>
+                    </div>
+                    
+                    <!-- Web Tools -->
+                    <div class="tool-card card-glow bg-cyber-card border border-white/10 rounded-xl p-6" data-category="web">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="w-12 h-12 bg-cyber-accent2/10 rounded-lg flex items-center justify-center">
+                                <i data-lucide="shield" class="w-6 h-6 text-cyber-accent2"></i>
+                            </div>
+                            <span class="category-badge px-2 py-1 bg-cyber-accent2/10 text-cyber-accent2 rounded">Web</span>
+                        </div>
+                        <h3 class="text-lg font-semibold text-white mb-2">Burp Suite</h3>
+                        <p class="text-sm text-gray-400">Umfassende Plattform für Web-Security-Testing</p>
+                    </div>
+                    
+                    <div class="tool-card card-glow bg-cyber-card border border-white/10 rounded-xl p-6" data-category="web">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="w-12 h-12 bg-cyber-accent2/10 rounded-lg flex items-center justify-center">
+                                <i data-lucide="database" class="w-6 h-6 text-cyber-accent2"></i>
+                            </div>
+                            <span class="category-badge px-2 py-1 bg-cyber-accent2/10 text-cyber-accent2 rounded">Web</span>
+                        </div>
+                        <h3 class="text-lg font-semibold text-white mb-2">SQLMap</h3>
+                        <p class="text-sm text-gray-400">Automatisiertes SQL-Injection-Testing-Tool</p>
+                    </div>
+                    
+                    <div class="tool-card card-glow bg-cyber-card border border-white/10 rounded-xl p-6" data-category="web">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="w-12 h-12 bg-cyber-accent2/10 rounded-lg flex items-center justify-center">
+                                <i data-lucide="folder-search" class="w-6 h-6 text-cyber-accent2"></i>
+                            </div>
+                            <span class="category-badge px-2 py-1 bg-cyber-accent2/10 text-cyber-accent2 rounded">Web</span>
+                        </div>
+                        <h3 class="text-lg font-semibold text-white mb-2">Gobuster</h3>
+                        <p class="text-sm text-gray-400">Directory/File- und DNS-Subdomain-Enumerator</p>
+                    </div>
+                    
+                    <div class="tool-card card-glow bg-cyber-card border border-white/10 rounded-xl p-6" data-category="web">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="w-12 h-12 bg-cyber-accent2/10 rounded-lg flex items-center justify-center">
+                                <i data-lucide="bug" class="w-6 h-6 text-cyber-accent2"></i>
+                            </div>
+                            <span class="category-badge px-2 py-1 bg-cyber-accent2/10 text-cyber-accent2 rounded">Web</span>
+                        </div>
+                        <h3 class="text-lg font-semibold text-white mb-2">OWASP ZAP</h3>
+                        <p class="text-sm text-gray-400">Open-Source Web-Application-Security-Scanner</p>
+                    </div>
+                    
+                    <div class="tool-card card-glow bg-cyber-card border border-white/10 rounded-xl p-6" data-category="web">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="w-12 h-12 bg-cyber-accent2/10 rounded-lg flex items-center justify-center">
+                                <i data-lucide="flame" class="w-6 h-6 text-cyber-accent2"></i>
+                            </div>
+                            <span class="category-badge px-2 py-1 bg-cyber-accent2/10 text-cyber-accent2 rounded">Web</span>
+                        </div>
+                        <h3 class="text-lg font-semibold text-white mb-2">FFuF</h3>
+                        <p class="text-sm text-gray-400">Schneller Web-Fuzzer für Content-Discovery</p>
+                    </div>
+                    
+                    <div class="tool-card card-glow bg-cyber-card border border-white/10 rounded-xl p-6" data-category="web">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="w-12 h-12 bg-cyber-accent2/10 rounded-lg flex items-center justify-center">
+                                <i data-lucide="eye" class="w-6 h-6 text-cyber-accent2"></i>
+                            </div>
+                            <span class="category-badge px-2 py-1 bg-cyber-accent2/10 text-cyber-accent2 rounded">Web</span>
+                        </div>
+                        <h3 class="text-lg font-semibold text-white mb-2">Nikto</h3>
+                        <p class="text-sm text-gray-400">Web-Server-Scanner für Schwachstellen</p>
+                    </div>
+                    
+                    <div class="tool-card card-glow bg-cyber-card border border-white/10 rounded-xl p-6" data-category="web">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="w-12 h-12 bg-cyber-accent2/10 rounded-lg flex items-center justify-center">
+                                <i data-lucide="link" class="w-6 h-6 text-cyber-accent2"></i>
+                            </div>
+                            <span class="category-badge px-2 py-1 bg-cyber-accent2/10 text-cyber-accent2 rounded">Web</span>
+                        </div>
+                        <h3 class="text-lg font-semibold text-white mb-2">HTTPX</h3>
+                        <p class="text-sm text-gray-400">Schneller und vielseitiger HTTP-Toolkit</p>
+                    </div>
+                    
+                    <!-- Exploitation Tools -->
+                    <div class="tool-card card-glow bg-cyber-card border border-white/10 rounded-xl p-6" data-category="exploitation">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="w-12 h-12 bg-cyber-danger/10 rounded-lg flex items-center justify-center">
+                                <i data-lucide="crosshair" class="w-6 h-6 text-cyber-danger"></i>
+                            </div>
+                            <span class="category-badge px-2 py-1 bg-cyber-danger/10 text-cyber-danger rounded">Exploitation</span>
+                        </div>
+                        <h3 class="text-lg font-semibold text-white mb-2">Metasploit Framework</h3>
+                        <p class="text-sm text-gray-400">Umfassendes Penetration-Testing-Framework</p>
+                    </div>
+                    
+                    <!-- Brute Force Tools -->
+                    <div class="tool-card card-glow bg-cyber-card border border-white/10 rounded-xl p-6" data-category="bruteforce">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="w-12 h-12 bg-cyber-warning/10 rounded-lg flex items-center justify-center">
+                                <i data-lucide="key" class="w-6 h-6 text-cyber-warning"></i>
+                            </div>
+                            <span class="category-badge px-2 py-1 bg-cyber-warning/10 text-cyber-warning rounded">Brute Force</span>
+                        </div>
+                        <h3 class="text-lg font-semibold text-white mb-2">Hydra</h3>
+                        <p class="text-sm text-gray-400">Schneller Netzwerk-Login-Cracker</p>
+                    </div>
+                    
+                    <div class="tool-card card-glow bg-cyber-card border border-white/10 rounded-xl p-6" data-category="bruteforce">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="w-12 h-12 bg-cyber-warning/10 rounded-lg flex items-center justify-center">
+                                <i data-lucide="cpu" class="w-6 h-6 text-cyber-warning"></i>
+                            </div>
+                            <span class="category-badge px-2 py-1 bg-cyber-warning/10 text-cyber-warning rounded">Brute Force</span>
+                        </div>
+                        <h3 class="text-lg font-semibold text-white mb-2">Hashcat</h3>
+                        <p class="text-sm text-gray-400">Weltweit schnellster Passwort-Recovery-Tool</p>
+                    </div>
+                    
+                    <!-- Reconnaissance Tools -->
+                    <div class="tool-card card-glow bg-cyber-card border border-white/10 rounded-xl p-6" data-category="reconnaissance">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="w-12 h-12 bg-cyber-success/10 rounded-lg flex items-center justify-center">
+                                <i data-lucide="map" class="w-6 h-6 text-cyber-success"></i>
+                            </div>
+                            <span class="category-badge px-2 py-1 bg-cyber-success/10 text-cyber-success rounded">Reconnaissance</span>
+                        </div>
+                        <h3 class="text-lg font-semibold text-white mb-2">Amass</h3>
+                        <p class="text-sm text-gray-400">Umfassendes Netzwerk-Mapping für Attack Surface</p>
+                    </div>
+                    
+                    <div class="tool-card card-glow bg-cyber-card border border-white/10 rounded-xl p-6" data-category="reconnaissance">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="w-12 h-12 bg-cyber-success/10 rounded-lg flex items-center justify-center">
+                                <i data-lucide="radar" class="w-6 h-6 text-cyber-success"></i>
+                            </div>
+                            <span class="category-badge px-2 py-1 bg-cyber-success/10 text-cyber-success rounded">Reconnaissance</span>
+                        </div>
+                        <h3 class="text-lg font-semibold text-white mb-2">Nuclei</h3>
+                        <p class="text-sm text-gray-400">Schneller Template-basierter Vulnerability-Scanner</p>
+                    </div>
+                    
+                    <div class="tool-card card-glow bg-cyber-card border border-white/10 rounded-xl p-6" data-category="reconnaissance">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="w-12 h-12 bg-cyber-success/10 rounded-lg flex items-center justify-center">
+                                <i data-lucide="mail" class="w-6 h-6 text-cyber-success"></i>
+                            </div>
+                            <span class="category-badge px-2 py-1 bg-cyber-success/10 text-cyber-success rounded">Reconnaissance</span>
+                        </div>
+                        <h3 class="text-lg font-semibold text-white mb-2">TheHarvester</h3>
+                        <p class="text-sm text-gray-400">E-Mail-Account- und Subdomain-Enumerator</p>
+                    </div>
+                    
+                    <div class="tool-card card-glow bg-cyber-card border border-white/10 rounded-xl p-6" data-category="reconnaissance">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="w-12 h-12 bg-cyber-success/10 rounded-lg flex items-center justify-center">
+                                <i data-lucide="git-branch" class="w-6 h-6 text-cyber-success"></i>
+                            </div>
+                            <span class="category-badge px-2 py-1 bg-cyber-success/10 text-cyber-success rounded">Reconnaissance</span>
+                        </div>
+                        <h3 class="text-lg font-semibold text-white mb-2">Subfinder</h3>
+                        <p class="text-sm text-gray-400">Subdomain-Discovery-Tool mit passiver Quellen</p>
+                    </div>
+                    
+                    <div class="tool-card card-glow bg-cyber-card border border-white/10 rounded-xl p-6" data-category="reconnaissance">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="w-12 h-12 bg-cyber-success/10 rounded-lg flex items-center justify-center">
+                                <i data-lucide="fingerprint" class="w-6 h-6 text-cyber-success"></i>
+                            </div>
+                            <span class="category-badge px-2 py-1 bg-cyber-success/10 text-cyber-success rounded">Reconnaissance</span>
+                        </div>
+                        <h3 class="text-lg font-semibold text-white mb-2">WhatWeb</h3>
+                        <p class="text-sm text-gray-400">Web-Technologie-Fingerprinter</p>
+                    </div>
+                    
+                    <div class="tool-card card-glow bg-cyber-card border border-white/10 rounded-xl p-6" data-category="reconnaissance">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="w-12 h-12 bg-cyber-success/10 rounded-lg flex items-center justify-center">
+                                <i data-lucide="shield-off" class="w-6 h-6 text-cyber-success"></i>
+                            </div>
+                            <span class="category-badge px-2 py-1 bg-cyber-success/10 text-cyber-success rounded">Reconnaissance</span>
+                        </div>
+                        <h3 class="text-lg font-semibold text-white mb-2">WAFW00F</h3>
+                        <p class="text-sm text-gray-400">Web Application Firewall Fingerprinting Tool</p>
+                    </div>
+                    
+                    <!-- Active Directory Tools -->
+                    <div class="tool-card card-glow bg-cyber-card border border-white/10 rounded-xl p-6" data-category="activedirectory">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="w-12 h-12 bg-purple-500/10 rounded-lg flex items-center justify-center">
+                                <i data-lucide="share-2" class="w-6 h-6 text-purple-500"></i>
+                            </div>
+                            <span class="category-badge px-2 py-1 bg-purple-500/10 text-purple-500 rounded">Active Directory</span>
+                        </div>
+                        <h3 class="text-lg font-semibold text-white mb-2">BloodHound</h3>
+                        <p class="text-sm text-gray-400">Active Directory-Analyse und Angriffspfad-Mapping</p>
+                    </div>
+                    
+                    <div class="tool-card card-glow bg-cyber-card border border-white/10 rounded-xl p-6" data-category="activedirectory">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="w-12 h-12 bg-purple-500/10 rounded-lg flex items-center justify-center">
+                                <i data-lucide="hammer" class="w-6 h-6 text-purple-500"></i>
+                            </div>
+                            <span class="category-badge px-2 py-1 bg-purple-500/10 text-purple-500 rounded">Active Directory</span>
+                        </div>
+                        <h3 class="text-lg font-semibold text-white mb-2">CrackMapExec</h3>
+                        <p class="text-sm text-gray-400">Schweizer Taschenmesser für Pentesting-Netzwerke</p>
+                    </div>
+                    
+                    <div class="tool-card card-glow bg-cyber-card border border-white/10 rounded-xl p-6" data-category="activedirectory">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="w-12 h-12 bg-purple-500/10 rounded-lg flex items-center justify-center">
+                                <i data-lucide="message-square" class="w-6 h-6 text-purple-500"></i>
+                            </div>
+                            <span class="category-badge px-2 py-1 bg-purple-500/10 text-purple-500 rounded">Active Directory</span>
+                        </div>
+                        <h3 class="text-lg font-semibold text-white mb-2">Responder</h3>
+                        <p class="text-sm text-gray-400">LLMNR, NBT-NS und MDNS-Poisoner</p>
+                    </div>
+                    
+                    <!-- Wireless Tools -->
+                    <div class="tool-card card-glow bg-cyber-card border border-white/10 rounded-xl p-6" data-category="wireless">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="w-12 h-12 bg-pink-500/10 rounded-lg flex items-center justify-center">
+                                <i data-lucide="radio" class="w-6 h-6 text-pink-500"></i>
+                            </div>
+                            <span class="category-badge px-2 py-1 bg-pink-500/10 text-pink-500 rounded">Wireless</span>
+                        </div>
+                        <h3 class="text-lg font-semibold text-white mb-2">Aircrack-ng Suite</h3>
+                        <p class="text-sm text-gray-400">Komplettes Toolkit für WLAN-Sicherheits-Auditing</p>
+                    </div>
+                    
+                </div>
+            </div>
+        </section>
+
+        <!-- Stats Section -->
+        <section class="py-16 border-y border-white/5">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+                    <div class="text-center">
+                        <div class="text-3xl md:text-4xl font-bold gradient-text mb-2">40+</div>
+                        <div class="text-sm text-gray-400">Integrierte Tools</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl md:text-4xl font-bold gradient-text mb-2">7</div>
+                        <div class="text-sm text-gray-400">Kategorien</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl md:text-4xl font-bold gradient-text mb-2">24/7</div>
+                        <div class="text-sm text-gray-400">Automatisierte Scans</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl md:text-4xl font-bold gradient-text mb-2">100%</div>
+                        <div class="text-sm text-gray-400">Open Source</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="py-20 lg:py-28 relative overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-r from-cyber-accent/10 to-cyber-accent2/10"></div>
+            <div class="absolute inset-0 grid-bg opacity-30"></div>
+            
+            <div class="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <h2 class="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
+                    Bereit für den <span class="gradient-text">nächsten Schritt</span>?
+                </h2>
+                <p class="text-lg text-gray-400 mb-10 max-w-2xl mx-auto">
+                    Starten Sie noch heute mit CyberShield und nutzen Sie die volle Power von 40+ professionellen Security-Tools für Ihre Penetration Tests.
+                </p>
+                
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                    <a href="pricing.html" class="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-cyber-accent to-cyber-accent2 text-cyber-darker font-bold rounded-xl hover:shadow-glow-lg transition-all duration-300 flex items-center justify-center space-x-2">
+                        <span>Jetzt Kostenlos Testen</span>
+                        <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                    </a>
+                    <a href="docs.html" class="w-full sm:w-auto px-8 py-4 border border-white/20 text-white font-semibold rounded-xl hover:bg-white/5 transition-all duration-300 flex items-center justify-center space-x-2">
+                        <i data-lucide="book-open" class="w-5 h-5"></i>
+                        <span>Dokumentation</span>
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-cyber-darker border-t border-white/5">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
+                <!-- Brand -->
+                <div class="lg:col-span-1">
+                    <a href="../index.html" class="flex items-center space-x-2 mb-4">
+                        <i data-lucide="shield-check" class="w-8 h-8 text-cyber-accent"></i>
+                        <span class="text-xl font-bold">
+                            <span class="text-white">Cyber</span><span class="text-cyber-accent">Shield</span>
+                        </span>
+                    </a>
+                    <p class="text-gray-400 text-sm mb-6">
+                        Professionelle Penetration-Testing-Tools für moderne Security-Teams.
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-cyber-accent transition-colors">
+                            <i data-lucide="github" class="w-5 h-5"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-cyber-accent transition-colors">
+                            <i data-lucide="twitter" class="w-5 h-5"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-cyber-accent transition-colors">
+                            <i data-lucide="linkedin" class="w-5 h-5"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-cyber-accent transition-colors">
+                            <i data-lucide="youtube" class="w-5 h-5"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Product -->
+                <div>
+                    <h4 class="text-white font-semibold mb-4">Produkt</h4>
+                    <ul class="space-y-3">
+                        <li><a href="tools.html" class="text-gray-400 hover:text-cyber-accent transition-colors text-sm">Tools</a></li>
+                        <li><a href="features.html" class="text-gray-400 hover:text-cyber-accent transition-colors text-sm">Features</a></li>
+                        <li><a href="architecture.html">Architektur</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-cyber-accent transition-colors text-sm">Changelog</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Resources -->
+                <div>
+                    <h4 class="text-white font-semibold mb-4">Ressourcen</h4>
+                    <ul class="space-y-3">
+                        <li><a href="docs.html" class="text-gray-400 hover:text-cyber-accent transition-colors text-sm">Dokumentation</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-cyber-accent transition-colors text-sm">API Referenz</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-cyber-accent transition-colors text-sm">Blog</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-cyber-accent transition-colors text-sm">Community</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Legal -->
+                <div>
+                    <h4 class="text-white font-semibold mb-4">Rechtliches</h4>
+                    <ul class="space-y-3">
+                        <li><a href="#" class="text-gray-400 hover:text-cyber-accent transition-colors text-sm">Impressum</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-cyber-accent transition-colors text-sm">Datenschutz</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-cyber-accent transition-colors text-sm">AGB</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-cyber-accent transition-colors text-sm">Cookie-Richtlinie</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-white/5 mt-12 pt-8 flex flex-col md:flex-row items-center justify-between">
+                <p class="text-gray-500 text-sm">
+                    &copy; 2024 CyberShield. Alle Rechte vorbehalten.
+                </p>
+                <p class="text-gray-600 text-sm mt-2 md:mt-0 flex items-center">
+                    Made with <i data-lucide="heart" class="w-4 h-4 text-cyber-danger mx-1"></i> in Germany
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+        
+        // Register GSAP ScrollTrigger
+        gsap.registerPlugin(ScrollTrigger);
+        
+        // Mobile Menu Toggle
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+        
+        // Filter Functionality
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        const toolCards = document.querySelectorAll('.tool-card');
+        
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Update active state
+                filterBtns.forEach(b => {
+                    b.classList.remove('active');
+                    b.classList.add('text-gray-300');
+                });
+                btn.classList.add('active');
+                btn.classList.remove('text-gray-300');
+                
+                const filter = btn.getAttribute('data-filter');
+                
+                // Filter cards with animation
+                toolCards.forEach(card => {
+                    const category = card.getAttribute('data-category');
+                    
+                    if (filter === 'all' || category === filter) {
+                        gsap.to(card, {
+                            opacity: 1,
+                            scale: 1,
+                            duration: 0.3,
+                            display: 'block'
+                        });
+                    } else {
+                        gsap.to(card, {
+                            opacity: 0,
+                            scale: 0.9,
+                            duration: 0.3,
+                            display: 'none'
+                        });
+                    }
+                });
+            });
+        });
+        
+        // Scroll-triggered stagger animation for tool cards
+        gsap.to('.tool-card', {
+            opacity: 1,
+            y: 0,
+            duration: 0.5,
+            stagger: {
+                amount: 0.8,
+                from: 'start'
+            },
+            ease: 'power2.out',
+            scrollTrigger: {
+                trigger: '#tools-grid',
+                start: 'top 80%',
+                once: true
+            }
+        });
+        
+        // Header animation
+        gsap.from('h1', {
+            opacity: 0,
+            y: 30,
+            duration: 0.8,
+            ease: 'power2.out',
+            delay: 0.2
+        });
+        
+        gsap.from('h1 + p', {
+            opacity: 0,
+            y: 20,
+            duration: 0.8,
+            ease: 'power2.out',
+            delay: 0.4
+        });
+        
+        // Stats counter animation
+        const statsSection = document.querySelector('section:nth-of-type(4)');
+        gsap.from(statsSection.querySelectorAll('.text-center'), {
+            opacity: 0,
+            y: 30,
+            duration: 0.6,
+            stagger: 0.1,
+            ease: 'power2.out',
+            scrollTrigger: {
+                trigger: statsSection,
+                start: 'top 80%',
+                once: true
+            }
+        });
+        
+        // CTA Section animation
+        gsap.from('section:nth-of-type(5) h2, section:nth-of-type(5) p, section:nth-of-type(5) .flex', {
+            opacity: 0,
+            y: 30,
+            duration: 0.8,
+            stagger: 0.15,
+            ease: 'power2.out',
+            scrollTrigger: {
+                trigger: 'section:nth-of-type(5)',
+                start: 'top 70%',
+                once: true
+            }
+        });
+    </script>
+</body>
+</html>

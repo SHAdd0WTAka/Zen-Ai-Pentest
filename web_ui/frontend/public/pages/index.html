@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zen-AI-Pentest | KI-gestütztes Penetration-Testing-Framework</title>
+    <meta name="description" content="Autonome Sicherheitsanalyse mit 40+ integrierten Tools, Multi-Agent-System und intelligenter Risikobewertung">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        zen: {
+                            dark: '#0a0a0f',
+                            darker: '#050508',
+                            card: '#12121a',
+                            accent: '#00d4ff',
+                            accent2: '#7c3aed',
+                            success: '#10b981',
+                            warning: '#f59e0b',
+                            danger: '#ef4444',
+                        }
+                    },
+                    animation: {
+                        'gradient': 'gradient 8s ease infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        gradient: {
+                            '0%, 100%': { backgroundPosition: '0% 50%' },
+                            '50%': { backgroundPosition: '100% 50%' },
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            background-color: #0a0a0f;
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #00d4ff 0%, #7c3aed 50%, #00d4ff 100%);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradient 4s ease infinite;
+        }
+        
+        .hero-gradient {
+            background: linear-gradient(135deg, 
+                rgba(0, 212, 255, 0.1) 0%, 
+                rgba(124, 58, 237, 0.1) 50%, 
+                rgba(0, 212, 255, 0.1) 100%);
+            background-size: 400% 400%;
+            animation: gradient 8s ease infinite;
+        }
+        
+        .glow-accent {
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.3),
+                        0 0 40px rgba(0, 212, 255, 0.2),
+                        0 0 60px rgba(0, 212, 255, 0.1);
+        }
+        
+        .glow-card {
+            transition: all 0.3s ease;
+        }
+        
+        .glow-card:hover {
+            box-shadow: 0 0 30px rgba(0, 212, 255, 0.2),
+                        0 0 60px rgba(124, 58, 237, 0.1);
+            transform: translateY(-5px);
+        }
+        
+        .code-block {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+        }
+        
+        .nav-blur {
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        
+        .stat-number {
+            font-variant-numeric: tabular-nums;
+        }
+        
+        .feature-icon {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.2) 0%, rgba(124, 58, 237, 0.2) 100%);
+        }
+        
+        /* Animated background mesh */
+        .mesh-bg {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+            z-index: 0;
+        }
+        
+        .mesh-bg::before {
+            content: '';
+            position: absolute;
+            inset: -50%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(0, 212, 255, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(124, 58, 237, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(0, 212, 255, 0.1) 0%, transparent 40%);
+            animation: rotate 30s linear infinite;
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .hero-overlay {
+            background: linear-gradient(to bottom, 
+                rgba(10, 10, 15, 0.3) 0%, 
+                rgba(10, 10, 15, 0.7) 70%,
+                rgba(10, 10, 15, 1) 100%);
+        }
+    </style>
+</head>
+<body class="font-sans antialiased">
+    <!-- Navigation -->
+    <nav id="navbar" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo -->
+                <a href="index.html" class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-zen-accent to-zen-accent2 flex items-center justify-center">
+                        <i data-lucide="shield-check" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <span class="text-xl font-bold gradient-text">Zen-AI-Pentest</span>
+                </a>
+                
+                <!-- Desktop Navigation -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="features.html" class="text-gray-300 hover:text-zen-accent transition-colors">Features</a>
+                    <a href="docs.html" class="text-gray-300 hover:text-zen-accent transition-colors">Dokumentation</a>
+                    <a href="demo.html" class="text-gray-300 hover:text-zen-accent transition-colors">Demo</a>
+                    <a href="community.html" class="text-gray-300 hover:text-zen-accent transition-colors">Community</a>
+                </div>
+                
+                <!-- CTA Button -->
+                <div class="hidden md:block">
+                    <a href="docs.html" class="px-5 py-2.5 rounded-lg bg-gradient-to-r from-zen-accent to-zen-accent2 text-white font-medium hover:opacity-90 transition-opacity glow-accent">
+                        Jetzt Starten
+                    </a>
+                </div>
+                
+                <!-- Mobile Menu Button -->
+                <button id="mobile-menu-btn" class="md:hidden p-2 rounded-lg hover:bg-white/10 transition-colors">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden nav-blur bg-zen-dark/95 border-t border-white/10">
+            <div class="px-4 py-4 space-y-3">
+                <a href="features.html" class="block px-4 py-2 rounded-lg hover:bg-white/10 text-gray-300 transition-colors">Features</a>
+                <a href="docs.html" class="block px-4 py-2 rounded-lg hover:bg-white/10 text-gray-300 transition-colors">Dokumentation</a>
+                <a href="demo.html" class="block px-4 py-2 rounded-lg hover:bg-white/10 text-gray-300 transition-colors">Demo</a>
+                <a href="community.html" class="block px-4 py-2 rounded-lg hover:bg-white/10 text-gray-300 transition-colors">Community</a>
+                <a href="docs.html" class="block px-4 py-2 rounded-lg bg-gradient-to-r from-zen-accent to-zen-accent2 text-white text-center font-medium">
+                    Jetzt Starten
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        <!-- Hero Section -->
+        <section class="relative min-h-screen flex items-center justify-center overflow-hidden">
+            <!-- Background Image with Overlay -->
+            <div class="absolute inset-0 z-0">
+                <img src="../images/hero-bg.jpg" alt="" class="w-full h-full object-cover opacity-40">
+                <div class="absolute inset-0 hero-overlay"></div>
+            </div>
+            
+            <!-- Animated Mesh Background -->
+            <div class="mesh-bg"></div>
+            
+            <!-- Hero Content -->
+            <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-32 text-center">
+                <!-- Badge -->
+                <div id="hero-badge" class="inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-white/5 border border-zen-accent/30 mb-8 opacity-0">
+                    <span class="w-2 h-2 rounded-full bg-zen-success animate-pulse"></span>
+                    <span class="text-sm text-gray-300">v2.3.9 Jetzt Verfügbar</span>
+                </div>
+                
+                <!-- Main Headline -->
+                <h1 id="hero-title" class="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold mb-6 opacity-0">
+                    <span class="gradient-text">Zen-AI-Pentest</span>
+                </h1>
+                
+                <!-- Tagline -->
+                <p id="hero-tagline" class="text-xl sm:text-2xl md:text-3xl text-gray-300 mb-4 font-light opacity-0">
+                    KI-gestütztes Penetration-Testing-Framework der nächsten Generation
+                </p>
+                
+                <!-- Subtitle -->
+                <p id="hero-subtitle" class="max-w-3xl mx-auto text-base sm:text-lg text-gray-400 mb-12 opacity-0">
+                    Autonome Sicherheitsanalyse mit 40+ integrierten Tools, Multi-Agent-System und intelligenter Risikobewertung
+                </p>
+                
+                <!-- CTA Buttons -->
+                <div id="hero-cta" class="flex flex-col sm:flex-row items-center justify-center gap-4 opacity-0">
+                    <a href="docs.html" class="group px-8 py-4 rounded-xl bg-gradient-to-r from-zen-accent to-zen-accent2 text-white font-semibold text-lg hover:opacity-90 transition-all glow-accent flex items-center space-x-2">
+                        <span>Jetzt Starten</span>
+                        <i data-lucide="arrow-right" class="w-5 h-5 group-hover:translate-x-1 transition-transform"></i>
+                    </a>
+                    <a href="docs.html" class="px-8 py-4 rounded-xl border border-white/20 text-white font-semibold text-lg hover:bg-white/10 transition-all flex items-center space-x-2">
+                        <i data-lucide="book-open" class="w-5 h-5"></i>
+                        <span>Dokumentation</span>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Scroll Indicator -->
+            <div class="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 animate-bounce">
+                <i data-lucide="chevron-down" class="w-8 h-8 text-zen-accent"></i>
+            </div>
+        </section>
+
+        <!-- Stats Bar -->
+        <section class="relative z-20 -mt-20 px-4 sm:px-6 lg:px-8">
+            <div class="max-w-5xl mx-auto">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+                    <!-- Stat 1: Stars -->
+                    <div class="stat-card glow-card bg-zen-card rounded-2xl p-6 border border-white/10 text-center">
+                        <div class="flex items-center justify-center mb-3">
+                            <div class="w-12 h-12 rounded-xl feature-icon flex items-center justify-center">
+                                <i data-lucide="star" class="w-6 h-6 text-zen-accent"></i>
+                            </div>
+                        </div>
+                        <div class="stat-number text-3xl md:text-4xl font-bold text-white mb-1" data-target="205">0</div>
+                        <div class="text-sm text-gray-400">Stars</div>
+                    </div>
+                    
+                    <!-- Stat 2: Forks -->
+                    <div class="stat-card glow-card bg-zen-card rounded-2xl p-6 border border-white/10 text-center">
+                        <div class="flex items-center justify-center mb-3">
+                            <div class="w-12 h-12 rounded-xl feature-icon flex items-center justify-center">
+                                <i data-lucide="git-fork" class="w-6 h-6 text-zen-accent2"></i>
+                            </div>
+                        </div>
+                        <div class="stat-number text-3xl md:text-4xl font-bold text-white mb-1" data-target="29">0</div>
+                        <div class="text-sm text-gray-400">Forks</div>
+                    </div>
+                    
+                    <!-- Stat 3: Commits -->
+                    <div class="stat-card glow-card bg-zen-card rounded-2xl p-6 border border-white/10 text-center">
+                        <div class="flex items-center justify-center mb-3">
+                            <div class="w-12 h-12 rounded-xl feature-icon flex items-center justify-center">
+                                <i data-lucide="git-commit" class="w-6 h-6 text-zen-success"></i>
+                            </div>
+                        </div>
+                        <div class="stat-number text-3xl md:text-4xl font-bold text-white mb-1" data-target="776">0</div>
+                        <div class="text-sm text-gray-400">Commits</div>
+                    </div>
+                    
+                    <!-- Stat 4: Version -->
+                    <div class="stat-card glow-card bg-zen-card rounded-2xl p-6 border border-white/10 text-center">
+                        <div class="flex items-center justify-center mb-3">
+                            <div class="w-12 h-12 rounded-xl feature-icon flex items-center justify-center">
+                                <i data-lucide="tag" class="w-6 h-6 text-zen-warning"></i>
+                            </div>
+                        </div>
+                        <div class="text-3xl md:text-4xl font-bold text-white mb-1">v2.3.9</div>
+                        <div class="text-sm text-gray-400">Version</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Key Features Preview -->
+        <section class="py-24 px-4 sm:px-6 lg:px-8">
+            <div class="max-w-7xl mx-auto">
+                <!-- Section Header -->
+                <div class="text-center mb-16">
+                    <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
+                        <span class="gradient-text">Leistungsstarke Features</span>
+                    </h2>
+                    <p class="text-gray-400 text-lg max-w-2xl mx-auto">
+                        Entdecken Sie die innovativen Funktionen, die Zen-AI-Pentest zur nächsten Generation der Sicherheitsanalyse machen
+                    </p>
+                </div>
+                
+                <!-- Feature Cards Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- Feature 1: Autonomous AI Agent -->
+                    <div class="feature-card glow-card bg-zen-card rounded-2xl p-6 border border-white/10">
+                        <div class="w-14 h-14 rounded-xl feature-icon flex items-center justify-center mb-5">
+                            <i data-lucide="bot" class="w-7 h-7 text-zen-accent"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-white mb-3">Autonomer AI-Agent</h3>
+                        <p class="text-gray-400 text-sm leading-relaxed mb-4">
+                            Intelligenter Agent mit ReAct Pattern und State Machine für autonome Penetrationstests
+                        </p>
+                        <ul class="space-y-2 text-sm text-gray-500">
+                            <li class="flex items-center space-x-2">
+                                <i data-lucide="check-circle" class="w-4 h-4 text-zen-success"></i>
+                                <span>ReAct Pattern</span>
+                            </li>
+                            <li class="flex items-center space-x-2">
+                                <i data-lucide="check-circle" class="w-4 h-4 text-zen-success"></i>
+                                <span>State Machine</span>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Feature 2: 40+ Security Tools -->
+                    <div class="feature-card glow-card bg-zen-card rounded-2xl p-6 border border-white/10">
+                        <div class="w-14 h-14 rounded-xl feature-icon flex items-center justify-center mb-5">
+                            <i data-lucide="wrench" class="w-7 h-7 text-zen-accent2"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-white mb-3">40+ Security-Tools</h3>
+                        <p class="text-gray-400 text-sm leading-relaxed mb-4">
+                            Vollständig integrierte Toolchain mit Nmap, Nuclei, SQLMap und vielen mehr
+                        </p>
+                        <ul class="space-y-2 text-sm text-gray-500">
+                            <li class="flex items-center space-x-2">
+                                <i data-lucide="check-circle" class="w-4 h-4 text-zen-success"></i>
+                                <span>Nmap, Nuclei</span>
+                            </li>
+                            <li class="flex items-center space-x-2">
+                                <i data-lucide="check-circle" class="w-4 h-4 text-zen-success"></i>
+                                <span>SQLMap, Metasploit</span>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Feature 3: Multi-Agent System -->
+                    <div class="feature-card glow-card bg-zen-card rounded-2xl p-6 border border-white/10">
+                        <div class="w-14 h-14 rounded-xl feature-icon flex items-center justify-center mb-5">
+                            <i data-lucide="users" class="w-7 h-7 text-zen-success"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-white mb-3">Multi-Agent-System</h3>
+                        <p class="text-gray-400 text-sm leading-relaxed mb-4">
+                            Koordinierte Zusammenarbeit mehrerer spezialisierter Agenten für komplexe Workflows
+                        </p>
+                        <ul class="space-y-2 text-sm text-gray-500">
+                            <li class="flex items-center space-x-2">
+                                <i data-lucide="check-circle" class="w-4 h-4 text-zen-success"></i>
+                                <span>Workflow Orchestration</span>
+                            </li>
+                            <li class="flex items-center space-x-2">
+                                <i data-lucide="check-circle" class="w-4 h-4 text-zen-success"></i>
+                                <span>Spezialisierte Agenten</span>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Feature 4: Risk Engine -->
+                    <div class="feature-card glow-card bg-zen-card rounded-2xl p-6 border border-white/10">
+                        <div class="w-14 h-14 rounded-xl feature-icon flex items-center justify-center mb-5">
+                            <i data-lucide="activity" class="w-7 h-7 text-zen-warning"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-white mb-3">Risk Engine</h3>
+                        <p class="text-gray-400 text-sm leading-relaxed mb-4">
+                            Intelligente Risikobewertung mit CVSS- und EPSS-Scoring für präzise Priorisierung
+                        </p>
+                        <ul class="space-y-2 text-sm text-gray-500">
+                            <li class="flex items-center space-x-2">
+                                <i data-lucide="check-circle" class="w-4 h-4 text-zen-success"></i>
+                                <span>CVSS Scoring</span>
+                            </li>
+                            <li class="flex items-center space-x-2">
+                                <i data-lucide="check-circle" class="w-4 h-4 text-zen-success"></i>
+                                <span>EPSS Integration</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- View All Features Link -->
+                <div class="text-center mt-12">
+                    <a href="features.html" class="inline-flex items-center space-x-2 text-zen-accent hover:text-white transition-colors">
+                        <span>Alle Features ansehen</span>
+                        <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section - Docker Install -->
+        <section class="py-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+            <!-- Background Gradient -->
+            <div class="absolute inset-0 hero-gradient opacity-30"></div>
+            
+            <div class="max-w-4xl mx-auto relative z-10">
+                <div class="bg-zen-card rounded-3xl p-8 md:p-12 border border-white/10 text-center">
+                    <h2 class="text-3xl sm:text-4xl font-bold mb-4">
+                        <span class="gradient-text">Bereit zum Starten?</span>
+                    </h2>
+                    <p class="text-gray-400 text-lg mb-8 max-w-2xl mx-auto">
+                        Installieren Sie Zen-AI-Pentest in wenigen Sekunden mit Docker und starten Sie Ihre erste Sicherheitsanalyse
+                    </p>
+                    
+                    <!-- Docker Command -->
+                    <div class="code-block rounded-xl p-4 md:p-6 mb-8 text-left overflow-x-auto">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center space-x-2">
+                                <i data-lucide="terminal" class="w-4 h-4 text-zen-accent"></i>
+                                <span class="text-xs text-gray-500 uppercase tracking-wider">Docker</span>
+                            </div>
+                            <button id="copy-btn" class="flex items-center space-x-1 text-xs text-gray-400 hover:text-zen-accent transition-colors">
+                                <i data-lucide="copy" class="w-4 h-4"></i>
+                                <span>Kopieren</span>
+                            </button>
+                        </div>
+                        <code class="font-mono text-sm text-zen-accent">
+                            docker run -it --rm zen-ai-pentest/zen-ai-pentest:latest
+                        </code>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                        <a href="docs.html" class="px-8 py-3 rounded-xl bg-gradient-to-r from-zen-accent to-zen-accent2 text-white font-semibold hover:opacity-90 transition-opacity glow-accent">
+                            Installation Guide
+                        </a>
+                        <a href="https://github.com/zen-ai-pentest/zen-ai-pentest" target="_blank" class="px-8 py-3 rounded-xl border border-white/20 text-white font-semibold hover:bg-white/10 transition-all flex items-center space-x-2">
+                            <i data-lucide="github" class="w-5 h-5"></i>
+                            <span>GitHub</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-white/10 bg-zen-darker">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+                <!-- Brand -->
+                <div class="md:col-span-1">
+                    <a href="index.html" class="flex items-center space-x-3 mb-4">
+                        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-zen-accent to-zen-accent2 flex items-center justify-center">
+                            <i data-lucide="shield-check" class="w-6 h-6 text-white"></i>
+                        </div>
+                        <span class="text-xl font-bold gradient-text">Zen-AI-Pentest</span>
+                    </a>
+                    <p class="text-gray-400 text-sm">
+                        KI-gestütztes Penetration-Testing-Framework für die nächste Generation der Cybersicherheit.
+                    </p>
+                </div>
+                
+                <!-- Quick Links -->
+                <div>
+                    <h4 class="text-white font-semibold mb-4">Produkt</h4>
+                    <ul class="space-y-2">
+                        <li><a href="features.html" class="text-gray-400 hover:text-zen-accent transition-colors text-sm">Features</a></li>
+                        <li><a href="docs.html" class="text-gray-400 hover:text-zen-accent transition-colors text-sm">Dokumentation</a></li>
+                        <li><a href="demo.html" class="text-gray-400 hover:text-zen-accent transition-colors text-sm">Demo</a></li>
+                        <li><a href="pricing.html" class="text-gray-400 hover:text-zen-accent transition-colors text-sm">Preise</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Resources -->
+                <div>
+                    <h4 class="text-white font-semibold mb-4">Ressourcen</h4>
+                    <ul class="space-y-2">
+                        <li><a href="docs.html" class="text-gray-400 hover:text-zen-accent transition-colors text-sm">API Referenz</a></li>
+                        <li><a href="community.html" class="text-gray-400 hover:text-zen-accent transition-colors text-sm">Community</a></li>
+                        <li><a href="blog.html" class="text-gray-400 hover:text-zen-accent transition-colors text-sm">Blog</a></li>
+                        <li><a href="changelog.html" class="text-gray-400 hover:text-zen-accent transition-colors text-sm">Changelog</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Connect -->
+                <div>
+                    <h4 class="text-white font-semibold mb-4">Connect</h4>
+                    <div class="flex space-x-4">
+                        <a href="https://github.com/zen-ai-pentest" target="_blank" class="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center hover:bg-zen-accent/20 transition-colors">
+                            <i data-lucide="github" class="w-5 h-5 text-gray-400"></i>
+                        </a>
+                        <a href="https://twitter.com/zenaipentest" target="_blank" class="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center hover:bg-zen-accent/20 transition-colors">
+                            <i data-lucide="twitter" class="w-5 h-5 text-gray-400"></i>
+                        </a>
+                        <a href="https://discord.gg/zen-ai-pentest" target="_blank" class="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center hover:bg-zen-accent/20 transition-colors">
+                            <i data-lucide="message-circle" class="w-5 h-5 text-gray-400"></i>
+                        </a>
+                        <a href="https://linkedin.com/company/zen-ai-pentest" target="_blank" class="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center hover:bg-zen-accent/20 transition-colors">
+                            <i data-lucide="linkedin" class="w-5 h-5 text-gray-400"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Bottom Bar -->
+            <div class="border-t border-white/10 pt-8 flex flex-col md:flex-row items-center justify-between">
+                <p class="text-gray-500 text-sm">
+                    &copy; 2025 Zen-AI-Pentest. Alle Rechte vorbehalten.
+                </p>
+                <div class="flex space-x-6 mt-4 md:mt-0">
+                    <a href="privacy.html" class="text-gray-500 hover:text-zen-accent transition-colors text-sm">Datenschutz</a>
+                    <a href="terms.html" class="text-gray-500 hover:text-zen-accent transition-colors text-sm">Nutzungsbedingungen</a>
+                    <a href="license.html" class="text-gray-500 hover:text-zen-accent transition-colors text-sm">Lizenz</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        // Initialize Lucide Icons
+        document.addEventListener('DOMContentLoaded', function() {
+            lucide.createIcons();
+            
+            // Register GSAP ScrollTrigger
+            gsap.registerPlugin(ScrollTrigger);
+            
+            // Hero Animations
+            const heroTimeline = gsap.timeline({ defaults: { ease: 'power3.out' } });
+            
+            heroTimeline
+                .to('#hero-badge', { opacity: 1, y: 0, duration: 0.6, delay: 0.2 })
+                .to('#hero-title', { opacity: 1, y: 0, duration: 0.8 }, '-=0.3')
+                .to('#hero-tagline', { opacity: 1, y: 0, duration: 0.6 }, '-=0.5')
+                .to('#hero-subtitle', { opacity: 1, y: 0, duration: 0.6 }, '-=0.4')
+                .to('#hero-cta', { opacity: 1, y: 0, duration: 0.6 }, '-=0.3');
+            
+            // Set initial states for hero elements
+            gsap.set('#hero-badge', { opacity: 0, y: 20 });
+            gsap.set('#hero-title', { opacity: 0, y: 30 });
+            gsap.set('#hero-tagline', { opacity: 0, y: 20 });
+            gsap.set('#hero-subtitle', { opacity: 0, y: 20 });
+            gsap.set('#hero-cta', { opacity: 0, y: 20 });
+            
+            // Stats Counter Animation
+            const statNumbers = document.querySelectorAll('.stat-number[data-target]');
+            
+            statNumbers.forEach(stat => {
+                const target = parseInt(stat.getAttribute('data-target'));
+                
+                ScrollTrigger.create({
+                    trigger: stat,
+                    start: 'top 80%',
+                    onEnter: () => {
+                        gsap.to(stat, {
+                            innerHTML: target,
+                            duration: 2,
+                            ease: 'power2.out',
+                            snap: { innerHTML: 1 },
+                            onUpdate: function() {
+                                stat.innerHTML = Math.round(this.targets()[0].innerHTML) + '+';
+                            }
+                        });
+                    },
+                    once: true
+                });
+            });
+            
+            // Feature Cards Animation
+            const featureCards = document.querySelectorAll('.feature-card');
+            
+            featureCards.forEach((card, index) => {
+                gsap.from(card, {
+                    scrollTrigger: {
+                        trigger: card,
+                        start: 'top 85%',
+                    },
+                    opacity: 0,
+                    y: 40,
+                    duration: 0.6,
+                    delay: index * 0.1,
+                    ease: 'power3.out'
+                });
+            });
+            
+            // Stat Cards Animation
+            const statCards = document.querySelectorAll('.stat-card');
+            
+            statCards.forEach((card, index) => {
+                gsap.from(card, {
+                    scrollTrigger: {
+                        trigger: card,
+                        start: 'top 85%',
+                    },
+                    opacity: 0,
+                    y: 30,
+                    scale: 0.95,
+                    duration: 0.5,
+                    delay: index * 0.1,
+                    ease: 'back.out(1.7)'
+                });
+            });
+            
+            // Navigation Scroll Effect
+            const navbar = document.getElementById('navbar');
+            
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 50) {
+                    navbar.classList.add('nav-blur', 'bg-zen-dark/80', 'border-b', 'border-white/10');
+                } else {
+                    navbar.classList.remove('nav-blur', 'bg-zen-dark/80', 'border-b', 'border-white/10');
+                }
+            }, { passive: true });
+            
+            // Mobile Menu Toggle
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
+            
+            mobileMenuBtn.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+            
+            // Copy Button Functionality
+            const copyBtn = document.getElementById('copy-btn');
+            const dockerCommand = 'docker run -it --rm zen-ai-pentest/zen-ai-pentest:latest';
+            
+            copyBtn.addEventListener('click', () => {
+                navigator.clipboard.writeText(dockerCommand).then(() => {
+                    const originalHTML = copyBtn.innerHTML;
+                    copyBtn.innerHTML = '<i data-lucide="check" class="w-4 h-4"></i><span>Kopiert!</span>';
+                    copyBtn.classList.add('text-zen-success');
+                    lucide.createIcons();
+                    
+                    setTimeout(() => {
+                        copyBtn.innerHTML = originalHTML;
+                        copyBtn.classList.remove('text-zen-success');
+                        lucide.createIcons();
+                    }, 2000);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
