@@ -5,11 +5,13 @@
   "private": true,
   "dependencies": {
     "@heroicons/react": "^2.0.0",
+    "@tanstack/react-query": "^5.90.21",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
     "axios": "^1.8.2",
     "date-fns": "^2.30.0",
+    "jsonpath-plus": "^10.4.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.20.0",
@@ -53,15 +55,15 @@
     "nth-check": "^2.1.1",
     "postcss": "^8.4.32",
     "webpack-dev-server": "^5.2.1",
-    "jsonpath": "^1.2.0",
+    "jsonpath": "npm:jsonpath-plus@^10.4.0",
     "qs": "^6.14.0",
     "bfj": {
-      "jsonpath": "^1.2.0"
+      "jsonpath": "npm:jsonpath-plus@^10.4.0"
     },
     "react-scripts": {
       "webpack-dev-server": "^5.2.1",
       "bfj": {
-        "jsonpath": "^1.2.0"
+        "jsonpath": "npm:jsonpath-plus@^10.4.0"
       }
     },
     "@pmmmwh/react-refresh-webpack-plugin": {

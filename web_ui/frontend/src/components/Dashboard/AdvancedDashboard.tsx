@@ -99,7 +99,8 @@ const ScanStatusBadge: React.FC<{ status: ScanStatus }> = ({ status }) => {
 
 // Alert Panel Component
 const AlertPanel: React.FC = () => {
-  const { data: alerts = [], isLoading } = useAlerts({ acknowledged: false });
+  const { data: alertsData, isLoading } = useAlerts({ acknowledged: false });
+  const alerts = (alertsData || []) as any[];
   const acknowledgeMutation = useAcknowledgeAlert();
 
   if (isLoading) return <LoadingCard title="Aktive Alerts" />;
@@ -155,7 +156,8 @@ const AlertPanel: React.FC = () => {
 
 // Agent Status Panel
 const AgentStatusPanel: React.FC = () => {
-  const { data: agents = [], isLoading } = useAgents();
+  const { data: agentsData, isLoading } = useAgents();
+  const agents = (agentsData || []) as any[];
 
   if (isLoading) return <LoadingCard title="Agent Status" />;
 

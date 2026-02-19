@@ -12,7 +12,7 @@ import EvidenceViewer from './components/Evidence/EvidenceViewer';
 import FindingsTable from './components/Findings/FindingsTable';
 import ReportViewer from './components/Reports/ReportViewer';
 import ErrorBoundary from './components/ErrorBoundary';
-import { useToast, ToastContainer } from './components/Toast';
+import { useToast } from './components/Toast';
 
 import { useWebSocket, useAlertUpdates } from './hooks/useWebSocket';
 import { wsService } from './services/api';
@@ -20,7 +20,6 @@ import { wsService } from './services/api';
 import {
   AttackGraph as AttackGraphType,
   Evidence,
-  Finding,
   Report,
   Alert,
 } from './types';
