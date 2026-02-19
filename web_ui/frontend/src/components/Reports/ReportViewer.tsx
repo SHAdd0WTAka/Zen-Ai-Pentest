@@ -269,7 +269,7 @@ const ReportViewer: React.FC<ReportViewerProps> = ({ report, onDownload, onDelet
           <div className="prose prose-invert max-w-none bg-gray-900 p-6 rounded-lg border border-gray-700">
             <ReactMarkdown
               components={{
-                code({ node, inline, className, children, ...props }) {
+                code({ node, inline, className, children, ...props }: any) {
                   const match = /language-(\w+)/.exec(className || '');
                   return !inline && match ? (
                     <SyntaxHighlighter

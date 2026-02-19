@@ -209,7 +209,7 @@ const FindingsTable: React.FC<FindingsTableProps> = ({ scanId, onFindingClick })
     perPage: 100,
   });
 
-  const findings = findingsData?.items || [];
+  const findings = (findingsData as any)?.items || [];
 
   // Mutations
   const bulkUpdateMutation = useBulkUpdateFindings();

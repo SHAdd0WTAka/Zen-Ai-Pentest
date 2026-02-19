@@ -206,7 +206,7 @@ const RecentScansTable: React.FC = () => {
 
   if (isLoading) return <LoadingTable rows={5} columns={4} />;
 
-  const scans = scansData?.items || [];
+  const scans = (scansData as any)?.items || [];
 
   return (
     <div className="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
@@ -263,30 +263,36 @@ const RecentScansTable: React.FC = () => {
 
 // Main Dashboard Component
 const AdvancedDashboard: React.FC = () => {
-  const { data: stats, isLoading: statsLoading } = useScanStatistics();
-  const { data: agents } = useAgents();
-  const { data: alerts } = useAlerts();
+  const { data: statsRaw, isLoading: statsLoading } = useScanStatistics();
+  const { data: agentsRaw } = useAgents();
+  const { data: alertsRaw } = useAlerts();
+  
+  const stats = statsRaw as any;
+  const agents = (agentsRaw || []) as any[];
+  const alerts = (alertsRaw || []) as any[];
 
   // Real-time updates
   useRealTimeUpdates();
 
   // Memoized chart data
   const severityData = useMemo(() => {
-    if (!stats?.findingsBySeverity) return [];
-    return Object.entries(stats.findingsBySeverity).map(([severity, count]) => ({
+    const s = stats as any;
+    if (!s?.findingsBySeverity) return [];
+    return Object.entries(s.findingsBySeverity).map(([severity, count]) => ({
       name: severityLabels[severity as SeverityLevel],
       value: count,
       color: SEVERITY_CHART_COLORS[severity as SeverityLevel],
     }));
-  }, [stats?.findingsBySeverity]);
+  }, [(stats as any)?.findingsBySeverity]);
 
   const scansByTypeData = useMemo(() => {
-    if (!stats?.scansByType) return [];
-    return Object.entries(stats.scansByType).map(([type, count]) => ({
+    const s = stats as any;
+    if (!s?.scansByType) return [];
+    return Object.entries(s.scansByType).map(([type, count]) => ({
       name: type,
       value: count,
     }));
-  }, [stats?.scansByType]);
+  }, [(stats as any)?.scansByType]);
 
   // Timeline data (mock for now)
   const timelineData = [
@@ -345,7 +351,7 @@ const AdvancedDashboard: React.FC = () => {
         <StatsCard
           title="Kritische Findings"
           value={stats?.findingsBySeverity?.critical || 0}
-          subtitle={`${formatNumber(Object.values(stats?.findingsBySeverity || {}).reduce((a, b) => a + b, 0))} insgesamt`}
+          subtitle={`${formatNumber(Object.values((stats?.findingsBySeverity || {}) as Record<string, number>).reduce((a: number, b: number) => a + b, 0))} insgesamt`}
           icon={
             <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -411,7 +417,7 @@ const AdvancedDashboard: React.FC = () => {
             </ResponsiveContainer>
           </div>
           <div className="flex flex-wrap gap-2 mt-4 justify-center">
-            {severityData.map((item) => (
+            {severityData.map((item: any) => (
               <div key={item.name} className="flex items-center gap-1">
                 <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
                 <span className="text-gray-400 text-xs">{item.name}: {item.value}</span>
