@@ -1415,21 +1415,14 @@ def _validate_slack_webhook_url(webhook_url: str) -> str:
     if not webhook_url:
         raise HTTPException(status_code=400, detail="webhook_url is required")
 
-    parsed = urlparse(webhook_url)
+    try:
+        # Reuse centralized validation logic from notifications.slack
+        from notifications.slack import _validate_slack_webhook_url as _core_validate_slack_webhook_url
 
-    if parsed.scheme not in ("http", "https"):
-        raise HTTPException(status_code=400, detail="Invalid webhook URL scheme")
-
-    if not parsed.netloc:
-        raise HTTPException(status_code=400, detail="Invalid webhook URL")
-
-    # Restrict to official Slack incoming webhook host
-    # See: https://api.slack.com/messaging/webhooks
-    host = parsed.hostname or ""
-    if host != "hooks.slack.com":
-        raise HTTPException(status_code=400, detail="Webhook host is not allowed")
-
-    return webhook_url
+        return _core_validate_slack_webhook_url(webhook_url)
+    except ValueError as e:
+        # Map validation errors to HTTP 400 responses
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @app.post("/notifications/slack/test")

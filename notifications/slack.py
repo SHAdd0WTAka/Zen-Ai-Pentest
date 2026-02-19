@@ -6,15 +6,44 @@ import requests
 import logging
 from typing import Dict
 from datetime import datetime
+from urllib.parse import urlparse
 
 logger = logging.getLogger(__name__)
+
+
+def _validate_slack_webhook_url(webhook_url: str) -> str:
+    """
+    Validate that the provided webhook URL is a Slack webhook URL.
+
+    This helps prevent server-side request forgery by restricting outbound
+    requests to the official Slack webhook host.
+    """
+    if not webhook_url:
+        raise ValueError("webhook_url is required")
+
+    parsed = urlparse(webhook_url)
+
+    if parsed.scheme not in ("http", "https"):
+        raise ValueError("Invalid webhook URL scheme")
+
+    if not parsed.netloc:
+        raise ValueError("Invalid webhook URL")
+
+    # Restrict to official Slack incoming webhook host
+    # See: https://api.slack.com/messaging/webhooks
+    host = parsed.hostname or ""
+    if host != "hooks.slack.com":
+        raise ValueError("Webhook host is not allowed")
+
+    return webhook_url
 
 
 class SlackNotifier:
     """Sendet Benachrichtigungen an Slack"""
 
     def __init__(self, webhook_url: str):
-        self.webhook_url = webhook_url
+        # Ensure that the webhook URL is a valid Slack webhook URL.
+        self.webhook_url = _validate_slack_webhook_url(webhook_url)
 
     def send_message(self, message: str, channel: str = None) -> bool:
         """Sendet einfache Text-Nachricht"""
@@ -91,6 +120,12 @@ def slack_notify_scan_complete(scan_id: int, target: str, findings_count: int, c
     if not webhook:
         return "Slack webhook not configured"
 
-    notifier = SlackNotifier(webhook)
+    try:
+        safe_webhook = _validate_slack_webhook_url(webhook)
+    except ValueError as e:
+        logger.error(f"Invalid Slack webhook URL from environment: {e}")
+        return "Invalid Slack webhook configuration"
+
+    notifier = SlackNotifier(safe_webhook)
     success = notifier.send_scan_completed(scan_id, target, findings_count, critical_count)
     return "Notification sent" if success else "Failed to send notification"
