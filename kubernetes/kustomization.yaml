@@ -1,0 +1,38 @@
+# =============================================================================
+# Zen-AI-Pentest Kustomization
+# Für einfaches Deployment mit kubectl apply -k
+# =============================================================================
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: zen-pentest
+
+resources:
+  - namespace.yaml
+  - secrets.yaml
+  - configmap.yaml
+  - postgres.yaml
+  - redis.yaml
+  - api-deployment.yaml
+  - worker-deployment.yaml
+  - rbac.yaml
+  - ingress.yaml
+
+commonLabels:
+  app.kubernetes.io/part-of: zen-pentest
+  app.kubernetes.io/managed-by: kustomize
+
+images:
+  - name: zen-pentest/api
+    newTag: "2.3.9"
+  - name: zen-pentest/worker
+    newTag: "2.3.9"
+  - name: zen-pentest/scheduler
+    newTag: "2.3.9"
+
+replicas:
+  - name: zen-api
+    count: 3
+  - name: zen-worker
+    count: 2

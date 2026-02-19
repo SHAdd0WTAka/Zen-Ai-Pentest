@@ -1,0 +1,19 @@
+# ============================================
+# Zen-Ai-Pentest - Grafana Dashboards
+# Auto-provisioned on startup
+# ============================================
+
+apiVersion: 1
+
+providers:
+  - name: 'Zen-Ai Dashboards'
+    orgId: 1
+    folder: 'Zen-Ai-Pentest'
+    folderUid: ''
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards
+      foldersFromFilesStructure: true

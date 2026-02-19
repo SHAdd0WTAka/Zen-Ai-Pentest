@@ -1,0 +1,58 @@
+# =============================================================================
+# Zen-AI-Pentest Kubernetes Namespace
+# =============================================================================
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: zen-pentest
+  labels:
+    app.kubernetes.io/name: zen-pentest
+    app.kubernetes.io/version: "2.3.9"
+    app.kubernetes.io/component: namespace
+    app.kubernetes.io/part-of: zen-pentest-platform
+    environment: production
+  annotations:
+    description: "Namespace for Zen-AI-Pentest Platform"
+---
+# Network Policy for namespace isolation
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: zen-pentest
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+---
+# Allow internal communication
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-internal
+  namespace: zen-pentest
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: zen-pentest
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: zen-pentest
+    # Allow DNS
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53

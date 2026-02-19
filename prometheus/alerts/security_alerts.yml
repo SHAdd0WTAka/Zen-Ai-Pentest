@@ -1,0 +1,165 @@
+# ============================================
+# Zen-Ai-Pentest - Security Alerts
+# Pentest-specific monitoring
+# ============================================
+
+groups:
+  - name: zen_ai_security_alerts
+    interval: 30s
+    rules:
+      # ============================================
+      # Critical Vulnerability Detection
+      # ============================================
+      - alert: ZenAiCriticalVulnerabilityFound
+        expr: |
+          increase(zen_ai_scanner_findings_total{severity="critical"}[5m]) > 0
+        labels:
+          severity: critical
+          priority: P1
+          team: security
+          category: vulnerability
+        annotations:
+          summary: "CRITICAL vulnerability detected"
+          description: "A critical severity vulnerability was found by {{ $labels.scanner_type }}"
+          dashboard_url: "https://grafana.internal/d/zen-ai-security"
+
+      - alert: ZenAiHighVulnerabilitySpike
+        expr: |
+          increase(zen_ai_scanner_findings_total{severity=~"high|critical"}[1h]) > 10
+        labels:
+          severity: warning
+          priority: P2
+          team: security
+          category: vulnerability
+        annotations:
+          summary: "High number of vulnerabilities detected"
+          description: "{{ $value }} high/critical vulnerabilities found in the last hour"
+
+      # ============================================
+      # Scan Anomalies
+      # ============================================
+      - alert: ZenAiUnusualScanPattern
+        expr: |
+          (
+            rate(zen_ai_scanner_requests_total[10m])
+            >
+            3 * avg_over_time(rate(zen_ai_scanner_requests_total[1h] offset 1h)[1h:])
+          )
+        for: 5m
+        labels:
+          severity: warning
+          priority: P2
+          team: security
+          category: anomaly
+        annotations:
+          summary: "Unusual scan pattern detected"
+          description: "Scan rate is 3x higher than normal baseline"
+
+      # ============================================
+      # Target Availability
+      # ============================================
+      - alert: ZenAiTargetUnreachable
+        expr: |
+          zen_ai_target_reachable == 0
+        for: 2m
+        labels:
+          severity: warning
+          priority: P2
+          team: security
+          category: target
+        annotations:
+          summary: "Target {{ $labels.target }} is unreachable"
+          description: "Cannot reach target for security scanning"
+
+      # ============================================
+      # Rate Limiting
+      # ============================================
+      - alert: ZenAiRateLimitApproaching
+        expr: |
+          zen_ai_api_rate_limit_remaining / zen_ai_api_rate_limit_total < 0.2
+        for: 5m
+        labels:
+          severity: warning
+          priority: P3
+          team: security
+          category: rate-limit
+        annotations:
+          summary: "Rate limit approaching for {{ $labels.api_name }}"
+          description: "Only {{ $value | humanizePercentage }} of rate limit remaining"
+
+      # ============================================
+      # Authentication Failures
+      # ============================================
+      - alert: ZenAiAuthFailuresSpike
+        expr: |
+          increase(zen_ai_auth_failures_total[5m]) > 10
+        labels:
+          severity: warning
+          priority: P2
+          team: security
+          category: authentication
+        annotations:
+          summary: "Spike in authentication failures"
+          description: "{{ $value }} auth failures in the last 5 minutes"
+
+      # ============================================
+      # Suspicious Activity
+      # ============================================
+      - alert: ZenAiSuspiciousActivityDetected
+        expr: |
+          increase(zen_ai_security_events_total{type="suspicious"}[5m]) > 0
+        labels:
+          severity: warning
+          priority: P2
+          team: security
+          category: incident
+        annotations:
+          summary: "Suspicious activity detected"
+          description: "Suspicious security event: {{ $labels.description }}"
+
+      # ============================================
+      # Compliance Monitoring
+      # ============================================
+      - alert: ZenAiComplianceScanOverdue
+        expr: |
+          time() - zen_ai_last_compliance_scan_timestamp > 86400 * 7
+        for: 1h
+        labels:
+          severity: warning
+          priority: P3
+          team: compliance
+          category: compliance
+        annotations:
+          summary: "Compliance scan overdue"
+          description: "Last compliance scan was {{ $value | humanizeDuration }} ago"
+
+      # ============================================
+      # Report Generation
+      # ============================================
+      - alert: ZenAiReportGenerationFailed
+        expr: |
+          increase(zen_ai_report_generation_failures_total[1h]) > 5
+        labels:
+          severity: warning
+          priority: P2
+          team: security
+          category: reporting
+        annotations:
+          summary: "Multiple report generation failures"
+          description: "{{ $value }} report generation failures in the last hour"
+
+      # ============================================
+      # WAF/Security Tool Health
+      # ============================================
+      - alert: ZenAiSecurityToolDegraded
+        expr: |
+          zen_ai_security_tool_health < 0.8
+        for: 5m
+        labels:
+          severity: warning
+          priority: P2
+          team: security
+          category: tool-health
+        annotations:
+          summary: "Security tool {{ $labels.tool_name }} is degraded"
+          description: "Health score is {{ $value | humanizePercentage }}"

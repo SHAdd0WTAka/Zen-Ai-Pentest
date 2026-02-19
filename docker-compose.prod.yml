@@ -1,28 +1,495 @@
-# Production Docker Compose mit HTTPS
+# =============================================================================
+# Zen-AI-Pentest Framework - Production Docker Compose
+# =============================================================================
+# Version: 1.0.0
+# Environment: Production
+# =============================================================================
+
 version: '3.8'
 
 services:
+  # ===========================================================================
+  # PostgreSQL Database - Primary
+  # ===========================================================================
+  database-primary:
+    image: postgres:15-alpine
+    container_name: zen-pentest-db-primary
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-zen_pentest}
+      POSTGRES_USER: ${DB_USER:-zen_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - db_primary_data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d:ro
+      - ./backups:/backups
+    ports:
+      - "127.0.0.1:5432:5432"
+    networks:
+      - zen-pentest-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-zen_user} -d ${DB_NAME:-zen_pentest}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp:noexec,nosuid,size=100m
+
+  # ===========================================================================
+  # PostgreSQL Database - Replica (Read-only)
+  # ===========================================================================
+  database-replica:
+    image: postgres:15-alpine
+    container_name: zen-pentest-db-replica
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-zen_pentest}
+      POSTGRES_USER: ${DB_USER:-zen_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - db_replica_data:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5433:5432"
+    networks:
+      - zen-pentest-net
+    depends_on:
+      - database-primary
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-zen_user} -d ${DB_NAME:-zen_pentest}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+    security_opt:
+      - no-new-privileges:true
+
+  # ===========================================================================
+  # Redis Cluster - Primary
+  # ===========================================================================
+  redis-primary:
+    image: redis:7-alpine
+    container_name: zen-pentest-redis-primary
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_primary_data:/data
+    ports:
+      - "127.0.0.1:6379:6379"
+    networks:
+      - zen-pentest-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+    security_opt:
+      - no-new-privileges:true
+
+  # ===========================================================================
+  # Redis Cluster - Replica
+  # ===========================================================================
+  redis-replica:
+    image: redis:7-alpine
+    container_name: zen-pentest-redis-replica
+    restart: unless-stopped
+    command: redis-server --replicaof redis-primary 6379
+    volumes:
+      - redis_replica_data:/data
+    networks:
+      - zen-pentest-net
+    depends_on:
+      - redis-primary
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  # ===========================================================================
+  # API Gateway Service
+  # ===========================================================================
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+      target: production
+    image: zen-pentest/api:${VERSION:-latest}
+    container_name: zen-pentest-api
+    restart: unless-stopped
+    environment:
+      - ZEN_CONFIG=/app/config/production.json
+      - DATABASE_URL=postgresql://${DB_USER:-zen_user}:${DB_PASSWORD}@database-primary:5432/${DB_NAME:-zen_pentest}
+      - DATABASE_REPLICA_URL=postgresql://${DB_USER:-zen_user}:${DB_PASSWORD}@database-replica:5432/${DB_NAME:-zen_pentest}
+      - REDIS_URL=redis://redis-primary:6379/0
+      - REDIS_REPLICA_URL=redis://redis-replica:6379/0
+      - JWT_SECRET=${JWT_SECRET}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - WORKERS=${API_WORKERS:-4}
+    volumes:
+      - ./config:/app/config:ro
+      - api_data:/app/data
+      - api_logs:/app/logs
+      - ./models:/app/models:ro
+    ports:
+      - "${API_PORT:-8080}:8080"
+    networks:
+      - zen-pentest-net
+    depends_on:
+      database-primary:
+        condition: service_healthy
+      redis-primary:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      replicas: ${API_REPLICAS:-2}
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+      rollback_config:
+        parallelism: 1
+        delay: 10s
+    security_opt:
+      - no-new-privileges:true
+
+  # ===========================================================================
+  # Background Worker Service
+  # ===========================================================================
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+      target: production
+    image: zen-pentest/worker:${VERSION:-latest}
+    container_name: zen-pentest-worker
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgresql://${DB_USER:-zen_user}:${DB_PASSWORD}@database-primary:5432/${DB_NAME:-zen_pentest}
+      - REDIS_URL=redis://redis-primary:6379/0
+      - API_URL=http://api:8080
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - MAX_CONCURRENT_SCANS=${MAX_CONCURRENT_SCANS:-5}
+      - SCAN_TIMEOUT=${SCAN_TIMEOUT:-3600}
+    volumes:
+      - worker_data:/app/data
+      - worker_logs:/app/logs
+      - scan_results:/app/results
+      - ./models:/app/models:ro
+    networks:
+      - zen-pentest-net
+    depends_on:
+      - database-primary
+      - redis-primary
+      - api
+    healthcheck:
+      test: ["CMD-SHELL", "python -c 'import sys; sys.exit(0)'"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+    deploy:
+      replicas: ${WORKER_REPLICAS:-3}
+      resources:
+        limits:
+          cpus: '4.0'
+          memory: 4G
+        reservations:
+          cpus: '1.0'
+          memory: 1G
+      update_config:
+        parallelism: 1
+        delay: 30s
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_RAW
+      - NET_BIND_SERVICE
+
+  # ===========================================================================
+  # Web Interface
+  # ===========================================================================
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile.web
+      target: production
+    image: zen-pentest/web:${VERSION:-latest}
+    container_name: zen-pentest-web
+    restart: unless-stopped
+    environment:
+      - API_URL=http://api:8080
+      - NODE_ENV=production
+    ports:
+      - "${WEB_PORT:-3000}:3000"
+    networks:
+      - zen-pentest-net
+    depends_on:
+      - api
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      replicas: ${WEB_REPLICAS:-2}
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+    security_opt:
+      - no-new-privileges:true
+
+  # ===========================================================================
+  # Prometheus Monitoring
+  # ===========================================================================
+  prometheus:
+    image: prom/prometheus:v2.47.0
+    container_name: zen-pentest-prometheus
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/alert-rules.yml:/etc/prometheus/alert-rules.yml:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "127.0.0.1:9090:9090"
+    networks:
+      - zen-pentest-net
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+
+  # ===========================================================================
+  # Alertmanager
+  # ===========================================================================
+  alertmanager:
+    image: prom/alertmanager:v0.26.0
+    container_name: zen-pentest-alertmanager
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+    volumes:
+      - ./monitoring/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - alertmanager_data:/alertmanager
+    ports:
+      - "127.0.0.1:9093:9093"
+    networks:
+      - zen-pentest-net
+
+  # ===========================================================================
+  # Grafana Dashboard
+  # ===========================================================================
+  grafana:
+    image: grafana/grafana:10.1.0
+    container_name: zen-pentest-grafana
+    restart: unless-stopped
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_ROOT_URL=${GRAFANA_URL:-http://localhost:3001}
+      - GF_AUTH_ANONYMOUS_ENABLED=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./monitoring/grafana/notifiers:/etc/grafana/provisioning/notifiers:ro
+    ports:
+      - "${GRAFANA_PORT:-3001}:3000"
+    networks:
+      - zen-pentest-net
+    depends_on:
+      - prometheus
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  # ===========================================================================
+  # Loki - Log Aggregation
+  # ===========================================================================
+  loki:
+    image: grafana/loki:2.9.0
+    container_name: zen-pentest-loki
+    restart: unless-stopped
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - ./monitoring/loki-config.yml:/etc/loki/local-config.yaml:ro
+      - loki_data:/loki
+    ports:
+      - "127.0.0.1:3100:3100"
+    networks:
+      - zen-pentest-net
+
+  # ===========================================================================
+  # Promtail - Log Collector
+  # ===========================================================================
+  promtail:
+    image: grafana/promtail:2.9.0
+    container_name: zen-pentest-promtail
+    restart: unless-stopped
+    command: -config.file=/etc/promtail/config.yml
+    volumes:
+      - ./monitoring/promtail-config.yml:/etc/promtail/config.yml:ro
+      - api_logs:/var/log/api:ro
+      - worker_logs:/var/log/worker:ro
+    networks:
+      - zen-pentest-net
+    depends_on:
+      - loki
+
+  # ===========================================================================
+  # Jaeger - Distributed Tracing
+  # ===========================================================================
+  jaeger:
+    image: jaegertracing/all-in-one:1.49
+    container_name: zen-pentest-jaeger
+    restart: unless-stopped
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    ports:
+      - "127.0.0.1:16686:16686"
+      - "127.0.0.1:4317:4317"
+      - "127.0.0.1:4318:4318"
+    networks:
+      - zen-pentest-net
+
+  # ===========================================================================
+  # Vault - Secrets Management
+  # ===========================================================================
+  vault:
+    image: hashicorp/vault:1.15
+    container_name: zen-pentest-vault
+    restart: unless-stopped
+    cap_add:
+      - IPC_LOCK
+    environment:
+      - VAULT_ADDR=http://0.0.0.0:8200
+      - VAULT_API_ADDR=http://vault:8200
+    volumes:
+      - vault_data:/vault/file
+      - ./config/vault:/vault/config:ro
+    ports:
+      - "127.0.0.1:8200:8200"
+    networks:
+      - zen-pentest-net
+    command: server -config=/vault/config/vault.hcl
+
+  # ===========================================================================
+  # Nginx Load Balancer
+  # ===========================================================================
   nginx:
     image: nginx:alpine
-    container_name: zen-nginx
+    container_name: zen-pentest-nginx
+    restart: unless-stopped
+    volumes:
+      - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./config/nginx/ssl:/etc/nginx/ssl:ro
     ports:
       - "80:80"
       - "443:443"
-    volumes:
-      - ./docker/nginx_ssl.conf:/etc/nginx/nginx.conf:ro
-      - ./certs:/etc/nginx/certs:ro
+    networks:
+      - zen-pentest-net
     depends_on:
       - api
-      - frontend
-    networks:
-      - zen-network
-    restart: unless-stopped
-    profiles:
-      - production
+      - web
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
 
-  # API, Frontend, DB, Redis wie in docker-compose.yml
-  # ... (referenziert docker-compose.yml)
+# =============================================================================
+# Volumes
+# =============================================================================
+volumes:
+  db_primary_data:
+    driver: local
+  db_replica_data:
+    driver: local
+  redis_primary_data:
+    driver: local
+  redis_replica_data:
+    driver: local
+  api_data:
+    driver: local
+  api_logs:
+    driver: local
+  worker_data:
+    driver: local
+  worker_logs:
+    driver: local
+  scan_results:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+  alertmanager_data:
+    driver: local
+  loki_data:
+    driver: local
+  vault_data:
+    driver: local
 
+# =============================================================================
+# Networks
+# =============================================================================
 networks:
-  zen-network:
-    external: true
+  zen-pentest-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+    internal: false

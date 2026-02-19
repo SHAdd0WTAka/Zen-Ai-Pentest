@@ -1,0 +1,65 @@
+id: zen-ai-recon-workflow
+
+info:
+  name: Zen AI Reconnaissance Workflow
+  author: zen-ai-pentest
+  description: |
+    Comprehensive reconnaissance workflow that performs initial discovery
+    and enumeration of web targets. Runs technology detection, panel discovery,
+    API endpoint enumeration, and sensitive file exposure checks.
+  tags: workflow, reconnaissance, discovery, enumeration
+
+workflows:
+  # Step 1: Technology Detection
+  - template: technologies/
+    matchers:
+      - name: tech-detected
+        condition: or
+
+  # Step 2: Panel Detection
+  - template: custom/zen-ai-panel-detection
+    matchers:
+      - name: admin-panel-found
+        condition: or
+
+  # Step 3: API Endpoint Discovery
+  - template: custom/zen-ai-api-endpoint
+    matchers:
+      - name: api-discovered
+        condition: or
+
+  # Step 4: Sensitive File Exposure
+  - template: custom/zen-ai-sensitive-files
+    matchers:
+      - name: sensitive-files-exposed
+        condition: or
+
+  # Step 5: Subdomain Takeover Check
+  - template: subdomain-takeover/
+    matchers:
+      - name: takeover-possible
+        condition: or
+
+  # Step 6: SSL/TLS Configuration
+  - template: ssl/
+    matchers:
+      - name: ssl-issue-found
+        condition: or
+
+  # Step 7: DNS Analysis
+  - template: dns/
+    matchers:
+      - name: dns-info-found
+        condition: or
+
+  # Step 8: Misconfiguration Detection
+  - template: misconfiguration/
+    matchers:
+      - name: misconfig-found
+        condition: or
+
+  # Step 9: Exposed Panels
+  - template: exposures/
+    matchers:
+      - name: exposure-found
+        condition: or

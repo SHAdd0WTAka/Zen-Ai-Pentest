@@ -1,0 +1,204 @@
+# ============================================
+# Zen-Ai-Pentest - Warning Alerts
+# P2/P3 - Attention Required
+# ============================================
+
+groups:
+  - name: zen_ai_warning_alerts
+    interval: 30s
+    rules:
+      # ============================================
+      # Performance Degradation
+      # ============================================
+      - alert: ZenAiAPIElevatedLatency
+        expr: |
+          histogram_quantile(0.95, 
+            sum by (le, endpoint) (rate(zen_ai_api_request_duration_seconds_bucket[5m]))
+          ) > 1
+        for: 5m
+        labels:
+          severity: warning
+          priority: P2
+          team: platform
+        annotations:
+          summary: "Elevated latency on {{ $labels.endpoint }}"
+          description: "P95 latency is {{ $value }}s for {{ $labels.endpoint }}"
+
+      - alert: ZenAiAPIErrorRateWarning
+        expr: |
+          (
+            sum by (service) (rate(zen_ai_api_requests_total{status=~"5..|4.."}[5m]))
+            /
+            sum by (service) (rate(zen_ai_api_requests_total[5m]))
+          ) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          priority: P2
+          team: platform
+        annotations:
+          summary: "Elevated error rate on {{ $labels.service }}"
+          description: "Error rate is {{ $value | humanizePercentage }}"
+
+      # ============================================
+      # Resource Usage Warnings
+      # ============================================
+      - alert: ZenAiHighCPUUsage
+        expr: |
+          100 - (avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 10m
+        labels:
+          severity: warning
+          priority: P2
+          team: infrastructure
+        annotations:
+          summary: "High CPU usage on {{ $labels.instance }}"
+          description: "CPU usage has been above 80% for 10 minutes"
+
+      - alert: ZenAiHighMemoryUsage
+        expr: |
+          (
+            node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes
+          ) / node_memory_MemTotal_bytes > 0.85
+        for: 10m
+        labels:
+          severity: warning
+          priority: P2
+          team: infrastructure
+        annotations:
+          summary: "High memory usage on {{ $labels.instance }}"
+          description: "Memory usage is at {{ $value | humanizePercentage }}"
+
+      - alert: ZenAiDiskSpaceWarning
+        expr: |
+          (
+            node_filesystem_size_bytes{mountpoint="/"} - node_filesystem_avail_bytes{mountpoint="/"}
+          ) / node_filesystem_size_bytes{mountpoint="/"} > 0.85
+        for: 10m
+        labels:
+          severity: warning
+          priority: P2
+          team: infrastructure
+        annotations:
+          summary: "Disk space warning on {{ $labels.instance }}"
+          description: "Disk usage is at {{ $value | humanizePercentage }}"
+
+      # ============================================
+      # Queue Warnings
+      # ============================================
+      - alert: ZenAiQueueGrowing
+        expr: |
+          (
+            zen_ai_queue_messages_current 
+            - 
+            zen_ai_queue_messages_current offset 5m
+          ) > 100
+        for: 5m
+        labels:
+          severity: warning
+          priority: P2
+          team: platform
+        annotations:
+          summary: "Queue {{ $labels.queue_name }} is growing"
+          description: "Queue depth increased by {{ $value }} messages in 5 minutes"
+
+      # ============================================
+      # AI Engine Warnings
+      # ============================================
+      - alert: ZenAiAIModelLatencyHigh
+        expr: |
+          histogram_quantile(0.95,
+            sum by (le, model_name) (rate(zen_ai_ai_inference_duration_seconds_bucket[5m]))
+          ) > 10
+        for: 5m
+        labels:
+          severity: warning
+          priority: P2
+          team: ai
+        annotations:
+          summary: "AI model {{ $labels.model_name }} latency is high"
+          description: "P95 inference time is {{ $value }}s"
+
+      - alert: ZenAiAIGPUHighTemperature
+        expr: nvidia_gpu_temperature_gpu > 80
+        for: 5m
+        labels:
+          severity: warning
+          priority: P2
+          team: ai
+        annotations:
+          summary: "GPU {{ $labels.gpu_id }} temperature is high"
+          description: "GPU temperature is {{ $value }}°C"
+
+      # ============================================
+      # Scanner Warnings
+      # ============================================
+      - alert: ZenAiScannerLongRunningTask
+        expr: |
+          zen_ai_scanner_task_duration_seconds > 3600
+        for: 5m
+        labels:
+          severity: warning
+          priority: P3
+          team: security
+        annotations:
+          summary: "Scanner task running for over 1 hour"
+          description: "Task has been running for {{ $value | humanizeDuration }}"
+
+      - alert: ZenAiScannerLowThroughput
+        expr: |
+          rate(zen_ai_scanner_tasks_completed_total[10m]) < 0.1
+        for: 10m
+        labels:
+          severity: warning
+          priority: P3
+          team: security
+        annotations:
+          summary: "Scanner throughput is low"
+          description: "Less than 0.1 tasks completed per second"
+
+      # ============================================
+      # Database Warnings
+      # ============================================
+      - alert: ZenAiDBSlowQueries
+        expr: |
+          rate(pg_stat_statements_total_time_sum[5m]) / 
+          rate(pg_stat_statements_calls_sum[5m]) > 100
+        for: 5m
+        labels:
+          severity: warning
+          priority: P2
+          team: platform
+        annotations:
+          summary: "Slow database queries detected"
+          description: "Average query time is {{ $value }}ms"
+
+      # ============================================
+      # SSL Certificate Warnings
+      # ============================================
+      - alert: ZenAiSSLCertificateExpiring
+        expr: |
+          (ssl_certificate_expiry_seconds - time()) / 86400 < 30
+        for: 1h
+        labels:
+          severity: warning
+          priority: P3
+          team: security
+        annotations:
+          summary: "SSL certificate expiring soon"
+          description: "Certificate expires in {{ $value | humanizeDuration }}"
+
+      # ============================================
+      # Backup Warnings
+      # ============================================
+      - alert: ZenAiBackupNotRunning
+        expr: |
+          time() - zen_ai_last_backup_timestamp > 86400 * 2
+        for: 1h
+        labels:
+          severity: warning
+          priority: P2
+          team: platform
+        annotations:
+          summary: "Backup has not run in over 2 days"
+          description: "Last backup was {{ $value | humanizeDuration }} ago"

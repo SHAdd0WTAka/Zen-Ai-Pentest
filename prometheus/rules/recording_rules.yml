@@ -1,0 +1,147 @@
+# ============================================
+# Zen-Ai-Pentest - Prometheus Recording Rules
+# Pre-aggregated metrics for performance
+# ============================================
+
+groups:
+  # ============================================
+  # API Performance Rules
+  # ============================================
+  - name: zen_ai_api_performance
+    interval: 30s
+    rules:
+      - record: zen_ai:api_request_rate_5m
+        expr: |
+          sum by (service, method, endpoint) (
+            rate(zen_ai_api_requests_total[5m])
+          )
+
+      - record: zen_ai:api_error_rate_5m
+        expr: |
+          sum by (service, endpoint) (
+            rate(zen_ai_api_requests_total{status=~"5..|4.."}[5m])
+          ) 
+          / 
+          sum by (service, endpoint) (
+            rate(zen_ai_api_requests_total[5m])
+          )
+
+      - record: zen_ai:api_latency_p99_5m
+        expr: |
+          histogram_quantile(0.99, 
+            sum by (service, endpoint, le) (
+              rate(zen_ai_api_request_duration_seconds_bucket[5m])
+            )
+          )
+
+      - record: zen_ai:api_latency_p95_5m
+        expr: |
+          histogram_quantile(0.95, 
+            sum by (service, endpoint, le) (
+              rate(zen_ai_api_request_duration_seconds_bucket[5m])
+            )
+          )
+
+  # ============================================
+  # Scanner Performance Rules
+  # ============================================
+  - name: zen_ai_scanner_performance
+    interval: 30s
+    rules:
+      - record: zen_ai:scanner_tasks_rate_5m
+        expr: |
+          sum by (scanner_type, status) (
+            rate(zen_ai_scanner_tasks_total[5m])
+          )
+
+      - record: zen_ai:scanner_findings_rate_5m
+        expr: |
+          sum by (severity, scanner_type) (
+            rate(zen_ai_scanner_findings_total[5m])
+          )
+
+      - record: zen_ai:scanner_duration_avg_5m
+        expr: |
+          avg by (scanner_type) (
+            rate(zen_ai_scanner_duration_seconds_sum[5m])
+            /
+            rate(zen_ai_scanner_duration_seconds_count[5m])
+          )
+
+  # ============================================
+  # AI Engine Performance Rules
+  # ============================================
+  - name: zen_ai_ai_engine_performance
+    interval: 30s
+    rules:
+      - record: zen_ai:ai_analysis_rate_5m
+        expr: |
+          sum by (analysis_type) (
+            rate(zen_ai_ai_analysis_total[5m])
+          )
+
+      - record: zen_ai:ai_inference_latency_p95_5m
+        expr: |
+          histogram_quantile(0.95,
+            sum by (model_name, le) (
+              rate(zen_ai_ai_inference_duration_seconds_bucket[5m])
+            )
+          )
+
+      - record: zen_ai:ai_gpu_utilization_avg_5m
+        expr: |
+          avg by (gpu_id) (
+            nvidia_gpu_utilization_gpu[5m]
+          )
+
+  # ============================================
+  # Queue Performance Rules
+  # ============================================
+  - name: zen_ai_queue_performance
+    interval: 30s
+    rules:
+      - record: zen_ai:queue_depth
+        expr: |
+          sum by (queue_name) (
+            zen_ai_queue_messages_current
+          )
+
+      - record: zen_ai:queue_processing_rate_5m
+        expr: |
+          sum by (queue_name) (
+            rate(zen_ai_queue_messages_processed_total[5m])
+          )
+
+      - record: zen_ai:queue_wait_time_avg_5m
+        expr: |
+          avg by (queue_name) (
+            rate(zen_ai_queue_wait_seconds_sum[5m])
+            /
+            rate(zen_ai_queue_wait_seconds_count[5m])
+          )
+
+  # ============================================
+  # System Resource Rules
+  # ============================================
+  - name: zen_ai_system_resources
+    interval: 30s
+    rules:
+      - record: zen_ai:node_cpu_utilization_5m
+        expr: |
+          100 - (
+            avg by (instance) (
+              irate(node_cpu_seconds_total{mode="idle"}[5m])
+            ) * 100
+          )
+
+      - record: zen_ai:node_memory_utilization
+        expr: |
+          (
+            node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes
+          ) / node_memory_MemTotal_bytes * 100
+
+      - record: zen_ai:node_disk_utilization
+        expr: |
+          (
+            node_filesystem_size_bytes{mountpoint="/"} - node_filesystem_avail_bytes{mountpoint="/"}
+          ) / node_filesystem_size_bytes{mountpoint="/"} * 100

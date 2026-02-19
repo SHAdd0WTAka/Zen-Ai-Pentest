@@ -1,0 +1,163 @@
+# ============================================
+# Zen-Ai-Pentest - Critical Alerts
+# P1 - Immediate Response Required
+# ============================================
+
+groups:
+  - name: zen_ai_critical_alerts
+    interval: 15s
+    rules:
+      # ============================================
+      # Service Down Alerts
+      # ============================================
+      - alert: ZenAiAPIDown
+        expr: up{job="zen-ai-api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          priority: P1
+          team: platform
+          service: api-gateway
+        annotations:
+          summary: "Zen-Ai API Gateway is DOWN"
+          description: "API Gateway has been down for more than 1 minute"
+          runbook_url: "https://wiki.internal/zen-ai/runbooks/api-down"
+          dashboard_url: "https://grafana.internal/d/zen-ai-api"
+
+      - alert: ZenAiScannerDown
+        expr: up{job="zen-ai-scanner"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          priority: P1
+          team: security
+          service: scanner-engine
+        annotations:
+          summary: "Zen-Ai Scanner Engine is DOWN"
+          description: "Scanner Engine has been down for more than 2 minutes"
+          runbook_url: "https://wiki.internal/zen-ai/runbooks/scanner-down"
+
+      - alert: ZenAiAIEngineDown
+        expr: up{job="zen-ai-ai-engine"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          priority: P1
+          team: ai
+          service: ai-engine
+        annotations:
+          summary: "Zen-Ai AI Engine is DOWN"
+          description: "AI Analysis Engine has been down for more than 2 minutes"
+
+      # ============================================
+      # High Error Rate Alerts
+      # ============================================
+      - alert: ZenAiAPIHighErrorRate
+        expr: |
+          (
+            sum by (service, endpoint) (rate(zen_ai_api_requests_total{status=~"5.."}[5m]))
+            /
+            sum by (service, endpoint) (rate(zen_ai_api_requests_total[5m]))
+          ) > 0.1
+        for: 2m
+        labels:
+          severity: critical
+          priority: P1
+          team: platform
+        annotations:
+          summary: "High Error Rate on {{ $labels.endpoint }}"
+          description: "Error rate is {{ $value | humanizePercentage }} for {{ $labels.endpoint }}"
+
+      # ============================================
+      # Latency Alerts
+      # ============================================
+      - alert: ZenAiAPILatencyCritical
+        expr: |
+          histogram_quantile(0.99, 
+            sum by (le, endpoint) (rate(zen_ai_api_request_duration_seconds_bucket[5m]))
+          ) > 5
+        for: 3m
+        labels:
+          severity: critical
+          priority: P1
+          team: platform
+        annotations:
+          summary: "Critical Latency on {{ $labels.endpoint }}"
+          description: "P99 latency is {{ $value }}s for {{ $labels.endpoint }}"
+
+      # ============================================
+      # Queue Backup Alerts
+      # ============================================
+      - alert: ZenAiQueueCriticalBackup
+        expr: zen_ai_queue_messages_current > 10000
+        for: 5m
+        labels:
+          severity: critical
+          priority: P1
+          team: platform
+        annotations:
+          summary: "Queue {{ $labels.queue_name }} critically backed up"
+          description: "Queue has {{ $value }} messages pending for more than 5 minutes"
+
+      # ============================================
+      # Database Connection Alerts
+      # ============================================
+      - alert: ZenAiDatabaseConnectionsExhausted
+        expr: |
+          pg_stat_activity_count{state="active"} / pg_settings_max_connections > 0.9
+        for: 2m
+        labels:
+          severity: critical
+          priority: P1
+          team: platform
+        annotations:
+          summary: "Database connections nearly exhausted"
+          description: "{{ $value | humanizePercentage }} of connections are in use"
+
+      # ============================================
+      # Security Scan Failure Alerts
+      # ============================================
+      - alert: ZenAiScannerStuck
+        expr: |
+          zen_ai_scanner_active_scans > 0
+          and
+          changes(zen_ai_scanner_tasks_total[10m]) == 0
+        for: 5m
+        labels:
+          severity: critical
+          priority: P1
+          team: security
+        annotations:
+          summary: "Scanner appears to be stuck"
+          description: "Active scans but no progress in last 10 minutes"
+
+      # ============================================
+      # Infrastructure Alerts
+      # ============================================
+      - alert: ZenAiNodeOutOfMemory
+        expr: |
+          (
+            node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes
+          ) / node_memory_MemTotal_bytes > 0.95
+        for: 2m
+        labels:
+          severity: critical
+          priority: P1
+          team: infrastructure
+        annotations:
+          summary: "Node {{ $labels.instance }} is running out of memory"
+          description: "Memory usage is at {{ $value | humanizePercentage }}"
+
+      - alert: ZenAiDiskFull
+        expr: |
+          (
+            node_filesystem_size_bytes{mountpoint="/"} - node_filesystem_avail_bytes{mountpoint="/"}
+          ) / node_filesystem_size_bytes{mountpoint="/"} > 0.95
+        for: 5m
+        labels:
+          severity: critical
+          priority: P1
+          team: infrastructure
+        annotations:
+          summary: "Disk is almost full on {{ $labels.instance }}"
+          description: "Disk usage is at {{ $value | humanizePercentage }}"

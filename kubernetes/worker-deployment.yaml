@@ -1,0 +1,219 @@
+# =============================================================================
+# Zen-AI-Pentest Worker Deployment
+# =============================================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zen-worker
+  namespace: zen-pentest
+  labels:
+    app.kubernetes.io/name: zen-worker
+    app.kubernetes.io/component: worker
+    app.kubernetes.io/part-of: zen-pentest
+    app.kubernetes.io/version: "2.3.9"
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: zen-worker
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: zen-worker
+        app.kubernetes.io/component: worker
+        app.kubernetes.io/version: "2.3.9"
+    spec:
+      serviceAccountName: zen-pentest
+      securityContext:
+        fsGroup: 1000
+        runAsUser: 1000
+        runAsNonRoot: true
+      containers:
+        - name: worker
+          image: zen-pentest/worker:2.3.9
+          imagePullPolicy: Always
+          command:
+            - celery
+            - -A
+            - core.celery_app
+            - worker
+            - --loglevel=info
+            - --concurrency=4
+            - -Q
+            - scan,default,agents,compliance
+            - -n
+            - worker@%h
+          envFrom:
+            - configMapRef:
+                name: zen-pentest-config
+            - secretRef:
+                name: zen-pentest-secrets
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: WORKER_NAME
+              value: "$(POD_NAME)"
+          volumeMounts:
+            - name: logs
+              mountPath: /app/logs
+            - name: data
+              mountPath: /app/data
+            - name: reports
+              mountPath: /app/reports
+            - name: evidence
+              mountPath: /app/evidence
+            - name: tmp
+              mountPath: /tmp
+          resources:
+            requests:
+              memory: "2Gi"
+              cpu: "1000m"
+            limits:
+              memory: "8Gi"
+              cpu: "4000m"
+          livenessProbe:
+            exec:
+              command:
+                - celery
+                - -A
+                - core.celery_app
+                - inspect
+                - ping
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+      volumes:
+        - name: logs
+          emptyDir: {}
+        - name: data
+          emptyDir: {}
+        - name: reports
+          persistentVolumeClaim:
+            claimName: reports-data
+        - name: evidence
+          persistentVolumeClaim:
+            claimName: evidence-data
+        - name: tmp
+          emptyDir: {}
+---
+# =============================================================================
+# Zen-AI-Pentest Scheduler Deployment (Celery Beat)
+# =============================================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zen-scheduler
+  namespace: zen-pentest
+  labels:
+    app.kubernetes.io/name: zen-scheduler
+    app.kubernetes.io/component: scheduler
+    app.kubernetes.io/part-of: zen-pentest
+    app.kubernetes.io/version: "2.3.9"
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: zen-scheduler
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: zen-scheduler
+        app.kubernetes.io/component: scheduler
+        app.kubernetes.io/version: "2.3.9"
+    spec:
+      serviceAccountName: zen-pentest
+      securityContext:
+        fsGroup: 1000
+        runAsUser: 1000
+        runAsNonRoot: true
+      containers:
+        - name: scheduler
+          image: zen-pentest/scheduler:2.3.9
+          imagePullPolicy: Always
+          command:
+            - celery
+            - -A
+            - core.celery_app
+            - beat
+            - --loglevel=info
+            - --scheduler
+            - django_celery_beat.schedulers:DatabaseScheduler
+          envFrom:
+            - configMapRef:
+                name: zen-pentest-config
+            - secretRef:
+                name: zen-pentest-secrets
+          volumeMounts:
+            - name: logs
+              mountPath: /app/logs
+            - name: tmp
+              mountPath: /tmp
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+      volumes:
+        - name: logs
+          emptyDir: {}
+        - name: tmp
+          emptyDir: {}
+---
+# =============================================================================
+# Persistent Volume Claims
+# =============================================================================
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: reports-data
+  namespace: zen-pentest
+  labels:
+    app.kubernetes.io/name: zen-pentest
+    app.kubernetes.io/component: storage
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 100Gi
+  storageClassName: standard
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: evidence-data
+  namespace: zen-pentest
+  labels:
+    app.kubernetes.io/name: zen-pentest
+    app.kubernetes.io/component: storage
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 500Gi
+  storageClassName: standard

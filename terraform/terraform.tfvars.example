@@ -1,0 +1,20 @@
+# =============================================================================
+# Zen-AI-Pentest Framework - Terraform Variables Example
+# =============================================================================
+
+aws_region    = "us-east-1"
+environment   = "production"
+project_name  = "zen-pentest"
+vpc_cidr      = "10.0.0.0/16"
+
+db_instance_class = "db.r6g.xlarge"
+redis_node_type   = "cache.r6g.large"
+
+enable_monitoring = true
+enable_waf        = true
+
+tags = {
+  Owner       = "security-team"
+  CostCenter  = "security-ops"
+  DataClass   = "confidential"
+}

@@ -1,0 +1,167 @@
+# =============================================================================
+# Zen-AI-Pentest ConfigMap
+# =============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: zen-pentest-config
+  namespace: zen-pentest
+  labels:
+    app.kubernetes.io/name: zen-pentest
+    app.kubernetes.io/component: config
+data:
+  # Application Settings
+  ENVIRONMENT: "production"
+  LOG_LEVEL: "INFO"
+  DEBUG: "false"
+  
+  # CORS Settings
+  CORS_ORIGINS: "https://zen-pentest.example.com"
+  
+  # API Settings
+  API_HOST: "0.0.0.0"
+  API_PORT: "8000"
+  API_WORKERS: "4"
+  
+  # Database Settings (without credentials)
+  DB_HOST: "postgres"
+  DB_PORT: "5432"
+  DB_NAME: "zen_pentest"
+  
+  # Redis Settings (without credentials)
+  REDIS_HOST: "redis"
+  REDIS_PORT: "6379"
+  
+  # Worker Settings
+  CELERY_WORKER_CONCURRENCY: "4"
+  CELERY_TASK_SOFT_TIME_LIMIT: "3300"
+  CELERY_TASK_TIME_LIMIT: "3600"
+  
+  # Scanning Settings
+  SCAN_TIMEOUT: "3600"
+  MAX_CONCURRENT_SCANS: "5"
+  RATE_LIMIT_REQUESTS_PER_MINUTE: "60"
+  
+  # Feature Flags
+  ENABLE_AI_ANALYSIS: "true"
+  ENABLE_COMPLIANCE_REPORTS: "true"
+  ENABLE_SIEM_INTEGRATION: "false"
+  ENABLE_NOTIFICATIONS: "true"
+  
+  # Security Settings
+  REQUIRE_SCAN_APPROVAL: "true"
+  MAX_SCAN_TARGETS_PER_REQUEST: "10"
+  ALLOWED_SCAN_TYPES: "web,network,api,cloud"
+  
+  # Compliance Standards
+  COMPLIANCE_STANDARDS: "OWASP_TOP_10,PCI_DSS,ISO27001,NIST_800_53"
+  
+  # Retention Settings
+  SCAN_RETENTION_DAYS: "365"
+  REPORT_RETENTION_DAYS: "730"
+  LOG_RETENTION_DAYS: "90"
+---
+# Nginx Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+  namespace: zen-pentest
+  labels:
+    app.kubernetes.io/name: nginx
+    app.kubernetes.io/component: config
+data:
+  nginx.conf: |
+    user nginx;
+    worker_processes auto;
+    error_log /var/log/nginx/error.log warn;
+    pid /var/run/nginx.pid;
+
+    events {
+        worker_connections 1024;
+    }
+
+    http {
+        include /etc/nginx/mime.types;
+        default_type application/octet-stream;
+
+        log_format main '$remote_addr - $remote_user [$time_local] "$request" '
+                        '$status $body_bytes_sent "$http_referer" '
+                        '"$http_user_agent" "$http_x_forwarded_for"';
+
+        access_log /var/log/nginx/access.log main;
+
+        sendfile on;
+        tcp_nopush on;
+        tcp_nodelay on;
+        keepalive_timeout 65;
+        types_hash_max_size 2048;
+        client_max_body_size 100M;
+
+        # Gzip compression
+        gzip on;
+        gzip_vary on;
+        gzip_proxied any;
+        gzip_comp_level 6;
+        gzip_types text/plain text/css text/xml application/json application/javascript application/rss+xml application/atom+xml image/svg+xml;
+
+        # Rate limiting
+        limit_req_zone $binary_remote_addr zone=api:10m rate=10r/s;
+        limit_req_zone $binary_remote_addr zone=auth:10m rate=5r/m;
+
+        upstream api {
+            least_conn;
+            server zen-api:8000;
+        }
+
+        server {
+            listen 80;
+            server_name _;
+
+            # Security headers
+            add_header X-Frame-Options "SAMEORIGIN" always;
+            add_header X-Content-Type-Options "nosniff" always;
+            add_header X-XSS-Protection "1; mode=block" always;
+            add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+
+            # Health check endpoint
+            location /health {
+                access_log off;
+                proxy_pass http://api/health;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+            }
+
+            # API endpoints with rate limiting
+            location /api/ {
+                limit_req zone=api burst=20 nodelay;
+                proxy_pass http://api;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+                proxy_connect_timeout 30s;
+                proxy_send_timeout 30s;
+                proxy_read_timeout 30s;
+            }
+
+            # Authentication endpoints with stricter rate limiting
+            location /api/auth/ {
+                limit_req zone=auth burst=5 nodelay;
+                proxy_pass http://api;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+            }
+
+            # Default location
+            location / {
+                proxy_pass http://api;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+            }
+        }
+    }

@@ -1,0 +1,172 @@
+# =============================================================================
+# Zen-AI-Pentest RBAC Configuration
+# =============================================================================
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: zen-pentest
+  namespace: zen-pentest
+  labels:
+    app.kubernetes.io/name: zen-pentest
+    app.kubernetes.io/component: rbac
+automountServiceAccountToken: false
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: zen-pentest-role
+  namespace: zen-pentest
+  labels:
+    app.kubernetes.io/name: zen-pentest
+    app.kubernetes.io/component: rbac
+rules:
+  # Read access to configmaps and secrets
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get"]
+    resourceNames: ["zen-pentest-secrets"]
+  # Read access to pods (for service discovery)
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+  # Read access to endpoints
+  - apiGroups: [""]
+    resources: ["endpoints"]
+    verbs: ["get", "list", "watch"]
+  # Read access to services
+  - apiGroups: [""]
+    resources: ["services"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: zen-pentest-rolebinding
+  namespace: zen-pentest
+  labels:
+    app.kubernetes.io/name: zen-pentest
+    app.kubernetes.io/component: rbac
+subjects:
+  - kind: ServiceAccount
+    name: zen-pentest
+    namespace: zen-pentest
+roleRef:
+  kind: Role
+  name: zen-pentest-role
+  apiGroup: rbac.authorization.k8s.io
+---
+# Network Policy for API
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: zen-api-network-policy
+  namespace: zen-pentest
+  labels:
+    app.kubernetes.io/name: zen-api
+    app.kubernetes.io/component: network-policy
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: zen-api
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow from ingress controller
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              app.kubernetes.io/name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8000
+    # Allow from monitoring
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+      ports:
+        - protocol: TCP
+          port: 8000
+  egress:
+    # Allow to postgres
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: postgres
+      ports:
+        - protocol: TCP
+          port: 5432
+    # Allow to redis
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: redis
+      ports:
+        - protocol: TCP
+          port: 6379
+    # Allow DNS
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+---
+# Network Policy for Worker
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: zen-worker-network-policy
+  namespace: zen-pentest
+  labels:
+    app.kubernetes.io/name: zen-worker
+    app.kubernetes.io/component: network-policy
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: zen-worker
+  policyTypes:
+    - Egress
+  egress:
+    # Allow to postgres
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: postgres
+      ports:
+        - protocol: TCP
+          port: 5432
+    # Allow to redis
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: redis
+      ports:
+        - protocol: TCP
+          port: 6379
+    # Allow DNS
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+    # Allow to scan targets (outbound scanning)
+    - to: []
+      ports:
+        - protocol: TCP
+          port: 80
+        - protocol: TCP
+          port: 443
+        - protocol: TCP
+          port: 8080
+        - protocol: TCP
+          port: 8443

@@ -1,0 +1,131 @@
+id: zen-ai-vulnerability-workflow
+
+info:
+  name: Zen AI Vulnerability Assessment Workflow
+  author: zen-ai-pentest
+  description: |
+    Comprehensive vulnerability assessment workflow targeting critical
+    and high severity CVEs, misconfigurations, and security weaknesses.
+    Optimized for thorough security testing of web applications.
+  tags: workflow, vulnerability, cve, security, assessment
+
+workflows:
+  # Step 1: Critical CVEs
+  - template: cves/2024/
+    matchers:
+      - name: critical-cve-found
+        condition: or
+
+  # Step 2: High Severity CVEs
+  - template: cves/2023/
+    matchers:
+      - name: high-cve-found
+        condition: or
+
+  # Step 3: Medium Severity CVEs
+  - template: cves/2022/
+    matchers:
+      - name: medium-cve-found
+        condition: or
+
+  # Step 4: Web Vulnerabilities
+  - template: vulnerabilities/
+    matchers:
+      - name: vuln-found
+        condition: or
+
+  # Step 5: Critical Misconfigurations
+  - template: misconfiguration/
+    matchers:
+      - name: misconfig-found
+        condition: or
+
+  # Step 6: Exposed Sensitive Data
+  - template: exposures/
+    matchers:
+      - name: exposure-found
+        condition: or
+
+  # Step 7: Default Credentials
+  - template: default-logins/
+    matchers:
+      - name: default-creds-found
+        condition: or
+
+  # Step 8: File Upload Vulnerabilities
+  - template: vulnerabilities/generic/
+    matchers:
+      - name: generic-vuln-found
+        condition: or
+
+  # Step 9: Server-Side Request Forgery
+  - template: vulnerabilities/ssrf/
+    matchers:
+      - name: ssrf-found
+        condition: or
+
+  # Step 10: Cross-Site Scripting
+  - template: vulnerabilities/xss/
+    matchers:
+      - name: xss-found
+        condition: or
+
+  # Step 11: SQL Injection
+  - template: vulnerabilities/sqli/
+    matchers:
+      - name: sqli-found
+        condition: or
+
+  # Step 12: Command Injection
+  - template: vulnerabilities/rce/
+    matchers:
+      - name: rce-found
+        condition: or
+
+  # Step 13: Local File Inclusion
+  - template: vulnerabilities/lfi/
+    matchers:
+      - name: lfi-found
+        condition: or
+
+  # Step 14: Remote File Inclusion
+  - template: vulnerabilities/rfi/
+    matchers:
+      - name: rfi-found
+        condition: or
+
+  # Step 15: XML External Entity
+  - template: vulnerabilities/xxe/
+    matchers:
+      - name: xxe-found
+        condition: or
+
+  # Step 16: Open Redirect
+  - template: vulnerabilities/redirect/
+    matchers:
+      - name: redirect-found
+        condition: or
+
+  # Step 17: Cross-Site Request Forgery
+  - template: vulnerabilities/csrf/
+    matchers:
+      - name: csrf-found
+        condition: or
+
+  # Step 18: Insecure Deserialization
+  - template: vulnerabilities/deserialization/
+    matchers:
+      - name: deserialization-found
+        condition: or
+
+  # Step 19: Path Traversal
+  - template: vulnerabilities/pathtraversal/
+    matchers:
+      - name: pathtraversal-found
+        condition: or
+
+  # Step 20: Information Disclosure
+  - template: vulnerabilities/information-disclosure/
+    matchers:
+      - name: info-disclosure-found
+        condition: or

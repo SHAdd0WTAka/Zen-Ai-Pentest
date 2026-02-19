@@ -1,0 +1,53 @@
+# ============================================
+# Zen-Ai-Pentest - Grafana Alert Notifications
+# Auto-provisioned on startup
+# ============================================
+
+apiVersion: 1
+
+notifiers:
+  - name: 'Slack - Critical'
+    type: slack
+    uid: slack-critical
+    org_id: 1
+    is_default: false
+    send_reminder: true
+    frequency: 15m
+    disable_resolve_message: false
+    settings:
+      url: '${SLACK_WEBHOOK_URL}'
+      recipient: '#alerts-critical'
+      title: '{{ template "default.title" . }}'
+      body: '{{ template "default.message" . }}'
+      mention: '@here'
+      mentionGroups: ''
+      token: ''
+      username: 'Grafana Alerts'
+      icon_emoji: ':rotating_light:'
+
+  - name: 'Slack - General'
+    type: slack
+    uid: slack-general
+    org_id: 1
+    is_default: true
+    send_reminder: true
+    frequency: 1h
+    disable_resolve_message: false
+    settings:
+      url: '${SLACK_WEBHOOK_URL}'
+      recipient: '#alerts-general'
+      title: '{{ template "default.title" . }}'
+      body: '{{ template "default.message" . }}'
+      username: 'Grafana Alerts'
+      icon_emoji: ':grafana:'
+
+  - name: 'PagerDuty'
+    type: pagerduty
+    uid: pagerduty-oncall
+    org_id: 1
+    is_default: false
+    settings:
+      integrationKey: '${PAGERDUTY_SERVICE_KEY}'
+      severity: critical
+      autoResolve: true
+      message: '{{ template "default.title" . }}'

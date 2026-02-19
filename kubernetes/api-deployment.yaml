@@ -1,0 +1,229 @@
+# =============================================================================
+# Zen-AI-Pentest API Deployment
+# =============================================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zen-api
+  namespace: zen-pentest
+  labels:
+    app.kubernetes.io/name: zen-api
+    app.kubernetes.io/component: api
+    app.kubernetes.io/part-of: zen-pentest
+    app.kubernetes.io/version: "2.3.9"
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: zen-api
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: zen-api
+        app.kubernetes.io/component: api
+        app.kubernetes.io/version: "2.3.9"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: zen-pentest
+      securityContext:
+        fsGroup: 1000
+        runAsUser: 1000
+        runAsNonRoot: true
+      initContainers:
+        # Wait for database to be ready
+        - name: wait-for-db
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              until nc -z postgres 5432; do
+                echo "Waiting for postgres..."
+                sleep 2
+              done
+        # Run database migrations
+        - name: db-migrate
+          image: zen-pentest/api:2.3.9
+          command: ["alembic", "upgrade", "head"]
+          envFrom:
+            - configMapRef:
+                name: zen-pentest-config
+            - secretRef:
+                name: zen-pentest-secrets
+      containers:
+        - name: api
+          image: zen-pentest/api:2.3.9
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8000
+              name: http
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: zen-pentest-config
+            - secretRef:
+                name: zen-pentest-secrets
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          volumeMounts:
+            - name: logs
+              mountPath: /app/logs
+            - name: data
+              mountPath: /app/data
+            - name: reports
+              mountPath: /app/reports
+            - name: evidence
+              mountPath: /app/evidence
+            - name: tmp
+              mountPath: /tmp
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "500m"
+            limits:
+              memory: "4Gi"
+              cpu: "2000m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 30
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+      volumes:
+        - name: logs
+          emptyDir: {}
+        - name: data
+          emptyDir: {}
+        - name: reports
+          persistentVolumeClaim:
+            claimName: reports-data
+        - name: evidence
+          persistentVolumeClaim:
+            claimName: evidence-data
+        - name: tmp
+          emptyDir: {}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app.kubernetes.io/name
+                      operator: In
+                      values:
+                        - zen-api
+                topologyKey: kubernetes.io/hostname
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: zen-api
+  namespace: zen-pentest
+  labels:
+    app.kubernetes.io/name: zen-api
+    app.kubernetes.io/component: api
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8000
+      targetPort: 8000
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: zen-api
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: zen-api-hpa
+  namespace: zen-pentest
+  labels:
+    app.kubernetes.io/name: zen-api
+    app.kubernetes.io/component: autoscaler
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: zen-api
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+        - type: Percent
+          value: 100
+          periodSeconds: 15
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 10
+          periodSeconds: 60
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: zen-api-pdb
+  namespace: zen-pentest
+  labels:
+    app.kubernetes.io/name: zen-api
+    app.kubernetes.io/component: pdb
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: zen-api

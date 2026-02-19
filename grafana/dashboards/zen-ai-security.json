@@ -1,0 +1,407 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "Zen-Ai-Pentest - Security Scanning Dashboard",
+  "editable": true,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "collapsed": false,
+      "datasource": null,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 0},
+      "id": 1,
+      "panels": [],
+      "title": "Vulnerability Summary",
+      "type": "row"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 1},
+              {"color": "orange", "value": 5},
+              {"color": "red", "value": 10}
+            ]
+          }
+        }
+      },
+      "gridPos": {"h": 4, "w": 4, "x": 0, "y": 1},
+      "id": 2,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area"
+      },
+      "targets": [
+        {
+          "expr": "sum(zen_ai_scanner_findings_total{severity=\"critical\"})",
+          "refId": "A"
+        }
+      ],
+      "title": "Critical Findings",
+      "type": "stat"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 10},
+              {"color": "orange", "value": 25},
+              {"color": "red", "value": 50}
+            ]
+          }
+        }
+      },
+      "gridPos": {"h": 4, "w": 4, "x": 4, "y": 1},
+      "id": 3,
+      "options": {
+        "colorMode": "background"
+      },
+      "targets": [
+        {
+          "expr": "sum(zen_ai_scanner_findings_total{severity=\"high\"})",
+          "refId": "A"
+        }
+      ],
+      "title": "High Findings",
+      "type": "stat"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "blue", "value": 1}
+            ]
+          }
+        }
+      },
+      "gridPos": {"h": 4, "w": 4, "x": 8, "y": 1},
+      "id": 4,
+      "options": {
+        "colorMode": "background"
+      },
+      "targets": [
+        {
+          "expr": "sum(zen_ai_scanner_findings_total{severity=\"medium\"})",
+          "refId": "A"
+        }
+      ],
+      "title": "Medium Findings",
+      "type": "stat"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null}
+            ]
+          }
+        }
+      },
+      "gridPos": {"h": 4, "w": 4, "x": 12, "y": 1},
+      "id": 5,
+      "options": {
+        "colorMode": "background"
+      },
+      "targets": [
+        {
+          "expr": "sum(zen_ai_scanner_findings_total{severity=\"low\"})",
+          "refId": "A"
+        }
+      ],
+      "title": "Low Findings",
+      "type": "stat"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 1}
+            ]
+          }
+        }
+      },
+      "gridPos": {"h": 4, "w": 4, "x": 16, "y": 1},
+      "id": 6,
+      "options": {
+        "colorMode": "background"
+      },
+      "targets": [
+        {
+          "expr": "zen_ai_scanner_active_scans",
+          "refId": "A"
+        }
+      ],
+      "title": "Active Scans",
+      "type": "stat"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "unit": "s"
+        }
+      },
+      "gridPos": {"h": 4, "w": 4, "x": 20, "y": 1},
+      "id": 7,
+      "options": {
+        "colorMode": "background"
+      },
+      "targets": [
+        {
+          "expr": "avg(zen_ai:scanner_duration_avg_5m)",
+          "refId": "A"
+        }
+      ],
+      "title": "Avg Scan Duration",
+      "type": "stat"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {
+            "hideFrom": {"tooltip": false, "viz": false, "legend": false}
+          }
+        }
+      },
+      "gridPos": {"h": 8, "w": 8, "x": 0, "y": 5},
+      "id": 8,
+      "options": {
+        "legend": {"displayMode": "list", "placement": "right", "showLegend": true},
+        "pieType": "donut",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "tooltip": {"mode": "single", "sort": "none"}
+      },
+      "targets": [
+        {
+          "expr": "sum by (severity) (zen_ai_scanner_findings_total)",
+          "legendFormat": "{{ severity }}",
+          "refId": "A"
+        }
+      ],
+      "title": "Findings Distribution",
+      "type": "piechart"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {"drawStyle": "bars", "fillOpacity": 60}
+        }
+      },
+      "gridPos": {"h": 8, "w": 16, "x": 8, "y": 5},
+      "id": 9,
+      "options": {
+        "legend": {"displayMode": "table", "placement": "right"},
+        "tooltip": {"mode": "multi"}
+      },
+      "targets": [
+        {
+          "expr": "sum by (scanner_type, severity) (rate(zen_ai_scanner_findings_total[5m]))",
+          "legendFormat": "{{ scanner_type }} - {{ severity }}",
+          "refId": "A"
+        }
+      ],
+      "title": "Findings by Scanner Type",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "datasource": null,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 13},
+      "id": 10,
+      "panels": [],
+      "title": "Scanner Performance",
+      "type": "row"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {"drawStyle": "line", "fillOpacity": 10}
+        }
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 14},
+      "id": 11,
+      "options": {
+        "legend": {"displayMode": "table", "placement": "right"}
+      },
+      "targets": [
+        {
+          "expr": "sum by (scanner_type) (rate(zen_ai_scanner_tasks_total[5m]))",
+          "legendFormat": "{{ scanner_type }}",
+          "refId": "A"
+        }
+      ],
+      "title": "Scan Tasks Rate",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {"drawStyle": "line"},
+          "unit": "s"
+        }
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 14},
+      "id": 12,
+      "options": {
+        "legend": {"displayMode": "table", "placement": "right"}
+      },
+      "targets": [
+        {
+          "expr": "zen_ai:scanner_duration_avg_5m",
+          "legendFormat": "{{ scanner_type }}",
+          "refId": "A"
+        }
+      ],
+      "title": "Average Scan Duration",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "datasource": null,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 22},
+      "id": 13,
+      "panels": [],
+      "title": "Target Status",
+      "type": "row"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "custom": {
+            "align": "auto",
+            "displayMode": "auto",
+            "inspect": false
+          },
+          "mappings": [
+            {"options": {"0": {"color": "red", "text": "Down"}}, "type": "value"},
+            {"options": {"1": {"color": "green", "text": "Up"}}, "type": "value"}
+          ],
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]}
+        }
+      },
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 23},
+      "id": 14,
+      "options": {
+        "showHeader": true,
+        "sortBy": [{"desc": false, "displayName": "Target"}]
+      },
+      "pluginVersion": "8.0.0",
+      "targets": [
+        {
+          "expr": "zen_ai_target_reachable",
+          "format": "table",
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Target Reachability",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "indexByName": {},
+            "renameByName": {
+              "Value": "Status",
+              "target": "Target"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 27,
+  "style": "dark",
+  "tags": ["zen-ai", "security"],
+  "templating": {
+    "list": [
+      {
+        "current": {"selected": false, "text": "Prometheus", "value": "Prometheus"},
+        "hide": 0,
+        "includeAll": false,
+        "label": "Datasource",
+        "multi": false,
+        "name": "datasource",
+        "options": [],
+        "query": "prometheus",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      },
+      {
+        "current": {"selected": true, "text": ["All"], "value": ["$__all"]},
+        "datasource": "Prometheus",
+        "definition": "label_values(scanner_type)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Scanner Type",
+        "multi": true,
+        "name": "scanner",
+        "options": [],
+        "query": {"query": "label_values(scanner_type)", "refId": "A"},
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {"from": "now-6h", "to": "now"},
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Zen-Ai Security Dashboard",
+  "uid": "zen-ai-security",
+  "version": 1
+}
