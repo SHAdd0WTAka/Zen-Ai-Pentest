@@ -77,6 +77,9 @@ scripts/use_github_token.ps1
 web_ui/frontend/node_modules/
 web_ui/frontend/dist/
 web_ui/frontend/build/
+web_ui/dashboard/node_modules/
+web_ui/dashboard/dist/
+web_ui/dashboard/build/
 
 # Secrets
 *.key
@@ -92,3 +95,15 @@ tools/kimi_cli_adapter.py
 
 # Temporäres Frontend
 frontend-simple/
+
+# Screenshots (lokal behalten, nicht commiten)
+screenshot_*.png
+
+# Lokale Testdatenbank
+test.db
+
+# Temporäre Scripts
+fix_alerts.py
+
+# Backup-Verzeichnisse
+web_ui/frontend_backup_/
