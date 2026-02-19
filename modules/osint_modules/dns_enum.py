@@ -180,7 +180,7 @@ class DNSEnumerator:
                             'value': info[4][0],
                             'ttl': 0
                         })
-                except:
+                except (socket.gaierror, socket.herror, OSError):
                     pass
         
         return records
@@ -256,7 +256,7 @@ class DNSEnumerator:
                 None, socket.gethostbyaddr, ip
             )
             return hostname[0]
-        except:
+        except (socket.herror, socket.gaierror):
             return None
     
     async def _check_email_security(self, domain: str) -> Dict:

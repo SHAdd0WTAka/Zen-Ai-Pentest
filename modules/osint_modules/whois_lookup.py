@@ -324,7 +324,7 @@ class WhoisLookup:
                 try:
                     parsed = datetime.strptime(date_value.split('T')[0], fmt)
                     return parsed.isoformat()
-                except:
+                except ValueError:
                     continue
             
             return date_value
@@ -344,7 +344,7 @@ class WhoisLookup:
             creation = datetime.fromisoformat(record.creation_date.replace('Z', '+00:00'))
             age = (datetime.now() - creation).days
             return age
-        except:
+        except (ValueError, TypeError):
             return None
     
     def is_expired(self, domain: str) -> bool:
@@ -359,7 +359,7 @@ class WhoisLookup:
         try:
             expiration = datetime.fromisoformat(record.expiration_date.replace('Z', '+00:00'))
             return datetime.now() > expiration
-        except:
+        except (ValueError, TypeError):
             return False
     
     def get_abuse_contacts(self, domain: str) -> List[str]:

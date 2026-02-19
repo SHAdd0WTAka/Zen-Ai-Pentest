@@ -298,7 +298,7 @@ class CertificateTransparency:
                         
                         if 0 <= days_until_expiry <= days:
                             expiring.append(cert)
-                    except:
+                    except (ValueError, TypeError):
                         pass
         
         return expiring
