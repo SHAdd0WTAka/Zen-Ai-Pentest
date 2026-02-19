@@ -1,0 +1,18 @@
+{
+  "name": "zen-ai-pentest-cloudflare",
+  "version": "3.0.0",
+  "description": "Zen-AI-Pentest Cloudflare Worker Deployment",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "logs": "wrangler tail",
+    "kv:create": "wrangler kv:namespace create CACHE",
+    "secret:put": "wrangler secret put",
+    "build:site": "cd ../web_ui/frontend && npm run build"
+  },
+  "devDependencies": {
+    "wrangler": "^3.0.0"
+  },
+  "dependencies": {}
+}

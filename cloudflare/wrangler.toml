@@ -1,0 +1,42 @@
+name = "zen-ai-pentest"
+main = "src/index.js"
+compatibility_date = "2026-02-19"
+compatibility_flags = ["nodejs_compat"]
+
+# Static site hosting
+[site]
+bucket = "../web_ui/frontend/dist"
+
+# Environment variables
+[vars]
+ENVIRONMENT = "production"
+API_VERSION = "v1"
+
+# KV Namespace for caching
+[[kv_namespaces]]
+binding = "CACHE"
+id = "zen_pentest_cache"
+
+# Durable Objects (für WebSockets)
+[[durable_objects.bindings]]
+name = "WEBSOCKET_HUB"
+class_name = "WebSocketHub"
+
+# Secrets (werden via CLI gesetzt)
+# wrangler secret put JWT_SECRET
+# wrangler secret put KIMI_API_KEY
+
+# Routes
+[[routes]]
+pattern = "zen-ai-pentest.pages.dev/*"
+custom_domain = false
+
+# Logging
+[observability]
+enabled = true
+head_sampling_rate = 1
+
+# Analytics
+[[analytics_engine_datasets]]
+binding = "ANALYTICS"
+dataset = "zen_pentest_analytics"

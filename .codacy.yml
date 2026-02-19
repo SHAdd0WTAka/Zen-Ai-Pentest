@@ -1,0 +1,27 @@
+# Codacy Configuration
+---
+engines:
+  pylint:
+    enabled: true
+  eslint:
+    enabled: true
+  shellcheck:
+    enabled: true
+  markdownlint:
+    enabled: true
+  duplication:
+    enabled: true
+    config:
+      languages:
+        - python
+        - javascript
+
+exclude_paths:
+  - "**/node_modules/**"
+  - "**/venv/**"
+  - "**/.venv/**"
+  - "**/tests/**"
+  - "**/dist/**"
+  - "**/build/**"
+  - "**/*.min.js"
+  - "**/*.min.css"

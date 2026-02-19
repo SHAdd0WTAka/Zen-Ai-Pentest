@@ -1,0 +1,19 @@
+# Codecov Configuration
+coverage:
+  status:
+    project:
+      default:
+        target: 80%
+        threshold: 2%
+    patch:
+      default:
+        target: 80%
+  ignore:
+    - "tests/**/*"
+    - "web_ui/frontend/node_modules/**/*"
+    - "**/node_modules/**/*"
+
+comment:
+  layout: "reach, diff, flags, files"
+  behavior: default
+  require_changes: false

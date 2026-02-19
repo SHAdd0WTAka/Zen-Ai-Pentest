@@ -1,0 +1,54 @@
+name: Deploy to Cloudflare
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'web_ui/frontend/**'
+      - 'cloudflare/**'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: web_ui/frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: web_ui/frontend
+        run: npm ci
+
+      - name: Build frontend
+        working-directory: web_ui/frontend
+        run: npm run build
+        env:
+          VITE_API_URL: ${{ secrets.CF_API_URL }}
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: zen-ai-pentest
+          directory: web_ui/frontend/dist
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Deploy Worker
+        working-directory: cloudflare
+        run: |
+          npm install -g wrangler
+          wrangler deploy --env production
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
