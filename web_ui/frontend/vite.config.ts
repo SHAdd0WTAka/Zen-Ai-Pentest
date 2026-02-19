@@ -1,37 +1,33 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import path from "path"
+import react from "@vitejs/plugin-react"
+import { defineConfig } from "vite"
+import { inspectAttr } from 'kimi-plugin-inspect-react'
 
-// https://vitejs.dev/config/
+// https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  base: './',
+  plugins: [inspectAttr(), react()],
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+    },
+  },
   server: {
     port: 3000,
     proxy: {
       '/api': {
         target: 'http://localhost:8000',
         changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ''),
       },
-      '/ws': {
-        target: 'ws://localhost:8000',
-        ws: true,
+      '/docs': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
       },
-    },
-  },
-  build: {
-    outDir: 'dist',
-    sourcemap: true,
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'charts': ['recharts', 'd3'],
-          'query': ['@tanstack/react-query', '@tanstack/react-table'],
-        },
+      '/openapi.json': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
       },
     },
   },
-  define: {
-    // Enable feature flags
-    __FEATURE_WEBSOCKET__: true,
-  },
-})
+});

@@ -96,7 +96,7 @@ services:
       - "8080:80"
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
-      - ./web_ui/frontend/build:/usr/share/nginx/html:ro
+      - ./web_ui/frontend/dist:/usr/share/nginx/html:ro
     depends_on:
       - api
     healthcheck:
