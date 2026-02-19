@@ -1,0 +1,57 @@
+{
+    "recommendations": [
+        // AI Assistant (bereits installiert)
+        "moonshot-ai.kimi-code",
+        
+        // Python & Code Quality
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-python.debugpy",
+        "charliermarsh.ruff",
+        "ms-python.black-formatter",
+        "ms-python.isort",
+        "ms-python.mypy-type-checker",
+        
+        // Coverage
+        "ryanluker.vscode-coverage-gutters",
+        "markis.code-coverage",
+        
+        // Security Scanning
+        "github.vscode-codeql",
+        "sonarsource.sonarlint-vscode",
+        "snyk-security.snyk-vulnerability-scanner",
+        "trailofbits.weaudit",
+        
+        // Testing
+        "littlefoxteam.vscode-python-test-adapter",
+        "hbenl.vscode-test-explorer",
+        
+        // Docker
+        "ms-azuretools.vscode-docker",
+        
+        // Git & GitHub
+        "eamodio.gitlens",
+        "github.vscode-pull-request-github",
+        "github.vscode-github-actions",
+        
+        // Documentation & Markdown
+        "yzhang.markdown-all-in-one",
+        "davidanson.vscode-markdownlint",
+        "shd101wyy.markdown-preview-enhanced",
+        
+        // YAML/TOML/JSON
+        "redhat.vscode-yaml",
+        "tamasfe.even-better-toml",
+        
+        // General Productivity
+        "editorconfig.editorconfig",
+        "usernamehw.errorlens",
+        "aaron-bond.better-comments",
+        "gruntfuggly.todo-tree",
+        "pkief.material-icon-theme"
+    ],
+    "unwantedRecommendations": [
+        "ms-python.flake8",
+        "ms-python.pylint"
+    ]
+}
