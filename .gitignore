@@ -27,8 +27,15 @@ ENV/
 .venv
 
 # IDE
-.vscode/
 .idea/
+*.swp
+*.swo
+*~
+
+# VS Code (allow shared settings, ignore local)
+.vscode/settings.json.local
+.vscode/launch.json.local
+.vscode/*.local
 *.swp
 *.swo
 *~
