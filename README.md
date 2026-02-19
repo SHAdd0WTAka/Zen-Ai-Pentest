@@ -58,7 +58,7 @@ All tools run with **safety controls**:
 
 ## 🚀 Quick Start
 
-[![Version](https://img.shields.io/badge/Version-2.3.9-orange)](https://github.com/SHAdd0WTAka/zen-ai-pentest/releases)
+[![Version](https://img.shields.io/badge/Version-3.0.0-orange)](https://github.com/SHAdd0WTAka/zen-ai-pentest/releases)
 [![Python](https://img.shields.io/badge/Python-3.9%2B-blue)](https://python.org)
 [![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
 [![Commits](https://img.shields.io/badge/Commits-740+-brightgreen)](https://github.com/SHAdd0WTAka/zen-ai-pentest/commits/main)

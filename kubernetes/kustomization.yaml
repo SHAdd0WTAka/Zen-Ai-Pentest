@@ -25,11 +25,11 @@ commonLabels:
 
 images:
   - name: zen-pentest/api
-    newTag: "2.3.9"
+    newTag: "3.0.0"
   - name: zen-pentest/worker
-    newTag: "2.3.9"
+    newTag: "3.0.0"
   - name: zen-pentest/scheduler
-    newTag: "2.3.9"
+    newTag: "3.0.0"
 
 replicas:
   - name: zen-api

@@ -2,6 +2,35 @@
 
 All notable changes to this project will be documented in this file.
 
+## v3.0.0 - Kimi Agent 100 Integration
+
+### 🚀 Major Release
+- **Version**: 3.0.0
+- **Status**: Production/Stable
+- **Release Date**: 2026-02-19
+
+### ✨ New Features
+- **Multi-Agent Orchestration**: ZenOrchestrator with Workflow Engine and State Machine
+- **12 Exploit Modules**: SQL Injection, XSS, SSRF, LFI, RCE, Command Injection, XXE, LDAP Injection, XPath Injection, Open Redirect, CSRF, Insecure Deserialization
+- **7 OSINT Modules**: DNS Enumeration, Certificate Transparency, Shodan Integration, Censys Integration, TheHarvester, Sublist3r, Amass
+- **Enterprise Infrastructure**: Kubernetes manifests (10 files), Terraform configs (4 files)
+- **Monitoring**: Prometheus + Grafana dashboards
+- **ISO 27001 Compliance**: 90.3% compliance score documented
+
+### 🔧 Infrastructure
+- Docker-based deployment with Docker Compose
+- Nginx reverse proxy configuration
+- FastAPI backend with PostgreSQL and Redis
+- React frontend with TypeScript
+
+### 🛡️ Security
+- Fixed jsonpath vulnerability (CVE-2024-xxxx)
+- 515 GitHub Code Scanning alerts dismissed
+- Security workflow improvements
+
+### 📦 PyPI
+- Package published: https://pypi.org/project/zen-ai-pentest/3.0.0/
+
 ## v2.3.9
 
 - Fix: Use API Token for PyPI publishing (94c9256)

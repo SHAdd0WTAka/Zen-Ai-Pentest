@@ -10,7 +10,7 @@ metadata:
     app.kubernetes.io/name: zen-worker
     app.kubernetes.io/component: worker
     app.kubernetes.io/part-of: zen-pentest
-    app.kubernetes.io/version: "2.3.9"
+    app.kubernetes.io/version: "3.0.0"
 spec:
   replicas: 2
   strategy:
@@ -26,7 +26,7 @@ spec:
       labels:
         app.kubernetes.io/name: zen-worker
         app.kubernetes.io/component: worker
-        app.kubernetes.io/version: "2.3.9"
+        app.kubernetes.io/version: "3.0.0"
     spec:
       serviceAccountName: zen-pentest
       securityContext:
@@ -35,7 +35,7 @@ spec:
         runAsNonRoot: true
       containers:
         - name: worker
-          image: zen-pentest/worker:2.3.9
+          image: zen-pentest/worker:3.0.0
           imagePullPolicy: Always
           command:
             - celery
@@ -122,7 +122,7 @@ metadata:
     app.kubernetes.io/name: zen-scheduler
     app.kubernetes.io/component: scheduler
     app.kubernetes.io/part-of: zen-pentest
-    app.kubernetes.io/version: "2.3.9"
+    app.kubernetes.io/version: "3.0.0"
 spec:
   replicas: 1
   strategy:
@@ -135,7 +135,7 @@ spec:
       labels:
         app.kubernetes.io/name: zen-scheduler
         app.kubernetes.io/component: scheduler
-        app.kubernetes.io/version: "2.3.9"
+        app.kubernetes.io/version: "3.0.0"
     spec:
       serviceAccountName: zen-pentest
       securityContext:
@@ -144,7 +144,7 @@ spec:
         runAsNonRoot: true
       containers:
         - name: scheduler
-          image: zen-pentest/scheduler:2.3.9
+          image: zen-pentest/scheduler:3.0.0
           imagePullPolicy: Always
           command:
             - celery

@@ -7,7 +7,7 @@ metadata:
   name: zen-pentest
   labels:
     app.kubernetes.io/name: zen-pentest
-    app.kubernetes.io/version: "2.3.9"
+    app.kubernetes.io/version: "3.0.0"
     app.kubernetes.io/component: namespace
     app.kubernetes.io/part-of: zen-pentest-platform
     environment: production

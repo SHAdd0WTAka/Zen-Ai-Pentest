@@ -9,7 +9,7 @@
 **Zen-AI-Pentest** is an autonomous, AI-powered penetration testing framework that executes **real security tools** with intelligent orchestration.
 
 - **Name**: zen-ai-pentest
-- **Version**: 2.3.9
+- **Version**: 3.0.0
 - **License**: MIT
 - **Python**: 3.9+
 - **Repository**: https://github.com/SHAdd0WTAka/zen-ai-pentest

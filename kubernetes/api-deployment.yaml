@@ -10,7 +10,7 @@ metadata:
     app.kubernetes.io/name: zen-api
     app.kubernetes.io/component: api
     app.kubernetes.io/part-of: zen-pentest
-    app.kubernetes.io/version: "2.3.9"
+    app.kubernetes.io/version: "3.0.0"
 spec:
   replicas: 3
   strategy:
@@ -26,7 +26,7 @@ spec:
       labels:
         app.kubernetes.io/name: zen-api
         app.kubernetes.io/component: api
-        app.kubernetes.io/version: "2.3.9"
+        app.kubernetes.io/version: "3.0.0"
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "8000"
@@ -51,7 +51,7 @@ spec:
               done
         # Run database migrations
         - name: db-migrate
-          image: zen-pentest/api:2.3.9
+          image: zen-pentest/api:3.0.0
           command: ["alembic", "upgrade", "head"]
           envFrom:
             - configMapRef:
@@ -60,7 +60,7 @@ spec:
                 name: zen-pentest-secrets
       containers:
         - name: api
-          image: zen-pentest/api:2.3.9
+          image: zen-pentest/api:3.0.0
           imagePullPolicy: Always
           ports:
             - containerPort: 8000
