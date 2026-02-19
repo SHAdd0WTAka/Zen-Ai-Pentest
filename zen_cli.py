@@ -7,6 +7,11 @@ Provides 'zen' command with auth support
 import sys
 import os
 
+# Windows Asyncio Fix (must be first)
+if sys.platform == 'win32':
+    import warnings
+    warnings.filterwarnings('ignore', message='unclosed transport', category=ResourceWarning)
+
 # Add project to path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 

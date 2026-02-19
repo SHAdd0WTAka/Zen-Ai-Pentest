@@ -8,6 +8,11 @@ import os
 import sys
 from pathlib import Path
 
+# Windows Asyncio Fix (must be first)
+if sys.platform == 'win32':
+    import warnings
+    warnings.filterwarnings('ignore', message='unclosed transport', category=ResourceWarning)
+
 # Add parent to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
