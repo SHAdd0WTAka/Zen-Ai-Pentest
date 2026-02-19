@@ -624,7 +624,7 @@ class BaseAPIScanner(ABC):
                     self.result.add_vulnerability(vuln)
                     break
                     
-            except Exception:
+            except (ConnectionError, TimeoutError, aiohttp.ClientError):
                 pass
     
     async def _test_jwt_vulnerabilities(self, endpoint: APIEndpoint, vulnerabilities: List[Vulnerability]):
@@ -652,7 +652,7 @@ class BaseAPIScanner(ABC):
                 vulnerabilities.append(vuln)
                 self.result.add_vulnerability(vuln)
                 
-        except Exception:
+        except (ConnectionError, TimeoutError, aiohttp.ClientError):
             pass
     
     async def test_rate_limiting(self, endpoint: APIEndpoint, requests: int = 50) -> List[Vulnerability]:

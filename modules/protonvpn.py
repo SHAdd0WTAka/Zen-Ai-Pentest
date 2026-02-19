@@ -143,7 +143,7 @@ class ProtonVPNManager:
                     ip = stdout.decode().strip()
                     if ip and self._is_valid_ip(ip):
                         return ip
-                except Exception:
+                except (subprocess.SubprocessError, asyncio.TimeoutError, OSError):
                     continue
 
             return "unknown"

@@ -89,7 +89,7 @@ Provide a structured reconnaissance plan including:
                 )
                 if result.returncode == 0:
                     records.append(f"{rtype}: {result.stdout[:200]}...")
-            except Exception:
+            except (subprocess.SubprocessError, OSError):
                 continue
 
         return records if records else ["No DNS records found"]
@@ -100,7 +100,7 @@ Provide a structured reconnaissance plan including:
             result = subprocess.run(["whois", target], capture_output=True, text=True, timeout=15)
             # Return first 500 chars of relevant info
             return result.stdout[:500] if result.returncode == 0 else "WHOIS failed"
-        except Exception:
+        except (subprocess.SubprocessError, OSError):
             return "WHOIS not available"
 
     def _parse_attack_vectors(self, llm_content: str) -> List[str]:

@@ -199,10 +199,10 @@ class AdvancedSubdomainScanner(SubdomainScanner):
                             if subdomain != domain:
                                 discovered.add(subdomain.lower())
                         logger.info(f"[AdvancedScanner] AXFR successful from {ns_server}")
-                except Exception as e:
+                except (dns.exception.DNSException, ConnectionError, TimeoutError) as e:
                     logger.debug(f"[AdvancedScanner] AXFR failed from {ns_server}: {e}")
 
-        except Exception as e:
+        except (dns.exception.DNSException, ConnectionError, TimeoutError) as e:
             logger.debug(f"[AdvancedScanner] Zone transfer enumeration failed: {e}")
 
         return discovered
@@ -268,7 +268,7 @@ class AdvancedSubdomainScanner(SubdomainScanner):
                             timeout=self.timeout
                         )
                     return subdomain
-                except Exception:
+                except (dns.exception.DNSException, asyncio.TimeoutError, ConnectionError):
                     return None
 
         tasks = [test_permutation(p) for p in permutations]
@@ -302,7 +302,7 @@ class AdvancedSubdomainScanner(SubdomainScanner):
                         subdomains = data.get("subdomains", [])
                         for sub in subdomains:
                             discovered.add(sub.lower())
-        except Exception as e:
+        except (aiohttp.ClientError, asyncio.TimeoutError, OSError) as e:
             logger.debug(f"[AdvancedScanner] VirusTotal lookup failed: {e}")
 
         return discovered
@@ -327,9 +327,9 @@ class AdvancedSubdomainScanner(SubdomainScanner):
                         inc_answers = resolver.resolve(inc, "A")
                         if inc_answers:
                             discovered.add(inc.lower())
-                    except Exception:
+                    except dns.exception.DNSException:
                         pass
-        except Exception:
+        except dns.exception.DNSException:
             pass
 
         # Check DMARC
@@ -344,7 +344,7 @@ class AdvancedSubdomainScanner(SubdomainScanner):
                     if "@" in uri:
                         report_domain = uri.split("@")[1]
                         discovered.add(report_domain.lower())
-        except Exception:
+        except dns.exception.DNSException:
             pass
 
         # Check MX records for subdomains
@@ -359,7 +359,7 @@ class AdvancedSubdomainScanner(SubdomainScanner):
                 if len(parts) > 2:
                     potential_sub = ".".join(parts[:-2]) + f".{domain}"
                     discovered.add(potential_sub.lower())
-        except Exception:
+        except dns.exception.DNSException:
             pass
 
         return discovered
@@ -379,7 +379,7 @@ class AdvancedSubdomainScanner(SubdomainScanner):
                 answers = resolver.resolve(subdomain, "AAAA")
                 if answers:
                     discovered.add(subdomain.lower())
-            except Exception:
+            except dns.exception.DNSException:
                 pass
 
         return discovered
@@ -399,7 +399,7 @@ class AdvancedSubdomainScanner(SubdomainScanner):
                             hostname = entry.get("hostname", "").lower()
                             if hostname and hostname.endswith(f".{domain}"):
                                 discovered.add(hostname)
-        except Exception as e:
+        except (aiohttp.ClientError, asyncio.TimeoutError, OSError) as e:
             logger.debug(f"[AdvancedScanner] AlienVault lookup failed: {e}")
 
         return discovered
@@ -421,7 +421,7 @@ class AdvancedSubdomainScanner(SubdomainScanner):
                                 subdomain = parts[1].lower()
                                 if subdomain.endswith(f".{domain}"):
                                     discovered.add(subdomain)
-        except Exception as e:
+        except (aiohttp.ClientError, asyncio.TimeoutError, OSError) as e:
             logger.debug(f"[AdvancedScanner] BufferOver lookup failed: {e}")
 
         return discovered

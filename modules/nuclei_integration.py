@@ -128,7 +128,7 @@ class NucleiIntegration:
                     for category in categories.keys():
                         if f"{category}/" in line.lower():
                             categories[category].append(line.strip())
-        except Exception:
+        except (subprocess.SubprocessError, FileNotFoundError, OSError):
             pass
 
         return categories

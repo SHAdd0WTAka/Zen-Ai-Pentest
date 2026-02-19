@@ -199,7 +199,7 @@ class SubdomainScanner:
             answers = resolver.resolve(subdomain, record_type)
             if answers:
                 return subdomain
-        except Exception:
+        except (dns.resolver.NXDOMAIN, dns.resolver.NoAnswer, dns.resolver.Timeout, dns.exception.DNSException):
             pass
         return None
 
@@ -220,7 +220,7 @@ class SubdomainScanner:
                             timeout=self.timeout
                         )
                     return subdomain
-                except Exception:
+                except (socket.gaierror, socket.herror, asyncio.TimeoutError, OSError):
                     return None
 
         # Create tasks for all wordlist entries
@@ -321,7 +321,7 @@ Example: admin,api,dev,staging,us-west,cdn
             try:
                 ip = socket.gethostbyname(test_sub)
                 wildcard_ips.add(ip)
-            except Exception:
+            except socket.gaierror:
                 pass
 
         # Filter results
@@ -332,7 +332,7 @@ Example: admin,api,dev,staging,us-west,cdn
                 ip = socket.gethostbyname(subdomain)
                 if ip not in wildcard_ips:
                     filtered.add(subdomain)
-            except Exception:
+            except socket.gaierror:
                 # If we can't resolve, still keep it (might be CNAME or other record)
                 filtered.add(subdomain)
 
@@ -362,7 +362,7 @@ Example: admin,api,dev,staging,us-west,cdn
                             # Detect technologies
                             result.technologies = self._detect_technologies(response.headers, await response.text())
 
-                except Exception:
+                except (aiohttp.ClientError, asyncio.TimeoutError, OSError):
                     pass
 
         # Check both HTTP and HTTPS
