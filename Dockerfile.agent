@@ -28,8 +28,10 @@ RUN curl -s https://api.github.com/repos/projectdiscovery/nuclei/releases/latest
     grep "browser_download_url.*linux_amd64.zip" | \
     cut -d '"' -f 4 | \
     wget -qi - -O nuclei.zip && \
-    unzip nuclei.zip -d /usr/local/bin && \
-    rm nuclei.zip && \
+    mkdir -p /tmp/nuclei && \
+    unzip nuclei.zip -d /tmp/nuclei && \
+    mv /tmp/nuclei/nuclei /usr/local/bin/nuclei && \
+    rm -rf nuclei.zip /tmp/nuclei && \
     chmod +x /usr/local/bin/nuclei && \
     nuclei -update-templates
 
@@ -38,8 +40,10 @@ RUN curl -s https://api.github.com/repos/projectdiscovery/subfinder/releases/lat
     grep "browser_download_url.*linux_amd64.zip" | \
     cut -d '"' -f 4 | \
     wget -qi - -O subfinder.zip && \
-    unzip subfinder.zip -d /usr/local/bin && \
-    rm subfinder.zip && \
+    mkdir -p /tmp/subfinder && \
+    unzip subfinder.zip -d /tmp/subfinder && \
+    mv /tmp/subfinder/subfinder /usr/local/bin/subfinder && \
+    rm -rf subfinder.zip /tmp/subfinder && \
     chmod +x /usr/local/bin/subfinder
 
 # Install Python dependencies

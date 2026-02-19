@@ -36,6 +36,7 @@ Thumbs.db
 .pytest_cache
 .coverage
 htmlcov
+htmlcov_new
 .tox
 
 # Documentation builds
@@ -60,3 +61,50 @@ logs/
 tmp/
 temp/
 *.tmp
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Frontend (separately built) - exclude only large frontend directories
+web_ui/frontend/
+web_ui/dashboard/
+web_ui/frontend/node_modules/
+web_ui/dashboard/node_modules/
+
+# Large data directories
+evidence/
+data/
+reports/
+test_reports/
+screenshots/
+.agent-comm/
+.analysis/
+.skills/
+.vs/
+pytest_cache/
+.ruff_cache/
+__pycache__/
+
+# Backup files
+*.backup
+*.bak
+*~
+
+# CI/CD artifacts
+jenkins/
+codecov.exe
+codecov.asc
+*.SHA256SUM*
+
+# Other
+.claw-test
+.zenclaw-test
+.coverage-trigger
+.coverage-test-trigger
+.codecov-trigger
+
+# WSL/Windows specific
+*:Zone.Identifier
