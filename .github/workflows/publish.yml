@@ -11,7 +11,6 @@ concurrency:
 
 permissions:
   contents: read
-  id-token: write
 
 jobs:
   build-and-publish:
@@ -43,8 +42,8 @@ jobs:
         check-wheel-contents dist/*.whl || true
     
     - name: Publish to PyPI
-      uses: pypa/gh-action-pypi-publish@release/v1
-      with:
-        packages-dir: dist/
-        skip-existing: true
-        print-hash: true
+      env:
+        TWINE_USERNAME: __token__
+        TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+      run: |
+        python -m twine upload dist/* --skip-existing
