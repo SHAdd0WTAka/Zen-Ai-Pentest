@@ -25,12 +25,13 @@ export function Login() {
       if (response.ok) {
         const data = await response.json();
         localStorage.setItem('token', data.access_token);
-        window.location.href = '/dashboard';
+        window.location.href = '/';
       } else {
-        setError('Invalid credentials');
+        const errorData = await response.json().catch(() => null);
+        setError(errorData?.detail || 'Invalid credentials');
       }
     } catch (err) {
-      setError('Login failed. Please try again.');
+      setError('Network error. Please check connection.');
     } finally {
       setLoading(false);
     }
