@@ -114,3 +114,6 @@ fix_alerts.py
 
 # Backup-Verzeichnisse
 web_ui/frontend_backup_/
+
+# Exception for frontend lib
+!web_ui/frontend/src/lib/
