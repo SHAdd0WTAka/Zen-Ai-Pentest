@@ -1,0 +1,248 @@
+name: Workflow Health Monitor
+
+on:
+  schedule:
+    # Run every 6 hours
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+    inputs:
+      create_issues:
+        description: 'Create issues for failing workflows'
+        required: false
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  actions: read
+  issues: write
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    outputs:
+      error_count: ${{ steps.health_check.outputs.error_count }}
+      has_failures: ${{ steps.workflow_runs.outputs.has_failures }}
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Check Workflow Health
+        id: health_check
+        run: |
+          python scripts/workflow_health_check.py --json --output health_report.json || true
+          
+          # Check if there are any errors
+          if [ -f health_report.json ]; then
+            ERROR_COUNT=$(jq -r '.summary.issues_by_severity.error // 0' health_report.json)
+            echo "error_count=$ERROR_COUNT" >> $GITHUB_OUTPUT
+            
+            WARNING_COUNT=$(jq -r '.summary.issues_by_severity.warning // 0' health_report.json)
+            echo "warning_count=$WARNING_COUNT" >> $GITHUB_OUTPUT
+            
+            TOTAL_ISSUES=$(jq -r '.summary.total_issues // 0' health_report.json)
+            echo "total_issues=$TOTAL_ISSUES" >> $GITHUB_OUTPUT
+          else
+            echo "error_count=0" >> $GITHUB_OUTPUT
+            echo "warning_count=0" >> $GITHUB_OUTPUT
+            echo "total_issues=0" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Get Recent Workflow Runs
+        id: workflow_runs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Get recent runs with failures
+          gh api repos/${{ github.repository }}/actions/runs \
+            --paginate \
+            -q '.workflow_runs[] | select(.conclusion=="failure") | "\(.id)|\(.name)|\(.head_branch)|\(.run_started_at)|\(.html_url)"' 2>/dev/null | head -10 > failed_runs.txt || true
+          
+          if [ -s failed_runs.txt ]; then
+            echo "has_failures=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_failures=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check for Stale Issues
+        id: stale_check
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Check if there's already an open workflow health issue
+          EXISTING_ISSUE=$(gh issue list \
+            --repo ${{ github.repository }} \
+            --label "workflow-health" \
+            --state open \
+            --json number \
+            -q '.[0].number' 2>/dev/null)
+          
+          if [ -n "$EXISTING_ISSUE" ]; then
+            echo "existing_issue=$EXISTING_ISSUE" >> $GITHUB_OUTPUT
+          else
+            echo "existing_issue=" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Generate Error Details
+        id: error_details
+        if: steps.health_check.outputs.error_count > 0
+        run: |
+          if [ -f health_report.json ]; then
+            # Extract error issues using jq
+            jq -r '.issues[] | select(.severity=="error") | "- **\(.workflow)**: \(.message)"' health_report.json | head -10 > error_details.txt
+            if [ -s error_details.txt ]; then
+              echo "has_errors=true" >> $GITHUB_OUTPUT
+            else
+              echo "has_errors=false" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "has_errors=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create/Update Health Report Issue
+        if: |
+          (steps.health_check.outputs.error_count > 0 || steps.workflow_runs.outputs.has_failures == 'true') &&
+          (github.event.inputs.create_issues != 'false')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EXISTING_ISSUE: ${{ steps.stale_check.outputs.existing_issue }}
+        run: |
+          # Generate report content
+          TIMESTAMP=$(date -u +'%Y-%m-%d %H:%M:%S UTC')
+          
+          cat > report_body.md << 'ENDREPORT'
+          ## 🔍 Workflow Health Monitor Report
+
+          **Generated:** ${TIMESTAMP}
+
+          ### 📊 Health Check Summary
+
+          - **Total Issues:** ${{ steps.health_check.outputs.total_issues }}
+          - **Errors:** ${{ steps.health_check.outputs.error_count }}
+          - **Warnings:** ${{ steps.health_check.outputs.warning_count }}
+          ENDREPORT
+          
+          # Add error details if available
+          if [ "${{ steps.error_details.outputs.has_errors }}" == "true" ] && [ -f error_details.txt ]; then
+            echo "" >> report_body.md
+            echo "### 📝 Error Details" >> report_body.md
+            echo "" >> report_body.md
+            cat error_details.txt >> report_body.md
+          fi
+          
+          # Add failed workflow runs
+          if [ "${{ steps.workflow_runs.outputs.has_failures }}" == "true" ] && [ -s failed_runs.txt ]; then
+            echo "" >> report_body.md
+            echo "### ❌ Recent Failed Workflow Runs" >> report_body.md
+            echo "" >> report_body.md
+            while IFS='|' read -r id name branch started_at url; do
+              echo "- **[${name}](${url})** - Branch: \`${branch}\`" >> report_body.md
+            done < failed_runs.txt
+          fi
+          
+          # Add troubleshooting section
+          cat >> report_body.md << 'ENDREPORT'
+
+          ### 🔧 Troubleshooting
+
+          To fix these issues:
+
+          1. Run the health check locally:
+             ```bash
+             python scripts/workflow_health_check.py --verbose
+             ```
+
+          2. Check the workflow dashboard:
+             ```bash
+             python scripts/workflow_dashboard.py
+             ```
+
+          3. Review the [Actions tab](https://github.com/${{ github.repository }}/actions) for detailed logs
+
+          ---
+
+          <sub>This issue was automatically created by the [Workflow Monitor](.github/workflows/workflow-monitor.yml). It will be updated on the next check cycle.</sub>
+          ENDREPORT
+          
+          # Create or update issue
+          if [ -n "$EXISTING_ISSUE" ]; then
+            # Update existing issue with new report as a comment
+            gh issue comment "$EXISTING_ISSUE" --body-file report_body.md
+            echo "Updated existing issue #$EXISTING_ISSUE"
+          else
+            # Create new issue
+            gh issue create \
+              --title "🔍 Workflow Health Monitor Alert" \
+              --body-file report_body.md \
+              --label "workflow-health,automated"
+            echo "Created new health report issue"
+          fi
+
+      - name: Workflow Summary
+        if: always()
+        run: |
+          echo "## Workflow Health Monitor" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Health Check Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Total Issues | ${{ steps.health_check.outputs.total_issues }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Errors | ${{ steps.health_check.outputs.error_count }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Warnings | ${{ steps.health_check.outputs.warning_count }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ steps.workflow_runs.outputs.has_failures }}" == "true" ]; then
+            echo "⚠️ **Failed workflow runs detected**" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [ -n "${{ steps.stale_check.outputs.existing_issue }}" ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "📋 Existing tracking issue: #${{ steps.stale_check.outputs.existing_issue }}" >> $GITHUB_STEP_SUMMARY
+          fi
+
+  # Cleanup old workflow health issues if everything is healthy
+  cleanup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: monitor
+    if: |
+      always() && 
+      needs.monitor.result == 'success' &&
+      needs.monitor.outputs.error_count == '0' &&
+      needs.monitor.outputs.has_failures != 'true' &&
+      github.event.inputs.create_issues != 'false'
+    
+    permissions:
+      issues: write
+    
+    steps:
+      - name: Close Resolved Health Issues
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Close open workflow-health issues
+          gh issue list \
+            --repo ${{ github.repository }} \
+            --label "workflow-health" \
+            --state open \
+            --json number \
+            -q '.[].number' | while read issue_num; do
+              gh issue close "$issue_num" --comment "✅ All workflow health issues have been resolved. Closing this automated report."
+              echo "Closed issue #$issue_num"
+          done

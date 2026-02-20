@@ -1,60 +1,21 @@
 {
   "summary": {
-    "total_workflows": 69,
-    "workflows_with_issues": 26,
-    "total_issues": 76,
+    "total_workflows": 68,
+    "workflows_with_issues": 7,
+    "total_issues": 27,
     "issues_by_type": {
-      "missing_permissions": 12,
-      "missing_job_permissions": 13,
-      "missing_concurrency": 12,
-      "missing_timeout": 30,
-      "outdated_action": 4,
-      "yaml_syntax": 1,
-      "no_triggers": 2,
-      "missing_name": 2
+      "missing_permissions": 4,
+      "missing_job_permissions": 4,
+      "missing_timeout": 16,
+      "missing_concurrency": 3
     },
     "issues_by_severity": {
-      "error": 3,
-      "warning": 12,
-      "info": 61
+      "error": 0,
+      "warning": 4,
+      "info": 23
     }
   },
   "issues": [
-    {
-      "workflow": "admin-tasks.yml",
-      "type": "missing_permissions",
-      "message": "Workflow missing permissions block. Add 'permissions: contents: read' at minimum",
-      "severity": "warning",
-      "line": null
-    },
-    {
-      "workflow": "admin-tasks.yml",
-      "type": "missing_job_permissions",
-      "message": "Job 'admin-task' missing permissions. Consider adding job-level permissions",
-      "severity": "info",
-      "line": null
-    },
-    {
-      "workflow": "admin-tasks.yml",
-      "type": "missing_concurrency",
-      "message": "Missing concurrency settings. Consider adding:\n  concurrency:\n    group: ${{ github.workflow }}-${{ github.ref }}\n    cancel-in-progress: true",
-      "severity": "info",
-      "line": null
-    },
-    {
-      "workflow": "admin-tasks.yml",
-      "type": "missing_timeout",
-      "message": "Job 'admin-task' missing timeout-minutes. Consider adding timeout to prevent hanging jobs",
-      "severity": "info",
-      "line": null
-    },
-    {
-      "workflow": "auto-fix-repository.yml",
-      "type": "outdated_action",
-      "message": "Line 229: peter-evans/create-pull-request@v6 could be updated to v7",
-      "severity": "info",
-      "line": 229
-    },
     {
       "workflow": "auto-fix-repository.yml",
       "type": "missing_permissions",
@@ -91,13 +52,6 @@
       "line": null
     },
     {
-      "workflow": "auto-release-notes.yml",
-      "type": "outdated_action",
-      "message": "Line 84: softprops/action-gh-release@v1 could be updated to v2",
-      "severity": "info",
-      "line": 84
-    },
-    {
       "workflow": "benchmark.yml",
       "type": "missing_timeout",
       "message": "Job 'pr-comment' missing timeout-minutes. Consider adding timeout to prevent hanging jobs",
@@ -115,55 +69,6 @@
       "workflow": "benchmark.yml",
       "type": "missing_timeout",
       "message": "Job 'regression-check' missing timeout-minutes. Consider adding timeout to prevent hanging jobs",
-      "severity": "info",
-      "line": null
-    },
-    {
-      "workflow": "benchmark.yml",
-      "type": "missing_timeout",
-      "message": "Job 'benchmark-summary' missing timeout-minutes. Consider adding timeout to prevent hanging jobs",
-      "severity": "info",
-      "line": null
-    },
-    {
-      "workflow": "benchmarks.yml",
-      "type": "missing_timeout",
-      "message": "Job 'benchmark-summary' missing timeout-minutes. Consider adding timeout to prevent hanging jobs",
-      "severity": "info",
-      "line": null
-    },
-    {
-      "workflow": "code-quality.yml",
-      "type": "missing_timeout",
-      "message": "Job 'quality-summary' missing timeout-minutes. Consider adding timeout to prevent hanging jobs",
-      "severity": "info",
-      "line": null
-    },
-    {
-      "workflow": "codecov.yml",
-      "type": "missing_permissions",
-      "message": "Workflow missing permissions block. Add 'permissions: contents: read' at minimum",
-      "severity": "warning",
-      "line": null
-    },
-    {
-      "workflow": "codecov.yml",
-      "type": "missing_job_permissions",
-      "message": "Job 'coverage' missing permissions. Consider adding job-level permissions",
-      "severity": "info",
-      "line": null
-    },
-    {
-      "workflow": "codecov.yml",
-      "type": "missing_concurrency",
-      "message": "Missing concurrency settings. Consider adding:\n  concurrency:\n    group: ${{ github.workflow }}-${{ github.ref }}\n    cancel-in-progress: true",
-      "severity": "info",
-      "line": null
-    },
-    {
-      "workflow": "codecov.yml",
-      "type": "missing_timeout",
-      "message": "Job 'coverage' missing timeout-minutes. Consider adding timeout to prevent hanging jobs",
       "severity": "info",
       "line": null
     },
@@ -248,153 +153,6 @@
       "workflow": "coverage.yml",
       "type": "missing_timeout",
       "message": "Job 'coverage' missing timeout-minutes. Consider adding timeout to prevent hanging jobs",
-      "severity": "info",
-      "line": null
-    },
-    {
-      "workflow": "dependabot-auto-merge.yml",
-      "type": "missing_timeout",
-      "message": "Job 'dependabot-summary' missing timeout-minutes. Consider adding timeout to prevent hanging jobs",
-      "severity": "info",
-      "line": null
-    },
-    {
-      "workflow": "deploy-cloudflare.yml",
-      "type": "missing_permissions",
-      "message": "Workflow missing permissions block. Add 'permissions: contents: read' at minimum",
-      "severity": "warning",
-      "line": null
-    },
-    {
-      "workflow": "deploy-cloudflare.yml",
-      "type": "missing_concurrency",
-      "message": "Missing concurrency settings. Consider adding:\n  concurrency:\n    group: ${{ github.workflow }}-${{ github.ref }}\n    cancel-in-progress: true",
-      "severity": "info",
-      "line": null
-    },
-    {
-      "workflow": "deploy-cloudflare.yml",
-      "type": "missing_timeout",
-      "message": "Job 'deploy' missing timeout-minutes. Consider adding timeout to prevent hanging jobs",
-      "severity": "info",
-      "line": null
-    },
-    {
-      "workflow": "deploy.yml",
-      "type": "missing_timeout",
-      "message": "Job 'deploy-summary' missing timeout-minutes. Consider adding timeout to prevent hanging jobs",
-      "severity": "info",
-      "line": null
-    },
-    {
-      "workflow": "discord-bot.yml",
-      "type": "outdated_action",
-      "message": "Line 40: Ilshidur/action-discord@0.3.2 could be updated to master",
-      "severity": "info",
-      "line": 40
-    },
-    {
-      "workflow": "discord-github-notify.yml",
-      "type": "yaml_syntax",
-      "message": "YAML syntax error: while scanning a simple key\n  in \"<unicode string>\", line 288, column 1:\n    import json\n    ^\ncould not find expected ':'\n  in \"<unicode string>\", line 289, column 1:\n    import sys\n    ^",
-      "severity": "error",
-      "line": null
-    },
-    {
-      "workflow": "html-coverage.yml",
-      "type": "missing_permissions",
-      "message": "Workflow missing permissions block. Add 'permissions: contents: read' at minimum",
-      "severity": "warning",
-      "line": null
-    },
-    {
-      "workflow": "html-coverage.yml",
-      "type": "missing_job_permissions",
-      "message": "Job 'coverage-html' missing permissions. Consider adding job-level permissions",
-      "severity": "info",
-      "line": null
-    },
-    {
-      "workflow": "html-coverage.yml",
-      "type": "missing_concurrency",
-      "message": "Missing concurrency settings. Consider adding:\n  concurrency:\n    group: ${{ github.workflow }}-${{ github.ref }}\n    cancel-in-progress: true",
-      "severity": "info",
-      "line": null
-    },
-    {
-      "workflow": "html-coverage.yml",
-      "type": "missing_timeout",
-      "message": "Job 'coverage-html' missing timeout-minutes. Consider adding timeout to prevent hanging jobs",
-      "severity": "info",
-      "line": null
-    },
-    {
-      "workflow": "kimi-claw-gateway.yml",
-      "type": "outdated_action",
-      "message": "Line 57: Ilshidur/action-discord@0.3.2 could be updated to master",
-      "severity": "info",
-      "line": 57
-    },
-    {
-      "workflow": "pr-validation.yml",
-      "type": "missing_timeout",
-      "message": "Job 'validation-summary' missing timeout-minutes. Consider adding timeout to prevent hanging jobs",
-      "severity": "info",
-      "line": null
-    },
-    {
-      "workflow": "python-app.yml",
-      "type": "missing_timeout",
-      "message": "Job 'ci-summary' missing timeout-minutes. Consider adding timeout to prevent hanging jobs",
-      "severity": "info",
-      "line": null
-    },
-    {
-      "workflow": "release.yml",
-      "type": "missing_timeout",
-      "message": "Job 'release-summary' missing timeout-minutes. Consider adding timeout to prevent hanging jobs",
-      "severity": "info",
-      "line": null
-    },
-    {
-      "workflow": "security.yml",
-      "type": "missing_timeout",
-      "message": "Job 'security-summary' missing timeout-minutes. Consider adding timeout to prevent hanging jobs",
-      "severity": "info",
-      "line": null
-    },
-    {
-      "workflow": "tests-coverage.yml",
-      "type": "missing_permissions",
-      "message": "Workflow missing permissions block. Add 'permissions: contents: read' at minimum",
-      "severity": "warning",
-      "line": null
-    },
-    {
-      "workflow": "tests-coverage.yml",
-      "type": "missing_job_permissions",
-      "message": "Job 'test' missing permissions. Consider adding job-level permissions",
-      "severity": "info",
-      "line": null
-    },
-    {
-      "workflow": "tests-coverage.yml",
-      "type": "missing_job_permissions",
-      "message": "Job 'code-quality' missing permissions. Consider adding job-level permissions",
-      "severity": "info",
-      "line": null
-    },
-    {
-      "workflow": "tests-coverage.yml",
-      "type": "missing_job_permissions",
-      "message": "Job 'health-check' missing permissions. Consider adding job-level permissions",
-      "severity": "info",
-      "line": null
-    },
-    {
-      "workflow": "tests-coverage.yml",
-      "type": "missing_concurrency",
-      "message": "Missing concurrency settings. Consider adding:\n  concurrency:\n    group: ${{ github.workflow }}-${{ github.ref }}\n    cancel-in-progress: true",
       "severity": "info",
       "line": null
     },
@@ -428,41 +186,6 @@
     },
     {
       "workflow": "tests-simple.yml",
-      "type": "missing_permissions",
-      "message": "Workflow missing permissions block. Add 'permissions: contents: read' at minimum",
-      "severity": "warning",
-      "line": null
-    },
-    {
-      "workflow": "tests-simple.yml",
-      "type": "missing_job_permissions",
-      "message": "Job 'quick-test' missing permissions. Consider adding job-level permissions",
-      "severity": "info",
-      "line": null
-    },
-    {
-      "workflow": "tests-simple.yml",
-      "type": "missing_job_permissions",
-      "message": "Job 'coverage-simple' missing permissions. Consider adding job-level permissions",
-      "severity": "info",
-      "line": null
-    },
-    {
-      "workflow": "tests-simple.yml",
-      "type": "missing_job_permissions",
-      "message": "Job 'lint-check' missing permissions. Consider adding job-level permissions",
-      "severity": "info",
-      "line": null
-    },
-    {
-      "workflow": "tests-simple.yml",
-      "type": "missing_concurrency",
-      "message": "Missing concurrency settings. Consider adding:\n  concurrency:\n    group: ${{ github.workflow }}-${{ github.ref }}\n    cancel-in-progress: true",
-      "severity": "info",
-      "line": null
-    },
-    {
-      "workflow": "tests-simple.yml",
       "type": "missing_timeout",
       "message": "Job 'quick-test' missing timeout-minutes. Consider adding timeout to prevent hanging jobs",
       "severity": "info",
@@ -479,76 +202,6 @@
       "workflow": "tests-simple.yml",
       "type": "missing_timeout",
       "message": "Job 'lint-check' missing timeout-minutes. Consider adding timeout to prevent hanging jobs",
-      "severity": "info",
-      "line": null
-    },
-    {
-      "workflow": "update-status-card.yml",
-      "type": "missing_concurrency",
-      "message": "Missing concurrency settings. Consider adding:\n  concurrency:\n    group: ${{ github.workflow }}-${{ github.ref }}\n    cancel-in-progress: true",
-      "severity": "info",
-      "line": null
-    },
-    {
-      "workflow": "update-status-card.yml",
-      "type": "missing_timeout",
-      "message": "Job 'update-status' missing timeout-minutes. Consider adding timeout to prevent hanging jobs",
-      "severity": "info",
-      "line": null
-    },
-    {
-      "workflow": "zen-ai-recon-workflow.yaml",
-      "type": "missing_permissions",
-      "message": "Workflow missing permissions block. Add 'permissions: contents: read' at minimum",
-      "severity": "warning",
-      "line": null
-    },
-    {
-      "workflow": "zen-ai-recon-workflow.yaml",
-      "type": "missing_concurrency",
-      "message": "Missing concurrency settings. Consider adding:\n  concurrency:\n    group: ${{ github.workflow }}-${{ github.ref }}\n    cancel-in-progress: true",
-      "severity": "info",
-      "line": null
-    },
-    {
-      "workflow": "zen-ai-recon-workflow.yaml",
-      "type": "no_triggers",
-      "message": "Workflow has no trigger events defined",
-      "severity": "error",
-      "line": null
-    },
-    {
-      "workflow": "zen-ai-recon-workflow.yaml",
-      "type": "missing_name",
-      "message": "Workflow missing name. Add a descriptive name for better visibility",
-      "severity": "info",
-      "line": null
-    },
-    {
-      "workflow": "zen-ai-vuln-workflow.yaml",
-      "type": "missing_permissions",
-      "message": "Workflow missing permissions block. Add 'permissions: contents: read' at minimum",
-      "severity": "warning",
-      "line": null
-    },
-    {
-      "workflow": "zen-ai-vuln-workflow.yaml",
-      "type": "missing_concurrency",
-      "message": "Missing concurrency settings. Consider adding:\n  concurrency:\n    group: ${{ github.workflow }}-${{ github.ref }}\n    cancel-in-progress: true",
-      "severity": "info",
-      "line": null
-    },
-    {
-      "workflow": "zen-ai-vuln-workflow.yaml",
-      "type": "no_triggers",
-      "message": "Workflow has no trigger events defined",
-      "severity": "error",
-      "line": null
-    },
-    {
-      "workflow": "zen-ai-vuln-workflow.yaml",
-      "type": "missing_name",
-      "message": "Workflow missing name. Add a descriptive name for better visibility",
       "severity": "info",
       "line": null
     }

@@ -5,7 +5,7 @@
 # ==================== CORE ====================
 
 # HTTP and API
-requests>=2.31.0
+requests>=2.32.0  # SECURITY FIX: CVE-2024-35195
 aiohttp>=3.13.3  # SECURITY FIX: CVE-2025-69223, CVE-2024-30251, CVE-2024-23334
 websockets>=12.0
 
@@ -13,10 +13,13 @@ websockets>=12.0
 python-dotenv>=1.0.0
 pydantic>=2.0.0
 pyyaml>=6.0.1
+urllib3>=2.6.3  # SECURITY: Latest with connection fixes
+filelock>=3.20.3  # File locking security fix
+dnspython>=2.7.0  # DNS resolution for subdomain scanning
 
 # Web Framework (for API)
-fastapi>=0.104.0
-uvicorn>=0.24.0
+fastapi>=0.115.8  # SECURITY: Latest stable with security fixes
+uvicorn>=0.34.0  # SECURITY: Latest with security fixes
 
 # CLI and UI
 click>=8.1.0
@@ -25,8 +28,7 @@ colorama>=0.4.6
 typer>=0.9.0
 
 # Security and Cryptography
-cryptography>=42.0.4  # SECURITY FIX: CVE-2024-26130
-cryptography>=41.0.0
+cryptography>=44.0.0  # SECURITY FIX: CVE-2024-26130, CVE-2024-41985, CVE-2024-25185, CVE-2024-12797
 python-jose>=3.4.0  # SECURITY FIX: CVE-2024-33663
 passlib>=1.7.4
 
@@ -47,9 +49,9 @@ pandas>=2.0.0
 numpy>=1.24.0
 
 # Reporting
-jinja2>=3.1.0
+jinja2>=3.1.5  # SECURITY FIX: CVE-2024-56201, CVE-2024-56326, CVE-2024-34064
 markdown>=3.5.0
-weasyprint>=60.0; platform_system != "Windows"
+weasyprint>=61.0; platform_system != "Windows"  # SECURITY FIX: CVE-2024-45492
 
 # Utilities
 tenacity>=8.2.0

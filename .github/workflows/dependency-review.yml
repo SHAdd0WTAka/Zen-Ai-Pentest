@@ -3,13 +3,23 @@ name: Dependency Review
 on:
   pull_request:
     branches: [main, master]
+  push:
+    branches: [main, master]
+    paths:
+      - '**/requirements*.txt'
+      - '**/pyproject.toml'
+      - '**/package.json'
+      - '**/package-lock.json'
+      - '**/yarn.lock'
+      - '**/pnpm-lock.yaml'
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 permissions:
   contents: read
+  pull-requests: write
 
 jobs:
   dependency-review:
@@ -25,3 +35,49 @@ jobs:
           fail-on-severity: high
           comment-summary-in-pr: true
           deny-licenses: GPL-1.0, GPL-2.0, GPL-3.0
+          warn-on-openssf-scorecard-level: 3
+
+  python-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install pip-audit
+        run: pip install pip-audit
+
+      - name: Run pip-audit
+        run: |
+          pip-audit --desc --skip-editable -r requirements.txt || true
+          pip-audit --desc --skip-editable -r requirements-all.txt || true
+
+  javascript-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      matrix:
+        dir: ['dashboard', 'web_ui/dashboard', 'web_ui/frontend']
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run npm audit
+        working-directory: ${{ matrix.dir }}
+        run: |
+          if [ -f package.json ]; then
+            npm audit --audit-level=moderate || true
+          else
+            echo "No package.json found in ${{ matrix.dir }}"
+          fi
+        shell: bash

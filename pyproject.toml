@@ -37,13 +37,14 @@ classifiers = [
 ]
 
 dependencies = [
-    "requests>=2.31.0",
-    "aiohttp>=3.9.0",
+    "requests>=2.32.0",  # SECURITY FIX: CVE-2024-35195
+    "aiohttp>=3.10.0",  # SECURITY FIX: CVE-2024-30251, CVE-2024-23334
     "python-dotenv>=1.0.0",
     "pydantic>=2.0.0",
-    "fastapi>=0.104.0",
-    "uvicorn>=0.24.0",
+    "fastapi>=0.115.8",  # SECURITY: Latest stable with security fixes
+    "uvicorn>=0.34.0",  # SECURITY: Latest with security fixes
     "dnspython>=2.7.0",
+    "urllib3>=2.6.3",  # SECURITY: Latest with connection fixes
 ]
 
 [project.optional-dependencies]

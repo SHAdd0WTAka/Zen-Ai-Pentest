@@ -57,7 +57,7 @@ repos:
 
   # Ruff: Fast Python linter (replaces flake8, pydocstyle, etc.)
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.1.9
+    rev: v0.9.0
     hooks:
       - id: ruff
         name: "Ruff linter"
@@ -104,6 +104,15 @@ repos:
           - "--exclude=./tests,./venv,./.venv,./env,./build,./dist,./logs,./evidence"
         exclude: "^(tests/|venv/|\\.venv/|env/|build/|dist/|logs/|evidence/)"
 
+  # pip-audit: Python dependency vulnerability scanner
+  - repo: https://github.com/pypa/pip-audit
+    rev: v2.8.0
+    hooks:
+      - id: pip-audit
+        name: "pip-audit dependency scan"
+        args: ["--desc", "--skip-editable"]
+        stages: [pre-commit, pre-push]
+
   # ============================================================================
   # Testing (quick tests only - staged files)
   # ============================================================================
@@ -142,28 +151,28 @@ minimum_pre_commit_version: "3.0.0"
 # Files to exclude from all hooks (in addition to per-hook excludes)
 exclude: |
   (?x)^(
-    \.git/|
-    \.github/|
-    \.vscode/|
-    \.kimi/|
-    \.pytest_cache/|
-    \.ruff_cache/|
-    \.mypy_cache/|
+    \\.git/|
+    \\.github/|
+    \\.vscode/|
+    \\.kimi/|
+    \\.pytest_cache/|
+    \\.ruff_cache/|
+    \\.mypy_cache/|
     __pycache__/|
     venv/|
-    \.venv/|
+    \\.venv/|
     env/|
     build/|
     dist/|
     logs/|
     evidence/|
-    \.coverage|
-    coverage\.xml|
+    \\.coverage|
+    coverage\\.xml|
     htmlcov/|
-    \.egg-info/|
+    \\.egg-info/|
     node_modules/|
-    \.tox/|
-    \.eggs/
+    \\.tox/|
+    \\.eggs/
   )
 
 # Skip certain hooks during specific git operations
