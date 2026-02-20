@@ -10,16 +10,17 @@ Generates compliance reports for various standards:
 """
 
 import json
-from typing import Dict, Any, List, Optional
-from datetime import datetime, timedelta
 from dataclasses import dataclass
+from datetime import datetime, timedelta
 from enum import Enum
+from typing import Any, Dict, List, Optional
 
 from .logger import AuditLogEntry, EventCategory
 
 
 class ComplianceStandard(Enum):
     """Supported compliance standards"""
+
     ISO27001 = "iso27001"
     SOC2 = "soc2"
     GDPR = "gdpr"
@@ -31,6 +32,7 @@ class ComplianceStandard(Enum):
 @dataclass
 class ComplianceControl:
     """Individual compliance control"""
+
     control_id: str
     standard: ComplianceStandard
     description: str
@@ -42,6 +44,7 @@ class ComplianceControl:
 @dataclass
 class ComplianceFinding:
     """Compliance finding (pass/fail)"""
+
     control_id: str
     status: str  # "pass", "fail", "partial", "not_applicable"
     evidence_count: int
@@ -66,7 +69,7 @@ class ComplianceReporter:
             description="Access to networks and network services",
             requirement="Users shall only be provided with access to the network and network services that they have been specifically authorized to use.",
             evidence_required=["authentication_logs", "authorization_logs"],
-            verification_method="review_logs"
+            verification_method="review_logs",
         ),
         "A.9.2.1": ComplianceControl(
             control_id="A.9.2.1",
@@ -74,7 +77,7 @@ class ComplianceReporter:
             description="User registration and de-registration",
             requirement="A formal user registration and de-registration process shall be implemented.",
             evidence_required=["user_registration_logs", "user_deactivation_logs"],
-            verification_method="review_logs"
+            verification_method="review_logs",
         ),
         "A.9.4.1": ComplianceControl(
             control_id="A.9.4.1",
@@ -82,7 +85,7 @@ class ComplianceReporter:
             description="Restriction of access to information",
             requirement="Access to information and application system functions shall be restricted in accordance with the access control policy.",
             evidence_required=["access_logs", "authorization_failures"],
-            verification_method="review_logs"
+            verification_method="review_logs",
         ),
         "A.9.4.2": ComplianceControl(
             control_id="A.9.4.2",
@@ -90,7 +93,7 @@ class ComplianceReporter:
             description="Secure log-on procedures",
             requirement="Where required by the access control policy, access to systems and applications shall be controlled by a secure log-on procedure.",
             evidence_required=["authentication_logs", "failed_login_attempts"],
-            verification_method="review_logs"
+            verification_method="review_logs",
         ),
         "A.12.4.1": ComplianceControl(
             control_id="A.12.4.1",
@@ -98,7 +101,7 @@ class ComplianceReporter:
             description="Event logging",
             requirement="Event logs recording user activities, exceptions, and information security events shall be produced and kept.",
             evidence_required=["audit_logs", "log_integrity_verification"],
-            verification_method="review_logs"
+            verification_method="review_logs",
         ),
         "A.12.4.2": ComplianceControl(
             control_id="A.12.4.2",
@@ -106,7 +109,7 @@ class ComplianceReporter:
             description="Protection of log information",
             requirement="Logging facilities and log information shall be protected against tampering and unauthorized access.",
             evidence_required=["log_signatures", "access_control_logs"],
-            verification_method="verify_integrity"
+            verification_method="verify_integrity",
         ),
         "A.12.4.3": ComplianceControl(
             control_id="A.12.4.3",
@@ -114,7 +117,7 @@ class ComplianceReporter:
             description="Administrator and operator logs",
             requirement="System administrator and system operator activities shall be logged.",
             evidence_required=["admin_logs", "privileged_access_logs"],
-            verification_method="review_logs"
+            verification_method="review_logs",
         ),
         "A.12.6.1": ComplianceControl(
             control_id="A.12.6.1",
@@ -122,7 +125,7 @@ class ComplianceReporter:
             description="Management of technical vulnerabilities",
             requirement="Information about technical vulnerabilities of information systems being used shall be obtained, the organization's exposure to such vulnerabilities evaluated, and appropriate measures taken.",
             evidence_required=["vulnerability_scans", "remediation_logs"],
-            verification_method="review_evidence"
+            verification_method="review_evidence",
         ),
         "A.16.1.1": ComplianceControl(
             control_id="A.16.1.1",
@@ -130,7 +133,7 @@ class ComplianceReporter:
             description="Responsibilities and procedures",
             requirement="Management responsibilities and procedures shall be established to ensure a quick, effective, and orderly response to information security incidents.",
             evidence_required=["incident_logs", "response_procedures"],
-            verification_method="review_evidence"
+            verification_method="review_evidence",
         ),
         "A.16.1.4": ComplianceControl(
             control_id="A.16.1.4",
@@ -138,7 +141,7 @@ class ComplianceReporter:
             description="Assessment of and decision on information security events",
             requirement="Information security events shall be assessed and decisions made on how they should be classified and handled.",
             evidence_required=["security_event_logs", "incident_classification"],
-            verification_method="review_logs"
+            verification_method="review_logs",
         ),
     }
 
@@ -150,7 +153,7 @@ class ComplianceReporter:
             description="Principles relating to processing of personal data",
             requirement="Personal data shall be processed lawfully, fairly and transparently.",
             evidence_required=["data_access_logs", "consent_logs"],
-            verification_method="review_logs"
+            verification_method="review_logs",
         ),
         "Art.17": ComplianceControl(
             control_id="Art.17",
@@ -158,7 +161,7 @@ class ComplianceReporter:
             description="Right to erasure ('right to be forgotten')",
             requirement="Data subject rights for erasure must be honored.",
             evidence_required=["deletion_logs", "verification_logs"],
-            verification_method="review_logs"
+            verification_method="review_logs",
         ),
         "Art.32": ComplianceControl(
             control_id="Art.32",
@@ -166,7 +169,7 @@ class ComplianceReporter:
             description="Security of processing",
             requirement="Appropriate technical and organizational measures to ensure security.",
             evidence_required=["security_logs", "access_controls", "encryption_logs"],
-            verification_method="review_evidence"
+            verification_method="review_evidence",
         ),
         "Art.33": ComplianceControl(
             control_id="Art.33",
@@ -174,7 +177,7 @@ class ComplianceReporter:
             description="Notification of personal data breach",
             requirement="Breach notification within 72 hours.",
             evidence_required=["breach_logs", "notification_logs"],
-            verification_method="review_logs"
+            verification_method="review_logs",
         ),
     }
 
@@ -186,7 +189,7 @@ class ComplianceReporter:
             description="Audit trails linking access to system components",
             requirement="Implement audit trails linking all access to system components to each individual user.",
             evidence_required=["access_logs", "user_identification"],
-            verification_method="review_logs"
+            verification_method="review_logs",
         ),
         "Req.10.2": ComplianceControl(
             control_id="Req.10.2",
@@ -194,7 +197,7 @@ class ComplianceReporter:
             description="Audit trail entries",
             requirement="Implement automated audit trails for all system components.",
             evidence_required=["audit_logs", "log_completeness"],
-            verification_method="review_logs"
+            verification_method="review_logs",
         ),
         "Req.10.3": ComplianceControl(
             control_id="Req.10.3",
@@ -202,7 +205,7 @@ class ComplianceReporter:
             description="Record audit trail entries",
             requirement="Record specific data elements for each event.",
             evidence_required=["audit_logs", "data_elements"],
-            verification_method="review_logs"
+            verification_method="review_logs",
         ),
         "Req.10.5": ComplianceControl(
             control_id="Req.10.5",
@@ -210,7 +213,7 @@ class ComplianceReporter:
             description="Secure audit trails so they cannot be altered",
             requirement="Protect audit trail files from unauthorized modifications.",
             evidence_required=["log_integrity", "access_controls"],
-            verification_method="verify_integrity"
+            verification_method="verify_integrity",
         ),
     }
 
@@ -227,7 +230,7 @@ class ComplianceReporter:
         standard: ComplianceStandard,
         start_date: Optional[datetime] = None,
         end_date: Optional[datetime] = None,
-        **filters
+        **filters,
     ) -> Dict[str, Any]:
         """
         Generate compliance report for a specific standard
@@ -251,11 +254,7 @@ class ComplianceReporter:
         controls = self._get_controls_for_standard(standard)
 
         # Get audit logs for period
-        logs = await self.audit_logger.query(
-            start_time=start_date,
-            end_time=end_date,
-            limit=10000
-        )
+        logs = await self.audit_logger.query(start_time=start_date, end_time=end_date, limit=10000)
 
         # Evaluate each control
         findings = []
@@ -274,37 +273,25 @@ class ComplianceReporter:
             "report_id": f"COMPLIANCE-{datetime.utcnow().strftime('%Y%m%d-%H%M%S')}",
             "standard": standard.value,
             "generated_at": datetime.utcnow().isoformat(),
-            "period": {
-                "start": start_date.isoformat(),
-                "end": end_date.isoformat()
-            },
+            "period": {"start": start_date.isoformat(), "end": end_date.isoformat()},
             "summary": {
                 "total_controls": total,
                 "passed": passed,
                 "failed": failed,
                 "partial": partial,
-                "compliance_rate": (passed / total * 100) if total > 0 else 0
+                "compliance_rate": (passed / total * 100) if total > 0 else 0,
             },
             "findings": [self._finding_to_dict(f) for f in findings],
-            "evidence_package": await self._generate_evidence_package(
-                standard, logs, findings
-            )
+            "evidence_package": await self._generate_evidence_package(standard, logs, findings),
         }
 
         return report
 
     def _get_controls_for_standard(self, standard: ComplianceStandard) -> List[ComplianceControl]:
         """Get all controls for a compliance standard"""
-        return [
-            control for control in self.all_controls.values()
-            if control.standard == standard
-        ]
+        return [control for control in self.all_controls.values() if control.standard == standard]
 
-    async def _evaluate_control(
-        self,
-        control: ComplianceControl,
-        logs: List[AuditLogEntry]
-    ) -> ComplianceFinding:
+    async def _evaluate_control(self, control: ComplianceControl, logs: List[AuditLogEntry]) -> ComplianceFinding:
         """Evaluate a single control against audit logs"""
 
         # Filter logs for this control's evidence
@@ -323,14 +310,10 @@ class ComplianceReporter:
             status="not_applicable",
             evidence_count=len(relevant_logs),
             findings=["Unknown verification method"],
-            recommendations=["Configure verification method"]
+            recommendations=["Configure verification method"],
         )
 
-    def _filter_logs_for_control(
-        self,
-        control: ComplianceControl,
-        logs: List[AuditLogEntry]
-    ) -> List[AuditLogEntry]:
+    def _filter_logs_for_control(self, control: ComplianceControl, logs: List[AuditLogEntry]) -> List[AuditLogEntry]:
         """Filter logs relevant to a control"""
         relevant = []
 
@@ -354,11 +337,7 @@ class ComplianceReporter:
 
         return relevant
 
-    def _evaluate_log_review(
-        self,
-        control: ComplianceControl,
-        logs: List[AuditLogEntry]
-    ) -> ComplianceFinding:
+    def _evaluate_log_review(self, control: ComplianceControl, logs: List[AuditLogEntry]) -> ComplianceFinding:
         """Evaluate control based on log review"""
         findings = []
         recommendations = []
@@ -370,7 +349,7 @@ class ComplianceReporter:
                 evidence_count=0,
                 findings=["No audit logs found for this control"],
                 recommendations=["Enable logging for this control area"],
-                severity="high"
+                severity="high",
             )
 
         # Check for required evidence
@@ -403,14 +382,10 @@ class ComplianceReporter:
             evidence_count=len(logs),
             findings=findings,
             recommendations=recommendations,
-            severity="medium" if status == "fail" else None
+            severity="medium" if status == "fail" else None,
         )
 
-    async def _evaluate_integrity(
-        self,
-        control: ComplianceControl,
-        logs: List[AuditLogEntry]
-    ) -> ComplianceFinding:
+    async def _evaluate_integrity(self, control: ComplianceControl, logs: List[AuditLogEntry]) -> ComplianceFinding:
         """Evaluate log integrity"""
         findings = []
         recommendations = []
@@ -422,7 +397,7 @@ class ComplianceReporter:
                 evidence_count=0,
                 findings=["No logs to verify"],
                 recommendations=["Enable logging"],
-                severity="high"
+                severity="high",
             )
 
         # Check for signatures
@@ -449,23 +424,15 @@ class ComplianceReporter:
             evidence_count=len(logs),
             findings=findings,
             recommendations=recommendations,
-            severity="critical" if status == "fail" else None
+            severity="critical" if status == "fail" else None,
         )
 
-    def _evaluate_evidence(
-        self,
-        control: ComplianceControl,
-        logs: List[AuditLogEntry]
-    ) -> ComplianceFinding:
+    def _evaluate_evidence(self, control: ComplianceControl, logs: List[AuditLogEntry]) -> ComplianceFinding:
         """Evaluate control based on evidence"""
         # Simplified evidence evaluation
         if logs:
             return ComplianceFinding(
-                control_id=control.control_id,
-                status="pass",
-                evidence_count=len(logs),
-                findings=[],
-                recommendations=[]
+                control_id=control.control_id, status="pass", evidence_count=len(logs), findings=[], recommendations=[]
             )
         else:
             return ComplianceFinding(
@@ -474,7 +441,7 @@ class ComplianceReporter:
                 evidence_count=0,
                 findings=["No evidence found"],
                 recommendations=["Collect required evidence"],
-                severity="medium"
+                severity="medium",
             )
 
     def _finding_to_dict(self, finding: ComplianceFinding) -> Dict[str, Any]:
@@ -485,14 +452,11 @@ class ComplianceReporter:
             "evidence_count": finding.evidence_count,
             "findings": finding.findings,
             "recommendations": finding.recommendations,
-            "severity": finding.severity
+            "severity": finding.severity,
         }
 
     async def _generate_evidence_package(
-        self,
-        standard: ComplianceStandard,
-        logs: List[AuditLogEntry],
-        findings: List[ComplianceFinding]
+        self, standard: ComplianceStandard, logs: List[AuditLogEntry], findings: List[ComplianceFinding]
     ) -> Dict[str, Any]:
         """Generate evidence package for auditors"""
         return {
@@ -503,13 +467,7 @@ class ComplianceReporter:
             },
             "integrity_verification": await self.audit_logger.verify_integrity(),
             "sample_logs": [log.to_dict() for log in logs[:10]],
-            "control_mapping": {
-                f.control_id: {
-                    "status": f.status,
-                    "evidence_count": f.evidence_count
-                }
-                for f in findings
-            }
+            "control_mapping": {f.control_id: {"status": f.status, "evidence_count": f.evidence_count} for f in findings},
         }
 
     def _summarize_by_category(self, logs: List[AuditLogEntry]) -> Dict[str, int]:
@@ -526,11 +484,7 @@ class ComplianceReporter:
             summary[log.level] = summary.get(log.level, 0) + 1
         return summary
 
-    async def export_report(
-        self,
-        report: Dict[str, Any],
-        format: str = "json"
-    ) -> str:
+    async def export_report(self, report: Dict[str, Any], format: str = "json") -> str:
         """Export report to various formats"""
         if format == "json":
             return json.dumps(report, indent=2, default=str)
@@ -567,20 +521,20 @@ class ComplianceReporter:
 | Control | Status | Evidence | Findings |
 |---------|--------|----------|----------|
 """
-        for finding in report['findings']:
-            status_icon = "✅" if finding['status'] == "pass" else "❌" if finding['status'] == "fail" else "⚠️"
+        for finding in report["findings"]:
+            status_icon = "✅" if finding["status"] == "pass" else "❌" if finding["status"] == "fail" else "⚠️"
             md += f"| {finding['control_id']} | {status_icon} {finding['status']} | {finding['evidence_count']} | {len(finding['findings'])} |\n"
 
         md += "\n## Detailed Findings\n\n"
-        for finding in report['findings']:
-            if finding['findings']:
+        for finding in report["findings"]:
+            if finding["findings"]:
                 md += f"### {finding['control_id']}\n\n"
                 md += f"**Status:** {finding['status']}\n\n"
                 md += "**Findings:**\n"
-                for f in finding['findings']:
+                for f in finding["findings"]:
                     md += f"- {f}\n"
                 md += "\n**Recommendations:**\n"
-                for r in finding['recommendations']:
+                for r in finding["recommendations"]:
                     md += f"- {r}\n"
                 md += "\n"
 
@@ -588,26 +542,26 @@ class ComplianceReporter:
 
     def _to_csv(self, report: Dict[str, Any]) -> str:
         """Convert report to CSV"""
-        import io
         import csv
+        import io
 
         output = io.StringIO()
         writer = csv.writer(output)
 
         # Header
-        writer.writerow([
-            "control_id", "status", "evidence_count", "findings", "recommendations", "severity"
-        ])
+        writer.writerow(["control_id", "status", "evidence_count", "findings", "recommendations", "severity"])
 
         # Data
-        for finding in report['findings']:
-            writer.writerow([
-                finding['control_id'],
-                finding['status'],
-                finding['evidence_count'],
-                "; ".join(finding['findings']),
-                "; ".join(finding['recommendations']),
-                finding.get('severity', '')
-            ])
+        for finding in report["findings"]:
+            writer.writerow(
+                [
+                    finding["control_id"],
+                    finding["status"],
+                    finding["evidence_count"],
+                    "; ".join(finding["findings"]),
+                    "; ".join(finding["recommendations"]),
+                    finding.get("severity", ""),
+                ]
+            )
 
         return output.getvalue()

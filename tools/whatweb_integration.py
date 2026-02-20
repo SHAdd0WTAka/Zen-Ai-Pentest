@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class Technology:
     """Detected technology"""
+
     name: str
     version: str = ""
     confidence: int = 100
@@ -26,6 +27,7 @@ class Technology:
 @dataclass
 class WhatWebResult:
     """WhatWeb scan result"""
+
     success: bool
     url: str = ""
     technologies: List[Technology] = field(default_factory=list)
@@ -45,11 +47,7 @@ class WhatWebIntegration:
         """
         self.aggression = aggression
 
-    async def scan(
-        self,
-        target: str,
-        user_agent: Optional[str] = None
-    ) -> WhatWebResult:
+    async def scan(self, target: str, user_agent: Optional[str] = None) -> WhatWebResult:
         """
         Scan a target for technologies
 
@@ -63,8 +61,10 @@ class WhatWebIntegration:
 
         cmd = [
             "whatweb",
-            "--log-json", "-",
-            "-a", str(self.aggression),
+            "--log-json",
+            "-",
+            "-a",
+            str(self.aggression),
         ]
 
         if user_agent:
@@ -76,9 +76,7 @@ class WhatWebIntegration:
 
         try:
             process = await asyncio.create_subprocess_exec(
-                *cmd,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE
+                *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
             )
 
             stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=60)
@@ -96,7 +94,7 @@ class WhatWebIntegration:
 
             try:
                 # WhatWeb outputs JSON Lines format
-                for line in output.split('\n'):
+                for line in output.split("\n"):
                     if not line:
                         continue
                     # Clean ANSI escape codes
@@ -125,14 +123,14 @@ class WhatWebIntegration:
                         confidence = confidence[0] if isinstance(confidence, list) else confidence
 
                         # Skip lines that are clearly parsing errors
-                        if len(plugin_name) > 100 or '\n' in plugin_name:
+                        if len(plugin_name) > 100 or "\n" in plugin_name:
                             continue
 
                         tech = Technology(
                             name=plugin_name,
                             version=version,
                             confidence=int(confidence),
-                            category=self._categorize(plugin_name)
+                            category=self._categorize(plugin_name),
                         )
                         technologies.append(tech)
                         plugins[plugin_name] = plugin_info
@@ -143,12 +141,7 @@ class WhatWebIntegration:
                 technologies = self._parse_text_output(output)
 
             return WhatWebResult(
-                success=True,
-                url=target,
-                technologies=technologies,
-                headers=headers,
-                plugins=plugins,
-                raw_output=output
+                success=True, url=target, technologies=technologies, headers=headers, plugins=plugins, raw_output=output
             )
 
         except asyncio.TimeoutError:
@@ -161,8 +154,9 @@ class WhatWebIntegration:
     def _clean_ansi(self, text: str) -> str:
         """Remove ANSI escape codes from text"""
         import re
-        ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
-        return ansi_escape.sub('', text)
+
+        ansi_escape = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
+        return ansi_escape.sub("", text)
 
     def _categorize(self, plugin_name: str) -> str:
         """Categorize technology"""
@@ -190,11 +184,11 @@ class WhatWebIntegration:
         """Fallback parser for text output"""
         technologies = []
         # Pattern: URL [Technology1][Technology2(Version)]
-        matches = re.findall(r'\[([^\]]+)\]', output)
+        matches = re.findall(r"\[([^\]]+)\]", output)
         for match in matches:
-            if '(' in match:
-                name, version = match.split('(', 1)
-                version = version.rstrip(')')
+            if "(" in match:
+                name, version = match.split("(", 1)
+                version = version.rstrip(")")
             else:
                 name = match
                 version = ""
@@ -211,10 +205,11 @@ def scan_sync(target: str, aggression: int = 1) -> WhatWebResult:
 
 if __name__ == "__main__":
     import logging
+
     logging.basicConfig(level=logging.INFO)
 
     print("Testing WhatWeb Integration...")
-    print("="*60)
+    print("=" * 60)
 
     result = scan_sync("http://scanme.nmap.org")
 

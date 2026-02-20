@@ -1,13 +1,14 @@
 """Tests for CVE updater module"""
 
-import pytest
 import asyncio
-
 import os
 import tempfile
 from datetime import datetime
-from unittest.mock import patch, AsyncMock
-from modules.cve_updater import CVEUpdater, NVDClient, CVEEntry
+from unittest.mock import AsyncMock, patch
+
+import pytest
+
+from modules.cve_updater import CVEEntry, CVEUpdater, NVDClient
 
 
 class TestCVEEntry:

@@ -1,8 +1,8 @@
 """Responder Integration - LLMNR/NBT-NS/mDNS Poisoning"""
 
-import subprocess
 import logging
 import signal
+import subprocess
 
 logger = logging.getLogger(__name__)
 

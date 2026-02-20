@@ -8,66 +8,70 @@ Version: 1.0.0 (2026)
 """
 
 import json
+import logging
 import math
+from collections import defaultdict
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Optional, Any, Tuple
-from dataclasses import dataclass, field, asdict
-from collections import defaultdict
-import logging
+from typing import Any, Dict, List, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
 
 class RiskLevel(Enum):
     """Risiko-Level nach ISO 27005"""
-    CRITICAL = "critical"      # Sofortige MaÃŸnahmen erforderlich
-    HIGH = "high"              # Kurzfristige MaÃŸnahmen erforderlich
-    MEDIUM = "medium"          # MaÃŸnahmen planen
-    LOW = "low"                # Akzeptabel, Monitoring empfohlen
+
+    CRITICAL = "critical"  # Sofortige MaÃŸnahmen erforderlich
+    HIGH = "high"  # Kurzfristige MaÃŸnahmen erforderlich
+    MEDIUM = "medium"  # MaÃŸnahmen planen
+    LOW = "low"  # Akzeptabel, Monitoring empfohlen
     NEGLIGIBLE = "negligible"  # Keine MaÃŸnahmen erforderlich
 
 
 class AssetCriticality(Enum):
     """KritikalitÃ¤t von Assets"""
-    CRITICAL = 5    # GeschÃ¤ftskritisch, Ausfall nicht tolerierbar
-    HIGH = 4        # Wichtig, Ausfall nur kurz tolerierbar
-    MEDIUM = 3      # Normal, Ausfall begrenzt tolerierbar
-    LOW = 2         # Weniger wichtig, Ausfall tolerierbar
-    MINIMAL = 1     # Nicht kritisch
+
+    CRITICAL = 5  # GeschÃ¤ftskritisch, Ausfall nicht tolerierbar
+    HIGH = 4  # Wichtig, Ausfall nur kurz tolerierbar
+    MEDIUM = 3  # Normal, Ausfall begrenzt tolerierbar
+    LOW = 2  # Weniger wichtig, Ausfall tolerierbar
+    MINIMAL = 1  # Nicht kritisch
 
 
 class ThreatActor(Enum):
     """Threat Actor Profile nach MITRE ATT&CK"""
-    SCRIPT_KIDDIE = "script_kiddie"      # Wenig FÃ¤higkeiten, Ã¶ffentliche Tools
-    HACKTIVIST = "hacktivist"            # Ideologisch motiviert
-    CYBERCRIMINAL = "cybercriminal"      # Finanziell motiviert
-    INSIDER = "insider"                  # Interner Angreifer
+
+    SCRIPT_KIDDIE = "script_kiddie"  # Wenig FÃ¤higkeiten, Ã¶ffentliche Tools
+    HACKTIVIST = "hacktivist"  # Ideologisch motiviert
+    CYBERCRIMINAL = "cybercriminal"  # Finanziell motiviert
+    INSIDER = "insider"  # Interner Angreifer
     STATE_SPONSORED = "state_sponsored"  # APT, Nation State
-    COMPETITOR = "competitor"            # Wirtschaftsspionage
+    COMPETITOR = "competitor"  # Wirtschaftsspionage
 
 
 @dataclass
 class RiskFactors:
     """Risikofaktoren fÃ¼r die Bewertung"""
+
     # Technische Faktoren (0-10)
-    exploitability: float = 5.0           # Wie einfach ist die Ausnutzung
-    prevalence: float = 5.0               # Wie verbreitet ist die Schwachstelle
-    detection_difficulty: float = 5.0     # Wie schwer ist die Erkennung
+    exploitability: float = 5.0  # Wie einfach ist die Ausnutzung
+    prevalence: float = 5.0  # Wie verbreitet ist die Schwachstelle
+    detection_difficulty: float = 5.0  # Wie schwer ist die Erkennung
 
     # GeschÃ¤ftliche Faktoren (0-10)
-    data_sensitivity: float = 5.0         # SensitivitÃ¤t der betroffenen Daten
-    business_impact: float = 5.0          # GeschÃ¤ftlicher Impact
-    compliance_relevance: float = 5.0     # Relevanz fÃ¼r Compliance
+    data_sensitivity: float = 5.0  # SensitivitÃ¤t der betroffenen Daten
+    business_impact: float = 5.0  # GeschÃ¤ftlicher Impact
+    compliance_relevance: float = 5.0  # Relevanz fÃ¼r Compliance
 
     # Kontext-Faktoren (0-10)
-    exposure: float = 5.0                 # Exposition (Internet, intern, etc.)
-    asset_value: float = 5.0              # Wert des betroffenen Assets
-    user_interaction: float = 5.0         # Benutzerinteraktion erforderlich
+    exposure: float = 5.0  # Exposition (Internet, intern, etc.)
+    asset_value: float = 5.0  # Wert des betroffenen Assets
+    user_interaction: float = 5.0  # Benutzerinteraktion erforderlich
 
     # Zeitliche Faktoren
-    time_to_exploit: float = 1.0          # Zeit bis zur Ausnutzung (Stunden)
-    patch_availability: float = 0.0       # Patch verfÃ¼gbar (0=nein, 1=ja)
+    time_to_exploit: float = 1.0  # Zeit bis zur Ausnutzung (Stunden)
+    patch_availability: float = 0.0  # Patch verfÃ¼gbar (0=nein, 1=ja)
 
     def to_dict(self) -> Dict[str, float]:
         return asdict(self)
@@ -76,20 +80,21 @@ class RiskFactors:
 @dataclass
 class RiskScore:
     """Risiko-Score mit Metadaten"""
-    base_score: float = 0.0               # Basis-Score (0-10)
-    temporal_score: float = 0.0           # Temporaler Score (0-10)
-    environmental_score: float = 0.0      # Umwelt-Score (0-10)
-    final_score: float = 0.0              # Finaler Score (0-10)
+
+    base_score: float = 0.0  # Basis-Score (0-10)
+    temporal_score: float = 0.0  # Temporaler Score (0-10)
+    environmental_score: float = 0.0  # Umwelt-Score (0-10)
+    final_score: float = 0.0  # Finaler Score (0-10)
     risk_level: RiskLevel = RiskLevel.LOW
 
     # Komponenten
-    likelihood: float = 0.0               # Eintrittswahrscheinlichkeit (0-1)
-    impact: float = 0.0                   # Auswirkung (0-1)
+    likelihood: float = 0.0  # Eintrittswahrscheinlichkeit (0-1)
+    impact: float = 0.0  # Auswirkung (0-1)
 
     # Bewertungsdetails
     calculation_method: str = ""
     factors_applied: List[str] = field(default_factory=list)
-    confidence: float = 1.0               # Konfidenz der Bewertung (0-1)
+    confidence: float = 1.0  # Konfidenz der Bewertung (0-1)
 
     # Metadaten
     calculated_at: datetime = field(default_factory=datetime.utcnow)
@@ -98,8 +103,8 @@ class RiskScore:
 
     def to_dict(self) -> Dict[str, Any]:
         data = asdict(self)
-        data['risk_level'] = self.risk_level.value
-        data['calculated_at'] = self.calculated_at.isoformat()
+        data["risk_level"] = self.risk_level.value
+        data["calculated_at"] = self.calculated_at.isoformat()
         return data
 
 
@@ -116,13 +121,7 @@ class RiskScorer:
     """
 
     # Gewichtungen fÃ¼r verschiedene Scoring-Methoden
-    DEFAULT_WEIGHTS = {
-        "cvss": 0.30,
-        "fair": 0.25,
-        "dread": 0.20,
-        "owasp": 0.15,
-        "context": 0.10
-    }
+    DEFAULT_WEIGHTS = {"cvss": 0.30, "fair": 0.25, "dread": 0.20, "owasp": 0.15, "context": 0.10}
 
     # Threat Actor Capability Scores
     THREAT_ACTOR_CAPABILITIES = {
@@ -179,9 +178,11 @@ class RiskScorer:
                     metrics[key] = value
 
             # Base Score Calculation
-            iss = 1 - ((1 - metric_values["C"].get(metrics.get("C", "N"), 0)) *
-                       (1 - metric_values["I"].get(metrics.get("I", "N"), 0)) *
-                       (1 - metric_values["A"].get(metrics.get("A", "N"), 0)))
+            iss = 1 - (
+                (1 - metric_values["C"].get(metrics.get("C", "N"), 0))
+                * (1 - metric_values["I"].get(metrics.get("I", "N"), 0))
+                * (1 - metric_values["A"].get(metrics.get("A", "N"), 0))
+            )
 
             scope_changed = metrics.get("S", "U") == "C"
 
@@ -190,13 +191,17 @@ class RiskScorer:
             else:
                 impact = 6.42 * iss
 
-            exploitability = (8.22 *
-                            metric_values["AV"].get(metrics.get("AV", "N"), 0.85) *
-                            metric_values["AC"].get(metrics.get("AC", "L"), 0.77) *
-                            (metric_values["PR_SCOPE"].get(metrics.get("PR", "N"), 0.85)
-                             if scope_changed else
-                             metric_values["PR"].get(metrics.get("PR", "N"), 0.85)) *
-                            metric_values["UI"].get(metrics.get("UI", "N"), 0.85))
+            exploitability = (
+                8.22
+                * metric_values["AV"].get(metrics.get("AV", "N"), 0.85)
+                * metric_values["AC"].get(metrics.get("AC", "L"), 0.77)
+                * (
+                    metric_values["PR_SCOPE"].get(metrics.get("PR", "N"), 0.85)
+                    if scope_changed
+                    else metric_values["PR"].get(metrics.get("PR", "N"), 0.85)
+                )
+                * metric_values["UI"].get(metrics.get("UI", "N"), 0.85)
+            )
 
             if impact <= 0:
                 base_score = 0
@@ -257,9 +262,9 @@ class RiskScorer:
             "fair_risk": round(risk * 10, 1),  # Skaliert auf 0-10
         }
 
-    def calculate_dread_score(self, damage: float, reproducibility: float,
-                             exploitability: float, affected_users: float,
-                             discoverability: float) -> Dict[str, float]:
+    def calculate_dread_score(
+        self, damage: float, reproducibility: float, exploitability: float, affected_users: float, discoverability: float
+    ) -> Dict[str, float]:
         """
         Berechnet DREAD Score.
 
@@ -267,8 +272,7 @@ class RiskScorer:
         Score = (D + R + E + A + D) / 5
         """
         # Alle Werte sollten 0-10 sein
-        dread_score = (damage + reproducibility + exploitability +
-                      affected_users + discoverability) / 5
+        dread_score = (damage + reproducibility + exploitability + affected_users + discoverability) / 5
 
         return {
             "damage": damage,
@@ -279,8 +283,9 @@ class RiskScorer:
             "dread_score": round(dread_score, 1),
         }
 
-    def calculate_owasp_risk(self, threat_agent: float, vulnerability: float,
-                            technical_impact: float, business_impact: float) -> Dict[str, float]:
+    def calculate_owasp_risk(
+        self, threat_agent: float, vulnerability: float, technical_impact: float, business_impact: float
+    ) -> Dict[str, float]:
         """
         Berechnet OWASP Risk Rating.
 
@@ -298,9 +303,9 @@ class RiskScorer:
             "owasp_risk": round(risk * 10, 1),
         }
 
-    def calculate_context_score(self, factors: RiskFactors,
-                               asset_criticality: AssetCriticality,
-                               threat_actor: ThreatActor) -> Dict[str, float]:
+    def calculate_context_score(
+        self, factors: RiskFactors, asset_criticality: AssetCriticality, threat_actor: ThreatActor
+    ) -> Dict[str, float]:
         """
         Berechnet kontext-basierten Risk Score.
 
@@ -325,12 +330,19 @@ class RiskScorer:
         time_factor = min(1, 24 / max(factors.time_to_exploit, 1))
 
         context_score = (
-            factors.exploitability * 0.3 +
-            factors.data_sensitivity * 0.2 +
-            factors.business_impact * 0.2 +
-            factors.compliance_relevance * 0.1 +
-            factors.asset_value * 0.2
-        ) * ac_multiplier * ta_capability * exposure_factor * patch_factor * time_factor
+            (
+                factors.exploitability * 0.3
+                + factors.data_sensitivity * 0.2
+                + factors.business_impact * 0.2
+                + factors.compliance_relevance * 0.1
+                + factors.asset_value * 0.2
+            )
+            * ac_multiplier
+            * ta_capability
+            * exposure_factor
+            * patch_factor
+            * time_factor
+        )
 
         return {
             "context_score": round(min(context_score, 10), 1),
@@ -341,15 +353,17 @@ class RiskScorer:
             "time_factor": round(time_factor, 2),
         }
 
-    def calculate_comprehensive_risk(self,
-                                     cvss_vector: Optional[str] = None,
-                                     cvss_score: Optional[float] = None,
-                                     factors: Optional[RiskFactors] = None,
-                                     asset_criticality: AssetCriticality = AssetCriticality.MEDIUM,
-                                     threat_actor: ThreatActor = ThreatActor.CYBERCRIMINAL,
-                                     dread_values: Optional[Dict[str, float]] = None,
-                                     owasp_values: Optional[Dict[str, float]] = None,
-                                     custom_weights: Optional[Dict[str, float]] = None) -> RiskScore:
+    def calculate_comprehensive_risk(
+        self,
+        cvss_vector: Optional[str] = None,
+        cvss_score: Optional[float] = None,
+        factors: Optional[RiskFactors] = None,
+        asset_criticality: AssetCriticality = AssetCriticality.MEDIUM,
+        threat_actor: ThreatActor = ThreatActor.CYBERCRIMINAL,
+        dread_values: Optional[Dict[str, float]] = None,
+        owasp_values: Optional[Dict[str, float]] = None,
+        custom_weights: Optional[Dict[str, float]] = None,
+    ) -> RiskScore:
         """
         Berechnet einen umfassenden Risk Score unter Verwendung mehrerer Methoden.
 
@@ -414,8 +428,7 @@ class RiskScorer:
             scores["context"] = scores["cvss"] * 1.1
 
         # Gewichteter Durchschnitt
-        final_score = sum(scores[method] * weights.get(method, 0.2)
-                         for method in scores.keys())
+        final_score = sum(scores[method] * weights.get(method, 0.2) for method in scores.keys())
 
         # Normalisierung auf 0-10
         final_score = min(10, max(0, final_score))
@@ -441,17 +454,18 @@ class RiskScorer:
         )
 
         # Historie speichern
-        self.scoring_history.append({
-            "timestamp": datetime.utcnow().isoformat(),
-            "scores": scores,
-            "final_score": final_score,
-            "risk_level": risk_level.value,
-        })
+        self.scoring_history.append(
+            {
+                "timestamp": datetime.utcnow().isoformat(),
+                "scores": scores,
+                "final_score": final_score,
+                "risk_level": risk_level.value,
+            }
+        )
 
         return risk_score
 
-    def calculate_risk_trend(self, vulnerability_id: str,
-                            scores: List[Tuple[datetime, float]]) -> Dict[str, Any]:
+    def calculate_risk_trend(self, vulnerability_id: str, scores: List[Tuple[datetime, float]]) -> Dict[str, Any]:
         """
         Analysiert den Risiko-Trend Ã¼ber Zeit.
 
@@ -499,8 +513,9 @@ class RiskScorer:
             "data_points": len(scores),
         }
 
-    def prioritize_vulnerabilities(self, vulnerabilities: List[Dict[str, Any]],
-                                   asset_criticalities: Optional[Dict[str, AssetCriticality]] = None) -> List[Dict[str, Any]]:
+    def prioritize_vulnerabilities(
+        self, vulnerabilities: List[Dict[str, Any]], asset_criticalities: Optional[Dict[str, AssetCriticality]] = None
+    ) -> List[Dict[str, Any]]:
         """
         Priorisiert eine Liste von Schwachstellen.
 
@@ -525,11 +540,13 @@ class RiskScorer:
                 asset_criticality=criticality,
             )
 
-            prioritized.append({
-                **vuln,
-                "risk_score": risk_score.to_dict(),
-                "priority_score": self._calculate_priority_score(risk_score, vuln),
-            })
+            prioritized.append(
+                {
+                    **vuln,
+                    "risk_score": risk_score.to_dict(),
+                    "priority_score": self._calculate_priority_score(risk_score, vuln),
+                }
+            )
 
         # Sortiere nach Priority Score (absteigend)
         prioritized.sort(key=lambda x: x["priority_score"], reverse=True)
@@ -578,10 +595,9 @@ class RiskScorer:
             "min_score": min(scores),
             "score_distribution": self._calculate_distribution(scores),
             "risk_level_distribution": self._calculate_level_distribution(),
-            "scoring_methods_used": list(set(
-                method for entry in self.scoring_history
-                for method in entry.get("scores", {}).keys()
-            )),
+            "scoring_methods_used": list(
+                set(method for entry in self.scoring_history for method in entry.get("scores", {}).keys())
+            ),
         }
 
     def _score_to_level(self, score: float) -> RiskLevel:
@@ -591,28 +607,25 @@ class RiskScorer:
                 return level
         return RiskLevel.LOW
 
-    def _calculate_likelihood(self, scores: Dict[str, float],
-                              factors: Optional[RiskFactors]) -> float:
+    def _calculate_likelihood(self, scores: Dict[str, float], factors: Optional[RiskFactors]) -> float:
         """Berechnet die Eintrittswahrscheinlichkeit"""
         base_likelihood = scores.get("cvss", 5) / 10
 
         if factors:
             exploitability_factor = factors.exploitability / 10
             prevalence_factor = factors.prevalence / 10
-            return (base_likelihood * 0.4 + exploitability_factor * 0.4 +
-                   prevalence_factor * 0.2)
+            return base_likelihood * 0.4 + exploitability_factor * 0.4 + prevalence_factor * 0.2
 
         return base_likelihood
 
-    def _calculate_impact(self, scores: Dict[str, float],
-                         factors: Optional[RiskFactors]) -> float:
+    def _calculate_impact(self, scores: Dict[str, float], factors: Optional[RiskFactors]) -> float:
         """Berechnet den Impact"""
         base_impact = scores.get("cvss", 5) / 10
 
         if factors:
             data_impact = factors.data_sensitivity / 10
             business_impact = factors.business_impact / 10
-            return (base_impact * 0.3 + data_impact * 0.35 + business_impact * 0.35)
+            return base_impact * 0.3 + data_impact * 0.35 + business_impact * 0.35
 
         return base_impact
 
@@ -667,6 +680,7 @@ class RiskScorer:
 # Singleton-Instanz
 _scorer = None
 
+
 def get_risk_scorer() -> RiskScorer:
     """Gibt die Singleton-Instanz des RiskScorers zurÃ¼ck"""
     global _scorer
@@ -707,4 +721,3 @@ if __name__ == "__main__":
     # Test Risk Matrix
     print("\nRisk Matrix:")
     print(json.dumps(scorer.get_risk_matrix(), indent=2))
-

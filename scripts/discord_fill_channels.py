@@ -4,8 +4,9 @@ Discord Server - Channels mit Inhalt füllen
 Postet Willkommensnachrichten, Regeln und Informationen
 """
 
-import requests
 import os
+
+import requests
 
 # Konfiguration
 GUILD_ID = "1467204311355363485"
@@ -45,7 +46,6 @@ Willkommen in der Zen-AI-Pentest Community! 🛡️
 
 **Viel Spaß in der Community!** 🚀
 """,
-
     "announcements": """# 📢 Willkommen bei Zen-Ai!
 
 🎉 **Der Discord Server ist jetzt live!**
@@ -80,7 +80,6 @@ Ein professionelles, KI-gestütztes Penetration Testing Framework für:
 
 **Bleib dran für Updates!** 🔔
 """,
-
     "general": """# 💬 Willkommen im General Chat!
 
 Hier kannst du:
@@ -96,7 +95,6 @@ Hier kannst du:
 
 **Viel Spaß!** 🎉
 """,
-
     "introductions": """# 👋 Stell dich vor!
 
 Neu im Server? Hier ist der perfekte Ort um dich vorzustellen!
@@ -116,7 +114,6 @@ Neu im Server? Hier ist der perfekte Ort um dich vorzustellen!
 
 Wir freuen uns dich kennenzulernen! 🎉
 """,
-
     "knowledge-base": """# 📚 Knowledge Base
 
 Hier sammeln wir nützliche Ressourcen!
@@ -150,7 +147,6 @@ Hier sammeln wir nützliche Ressourcen!
 
 **Hast du eine Ressource die fehlt?** Poste sie hier! 💡
 """,
-
     "tools-automation": """# 🤖 Tools & Automation
 
 Diskutiere über Pentesting-Tools und Automatisierung!
@@ -181,7 +177,6 @@ Diskutiere über Pentesting-Tools und Automatisierung!
 
 **Zeig her deine Setups!** 🔧
 """,
-
     "security-research": """# 🔒 Security Research
 
 Für tiefgreifende Security-Diskussionen!
@@ -221,7 +216,6 @@ Reference: Link
 
 **Disclaimer:** Nur für autorisierte Tests und Research! 🛡️
 """,
-
     "ai-ml-discussion": """# 🧠 AI & Machine Learning
 
 KI-Themen rund um Security!
@@ -259,7 +253,6 @@ KI-Themen rund um Security!
 
 **Was ist deine Meinung zu AI in Security?** 🤔
 """,
-
     "bug-reports": """# 🐛 Bug Reports
 
 Hier können Bugs gemeldet werden!
@@ -311,7 +304,6 @@ Ein Moderator wird das Issue labeln:
 
 **Danke für deine Hilfe!** 🙏
 """,
-
     "feature-requests": """# 💡 Feature Requests
 
 Hast du eine Idee für ein neues Feature?
@@ -353,7 +345,6 @@ Reagiere auf Feature-Requests mit:
 
 **Community-Wünsche werden priorisiert!** 📈
 """,
-
     "support": """# 🆘 Support & Help
 
 Hilfe bei Problemen mit Zen-AI-Pentest!
@@ -419,10 +410,7 @@ Fehler-Log hier
 def get_channels(guild_id, token):
     """Holt alle Channels vom Server"""
     url = f"{API_BASE}/guilds/{guild_id}/channels"
-    headers = {
-        "Authorization": f"Bot {token}",
-        "Content-Type": "application/json"
-    }
+    headers = {"Authorization": f"Bot {token}", "Content-Type": "application/json"}
     response = requests.get(url, headers=headers)
     if response.status_code == 200:
         return response.json()
@@ -435,10 +423,7 @@ def get_channels(guild_id, token):
 def send_message(channel_id, content, token):
     """Sendet eine Nachricht in einen Channel"""
     url = f"{API_BASE}/channels/{channel_id}/messages"
-    headers = {
-        "Authorization": f"Bot {token}",
-        "Content-Type": "application/json"
-    }
+    headers = {"Authorization": f"Bot {token}", "Content-Type": "application/json"}
 
     # Discord hat ein Limit von 2000 Zeichen pro Nachricht
     # Lange Nachrichten müssen aufgeteilt werden
@@ -458,12 +443,12 @@ def send_message(channel_id, content, token):
         # Nachricht aufteilen
         parts = []
         current_part = ""
-        for line in content.split('\n'):
+        for line in content.split("\n"):
             if len(current_part) + len(line) + 1 > max_length:
                 parts.append(current_part)
                 current_part = line
             else:
-                current_part += '\n' + line if current_part else line
+                current_part += "\n" + line if current_part else line
         if current_part:
             parts.append(current_part)
 
@@ -482,9 +467,9 @@ def find_channel_by_name(channels, name_part):
     """Findet einen Channel anhand eines Namensteils"""
     for channel in channels:
         # Entferne Emojis und suche nach Namensteil
-        clean_name = ''.join(c for c in channel['name'] if c.isalnum() or c in '-_').lower()
-        if name_part.lower() in clean_name or name_part.lower() in channel['name'].lower():
-            return channel['id']
+        clean_name = "".join(c for c in channel["name"] if c.isalnum() or c in "-_").lower()
+        if name_part.lower() in clean_name or name_part.lower() in channel["name"].lower():
+            return channel["id"]
     return None
 
 
@@ -495,7 +480,7 @@ def main():
     print()
 
     # Token aus Umgebungsvariable oder Datei
-    token = os.getenv('DISCORD_BOT_TOKEN')
+    token = os.getenv("DISCORD_BOT_TOKEN")
     if not token:
         print("[ERROR] DISCORD_BOT_TOKEN nicht gesetzt")
         print("Nutze: $env:DISCORD_BOT_TOKEN='dein-token'")
@@ -513,17 +498,17 @@ def main():
 
     # Mapping: Content-Key -> Channel-Name-Suchbegriffe
     channel_mapping = {
-        'rules': ['rules', 'regeln'],
-        'announcements': ['announcements', 'announce', 'news', 'updates'],
-        'general': ['general', 'allgemein', 'chat'],
-        'introductions': ['introductions', 'intro', 'vorstellung'],
-        'knowledge-base': ['knowledge', 'wiki', 'docs', 'resources'],
-        'tools-automation': ['tools', 'automation', 'scripting'],
-        'security-research': ['security', 'research', 'cve'],
-        'ai-ml-discussion': ['ai', 'ml', 'machine-learning', 'ki'],
-        'bug-reports': ['bug', 'bugs', 'issue', 'issues'],
-        'feature-requests': ['feature', 'features', 'request'],
-        'support': ['support', 'help', 'hilfe'],
+        "rules": ["rules", "regeln"],
+        "announcements": ["announcements", "announce", "news", "updates"],
+        "general": ["general", "allgemein", "chat"],
+        "introductions": ["introductions", "intro", "vorstellung"],
+        "knowledge-base": ["knowledge", "wiki", "docs", "resources"],
+        "tools-automation": ["tools", "automation", "scripting"],
+        "security-research": ["security", "research", "cve"],
+        "ai-ml-discussion": ["ai", "ml", "machine-learning", "ki"],
+        "bug-reports": ["bug", "bugs", "issue", "issues"],
+        "feature-requests": ["feature", "features", "request"],
+        "support": ["support", "help", "hilfe"],
     }
 
     success_count = 0

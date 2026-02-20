@@ -5,33 +5,36 @@ Data models and enums for scheduled jobs.
 """
 
 import uuid
-from typing import Dict, Any, Optional
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
+from typing import Any, Dict, Optional
 
 
 class ScheduleType(Enum):
     """Types of schedules"""
-    CRON = "cron"              # Cron expression
-    INTERVAL = "interval"      # Fixed interval (e.g., every 5 minutes)
-    ONCE = "once"              # One-time execution
-    DATETIME = "datetime"      # Specific date and time
+
+    CRON = "cron"  # Cron expression
+    INTERVAL = "interval"  # Fixed interval (e.g., every 5 minutes)
+    ONCE = "once"  # One-time execution
+    DATETIME = "datetime"  # Specific date and time
 
 
 class JobStatus(Enum):
     """Job lifecycle states"""
-    SCHEDULED = "scheduled"    # Waiting for next execution
-    RUNNING = "running"        # Currently executing
-    PAUSED = "paused"          # Temporarily paused
-    COMPLETED = "completed"    # One-time job completed
-    FAILED = "failed"          # Last execution failed
-    DISABLED = "disabled"      # Permanently disabled
+
+    SCHEDULED = "scheduled"  # Waiting for next execution
+    RUNNING = "running"  # Currently executing
+    PAUSED = "paused"  # Temporarily paused
+    COMPLETED = "completed"  # One-time job completed
+    FAILED = "failed"  # Last execution failed
+    DISABLED = "disabled"  # Permanently disabled
 
 
 @dataclass
 class JobExecution:
     """Record of a single job execution"""
+
     id: str
     job_id: str
     started_at: datetime
@@ -73,6 +76,7 @@ class ScheduledJob:
         fail_count: Failed execution count
         metadata: Additional metadata
     """
+
     id: str
     name: str
     description: str
@@ -108,7 +112,7 @@ class ScheduledJob:
         schedule_type: ScheduleType,
         schedule_expr: str,
         description: str = "",
-        **kwargs
+        **kwargs,
     ) -> "ScheduledJob":
         """Create a new scheduled job"""
         return cls(
@@ -119,7 +123,7 @@ class ScheduledJob:
             task_data=task_data,
             schedule_type=schedule_type,
             schedule_expr=schedule_expr,
-            **kwargs
+            **kwargs,
         )
 
     def to_dict(self) -> Dict[str, Any]:
@@ -143,7 +147,7 @@ class ScheduledJob:
             "next_run": self.next_run.isoformat() if self.next_run else None,
             "run_count": self.run_count,
             "fail_count": self.fail_count,
-            "metadata": self.metadata
+            "metadata": self.metadata,
         }
 
     @classmethod
@@ -267,5 +271,5 @@ class JobBuilder:
             timezone=self._timezone,
             max_retries=self._max_retries,
             timeout=self._timeout,
-            metadata=self._metadata
+            metadata=self._metadata,
         )

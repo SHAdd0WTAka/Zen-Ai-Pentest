@@ -4,14 +4,15 @@ Audit Logging Configuration
 Configuration for the audit logging system following ISO 27001 standards.
 """
 
-from enum import Enum
 from dataclasses import dataclass
-from typing import Optional, List
 from datetime import timedelta
+from enum import Enum
+from typing import List, Optional
 
 
 class LogLevel(Enum):
     """Audit log severity levels"""
+
     DEBUG = "debug"
     INFO = "info"
     NOTICE = "notice"
@@ -24,6 +25,7 @@ class LogLevel(Enum):
 
 class EventCategory(Enum):
     """Categories of audit events"""
+
     AUTHENTICATION = "authentication"
     AUTHORIZATION = "authorization"
     DATA_ACCESS = "data_access"
@@ -37,10 +39,11 @@ class EventCategory(Enum):
 
 class RetentionPolicy(Enum):
     """Log retention policies based on compliance requirements"""
-    SHORT = timedelta(days=30)      # Debug/Info logs
-    STANDARD = timedelta(days=90)    # Normal operations
-    EXTENDED = timedelta(days=365)   # Security events
-    PERMANENT = None                  # Critical security events
+
+    SHORT = timedelta(days=30)  # Debug/Info logs
+    STANDARD = timedelta(days=90)  # Normal operations
+    EXTENDED = timedelta(days=365)  # Security events
+    PERMANENT = None  # Critical security events
 
 
 @dataclass
@@ -100,10 +103,7 @@ class AuditConfig:
             }
 
         if self.mask_fields is None:
-            self.mask_fields = [
-                "password", "secret", "token", "api_key", "private_key",
-                "credit_card", "ssn", "personal_id"
-            ]
+            self.mask_fields = ["password", "secret", "token", "api_key", "private_key", "credit_card", "ssn", "personal_id"]
 
     @classmethod
     def default(cls) -> "AuditConfig":
@@ -128,9 +128,7 @@ class AuditConfig:
             compliance_mode="strict",
             include_pii=False,
             retention_policies={
-                level: RetentionPolicy.EXTENDED if level.value in [
-                    "debug", "info", "notice"
-                ] else RetentionPolicy.PERMANENT
+                level: RetentionPolicy.EXTENDED if level.value in ["debug", "info", "notice"] else RetentionPolicy.PERMANENT
                 for level in LogLevel
-            }
+            },
         )

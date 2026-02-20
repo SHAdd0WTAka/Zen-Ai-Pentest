@@ -4,14 +4,13 @@ Tests for api/routes/agents.py - Agent Management Endpoints
 Comprehensive tests for agent listing, control, and task assignment.
 """
 
-import pytest
-from datetime import datetime
-from unittest.mock import Mock, AsyncMock
-from fastapi import HTTPException
-
 # Mock the dependencies before importing
 import sys
-from unittest.mock import MagicMock
+from datetime import datetime
+from unittest.mock import AsyncMock, MagicMock, Mock
+
+import pytest
+from fastapi import HTTPException
 
 # Create mock modules
 mock_agents = MagicMock()
@@ -35,24 +34,24 @@ mock_user.UserRole = MagicMock()
 mock_user.UserRole.ADMIN = MagicMock()
 mock_user.UserRole.ADMIN.value = 2
 
-sys.modules['api.core.agents'] = mock_agents
-sys.modules['api.core.auth'] = mock_auth
-sys.modules['api.models.user'] = mock_user
+sys.modules["api.core.agents"] = mock_agents
+sys.modules["api.core.auth"] = mock_auth
+sys.modules["api.models.user"] = mock_user
 
 from api.routes.agents import (
-    list_agents,
+    assign_task,
+    broadcast_message,
     get_agent,
+    get_agent_logs,
+    get_system_status,
+    list_agents,
+    send_message,
     start_agent,
     stop_agent,
-    assign_task,
-    send_message,
-    get_agent_logs,
-    broadcast_message,
-    get_system_status,
 )
 
-
 # ==================== Test Fixtures ====================
+
 
 @pytest.fixture
 def mock_current_user():
@@ -96,6 +95,7 @@ def mock_agent():
 
 
 # ==================== List Agents Tests ====================
+
 
 class TestListAgents:
     """Test list_agents endpoint"""
@@ -145,6 +145,7 @@ class TestListAgents:
 
 # ==================== Get Agent Tests ====================
 
+
 class TestGetAgent:
     """Test get_agent endpoint"""
 
@@ -172,6 +173,7 @@ class TestGetAgent:
 
 # ==================== Start Agent Tests ====================
 
+
 class TestStartAgent:
     """Test start_agent endpoint"""
 
@@ -197,6 +199,7 @@ class TestStartAgent:
 
 
 # ==================== Stop Agent Tests ====================
+
 
 class TestStopAgent:
     """Test stop_agent endpoint"""
@@ -224,6 +227,7 @@ class TestStopAgent:
 
 # ==================== Assign Task Tests ====================
 
+
 class TestAssignTask:
     """Test assign_task endpoint"""
 
@@ -238,7 +242,7 @@ class TestAssignTask:
             "agent_id": "agent-001",
             "task_type": "scan",
             "parameters": {"target": "example.com"},
-            "priority": 5
+            "priority": 5,
         }
 
         result = await assign_task("agent-001", task_request, Mock(), mock_current_user)
@@ -277,6 +281,7 @@ class TestAssignTask:
 
 # ==================== Send Message Tests ====================
 
+
 class TestSendMessage:
     """Test send_message endpoint"""
 
@@ -310,6 +315,7 @@ class TestSendMessage:
 
 # ==================== Get Agent Logs Tests ====================
 
+
 class TestGetAgentLogs:
     """Test get_agent_logs endpoint"""
 
@@ -340,6 +346,7 @@ class TestGetAgentLogs:
 
 # ==================== Broadcast Tests ====================
 
+
 class TestBroadcastMessage:
     """Test broadcast_message endpoint"""
 
@@ -353,6 +360,7 @@ class TestBroadcastMessage:
 
 
 # ==================== System Status Tests ====================
+
 
 class TestGetSystemStatus:
     """Test get_system_status endpoint"""
@@ -383,9 +391,7 @@ class TestGetSystemStatus:
         error_agent = Mock()
         error_agent.state.value = "error"
 
-        mock_agents.agent_manager.get_all_agents.return_value = [
-            running_agent, idle_agent, error_agent
-        ]
+        mock_agents.agent_manager.get_all_agents.return_value = [running_agent, idle_agent, error_agent]
         mock_agents.agent_manager.shared_context = {"key": "value"}
         mock_agents.agent_manager.message_history = ["msg1", "msg2"]
 
@@ -401,6 +407,7 @@ class TestGetSystemStatus:
 
 # ==================== Model Tests ====================
 
+
 class TestAgentModels:
     """Test Pydantic models for agents"""
 
@@ -415,12 +422,7 @@ class TestAgentModels:
             priority: int = Field(default=5, ge=1, le=10)
 
         # Valid request
-        request = AgentTaskRequest(
-            agent_id="agent-001",
-            task_type="scan",
-            parameters={"target": "example.com"},
-            priority=8
-        )
+        request = AgentTaskRequest(agent_id="agent-001", task_type="scan", parameters={"target": "example.com"}, priority=8)
         assert request.priority == 8
 
         # Default priority
@@ -436,18 +438,15 @@ class TestAgentModels:
             message: str
             context: dict = Field(default_factory=dict)
 
-        request = AgentMessageRequest(
-            agent_id="agent-001",
-            message="Hello",
-            context={"key": "value"}
-        )
+        request = AgentMessageRequest(agent_id="agent-001", message="Hello", context={"key": "value"})
         assert request.message == "Hello"
 
     def test_agent_response_model(self):
         """Test AgentResponse model structure"""
-        from pydantic import BaseModel
         from datetime import datetime
         from typing import Optional
+
+        from pydantic import BaseModel
 
         class AgentResponse(BaseModel):
             id: str
@@ -467,6 +466,6 @@ class TestAgentModels:
             current_task="scanning",
             last_activity=datetime.utcnow(),
             messages_processed=10,
-            errors_count=0
+            errors_count=0,
         )
         assert response.id == "agent-001"

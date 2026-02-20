@@ -1,7 +1,7 @@
 """Hydra Integration - Online Password Brute-Force"""
 
-import subprocess
 import logging
+import subprocess
 from typing import Dict
 
 logger = logging.getLogger(__name__)

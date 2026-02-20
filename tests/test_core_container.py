@@ -4,25 +4,26 @@ Tests for core/container.py - Dependency Injection Container
 Comprehensive tests for Container, Provider classes, Scope, and injection utilities.
 """
 
-import pytest
 from unittest.mock import Mock
 
+import pytest
+
 from core.container import (
-    Provider,
-    Singleton,
-    Factory,
-    Value,
     Container,
+    Factory,
+    Provider,
     Scope,
+    Singleton,
+    Value,
+    _global_container,
     get_container,
-    set_container,
     inject,
     scope,
-    _global_container,
+    set_container,
 )
 
-
 # ==================== Test Fixtures ====================
+
 
 @pytest.fixture
 def fresh_container():
@@ -41,6 +42,7 @@ def reset_global_container():
 
 class SimpleService:
     """Simple service for testing"""
+
     def __init__(self, name: str = "default"):
         self.name = name
         self.init_count = 0
@@ -48,12 +50,14 @@ class SimpleService:
 
 class DependentService:
     """Service with dependencies"""
+
     def __init__(self, simple: SimpleService):
         self.simple = simple
 
 
 class CounterService:
     """Service that counts instantiations"""
+
     instance_count = 0
 
     def __init__(self):
@@ -62,6 +66,7 @@ class CounterService:
 
 
 # ==================== Provider Tests ====================
+
 
 class TestProvider:
     """Test base Provider class"""
@@ -179,6 +184,7 @@ class TestValue:
 
 
 # ==================== Container Tests ====================
+
 
 class TestContainerRegistration:
     """Test Container registration methods"""
@@ -356,6 +362,7 @@ class TestDependencyResolution:
 
 # ==================== Scope Tests ====================
 
+
 class TestScope:
     """Test Scope functionality"""
 
@@ -439,6 +446,7 @@ class TestScope:
 
 # ==================== Global Container Tests ====================
 
+
 class TestGlobalContainer:
     """Test global container functions"""
 
@@ -468,6 +476,7 @@ class TestGlobalContainer:
 
 # ==================== Inject Marker Tests ====================
 
+
 class TestInjectMarker:
     """Test inject marker functionality"""
 
@@ -488,6 +497,7 @@ class TestInjectMarker:
 
 
 # ==================== Async Scope Tests ====================
+
 
 @pytest.mark.asyncio
 class TestAsyncScope:
@@ -526,6 +536,7 @@ class TestAsyncScope:
 
 
 # ==================== Integration Tests ====================
+
 
 class TestIntegration:
     """Integration tests for container system"""
@@ -571,12 +582,7 @@ class TestIntegration:
 
     def test_container_chaining(self, fresh_container):
         """Test fluent interface chaining"""
-        result = (
-            fresh_container
-            .register_value("a", 1)
-            .register_value("b", 2)
-            .register_singleton("service", SimpleService)
-        )
+        result = fresh_container.register_value("a", 1).register_value("b", 2).register_singleton("service", SimpleService)
 
         assert result is fresh_container
         assert fresh_container.get("a") == 1

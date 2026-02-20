@@ -21,24 +21,24 @@ from pathlib import Path
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from tools.zap_integration import (
-    ZAPScanner,
-    zap_quick_scan,
-    zap_spider_only,
-)
-from tools.trufflehog_integration import (
-    TruffleHogScanner,
-)
 from tools.scout_integration import (
-    ScoutSuiteScanner,
     CloudProvider,
+    ScoutSuiteScanner,
+)
+from tools.semgrep_integration import (
+    SemgrepScanner,
 )
 from tools.trivy_integration import (
     TrivyScanner,
     TrivyScannerType,
 )
-from tools.semgrep_integration import (
-    SemgrepScanner,
+from tools.trufflehog_integration import (
+    TruffleHogScanner,
+)
+from tools.zap_integration import (
+    ZAPScanner,
+    zap_quick_scan,
+    zap_spider_only,
 )
 
 
@@ -61,8 +61,7 @@ async def demo_zap():
         },
     )
     print(f"ZAP Scanner initialized for: {scanner.target}")
-    print(f"Options: spider={scanner.options['spider']}, "
-          f"active_scan={scanner.options['active_scan']}")
+    print(f"Options: spider={scanner.options['spider']}, " f"active_scan={scanner.options['active_scan']}")
 
     # Example 2: Quick scan using LangChain tool
     print("\n--- Example: ZAP Quick Scan Tool ---")
@@ -251,8 +250,7 @@ async def demo_semgrep():
         if result.success:
             print(f"Scan completed in {result.scan_time:.2f}s")
             print(f"Findings: {len(result.findings)}")
-            owasp_findings = [f for f in result.findings
-                            if f.metadata.get("owasp")]
+            owasp_findings = [f for f in result.findings if f.metadata.get("owasp")]
             print(f"OWASP-related findings: {len(owasp_findings)}")
         else:
             print(f"Scan failed: {result.error}")
@@ -394,4 +392,5 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"[!] Error: {e}")
         import traceback
+
         traceback.print_exc()

@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class WAFFinding:
     """Detected WAF"""
+
     name: str
     manufacturer: str = ""
     detected: bool = False
@@ -25,6 +26,7 @@ class WAFFinding:
 @dataclass
 class WAFW00FResult:
     """WAFW00F scan result"""
+
     success: bool
     url: str = ""
     wafs: List[WAFFinding] = field(default_factory=list)
@@ -53,9 +55,7 @@ class WAFW00FIntegration:
 
         try:
             process = await asyncio.create_subprocess_exec(
-                *cmd,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE
+                *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
             )
 
             stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=60)
@@ -73,7 +73,7 @@ class WAFW00FIntegration:
 
             # Try JSON output first
             try:
-                if output.startswith('['):
+                if output.startswith("["):
                     data = json.loads(output)
                     for item in data:
                         detected_wafs = item.get("firewall", "")
@@ -82,22 +82,12 @@ class WAFW00FIntegration:
                             for waf_name in detected_wafs.split(","):
                                 waf_name = waf_name.strip()
                                 if waf_name:
-                                    wafs.append(WAFFinding(
-                                        name=waf_name,
-                                        detected=True,
-                                        confidence="high"
-                                    ))
+                                    wafs.append(WAFFinding(name=waf_name, detected=True, confidence="high"))
             except json.JSONDecodeError:
                 # Fallback: parse text output
                 wafs, firewall_detected = self._parse_text_output(output)
 
-            return WAFW00FResult(
-                success=True,
-                url=target,
-                wafs=wafs,
-                firewall_detected=firewall_detected,
-                raw_output=output
-            )
+            return WAFW00FResult(success=True, url=target, wafs=wafs, firewall_detected=firewall_detected, raw_output=output)
 
         except asyncio.TimeoutError:
             logger.error("WAFW00F detection timed out")
@@ -112,18 +102,14 @@ class WAFW00FIntegration:
         firewall_detected = False
 
         # Pattern: "The site http://... is behind X WAF"
-        waf_pattern = r'behind\s+(.+?)\s+WAF'
+        waf_pattern = r"behind\s+(.+?)\s+WAF"
         matches = re.findall(waf_pattern, output, re.IGNORECASE)
 
         for match in matches:
             firewall_detected = True
             waf_names = match.split(" and ")
             for name in waf_names:
-                wafs.append(WAFFinding(
-                    name=name.strip(),
-                    detected=True,
-                    confidence="high"
-                ))
+                wafs.append(WAFFinding(name=name.strip(), detected=True, confidence="high"))
 
         # Check for "No WAF detected"
         if "No WAF" in output or "not behind" in output.lower():
@@ -141,10 +127,11 @@ def detect_sync(target: str) -> WAFW00FResult:
 
 if __name__ == "__main__":
     import logging
+
     logging.basicConfig(level=logging.INFO)
 
     print("Testing WAFW00F Integration...")
-    print("="*60)
+    print("=" * 60)
 
     result = detect_sync("http://scanme.nmap.org")
 

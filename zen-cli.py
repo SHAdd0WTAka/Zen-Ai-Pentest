@@ -7,8 +7,8 @@ Main entry point for command-line operations:
 - Scan operations
 """
 
-import sys
 import argparse
+import sys
 from pathlib import Path
 
 # Add modules to path

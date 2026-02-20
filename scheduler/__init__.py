@@ -21,9 +21,9 @@ Usage:
     )
 """
 
-from .core import TaskScheduler, ScheduleConfig
-from .job import ScheduledJob, JobStatus, ScheduleType
+from .core import ScheduleConfig, TaskScheduler
 from .cron import CronParser
+from .job import JobStatus, ScheduledJob, ScheduleType
 from .recurring import RecurringSchedule
 
 __all__ = [

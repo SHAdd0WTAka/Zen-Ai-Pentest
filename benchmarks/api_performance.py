@@ -5,16 +5,15 @@ Measures API response times, throughput, and endpoint-specific latency.
 """
 
 import asyncio
-from typing import List, Dict, Any, Optional, Callable
+import sys
 from dataclasses import dataclass
 from enum import Enum
-
-import sys
 from pathlib import Path
+from typing import Any, Callable, Dict, List, Optional
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from modules.benchmark import BenchmarkRunner, BenchmarkResult, BenchmarkCategory, ThroughputMetrics
+from modules.benchmark import BenchmarkCategory, BenchmarkResult, BenchmarkRunner, ThroughputMetrics
 
 
 class APIEndpointType(Enum):

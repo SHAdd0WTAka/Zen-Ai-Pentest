@@ -3,6 +3,7 @@ Unit Tests für safety/config.py
 """
 
 import pytest
+
 from safety.config import SAFETY_CONFIG
 from safety.guardrails import SafetyLevel
 

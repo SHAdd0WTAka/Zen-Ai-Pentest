@@ -3,9 +3,10 @@ EPSS (Exploit Prediction Scoring System) Client
 Integrates with FIRST EPSS API for exploit probability
 """
 
-from typing import Dict, Optional, List
 from dataclasses import dataclass
 from datetime import datetime
+from typing import Dict, List, Optional
+
 import requests
 
 

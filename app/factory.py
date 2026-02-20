@@ -5,22 +5,22 @@ Creates and configures the FastAPI application with all components.
 """
 
 import asyncio
+import logging
 from contextlib import asynccontextmanager
 from datetime import datetime
-from typing import Dict, Any, Optional
-import logging
+from typing import Any, Dict, Optional
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 # Import all our components
 try:
-    from orchestrator import ZenOrchestrator, OrchestratorConfig
-    from scheduler import TaskScheduler, ScheduleConfig
-    from dashboard import DashboardManager, DashboardConfig
-    from audit import AuditLogger
     from analysis_bot import AnalysisBot
+    from audit import AuditLogger
     from core.secure_input_validator import SecureInputValidator
+    from dashboard import DashboardConfig, DashboardManager
+    from orchestrator import OrchestratorConfig, ZenOrchestrator
+    from scheduler import ScheduleConfig, TaskScheduler
 except ImportError as e:
     logging.warning(f"Some components not available: {e}")
     ZenOrchestrator = None
@@ -34,9 +34,9 @@ except ImportError as e:
 try:
     from api.routes.analysis import router as analysis_router
     from api.routes.audit import router as audit_router
+    from api.routes.dashboard import router as dashboard_router
     from api.routes.orchestrator import router as orchestrator_router
     from api.routes.scheduler import router as scheduler_router
-    from api.routes.dashboard import router as dashboard_router
 except ImportError:
     analysis_router = None
     audit_router = None
@@ -68,11 +68,7 @@ class ApplicationFactory:
         self.components: Dict[str, Any] = {}
         self.app: Optional[FastAPI] = None
 
-    def create(
-        self,
-        debug: bool = False,
-        enable_docs: bool = True
-    ) -> FastAPI:
+    def create(self, debug: bool = False, enable_docs: bool = True) -> FastAPI:
         """
         Create and configure the FastAPI application
 
@@ -153,6 +149,7 @@ class ApplicationFactory:
         if AuditLogger:
             try:
                 from audit.config import AuditConfig
+
                 audit_config = AuditConfig.default()
                 audit_logger = AuditLogger(audit_config)
                 await audit_logger.start()
@@ -258,14 +255,14 @@ class ApplicationFactory:
 
         shutdown_order = [
             "orchestrator",  # Stop orchestrator first
-            "dashboard",     # Then dashboard
-            "scheduler",     # Then scheduler
+            "dashboard",  # Then dashboard
+            "scheduler",  # Then scheduler
             "audit_logger",  # Then audit logger
         ]
 
         for name in shutdown_order:
             component = self.components.get(name)
-            if component and hasattr(component, 'stop'):
+            if component and hasattr(component, "stop"):
                 try:
                     await component.stop()
                     logger.info(f"✅ {name} stopped")
@@ -298,7 +295,7 @@ class ApplicationFactory:
 
             for name, component in self.components.items():
                 try:
-                    if hasattr(component, 'health_check'):
+                    if hasattr(component, "health_check"):
                         if asyncio.iscoroutinefunction(component.health_check):
                             checks[name] = await component.health_check()
                         else:
@@ -308,15 +305,12 @@ class ApplicationFactory:
                 except Exception as e:
                     checks[name] = {"healthy": False, "error": str(e)}
 
-            all_healthy = all(
-                c.get("healthy", False) if isinstance(c, dict) else c
-                for c in checks.values()
-            )
+            all_healthy = all(c.get("healthy", False) if isinstance(c, dict) else c for c in checks.values())
 
             return {
                 "status": "healthy" if all_healthy else "degraded",
                 "checks": checks,
-                "timestamp": datetime.utcnow().isoformat()
+                "timestamp": datetime.utcnow().isoformat(),
             }
 
         @self.app.get("/ready")
@@ -337,10 +331,7 @@ class ApplicationFactory:
         return self.components.get(name)
 
 
-def create_app(
-    debug: bool = False,
-    enable_docs: bool = True
-) -> FastAPI:
+def create_app(debug: bool = False, enable_docs: bool = True) -> FastAPI:
     """
     Convenience function to create the application
 

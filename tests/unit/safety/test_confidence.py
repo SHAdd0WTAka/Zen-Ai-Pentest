@@ -2,10 +2,12 @@
 Unit Tests für safety/confidence.py
 """
 
-import pytest
 from dataclasses import dataclass
 from typing import List
-from safety.confidence import ConfidenceScorer, ConfidenceScore
+
+import pytest
+
+from safety.confidence import ConfidenceScore, ConfidenceScorer
 
 pytestmark = pytest.mark.unit
 
@@ -33,10 +35,7 @@ class TestConfidenceScore:
     def test_score_creation(self):
         """Test creating ConfidenceScore"""
         score = ConfidenceScore(
-            score=0.85,
-            level="high",
-            breakdown={"guardrails": 0.9, "validation": 0.8},
-            recommendations=["Test recommendation"]
+            score=0.85, level="high", breakdown={"guardrails": 0.9, "validation": 0.8}, recommendations=["Test recommendation"]
         )
         assert score.score == 0.85
         assert score.level == "high"
@@ -87,10 +86,7 @@ class TestConfidenceScorerCalculate:
         fact_checks = [MockFactCheckResult(confidence=0.9)]
 
         result = scorer.calculate(
-            guardrail_result=guardrail,
-            validation_result=validation,
-            fact_check_results=fact_checks,
-            consistency_score=1.0
+            guardrail_result=guardrail, validation_result=validation, fact_check_results=fact_checks, consistency_score=1.0
         )
 
         assert result.score >= 0.9
@@ -105,10 +101,7 @@ class TestConfidenceScorerCalculate:
         fact_checks = [MockFactCheckResult(confidence=0.3)]
 
         result = scorer.calculate(
-            guardrail_result=guardrail,
-            validation_result=validation,
-            fact_check_results=fact_checks,
-            consistency_score=0.4
+            guardrail_result=guardrail, validation_result=validation, fact_check_results=fact_checks, consistency_score=0.4
         )
 
         assert result.score < 0.7
@@ -147,7 +140,7 @@ class TestConfidenceScorerCalculate:
         result = scorer.calculate(fact_check_results=fact_checks)
 
         # 1 out of 3 verified (confidence > 0.7)
-        assert result.breakdown["fact_check"] == 1/3
+        assert result.breakdown["fact_check"] == 1 / 3
         assert "Verify factual claims" in result.recommendations
 
     def test_calculate_with_low_consistency(self):
@@ -165,11 +158,7 @@ class TestConfidenceScorerCalculate:
         guardrail = MockGuardrailResult(confidence_penalty=1.0)
         validation = MockValidationResult(confidence_impact=1.0, errors=["error"])
 
-        result = scorer.calculate(
-            guardrail_result=guardrail,
-            validation_result=validation,
-            consistency_score=0.0
-        )
+        result = scorer.calculate(guardrail_result=guardrail, validation_result=validation, consistency_score=0.0)
 
         assert result.level == "critical"
         assert any("HIGH RISK" in r for r in result.recommendations)
@@ -181,34 +170,19 @@ class TestConfidenceScorerRetry:
     def test_should_retry_low_score(self):
         """Test retry with low score"""
         scorer = ConfidenceScorer()
-        low_score = ConfidenceScore(
-            score=0.4,
-            level="critical",
-            breakdown={},
-            recommendations=[]
-        )
+        low_score = ConfidenceScore(score=0.4, level="critical", breakdown={}, recommendations=[])
         assert scorer.should_retry(low_score, threshold=0.6) is True
 
     def test_should_not_retry_high_score(self):
         """Test no retry with high score"""
         scorer = ConfidenceScorer()
-        high_score = ConfidenceScore(
-            score=0.9,
-            level="high",
-            breakdown={},
-            recommendations=[]
-        )
+        high_score = ConfidenceScore(score=0.9, level="high", breakdown={}, recommendations=[])
         assert scorer.should_retry(high_score, threshold=0.6) is False
 
     def test_should_retry_custom_threshold(self):
         """Test retry with custom threshold"""
         scorer = ConfidenceScorer()
-        score = ConfidenceScore(
-            score=0.7,
-            level="medium",
-            breakdown={},
-            recommendations=[]
-        )
+        score = ConfidenceScore(score=0.7, level="medium", breakdown={}, recommendations=[])
         assert scorer.should_retry(score, threshold=0.8) is True
         assert scorer.should_retry(score, threshold=0.6) is False
 
@@ -219,43 +193,23 @@ class TestConfidenceScorerAlert:
     def test_should_alert_critical(self):
         """Test alert for critical level"""
         scorer = ConfidenceScorer()
-        score = ConfidenceScore(
-            score=0.3,
-            level="critical",
-            breakdown={},
-            recommendations=[]
-        )
+        score = ConfidenceScore(score=0.3, level="critical", breakdown={}, recommendations=[])
         assert scorer.should_alert(score) is True
 
     def test_should_alert_low(self):
         """Test alert for low level"""
         scorer = ConfidenceScorer()
-        score = ConfidenceScore(
-            score=0.5,
-            level="low",
-            breakdown={},
-            recommendations=[]
-        )
+        score = ConfidenceScore(score=0.5, level="low", breakdown={}, recommendations=[])
         assert scorer.should_alert(score) is True
 
     def test_should_not_alert_medium(self):
         """Test no alert for medium level"""
         scorer = ConfidenceScorer()
-        score = ConfidenceScore(
-            score=0.75,
-            level="medium",
-            breakdown={},
-            recommendations=[]
-        )
+        score = ConfidenceScore(score=0.75, level="medium", breakdown={}, recommendations=[])
         assert scorer.should_alert(score) is False
 
     def test_should_not_alert_high(self):
         """Test no alert for high level"""
         scorer = ConfidenceScorer()
-        score = ConfidenceScore(
-            score=0.95,
-            level="high",
-            breakdown={},
-            recommendations=[]
-        )
+        score = ConfidenceScore(score=0.95, level="high", breakdown={}, recommendations=[])
         assert scorer.should_alert(score) is False

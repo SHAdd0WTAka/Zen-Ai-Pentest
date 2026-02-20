@@ -5,6 +5,7 @@ Tests CVSS v3.1 scoring calculations.
 """
 
 import pytest
+
 from risk_engine.cvss import CVSSCalculator
 
 pytestmark = pytest.mark.unit
@@ -17,7 +18,7 @@ class TestCVSSCalculatorInit:
         """Test calculator initialization"""
         calc = CVSSCalculator()
         assert calc is not None
-        assert hasattr(calc, 'WEIGHTS')
+        assert hasattr(calc, "WEIGHTS")
         assert "AV" in calc.WEIGHTS
         assert "AC" in calc.WEIGHTS
 
@@ -33,10 +34,10 @@ class TestCVSSCalculate:
             "AC": "L",  # Low
             "PR": "N",  # None
             "UI": "N",  # None
-            "S": "C",   # Changed
-            "C": "H",   # High
-            "I": "H",   # High
-            "A": "H",   # High
+            "S": "C",  # Changed
+            "C": "H",  # High
+            "I": "H",  # High
+            "A": "H",  # High
         }
         score = calc.calculate(metrics)
         assert 9.0 <= score <= 10.0
@@ -50,7 +51,7 @@ class TestCVSSCalculate:
             "AC": "L",
             "PR": "L",  # Low privilege
             "UI": "N",
-            "S": "U",   # Unchanged
+            "S": "U",  # Unchanged
             "C": "H",
             "I": "H",
             "A": "H",
@@ -67,7 +68,7 @@ class TestCVSSCalculate:
             "PR": "L",
             "UI": "R",  # Required
             "S": "U",
-            "C": "L",   # Low
+            "C": "L",  # Low
             "I": "L",
             "A": "L",
         }
@@ -83,7 +84,7 @@ class TestCVSSCalculate:
             "PR": "H",  # High privilege
             "UI": "R",
             "S": "U",
-            "C": "N",   # None
+            "C": "N",  # None
             "I": "N",
             "A": "L",
         }
@@ -128,8 +129,13 @@ class TestCVSSCalculate:
         """Test scope changed affects score"""
         calc = CVSSCalculator()
         base_metrics = {
-            "AV": "N", "AC": "L", "PR": "N", "UI": "N",
-            "C": "H", "I": "H", "A": "H",
+            "AV": "N",
+            "AC": "L",
+            "PR": "N",
+            "UI": "N",
+            "C": "H",
+            "I": "H",
+            "A": "H",
         }
 
         unchanged = calc.calculate({**base_metrics, "S": "U"})
@@ -142,8 +148,13 @@ class TestCVSSCalculate:
         """Test network accessibility increases score"""
         calc = CVSSCalculator()
         base_metrics = {
-            "AC": "L", "PR": "N", "UI": "N", "S": "U",
-            "C": "H", "I": "H", "A": "H",
+            "AC": "L",
+            "PR": "N",
+            "UI": "N",
+            "S": "U",
+            "C": "H",
+            "I": "H",
+            "A": "H",
         }
 
         local = calc.calculate({**base_metrics, "AV": "L"})
@@ -329,8 +340,14 @@ class TestCVSSGetVector:
         """Test generating full CVSS vector"""
         calc = CVSSCalculator()
         metrics = {
-            "AV": "N", "AC": "L", "PR": "N", "UI": "N",
-            "S": "U", "C": "H", "I": "H", "A": "H",
+            "AV": "N",
+            "AC": "L",
+            "PR": "N",
+            "UI": "N",
+            "S": "U",
+            "C": "H",
+            "I": "H",
+            "A": "H",
         }
         vector = calc.get_vector_from_metrics(metrics)
 
@@ -364,7 +381,7 @@ class TestCVSSWeights:
         assert calc.WEIGHTS["AV"]["N"] == 0.85  # Network
         assert calc.WEIGHTS["AV"]["A"] == 0.62  # Adjacent
         assert calc.WEIGHTS["AV"]["L"] == 0.55  # Local
-        assert calc.WEIGHTS["AV"]["P"] == 0.2   # Physical
+        assert calc.WEIGHTS["AV"]["P"] == 0.2  # Physical
 
     def test_scope_weights(self):
         """Test Scope weights"""

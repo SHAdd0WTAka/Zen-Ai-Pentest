@@ -2,8 +2,9 @@
 Test API schema definitions without full app import
 """
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
@@ -11,6 +12,7 @@ def test_pydantic_import():
     """Test that pydantic can be imported"""
     try:
         from pydantic import BaseModel
+
         assert True
     except ImportError:
         # Skip if not installed
@@ -19,6 +21,7 @@ def test_pydantic_import():
 
 def test_basic_schema_structure():
     """Test basic schema structure concepts"""
+
     # Simulate what schemas would look like
     class MockScanRequest:
         def __init__(self, target, tool, options=None):
@@ -40,6 +43,7 @@ def test_basic_schema_structure():
 
 def test_response_structure():
     """Test response structure concepts"""
+
     class MockScanResponse:
         def __init__(self, success, data=None, error=None):
             self.success = success
@@ -47,11 +51,7 @@ def test_response_structure():
             self.error = error
 
         def to_dict(self):
-            return {
-                "success": self.success,
-                "data": self.data,
-                "error": self.error
-            }
+            return {"success": self.success, "data": self.data, "error": self.error}
 
     # Test success response
     resp = MockScanResponse(True, {"ports": [80, 443]})
@@ -70,7 +70,7 @@ def test_enum_definitions():
     TOOL_TYPES = {
         "network": ["nmap", "masscan"],
         "web": ["sqlmap", "nuclei", "gobuster"],
-        "exploit": ["metasploit", "searchsploit"]
+        "exploit": ["metasploit", "searchsploit"],
     }
 
     assert "nmap" in TOOL_TYPES["network"]
@@ -80,14 +80,7 @@ def test_enum_definitions():
 
 def test_status_codes():
     """Test HTTP status code concepts"""
-    STATUS_CODES = {
-        "OK": 200,
-        "CREATED": 201,
-        "BAD_REQUEST": 400,
-        "UNAUTHORIZED": 401,
-        "NOT_FOUND": 404,
-        "SERVER_ERROR": 500
-    }
+    STATUS_CODES = {"OK": 200, "CREATED": 201, "BAD_REQUEST": 400, "UNAUTHORIZED": 401, "NOT_FOUND": 404, "SERVER_ERROR": 500}
 
     assert STATUS_CODES["OK"] == 200
     assert STATUS_CODES["NOT_FOUND"] == 404
@@ -96,6 +89,7 @@ def test_status_codes():
 
 def test_validation_rules():
     """Test validation logic concepts"""
+
     def validate_target(target):
         """Validate scan target"""
         if not target:
@@ -115,6 +109,7 @@ def test_validation_rules():
 
 def test_pagination_concept():
     """Test pagination structure"""
+
     def create_paginated_response(items, page=1, per_page=10):
         total = len(items)
         start = (page - 1) * per_page
@@ -126,7 +121,7 @@ def test_pagination_concept():
             "total": total,
             "page": page,
             "per_page": per_page,
-            "pages": (total + per_page - 1) // per_page
+            "pages": (total + per_page - 1) // per_page,
         }
 
     # Test with mock data
@@ -140,14 +135,9 @@ def test_pagination_concept():
 
 def test_error_response_format():
     """Test standardized error response format"""
+
     def create_error(message, code, details=None):
-        return {
-            "error": {
-                "message": message,
-                "code": code,
-                "details": details or {}
-            }
-        }
+        return {"error": {"message": message, "code": code, "details": details or {}}}
 
     error = create_error("Invalid API key", "AUTH_001", {"field": "api_key"})
     assert error["error"]["message"] == "Invalid API key"
@@ -156,13 +146,7 @@ def test_error_response_format():
 
 def test_scan_status_enum():
     """Test scan status states"""
-    SCAN_STATUSES = [
-        "pending",
-        "running",
-        "completed",
-        "failed",
-        "cancelled"
-    ]
+    SCAN_STATUSES = ["pending", "running", "completed", "failed", "cancelled"]
 
     # Test state transitions
     assert "pending" in SCAN_STATUSES
@@ -194,6 +178,7 @@ class TestMockAPIClient:
 
     def test_client_initialization(self):
         """Test API client setup"""
+
         class MockAPIClient:
             def __init__(self, base_url, api_key=None):
                 self.base_url = base_url
@@ -211,13 +196,9 @@ class TestMockAPIClient:
 
     def test_request_building(self):
         """Test request construction"""
+
         def build_request(method, endpoint, data=None):
-            return {
-                "method": method.upper(),
-                "url": endpoint,
-                "data": data,
-                "timestamp": "2026-02-16T00:00:00Z"
-            }
+            return {"method": method.upper(), "url": endpoint, "data": data, "timestamp": "2026-02-16T00:00:00Z"}
 
         req = build_request("POST", "/scans", {"target": "test.com"})
         assert req["method"] == "POST"

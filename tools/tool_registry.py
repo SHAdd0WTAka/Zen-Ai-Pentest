@@ -3,12 +3,12 @@ Tool Registry für Zen-AI-Pentest
 Dynamische Tool-Registrierung und Discovery für Issue #19
 """
 
-from typing import Dict, List, Optional
-from dataclasses import dataclass, field
-from enum import Enum
-import logging
 import importlib
 import inspect
+import logging
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Dict, List, Optional
 
 from langchain_core.tools import BaseTool, Tool
 
@@ -365,7 +365,6 @@ def register_tool(
 
 # Import hier um circular imports zu vermeiden
 from datetime import datetime
-
 
 if __name__ == "__main__":
     # Test

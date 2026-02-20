@@ -28,6 +28,7 @@ logger = logging.getLogger("ZenAI")
 @dataclass
 class PermutationConfig:
     """Configuration for subdomain permutation"""
+
     insert_dashes: bool = True
     insert_dots: bool = False
     insert_numbers: bool = True
@@ -48,31 +49,142 @@ class AdvancedSubdomainScanner(SubdomainScanner):
     """
 
     COMMON_PREFIXES = [
-        "dev", "stg", "stage", "test", "uat", "qa", "prod", "production",
-        "api", "api-v1", "api-v2", "api-v3", "rest", "graphql",
-        "admin", "manage", "panel", "dashboard", "portal",
-        "cdn", "static", "assets", "media", "files", "img", "images",
-        "www", "www1", "www2", "web", "web1", "web2",
-        "mail", "email", "smtp", "pop", "imap", "mx", "mx1", "mx2",
-        "vpn", "remote", "access", "secure", "auth", "sso",
-        "git", "gitlab", "github", "bitbucket", "svn", "cvs",
-        "jenkins", "ci", "cd", "build", "deploy",
-        "monitor", "nagios", "zabbix", "prometheus", "grafana",
-        "db", "db1", "db2", "mysql", "postgres", "mongo", "redis",
-        "es", "elastic", "search", "solr",
-        "k8s", "kube", "kubernetes", "docker", "registry",
-        "us", "uk", "eu", "asia", "au", "ca", "de", "fr", "jp",
-        "east", "west", "north", "south", "central",
-        "old", "legacy", "v1", "v2", "v3", "2018", "2019", "2020",
-        "2021", "2022", "2023", "2024", "2025", "2026",
+        "dev",
+        "stg",
+        "stage",
+        "test",
+        "uat",
+        "qa",
+        "prod",
+        "production",
+        "api",
+        "api-v1",
+        "api-v2",
+        "api-v3",
+        "rest",
+        "graphql",
+        "admin",
+        "manage",
+        "panel",
+        "dashboard",
+        "portal",
+        "cdn",
+        "static",
+        "assets",
+        "media",
+        "files",
+        "img",
+        "images",
+        "www",
+        "www1",
+        "www2",
+        "web",
+        "web1",
+        "web2",
+        "mail",
+        "email",
+        "smtp",
+        "pop",
+        "imap",
+        "mx",
+        "mx1",
+        "mx2",
+        "vpn",
+        "remote",
+        "access",
+        "secure",
+        "auth",
+        "sso",
+        "git",
+        "gitlab",
+        "github",
+        "bitbucket",
+        "svn",
+        "cvs",
+        "jenkins",
+        "ci",
+        "cd",
+        "build",
+        "deploy",
+        "monitor",
+        "nagios",
+        "zabbix",
+        "prometheus",
+        "grafana",
+        "db",
+        "db1",
+        "db2",
+        "mysql",
+        "postgres",
+        "mongo",
+        "redis",
+        "es",
+        "elastic",
+        "search",
+        "solr",
+        "k8s",
+        "kube",
+        "kubernetes",
+        "docker",
+        "registry",
+        "us",
+        "uk",
+        "eu",
+        "asia",
+        "au",
+        "ca",
+        "de",
+        "fr",
+        "jp",
+        "east",
+        "west",
+        "north",
+        "south",
+        "central",
+        "old",
+        "legacy",
+        "v1",
+        "v2",
+        "v3",
+        "2018",
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025",
+        "2026",
     ]
 
     COMMON_SUFFIXES = [
-        "-dev", "-stg", "-stage", "-test", "-uat", "-qa", "-prod",
-        "-01", "-02", "-03", "-1", "-2", "-3",
-        "-new", "-old", "-legacy", "-beta", "-alpha",
-        "-us", "-eu", "-asia", "-au", "-uk",
-        "-east", "-west", "-north", "-south",
+        "-dev",
+        "-stg",
+        "-stage",
+        "-test",
+        "-uat",
+        "-qa",
+        "-prod",
+        "-01",
+        "-02",
+        "-03",
+        "-1",
+        "-2",
+        "-3",
+        "-new",
+        "-old",
+        "-legacy",
+        "-beta",
+        "-alpha",
+        "-us",
+        "-eu",
+        "-asia",
+        "-au",
+        "-uk",
+        "-east",
+        "-west",
+        "-north",
+        "-south",
     ]
 
     def __init__(self, orchestrator=None, max_workers: int = 50, timeout: int = 10):
@@ -249,7 +361,7 @@ class AdvancedSubdomainScanner(SubdomainScanner):
                 permutations.add(base.replace("-", "_"))
 
         # Limit permutations
-        permutations = list(permutations)[:self.permutation_config.max_permutations]
+        permutations = list(permutations)[: self.permutation_config.max_permutations]
 
         # Test permutations
         semaphore = asyncio.Semaphore(self.max_workers)
@@ -261,11 +373,7 @@ class AdvancedSubdomainScanner(SubdomainScanner):
                     loop = asyncio.get_event_loop()
                     with ThreadPoolExecutor(max_workers=1) as executor:
                         await asyncio.wait_for(
-                            loop.run_in_executor(
-                                executor,
-                                lambda: dns.resolver.resolve(subdomain, "A")
-                            ),
-                            timeout=self.timeout
+                            loop.run_in_executor(executor, lambda: dns.resolver.resolve(subdomain, "A")), timeout=self.timeout
                         )
                     return subdomain
                 except (dns.exception.DNSException, asyncio.TimeoutError, ConnectionError):
@@ -288,10 +396,7 @@ class AdvancedSubdomainScanner(SubdomainScanner):
             return discovered
 
         url = "https://www.virustotal.com/vtapi/v2/domain/report"
-        params = {
-            "apikey": self.virustotal_api_key,
-            "domain": domain
-        }
+        params = {"apikey": self.virustotal_api_key, "domain": domain}
 
         try:
             timeout = aiohttp.ClientTimeout(total=self.timeout)
@@ -486,11 +591,7 @@ async def scan_subdomains_advanced(
     if virustotal_key:
         scanner.set_virustotal_key(virustotal_key)
 
-    return await scanner.scan_advanced(
-        domain=domain,
-        techniques=techniques,
-        check_http=check_http
-    )
+    return await scanner.scan_advanced(domain=domain, techniques=techniques, check_http=check_http)
 
 
 if __name__ == "__main__":
@@ -508,11 +609,7 @@ if __name__ == "__main__":
 
     scanner = AdvancedSubdomainScanner(max_workers=30)
 
-    results = asyncio.run(scanner.scan_advanced(
-        target,
-        techniques=["basic", "permute", "dnsrecords"],
-        check_http=True
-    ))
+    results = asyncio.run(scanner.scan_advanced(target, techniques=["basic", "permute", "dnsrecords"], check_http=True))
 
     print(f"\n[+] Found {len(results)} subdomains\n")
 

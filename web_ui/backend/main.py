@@ -4,25 +4,24 @@ Q3 2026 Roadmap: Web Dashboard
 """
 
 import json
+
+# Import our autonomous modules
+import sys
 import uuid
 from contextlib import asynccontextmanager
 from datetime import datetime
 from typing import Dict, List, Optional
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, BackgroundTasks
+from fastapi import BackgroundTasks, FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-# Import our autonomous modules
-import sys
-
 sys.path.append("../..")
-from autonomous import AutonomousAgent, AgentConfig
+from autonomous import AgentConfig, AutonomousAgent
 from autonomous.tool_executor import SafetyLevel
 from risk_engine import RiskScorer
-
 
 # ============== Pydantic Models ==============
 
@@ -451,6 +450,7 @@ try:
     @app.get("/{path:path}")
     async def serve_frontend_routes(path: str):
         return FileResponse("../frontend/build/index.html")
+
 except Exception:
     pass  # Frontend not built yet
 

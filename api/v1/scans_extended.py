@@ -8,17 +8,17 @@ import asyncio
 import json
 import logging
 from datetime import datetime
-from typing import Dict, List, Optional, Any, AsyncGenerator
+from typing import Any, AsyncGenerator, Dict, List, Optional
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, status, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, WebSocket, WebSocketDisconnect, status
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from api.auth import verify_token
 from api.schemas import ScanResponse
 from api.websocket import ConnectionManager
-from database.models import Finding, get_db
 from database.crud import create_scan, get_scan, update_scan_status
+from database.models import Finding, get_db
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["scans-extended"])

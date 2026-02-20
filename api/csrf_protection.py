@@ -12,14 +12,15 @@ Schützt vor:
 - Unautorisierte POST/PUT/DELETE Requests
 """
 
+import hmac
+import logging
 import os
 import secrets
-import hmac
-from typing import Optional, Dict
 from datetime import datetime, timedelta
-from fastapi import Request, HTTPException, status
+from typing import Dict, Optional
+
+from fastapi import HTTPException, Request, status
 from fastapi.responses import Response
-import logging
 
 logger = logging.getLogger(__name__)
 

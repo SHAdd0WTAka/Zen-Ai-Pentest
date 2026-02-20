@@ -2,6 +2,7 @@
 Standalone tests - No imports, no dependencies
 Run with: python -m pytest tests/test_standalone.py -v
 """
+
 import os
 import sys
 
@@ -111,7 +112,10 @@ def test_comprehensions():
 
 def test_lambda():
     """Lambda functions"""
-    def double(x): return x * 2
+
+    def double(x):
+        return x * 2
+
     assert double(5) == 10
 
 

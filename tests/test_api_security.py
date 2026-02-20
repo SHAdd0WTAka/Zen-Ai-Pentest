@@ -11,19 +11,17 @@ Testet:
 Ziel: 80%+ Coverage der Security Features
 """
 
-import pytest
-
-from fastapi.testclient import TestClient
-
-
 # Import the app
 import sys
 from pathlib import Path
 
+import pytest
+from fastapi.testclient import TestClient
+
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from api.main import app
 from api.csrf_protection import CSRFToken  # noqa: F401
+from api.main import app
 from api.rate_limiter import auth_rate_limiter
 
 client = TestClient(app)

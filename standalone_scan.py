@@ -19,18 +19,19 @@ import json
 import os
 import sys
 from datetime import datetime
-from typing import List, Dict, Any
+from typing import Any, Dict, List
 
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+from backends.duckduckgo import DuckDuckGoBackend
+from core.orchestrator import ZenOrchestrator
+from modules.recon import ReconModule
+from modules.report_gen import ReportGenerator
+from modules.vuln_scanner import VulnScannerModule
+
 # Apply Windows/asyncio fixes
 from utils.async_fixes import apply_windows_async_fixes, silence_asyncio_warnings
-from core.orchestrator import ZenOrchestrator
-from backends.duckduckgo import DuckDuckGoBackend
-from modules.recon import ReconModule
-from modules.vuln_scanner import VulnScannerModule
-from modules.report_gen import ReportGenerator
 from utils.helpers import colorize, get_severity_color
 
 apply_windows_async_fixes()

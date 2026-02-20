@@ -6,21 +6,20 @@ This file demonstrates common use cases for the benchmark framework.
 
 import asyncio
 
-
 # Import main components
 from benchmarks import (
-    BenchmarkEngine,
     BenchmarkConfig,
+    BenchmarkEngine,
     BenchmarkMetrics,
     ClassificationMetrics,
-    CoverageMetrics,
-    TokenUsage,
-    FindingMetrics,
-    SeverityLevel,
-    FindingType,
-    list_all_scenarios,
-    create_benchmark_suite,
     ComparisonFramework,
+    CoverageMetrics,
+    FindingMetrics,
+    FindingType,
+    SeverityLevel,
+    TokenUsage,
+    create_benchmark_suite,
+    list_all_scenarios,
 )
 
 

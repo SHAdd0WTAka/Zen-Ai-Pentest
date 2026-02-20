@@ -6,12 +6,12 @@ Supports both AI-based and traditional security scanners.
 """
 
 import math
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Any
-from datetime import datetime
-from enum import Enum
 import statistics
 from abc import ABC, abstractmethod
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum
+from typing import Any, Dict, List, Optional
 
 
 class ToolCategory(Enum):

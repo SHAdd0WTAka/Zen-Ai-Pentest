@@ -3,10 +3,10 @@ Base memory interface and types
 """
 
 from abc import ABC, abstractmethod
-from enum import Enum
-from typing import Any, Dict, List, Optional
 from dataclasses import dataclass, field
 from datetime import datetime
+from enum import Enum
+from typing import Any, Dict, List, Optional
 
 
 class MemoryType(Enum):

@@ -16,7 +16,7 @@ from datetime import datetime
 import pytest
 
 from agents.v2.agent_task_processor import TaskProcessor, TaskResult
-from agents.workflows.orchestrator import WORKFLOW_DEFINITIONS, WorkflowOrchestrator, WorkflowState, WorkflowStep
+from agents.workflows.orchestrator import WORKFLOW_DEFINITIONS, WorkflowOrchestrator
 
 
 class TestWorkflowLifecycle:
@@ -261,8 +261,8 @@ class TestWorkflowListAndStatus:
     async def test_list_workflows(self, orchestrator):
         """Test listing workflows"""
         # Create a few workflows
-        wf1 = await orchestrator.start_workflow("network_recon", "192.168.1.1", ["agent-1"])
-        wf2 = await orchestrator.start_workflow("web_scan", "example.com", ["agent-1"])
+        await orchestrator.start_workflow("network_recon", "192.168.1.1", ["agent-1"])
+        await orchestrator.start_workflow("web_scan", "example.com", ["agent-1"])
 
         # List all
         workflows = orchestrator.list_workflows()

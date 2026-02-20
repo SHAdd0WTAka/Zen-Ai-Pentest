@@ -5,13 +5,14 @@ Tests additional helper functions.
 """
 
 import pytest
+
 from utils.helpers import (
-    sanitize_filename,
-    format_duration,
-    truncate_string,
     banner,
     colorize,
+    format_duration,
     get_severity_color,
+    sanitize_filename,
+    truncate_string,
 )
 
 pytestmark = pytest.mark.unit
@@ -33,7 +34,7 @@ class TestSanitizeFilename:
 
     def test_sanitize_windows_reserved(self):
         """Test sanitizing Windows reserved characters"""
-        result = sanitize_filename('file:name|test?.txt')
+        result = sanitize_filename("file:name|test?.txt")
         assert ":" not in result
         assert "|" not in result
         assert "?" not in result

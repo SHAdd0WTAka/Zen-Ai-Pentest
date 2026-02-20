@@ -9,13 +9,13 @@ This demonstrates the agent_base.py capabilities in action.
 """
 
 import asyncio
-import sys
 import os
+import sys
 
 # Add parent directory to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from agents.agent_base import BaseAgent, AgentRole, AgentMessage
+from agents.agent_base import AgentMessage, AgentRole, BaseAgent
 
 
 class ResearcherAgent(BaseAgent):
@@ -44,18 +44,14 @@ class ResearcherAgent(BaseAgent):
             "hosts": [target, f"www.{target}", f"api.{target}"],
             "open_ports": [80, 443, 8080],
             "technologies": ["Apache", "PHP", "MySQL"],
-            "findings_count": 3
+            "findings_count": 3,
         }
 
         self.discovered_hosts = findings["hosts"]
         self.open_ports = findings["open_ports"]
 
         # Share findings with other agents
-        await self.share_findings({
-            "type": "recon_complete",
-            "target": target,
-            "data": findings
-        })
+        await self.share_findings({"type": "recon_complete", "target": target, "data": findings})
 
         self.logger.info(f"[{self.name}] Reconnaissance complete. Found {findings['findings_count']} hosts")
 
@@ -84,32 +80,26 @@ class AnalystAgent(BaseAgent):
         analysis = {
             "risk_level": "medium",
             "identified_vulnerabilities": [
-                {
-                    "type": "information_disclosure",
-                    "severity": "low",
-                    "description": "Server version exposed"
-                },
+                {"type": "information_disclosure", "severity": "low", "description": "Server version exposed"},
                 {
                     "type": "potential_sqli",
                     "severity": "medium",
-                    "description": "PHP app with MySQL backend - SQL injection possible"
-                }
+                    "description": "PHP app with MySQL backend - SQL injection possible",
+                },
             ],
-            "recommendations": [
-                "Implement WAF",
-                "Update Apache version",
-                "Review input validation"
-            ]
+            "recommendations": ["Implement WAF", "Update Apache version", "Review input validation"],
         }
 
         self.vulnerabilities = analysis["identified_vulnerabilities"]
 
         # Share analysis
-        await self.share_findings({
-            "type": "analysis_complete",
-            "risk_level": analysis["risk_level"],
-            "vulnerabilities": len(analysis["identified_vulnerabilities"])
-        })
+        await self.share_findings(
+            {
+                "type": "analysis_complete",
+                "risk_level": analysis["risk_level"],
+                "vulnerabilities": len(analysis["identified_vulnerabilities"]),
+            }
+        )
 
         self.logger.info(f"[{self.name}] Analysis complete. Risk: {analysis['risk_level']}")
 
@@ -161,12 +151,12 @@ class SimpleOrchestrator:
 
     async def run_demo(self, target: str):
         """Run the multi-agent demonstration."""
-        print("\n" + "="*70)
+        print("\n" + "=" * 70)
         print("MULTI-AGENT PENETRATION TESTING DEMO")
-        print("="*70)
+        print("=" * 70)
         print(f"Target: {target}")
         print(f"Agents: {len(self.agents)}")
-        print("="*70 + "\n")
+        print("=" * 70 + "\n")
 
         # Start all agents
         for agent in self.agents.values():
@@ -176,11 +166,7 @@ class SimpleOrchestrator:
         researcher = next(a for a in self.agents.values() if a.role == AgentRole.RESEARCHER)
 
         print(f"[Demo] Assigning reconnaissance task to {researcher.name}...")
-        recon_task = {
-            "type": "recon",
-            "target": target,
-            "scope": "full"
-        }
+        recon_task = {"type": "recon", "target": target, "scope": "full"}
 
         # Execute reconnaissance
         recon_result = await researcher.execute_task(recon_task)
@@ -195,9 +181,9 @@ class SimpleOrchestrator:
         await asyncio.sleep(2)
 
         # Summary
-        print("\n" + "="*70)
+        print("\n" + "=" * 70)
         print("DEMO COMPLETE - SUMMARY")
-        print("="*70)
+        print("=" * 70)
         print("\nReconnaissance:")
         print(f"  - Hosts discovered: {len(recon_result.get('hosts', []))}")
         print(f"  - Open ports: {recon_result.get('open_ports', [])}")
@@ -205,7 +191,7 @@ class SimpleOrchestrator:
         print(f"  - Vulnerabilities: {len(analyst.vulnerabilities)}")
         print(f"  - Risk level: {analyst.vulnerabilities[0]['severity'] if analyst.vulnerabilities else 'unknown'}")
         print(f"\nMessages exchanged: {len(self.message_log)}")
-        print("="*70)
+        print("=" * 70)
 
         # Stop all agents
         for agent in self.agents.values():
@@ -241,6 +227,7 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"\n[Demo] Error: {e}")
         import traceback
+
         traceback.print_exc()
 
     print("\n[Demo] Finished")

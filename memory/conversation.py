@@ -2,8 +2,8 @@
 Conversation memory with LangGraph integration
 """
 
-from typing import List, Optional, Dict
 import uuid
+from typing import Dict, List, Optional
 
 from .base import BaseMemory, MemoryEntry, MemoryType
 

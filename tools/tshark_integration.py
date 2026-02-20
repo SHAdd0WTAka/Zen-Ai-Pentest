@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class TSharkHost:
     """Discovered host"""
+
     ip: str
     mac: Optional[str] = None
     hostname: Optional[str] = None
@@ -26,6 +27,7 @@ class TSharkHost:
 @dataclass
 class TSharkProtocol:
     """Protocol statistics"""
+
     name: str
     count: int
     percentage: float
@@ -34,6 +36,7 @@ class TSharkProtocol:
 @dataclass
 class TSharkResult:
     """TShark analysis result"""
+
     success: bool
     capture_file: str = ""
     hosts: List[TSharkHost] = field(default_factory=list)
@@ -68,44 +71,26 @@ class TSharkIntegration:
             TSharkResult with analysis
         """
         if not Path(pcap_file).exists():
-            return TSharkResult(
-                success=False,
-                error=f"PCAP file not found: {pcap_file}"
-            )
+            return TSharkResult(success=False, error=f"PCAP file not found: {pcap_file}")
 
         # Get protocol statistics
-        stats_cmd = [
-            "tshark", "-r", pcap_file,
-            "-q", "-z", "io,phs"
-        ]
+        stats_cmd = ["tshark", "-r", pcap_file, "-q", "-z", "io,phs"]
 
         # Get unique hosts
-        hosts_cmd = [
-            "tshark", "-r", pcap_file,
-            "-T", "fields", "-e", "ip.src", "-e", "ip.dst",
-            "-E", "header=y"
-        ]
+        hosts_cmd = ["tshark", "-r", pcap_file, "-T", "fields", "-e", "ip.src", "-e", "ip.dst", "-E", "header=y"]
 
         try:
             # Run statistics
             stats_process = await asyncio.create_subprocess_exec(
-                *stats_cmd,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE
+                *stats_cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
             )
-            stats_stdout, _ = await asyncio.wait_for(
-                stats_process.communicate(), timeout=60
-            )
+            stats_stdout, _ = await asyncio.wait_for(stats_process.communicate(), timeout=60)
 
             # Run host extraction
             hosts_process = await asyncio.create_subprocess_exec(
-                *hosts_cmd,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE
+                *hosts_cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
             )
-            hosts_stdout, _ = await asyncio.wait_for(
-                hosts_process.communicate(), timeout=60
-            )
+            hosts_stdout, _ = await asyncio.wait_for(hosts_process.communicate(), timeout=60)
 
             # Parse results
             protocols = self._parse_protocols(stats_stdout.decode())
@@ -119,8 +104,8 @@ class TSharkIntegration:
                 statistics={
                     "total_hosts": len(hosts),
                     "total_protocols": len(protocols),
-                    "file_size": Path(pcap_file).stat().st_size
-                }
+                    "file_size": Path(pcap_file).stat().st_size,
+                },
             )
 
         except asyncio.TimeoutError:
@@ -131,10 +116,7 @@ class TSharkIntegration:
             return TSharkResult(success=False, error=str(e))
 
     async def capture_live(
-        self,
-        duration: int = 60,
-        filter_expr: Optional[str] = None,
-        output_file: Optional[str] = None
+        self, duration: int = 60, filter_expr: Optional[str] = None, output_file: Optional[str] = None
     ) -> TSharkResult:
         """
         Perform live network capture
@@ -149,15 +131,11 @@ class TSharkIntegration:
         """
         if output_file is None:
             from datetime import datetime
+
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             output_file = f"/tmp/capture_{timestamp}.pcap"
 
-        cmd = [
-            "tshark",
-            "-i", self.interface,
-            "-a", f"duration:{duration}",
-            "-w", output_file
-        ]
+        cmd = ["tshark", "-i", self.interface, "-a", f"duration:{duration}", "-w", output_file]
 
         if filter_expr:
             cmd.extend(["-f", filter_expr])
@@ -166,15 +144,10 @@ class TSharkIntegration:
 
         try:
             process = await asyncio.create_subprocess_exec(
-                *cmd,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE
+                *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
             )
 
-            _, stderr = await asyncio.wait_for(
-                process.communicate(),
-                timeout=duration + 30
-            )
+            _, stderr = await asyncio.wait_for(process.communicate(), timeout=duration + 30)
 
             if process.returncode != 0:
                 error = stderr.decode().strip()
@@ -194,29 +167,29 @@ class TSharkIntegration:
     def _parse_protocols(self, output: str) -> List[TSharkProtocol]:
         """Parse protocol hierarchy statistics"""
         protocols = []
-        lines = output.split('\n')
+        lines = output.split("\n")
 
         for line in lines:
             # Look for protocol lines like "  tcp: packets: 100 bytes: 5000"
-            match = re.search(r'^\s+(\w+):\s+packets:\s+(\d+)', line)
+            match = re.search(r"^\s+(\w+):\s+packets:\s+(\d+)", line)
             if match:
-                protocols.append(TSharkProtocol(
-                    name=match.group(1),
-                    count=int(match.group(2)),
-                    percentage=0.0  # Would need total for percentage
-                ))
+                protocols.append(
+                    TSharkProtocol(
+                        name=match.group(1), count=int(match.group(2)), percentage=0.0  # Would need total for percentage
+                    )
+                )
 
         return protocols
 
     def _parse_hosts(self, output: str) -> List[TSharkHost]:
         """Parse unique hosts from output"""
         hosts = {}
-        lines = output.strip().split('\n')
+        lines = output.strip().split("\n")
 
         for line in lines[1:]:  # Skip header
             if not line:
                 continue
-            parts = line.split('\t')
+            parts = line.split("\t")
             for ip in parts:
                 ip = ip.strip()
                 if ip and ip not in hosts:
@@ -232,11 +205,7 @@ def analyze_pcap_sync(pcap_file: str) -> TSharkResult:
     return asyncio.run(tshark.analyze_pcap(pcap_file))
 
 
-def capture_live_sync(
-    duration: int = 60,
-    interface: str = "eth0",
-    output_file: Optional[str] = None
-) -> TSharkResult:
+def capture_live_sync(duration: int = 60, interface: str = "eth0", output_file: Optional[str] = None) -> TSharkResult:
     """Synchronous wrapper for live capture"""
     tshark = TSharkIntegration(interface=interface)
     return asyncio.run(tshark.capture_live(duration, output_file=output_file))
@@ -244,12 +213,13 @@ def capture_live_sync(
 
 if __name__ == "__main__":
     import logging
+
     logging.basicConfig(level=logging.INFO)
 
     print("Testing TShark Integration...")
-    print("="*60)
+    print("=" * 60)
     print("Note: Requires root privileges for live capture")
-    print("="*60)
+    print("=" * 60)
 
     # Test with sample PCAP if available
     sample_pcap = "/tmp/test.pcap"

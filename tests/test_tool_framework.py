@@ -6,8 +6,8 @@ Issue #19
 import pytest
 from langchain_core.tools import tool
 
-from tools.tool_registry import ToolRegistry, ToolCategory, ToolSafetyLevel
 from tools.tool_caller import ToolCaller
+from tools.tool_registry import ToolCategory, ToolRegistry, ToolSafetyLevel
 
 
 @pytest.fixture

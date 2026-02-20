@@ -14,14 +14,15 @@ Metrics:
 - Repository sync status
 """
 
+import json
 import os
 import sys
-import json
+from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
-from typing import Dict, List, Any, Optional
-from dataclasses import dataclass, asdict
-import requests
+from typing import Any, Dict, List, Optional
 from urllib.parse import urljoin
+
+import requests
 
 # Constants
 STALE_ISSUE_DAYS = 90
@@ -675,9 +676,7 @@ See `.github/health-trends/` for historical data.
                 status = (
                     "Healthy"
                     if self.metrics.overall_score >= 80
-                    else "Needs Attention"
-                    if self.metrics.overall_score >= 50
-                    else "Critical"
+                    else "Needs Attention" if self.metrics.overall_score >= 50 else "Critical"
                 )
                 f.write(f"health_status={status}\n")
 

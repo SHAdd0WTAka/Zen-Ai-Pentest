@@ -1,8 +1,8 @@
 """Aircrack-ng Integration - Wireless Security Testing"""
 
-import subprocess
 import logging
-from typing import List, Dict
+import subprocess
+from typing import Dict, List
 
 logger = logging.getLogger(__name__)
 

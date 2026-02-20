@@ -5,11 +5,10 @@ Collects and aggregates system metrics for dashboard display.
 """
 
 import asyncio
-from typing import Dict, Any, List, Optional, Callable
+import logging
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-import logging
-
+from typing import Any, Callable, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +16,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class MetricPoint:
     """Single metric data point"""
+
     timestamp: datetime
     value: float
     labels: Dict[str, str]
@@ -98,15 +98,11 @@ class MetricsCollector:
                         if key not in self._metrics:
                             self._metrics[key] = []
 
-                        self._metrics[key].append(MetricPoint(
-                            timestamp=datetime.utcnow(),
-                            value=float(value),
-                            labels={}
-                        ))
+                        self._metrics[key].append(MetricPoint(timestamp=datetime.utcnow(), value=float(value), labels={}))
 
                         # Trim history
                         if len(self._metrics[key]) > self._max_history:
-                            self._metrics[key] = self._metrics[key][-self._max_history:]
+                            self._metrics[key] = self._metrics[key][-self._max_history :]
 
                 # Notify callback
                 if self._on_metrics:
@@ -138,7 +134,7 @@ class MetricsCollector:
 
             cpu_percent = psutil.cpu_percent(interval=0.1)
             memory = psutil.virtual_memory()
-            disk = psutil.disk_usage('/')
+            disk = psutil.disk_usage("/")
 
             return {
                 "cpu_percent": cpu_percent,
@@ -178,11 +174,7 @@ class MetricsCollector:
         """Get current metrics snapshot"""
         return self._current.copy()
 
-    def get_metric_history(
-        self,
-        metric_name: str,
-        duration_seconds: int = 3600
-    ) -> List[MetricPoint]:
+    def get_metric_history(self, metric_name: str, duration_seconds: int = 3600) -> List[MetricPoint]:
         """Get historical data for a metric"""
         points = self._metrics.get(metric_name, [])
 
@@ -202,7 +194,7 @@ class MetricsCollector:
             "collection_interval": self.collection_interval,
             "metrics_count": len(self._metrics),
             "data_points": sum(len(points) for points in self._metrics.values()),
-            "last_update": self._current.get("timestamp")
+            "last_update": self._current.get("timestamp"),
         }
 
 
@@ -233,10 +225,7 @@ class MetricsAggregator:
         return min(values), max(values)
 
     @staticmethod
-    def calculate_rate(
-        points: List[MetricPoint],
-        duration_seconds: int = 60
-    ) -> Optional[float]:
+    def calculate_rate(points: List[MetricPoint], duration_seconds: int = 60) -> Optional[float]:
         """Calculate rate of change"""
         if len(points) < 2:
             return None

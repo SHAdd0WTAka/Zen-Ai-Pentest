@@ -6,25 +6,26 @@ SmartRouter, and rate limiting decorators.
 """
 
 import asyncio
-import pytest
 import time
 from unittest.mock import Mock
 
+import pytest
+
 from core.rate_limiter import (
-    CircuitState,
-    RateLimitConfig,
-    CircuitBreakerConfig,
-    TokenBucket,
-    ExponentialBackoff,
     CircuitBreaker,
+    CircuitBreakerConfig,
     CircuitBreakerOpen,
+    CircuitState,
+    ExponentialBackoff,
+    RateLimitConfig,
     SmartRouter,
-    rate_limited,
+    TokenBucket,
     cached_key,
+    rate_limited,
 )
 
-
 # ==================== TokenBucket Tests ====================
+
 
 class TestTokenBucket:
     """Test TokenBucket rate limiter"""
@@ -117,6 +118,7 @@ class TestTokenBucket:
 
 # ==================== ExponentialBackoff Tests ====================
 
+
 class TestExponentialBackoff:
     """Test ExponentialBackoff functionality"""
 
@@ -183,6 +185,7 @@ class TestExponentialBackoff:
 
 
 # ==================== CircuitBreaker Tests ====================
+
 
 class TestCircuitBreaker:
     """Test CircuitBreaker functionality"""
@@ -323,6 +326,7 @@ class TestCircuitBreaker:
 
 # ==================== SmartRouter Tests ====================
 
+
 class TestSmartRouter:
     """Test SmartRouter functionality"""
 
@@ -462,6 +466,7 @@ class TestSmartRouter:
 
 # ==================== RateLimitConfig Tests ====================
 
+
 class TestRateLimitConfig:
     """Test RateLimitConfig dataclass"""
 
@@ -478,11 +483,7 @@ class TestRateLimitConfig:
 
     def test_custom_config(self):
         """Test custom rate limit configuration"""
-        config = RateLimitConfig(
-            requests_per_second=10.0,
-            burst_size=20,
-            max_retries=5
-        )
+        config = RateLimitConfig(requests_per_second=10.0, burst_size=20, max_retries=5)
 
         assert config.requests_per_second == 10.0
         assert config.burst_size == 20
@@ -490,6 +491,7 @@ class TestRateLimitConfig:
 
 
 # ==================== CircuitBreakerConfig Tests ====================
+
 
 class TestCircuitBreakerConfig:
     """Test CircuitBreakerConfig dataclass"""
@@ -504,11 +506,7 @@ class TestCircuitBreakerConfig:
 
     def test_custom_config(self):
         """Test custom circuit breaker configuration"""
-        config = CircuitBreakerConfig(
-            failure_threshold=3,
-            recovery_timeout=10.0,
-            half_open_max_calls=1
-        )
+        config = CircuitBreakerConfig(failure_threshold=3, recovery_timeout=10.0, half_open_max_calls=1)
 
         assert config.failure_threshold == 3
         assert config.recovery_timeout == 10.0
@@ -516,6 +514,7 @@ class TestCircuitBreakerConfig:
 
 
 # ==================== CircuitState Tests ====================
+
 
 class TestCircuitState:
     """Test CircuitState enum"""
@@ -534,6 +533,7 @@ class TestCircuitState:
 
 # ==================== Decorator Tests ====================
 
+
 class TestRateLimitedDecorator:
     """Test rate_limited decorator"""
 
@@ -550,7 +550,7 @@ class TestRateLimitedDecorator:
 
         start = time.monotonic()
         results = await asyncio.gather(*[limited_function() for _ in range(5)])
-        elapsed = time.monotonic() - start
+        time.monotonic() - start
 
         assert len(results) == 5
         assert call_count == 5
@@ -592,6 +592,7 @@ class TestRateLimitedDecorator:
 
 # ==================== Utility Function Tests ====================
 
+
 class TestCachedKey:
     """Test cached_key utility function"""
 
@@ -626,6 +627,7 @@ class TestCachedKey:
 
 # ==================== CircuitBreakerOpen Tests ====================
 
+
 class TestCircuitBreakerOpen:
     """Test CircuitBreakerOpen exception"""
 
@@ -644,6 +646,7 @@ class TestCircuitBreakerOpen:
 
 # ==================== Integration Tests ====================
 
+
 class TestIntegration:
     """Integration tests for rate limiting components"""
 
@@ -661,12 +664,7 @@ class TestIntegration:
                 raise Exception("First call fails")
             return f"result_{call_count}"
 
-        router.register_backend(
-            "api",
-            Mock(),
-            priority=5,
-            circuit_config=CircuitBreakerConfig(failure_threshold=3)
-        )
+        router.register_backend("api", Mock(), priority=5, circuit_config=CircuitBreakerConfig(failure_threshold=3))
 
         # First call fails
         with pytest.raises(Exception):
@@ -687,6 +685,7 @@ class TestIntegration:
         async def quick_success():
             async def inner():
                 return "success"
+
             return await cb.call(inner)
 
         results = await asyncio.gather(*[quick_success() for _ in range(3)])

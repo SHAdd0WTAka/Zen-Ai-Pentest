@@ -4,9 +4,9 @@ Vollständiger Autonomer Scan mit Ergebnissen
 """
 
 import asyncio
-import sys
-import os
 import json
+import os
+import sys
 from datetime import datetime
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))

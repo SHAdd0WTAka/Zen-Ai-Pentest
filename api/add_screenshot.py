@@ -4,28 +4,31 @@ Screenshot Manager für Zen-Ai Pentest Web UI
 Kopiert Screenshots in das Projekt-Verzeichnis
 """
 
-import shutil
 import argparse
-from pathlib import Path
+import shutil
 from datetime import datetime
+from pathlib import Path
+
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
 console = Console()
 
+
 def get_screenshot_dir():
     """Erstelle und gib Screenshot-Verzeichnis zurück"""
-    screenshot_dir = Path.home() / 'Zen-Ai-Pentest' / 'screenshots'
+    screenshot_dir = Path.home() / "Zen-Ai-Pentest" / "screenshots"
     screenshot_dir.mkdir(parents=True, exist_ok=True)
     return screenshot_dir
+
 
 def list_screenshots():
     """Liste alle Screenshots auf"""
     screenshot_dir = get_screenshot_dir()
 
     screenshots = []
-    for ext in ['*.png', '*.jpg', '*.jpeg', '*.gif', '*.bmp']:
+    for ext in ["*.png", "*.jpg", "*.jpeg", "*.gif", "*.bmp"]:
         screenshots.extend(screenshot_dir.glob(ext))
 
     if not screenshots:
@@ -42,11 +45,12 @@ def list_screenshots():
     for i, screenshot in enumerate(sorted(screenshots, key=lambda x: x.stat().st_mtime, reverse=True), 1):
         stat = screenshot.stat()
         size = f"{stat.st_size / 1024:.1f} KB"
-        date = datetime.fromtimestamp(stat.st_mtime).strftime('%Y-%m-%d %H:%M')
+        date = datetime.fromtimestamp(stat.st_mtime).strftime("%Y-%m-%d %H:%M")
         table.add_row(str(i), screenshot.name, size, date)
 
     console.print(table)
     return screenshots
+
 
 def add_screenshot(source_path, rename=None):
     """Füge Screenshot hinzu"""
@@ -61,31 +65,35 @@ def add_screenshot(source_path, rename=None):
     # Generiere Dateinamen
     if rename:
         filename = rename
-        if not filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.bmp')):
+        if not filename.lower().endswith((".png", ".jpg", ".jpeg", ".gif", ".bmp")):
             filename += source.suffix
     else:
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"{timestamp}_{source.name}"
 
     destination = screenshot_dir / filename
 
     try:
         shutil.copy2(source, destination)
-        console.print(Panel(
-            f"[green]✅ Screenshot hinzugefügt![/green]\n\n"
-            f"Datei: {filename}\n"
-            f"Pfad: {destination}\n"
-            f"URL: http://127.0.0.1:5000/static/screenshots/{filename}",
-            title="Screenshot", border_style="green"
-        ))
+        console.print(
+            Panel(
+                f"[green]✅ Screenshot hinzugefügt![/green]\n\n"
+                f"Datei: {filename}\n"
+                f"Pfad: {destination}\n"
+                f"URL: http://127.0.0.1:5000/static/screenshots/{filename}",
+                title="Screenshot",
+                border_style="green",
+            )
+        )
         return True
     except Exception as e:
         console.print(f"[red]❌ Fehler beim Kopieren: {e}[/red]")
         return False
 
+
 def add_from_downloads():
     """Suche und füge Screenshots aus Downloads hinzu"""
-    downloads_dir = Path.home() / 'Downloads'
+    downloads_dir = Path.home() / "Downloads"
 
     if not downloads_dir.exists():
         console.print("[red]❌ Downloads-Verzeichnis nicht gefunden[/red]")
@@ -93,7 +101,7 @@ def add_from_downloads():
 
     # Suche nach Screenshots
     screenshots = []
-    for pattern in ['Screenshot*.png', 'Screenshot*.jpg', '*zen*.png', '*kimi*.png', '*pentest*.png']:
+    for pattern in ["Screenshot*.png", "Screenshot*.jpg", "*zen*.png", "*kimi*.png", "*pentest*.png"]:
         screenshots.extend(downloads_dir.glob(pattern))
 
     if not screenshots:
@@ -109,7 +117,7 @@ def add_from_downloads():
     console.print()
     response = input("Alle Screenshots kopieren? (j/n): ").lower()
 
-    if response == 'j':
+    if response == "j":
         success_count = 0
         for screenshot in screenshots:
             if add_screenshot(screenshot):
@@ -117,6 +125,7 @@ def add_from_downloads():
 
         console.print(f"\n[green]✅ {success_count}/{len(screenshots)} Screenshots kopiert[/green]")
         console.print("[blue]🌐 Web UI: http://127.0.0.1:5000 → Tab 'Screenshots'[/blue]")
+
 
 def delete_screenshot(filename):
     """Lösche Screenshot"""
@@ -135,20 +144,22 @@ def delete_screenshot(filename):
         console.print(f"[red]❌ Fehler: {e}[/red]")
         return False
 
+
 def open_screenshot_dir():
     """Öffne Screenshot-Verzeichnis im Dateimanager"""
     screenshot_dir = get_screenshot_dir()
 
     # Versuche verschiedene Dateimanager
     commands = [
-        ['xdg-open', str(screenshot_dir)],  # Linux
-        ['explorer', str(screenshot_dir)],   # Windows
-        ['open', str(screenshot_dir)],       # macOS
+        ["xdg-open", str(screenshot_dir)],  # Linux
+        ["explorer", str(screenshot_dir)],  # Windows
+        ["open", str(screenshot_dir)],  # macOS
     ]
 
     for cmd in commands:
         try:
             import subprocess
+
             subprocess.run(cmd, check=True)
             console.print(f"[green]📂 Geöffnet: {screenshot_dir}[/green]")
             return
@@ -157,6 +168,7 @@ def open_screenshot_dir():
 
     console.print("[yellow]⚠️  Konnte Dateimanager nicht öffnen[/yellow]")
     console.print(f"[dim]Pfad: {screenshot_dir}[/dim]")
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -169,28 +181,28 @@ Beispiele:
   %(prog)s add ~/Downloads/img.png -n recon # Mit Namen hinzufügen
   %(prog)s downloads                     # Aus Downloads suchen
   %(prog)s open                          # Verzeichnis öffnen
-        """
+        """,
     )
 
-    subparsers = parser.add_subparsers(dest='command', help='Befehle')
+    subparsers = parser.add_subparsers(dest="command", help="Befehle")
 
     # List
-    subparsers.add_parser('list', help='Liste alle Screenshots')
+    subparsers.add_parser("list", help="Liste alle Screenshots")
 
     # Add
-    p_add = subparsers.add_parser('add', help='Screenshot hinzufügen')
-    p_add.add_argument('path', help='Pfad zum Screenshot')
-    p_add.add_argument('-n', '--name', help='Neuer Dateiname (optional)')
+    p_add = subparsers.add_parser("add", help="Screenshot hinzufügen")
+    p_add.add_argument("path", help="Pfad zum Screenshot")
+    p_add.add_argument("-n", "--name", help="Neuer Dateiname (optional)")
 
     # Downloads
-    subparsers.add_parser('downloads', help='Screenshots aus Downloads suchen')
+    subparsers.add_parser("downloads", help="Screenshots aus Downloads suchen")
 
     # Delete
-    p_del = subparsers.add_parser('delete', help='Screenshot löschen')
-    p_del.add_argument('filename', help='Dateiname des Screenshots')
+    p_del = subparsers.add_parser("delete", help="Screenshot löschen")
+    p_del.add_argument("filename", help="Dateiname des Screenshots")
 
     # Open
-    subparsers.add_parser('open', help='Screenshot-Verzeichnis öffnen')
+    subparsers.add_parser("open", help="Screenshot-Verzeichnis öffnen")
 
     args = parser.parse_args()
 
@@ -198,16 +210,17 @@ Beispiele:
         parser.print_help()
         return
 
-    if args.command == 'list':
+    if args.command == "list":
         list_screenshots()
-    elif args.command == 'add':
+    elif args.command == "add":
         add_screenshot(args.path, args.name)
-    elif args.command == 'downloads':
+    elif args.command == "downloads":
         add_from_downloads()
-    elif args.command == 'delete':
+    elif args.command == "delete":
         delete_screenshot(args.filename)
-    elif args.command == 'open':
+    elif args.command == "open":
         open_screenshot_dir()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

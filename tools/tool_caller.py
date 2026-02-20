@@ -12,11 +12,11 @@ Ermöglicht dynamisches Laden und Ausführen von Tools mit:
 import asyncio
 import logging
 import time
-from typing import Dict, Any, Optional, List
-from dataclasses import dataclass
 from concurrent.futures import ThreadPoolExecutor
+from dataclasses import dataclass
+from typing import Any, Dict, List, Optional
 
-from .tool_registry import ToolRegistry, ToolSafetyLevel, ToolCategory
+from .tool_registry import ToolCategory, ToolRegistry, ToolSafetyLevel
 
 logger = logging.getLogger(__name__)
 

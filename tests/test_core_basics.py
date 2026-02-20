@@ -3,8 +3,9 @@ Basic unit tests for core modules - No complex imports
 Goal: +5% Coverage quickly
 """
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
@@ -12,6 +13,7 @@ def test_import_core():
     """Test that core module can be imported"""
     try:
         import core
+
         assert True
     except ImportError:
         # Expected if dependencies missing
@@ -22,6 +24,7 @@ def test_import_modules():
     """Test that modules package can be imported"""
     try:
         import modules
+
         assert True
     except ImportError:
         pass
@@ -55,11 +58,7 @@ def test_list_operations():
 
 def test_dict_operations():
     """Test basic dict operations"""
-    config = {
-        "name": "zen-ai-pentest",
-        "version": "2.3.9",
-        "license": "MIT"
-    }
+    config = {"name": "zen-ai-pentest", "version": "2.3.9", "license": "MIT"}
     assert config["name"] == "zen-ai-pentest"
     assert "version" in config
     assert config.get("nonexistent", "default") == "default"
@@ -67,25 +66,14 @@ def test_dict_operations():
 
 def test_file_exists():
     """Test that critical files exist"""
-    critical_files = [
-        "README.md",
-        "requirements.txt",
-        "setup.py",
-        ".github/workflows/ci.yml"
-    ]
+    critical_files = ["README.md", "requirements.txt", "setup.py", ".github/workflows/ci.yml"]
     for file in critical_files:
         assert os.path.exists(file), f"{file} not found"
 
 
 def test_directory_structure():
     """Test that critical directories exist"""
-    critical_dirs = [
-        "core",
-        "api",
-        "modules",
-        "tests",
-        "docs"
-    ]
+    critical_dirs = ["core", "api", "modules", "tests", "docs"]
     for dir_name in critical_dirs:
         assert os.path.isdir(dir_name), f"{dir_name} not found"
 
@@ -127,7 +115,7 @@ class TestBasicFunctionality:
 def test_error_handling():
     """Test basic error handling"""
     try:
-        result = 1 / 0
+        pass
     except ZeroDivisionError:
         assert True
     else:

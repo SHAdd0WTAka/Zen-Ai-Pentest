@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class SherlockResult:
     """Sherlock scan result"""
+
     username: str
     found_sites: List[Dict[str, str]] = field(default_factory=list)
     not_found_sites: List[str] = field(default_factory=list)
@@ -58,15 +59,10 @@ class SherlockIntegration:
 
         try:
             process = await asyncio.create_subprocess_exec(
-                *cmd,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE
+                *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
             )
 
-            stdout, stderr = await asyncio.wait_for(
-                process.communicate(),
-                timeout=self.timeout
-            )
+            stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=self.timeout)
 
             found_sites = []
             not_found_sites = []
@@ -81,27 +77,23 @@ class SherlockIntegration:
                         if isinstance(site_data, dict):
                             status = site_data.get("status", {})
                             if status.get("status") == "FOUND":
-                                found_sites.append({
-                                    "site": site_name,
-                                    "url": site_data.get("url_user", ""),
-                                    "status": "found"
-                                })
+                                found_sites.append(
+                                    {"site": site_name, "url": site_data.get("url_user", ""), "status": "found"}
+                                )
                             else:
                                 not_found_sites.append(site_name)
                         elif site_data == "FOUND":
-                            found_sites.append({
-                                "site": site_name,
-                                "url": f"https://{site_name}.com/{username}",
-                                "status": "found"
-                            })
+                            found_sites.append(
+                                {"site": site_name, "url": f"https://{site_name}.com/{username}", "status": "found"}
+                            )
 
             except json.JSONDecodeError:
                 # Fallback: parse line by line
-                for line in stdout.decode().split('\n'):
-                    if '[+]' in line and 'Found' in line:
+                for line in stdout.decode().split("\n"):
+                    if "[+]" in line and "Found" in line:
                         parts = line.split()
                         if len(parts) >= 3:
-                            site = parts[1].replace(':', '')
+                            site = parts[1].replace(":", "")
                             url = parts[-1]
                             found_sites.append({"site": site, "url": url, "status": "found"})
 
@@ -110,7 +102,7 @@ class SherlockIntegration:
                 found_sites=found_sites,
                 not_found_sites=not_found_sites,
                 total_sites=len(found_sites) + len(not_found_sites),
-                success=True
+                success=True,
             )
 
         except asyncio.TimeoutError:
@@ -145,10 +137,11 @@ def search_sync(username: str) -> SherlockResult:
 
 if __name__ == "__main__":
     import logging
+
     logging.basicConfig(level=logging.INFO)
 
     print("Testing Sherlock Integration...")
-    print("="*60)
+    print("=" * 60)
 
     # Test with a common username
     result = search_sync("admin")

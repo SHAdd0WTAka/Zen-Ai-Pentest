@@ -14,6 +14,7 @@ from typing import Dict, List
 try:
     from modules.subdomain_scanner import SubdomainScanner
     from modules.subdomain_scanner_advanced import AdvancedSubdomainScanner
+
     SUBDOMAIN_SCANNER_AVAILABLE = True
 except ImportError:
     SUBDOMAIN_SCANNER_AVAILABLE = False
@@ -194,23 +195,11 @@ Return as a comma-separated list.
         logger.info(f"[Recon] Starting comprehensive subdomain scan for {domain}")
 
         if advanced:
-            scanner = AdvancedSubdomainScanner(
-                orchestrator=self.orchestrator,
-                max_workers=max_workers
-            )
-            results = await scanner.scan_advanced(
-                domain=domain,
-                check_http=check_http
-            )
+            scanner = AdvancedSubdomainScanner(orchestrator=self.orchestrator, max_workers=max_workers)
+            results = await scanner.scan_advanced(domain=domain, check_http=check_http)
         else:
-            scanner = SubdomainScanner(
-                orchestrator=self.orchestrator,
-                max_workers=max_workers
-            )
-            results = await scanner.scan(
-                domain=domain,
-                check_http=check_http
-            )
+            scanner = SubdomainScanner(orchestrator=self.orchestrator, max_workers=max_workers)
+            results = await scanner.scan(domain=domain, check_http=check_http)
 
         # Build comprehensive result
         live_hosts = [r for r in results.values() if r.is_alive]
@@ -250,11 +239,7 @@ Return as a comma-separated list.
         logger.info(f"[Recon] Discovering attack surface for {domain}")
 
         # Run subdomain scan
-        subdomain_data = await self.comprehensive_subdomain_scan(
-            domain=domain,
-            advanced=True,
-            check_http=True
-        )
+        subdomain_data = await self.comprehensive_subdomain_scan(domain=domain, advanced=True, check_http=True)
 
         # Get basic target info
         target_info = {
@@ -264,10 +249,7 @@ Return as a comma-separated list.
         }
 
         # Use LLM to analyze attack surface
-        live_subdomains = [
-            sub for sub, data in subdomain_data["subdomains"].items()
-            if data.get("is_alive")
-        ]
+        live_subdomains = [sub for sub, data in subdomain_data["subdomains"].items() if data.get("is_alive")]
 
         prompt = f"""
 Analyze the attack surface for penetration testing:

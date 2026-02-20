@@ -7,8 +7,8 @@ to prevent damage to host system and contain exploits.
 
 import asyncio
 import logging
-import tempfile
 import os
+import tempfile
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Dict, List, Optional
@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class SandboxResult:
     """Result of sandboxed execution."""
+
     success: bool
     stdout: str
     stderr: str
@@ -48,7 +49,7 @@ class DockerSandbox:
         memory_limit: str = "512m",
         cpu_limit: str = "1.0",
         timeout: int = 300,
-        auto_cleanup: bool = True
+        auto_cleanup: bool = True,
     ):
         """
         Initialize Docker sandbox.
@@ -75,7 +76,7 @@ class DockerSandbox:
         working_dir: str = "/workspace",
         input_files: Optional[Dict[str, str]] = None,
         output_dirs: Optional[List[str]] = None,
-        environment: Optional[Dict[str, str]] = None
+        environment: Optional[Dict[str, str]] = None,
     ) -> SandboxResult:
         """
         Execute a command in Docker sandbox.
@@ -98,17 +99,26 @@ class DockerSandbox:
         try:
             # Build docker run command
             docker_cmd = [
-                "docker", "run",
-                "--name", container_name,
+                "docker",
+                "run",
+                "--name",
+                container_name,
                 "--rm" if self.auto_cleanup else "",
-                "--network", self.network_mode,
-                "--memory", self.memory_limit,
-                "--cpus", self.cpu_limit,
-                "--security-opt", "no-new-privileges:true",
-                "--cap-drop", "ALL",  # Drop all capabilities
+                "--network",
+                self.network_mode,
+                "--memory",
+                self.memory_limit,
+                "--cpus",
+                self.cpu_limit,
+                "--security-opt",
+                "no-new-privileges:true",
+                "--cap-drop",
+                "ALL",  # Drop all capabilities
                 "--read-only",  # Read-only root filesystem
-                "--tmpfs", "/tmp:noexec,nosuid,size=100m",
-                "-w", working_dir,
+                "--tmpfs",
+                "/tmp:noexec,nosuid,size=100m",
+                "-w",
+                working_dir,
             ]
 
             # Remove empty strings
@@ -140,16 +150,11 @@ class DockerSandbox:
 
             # Execute
             proc = await asyncio.create_subprocess_exec(
-                *docker_cmd,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE
+                *docker_cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
             )
 
             try:
-                stdout, stderr = await asyncio.wait_for(
-                    proc.communicate(),
-                    timeout=self.timeout
-                )
+                stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=self.timeout)
             except asyncio.TimeoutError:
                 # Kill container
                 await self._kill_container(container_name)
@@ -160,7 +165,7 @@ class DockerSandbox:
                     return_code=-1,
                     execution_time=(datetime.now() - start_time).total_seconds(),
                     container_id=container_name,
-                    error_message=f"Timeout after {self.timeout}s"
+                    error_message=f"Timeout after {self.timeout}s",
                 )
 
             execution_time = (datetime.now() - start_time).total_seconds()
@@ -174,12 +179,12 @@ class DockerSandbox:
 
             return SandboxResult(
                 success=proc.returncode == 0,
-                stdout=stdout.decode('utf-8', errors='replace'),
-                stderr=stderr.decode('utf-8', errors='replace'),
+                stdout=stdout.decode("utf-8", errors="replace"),
+                stderr=stderr.decode("utf-8", errors="replace"),
                 return_code=proc.returncode,
                 execution_time=execution_time,
                 container_id=container_name,
-                artifacts=artifacts
+                artifacts=artifacts,
             )
 
         except FileNotFoundError:
@@ -189,7 +194,7 @@ class DockerSandbox:
                 stderr="",
                 return_code=-1,
                 execution_time=(datetime.now() - start_time).total_seconds(),
-                error_message="Docker not found. Please install Docker."
+                error_message="Docker not found. Please install Docker.",
             )
         except Exception as e:
             self.logger.error(f"[SANDBOX] Execution failed: {e}")
@@ -199,16 +204,14 @@ class DockerSandbox:
                 stderr="",
                 return_code=-1,
                 execution_time=(datetime.now() - start_time).total_seconds(),
-                error_message=str(e)
+                error_message=str(e),
             )
 
     async def _kill_container(self, container_name: str):
         """Kill a running container."""
         try:
             proc = await asyncio.create_subprocess_exec(
-                "docker", "kill", container_name,
-                stdout=asyncio.subprocess.DEVNULL,
-                stderr=asyncio.subprocess.DEVNULL
+                "docker", "kill", container_name, stdout=asyncio.subprocess.DEVNULL, stderr=asyncio.subprocess.DEVNULL
             )
             await proc.wait()
             self.logger.warning(f"[SANDBOX] Killed container {container_name}")
@@ -219,9 +222,7 @@ class DockerSandbox:
         """Check if Docker is available."""
         try:
             proc = await asyncio.create_subprocess_exec(
-                "docker", "version",
-                stdout=asyncio.subprocess.DEVNULL,
-                stderr=asyncio.subprocess.DEVNULL
+                "docker", "version", stdout=asyncio.subprocess.DEVNULL, stderr=asyncio.subprocess.DEVNULL
             )
             await asyncio.wait_for(proc.wait(), timeout=5)
             return proc.returncode == 0
@@ -240,13 +241,7 @@ class SandboxedToolExecutor:
         self.sandbox = DockerSandbox()
         self.logger = logging.getLogger(__name__)
 
-    async def execute_tool(
-        self,
-        tool_name: str,
-        tool_args: List[str],
-        target: str,
-        **kwargs
-    ) -> SandboxResult:
+    async def execute_tool(self, tool_name: str, tool_args: List[str], target: str, **kwargs) -> SandboxResult:
         """
         Execute a security tool in sandbox.
 
@@ -270,10 +265,7 @@ class SandboxedToolExecutor:
 
         self.logger.info(f"[EXECUTOR] Running {tool_name} against {target} in sandbox")
 
-        return await self.sandbox.execute(
-            command=command,
-            **kwargs
-        )
+        return await self.sandbox.execute(command=command, **kwargs)
 
 
 # Example usage and test
@@ -289,9 +281,7 @@ async def test_sandbox():
     print("[TEST] Testing Docker sandbox...")
 
     # Test simple command
-    result = await sandbox.execute(
-        command=["echo", "Hello from sandbox!"]
-    )
+    result = await sandbox.execute(command=["echo", "Hello from sandbox!"])
 
     print(f"[TEST] Success: {result.success}")
     print(f"[TEST] Output: {result.stdout.strip()}")

@@ -3,25 +3,20 @@ Extended Tests für OSINT und Network Tools
 Sherlock, Ignorant, TShark, und Integration Tests
 """
 
-import pytest
 import asyncio
-from unittest.mock import AsyncMock, patch, MagicMock
 from pathlib import Path
+from unittest.mock import AsyncMock, MagicMock, patch
 
-# OSINT Tools
-from tools.sherlock_integration import (
-    SherlockIntegration, SherlockResult
-)
-from tools.ignorant_integration import (
-    IgnorantIntegration, IgnorantResult, IgnorantCheck
-)
-from tools.tshark_integration import (
-    TSharkIntegration, TSharkHost
-)
+import pytest
 
 # Module
 from modules.osint_super import OSINTSuperModule, OSINTSuperResult
 from modules.super_scanner import SuperScanner
+from tools.ignorant_integration import IgnorantCheck, IgnorantIntegration, IgnorantResult
+
+# OSINT Tools
+from tools.sherlock_integration import SherlockIntegration, SherlockResult
+from tools.tshark_integration import TSharkHost, TSharkIntegration
 
 
 class TestSherlockIntegration:
@@ -33,10 +28,10 @@ class TestSherlockIntegration:
             username="testuser",
             found_sites=[
                 {"site": "twitter", "url": "https://twitter.com/testuser"},
-                {"site": "github", "url": "https://github.com/testuser"}
+                {"site": "github", "url": "https://github.com/testuser"},
             ],
             total_sites=2,
-            success=True
+            success=True,
         )
         assert result.username == "testuser"
         assert len(result.found_sites) == 2
@@ -55,10 +50,10 @@ class TestSherlockIntegration:
         mock_json = '{"twitter": {"status": {"status": "FOUND"}, "url_user": "https://twitter.com/test"}}'
 
         mock_process = AsyncMock()
-        mock_process.communicate.return_value = (mock_json.encode(), b'')
+        mock_process.communicate.return_value = (mock_json.encode(), b"")
         mock_process.returncode = 0
 
-        with patch('asyncio.create_subprocess_exec', return_value=mock_process):
+        with patch("asyncio.create_subprocess_exec", return_value=mock_process):
             result = await sherlock.search("testuser")
 
         assert result.success is True
@@ -72,12 +67,8 @@ class TestSherlockIntegration:
 
         usernames = ["user1", "user2"]
 
-        with patch.object(sherlock, 'search') as mock_search:
-            mock_search.return_value = SherlockResult(
-                username="test",
-                found_sites=[],
-                success=True
-            )
+        with patch.object(sherlock, "search") as mock_search:
+            mock_search.return_value = SherlockResult(username="test", found_sites=[], success=True)
 
             results = await sherlock.search_multiple(usernames)
 
@@ -97,10 +88,10 @@ class TestIgnorantIntegration:
             domain="example.com",
             found_platforms=[
                 IgnorantCheck(platform="github", exists=True, url="https://github.com/test"),
-                IgnorantCheck(platform="twitter", exists=True, url="https://twitter.com/test")
+                IgnorantCheck(platform="twitter", exists=True, url="https://twitter.com/test"),
             ],
             total_checked=120,
-            success=True
+            success=True,
         )
         assert result.email == "test@example.com"
         assert result.username == "test"
@@ -122,10 +113,10 @@ class TestIgnorantIntegration:
         mock_json = '{"name": "github", "exists": true, "url": "https://github.com/test"}\n'
 
         mock_process = AsyncMock()
-        mock_process.communicate.return_value = (mock_json.encode(), b'')
+        mock_process.communicate.return_value = (mock_json.encode(), b"")
         mock_process.returncode = 0
 
-        with patch('asyncio.create_subprocess_exec', return_value=mock_process):
+        with patch("asyncio.create_subprocess_exec", return_value=mock_process):
             result = await ignorant.check_email("test@example.com")
 
         assert result.success is True
@@ -139,12 +130,7 @@ class TestTSharkIntegration:
 
     def test_tshark_host_dataclass(self):
         """Test TSharkHost dataclass"""
-        host = TSharkHost(
-            ip="192.168.1.1",
-            mac="00:11:22:33:44:55",
-            hostname="router.local",
-            ports=[80, 443, 22]
-        )
+        host = TSharkHost(ip="192.168.1.1", mac="00:11:22:33:44:55", hostname="router.local", ports=[80, 443, 22])
         assert host.ip == "192.168.1.1"
         assert host.mac == "00:11:22:33:44:55"
         assert len(host.ports) == 3
@@ -170,18 +156,19 @@ class TestTSharkIntegration:
 
         # Create temp PCAP file
         import tempfile
-        with tempfile.NamedTemporaryFile(suffix='.pcap', delete=False) as f:
-            f.write(b'\xd4\xc3\xb2\xa1')  # PCAP magic number
+
+        with tempfile.NamedTemporaryFile(suffix=".pcap", delete=False) as f:
+            f.write(b"\xd4\xc3\xb2\xa1")  # PCAP magic number
             temp_pcap = f.name
 
         try:
-            mock_output = b'  tcp: packets: 100 bytes: 5000\n  udp: packets: 50 bytes: 2000'
+            mock_output = b"  tcp: packets: 100 bytes: 5000\n  udp: packets: 50 bytes: 2000"
 
             mock_process = AsyncMock()
-            mock_process.communicate.return_value = (mock_output, b'')
+            mock_process.communicate.return_value = (mock_output, b"")
             mock_process.returncode = 0
 
-            with patch('asyncio.create_subprocess_exec', return_value=mock_process):
+            with patch("asyncio.create_subprocess_exec", return_value=mock_process):
                 result = await tshark.analyze_pcap(temp_pcap)
 
             # Should succeed (parsing may vary)
@@ -233,14 +220,12 @@ class TestOSINTSuperModule:
         """Test username investigation"""
         osint = OSINTSuperModule()
 
-        with patch.object(osint.sherlock, 'search') as mock_search:
+        with patch.object(osint.sherlock, "search") as mock_search:
             mock_search.return_value = SherlockResult(
                 username="testuser",
-                found_sites=[
-                    {"site": "twitter", "url": "https://twitter.com/testuser"}
-                ],
+                found_sites=[{"site": "twitter", "url": "https://twitter.com/testuser"}],
                 total_sites=1,
-                success=True
+                success=True,
             )
 
             result = await osint.investigate_username("testuser")
@@ -254,8 +239,7 @@ class TestOSINTSuperModule:
         """Test email investigation"""
         osint = OSINTSuperModule()
 
-        with patch.object(osint.ignorant, 'check_email') as mock_check, \
-             patch.object(osint.sherlock, 'search') as mock_search:
+        with patch.object(osint.ignorant, "check_email") as mock_check, patch.object(osint.sherlock, "search") as mock_search:
 
             mock_check.return_value = IgnorantResult(
                 email="test@example.com",
@@ -263,13 +247,9 @@ class TestOSINTSuperModule:
                 domain="example.com",
                 found_platforms=[IgnorantCheck(platform="github", exists=True)],
                 total_checked=10,
-                success=True
+                success=True,
             )
-            mock_search.return_value = SherlockResult(
-                username="test",
-                found_sites=[],
-                success=True
-            )
+            mock_search.return_value = SherlockResult(username="test", found_sites=[], success=True)
 
             result = await osint.investigate_email("test@example.com")
 
@@ -282,21 +262,16 @@ class TestOSINTSuperModule:
         """Test domain investigation"""
         osint = OSINTSuperModule()
 
-        with patch.object(osint.subfinder, 'enumerate') as mock_sub, \
-             patch.object(osint.amass, 'enumerate') as mock_amass, \
-             patch.object(osint.whatweb, 'scan') as mock_whatweb:
+        with (
+            patch.object(osint.subfinder, "enumerate") as mock_sub,
+            patch.object(osint.amass, "enumerate") as mock_amass,
+            patch.object(osint.whatweb, "scan") as mock_whatweb,
+        ):
 
-            mock_sub.return_value = MagicMock(
-                subdomains=["www.example.com", "mail.example.com"],
-                success=True
-            )
-            mock_amass.return_value = MagicMock(
-                subdomains=["api.example.com"],
-                success=True
-            )
+            mock_sub.return_value = MagicMock(subdomains=["www.example.com", "mail.example.com"], success=True)
+            mock_amass.return_value = MagicMock(subdomains=["api.example.com"], success=True)
             mock_whatweb.return_value = MagicMock(
-                technologies=[MagicMock(name="Apache", version="2.4", category="Web Server")],
-                success=True
+                technologies=[MagicMock(name="Apache", version="2.4", category="Web Server")], success=True
             )
 
             result = await osint.investigate_domain("example.com")
@@ -313,10 +288,7 @@ class TestOSINTSuperModule:
             target="testuser",
             target_type="username",
             timestamp="2024-01-01",
-            social_media={
-                "found_accounts": [{"site": "twitter"}, {"site": "github"}],
-                "total_found": 2
-            }
+            social_media={"found_accounts": [{"site": "twitter"}, {"site": "github"}], "total_found": 2},
         )
 
         summary = osint._generate_username_summary(result)
@@ -343,13 +315,15 @@ class TestSuperScanner:
         scanner = SuperScanner()
 
         # Mock all tool methods
-        with patch.object(scanner.subfinder, 'enumerate') as mock_sub, \
-             patch.object(scanner.amass, 'enumerate') as mock_amass, \
-             patch.object(scanner.httpx, 'probe') as mock_httpx, \
-             patch.object(scanner.whatweb, 'scan') as mock_whatweb, \
-             patch.object(scanner.wafw00f, 'detect') as mock_waf, \
-             patch.object(scanner.ffuf, 'directory_bruteforce') as mock_ffuf, \
-             patch.object(scanner.nikto, 'scan') as mock_nikto:
+        with (
+            patch.object(scanner.subfinder, "enumerate") as mock_sub,
+            patch.object(scanner.amass, "enumerate") as mock_amass,
+            patch.object(scanner.httpx, "probe") as mock_httpx,
+            patch.object(scanner.whatweb, "scan") as mock_whatweb,
+            patch.object(scanner.wafw00f, "detect") as mock_waf,
+            patch.object(scanner.ffuf, "directory_bruteforce") as mock_ffuf,
+            patch.object(scanner.nikto, "scan") as mock_nikto,
+        ):
 
             # Setup mocks
             mock_sub.return_value = MagicMock(subdomains=["www.test.com"], success=True)
@@ -363,9 +337,9 @@ class TestSuperScanner:
             result = await scanner.scan_domain("test.com")
 
         assert result.target == "test.com"
-        assert "subdomains" in result.__dict__ or hasattr(result, 'subdomains')
-        assert "technology" in result.__dict__ or hasattr(result, 'technology')
-        assert "summary" in result.__dict__ or hasattr(result, 'summary')
+        assert "subdomains" in result.__dict__ or hasattr(result, "subdomains")
+        assert "technology" in result.__dict__ or hasattr(result, "technology")
+        assert "summary" in result.__dict__ or hasattr(result, "summary")
 
     def test_generate_summary(self):
         """Test summary generation"""
@@ -373,7 +347,7 @@ class TestSuperScanner:
 
         # Create mock result
         from dataclasses import dataclass, field
-        from typing import Dict, Any
+        from typing import Any, Dict
 
         @dataclass
         class MockResult:
@@ -401,22 +375,16 @@ class TestIntegrationFlow:
         # First get subdomains via OSINT
         osint = OSINTSuperModule()
 
-        with patch.object(osint.subfinder, 'enumerate') as mock_sub:
-            mock_sub.return_value = MagicMock(
-                subdomains=["www.test.com", "api.test.com"],
-                success=True
-            )
+        with patch.object(osint.subfinder, "enumerate") as mock_sub:
+            mock_sub.return_value = MagicMock(subdomains=["www.test.com", "api.test.com"], success=True)
 
             osint_result = await osint.investigate_domain("test.com")
 
         # Then use those subdomains in Super Scanner
         scanner = SuperScanner()
 
-        with patch.object(scanner.httpx, 'probe') as mock_httpx:
-            mock_httpx.return_value = MagicMock(
-                hosts=[MagicMock(url="http://www.test.com", status_code=200)],
-                success=True
-            )
+        with patch.object(scanner.httpx, "probe") as mock_httpx:
+            mock_httpx.return_value = MagicMock(hosts=[MagicMock(url="http://www.test.com", status_code=200)], success=True)
 
             # Mock other methods
             with patch.multiple(
@@ -426,7 +394,7 @@ class TestIntegrationFlow:
                 whatweb=MagicMock(scan=MagicMock(return_value=MagicMock(technologies=[], success=True))),
                 wafw00f=MagicMock(detect=MagicMock(return_value=MagicMock(firewall_detected=False, wafs=[], success=True))),
                 ffuf=MagicMock(directory_bruteforce=MagicMock(return_value=MagicMock(findings=[], success=True))),
-                nikto=MagicMock(scan=MagicMock(return_value=MagicMock(findings=[], success=True)))
+                nikto=MagicMock(scan=MagicMock(return_value=MagicMock(findings=[], success=True))),
             ):
                 super_result = await scanner.scan_domain("test.com")
 

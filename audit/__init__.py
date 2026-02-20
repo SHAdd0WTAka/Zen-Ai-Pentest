@@ -8,10 +8,10 @@ ISO 27001 compliant audit logging with:
 - Real-time alerting
 """
 
-from .logger import AuditLogger, AuditLogEntry
-from .config import AuditConfig, LogLevel
-from .siem import SIEMIntegration
 from .compliance import ComplianceReporter
+from .config import AuditConfig, LogLevel
+from .logger import AuditLogEntry, AuditLogger
+from .siem import SIEMIntegration
 
 __all__ = [
     "AuditLogger",

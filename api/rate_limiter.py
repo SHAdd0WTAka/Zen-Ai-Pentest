@@ -7,12 +7,13 @@ Schützt API vor:
 - API Missbrauch
 """
 
+import logging
 import os
 import time
-from typing import Dict, Optional, Callable
 from functools import wraps
-from fastapi import Request, HTTPException, status
-import logging
+from typing import Callable, Dict, Optional
+
+from fastapi import HTTPException, Request, status
 
 logger = logging.getLogger(__name__)
 

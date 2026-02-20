@@ -2,9 +2,9 @@
 """Install Zen AI modules in development mode"""
 
 import os
+import site
 import subprocess
 import sys
-import site
 
 os.chdir(r"C:\Users\Ataka\zen-ai-pentest")
 

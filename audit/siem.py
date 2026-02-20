@@ -7,10 +7,11 @@ QRadar, and custom HTTP endpoints.
 
 import json
 from abc import ABC, abstractmethod
-from typing import Dict, Any, List, Optional
-from datetime import datetime
-import aiohttp
 from dataclasses import dataclass
+from datetime import datetime
+from typing import Any, Dict, List, Optional
+
+import aiohttp
 
 from .logger import AuditLogEntry
 
@@ -18,6 +19,7 @@ from .logger import AuditLogEntry
 @dataclass
 class SIEMConfig:
     """SIEM configuration"""
+
     url: str
     api_key: Optional[str] = None
     username: Optional[str] = None
@@ -82,16 +84,13 @@ class SplunkBackend(SIEMBackend):
                 "source": "zen-ai-pentest",
                 "sourcetype": self.config.source_type,
                 "index": self.config.index,
-                "event": self.format_entry(entry)
+                "event": self.format_entry(entry),
             }
             events.append(json.dumps(event))
 
         data = "\n".join(events)
 
-        headers = {
-            "Authorization": f"Splunk {self.config.api_key}",
-            "Content-Type": "application/json"
-        }
+        headers = {"Authorization": f"Splunk {self.config.api_key}", "Content-Type": "application/json"}
 
         async with aiohttp.ClientSession() as session:
             try:
@@ -100,7 +99,7 @@ class SplunkBackend(SIEMBackend):
                     data=data,
                     headers=headers,
                     ssl=self.config.ssl_verify,
-                    timeout=aiohttp.ClientTimeout(total=self.config.timeout)
+                    timeout=aiohttp.ClientTimeout(total=self.config.timeout),
                 ) as response:
                     if response.status == 200:
                         result = await response.json()
@@ -123,7 +122,7 @@ class SplunkBackend(SIEMBackend):
                     health_url,
                     headers=headers,
                     ssl=self.config.ssl_verify,
-                    timeout=aiohttp.ClientTimeout(total=self.config.timeout)
+                    timeout=aiohttp.ClientTimeout(total=self.config.timeout),
                 ) as response:
                     return response.status == 200
             except Exception:
@@ -142,12 +141,11 @@ class ElasticsearchBackend(SIEMBackend):
         bulk_data = []
         for entry in entries:
             # Action line
-            bulk_data.append(json.dumps({
-                "index": {
-                    "_index": f"{self.config.index}-{entry.timestamp.strftime('%Y.%m.%d')}",
-                    "_id": entry.id
-                }
-            }))
+            bulk_data.append(
+                json.dumps(
+                    {"index": {"_index": f"{self.config.index}-{entry.timestamp.strftime('%Y.%m.%d')}", "_id": entry.id}}
+                )
+            )
             # Document line
             bulk_data.append(json.dumps(self.format_entry(entry)))
 
@@ -173,7 +171,7 @@ class ElasticsearchBackend(SIEMBackend):
                     headers=headers,
                     auth=auth,
                     ssl=self.config.ssl_verify,
-                    timeout=aiohttp.ClientTimeout(total=self.config.timeout)
+                    timeout=aiohttp.ClientTimeout(total=self.config.timeout),
                 ) as response:
                     if response.status == 200:
                         result = await response.json()
@@ -202,7 +200,7 @@ class ElasticsearchBackend(SIEMBackend):
                     f"{self.config.url}/_cluster/health",
                     auth=auth,
                     ssl=self.config.ssl_verify,
-                    timeout=aiohttp.ClientTimeout(total=self.config.timeout)
+                    timeout=aiohttp.ClientTimeout(total=self.config.timeout),
                 ) as response:
                     if response.status == 200:
                         result = await response.json()
@@ -245,7 +243,7 @@ class QRadarBackend(SIEMBackend):
                     data=data,
                     headers=headers,
                     ssl=self.config.ssl_verify,
-                    timeout=aiohttp.ClientTimeout(total=self.config.timeout)
+                    timeout=aiohttp.ClientTimeout(total=self.config.timeout),
                 ) as response:
                     return response.status == 200
             except Exception as e:
@@ -254,16 +252,7 @@ class QRadarBackend(SIEMBackend):
 
     def _level_to_severity(self, level: str) -> int:
         """Convert log level to QRadar severity (0-10)"""
-        mapping = {
-            "debug": 1,
-            "info": 2,
-            "notice": 3,
-            "warning": 5,
-            "error": 7,
-            "critical": 9,
-            "alert": 10,
-            "emergency": 10
-        }
+        mapping = {"debug": 1, "info": 2, "notice": 3, "warning": 5, "error": 7, "critical": 9, "alert": 10, "emergency": 10}
         return mapping.get(level, 5)
 
     async def health_check(self) -> bool:
@@ -276,7 +265,7 @@ class QRadarBackend(SIEMBackend):
             level="info",
             category="system",
             event_type="health_check",
-            message="Health check"
+            message="Health check",
         )
         return await self.send([test_entry])
 
@@ -292,7 +281,7 @@ class GenericHTTPBackend(SIEMBackend):
         data = {
             "timestamp": datetime.utcnow().isoformat(),
             "source": "zen-ai-pentest",
-            "events": [self.format_entry(e) for e in entries]
+            "events": [self.format_entry(e) for e in entries],
         }
 
         headers = {"Content-Type": "application/json"}
@@ -308,7 +297,7 @@ class GenericHTTPBackend(SIEMBackend):
                     json=data,
                     headers=headers,
                     ssl=self.config.ssl_verify,
-                    timeout=aiohttp.ClientTimeout(total=self.config.timeout)
+                    timeout=aiohttp.ClientTimeout(total=self.config.timeout),
                 ) as response:
                     return response.status in [200, 201, 202]
             except Exception as e:
@@ -320,9 +309,7 @@ class GenericHTTPBackend(SIEMBackend):
         async with aiohttp.ClientSession() as session:
             try:
                 async with session.get(
-                    self.config.url,
-                    ssl=self.config.ssl_verify,
-                    timeout=aiohttp.ClientTimeout(total=self.config.timeout)
+                    self.config.url, ssl=self.config.ssl_verify, timeout=aiohttp.ClientTimeout(total=self.config.timeout)
                 ) as response:
                     return response.status < 500
             except Exception:

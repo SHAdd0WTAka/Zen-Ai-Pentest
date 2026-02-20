@@ -8,6 +8,7 @@ class TestAircrackFinal:
 
     def test_aircrack_import(self):
         from tools import aircrack_integration
+
         assert aircrack_integration is not None
 
 
@@ -16,6 +17,7 @@ class TestBloodhoundFinal:
 
     def test_bloodhound_import(self):
         from tools import bloodhound_integration
+
         assert bloodhound_integration is not None
 
 
@@ -24,6 +26,7 @@ class TestBurpSuiteFinal:
 
     def test_burpsuite_import(self):
         from tools import burpsuite_integration
+
         assert burpsuite_integration is not None
 
 
@@ -32,6 +35,7 @@ class TestCrackmapexecFinal:
 
     def test_crackmapexec_import(self):
         from tools import crackmapexec_integration
+
         assert crackmapexec_integration is not None
 
 
@@ -40,6 +44,7 @@ class TestHydraFinal:
 
     def test_hydra_import(self):
         from tools import hydra_integration
+
         assert hydra_integration is not None
 
 
@@ -48,6 +53,7 @@ class TestMetasploitFinal:
 
     def test_metasploit_import(self):
         from tools import metasploit_integration
+
         assert metasploit_integration is not None
 
 
@@ -56,6 +62,7 @@ class TestScapyFinal:
 
     def test_scapy_import(self):
         from tools import scapy_integration
+
         assert scapy_integration is not None
 
 
@@ -64,6 +71,7 @@ class TestSemgrepFinal:
 
     def test_semgrep_import(self):
         from tools import semgrep_integration
+
         assert semgrep_integration is not None
 
 
@@ -72,6 +80,7 @@ class TestTrivyFinal:
 
     def test_trivy_import(self):
         from tools import trivy_integration
+
         assert trivy_integration is not None
 
 
@@ -80,6 +89,7 @@ class TestTrufflehogFinal:
 
     def test_trufflehog_import(self):
         from tools import trufflehog_integration
+
         assert trufflehog_integration is not None
 
 
@@ -88,6 +98,7 @@ class TestZAPFinal:
 
     def test_zap_import(self):
         from tools import zap_integration
+
         assert zap_integration is not None
 
 
@@ -96,11 +107,13 @@ class TestToolRegistryFinal:
 
     def test_tool_registry_get_instance(self):
         from tools.tool_registry import ToolRegistry
+
         reg = ToolRegistry.get_instance()
         assert reg is not None
 
     def test_tool_registry_list_tools(self):
         from tools.tool_registry import ToolRegistry
+
         reg = ToolRegistry.get_instance()
         tools = reg.list_tools()
         assert isinstance(tools, list)
@@ -111,5 +124,6 @@ class TestToolCallerFinal:
 
     def test_tool_caller_creation(self):
         from tools.tool_caller import ToolCaller
+
         caller = ToolCaller()
         assert caller is not None

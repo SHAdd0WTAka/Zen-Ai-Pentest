@@ -7,11 +7,11 @@ Multi-layer caching with Redis/Memory support.
 import asyncio
 import hashlib
 import json
+import logging
 import time
-from typing import Any, Optional, Dict, Callable
 from dataclasses import dataclass
 from functools import wraps
-import logging
+from typing import Any, Callable, Dict, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class CacheConfig:
     """Cache configuration"""
+
     default_ttl: int = 300  # 5 minutes
     max_size: int = 10000
     cleanup_interval: int = 60
@@ -29,6 +30,7 @@ class CacheConfig:
 
 class CacheEntry:
     """Cache entry with metadata"""
+
     def __init__(self, value: Any, ttl: int):
         self.value = value
         self.created_at = time.time()
@@ -113,12 +115,7 @@ class CacheManager:
             self._hits += 1
             return entry.value
 
-    async def set(
-        self,
-        key: str,
-        value: Any,
-        ttl: Optional[int] = None
-    ) -> bool:
+    async def set(self, key: str, value: Any, ttl: Optional[int] = None) -> bool:
         """Set value in cache"""
         ttl = ttl or self.config.default_ttl
 
@@ -144,12 +141,7 @@ class CacheManager:
         async with self._lock:
             self._memory.clear()
 
-    async def get_or_set(
-        self,
-        key: str,
-        factory: Callable,
-        ttl: Optional[int] = None
-    ) -> Any:
+    async def get_or_set(self, key: str, factory: Callable, ttl: Optional[int] = None) -> Any:
         """Get or create cache entry"""
         value = await self.get(key)
         if value is not None:
@@ -161,42 +153,27 @@ class CacheManager:
 
     def cached(self, ttl: Optional[int] = None, key_prefix: str = ""):
         """Decorator for caching function results"""
+
         def decorator(func):
             @wraps(func)
             async def async_wrapper(*args, **kwargs):
                 cache_key = self._generate_key(key_prefix, func, args, kwargs)
-                return await self.get_or_set(
-                    cache_key,
-                    lambda: func(*args, **kwargs),
-                    ttl
-                )
+                return await self.get_or_set(cache_key, lambda: func(*args, **kwargs), ttl)
 
             @wraps(func)
             def sync_wrapper(*args, **kwargs):
                 cache_key = self._generate_key(key_prefix, func, args, kwargs)
                 # For sync functions, use run_in_executor
                 loop = asyncio.get_event_loop()
-                return loop.run_until_complete(
-                    self.get_or_set(cache_key, lambda: func(*args, **kwargs), ttl)
-                )
+                return loop.run_until_complete(self.get_or_set(cache_key, lambda: func(*args, **kwargs), ttl))
 
             return async_wrapper if asyncio.iscoroutinefunction(func) else sync_wrapper
+
         return decorator
 
-    def _generate_key(
-        self,
-        prefix: str,
-        func: Callable,
-        args: tuple,
-        kwargs: dict
-    ) -> str:
+    def _generate_key(self, prefix: str, func: Callable, args: tuple, kwargs: dict) -> str:
         """Generate cache key from function call"""
-        key_data = {
-            "prefix": prefix,
-            "func": func.__name__,
-            "args": args,
-            "kwargs": kwargs
-        }
+        key_data = {"prefix": prefix, "func": func.__name__, "args": args, "kwargs": kwargs}
         key_str = json.dumps(key_data, sort_keys=True, default=str)
         hash_key = hashlib.md5(key_str.encode()).hexdigest()
         return f"{prefix}:{func.__name__}:{hash_key}"
@@ -206,10 +183,7 @@ class CacheManager:
         if not self._memory:
             return
 
-        lru_key = min(
-            self._memory.keys(),
-            key=lambda k: self._memory[k].last_accessed
-        )
+        lru_key = min(self._memory.keys(), key=lambda k: self._memory[k].last_accessed)
         del self._memory[lru_key]
         self._evictions += 1
 
@@ -227,10 +201,7 @@ class CacheManager:
     async def _cleanup_expired(self):
         """Remove expired entries"""
         async with self._lock:
-            expired = [
-                k for k, v in self._memory.items()
-                if v.is_expired()
-            ]
+            expired = [k for k, v in self._memory.items() if v.is_expired()]
             for k in expired:
                 del self._memory[k]
 
@@ -250,5 +221,5 @@ class CacheManager:
             "sets": self._sets,
             "evictions": self._evictions,
             "hit_rate": round(hit_rate, 2),
-            "memory_usage_mb": len(self._memory) * 0.001  # Rough estimate
+            "memory_usage_mb": len(self._memory) * 0.001,  # Rough estimate
         }

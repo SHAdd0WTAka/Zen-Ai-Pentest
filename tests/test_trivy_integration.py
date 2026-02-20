@@ -6,24 +6,24 @@ including unit tests with mocked subprocess calls.
 
 import asyncio
 import json
-import pytest
 from unittest.mock import Mock, patch
+
+import pytest
 
 # Import the module under test
 from tools.trivy_integration import (
-    TrivyScanner,
-    TrivyVulnerability,
     TrivyMisconfiguration,
-    TrivySecret,
     TrivyResult,
-    TrivyScanTarget,
+    TrivyScanner,
     TrivyScannerType,
-    trivy_scan_image,
-    trivy_scan_filesystem,
-    trivy_scan_dockerfile,
+    TrivyScanTarget,
+    TrivySecret,
+    TrivyVulnerability,
     trivy_generate_sbom,
+    trivy_scan_dockerfile,
+    trivy_scan_filesystem,
+    trivy_scan_image,
 )
-
 
 # Sample Trivy JSON output for testing
 SAMPLE_TRIVY_VULN_OUTPUT = {
@@ -387,9 +387,7 @@ class TestCommandBuilding:
     def test_build_command_with_scanners(self, mock_which):
         """Test command with multiple scanners"""
         mock_which.return_value = "/usr/bin/trivy"
-        scanner = TrivyScanner(
-            scanners=[TrivyScannerType.VULNERABILITY, TrivyScannerType.MISCONFIGURATION]
-        )
+        scanner = TrivyScanner(scanners=[TrivyScannerType.VULNERABILITY, TrivyScannerType.MISCONFIGURATION])
         cmd = scanner._build_command(TrivyScanTarget.FILESYSTEM, ".")
 
         assert "--scanners" in cmd

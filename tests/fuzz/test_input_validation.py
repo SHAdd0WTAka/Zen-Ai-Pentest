@@ -6,12 +6,16 @@ to ensure proper validation and error handling.
 """
 
 import sys
-from hypothesis import given, strategies as st, settings
+
 import pytest
+from hypothesis import given, settings
+from hypothesis import strategies as st
 
 # Skip if hypothesis not installed
 try:
-    from hypothesis import given, strategies as st
+    from hypothesis import given
+    from hypothesis import strategies as st
+
     HYPOTHESIS_AVAILABLE = True
 except ImportError:
     HYPOTHESIS_AVAILABLE = False
@@ -52,10 +56,7 @@ class TestInputValidation:
     def test_complex_data_structures(self, list_data, dict_data):
         """Test handling of complex nested structures."""
         # Should handle without crashes
-        combined = {
-            "list": list_data,
-            "dict": dict_data
-        }
+        combined = {"list": list_data, "dict": dict_data}
         assert isinstance(combined, dict)
         assert "list" in combined
         assert "dict" in combined
@@ -64,10 +65,7 @@ class TestInputValidation:
 class TestAPISchemaValidation:
     """Test API schema validation."""
 
-    @given(st.dictionaries(
-        st.text(min_size=1, max_size=50),
-        st.one_of(st.text(), st.integers(), st.booleans())
-    ))
+    @given(st.dictionaries(st.text(min_size=1, max_size=50), st.one_of(st.text(), st.integers(), st.booleans())))
     @settings(max_examples=50, deadline=1000)
     def test_json_payload_handling(self, payload):
         """Test JSON payload handling."""
@@ -91,8 +89,8 @@ class TestURLValidation:
     def test_url_like_strings(self, url_string):
         """Test URL-like string handling."""
         # Should not crash on URL parsing attempts
-        if url_string.startswith(('http://', 'https://')):
-            assert '://' in url_string
+        if url_string.startswith(("http://", "https://")):
+            assert "://" in url_string
 
 
 def run_fuzz_tests():
@@ -102,11 +100,8 @@ def run_fuzz_tests():
         return 0
 
     import subprocess
-    result = subprocess.run(
-        [sys.executable, "-m", "pytest", __file__, "-v"],
-        capture_output=True,
-        text=True
-    )
+
+    result = subprocess.run([sys.executable, "-m", "pytest", __file__, "-v"], capture_output=True, text=True)
     print(result.stdout)
     if result.stderr:
         print(result.stderr, file=sys.stderr)

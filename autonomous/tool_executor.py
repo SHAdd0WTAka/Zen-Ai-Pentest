@@ -6,13 +6,13 @@ Executes actual security tools (nmap, nuclei, sqlmap, etc.) in sandboxed environ
 
 import asyncio
 import logging
+import shlex
 import subprocess
 import tempfile
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional, Callable
-import shlex
+from typing import Any, Callable, Dict, List, Optional
 
 
 class SafetyLevel(Enum):

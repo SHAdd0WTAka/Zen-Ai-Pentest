@@ -4,12 +4,12 @@ Dependency Injection Container
 Manages dependencies between components using DI pattern.
 """
 
-from typing import Dict, Any, Type, TypeVar, Optional, Callable
 import logging
+from typing import Any, Callable, Dict, Optional, Type, TypeVar
 
 logger = logging.getLogger(__name__)
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 class DependencyContainer:
@@ -49,12 +49,7 @@ class DependencyContainer:
         self._singletons[name] = instance
         logger.debug(f"Registered instance: {name}")
 
-    def register_factory(
-        self,
-        name: str,
-        factory: Callable[[], T],
-        singleton: bool = True
-    ) -> None:
+    def register_factory(self, name: str, factory: Callable[[], T], singleton: bool = True) -> None:
         """
         Register a factory function
 
@@ -63,19 +58,10 @@ class DependencyContainer:
             factory: Factory function
             singleton: Whether to cache the result
         """
-        self._factories[name] = {
-            "factory": factory,
-            "singleton": singleton
-        }
+        self._factories[name] = {"factory": factory, "singleton": singleton}
         logger.debug(f"Registered factory: {name} (singleton={singleton})")
 
-    def register_class(
-        self,
-        name: str,
-        cls: Type[T],
-        singleton: bool = True,
-        **kwargs
-    ) -> None:
+    def register_class(self, name: str, cls: Type[T], singleton: bool = True, **kwargs) -> None:
         """
         Register a class for automatic instantiation
 
@@ -85,6 +71,7 @@ class DependencyContainer:
             singleton: Whether to cache the instance
             **kwargs: Constructor arguments
         """
+
         def factory():
             return cls(**kwargs)
 

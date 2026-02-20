@@ -4,17 +4,18 @@ Performance Metrics Collection
 Tracks and reports performance metrics.
 """
 
+import statistics
 import time
-from typing import Dict, Any, Optional
+from collections import deque
 from dataclasses import dataclass, field
 from datetime import datetime
-from collections import deque
-import statistics
+from typing import Any, Dict, Optional
 
 
 @dataclass
 class MetricSample:
     """Single metric sample"""
+
     timestamp: datetime
     value: float
     labels: Dict[str, str] = field(default_factory=dict)
@@ -36,21 +37,12 @@ class PerformanceMetrics:
         self._metrics: Dict[str, deque] = {}
         self._counters: Dict[str, int] = {}
 
-    def record(
-        self,
-        name: str,
-        value: float,
-        labels: Optional[Dict[str, str]] = None
-    ):
+    def record(self, name: str, value: float, labels: Optional[Dict[str, str]] = None):
         """Record a metric sample"""
         if name not in self._metrics:
             self._metrics[name] = deque(maxlen=self.max_samples)
 
-        sample = MetricSample(
-            timestamp=datetime.utcnow(),
-            value=value,
-            labels=labels or {}
-        )
+        sample = MetricSample(timestamp=datetime.utcnow(), value=value, labels=labels or {})
 
         self._metrics[name].append(sample)
 
@@ -72,15 +64,12 @@ class PerformanceMetrics:
             "max": max(values),
             "mean": statistics.mean(values),
             "median": statistics.median(values),
-            "stdev": statistics.stdev(values) if len(values) > 1 else 0
+            "stdev": statistics.stdev(values) if len(values) > 1 else 0,
         }
 
     def get_all_stats(self) -> Dict[str, Dict[str, Any]]:
         """Get statistics for all metrics"""
-        return {
-            name: self.get_stats(name)
-            for name in self._metrics.keys()
-        }
+        return {name: self.get_stats(name) for name in self._metrics.keys()}
 
     def get_counters(self) -> Dict[str, int]:
         """Get all counters"""
@@ -95,12 +84,7 @@ class PerformanceMetrics:
 class TimingContext:
     """Context manager for timing operations"""
 
-    def __init__(
-        self,
-        metrics: PerformanceMetrics,
-        name: str,
-        labels: Optional[Dict[str, str]] = None
-    ):
+    def __init__(self, metrics: PerformanceMetrics, name: str, labels: Optional[Dict[str, str]] = None):
         self.metrics = metrics
         self.name = name
         self.labels = labels

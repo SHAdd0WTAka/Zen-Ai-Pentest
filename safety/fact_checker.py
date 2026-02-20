@@ -2,10 +2,10 @@
 Fact Checker - Verify claims against known data sources
 """
 
-from typing import Dict, List, Any, Optional
+import re
 from dataclasses import dataclass
 from enum import Enum
-import re
+from typing import Any, Dict, List, Optional
 
 
 class FactCheckStatus(Enum):

@@ -5,29 +5,31 @@ Comprehensive tests for MemoryCache, SQLiteCache, RedisCache, and MultiTierCache
 """
 
 import asyncio
-import pytest
 import tempfile
 from pathlib import Path
 from unittest.mock import patch
 
+import pytest
+
 # Mock redis before importing cache
 import core.cache as cache_module
+
 cache_module.REDIS_AVAILABLE = False
 
 from core.cache import (
     CacheBackend,
     MemoryCache,
-    SQLiteCache,
     MultiTierCache,
-    generate_cache_key,
-    cached,
-    get_cached_cve,
-    cache_cve,
+    SQLiteCache,
     _get_cache_backend,
+    cache_cve,
+    cached,
+    generate_cache_key,
+    get_cached_cve,
 )
 
-
 # ==================== Test Fixtures ====================
+
 
 @pytest.fixture
 def temp_db_path():
@@ -57,6 +59,7 @@ async def sqlite_cache(temp_db_path):
 
 
 # ==================== MemoryCache Tests ====================
+
 
 class TestMemoryCache:
     """Test MemoryCache functionality"""
@@ -232,6 +235,7 @@ class TestMemoryCache:
 
 # ==================== SQLiteCache Tests ====================
 
+
 class TestSQLiteCache:
     """Test SQLiteCache functionality"""
 
@@ -354,6 +358,7 @@ class TestSQLiteCache:
 
 # ==================== MultiTierCache Tests ====================
 
+
 class TestMultiTierCache:
     """Test MultiTierCache functionality"""
 
@@ -368,7 +373,7 @@ class TestMultiTierCache:
         result1 = await cache.get("key1")
 
         # Second get - still from L1
-        result2 = await cache.get("key1")
+        await cache.get("key1")
 
         assert result1 == "value2" or result1 == "value1"  # May be promoted
         await cache.close()
@@ -449,6 +454,7 @@ class TestMultiTierCache:
 
 # ==================== Utility Function Tests ====================
 
+
 class TestCacheUtilities:
     """Test cache utility functions"""
 
@@ -510,18 +516,14 @@ class TestCacheUtilities:
 
 # ==================== CVE Cache Tests ====================
 
+
 class TestCVECache:
     """Test CVE-specific cache functions"""
 
     @pytest.mark.asyncio
     async def test_cache_and_get_cve(self):
         """Test caching and retrieving CVE data"""
-        cve_data = {
-            "id": "CVE-2023-1234",
-            "severity": "HIGH",
-            "cvss": 8.5,
-            "description": "Test CVE"
-        }
+        cve_data = {"id": "CVE-2023-1234", "severity": "HIGH", "cvss": 8.5, "description": "Test CVE"}
 
         await cache_cve("CVE-2023-1234", cve_data)
         result = await get_cached_cve("CVE-2023-1234")
@@ -547,6 +549,7 @@ class TestCVECache:
 
 
 # ==================== Decorator Tests ====================
+
 
 class TestCachedDecorator:
     """Test cached decorator functionality"""
@@ -610,6 +613,7 @@ class TestCachedDecorator:
 
 # ==================== Abstract Class Tests ====================
 
+
 class TestCacheBackend:
     """Test CacheBackend abstract class"""
 
@@ -621,6 +625,7 @@ class TestCacheBackend:
     @pytest.mark.asyncio
     async def test_cache_backend_methods_raise(self):
         """Test that base methods raise NotImplementedError"""
+
         class IncompleteBackend(CacheBackend):
             pass
 
@@ -644,15 +649,17 @@ class TestCacheBackend:
 
 # ==================== Redis Cache Tests (Mocked) ====================
 
+
 class TestRedisCache:
     """Test RedisCache functionality with mocked redis"""
 
     @pytest.mark.asyncio
     async def test_redis_not_available(self):
         """Test RedisCache when redis not available"""
-        with patch.object(cache_module, 'REDIS_AVAILABLE', False):
+        with patch.object(cache_module, "REDIS_AVAILABLE", False):
             with pytest.raises(ImportError, match="redis not installed"):
                 from core.cache import RedisCache
+
                 RedisCache()
 
     @pytest.mark.asyncio
@@ -669,6 +676,7 @@ class TestRedisCache:
 
 
 # ==================== Error Handling Tests ====================
+
 
 class TestCacheErrorHandling:
     """Test error handling in cache operations"""

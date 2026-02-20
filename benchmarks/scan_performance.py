@@ -5,15 +5,14 @@ Measures scan throughput, target processing speed, and tool execution times.
 """
 
 import asyncio
-from typing import List, Dict, Any, Optional, Callable
-from dataclasses import dataclass
-
 import sys
+from dataclasses import dataclass
 from pathlib import Path
+from typing import Any, Callable, Dict, List, Optional
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from modules.benchmark import BenchmarkRunner, BenchmarkResult, BenchmarkCategory, ThroughputMetrics, measure_scan_throughput
+from modules.benchmark import BenchmarkCategory, BenchmarkResult, BenchmarkRunner, ThroughputMetrics, measure_scan_throughput
 
 
 @dataclass

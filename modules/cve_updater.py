@@ -8,13 +8,14 @@ Fetches and updates CVE data from NVD (National Vulnerability Database)
 
 import asyncio
 import json
-import os
-from typing import Dict, List, Optional
-from datetime import datetime, timedelta
-from dataclasses import dataclass, asdict
-import aiohttp
-import aiofiles
 import logging
+import os
+from dataclasses import asdict, dataclass
+from datetime import datetime, timedelta
+from typing import Dict, List, Optional
+
+import aiofiles
+import aiohttp
 
 
 @dataclass

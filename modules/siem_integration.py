@@ -9,8 +9,9 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Dict, List, Optional
-import requests
 from urllib.parse import urljoin
+
+import requests
 
 logger = logging.getLogger(__name__)
 
@@ -269,9 +270,9 @@ class AzureSentinelConnector(BaseSIEMConnector):
 
     def _build_auth_header(self) -> Dict[str, str]:
         """Build Azure API authentication header"""
-        import hmac
-        import hashlib
         import base64
+        import hashlib
+        import hmac
 
         date = datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S GMT")
         string_to_hash = f"POST\n{len('')}\napplication/json\nx-ms-date:{date}\n/api/logs"

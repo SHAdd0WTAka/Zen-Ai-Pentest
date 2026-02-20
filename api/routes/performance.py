@@ -5,6 +5,7 @@ Endpoints for cache management and performance monitoring.
 """
 
 from typing import Optional
+
 from fastapi import APIRouter, Depends, HTTPException
 
 # Import performance components
@@ -13,6 +14,7 @@ try:
     from performance.pool import PoolManager
 except ImportError:
     import sys
+
     sys.path.insert(0, "../..")
     from performance import CacheManager
     from performance.pool import PoolManager
@@ -43,28 +45,22 @@ def get_pool_manager() -> PoolManager:
 
 # Cache endpoints
 
+
 @router.get("/cache/stats")
-async def get_cache_stats(
-    cache: CacheManager = Depends(get_cache)
-):
+async def get_cache_stats(cache: CacheManager = Depends(get_cache)):
     """Get cache statistics"""
     return cache.get_stats()
 
 
 @router.delete("/cache")
-async def clear_cache(
-    cache: CacheManager = Depends(get_cache)
-):
+async def clear_cache(cache: CacheManager = Depends(get_cache)):
     """Clear all cache"""
     await cache.clear()
     return {"cleared": True}
 
 
 @router.delete("/cache/{key}")
-async def delete_cache_key(
-    key: str,
-    cache: CacheManager = Depends(get_cache)
-):
+async def delete_cache_key(key: str, cache: CacheManager = Depends(get_cache)):
     """Delete specific cache key"""
     success = await cache.delete(key)
     return {"deleted": success}
@@ -72,19 +68,15 @@ async def delete_cache_key(
 
 # Pool endpoints
 
+
 @router.get("/pools/stats")
-async def get_pool_stats(
-    pool_manager: PoolManager = Depends(get_pool_manager)
-):
+async def get_pool_stats(pool_manager: PoolManager = Depends(get_pool_manager)):
     """Get connection pool statistics"""
     return pool_manager.get_all_stats()
 
 
 @router.get("/pools/{name}/stats")
-async def get_pool_stats_by_name(
-    name: str,
-    pool_manager: PoolManager = Depends(get_pool_manager)
-):
+async def get_pool_stats_by_name(name: str, pool_manager: PoolManager = Depends(get_pool_manager)):
     """Get specific pool statistics"""
     pool = pool_manager.get(name)
     if not pool:
@@ -93,10 +85,7 @@ async def get_pool_stats_by_name(
 
 
 @router.post("/pools/{name}/cleanup")
-async def cleanup_pool(
-    name: str,
-    pool_manager: PoolManager = Depends(get_pool_manager)
-):
+async def cleanup_pool(name: str, pool_manager: PoolManager = Depends(get_pool_manager)):
     """Clean up idle connections in pool"""
     pool = pool_manager.get(name)
     if not pool:
@@ -108,14 +97,11 @@ async def cleanup_pool(
 
 # Performance optimization endpoints
 
+
 @router.get("/health/detailed")
 async def detailed_health_check():
     """Detailed performance health check"""
     return {
         "status": "healthy",
-        "components": {
-            "cache": "operational",
-            "pools": "operational",
-            "async_optimizer": "operational"
-        }
+        "components": {"cache": "operational", "pools": "operational", "async_optimizer": "operational"},
     }

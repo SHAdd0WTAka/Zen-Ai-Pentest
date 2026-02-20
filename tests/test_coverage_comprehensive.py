@@ -3,30 +3,32 @@ Comprehensive Test Suite for Maximum Coverage
 Tests for all tools, modules, and edge cases
 """
 
-import pytest
 import asyncio
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
+
+import pytest
 
 # ============================================================================
 # TOOL INTEGRATION TESTS
 # ============================================================================
+
 
 class TestToolBaseFunctionality:
     """Base tests that apply to all tools"""
 
     def test_all_tools_have_async_support(self):
         """Verify all new tools have async methods"""
-        from tools.ffuf_integration_enhanced import FFuFIntegration
-        from tools.whatweb_integration import WhatWebIntegration
-        from tools.wafw00f_integration import WAFW00FIntegration
-        from tools.subfinder_integration import SubfinderIntegration
-        from tools.httpx_integration import HTTPXIntegration
-        from tools.nikto_integration import NiktoIntegration
-        from tools.masscan_integration import MasscanIntegration
         from tools.amass_integration import AmassIntegration
-        from tools.sherlock_integration import SherlockIntegration
+        from tools.ffuf_integration_enhanced import FFuFIntegration
+        from tools.httpx_integration import HTTPXIntegration
         from tools.ignorant_integration import IgnorantIntegration
+        from tools.masscan_integration import MasscanIntegration
+        from tools.nikto_integration import NiktoIntegration
+        from tools.sherlock_integration import SherlockIntegration
+        from tools.subfinder_integration import SubfinderIntegration
         from tools.tshark_integration import TSharkIntegration
+        from tools.wafw00f_integration import WAFW00FIntegration
+        from tools.whatweb_integration import WhatWebIntegration
 
         tools = [
             FFuFIntegration(),
@@ -44,7 +46,7 @@ class TestToolBaseFunctionality:
 
         for tool in tools:
             # Check that tool has async methods
-            methods = [m for m in dir(tool) if not m.startswith('_')]
+            methods = [m for m in dir(tool) if not m.startswith("_")]
             async_methods = [m for m in methods if asyncio.iscoroutinefunction(getattr(tool, m, None))]
             assert len(async_methods) > 0, f"{tool.__class__.__name__} should have async methods"
 
@@ -55,23 +57,19 @@ class TestFFuFComprehensive:
     @pytest.fixture
     def ffuf(self):
         from tools.ffuf_integration_enhanced import FFuFIntegration
+
         return FFuFIntegration()
 
     def test_initialization_default_values(self, ffuf):
         """Test FFuF initializes with correct defaults"""
         assert ffuf.wordlist_dir is not None
-        assert 'directories' in ffuf.default_wordlists
+        assert "directories" in ffuf.default_wordlists
 
     def test_ffuf_finding_dataclass_defaults(self):
         """Test FFuFFinding dataclass with defaults"""
         from tools.ffuf_integration_enhanced import FFuFFinding
-        finding = FFuFFinding(
-            url="http://test.com",
-            status_code=200,
-            content_length=0,
-            content_words=0,
-            content_lines=0
-        )
+
+        finding = FFuFFinding(url="http://test.com", status_code=200, content_length=0, content_words=0, content_lines=0)
         assert finding.content_length == 0
         assert finding.content_words == 0
         assert finding.redirect_location == ""
@@ -79,6 +77,7 @@ class TestFFuFComprehensive:
     def test_ffuf_result_with_error(self):
         """Test FFuFResult with error state"""
         from tools.ffuf_integration_enhanced import FFuFResult
+
         result = FFuFResult(success=False, error="Test error", command="test")
         assert result.success is False
         assert result.error == "Test error"
@@ -91,12 +90,9 @@ class TestWhatWebComprehensive:
     def test_technology_dataclass_all_fields(self):
         """Test Technology dataclass with all fields"""
         from tools.whatweb_integration import Technology
+
         tech = Technology(
-            name="Apache",
-            version="2.4.7",
-            confidence=100,
-            category="Web Server",
-            description="Apache HTTP Server"
+            name="Apache", version="2.4.7", confidence=100, category="Web Server", description="Apache HTTP Server"
         )
         assert tech.name == "Apache"
         assert tech.confidence == 100
@@ -104,6 +100,7 @@ class TestWhatWebComprehensive:
     def test_categorize_all_known_technologies(self):
         """Test categorization of all known technologies"""
         from tools.whatweb_integration import WhatWebIntegration
+
         whatweb = WhatWebIntegration()
 
         known_techs = {
@@ -122,6 +119,7 @@ class TestWhatWebComprehensive:
     def test_clean_ansi_with_various_codes(self):
         """Test ANSI cleaning with various escape codes"""
         from tools.whatweb_integration import WhatWebIntegration
+
         whatweb = WhatWebIntegration()
 
         test_cases = [
@@ -142,6 +140,7 @@ class TestWAFW00FComprehensive:
     def test_waf_finding_defaults(self):
         """Test WAFFinding with default values"""
         from tools.wafw00f_integration import WAFFinding
+
         waf = WAFFinding(name="Cloudflare")
         assert waf.manufacturer == ""
         assert waf.detected is False
@@ -149,22 +148,14 @@ class TestWAFW00FComprehensive:
 
     def test_waf_result_various_states(self):
         """Test WAFW00FResult in various states"""
-        from tools.wafw00f_integration import WAFW00FResult, WAFFinding
+        from tools.wafw00f_integration import WAFFinding, WAFW00FResult
 
         # No WAF detected
-        result1 = WAFW00FResult(
-            success=True,
-            firewall_detected=False,
-            wafs=[]
-        )
+        result1 = WAFW00FResult(success=True, firewall_detected=False, wafs=[])
         assert result1.firewall_detected is False
 
         # WAF detected
-        result2 = WAFW00FResult(
-            success=True,
-            firewall_detected=True,
-            wafs=[WAFFinding(name="Cloudflare")]
-        )
+        result2 = WAFW00FResult(success=True, firewall_detected=True, wafs=[WAFFinding(name="Cloudflare")])
         assert result2.firewall_detected is True
 
 
@@ -174,6 +165,7 @@ class TestOSINTToolsComprehensive:
     def test_sherlock_result_empty(self):
         """Test SherlockResult with empty results"""
         from tools.sherlock_integration import SherlockResult
+
         result = SherlockResult(username="test")
         assert result.found_sites == []
         assert result.total_sites == 0
@@ -181,13 +173,14 @@ class TestOSINTToolsComprehensive:
     def test_ignorant_check_dataclass(self):
         """Test IgnorantCheck dataclass"""
         from tools.ignorant_integration import IgnorantCheck
+
         check = IgnorantCheck(platform="github", exists=True, url="https://github.com/test")
         assert check.platform == "github"
         assert check.exists is True
 
     def test_ignorant_result_with_found_platforms(self):
         """Test IgnorantResult with found platforms"""
-        from tools.ignorant_integration import IgnorantResult, IgnorantCheck
+        from tools.ignorant_integration import IgnorantCheck, IgnorantResult
 
         found = [
             IgnorantCheck(platform="github", exists=True),
@@ -200,7 +193,7 @@ class TestOSINTToolsComprehensive:
             domain="example.com",
             found_platforms=found,
             total_checked=120,
-            success=True
+            success=True,
         )
 
         assert len(result.found_platforms) == 2
@@ -213,17 +206,15 @@ class TestNetworkToolsComprehensive:
     def test_tshark_host_dataclass(self):
         """Test TSharkHost dataclass"""
         from tools.tshark_integration import TSharkHost
-        host = TSharkHost(
-            ip="192.168.1.1",
-            mac="00:11:22:33:44:55",
-            hostname="router.local"
-        )
+
+        host = TSharkHost(ip="192.168.1.1", mac="00:11:22:33:44:55", hostname="router.local")
         assert host.ip == "192.168.1.1"
         assert host.ports == []
 
     def test_tshark_protocol_dataclass(self):
         """Test TSharkProtocol dataclass"""
         from tools.tshark_integration import TSharkProtocol
+
         proto = TSharkProtocol(name="TCP", count=100, percentage=45.5)
         assert proto.name == "TCP"
         assert proto.percentage == 45.5
@@ -231,6 +222,7 @@ class TestNetworkToolsComprehensive:
     def test_masscan_port_dataclass(self):
         """Test MasscanPort dataclass"""
         from tools.masscan_integration import MasscanPort
+
         port = MasscanPort(port=80, ip="192.168.1.1")
         assert port.port == 80
         assert port.protocol == "tcp"
@@ -241,12 +233,14 @@ class TestNetworkToolsComprehensive:
 # MODULE TESTS
 # ============================================================================
 
+
 class TestEnhancedReconModuleComprehensive:
     """Comprehensive Enhanced Recon Module tests"""
 
     @pytest.fixture
     def recon(self):
         from modules.enhanced_recon import EnhancedReconModule
+
         return EnhancedReconModule()
 
     def test_module_initialization(self, recon):
@@ -257,13 +251,8 @@ class TestEnhancedReconModuleComprehensive:
 
     def test_technology_detection_returns_expected_structure(self, recon):
         """Test technology_detection returns correct structure"""
-        with patch.object(recon.whatweb, 'scan') as mock_scan:
-            mock_scan.return_value = MagicMock(
-                success=True,
-                technologies=[],
-                headers={},
-                error=None
-            )
+        with patch.object(recon.whatweb, "scan") as mock_scan:
+            mock_scan.return_value = MagicMock(success=True, technologies=[], headers={}, error=None)
 
             result = recon.technology_detection("test.com")
 
@@ -278,6 +267,7 @@ class TestOSINTSuperModuleComprehensive:
     @pytest.fixture
     def osint(self):
         from modules.osint_super import OSINTSuperModule
+
         return OSINTSuperModule()
 
     def test_osint_module_initialization(self, osint):
@@ -293,10 +283,7 @@ class TestOSINTSuperModuleComprehensive:
         from modules.osint_super import OSINTSuperResult
 
         result = OSINTSuperResult(
-            target="testuser",
-            target_type="username",
-            timestamp="2024-01-01",
-            social_media={"total_found": 10}
+            target="testuser", target_type="username", timestamp="2024-01-01", social_media={"total_found": 10}
         )
 
         summary = osint._generate_username_summary(result)
@@ -314,7 +301,7 @@ class TestOSINTSuperModuleComprehensive:
             target_type="email",
             timestamp="2024-01-01",
             email_check={"total_found": 5},
-            social_media={"total_found": 3}
+            social_media={"total_found": 3},
         )
 
         summary = osint._generate_email_summary(result)
@@ -327,12 +314,7 @@ class TestOSINTSuperModuleComprehensive:
         """Test domain summary generation"""
         from modules.osint_super import OSINTSuperResult
 
-        result = OSINTSuperResult(
-            target="test.com",
-            target_type="domain",
-            timestamp="2024-01-01",
-            subdomains={"total": 50}
-        )
+        result = OSINTSuperResult(target="test.com", target_type="domain", timestamp="2024-01-01", subdomains={"total": 50})
 
         summary = osint._generate_domain_summary(result)
 
@@ -347,6 +329,7 @@ class TestSuperScannerComprehensive:
     @pytest.fixture
     def scanner(self):
         from modules.super_scanner import SuperScanner
+
         return SuperScanner()
 
     def test_scanner_initialization(self, scanner):
@@ -372,7 +355,7 @@ class TestSuperScannerComprehensive:
             port_scan={"ports": [80]},
             directories={"total_found": 2},
             vulnerabilities={"total": 0},
-            http_probe={"live_hosts": 1}
+            http_probe={"live_hosts": 1},
         )
 
         summary_low = scanner._generate_summary(result_low)
@@ -387,7 +370,7 @@ class TestSuperScannerComprehensive:
             port_scan={"ports": [80, 443, 22, 21, 3306]},
             directories={"total_found": 20},
             vulnerabilities={"total": 10},
-            http_probe={"live_hosts": 5}
+            http_probe={"live_hosts": 5},
         )
 
         summary_high = scanner._generate_summary(result_high)
@@ -397,6 +380,7 @@ class TestSuperScannerComprehensive:
 # ============================================================================
 # EDGE CASE TESTS
 # ============================================================================
+
 
 class TestEdgeCases:
     """Edge case tests for robustness"""
@@ -434,6 +418,7 @@ class TestEdgeCases:
 # INTEGRATION TESTS
 # ============================================================================
 
+
 class TestToolIntegrations:
     """Integration tests between tools"""
 
@@ -442,12 +427,7 @@ class TestToolIntegrations:
         from tools.subfinder_integration import SubfinderResult
 
         # Subfinder finds subdomains
-        subdomains = SubfinderResult(
-            success=True,
-            domain="test.com",
-            subdomains=["www.test.com", "api.test.com"],
-            count=2
-        )
+        subdomains = SubfinderResult(success=True, domain="test.com", subdomains=["www.test.com", "api.test.com"], count=2)
 
         # These would be passed to HTTPX
         targets = subdomains.subdomains

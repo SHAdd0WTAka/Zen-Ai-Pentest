@@ -1,11 +1,12 @@
 """
 Extended Database Tests
 """
+
 import pytest
 
-
 try:
-    from database.models import User, Scan, Finding, Report, ScanStatus, Severity, Base
+    from database.models import Base, Finding, Report, Scan, ScanStatus, Severity, User
+
     DB_AVAILABLE = True
 except ImportError:
     DB_AVAILABLE = False
@@ -16,13 +17,7 @@ class TestUserExtended:
     """Erweiterte User Tests"""
 
     def test_user_creation_all_fields(self):
-        user = User(
-            username="testuser",
-            email="test@test.com",
-            hashed_password="hash123",
-            role="admin",
-            is_active=True
-        )
+        user = User(username="testuser", email="test@test.com", hashed_password="hash123", role="admin", is_active=True)
         assert user.username == "testuser"
         assert user.email == "test@test.com"
         assert user.role == "admin"
@@ -35,7 +30,7 @@ class TestUserExtended:
     def test_user_default_role(self):
         user = User(username="test")
         # Role sollte default haben
-        assert hasattr(user, 'role')
+        assert hasattr(user, "role")
 
 
 @pytest.mark.skipif(not DB_AVAILABLE, reason="Database not available")
@@ -44,23 +39,19 @@ class TestScanExtended:
 
     def test_scan_all_fields(self):
         scan = Scan(
-            target="example.com",
-            scan_type="network",
-            name="Test Scan",
-            config={"ports": "80,443"},
-            status=ScanStatus.PENDING
+            target="example.com", scan_type="network", name="Test Scan", config={"ports": "80,443"}, status=ScanStatus.PENDING
         )
         assert scan.target == "example.com"
         assert scan.name == "Test Scan"
 
     def test_scan_timestamps(self):
         scan = Scan(target="test.com")
-        assert hasattr(scan, 'created_at')
+        assert hasattr(scan, "created_at")
 
     def test_scan_relationships(self):
         scan = Scan(target="test.com")
-        assert hasattr(scan, 'findings')
-        assert hasattr(scan, 'reports')
+        assert hasattr(scan, "findings")
+        assert hasattr(scan, "reports")
 
 
 @pytest.mark.skipif(not DB_AVAILABLE, reason="Database not available")
@@ -79,14 +70,14 @@ class TestFindingExtended:
             tool="SQLMap",
             target="http://test.com/login",
             port=80,
-            service="http"
+            service="http",
         )
         assert finding.title == "SQL Injection"
         assert finding.cvss_score == 8.5
 
     def test_finding_timestamps(self):
         finding = Finding(title="Test")
-        assert hasattr(finding, 'created_at')
+        assert hasattr(finding, "created_at")
 
 
 @pytest.mark.skipif(not DB_AVAILABLE, reason="Database not available")
@@ -94,17 +85,13 @@ class TestReportExtended:
     """Erweiterte Report Tests"""
 
     def test_report_all_fields(self):
-        report = Report(
-            format="pdf",
-            status="completed",
-            file_path="/tmp/report.pdf"
-        )
+        report = Report(format="pdf", status="completed", file_path="/tmp/report.pdf")
         assert report.format == "pdf"
         assert report.file_path == "/tmp/report.pdf"
 
     def test_report_timestamps(self):
         report = Report(format="html")
-        assert hasattr(report, 'created_at')
+        assert hasattr(report, "created_at")
 
 
 @pytest.mark.skipif(not DB_AVAILABLE, reason="Database not available")

@@ -5,16 +5,15 @@ Measures agent decision-making time, ReAct loop iterations, and tool selection s
 """
 
 import asyncio
-from typing import List, Dict, Any, Optional, Callable
+import sys
 from dataclasses import dataclass
 from enum import Enum
-
-import sys
 from pathlib import Path
+from typing import Any, Callable, Dict, List, Optional
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from modules.benchmark import BenchmarkRunner, BenchmarkResult, BenchmarkCategory
+from modules.benchmark import BenchmarkCategory, BenchmarkResult, BenchmarkRunner
 
 
 class AgentTaskType(Enum):
@@ -223,9 +222,7 @@ class AgentPerformanceBenchmark:
         result.custom_metrics["memory_per_100_context"] = (
             result.memory.peak_mb / 10
             if cfg.complexity == "complex"
-            else result.memory.peak_mb / 5
-            if cfg.complexity == "medium"
-            else result.memory.peak_mb
+            else result.memory.peak_mb / 5 if cfg.complexity == "medium" else result.memory.peak_mb
         )
 
         return result
@@ -337,9 +334,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     async def main():
-        _ = AgentBenchmarkConfig(  # TODO: Use config
-            iterations=args.iterations, complexity=args.complexity
-        )
+        _ = AgentBenchmarkConfig(iterations=args.iterations, complexity=args.complexity)  # TODO: Use config
 
         benchmark = AgentPerformanceBenchmark(output_dir=args.output)
         results = await benchmark.run_all()

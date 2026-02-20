@@ -5,16 +5,17 @@ Manages startup and shutdown sequences with proper ordering.
 """
 
 import asyncio
-from typing import List, Callable, Dict, Any
+import logging
 from dataclasses import dataclass
 from enum import Enum
-import logging
+from typing import Any, Callable, Dict, List
 
 logger = logging.getLogger(__name__)
 
 
 class LifecyclePhase(Enum):
     """Lifecycle phases"""
+
     INITIALIZING = "initializing"
     STARTING = "starting"
     RUNNING = "running"
@@ -25,6 +26,7 @@ class LifecyclePhase(Enum):
 @dataclass
 class LifecycleHook:
     """A lifecycle hook"""
+
     name: str
     callback: Callable
     priority: int = 100  # Lower = earlier
@@ -60,12 +62,7 @@ class ApplicationLifecycle:
         self._components: Dict[str, Any] = {}
         self._startup_order: List[str] = []
 
-    def on_start(
-        self,
-        name: str,
-        callback: Callable,
-        priority: int = 100
-    ) -> None:
+    def on_start(self, name: str, callback: Callable, priority: int = 100) -> None:
         """
         Register a startup hook
 
@@ -74,24 +71,14 @@ class ApplicationLifecycle:
             callback: Function to call on startup
             priority: Execution priority (lower = earlier)
         """
-        hook = LifecycleHook(
-            name=name,
-            callback=callback,
-            priority=priority,
-            async_mode=asyncio.iscoroutinefunction(callback)
-        )
+        hook = LifecycleHook(name=name, callback=callback, priority=priority, async_mode=asyncio.iscoroutinefunction(callback))
 
         self._startup_hooks.append(hook)
         self._startup_hooks.sort(key=lambda h: h.priority)
 
         logger.debug(f"Registered startup hook: {name} (priority={priority})")
 
-    def on_stop(
-        self,
-        name: str,
-        callback: Callable,
-        priority: int = 100
-    ) -> None:
+    def on_stop(self, name: str, callback: Callable, priority: int = 100) -> None:
         """
         Register a shutdown hook
 
@@ -100,12 +87,7 @@ class ApplicationLifecycle:
             callback: Function to call on shutdown
             priority: Execution priority (lower = earlier)
         """
-        hook = LifecycleHook(
-            name=name,
-            callback=callback,
-            priority=priority,
-            async_mode=asyncio.iscoroutinefunction(callback)
-        )
+        hook = LifecycleHook(name=name, callback=callback, priority=priority, async_mode=asyncio.iscoroutinefunction(callback))
 
         self._shutdown_hooks.append(hook)
         # Sort in reverse for shutdown (higher priority = earlier shutdown)
@@ -219,7 +201,7 @@ class ApplicationLifecycle:
             "components": list(self._components.keys()),
             "startup_order": self._startup_order,
             "startup_hooks": len(self._startup_hooks),
-            "shutdown_hooks": len(self._shutdown_hooks)
+            "shutdown_hooks": len(self._shutdown_hooks),
         }
 
 

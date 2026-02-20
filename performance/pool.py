@@ -5,10 +5,10 @@ Generic connection pooling for databases, HTTP clients, etc.
 """
 
 import asyncio
-from typing import Any, Optional, List, Callable, Dict
+import logging
 from dataclasses import dataclass
 from datetime import datetime
-import logging
+from typing import Any, Callable, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class PoolConfig:
     """Pool configuration"""
+
     min_size: int = 5
     max_size: int = 20
     max_idle_time: int = 300  # 5 minutes
@@ -26,6 +27,7 @@ class PoolConfig:
 
 class PooledConnection:
     """Wrapped connection with metadata"""
+
     def __init__(self, connection: Any, pool: "ConnectionPool"):
         self.connection = connection
         self.pool = pool
@@ -68,12 +70,7 @@ class ConnectionPool:
             await conn.execute("SELECT * FROM table")
     """
 
-    def __init__(
-        self,
-        factory: Callable,
-        config: Optional[PoolConfig] = None,
-        name: str = "default"
-    ):
+    def __init__(self, factory: Callable, config: Optional[PoolConfig] = None, name: str = "default"):
         self.factory = factory
         self.config = config or PoolConfig()
         self.name = name
@@ -163,7 +160,7 @@ class ConnectionPool:
     async def _destroy_connection(self, pooled: PooledConnection):
         """Destroy connection"""
         try:
-            if hasattr(pooled.connection, 'close'):
+            if hasattr(pooled.connection, "close"):
                 if asyncio.iscoroutinefunction(pooled.connection.close):
                     await pooled.connection.close()
                 else:
@@ -175,7 +172,7 @@ class ConnectionPool:
     async def _validate(self, pooled: PooledConnection) -> bool:
         """Validate connection is still good"""
         try:
-            if hasattr(pooled.connection, 'ping'):
+            if hasattr(pooled.connection, "ping"):
                 if asyncio.iscoroutinefunction(pooled.connection.ping):
                     await pooled.connection.ping()
                 else:
@@ -188,10 +185,7 @@ class ConnectionPool:
     async def cleanup(self):
         """Remove expired/idle connections"""
         async with self._lock:
-            to_remove = [
-                p for p in self._pool
-                if not p.in_use and (p.is_expired() or p.is_idle_too_long())
-            ]
+            to_remove = [p for p in self._pool if not p.in_use and (p.is_expired() or p.is_idle_too_long())]
 
             for pooled in to_remove:
                 await self._destroy_connection(pooled)
@@ -248,7 +242,4 @@ class PoolManager:
 
     def get_all_stats(self) -> Dict[str, Any]:
         """Get stats for all pools"""
-        return {
-            name: pool.get_stats()
-            for name, pool in self._pools.items()
-        }
+        return {name: pool.get_stats() for name, pool in self._pools.items()}

@@ -3,9 +3,9 @@ CVSS 3.1 Calculator
 Implements full CVSS v3.1 scoring
 """
 
-from typing import Dict, Optional
 from dataclasses import dataclass
 from enum import Enum
+from typing import Dict, Optional
 
 
 class CVSSMetric(Enum):

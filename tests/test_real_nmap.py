@@ -6,9 +6,10 @@ Only run in safe environments with permission.
 """
 
 import asyncio
-import pytest
-import sys
 import os
+import sys
+
+import pytest
 
 # Add parent to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -31,11 +32,13 @@ async def test_nmap_real_execution():
     scanner = NmapScanner(timeout=60)
 
     # Test against scanme.nmap.org (official Nmap test target)
-    result = await scanner.execute({
-        "target": "scanme.nmap.org",
-        "ports": "22,80",  # Limited ports for faster test
-        "options": "-sV"   # Service detection only
-    })
+    result = await scanner.execute(
+        {
+            "target": "scanme.nmap.org",
+            "ports": "22,80",  # Limited ports for faster test
+            "options": "-sV",  # Service detection only
+        }
+    )
 
     # Assertions
     assert result.success, f"Nmap failed: {result.error_message}"
@@ -65,11 +68,9 @@ async def test_nmap_localhost():
     """
     scanner = NmapScanner(timeout=30)
 
-    result = await scanner.execute({
-        "target": "127.0.0.1",
-        "ports": "1-100",  # Top 100 ports
-        "options": "-sT"   # TCP connect scan
-    })
+    result = await scanner.execute(
+        {"target": "127.0.0.1", "ports": "1-100", "options": "-sT"}  # Top 100 ports  # TCP connect scan
+    )
 
     # Localhost should work but might have no open ports
     assert result.success or "Private IP" in (result.error_message or "")
@@ -88,10 +89,7 @@ async def test_nmap_safety_validation():
     scanner = NmapScanner()
 
     # Try to scan a private IP
-    result = await scanner.execute({
-        "target": "192.168.1.1",
-        "ports": "80"
-    })
+    result = await scanner.execute({"target": "192.168.1.1", "ports": "80"})
 
     # Should be blocked for safety
     assert not result.success

@@ -3,15 +3,16 @@ WebSocket Endpoint for Agent Communication Protocol (ACP)
 Handles real-time messaging between agents
 """
 
+# Import ACP models
+import sys
+from datetime import datetime
+from pathlib import Path
+from typing import Dict, List
+
 from fastapi import WebSocket, WebSocketDisconnect
 from fastapi.routing import APIRouter
 from pydantic import ValidationError
-from typing import Dict, List
-from datetime import datetime
 
-# Import ACP models
-import sys
-from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from agent_comm.models import AgentMessage
 
@@ -24,6 +25,7 @@ class ConnectionManager:
 
     Structure: {session_id: [{"websocket": ws, "agent_id": agent_id}, ...]}
     """
+
     def __init__(self):
         self.active_connections: Dict[str, List[Dict]] = {}
         self.agent_sessions: Dict[str, str] = {}  # agent_id -> session_id
@@ -35,10 +37,7 @@ class ConnectionManager:
         if session_id not in self.active_connections:
             self.active_connections[session_id] = []
 
-        self.active_connections[session_id].append({
-            "websocket": websocket,
-            "agent_id": agent_id
-        })
+        self.active_connections[session_id].append({"websocket": websocket, "agent_id": agent_id})
         self.agent_sessions[agent_id] = session_id
 
         print(f"Agent {agent_id} connected to session {session_id}")
@@ -47,8 +46,7 @@ class ConnectionManager:
         """Remove connection"""
         if session_id in self.active_connections:
             self.active_connections[session_id] = [
-                conn for conn in self.active_connections[session_id]
-                if conn["websocket"] != websocket
+                conn for conn in self.active_connections[session_id] if conn["websocket"] != websocket
             ]
             if not self.active_connections[session_id]:
                 del self.active_connections[session_id]
@@ -103,10 +101,7 @@ manager = ConnectionManager()
 
 
 @router.websocket("/{session_id}")
-async def websocket_endpoint(
-    websocket: WebSocket,
-    session_id: str
-):
+async def websocket_endpoint(websocket: WebSocket, session_id: str):
     """
     WebSocket endpoint for ACP v1.1
 
@@ -149,10 +144,7 @@ async def websocket_endpoint(
 
                 # Ensure message matches session
                 if msg.session_id != session_id:
-                    error_msg = {
-                        "type": "error",
-                        "error_message": f"Session mismatch: {msg.session_id} != {session_id}"
-                    }
+                    error_msg = {"type": "error", "error_message": f"Session mismatch: {msg.session_id} != {session_id}"}
                     await websocket.send_json(error_msg)
                     continue
 
@@ -170,7 +162,7 @@ async def websocket_endpoint(
                 error_msg = {
                     "type": "error",
                     "error_message": f"Validation error: {str(e)}",
-                    "timestamp": datetime.utcnow().isoformat()
+                    "timestamp": datetime.utcnow().isoformat(),
                 }
                 await websocket.send_json(error_msg)
 
@@ -185,8 +177,4 @@ async def websocket_endpoint(
 async def get_connected_agents(session_id: str):
     """Get list of connected agents in a session"""
     agents = manager.get_session_agents(session_id)
-    return {
-        "session_id": session_id,
-        "connected_agents": agents,
-        "count": len(agents)
-    }
+    return {"session_id": session_id, "connected_agents": agents, "count": len(agents)}

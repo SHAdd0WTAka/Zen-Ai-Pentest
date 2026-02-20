@@ -184,9 +184,7 @@ class SemgrepScanner:
         """Validate semgrep binary exists"""
         semgrep_path = shutil.which(path)
         if not semgrep_path:
-            raise RuntimeError(
-                f"semgrep not found at '{path}'. Install with: pip install semgrep"
-            )
+            raise RuntimeError(f"semgrep not found at '{path}'. Install with: pip install semgrep")
         return semgrep_path
 
     def _get_version(self) -> str:
@@ -497,10 +495,7 @@ class SemgrepScanner:
             # Build remediation
             remediation = finding.get("fix", "")
             if not remediation:
-                remediation = (
-                    "Review the code and fix the security issue. "
-                    "Refer to the provided references for guidance."
-                )
+                remediation = "Review the code and fix the security issue. " "Refer to the provided references for guidance."
 
             # Build evidence
             evidence = {
@@ -587,6 +582,7 @@ class SemgrepScanner:
             ]
 
         import re
+
         filtered = []
 
         for finding in findings:
@@ -610,6 +606,7 @@ class SemgrepScanner:
 # LangChain Tool integration
 try:
     from langchain_core.tools import tool
+
     LANGCHAIN_AVAILABLE = True
 except ImportError:
     LANGCHAIN_AVAILABLE = False
@@ -691,10 +688,7 @@ def semgrep_scan_owasp(path: str) -> str:
     if not result.success:
         return f"OWASP scan failed: {result.error}"
 
-    owasp_count = sum(
-        1 for f in result.findings
-        if f.metadata.get("owasp")
-    )
+    owasp_count = sum(1 for f in result.findings if f.metadata.get("owasp"))
 
     return (
         f"OWASP Top 10 Scan: {path}\n"
@@ -773,6 +767,7 @@ def semgrep_scan_ci(path: str) -> str:
 # Tool Registry integration
 try:
     from .tool_registry import ToolCategory, ToolSafetyLevel, registry
+
     TOOL_REGISTRY_AVAILABLE = True
 except ImportError:
     TOOL_REGISTRY_AVAILABLE = False

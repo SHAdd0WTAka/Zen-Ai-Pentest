@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 import sys
+
 from config_loader import load_config
+
 
 def test_kimi_connection():
     """Testet die Kimi API Verbindung mit dem aus .env geladenen Key"""
 
     # Config laden (merged mit Env-Vars)
     config = load_config()
-    api_key = config['backends']['kimi_api_key']
+    api_key = config["backends"]["kimi_api_key"]
 
     # Check ob Key vorhanden
     if not api_key:
@@ -29,6 +31,7 @@ def test_kimi_connection():
     # )
 
     print("\n🚀 Bereit für API-Calls!")
+
 
 if __name__ == "__main__":
     test_kimi_connection()

@@ -1,10 +1,11 @@
 """
 Report Generator mit Template Support
 """
-from jinja2 import Environment, FileSystemLoader
-from datetime import datetime
-from typing import List, Dict
 import os
+from datetime import datetime
+from typing import Dict, List
+
+from jinja2 import Environment, FileSystemLoader
 
 
 class ReportGenerator:

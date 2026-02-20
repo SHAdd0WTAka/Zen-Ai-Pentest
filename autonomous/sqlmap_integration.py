@@ -52,7 +52,7 @@ class SQLMapScanner:
         """
         self.timeout = timeout
         self.level = min(max(level, 1), 5)  # Clamp 1-5
-        self.risk = min(max(risk, 1), 3)    # Clamp 1-3
+        self.risk = min(max(risk, 1), 3)  # Clamp 1-3
         self.logger = logging.getLogger(__name__)
 
     async def scan_target(
@@ -61,7 +61,7 @@ class SQLMapScanner:
         method: str = "GET",
         data: Optional[str] = None,
         cookies: Optional[str] = None,
-        headers: Optional[Dict[str, str]] = None
+        headers: Optional[Dict[str, str]] = None,
     ) -> SQLMapResult:
         """
         Scan a target URL for SQL injection vulnerabilities.
@@ -87,22 +87,27 @@ class SQLMapScanner:
                 success=False,
                 vulnerable=False,
                 error_message=f"Safety check failed: {error}",
-                execution_time=(datetime.now() - start_time).total_seconds()
+                execution_time=(datetime.now() - start_time).total_seconds(),
             )
 
         try:
             # Build SQLMap command
             cmd = [
                 "sqlmap",
-                "-u", target_url,
-                "--batch",           # Non-interactive mode
-                "--level", str(self.level),
-                "--risk", str(self.risk),
-                "--json",            # JSON output
+                "-u",
+                target_url,
+                "--batch",  # Non-interactive mode
+                "--level",
+                str(self.level),
+                "--risk",
+                str(self.risk),
+                "--json",  # JSON output
                 "--tamper=space2comment",  # Basic tamper
-                "--random-agent",    # Rotate user agents
-                "--timeout", str(self.timeout),
-                "--retries", "2",
+                "--random-agent",  # Rotate user agents
+                "--timeout",
+                str(self.timeout),
+                "--retries",
+                "2",
             ]
 
             if method.upper() == "POST" and data:
@@ -116,24 +121,17 @@ class SQLMapScanner:
                     cmd.extend(["--header", f"{key}: {value}"])
 
             # CRITICAL SAFETY: Disable destructive operations by default
-            cmd.append("--no-union")      # No UNION-based injection tests
-            cmd.append("--no-exploit")    # No exploitation
-            cmd.append("--no-stored")     # No stored procedure tests
+            cmd.append("--no-union")  # No UNION-based injection tests
+            cmd.append("--no-exploit")  # No exploitation
+            cmd.append("--no-stored")  # No stored procedure tests
 
             self.logger.info(f"[REAL] Executing SQLMap: {' '.join(cmd)}")
 
             # Execute SQLMap
-            proc = await asyncio.create_subprocess_exec(
-                *cmd,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE
-            )
+            proc = await asyncio.create_subprocess_exec(*cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
 
             try:
-                stdout, stderr = await asyncio.wait_for(
-                    proc.communicate(),
-                    timeout=self.timeout
-                )
+                stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=self.timeout)
             except asyncio.TimeoutError:
                 proc.kill()
                 await proc.wait()
@@ -141,26 +139,28 @@ class SQLMapScanner:
                     success=False,
                     vulnerable=False,
                     error_message=f"SQLMap timeout after {self.timeout}s",
-                    execution_time=(datetime.now() - start_time).total_seconds()
+                    execution_time=(datetime.now() - start_time).total_seconds(),
                 )
 
             execution_time = (datetime.now() - start_time).total_seconds()
-            output = stdout.decode('utf-8', errors='replace')
-            stderr_text = stderr.decode('utf-8', errors='replace')
+            output = stdout.decode("utf-8", errors="replace")
+            stderr_text = stderr.decode("utf-8", errors="replace")
 
             # Parse results
             vulnerable, dbms, payload, parameters = self._parse_sqlmap_output(output)
 
             findings = []
             if vulnerable:
-                findings.append({
-                    "type": "sql_injection",
-                    "severity": "critical",
-                    "dbms": dbms,
-                    "payload": payload,
-                    "parameters": parameters,
-                    "description": f"SQL Injection vulnerability detected in {target_url}"
-                })
+                findings.append(
+                    {
+                        "type": "sql_injection",
+                        "severity": "critical",
+                        "dbms": dbms,
+                        "payload": payload,
+                        "parameters": parameters,
+                        "description": f"SQL Injection vulnerability detected in {target_url}",
+                    }
+                )
 
             return SQLMapResult(
                 success=True,
@@ -177,8 +177,8 @@ class SQLMapScanner:
                     "method": method,
                     "level": self.level,
                     "risk": self.risk,
-                    "real_execution": True
-                }
+                    "real_execution": True,
+                },
             )
 
         except FileNotFoundError:
@@ -186,7 +186,7 @@ class SQLMapScanner:
                 success=False,
                 vulnerable=False,
                 error_message="SQLMap not found. Install: https://sqlmap.org/",
-                execution_time=(datetime.now() - start_time).total_seconds()
+                execution_time=(datetime.now() - start_time).total_seconds(),
             )
         except Exception as e:
             self.logger.error(f"SQLMap execution failed: {e}")
@@ -194,7 +194,7 @@ class SQLMapScanner:
                 success=False,
                 vulnerable=False,
                 error_message=str(e),
-                execution_time=(datetime.now() - start_time).total_seconds()
+                execution_time=(datetime.now() - start_time).total_seconds(),
             )
 
     def _validate_target(self, target: str) -> Tuple[bool, str]:
@@ -202,12 +202,13 @@ class SQLMapScanner:
         import ipaddress
 
         # Check URL format
-        if not re.match(r'^https?://', target):
+        if not re.match(r"^https?://", target):
             return False, "Target must start with http:// or https://"
 
         # Extract host
         try:
             from urllib.parse import urlparse
+
             parsed = urlparse(target)
             host = parsed.hostname
 
@@ -223,7 +224,7 @@ class SQLMapScanner:
             return False, f"Invalid URL: {e}"
 
         # Check for dangerous characters
-        if re.search(r'[;&|<>$`]', target):
+        if re.search(r"[;&|<>$`]", target):
             return False, "Invalid characters in target"
 
         return True, ""
@@ -240,7 +241,7 @@ class SQLMapScanner:
         payload = None
         parameters = []
 
-        lines = output.split('\n')
+        lines = output.split("\n")
 
         for line in lines:
             # Check for vulnerability detection
@@ -249,26 +250,23 @@ class SQLMapScanner:
 
             # Extract DBMS
             if "back-end DBMS:" in line:
-                match = re.search(r'back-end DBMS:\s*(.+)', line, re.IGNORECASE)
+                match = re.search(r"back-end DBMS:\s*(.+)", line, re.IGNORECASE)
                 if match:
                     dbms = match.group(1).strip()
 
             # Extract payload
             if "payload:" in line.lower():
-                match = re.search(r'[Pp]ayload:\s*(.+)', line)
+                match = re.search(r"[Pp]ayload:\s*(.+)", line)
                 if match:
                     payload = match.group(1).strip()
 
             # Extract parameter info
             if "parameter" in line.lower() and ("get" in line.lower() or "post" in line.lower()):
-                match = re.search(r'(\w+)\s+parameter\s+\'([^\']+)\'', line, re.IGNORECASE)
+                match = re.search(r"(\w+)\s+parameter\s+\'([^\']+)\'", line, re.IGNORECASE)
                 if match:
                     param_type = match.group(1).upper()
                     param_name = match.group(2)
-                    parameters.append({
-                        "type": param_type,
-                        "name": param_name
-                    })
+                    parameters.append({"type": param_type, "name": param_name})
 
         return vulnerable, dbms, payload, parameters
 
@@ -296,7 +294,7 @@ class SQLMapTool:
             "dbms": result.dbms,
             "execution_time": result.execution_time,
             "error": result.error_message,
-            "metadata": result.metadata
+            "metadata": result.metadata,
         }
 
 
@@ -307,9 +305,7 @@ if __name__ == "__main__":
 
         # Test against deliberately vulnerable test target
         # Note: Only test against targets you own or have permission to test
-        result = await scanner.scan_target(
-            "http://testphp.vulnweb.com/artists.php?artist=1"
-        )
+        result = await scanner.scan_target("http://testphp.vulnweb.com/artists.php?artist=1")
 
         print(f"Success: {result.success}")
         print(f"Vulnerable: {result.vulnerable}")

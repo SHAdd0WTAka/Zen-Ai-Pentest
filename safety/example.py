@@ -3,8 +3,8 @@ Example: Using Safety System
 """
 
 from safety import (
-    SafetyPipeline,
     SafetyLevel,
+    SafetyPipeline,
 )
 
 

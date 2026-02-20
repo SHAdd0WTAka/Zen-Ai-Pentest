@@ -4,11 +4,11 @@ Test script for Slack and Discord webhooks
 Usage: python test_webhooks.py [slack|discord|both]
 """
 
-import sys
 import json
-import urllib.request
-import urllib.error
 import os
+import sys
+import urllib.error
+import urllib.request
 from datetime import datetime
 
 

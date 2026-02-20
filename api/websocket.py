@@ -4,6 +4,7 @@ WebSocket Connection Manager für Real-Time Updates
 
 import logging
 from typing import Dict, Set
+
 from fastapi import WebSocket
 
 logger = logging.getLogger(__name__)

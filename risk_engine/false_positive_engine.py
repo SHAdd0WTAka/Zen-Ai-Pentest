@@ -5,21 +5,21 @@ Diese Engine kombiniert Multi-Faktor-Validierung, Multi-LLM-Voting, historische 
 und Bayesian-Filtering zur Reduzierung von False Positives und Priorisierung von Risiken.
 """
 
-from enum import Enum
-from typing import Dict, List, Optional, Tuple, Any
+import asyncio
+import hashlib
+import json
+import logging
+import math
+from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime
-import asyncio
-import logging
-import json
-import hashlib
-from collections import defaultdict
-import math
+from enum import Enum
+from typing import Any, Dict, List, Optional, Tuple
 
 # Business Impact Calculator importieren
 from .business_impact_calculator import (
-    BusinessImpactCalculator,
     AssetContext,
+    BusinessImpactCalculator,
 )
 
 # Logger konfigurieren

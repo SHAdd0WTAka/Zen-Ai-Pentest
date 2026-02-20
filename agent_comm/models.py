@@ -4,12 +4,14 @@ Pydantic Models for structured inter-agent messaging
 """
 
 from datetime import datetime
-from typing import Literal, Optional, List, Dict, Any, Union
-from pydantic import BaseModel, Field, field_validator, ConfigDict
+from typing import Any, Dict, List, Literal, Optional, Union
+
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class MessageType:
     """Message types for ACP v1.1"""
+
     REASON = "reason"
     ACT = "act"
     OBSERVE = "observe"
@@ -24,6 +26,7 @@ class MessageType:
 
 class PriorityLevel:
     """Priority levels (0=CRITICAL, 4=BACKGROUND)"""
+
     CRITICAL = 0
     HIGH = 1
     NORMAL = 2
@@ -33,6 +36,7 @@ class PriorityLevel:
 
 class MessageContent(BaseModel):
     """Flexible content block - fields vary by message type"""
+
     model_config = ConfigDict(extra="allow")
 
     reasoning: Optional[str] = None
@@ -47,16 +51,17 @@ class MessageContent(BaseModel):
     assignee: Optional[Union[str, List[str]]] = None
     due_in_seconds: Optional[int] = None
 
-    @field_validator('confidence')
+    @field_validator("confidence")
     @classmethod
     def validate_confidence(cls, v):
         if v is not None and not 0.0 <= v <= 1.0:
-            raise ValueError('Confidence must be between 0.0 and 1.0')
+            raise ValueError("Confidence must be between 0.0 and 1.0")
         return v
 
 
 class MessageContext(BaseModel):
     """Context information for the message"""
+
     target: str
     session_id: str
     scan_id: Optional[str] = None
@@ -91,6 +96,7 @@ class AgentMessage(BaseModel):
             }
         }
     """
+
     model_config = ConfigDict(extra="forbid")
 
     message_id: str = Field(..., pattern=r"^msg_[a-z0-9_]{8,30}$")
@@ -98,7 +104,10 @@ class AgentMessage(BaseModel):
     timestamp: datetime = Field(default_factory=datetime.utcnow)
     agent_id: str
     session_id: str
-    type: str = Field(..., description="Message type: reason, act, observe, reflect, delegate, delegate_task, error, complete, status_update, cancel")
+    type: str = Field(
+        ...,
+        description="Message type: reason, act, observe, reflect, delegate, delegate_task, error, complete, status_update, cancel",
+    )
     priority: int = Field(default=PriorityLevel.NORMAL, ge=0, le=4)
     content: MessageContent
     targets: List[str] = Field(..., min_length=1)
@@ -106,18 +115,18 @@ class AgentMessage(BaseModel):
     correlation_id: Optional[str] = None  # For request-response pairs
     ttl_seconds: Optional[int] = Field(default=3600, ge=0)  # Time-to-live
 
-    @field_validator('targets')
+    @field_validator("targets")
     @classmethod
     def validate_targets(cls, v: List[str]):
         if not v:
             raise ValueError("At least one target required")
         return v
 
-    @field_validator('content')
+    @field_validator("content")
     @classmethod
     def validate_content_by_type(cls, v: MessageContent, info):
         values = info.data
-        msg_type = values.get('type')
+        msg_type = values.get("type")
 
         if msg_type == MessageType.ACT and not v.action:
             raise ValueError("'act' messages must have 'action' field")
@@ -142,12 +151,14 @@ class AgentMessage(BaseModel):
         if not self.ttl_seconds:
             return False
         from datetime import timedelta
+
         expiry = self.timestamp + timedelta(seconds=self.ttl_seconds)
         return datetime.utcnow() > expiry
 
 
 class MessageResponse(BaseModel):
     """Standard response wrapper for message operations"""
+
     success: bool
     message_id: Optional[str] = None
     error: Optional[str] = None
@@ -167,7 +178,7 @@ class MessageTemplates:
         target: str,
         priority: int = PriorityLevel.NORMAL,
         due_in_seconds: int = 1800,
-        parameters: Optional[Dict[str, Any]] = None
+        parameters: Optional[Dict[str, Any]] = None,
     ) -> AgentMessage:
         """Create a delegate_task message"""
         return AgentMessage(
@@ -180,24 +191,14 @@ class MessageTemplates:
                 task_description=task_description,
                 assignee=assignee,
                 due_in_seconds=due_in_seconds,
-                parameters=parameters or {}
+                parameters=parameters or {},
             ),
             targets=[assignee] if isinstance(assignee, str) else assignee,
-            context=MessageContext(
-                target=target,
-                session_id=session_id,
-                safety_level="medium_risk"
-            )
+            context=MessageContext(target=target, session_id=session_id, safety_level="medium_risk"),
         )
 
     @staticmethod
-    def create_status_update(
-        agent_id: str,
-        session_id: str,
-        status: str,
-        progress_percent: int,
-        target: str
-    ) -> AgentMessage:
+    def create_status_update(agent_id: str, session_id: str, status: str, progress_percent: int, target: str) -> AgentMessage:
         """Create a status_update message"""
         return AgentMessage(
             message_id=f"msg_status_{datetime.utcnow().strftime('%Y%m%d%H%M%S')}",
@@ -205,14 +206,7 @@ class MessageTemplates:
             session_id=session_id,
             type=MessageType.STATUS_UPDATE,
             priority=PriorityLevel.NORMAL,
-            content=MessageContent(
-                observation=status,
-                result={"progress": progress_percent}
-            ),
+            content=MessageContent(observation=status, result={"progress": progress_percent}),
             targets=["orchestrator"],
-            context=MessageContext(
-                target=target,
-                session_id=session_id,
-                safety_level="non_destructive"
-            )
+            context=MessageContext(target=target, session_id=session_id, safety_level="non_destructive"),
         )

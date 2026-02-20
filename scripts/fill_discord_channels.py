@@ -4,9 +4,10 @@ Discord Channel Content Filler
 Füllt die 4 fehlenden Channels mit Content aus dem Repo
 """
 
-import requests
 import os
 import sys
+
+import requests
 
 GUILD_ID = "1467204311355363485"
 BASE_URL = "https://discord.com/api/v10"
@@ -32,7 +33,6 @@ Wir freuen uns dich kennenzulernen! 🎉
 
 ---
 *Pinne diesen Post für das Template!* 📌""",
-
     "knowledge-base": """# 📚 Knowledge Base
 
 Hier sammeln wir nützliche Ressourcen!
@@ -65,7 +65,6 @@ Hier sammeln wir nützliche Ressourcen!
 | **AD** | BloodHound, CrackMapExec |
 
 **Hast du eine Ressource die fehlt?** Poste sie hier! 💡""",
-
     "tools-automation": """# 🤖 Tools & Automation
 
 Diskutiere über Pentesting-Tools und Automatisierung!
@@ -95,7 +94,6 @@ Diskutiere über Pentesting-Tools und Automatisierung!
 - Tool-Integration in CI/CD?
 
 **Zeig her deine Setups!** 🔧""",
-
     "support": """# 🆘 Support & Help
 
 Hilfe bei Problemen mit Zen-AI-Pentest!
@@ -153,8 +151,9 @@ Fehler-Log hier
 - [Troubleshooting Guide](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/blob/main/docs/TROUBLESHOOTING.md)
 - [FAQ](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/blob/main/docs/FAQ.md)
 
-**Wir helfen gerne!** 💪"""
+**Wir helfen gerne!** 💪""",
 }
+
 
 def find_channel_by_name(guild_id, channel_name, headers):
     """Findet Channel-ID anhand des Namens"""
@@ -164,9 +163,10 @@ def find_channel_by_name(guild_id, channel_name, headers):
     if response.status_code == 200:
         channels = response.json()
         for channel in channels:
-            if channel['name'] == channel_name:
-                return channel['id']
+            if channel["name"] == channel_name:
+                return channel["id"]
     return None
+
 
 def post_message(channel_id, content, headers):
     """Postet eine Nachricht in einen Channel"""
@@ -177,12 +177,12 @@ def post_message(channel_id, content, headers):
         # Teile in mehrere Nachrichten
         parts = []
         current = ""
-        for line in content.split('\n'):
+        for line in content.split("\n"):
             if len(current) + len(line) + 1 > 1900:
                 parts.append(current)
                 current = line
             else:
-                current += '\n' + line if current else line
+                current += "\n" + line if current else line
         if current:
             parts.append(current)
 
@@ -201,21 +201,19 @@ def post_message(channel_id, content, headers):
         response = requests.post(url, json=data, headers=headers)
         return response.status_code == 200
 
+
 def main():
     print("🎮 Discord Channel Content Filler")
     print("=" * 50)
 
     # Bot Token
-    bot_token = os.environ.get('DISCORD_BOT_TOKEN')
+    bot_token = os.environ.get("DISCORD_BOT_TOKEN")
     if not bot_token:
         print("\nBitte DISCORD_BOT_TOKEN als Environment Variable setzen:")
         print("set DISCORD_BOT_TOKEN=dein-token")
         sys.exit(1)
 
-    headers = {
-        "Authorization": f"Bot {bot_token}",
-        "Content-Type": "application/json"
-    }
+    headers = {"Authorization": f"Bot {bot_token}", "Content-Type": "application/json"}
 
     print(f"\n🏰 Guild ID: {GUILD_ID}")
     print("⏳ Suche Channels und poste Content...\n")
@@ -248,6 +246,7 @@ def main():
         print("🎉 Alle Channels wurden gefüllt!")
     else:
         print("⚠️  Einige Channels konnten nicht gefüllt werden")
+
 
 if __name__ == "__main__":
     main()

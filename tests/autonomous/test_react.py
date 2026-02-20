@@ -2,13 +2,13 @@
 Tests for ReAct Reasoning Loop
 """
 
+from unittest.mock import AsyncMock, Mock
+
 import pytest
 
-from unittest.mock import Mock, AsyncMock
-
-from autonomous.react import ReActLoop, Thought, Action, Observation, ActionType
-from autonomous.tool_executor import ToolExecutor
 from autonomous.memory import MemoryManager
+from autonomous.react import Action, ActionType, Observation, ReActLoop, Thought
+from autonomous.tool_executor import ToolExecutor
 
 
 @pytest.fixture

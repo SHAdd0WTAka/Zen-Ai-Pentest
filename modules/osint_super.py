@@ -17,22 +17,20 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-from tools.sherlock_integration import SherlockIntegration
-from tools.ignorant_integration import IgnorantIntegration
-from tools.subfinder_integration import SubfinderIntegration
 from tools.amass_integration import AmassIntegration
+from tools.ignorant_integration import IgnorantIntegration
+from tools.sherlock_integration import SherlockIntegration
+from tools.subfinder_integration import SubfinderIntegration
 from tools.whatweb_integration import WhatWebIntegration
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 
 @dataclass
 class OSINTSuperResult:
     """Complete OSINT result"""
+
     target: str
     target_type: str  # username, email, domain
     timestamp: str
@@ -79,11 +77,7 @@ class OSINTSuperModule:
         print(f"🔍 OSINT USERNAME INVESTIGATION: {username}")
         print(f"{'='*70}\n")
 
-        result = OSINTSuperResult(
-            target=username,
-            target_type="username",
-            timestamp=datetime.now().isoformat()
-        )
+        result = OSINTSuperResult(target=username, target_type="username", timestamp=datetime.now().isoformat())
 
         # Phase 1: Sherlock Social Media Search
         print("[1/1] 🔎 Searching 400+ social media platforms...")
@@ -95,7 +89,7 @@ class OSINTSuperModule:
                 "username": sherlock_result.username,
                 "found_accounts": sherlock_result.found_sites,
                 "total_found": len(sherlock_result.found_sites),
-                "platforms_checked": sherlock_result.total_sites
+                "platforms_checked": sherlock_result.total_sites,
             }
             print(f"      Found {len(sherlock_result.found_sites)} accounts")
         except Exception as e:
@@ -122,11 +116,7 @@ class OSINTSuperModule:
         print(f"📧 OSINT EMAIL INVESTIGATION: {email}")
         print(f"{'='*70}\n")
 
-        result = OSINTSuperResult(
-            target=email,
-            target_type="email",
-            timestamp=datetime.now().isoformat()
-        )
+        result = OSINTSuperResult(target=email, target_type="email", timestamp=datetime.now().isoformat())
 
         # Phase 1: Ignorant Email Check
         print("[1/2] 📮 Checking 120+ platforms for email...")
@@ -139,15 +129,10 @@ class OSINTSuperModule:
                 "username": ignorant_result.username,
                 "domain": ignorant_result.domain,
                 "found_platforms": [
-                    {
-                        "platform": p.platform,
-                        "url": p.url,
-                        "exists": p.exists
-                    }
-                    for p in ignorant_result.found_platforms
+                    {"platform": p.platform, "url": p.url, "exists": p.exists} for p in ignorant_result.found_platforms
                 ],
                 "total_found": len(ignorant_result.found_platforms),
-                "platforms_checked": ignorant_result.total_checked
+                "platforms_checked": ignorant_result.total_checked,
             }
             print(f"      Found on {len(ignorant_result.found_platforms)} platforms")
         except Exception as e:
@@ -164,7 +149,7 @@ class OSINTSuperModule:
                     "success": sherlock_result.success,
                     "username": sherlock_result.username,
                     "found_accounts": sherlock_result.found_sites,
-                    "total_found": len(sherlock_result.found_sites)
+                    "total_found": len(sherlock_result.found_sites),
                 }
                 print(f"      Found {len(sherlock_result.found_sites)} accounts")
             except Exception as e:
@@ -191,11 +176,7 @@ class OSINTSuperModule:
         print(f"🌐 OSINT DOMAIN INVESTIGATION: {domain}")
         print(f"{'='*70}\n")
 
-        result = OSINTSuperResult(
-            target=domain,
-            target_type="domain",
-            timestamp=datetime.now().isoformat()
-        )
+        result = OSINTSuperResult(target=domain, target_type="domain", timestamp=datetime.now().isoformat())
 
         # Phase 1: Subdomain Enumeration
         print("[1/3] 🔍 Enumerating subdomains (Subfinder)...")
@@ -222,7 +203,7 @@ class OSINTSuperModule:
             "success": True,
             "domain": domain,
             "subdomains": all_subdomains[:100],  # Limit for report
-            "total": len(all_subdomains)
+            "total": len(all_subdomains),
         }
 
         # Phase 3: Technology Detection
@@ -234,13 +215,8 @@ class OSINTSuperModule:
             result.technologies = {
                 "success": True,
                 "technologies": [
-                    {
-                        "name": t.name,
-                        "version": t.version,
-                        "category": t.category
-                    }
-                    for t in whatweb_result.technologies
-                ]
+                    {"name": t.name, "version": t.version, "category": t.category} for t in whatweb_result.technologies
+                ],
             }
             print(f"      Found {len(whatweb_result.technologies)} technologies")
         except Exception as e:
@@ -268,11 +244,15 @@ class OSINTSuperModule:
             "risk_level": risk_level,
             "accounts_found": len(found),
             "key_platforms": [a.get("site") for a in found[:5]],
-            "recommendations": [
-                "Review privacy settings on found platforms",
-                "Consider using different usernames across platforms",
-                "Remove or secure accounts on unused platforms"
-            ] if found else []
+            "recommendations": (
+                [
+                    "Review privacy settings on found platforms",
+                    "Consider using different usernames across platforms",
+                    "Remove or secure accounts on unused platforms",
+                ]
+                if found
+                else []
+            ),
         }
 
     def _generate_email_summary(self, result: OSINTSuperResult) -> Dict[str, Any]:
@@ -292,11 +272,15 @@ class OSINTSuperModule:
             "risk_level": risk_level,
             "email_platforms": email_found,
             "social_accounts": social_found,
-            "recommendations": [
-                "Use unique passwords for each platform",
-                "Enable 2FA on all found accounts",
-                "Consider using different emails for different purposes"
-            ] if email_found or social_found else []
+            "recommendations": (
+                [
+                    "Use unique passwords for each platform",
+                    "Enable 2FA on all found accounts",
+                    "Consider using different emails for different purposes",
+                ]
+                if email_found or social_found
+                else []
+            ),
         }
 
     def _generate_domain_summary(self, result: OSINTSuperResult) -> Dict[str, Any]:
@@ -317,11 +301,11 @@ class OSINTSuperModule:
             "subdomains": subdomains,
             "technologies": technologies,
             "attack_surface": "large" if subdomains > 50 else "medium" if subdomains > 10 else "small",
-            "recommendations": [
-                "Implement subdomain monitoring",
-                "Review and secure exposed services",
-                "Keep software versions up to date"
-            ] if subdomains > 10 else []
+            "recommendations": (
+                ["Implement subdomain monitoring", "Review and secure exposed services", "Keep software versions up to date"]
+                if subdomains > 10
+                else []
+            ),
         }
 
     def save_report(self, result: OSINTSuperResult, filename: Optional[str] = None):
@@ -341,9 +325,9 @@ class OSINTSuperModule:
 
     def print_report(self, result: OSINTSuperResult):
         """Print formatted report"""
-        print("\n" + "="*70)
+        print("\n" + "=" * 70)
         print("📊 OSINT INVESTIGATION REPORT")
-        print("="*70)
+        print("=" * 70)
         print(f"Target: {result.target}")
         print(f"Type: {result.target_type}")
         print(f"Timestamp: {result.timestamp}")
@@ -374,11 +358,11 @@ class OSINTSuperModule:
         print()
         if summary.get("recommendations"):
             print("💡 RECOMMENDATIONS")
-            print("-"*70)
+            print("-" * 70)
             for rec in summary["recommendations"]:
                 print(f"  • {rec}")
 
-        print("="*70)
+        print("=" * 70)
 
 
 def main():
@@ -395,7 +379,7 @@ Examples:
 
   # Domain investigation
   python -m modules.osint_super --domain example.com
-        """
+        """,
     )
 
     parser.add_argument("--username", "-u", help="Username to investigate")

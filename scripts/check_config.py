@@ -3,21 +3,21 @@
 Prüft ob Zen-AI Pentest korrekt konfiguriert ist
 Jeder Benutzer muss seine eigenen API Keys konfigurieren!
 """
+
 import re
 from pathlib import Path
+
 from rich.console import Console
-from rich.table import Table
 from rich.panel import Panel
+from rich.table import Table
 
 console = Console()
+
 
 def check_config():
     env_path = Path(__file__).parent.parent / ".env"
 
-    console.print(Panel.fit(
-        "Zen-AI Pentest - Konfigurations-Check",
-        title="Setup", border_style="cyan"
-    ))
+    console.print(Panel.fit("Zen-AI Pentest - Konfigurations-Check", title="Setup", border_style="cyan"))
 
     # Prüfe ob .env existiert
     if not env_path.exists():
@@ -26,7 +26,7 @@ def check_config():
         console.print("  python scripts/setup_wizard.py -b kimi -m kimi-k2.5 -k YOUR_KEY")
         return False
 
-    with open(env_path, 'r') as f:
+    with open(env_path, "r") as f:
         content = f.read()
 
     # Extrahiere Konfiguration
@@ -74,28 +74,36 @@ def check_config():
 
     # Hinweise
     if not has_valid_key:
-        console.print(Panel(
-            "[bold]Kein gültiger API Key gefunden![/bold]\n\n"
-            "Jeder Benutzer muss seine eigenen API Keys konfigurieren.\n\n"
-            "[cyan]Einrichtung:[/cyan]\n"
-            "  python scripts/setup_wizard.py\n\n"
-            "[cyan]Schnell-Setup:[/cyan]\n"
-            "  python scripts/setup_wizard.py -b kimi -m kimi-k2.5 -k \"sk-...\"",
-            title="Aktion erforderlich", border_style="yellow"
-        ))
+        console.print(
+            Panel(
+                "[bold]Kein gültiger API Key gefunden![/bold]\n\n"
+                "Jeder Benutzer muss seine eigenen API Keys konfigurieren.\n\n"
+                "[cyan]Einrichtung:[/cyan]\n"
+                "  python scripts/setup_wizard.py\n\n"
+                "[cyan]Schnell-Setup:[/cyan]\n"
+                '  python scripts/setup_wizard.py -b kimi -m kimi-k2.5 -k "sk-..."',
+                title="Aktion erforderlich",
+                border_style="yellow",
+            )
+        )
         return False
     else:
-        console.print(Panel(
-            f"[green]Backend:[/green] {default_backend}\n"
-            f"[green]Modell:[/green] {default_model}\n\n"
-            "[cyan]Nutzung:[/cyan]\n"
-            "  python tools/kimi_helper.py -p recon \"Scan target.com\"\n"
-            "  python tools/kimi_helper.py -i  (interaktiv)",
-            title="Bereit", border_style="green"
-        ))
+        console.print(
+            Panel(
+                f"[green]Backend:[/green] {default_backend}\n"
+                f"[green]Modell:[/green] {default_model}\n\n"
+                "[cyan]Nutzung:[/cyan]\n"
+                '  python tools/kimi_helper.py -p recon "Scan target.com"\n'
+                "  python tools/kimi_helper.py -i  (interaktiv)",
+                title="Bereit",
+                border_style="green",
+            )
+        )
         return True
+
 
 if __name__ == "__main__":
     import sys
+
     success = check_config()
     sys.exit(0 if success else 1)

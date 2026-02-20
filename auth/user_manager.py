@@ -13,18 +13,17 @@ Features:
 
 import uuid
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
 
-from database.auth_models import APIKey, MFADevice, TokenBlacklist
+from database.auth_models import TokenBlacklist
 from database.auth_models import TokenType as DBTokenType
-from database.auth_models import User, UserAuditLog, UserRole, UserSession, get_auth_db
+from database.auth_models import User, UserAuditLog, UserRole, UserSession
 
-from .jwt_handler import JWTHandler, TokenPayload, TokenType
+from .jwt_handler import JWTHandler, TokenType
 from .password_hasher import PasswordHasher
-from .rbac import Permission, Role
 
 
 class UserManager:
@@ -236,7 +235,7 @@ class UserManager:
             user_id=str(user.id),
             roles=[user.role.value],
             permissions=[p.value for p in permissions],
-            mfa_verified=user.is_mfa_enabled == False,  # Auto-verify if no MFA
+            mfa_verified=not user.is_mfa_enabled,  # Auto-verify if no MFA
         )
 
         refresh_token = self.jwt.create_refresh_token(user_id=str(user.id), session_id=session_id)
@@ -291,11 +290,7 @@ class UserManager:
                 return None
 
             # Get session
-            session = (
-                db.query(UserSession)
-                .filter(UserSession.refresh_token_jti == payload.jti, UserSession.is_active == True)
-                .first()
-            )
+            session = db.query(UserSession).filter(UserSession.refresh_token_jti == payload.jti, UserSession.is_active).first()
 
             if not session or session.is_expired():
                 return None
@@ -368,7 +363,7 @@ class UserManager:
         Returns:
             Number of sessions revoked
         """
-        sessions = db.query(UserSession).filter(UserSession.user_id == user_id, UserSession.is_active == True).all()
+        sessions = db.query(UserSession).filter(UserSession.user_id == user_id, UserSession.is_active).all()
 
         count = 0
         for session in sessions:
@@ -389,7 +384,7 @@ class UserManager:
         """Get all sessions for a user"""
         query = db.query(UserSession).filter(UserSession.user_id == user_id)
         if active_only:
-            query = query.filter(UserSession.is_active == True)
+            query = query.filter(UserSession.is_active)
         return query.order_by(desc(UserSession.created_at)).all()
 
     # ========================================================================

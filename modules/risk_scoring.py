@@ -6,9 +6,9 @@ Combines multiple risk factors for comprehensive scoring:
 - Business Impact (Criticality of affected asset)
 """
 
-from typing import Dict, List, Optional
 from dataclasses import dataclass
 from enum import Enum
+from typing import Dict, List, Optional
 
 
 class SeverityLevel(Enum):

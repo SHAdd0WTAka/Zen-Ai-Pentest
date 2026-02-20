@@ -11,7 +11,6 @@ without VPN, but warnings are issued for safety.
 
 import asyncio
 import logging
-import socket
 import subprocess
 from dataclasses import dataclass
 from enum import Enum
@@ -340,7 +339,9 @@ class VPNManager:
         # If VPN is connected, everything is good
         if status.status == VPNStatus.CONNECTED:
             result["recommendation"] = (
-                f"✅ VPN active ({status.provider}) - " f"Server: {status.server or 'unknown'}, " f"IP: {status.ip or 'hidden'}"
+                f"✅ VPN active ({status.provider}) - "
+                f"Server: {status.server or 'unknown'}, "
+                f"IP: {status.ip or 'hidden'}"
             )
             return result
 

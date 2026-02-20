@@ -34,11 +34,7 @@ async def scan_target_com():
     print("[*] Techniques: DNS, Wordlist, Certificate Transparency")
     print("[*] This may take a few moments...\n")
 
-    results = await scanner.scan(
-        domain=target,
-        techniques=["dns", "wordlist", "crt"],
-        check_http=True
-    )
+    results = await scanner.scan(domain=target, techniques=["dns", "wordlist", "crt"], check_http=True)
 
     # Display results
     print(f"\n[+] Discovery complete! Found {len(results)} subdomains\n")

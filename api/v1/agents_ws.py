@@ -7,10 +7,10 @@ Real-time agent activity monitoring and thought process streaming.
 import json
 import logging
 from datetime import datetime
-from typing import Dict, List, Optional, Any, Set
 from enum import Enum
+from typing import Any, Dict, List, Optional, Set
 
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect
 from pydantic import BaseModel, Field
 
 from api.auth import verify_token

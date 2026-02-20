@@ -2,11 +2,12 @@
 Tests für den ReAct Agent
 """
 
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock
 from langchain_core.messages import HumanMessage
 
-from agents.react_agent import ReActAgent, ReActAgentConfig, AgentState
+from agents.react_agent import AgentState, ReActAgent, ReActAgentConfig
 
 
 class TestReActAgent:

@@ -5,12 +5,12 @@ Verwaltet VMs für isolierte Pentest-Umgebungen.
 Unterstützt Kali Linux, Windows und macOS (Intel) VMs.
 """
 
-import subprocess
 import logging
-import time
-from typing import Optional, List, Dict, Literal
-from dataclasses import dataclass
 import platform
+import subprocess
+import time
+from dataclasses import dataclass
+from typing import Dict, List, Literal, Optional
 
 logger = logging.getLogger(__name__)
 

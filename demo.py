@@ -13,20 +13,22 @@ from datetime import datetime
 # Target: Nmap's official test server (safe to scan)
 TARGET = "scanme.nmap.org"
 
+
 async def demo_workflow():
     """Run complete demo workflow"""
 
-    print("="*70)
+    print("=" * 70)
     print(" ZEN-AI-PENTEST DEMO")
     print(f" Target: {TARGET}")
     print(f" Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    print("="*70)
+    print("=" * 70)
     print()
 
     # Step 1: Check system status
     print("[1/5] Checking system status...")
     try:
         from tools.integrations.tool_checker import ToolChecker
+
         checker = ToolChecker()
         report = checker.get_status_report()
 
@@ -40,8 +42,8 @@ async def demo_workflow():
     # Step 2: Initialize components
     print("[2/5] Initializing components...")
     try:
-        from orchestrator import ZenOrchestrator, OrchestratorConfig
-        from dashboard import DashboardManager, DashboardConfig
+        from dashboard import DashboardConfig, DashboardManager
+        from orchestrator import OrchestratorConfig, ZenOrchestrator
         from performance import CacheManager
 
         # Create instances
@@ -66,19 +68,9 @@ async def demo_workflow():
     # Step 3: Submit scan task
     print("[3/5] Submitting scan task...")
     try:
-        task_data = {
-            "type": "vulnerability_scan",
-            "target": TARGET,
-            "options": {
-                "ports": "22,80,443",
-                "scan_type": "quick"
-            }
-        }
+        task_data = {"type": "vulnerability_scan", "target": TARGET, "options": {"ports": "22,80,443", "scan_type": "quick"}}
 
-        task_id = await orchestrator.submit_task(
-            task_data=task_data,
-            priority="normal"
-        )
+        task_id = await orchestrator.submit_task(task_data=task_data, priority="normal")
 
         print(f"      Task ID: {task_id}")
         print(f"      Target: {TARGET}")
@@ -138,9 +130,9 @@ async def demo_workflow():
     print()
 
     # Summary
-    print("="*70)
+    print("=" * 70)
     print(" DEMO COMPLETE")
-    print("="*70)
+    print("=" * 70)
     print()
     print("Summary:")
     print(f"  - Target scanned: {TARGET}")
@@ -151,6 +143,7 @@ async def demo_workflow():
     print(f"  GET /api/v1/orchestrator/tasks/{task_id}/results")
     print()
 
+
 if __name__ == "__main__":
     try:
         asyncio.run(demo_workflow())
@@ -159,4 +152,5 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"\n\n[!] Demo failed: {e}")
         import traceback
+
         traceback.print_exc()

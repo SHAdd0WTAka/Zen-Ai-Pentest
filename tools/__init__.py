@@ -27,7 +27,7 @@ except ImportError as e:
     logger.warning(f"masscan_integration not available: {e}")
 
 try:
-    from .scapy_integration import scapy_syn_scan, scapy_arp_scan
+    from .scapy_integration import scapy_arp_scan, scapy_syn_scan
 
     TOOL_REGISTRY["scapy_syn_scan"] = scapy_syn_scan
     TOOL_REGISTRY["scapy_arp_scan"] = scapy_arp_scan

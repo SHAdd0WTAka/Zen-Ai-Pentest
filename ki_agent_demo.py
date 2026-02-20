@@ -19,14 +19,13 @@ Example:
 
 import asyncio
 import sys
-
 from datetime import datetime
 from pathlib import Path
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from autonomous.ki_analysis_agent import KIAutonomousAgent, AgentState, ReActStep, run_ki_agent
+from autonomous.ki_analysis_agent import AgentState, KIAutonomousAgent, ReActStep, run_ki_agent
 
 
 class Colors:

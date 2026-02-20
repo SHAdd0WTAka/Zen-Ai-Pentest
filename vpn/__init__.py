@@ -13,7 +13,7 @@ Features:
 
 Usage:
     from vpn import VPNManager, get_vpn_manager
-    
+
     vpn = get_vpn_manager()
     if vpn.is_connected():
         print("VPN active - safe to scan")

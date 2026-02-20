@@ -17,10 +17,10 @@ import asyncio
 import json
 import logging
 import os
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
 from datetime import datetime
 from functools import lru_cache
-from typing import Dict, List, Optional, Generator, Set
+from typing import Dict, Generator, List, Optional, Set
 
 logger = logging.getLogger("ZenAI")
 
@@ -106,10 +106,7 @@ class CVEDatabase:
                     self.ransomware_data = data.get("ransomware_campaigns", {})
                     self.cve_data = data.get("critical_historical_cves", {})
                     self.exploit_chains = data.get("common_exploit_chains", {})
-                logger.info(
-                    f"[CVE DB] Loaded {len(self.ransomware_data)} ransomware entries, "
-                    f"{len(self.cve_data)} CVEs"
-                )
+                logger.info(f"[CVE DB] Loaded {len(self.ransomware_data)} ransomware entries, " f"{len(self.cve_data)} CVEs")
             except Exception as e:
                 logger.error(f"[CVE DB] Error loading database: {e}")
 

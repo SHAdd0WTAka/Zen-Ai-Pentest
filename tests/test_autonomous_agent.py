@@ -7,9 +7,10 @@ import pytest
 
 # Try to import autonomous modules
 try:
+    from autonomous import agent as autonomous_agent
     from autonomous import agent_loop
     from autonomous import memory as agent_memory
-    from autonomous import agent as autonomous_agent
+
     AUTONOMOUS_AVAILABLE = True
 except ImportError:
     AUTONOMOUS_AVAILABLE = False
@@ -25,7 +26,7 @@ class TestAutonomousAgent:
 
     def test_agent_creation(self):
         """Test agent can be created"""
-        if hasattr(autonomous_agent, 'AutonomousAgent'):
+        if hasattr(autonomous_agent, "AutonomousAgent"):
             agent = autonomous_agent.AutonomousAgent()
             assert agent is not None
 
@@ -40,17 +41,17 @@ class TestAgentLoop:
 
     def test_loop_initialization(self):
         """Test loop can be initialized"""
-        if hasattr(agent_loop, 'AgentLoop'):
+        if hasattr(agent_loop, "AgentLoop"):
             loop = agent_loop.AgentLoop()
             assert loop is not None
 
     def test_loop_has_required_methods(self):
         """Test loop has required methods"""
-        if hasattr(agent_loop, 'AgentLoop'):
+        if hasattr(agent_loop, "AgentLoop"):
             loop = agent_loop.AgentLoop()
 
             # Check for common methods
-            assert hasattr(loop, 'run') or hasattr(loop, 'execute')
+            assert hasattr(loop, "run") or hasattr(loop, "execute")
 
 
 @pytest.mark.skipif(not AUTONOMOUS_AVAILABLE, reason="Autonomous modules not available")
@@ -63,21 +64,21 @@ class TestAgentMemory:
 
     def test_memory_initialization(self):
         """Test memory can be initialized"""
-        if hasattr(agent_memory, 'Memory'):
+        if hasattr(agent_memory, "Memory"):
             memory = agent_memory.Memory()
             assert memory is not None
 
     def test_memory_store_retrieve(self):
         """Test memory store and retrieve"""
-        if hasattr(agent_memory, 'Memory'):
+        if hasattr(agent_memory, "Memory"):
             memory = agent_memory.Memory()
 
             # Store something (if method exists)
-            if hasattr(memory, 'store'):
+            if hasattr(memory, "store"):
                 memory.store("key", "value")
 
             # Retrieve something (if method exists)
-            if hasattr(memory, 'retrieve'):
+            if hasattr(memory, "retrieve"):
                 value = memory.retrieve("key")
                 # Value might be None or the stored value
                 assert value is not None or value is None  # Just test it doesn't crash
@@ -90,10 +91,10 @@ class TestAgentState:
     def test_state_creation(self):
         """Test state can be created"""
         # Try to find State class
-        if hasattr(autonomous_agent, 'AgentState'):
+        if hasattr(autonomous_agent, "AgentState"):
             state = autonomous_agent.AgentState()
             assert state is not None
-        elif hasattr(agent_loop, 'State'):
+        elif hasattr(agent_loop, "State"):
             state = agent_loop.State()
             assert state is not None
 
@@ -106,6 +107,7 @@ class TestToolExecution:
         """Test tool executor exists"""
         try:
             from autonomous.tool_executor import ToolExecutor
+
             assert ToolExecutor is not None
         except ImportError:
             pytest.skip("ToolExecutor not available")
@@ -114,6 +116,7 @@ class TestToolExecution:
         """Test tool execution with mock"""
         try:
             from autonomous.tool_executor import ToolExecutor
+
             executor = ToolExecutor()
 
             # Test that it exists and can be called
@@ -125,6 +128,7 @@ class TestToolExecution:
 # ============================================================================
 # PLACEHOLDER TESTS FOR COVERAGE BOOST
 # ============================================================================
+
 
 class TestPlaceholderAutonomous:
     """Placeholder tests to boost coverage"""

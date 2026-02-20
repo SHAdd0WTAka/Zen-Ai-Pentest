@@ -5,8 +5,9 @@ Tests all API endpoints with actual HTTP requests.
 Requires running server: python -m uvicorn api.main:app --reload
 """
 
-import pytest
 import asyncio
+
+import pytest
 
 # Mark as e2e tests
 pytestmark = pytest.mark.e2e
@@ -64,7 +65,7 @@ class TestOrchestratorEndpoints:
             "type": "vulnerability_scan",
             "target": "test.example.com",
             "options": {"ports": "80,443"},
-            "priority": "normal"
+            "priority": "normal",
         }
 
         response = await client.post("/api/v1/orchestrator/tasks", json=task_data)
@@ -122,7 +123,7 @@ class TestSchedulerEndpoints:
             "task_type": "vulnerability_scan",
             "task_data": {"target": "test.com"},
             "cron": "0 2 * * *",
-            "timezone": "UTC"
+            "timezone": "UTC",
         }
 
         response = await client.post("/api/v1/scheduler/jobs", json=job_data)
@@ -246,7 +247,7 @@ class TestCompleteWorkflow:
             "type": "vulnerability_scan",
             "target": "integration-test.example.com",
             "options": {"deep_scan": False},
-            "priority": "high"
+            "priority": "high",
         }
 
         response = await client.post("/api/v1/orchestrator/tasks", json=task_data)
@@ -274,7 +275,7 @@ class TestCompleteWorkflow:
             "task_type": "subdomain_enum",
             "task_data": {"domain": "test.com"},
             "interval": 60,  # Every 60 minutes
-            "timezone": "UTC"
+            "timezone": "UTC",
         }
 
         response = await client.post("/api/v1/scheduler/jobs", json=job_data)
@@ -302,8 +303,8 @@ class TestCompleteWorkflow:
 
 # Fixtures
 try:
-    from httpx import AsyncClient
     import pytest_asyncio
+    from httpx import AsyncClient
 
     @pytest_asyncio.fixture
     async def client():

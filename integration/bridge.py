@@ -10,10 +10,11 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-import docker
-from docker.errors import DockerException
 from fastapi import BackgroundTasks, FastAPI, HTTPException, Query
 from pydantic import BaseModel, Field
+
+import docker
+from docker.errors import DockerException
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

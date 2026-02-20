@@ -8,18 +8,20 @@ Tests the core audit logging functionality including:
 - Chain of custody
 """
 
-import pytest
 from datetime import datetime
+
+import pytest
 
 # Import audit components
 try:
-    from audit import AuditLogger, AuditLogEntry
-    from audit.config import AuditConfig, LogLevel, EventCategory
+    from audit import AuditLogEntry, AuditLogger
+    from audit.config import AuditConfig, EventCategory, LogLevel
 except ImportError:
     import sys
+
     sys.path.insert(0, "../../..")
-    from audit import AuditLogger, AuditLogEntry
-    from audit.config import AuditConfig, LogLevel, EventCategory
+    from audit import AuditLogEntry, AuditLogger
+    from audit.config import AuditConfig, EventCategory, LogLevel
 
 
 class TestAuditLogEntry:
@@ -33,7 +35,7 @@ class TestAuditLogEntry:
             level="info",
             category="system",
             event_type="test_event",
-            message="Test message"
+            message="Test message",
         )
 
         assert entry.id == "test-123"
@@ -48,7 +50,7 @@ class TestAuditLogEntry:
             level="info",
             category="system",
             event_type="test_event",
-            message="Test message"
+            message="Test message",
         )
 
         # Hash should be deterministic
@@ -67,7 +69,7 @@ class TestAuditLogEntry:
             level="info",
             category="system",
             event_type="test_event",
-            message="Test message"
+            message="Test message",
         )
 
         secret = "my-secret-key"
@@ -90,7 +92,7 @@ class TestAuditLogEntry:
             level="info",
             category="system",
             event_type="event1",
-            message="First event"
+            message="First event",
         )
 
         entry2 = AuditLogEntry(
@@ -100,7 +102,7 @@ class TestAuditLogEntry:
             category="system",
             event_type="event2",
             message="Second event",
-            previous_hash=entry1.hash
+            previous_hash=entry1.hash,
         )
 
         # Valid chain
@@ -114,7 +116,7 @@ class TestAuditLogEntry:
             category="system",
             event_type="event3",
             message="Third event",
-            previous_hash="invalid-hash"
+            previous_hash="invalid-hash",
         )
         assert entry3.verify_chain(entry1) is False
 
@@ -130,7 +132,7 @@ class TestAuditLogEntry:
             level="info",
             category="system",
             event_type="test_event",
-            message="Test message"
+            message="Test message",
         )
 
         data = entry.to_dict()
@@ -148,7 +150,7 @@ class TestAuditLogEntry:
             "category": "system",
             "event_type": "test_event",
             "message": "Test message",
-            "hash": "abc123"
+            "hash": "abc123",
         }
 
         entry = AuditLogEntry.from_dict(data)
@@ -164,10 +166,7 @@ class TestAuditLogger:
     @pytest.fixture
     async def logger(self):
         """Create test logger"""
-        config = AuditConfig(
-            async_logging=False,  # Synchronous for tests
-            sign_logs=True
-        )
+        config = AuditConfig(async_logging=False, sign_logs=True)  # Synchronous for tests
         logger = AuditLogger(config)
         await logger.start()
         yield logger
@@ -181,7 +180,7 @@ class TestAuditLogger:
             category=EventCategory.SYSTEM,
             event_type="test_event",
             message="Test message",
-            user_id="user123"
+            user_id="user123",
         )
 
         assert entry.level == "info"
@@ -193,34 +192,22 @@ class TestAuditLogger:
     async def test_convenience_methods(self, logger):
         """Test convenience logging methods"""
         # Test all levels
-        debug_entry = await logger.debug(
-            EventCategory.SYSTEM, "debug_test", "Debug message"
-        )
+        debug_entry = await logger.debug(EventCategory.SYSTEM, "debug_test", "Debug message")
         assert debug_entry.level == "debug"
 
-        info_entry = await logger.info(
-            EventCategory.SYSTEM, "info_test", "Info message"
-        )
+        info_entry = await logger.info(EventCategory.SYSTEM, "info_test", "Info message")
         assert info_entry.level == "info"
 
-        warning_entry = await logger.warning(
-            EventCategory.SYSTEM, "warning_test", "Warning message"
-        )
+        warning_entry = await logger.warning(EventCategory.SYSTEM, "warning_test", "Warning message")
         assert warning_entry.level == "warning"
 
-        error_entry = await logger.error(
-            EventCategory.SYSTEM, "error_test", "Error message"
-        )
+        error_entry = await logger.error(EventCategory.SYSTEM, "error_test", "Error message")
         assert error_entry.level == "error"
 
-        critical_entry = await logger.critical(
-            EventCategory.SYSTEM, "critical_test", "Critical message"
-        )
+        critical_entry = await logger.critical(EventCategory.SYSTEM, "critical_test", "Critical message")
         assert critical_entry.level == "critical"
 
-        security_entry = await logger.security(
-            "security_test", "Security message"
-        )
+        security_entry = await logger.security("security_test", "Security message")
         assert security_entry.level == "alert"
         assert security_entry.category == "security"
 

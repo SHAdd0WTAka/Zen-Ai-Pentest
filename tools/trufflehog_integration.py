@@ -92,7 +92,6 @@ class TruffleHogScanner:
         "SlackConfig": "critical",
         "SlackLegacy": "critical",
         "SlackUserToken": "critical",
-
         # High - Important credentials
         "Docker": "high",
         "DockerHub": "high",
@@ -117,7 +116,6 @@ class TruffleHogScanner:
         "BearerToken": "high",
         "ApiKey": "high",
         "GenericApiKey": "high",
-
         # Medium - API keys and tokens
         "Mailchimp": "medium",
         "Mailgun": "medium",
@@ -139,7 +137,6 @@ class TruffleHogScanner:
         "DropboxShort": "medium",
         "Firebase": "medium",
         "FirebaseURL": "medium",
-
         # Low - Generic patterns and less critical
         "BasicAuth": "low",
         "HttpBasicAuth": "low",
@@ -190,8 +187,7 @@ class TruffleHogScanner:
         trufflehog_path = shutil.which(path)
         if not trufflehog_path:
             raise RuntimeError(
-                f"trufflehog not found at '{path}'. Install from: "
-                "https://github.com/trufflesecurity/trufflehog"
+                f"trufflehog not found at '{path}'. Install from: " "https://github.com/trufflesecurity/trufflehog"
             )
         return trufflehog_path
 
@@ -521,9 +517,7 @@ class TruffleHogScanner:
 
         for finding in findings:
             # Build description
-            description = (
-                f"Detected {finding.get('detector', 'Unknown')} secret"
-            )
+            description = f"Detected {finding.get('detector', 'Unknown')} secret"
             if finding.get("verified"):
                 description += " (VERIFIED)"
 
@@ -575,6 +569,7 @@ class TruffleHogScanner:
 # LangChain Tool integration
 try:
     from langchain_core.tools import tool
+
     LANGCHAIN_AVAILABLE = True
 except ImportError:
     LANGCHAIN_AVAILABLE = False
@@ -715,6 +710,7 @@ def trufflehog_scan_local_repo(
 # Tool Registry integration
 try:
     from .tool_registry import ToolCategory, ToolSafetyLevel, registry
+
     TOOL_REGISTRY_AVAILABLE = True
 except ImportError:
     TOOL_REGISTRY_AVAILABLE = False

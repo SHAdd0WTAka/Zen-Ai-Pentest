@@ -2,21 +2,22 @@
 Tests for Agent Communication Protocol (ACP) Models
 """
 
+import sys
+from pathlib import Path
+
 import pytest
 from pydantic import ValidationError
 
-import sys
-from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from agent_comm.models import (
     AgentMessage,
     MessageContent,
     MessageContext,
+    MessageResponse,
+    MessageTemplates,
     MessageType,
     PriorityLevel,
-    MessageTemplates,
-    MessageResponse
 )
 
 
@@ -25,11 +26,7 @@ class TestMessageContent:
 
     def test_valid_content(self):
         """Test creating valid MessageContent"""
-        content = MessageContent(
-            reasoning="Test reasoning",
-            action="nmap_scan",
-            confidence=0.85
-        )
+        content = MessageContent(reasoning="Test reasoning", action="nmap_scan", confidence=0.85)
         assert content.reasoning == "Test reasoning"
         assert content.action == "nmap_scan"
         assert content.confidence == 0.85
@@ -54,7 +51,7 @@ class TestMessageContent:
             task_description="Enumerate subdomains",
             assignee="recon-bot-1",
             due_in_seconds=1800,
-            parameters={"target": "example.com"}
+            parameters={"target": "example.com"},
         )
         assert content.task_description == "Enumerate subdomains"
         assert content.assignee == "recon-bot-1"
@@ -66,12 +63,7 @@ class TestMessageContext:
 
     def test_valid_context(self):
         """Test creating valid MessageContext"""
-        context = MessageContext(
-            target="192.168.1.1",
-            session_id="scan_123",
-            risk_score=7.5,
-            safety_level="medium_risk"
-        )
+        context = MessageContext(target="192.168.1.1", session_id="scan_123", risk_score=7.5, safety_level="medium_risk")
         assert context.target == "192.168.1.1"
         assert context.session_id == "scan_123"
         assert context.risk_score == 7.5
@@ -113,7 +105,7 @@ class TestAgentMessage:
             type=MessageType.OBSERVE,
             content=MessageContent(observation="Port 80 open"),
             targets=["orchestrator"],
-            context=MessageContext(target="192.168.1.1", session_id="scan_123")
+            context=MessageContext(target="192.168.1.1", session_id="scan_123"),
         )
         assert msg.message_id == "msg_abc12345"
         assert msg.version == "1.1"
@@ -130,7 +122,7 @@ class TestAgentMessage:
             type="observe",
             content=MessageContent(observation="Test"),
             targets=["target"],
-            context=MessageContext(target="test", session_id="123")
+            context=MessageContext(target="test", session_id="123"),
         )
 
         # Invalid - wrong prefix
@@ -142,7 +134,7 @@ class TestAgentMessage:
                 type="observe",
                 content=MessageContent(observation="Test"),
                 targets=["target"],
-                context=MessageContext(target="test", session_id="123")
+                context=MessageContext(target="test", session_id="123"),
             )
 
     def test_targets_validation(self):
@@ -155,7 +147,7 @@ class TestAgentMessage:
                 type="observe",
                 content=MessageContent(),
                 targets=[],  # Empty - should fail
-                context=MessageContext(target="test", session_id="123")
+                context=MessageContext(target="test", session_id="123"),
             )
 
     def test_act_message_requires_action(self):
@@ -169,7 +161,7 @@ class TestAgentMessage:
                 type=MessageType.ACT,
                 content=MessageContent(),  # No action
                 targets=["target"],
-                context=MessageContext(target="test", session_id="123")
+                context=MessageContext(target="test", session_id="123"),
             )
 
         # With action - should pass
@@ -180,7 +172,7 @@ class TestAgentMessage:
             type=MessageType.ACT,
             content=MessageContent(action="nmap_scan"),
             targets=["target"],
-            context=MessageContext(target="test", session_id="123")
+            context=MessageContext(target="test", session_id="123"),
         )
 
     def test_delegate_task_requires_description(self):
@@ -193,7 +185,7 @@ class TestAgentMessage:
                 type=MessageType.DELEGATE_TASK,
                 content=MessageContent(),  # No task_description
                 targets=["target"],
-                context=MessageContext(target="test", session_id="123")
+                context=MessageContext(target="test", session_id="123"),
             )
 
     def test_is_high_priority(self):
@@ -207,7 +199,7 @@ class TestAgentMessage:
             priority=PriorityLevel.CRITICAL,
             content=MessageContent(observation="Test"),
             targets=["target"],
-            context=MessageContext(target="test", session_id="123")
+            context=MessageContext(target="test", session_id="123"),
         )
         assert msg_critical.is_high_priority() is True
 
@@ -220,7 +212,7 @@ class TestAgentMessage:
             priority=PriorityLevel.NORMAL,
             content=MessageContent(observation="Test"),
             targets=["target"],
-            context=MessageContext(target="test", session_id="123")
+            context=MessageContext(target="test", session_id="123"),
         )
         assert msg_normal.is_high_priority() is False
 
@@ -235,7 +227,7 @@ class TestAgentMessage:
             ttl_seconds=1,
             content=MessageContent(observation="Test"),
             targets=["target"],
-            context=MessageContext(target="test", session_id="123")
+            context=MessageContext(target="test", session_id="123"),
         )
 
         # Should not be expired immediately
@@ -250,7 +242,7 @@ class TestAgentMessage:
             ttl_seconds=None,
             content=MessageContent(observation="Test"),
             targets=["target"],
-            context=MessageContext(target="test", session_id="123")
+            context=MessageContext(target="test", session_id="123"),
         )
         assert msg_no_ttl.is_expired() is False
 
@@ -267,7 +259,7 @@ class TestMessageTemplates:
             assignee="recon-bot-2",
             target="example.com",
             priority=PriorityLevel.HIGH,
-            due_in_seconds=1800
+            due_in_seconds=1800,
         )
 
         assert msg.agent_id == "analysis-bot-1"
@@ -285,7 +277,7 @@ class TestMessageTemplates:
             session_id="scan_123",
             status="Scanning ports 80-443",
             progress_percent=50,
-            target="example.com"
+            target="example.com",
         )
 
         assert msg.agent_id == "recon-bot-1"
@@ -300,20 +292,14 @@ class TestMessageResponse:
 
     def test_success_response(self):
         """Test successful response"""
-        response = MessageResponse(
-            success=True,
-            message_id="msg_abc12345"
-        )
+        response = MessageResponse(success=True, message_id="msg_abc12345")
         assert response.success is True
         assert response.message_id == "msg_abc12345"
         assert response.error is None
 
     def test_error_response(self):
         """Test error response"""
-        response = MessageResponse(
-            success=False,
-            error="Validation failed"
-        )
+        response = MessageResponse(success=False, error="Validation failed")
         assert response.success is False
         assert response.error == "Validation failed"
         assert response.message_id is None
@@ -331,7 +317,7 @@ class TestSerialization:
             type="observe",
             content=MessageContent(observation="Test"),
             targets=["orchestrator"],
-            context=MessageContext(target="test", session_id="scan_123")
+            context=MessageContext(target="test", session_id="scan_123"),
         )
 
         data = msg.model_dump()
@@ -349,7 +335,7 @@ class TestSerialization:
             "type": "observe",
             "content": {"observation": "Port 80 open"},
             "targets": ["orchestrator"],
-            "context": {"target": "192.168.1.1", "session_id": "scan_123", "safety_level": "non_destructive"}
+            "context": {"target": "192.168.1.1", "session_id": "scan_123", "safety_level": "non_destructive"},
         }
 
         msg = AgentMessage.model_validate(data)

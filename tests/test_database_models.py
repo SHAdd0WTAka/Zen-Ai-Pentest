@@ -7,10 +7,8 @@ import pytest
 
 # Try to import database models
 try:
-    from database.models import (
-        User, Scan, Finding, Report, Tool,
-        ScanResult, Notification
-    )
+    from database.models import Finding, Notification, Report, Scan, ScanResult, Tool, User
+
     MODELS_AVAILABLE = True
 except ImportError:
     MODELS_AVAILABLE = False
@@ -23,12 +21,7 @@ class TestUserModel:
     def test_user_creation(self):
         """Test user model attributes"""
         user = User(
-            id="1",
-            username="testuser",
-            email="test@test.com",
-            hashed_password="hashed_pass",
-            role="user",
-            is_active=True
+            id="1", username="testuser", email="test@test.com", hashed_password="hashed_pass", role="user", is_active=True
         )
 
         assert user.username == "testuser"
@@ -45,18 +38,13 @@ class TestUserModel:
 
     def test_user_to_dict(self):
         """Test user serialization"""
-        user = User(
-            id="1",
-            username="testuser",
-            email="test@test.com",
-            role="admin"
-        )
+        user = User(id="1", username="testuser", email="test@test.com", role="admin")
 
         # If to_dict method exists
-        if hasattr(user, 'to_dict'):
+        if hasattr(user, "to_dict"):
             user_dict = user.to_dict()
-            assert user_dict['username'] == "testuser"
-            assert user_dict['email'] == "test@test.com"
+            assert user_dict["username"] == "testuser"
+            assert user_dict["email"] == "test@test.com"
 
 
 @pytest.mark.skipif(not MODELS_AVAILABLE, reason="Database models not available")
@@ -65,13 +53,7 @@ class TestScanModel:
 
     def test_scan_creation(self):
         """Test scan model attributes"""
-        scan = Scan(
-            id="1",
-            target="example.com",
-            type="full",
-            status="pending",
-            user_id="1"
-        )
+        scan = Scan(id="1", target="example.com", type="full", status="pending", user_id="1")
 
         assert scan.target == "example.com"
         assert scan.type == "full"
@@ -79,11 +61,7 @@ class TestScanModel:
 
     def test_scan_status_transitions(self):
         """Test scan status can be updated"""
-        scan = Scan(
-            target="example.com",
-            type="quick",
-            status="pending"
-        )
+        scan = Scan(target="example.com", type="quick", status="pending")
 
         # Update status
         scan.status = "running"
@@ -94,13 +72,10 @@ class TestScanModel:
 
     def test_scan_timestamps(self):
         """Test scan timestamps"""
-        scan = Scan(
-            target="example.com",
-            type="full"
-        )
+        scan = Scan(target="example.com", type="full")
 
         # Check if created_at exists
-        if hasattr(scan, 'created_at'):
+        if hasattr(scan, "created_at"):
             assert scan.created_at is not None
 
 
@@ -116,7 +91,7 @@ class TestFindingModel:
             title="SQL Injection",
             severity="high",
             description="A SQL injection vulnerability was found",
-            url="http://example.com/page.php?id=1"
+            url="http://example.com/page.php?id=1",
         )
 
         assert finding.title == "SQL Injection"
@@ -128,11 +103,7 @@ class TestFindingModel:
         severities = ["critical", "high", "medium", "low", "info"]
 
         for severity in severities:
-            finding = Finding(
-                title=f"Test {severity}",
-                severity=severity,
-                scan_id="1"
-            )
+            finding = Finding(title=f"Test {severity}", severity=severity, scan_id="1")
             assert finding.severity == severity
 
 
@@ -142,13 +113,7 @@ class TestReportModel:
 
     def test_report_creation(self):
         """Test report model attributes"""
-        report = Report(
-            id="1",
-            scan_id="1",
-            format="pdf",
-            status="generating",
-            file_path="/reports/report1.pdf"
-        )
+        report = Report(id="1", scan_id="1", format="pdf", status="generating", file_path="/reports/report1.pdf")
 
         assert report.format == "pdf"
         assert report.scan_id == "1"
@@ -159,10 +124,7 @@ class TestReportModel:
         formats = ["pdf", "html", "json", "xml", "markdown"]
 
         for fmt in formats:
-            report = Report(
-                scan_id="1",
-                format=fmt
-            )
+            report = Report(scan_id="1", format=fmt)
             assert report.format == fmt
 
 
@@ -172,13 +134,7 @@ class TestToolModel:
 
     def test_tool_creation(self):
         """Test tool model attributes"""
-        tool = Tool(
-            id="nmap",
-            name="Nmap",
-            description="Network port scanner",
-            category="network",
-            enabled=True
-        )
+        tool = Tool(id="nmap", name="Nmap", description="Network port scanner", category="network", enabled=True)
 
         assert tool.name == "Nmap"
         assert tool.category == "network"
@@ -189,10 +145,7 @@ class TestToolModel:
         categories = ["network", "web", "reconnaissance", "exploitation"]
 
         for category in categories:
-            tool = Tool(
-                name=f"Test {category}",
-                category=category
-            )
+            tool = Tool(name=f"Test {category}", category=category)
             assert tool.category == category
 
 
@@ -234,10 +187,7 @@ class TestModelValidation:
 
     def test_email_validation(self):
         """Test email format validation"""
-        user = User(
-            username="test",
-            email="valid@example.com"
-        )
+        user = User(username="test", email="valid@example.com")
 
         assert "@" in user.email
         assert "." in user.email

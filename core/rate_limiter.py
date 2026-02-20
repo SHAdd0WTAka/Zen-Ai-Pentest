@@ -5,6 +5,7 @@ Prevents API abuse and handles backend failures gracefully
 
 import asyncio
 import hashlib
+import importlib.util
 import logging
 import random
 import time
@@ -12,8 +13,6 @@ from dataclasses import dataclass
 from enum import Enum
 from functools import wraps
 from typing import Any, Callable, Dict, Optional
-
-import importlib.util
 
 REDIS_AVAILABLE = importlib.util.find_spec("aioredis") is not None
 

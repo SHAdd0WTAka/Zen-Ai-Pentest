@@ -10,7 +10,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 
 from api.core.auth import get_current_user
-from modules.subdomain_scanner import SubdomainScanner, SubdomainResult
+from modules.subdomain_scanner import SubdomainResult, SubdomainScanner
 
 router = APIRouter(prefix="/subdomain", tags=["subdomain"])
 
@@ -20,11 +20,9 @@ scan_jobs = {}
 
 class SubdomainScanRequest(BaseModel):
     """Request model for subdomain scan"""
+
     domain: str = Field(..., description="Target domain to scan", example="target.com")
-    techniques: List[str] = Field(
-        default=["dns", "wordlist", "crt"],
-        description="Enumeration techniques to use"
-    )
+    techniques: List[str] = Field(default=["dns", "wordlist", "crt"], description="Enumeration techniques to use")
     check_http: bool = Field(default=True, description="Check HTTP/HTTPS availability")
     max_workers: int = Field(default=50, ge=1, le=200, description="Concurrent workers")
     timeout: int = Field(default=10, ge=1, le=60, description="Request timeout in seconds")
@@ -33,6 +31,7 @@ class SubdomainScanRequest(BaseModel):
 
 class SubdomainScanResponse(BaseModel):
     """Response model for subdomain scan result"""
+
     subdomain: str
     ip_addresses: List[str] = []
     status_code: Optional[int] = None
@@ -44,6 +43,7 @@ class SubdomainScanResponse(BaseModel):
 
 class ScanJobResponse(BaseModel):
     """Scan job status response"""
+
     job_id: str
     status: str  # pending, running, completed, failed
     domain: str
@@ -54,6 +54,7 @@ class ScanJobResponse(BaseModel):
 
 class ScanSummary(BaseModel):
     """Summary of scan results"""
+
     total_discovered: int
     live_hosts: int
     dns_only: int
@@ -103,12 +104,7 @@ async def start_subdomain_scan(
     # Start scan in background
     background_tasks.add_task(_run_scan, job_id, request)
 
-    return ScanJobResponse(
-        job_id=job_id,
-        status="pending",
-        domain=request.domain,
-        message="Scan started"
-    )
+    return ScanJobResponse(job_id=job_id, status="pending", domain=request.domain, message="Scan started")
 
 
 async def _run_scan(job_id: str, request: SubdomainScanRequest):
@@ -120,24 +116,19 @@ async def _run_scan(job_id: str, request: SubdomainScanRequest):
     scan_jobs[job_id]["message"] = "Scan in progress..."
 
     try:
-        scanner = SubdomainScanner(
-            max_workers=request.max_workers,
-            timeout=request.timeout
-        )
+        scanner = SubdomainScanner(max_workers=request.max_workers, timeout=request.timeout)
 
         # Run scan
         results = await scanner.scan(
             domain=request.domain,
             techniques=request.techniques,
             check_http=request.check_http,
-            wordlist=request.custom_wordlist
+            wordlist=request.custom_wordlist,
         )
 
         # Update job with results
         scan_jobs[job_id]["status"] = "completed"
-        scan_jobs[job_id]["results"] = {
-            sub: result_to_dict(sub, res) for sub, res in results.items()
-        }
+        scan_jobs[job_id]["results"] = {sub: result_to_dict(sub, res) for sub, res in results.items()}
         scan_jobs[job_id]["results_count"] = len(results)
         scan_jobs[job_id]["progress"] = 100
         scan_jobs[job_id]["scan_duration"] = time.time() - start_time
@@ -149,10 +140,7 @@ async def _run_scan(job_id: str, request: SubdomainScanRequest):
 
 
 @router.get("/scan/{job_id}", response_model=ScanJobResponse)
-async def get_scan_status(
-    job_id: str,
-    current_user: dict = Depends(get_current_user)
-):
+async def get_scan_status(job_id: str, current_user: dict = Depends(get_current_user)):
     """Get the status of a running or completed scan"""
     if job_id not in scan_jobs:
         raise HTTPException(status_code=404, detail="Scan job not found")
@@ -164,7 +152,7 @@ async def get_scan_status(
         domain=job["domain"],
         progress=job.get("progress", 0),
         results_count=job.get("results_count", 0),
-        message=job.get("message")
+        message=job.get("message"),
     )
 
 
@@ -172,7 +160,7 @@ async def get_scan_status(
 async def get_scan_results(
     job_id: str,
     alive_only: bool = Query(False, description="Only return live hosts"),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
 ):
     """Get results from a completed scan"""
     if job_id not in scan_jobs:
@@ -181,10 +169,7 @@ async def get_scan_results(
     job = scan_jobs[job_id]
 
     if job["status"] not in ["completed", "running"]:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Scan not ready. Status: {job['status']}"
-        )
+        raise HTTPException(status_code=400, detail=f"Scan not ready. Status: {job['status']}")
 
     results = job.get("results", {})
 
@@ -196,10 +181,7 @@ async def get_scan_results(
 
 
 @router.get("/scan/{job_id}/summary", response_model=ScanSummary)
-async def get_scan_summary(
-    job_id: str,
-    current_user: dict = Depends(get_current_user)
-):
+async def get_scan_summary(job_id: str, current_user: dict = Depends(get_current_user)):
     """Get summary statistics for a scan"""
     if job_id not in scan_jobs:
         raise HTTPException(status_code=404, detail="Scan job not found")
@@ -214,15 +196,12 @@ async def get_scan_summary(
         live_hosts=live_count,
         dns_only=len(results) - live_count,
         techniques_used=[],  # TODO: store in job
-        scan_duration=job.get("scan_duration", 0)
+        scan_duration=job.get("scan_duration", 0),
     )
 
 
 @router.delete("/scan/{job_id}")
-async def delete_scan_job(
-    job_id: str,
-    current_user: dict = Depends(get_current_user)
-):
+async def delete_scan_job(job_id: str, current_user: dict = Depends(get_current_user)):
     """Delete a scan job and its results"""
     if job_id not in scan_jobs:
         raise HTTPException(status_code=404, detail="Scan job not found")
@@ -232,10 +211,7 @@ async def delete_scan_job(
 
 
 @router.get("/scans", response_model=List[ScanJobResponse])
-async def list_scan_jobs(
-    current_user: dict = Depends(get_current_user),
-    limit: int = Query(10, ge=1, le=100)
-):
+async def list_scan_jobs(current_user: dict = Depends(get_current_user), limit: int = Query(10, ge=1, le=100)):
     """List recent scan jobs"""
     user_jobs = [
         ScanJobResponse(
@@ -244,7 +220,7 @@ async def list_scan_jobs(
             domain=job["domain"],
             progress=job.get("progress", 0),
             results_count=job.get("results_count", 0),
-            message=job.get("message")
+            message=job.get("message"),
         )
         for jid, job in list(scan_jobs.items())[-limit:]
     ]
@@ -252,10 +228,7 @@ async def list_scan_jobs(
 
 
 @router.post("/quick-scan")
-async def quick_subdomain_scan(
-    domain: str,
-    current_user: dict = Depends(get_current_user)
-):
+async def quick_subdomain_scan(domain: str, current_user: dict = Depends(get_current_user)):
     """
     Quick synchronous subdomain scan
 
@@ -265,16 +238,12 @@ async def quick_subdomain_scan(
     scanner = SubdomainScanner(max_workers=30, timeout=10)
 
     try:
-        results = await scanner.scan(
-            domain=domain,
-            techniques=["dns", "wordlist", "crt"],
-            check_http=True
-        )
+        results = await scanner.scan(domain=domain, techniques=["dns", "wordlist", "crt"], check_http=True)
 
         return {
             "domain": domain,
             "total_found": len(results),
-            "results": [result_to_dict(sub, res) for sub, res in results.items()]
+            "results": [result_to_dict(sub, res) for sub, res in results.items()],
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Scan failed: {str(e)}")

@@ -5,9 +5,10 @@ Dieser Bot konfiguriert Discord-Server mit sicheren Standard-Berechtigungen
 """
 
 import os
+
 import discord
-from discord.ext import commands
 from discord import app_commands
+from discord.ext import commands
 
 # Bot-Intents
 intents = discord.Intents.default()
@@ -15,7 +16,7 @@ intents.guilds = True
 intents.members = True
 intents.message_content = True
 
-bot = commands.Bot(command_prefix='!', intents=intents)
+bot = commands.Bot(command_prefix="!", intents=intents)
 
 # Farben
 EMBED_COLOR = discord.Color.blue()
@@ -23,18 +24,20 @@ SUCCESS_COLOR = discord.Color.green()
 ERROR_COLOR = discord.Color.red()
 WARNING_COLOR = discord.Color.orange()
 
+
 @bot.event
 async def on_ready():
     """Wird aufgerufen wenn der Bot bereit ist"""
-    print(f'🤖 {bot.user} ist online!')
-    print(f'📊 Auf {len(bot.guilds)} Servern aktiv')
+    print(f"🤖 {bot.user} ist online!")
+    print(f"📊 Auf {len(bot.guilds)} Servern aktiv")
 
     # Sync Slash Commands
     try:
         synced = await bot.tree.sync()
-        print(f'✅ {len(synced)} Slash-Commands synchronisiert')
+        print(f"✅ {len(synced)} Slash-Commands synchronisiert")
     except Exception as e:
-        print(f'❌ Sync fehlgeschlagen: {e}')
+        print(f"❌ Sync fehlgeschlagen: {e}")
+
 
 @bot.tree.command(name="zen-security-setup", description="🔒 Konfiguriert Server-Sicherheit (Nur für Admins)")
 @app_commands.checks.has_permissions(administrator=True)
@@ -54,10 +57,7 @@ async def security_setup(interaction: discord.Interaction):
 
         # 1. @everyone Rolle einschränken
         everyone = guild.default_role
-        await everyone.edit(
-            permissions=discord.Permissions.none(),
-            reason=f"Sicherheits-Setup durch {interaction.user}"
-        )
+        await everyone.edit(permissions=discord.Permissions.none(), reason=f"Sicherheits-Setup durch {interaction.user}")
         updates.append("✅ @everyone: Alle Berechtigungen entfernt")
         await progress_msg.edit(content="\n".join(updates))
 
@@ -82,10 +82,7 @@ async def security_setup(interaction: discord.Interaction):
         )
 
         if member_role:
-            await member_role.edit(
-                permissions=member_perms,
-                reason=f"Sicherheits-Setup durch {interaction.user}"
-            )
+            await member_role.edit(permissions=member_perms, reason=f"Sicherheits-Setup durch {interaction.user}")
             updates.append("✅ Member-Rolle: Berechtigungen aktualisiert")
         else:
             member_role = await guild.create_role(
@@ -93,7 +90,7 @@ async def security_setup(interaction: discord.Interaction):
                 permissions=member_perms,
                 color=discord.Color.blue(),
                 hoist=True,
-                reason=f"Sicherheits-Setup durch {interaction.user}"
+                reason=f"Sicherheits-Setup durch {interaction.user}",
             )
             updates.append("✅ Member-Rolle: Neu erstellt")
 
@@ -125,7 +122,7 @@ async def security_setup(interaction: discord.Interaction):
                 permissions=mod_perms,
                 color=discord.Color.orange(),
                 hoist=True,
-                reason=f"Sicherheits-Setup durch {interaction.user}"
+                reason=f"Sicherheits-Setup durch {interaction.user}",
             )
             updates.append("✅ Moderator-Rolle: Neu erstellt")
             await progress_msg.edit(content="\n".join(updates))
@@ -151,11 +148,7 @@ async def security_setup(interaction: discord.Interaction):
 
             # Entferne @everyone
             if everyone in overwrites:
-                await channel.set_permissions(
-                    everyone,
-                    overwrite=None,
-                    reason=f"Sicherheits-Setup durch {interaction.user}"
-                )
+                await channel.set_permissions(everyone, overwrite=None, reason=f"Sicherheits-Setup durch {interaction.user}")
 
             # Füge Member-Rolle hinzu
             if member_role not in overwrites:
@@ -165,7 +158,7 @@ async def security_setup(interaction: discord.Interaction):
                     send_messages=isinstance(channel, discord.TextChannel),
                     connect=isinstance(channel, discord.VoiceChannel),
                     speak=isinstance(channel, discord.VoiceChannel),
-                    reason=f"Sicherheits-Setup durch {interaction.user}"
+                    reason=f"Sicherheits-Setup durch {interaction.user}",
                 )
                 channel_updates += 1
 
@@ -184,31 +177,29 @@ async def security_setup(interaction: discord.Interaction):
         embed = discord.Embed(
             title="🔒 Sicherheits-Setup Abgeschlossen!",
             description="Der Server ist jetzt sicher konfiguriert.",
-            color=SUCCESS_COLOR
+            color=SUCCESS_COLOR,
         )
 
         embed.add_field(
             name="@everyone (Nicht-Mitglieder)",
             value="```❌ Keine Berechtigungen\n❌ Kann nichts sehen\n❌ Kein Zugriff auf Channels```",
-            inline=False
+            inline=False,
         )
 
         embed.add_field(
             name="Member (Normale Mitglieder)",
             value="```✅ Kanäle sehen\n✅ Nachrichten senden\n✅ Voice-Chat\n❌ Keine Server-Einstellungen\n❌ Kein Kick/Ban```",
-            inline=False
+            inline=False,
         )
 
         embed.add_field(
             name="Moderator",
             value="```✅ Alles wie Member\n✅ Nachrichten löschen\n✅ Timeout vergeben\n✅ Mitglieder kicken\n❌ Keine Server-Einstellungen```",
-            inline=False
+            inline=False,
         )
 
         embed.add_field(
-            name="Admin",
-            value="```✅ Alle Berechtigungen\n✅ Server verwalten\n✅ Rollen/Kanäle verwalten```",
-            inline=False
+            name="Admin", value="```✅ Alle Berechtigungen\n✅ Server verwalten\n✅ Rollen/Kanäle verwalten```", inline=False
         )
 
         embed.set_footer(text=f"Setup durchgeführt von {interaction.user}")
@@ -220,6 +211,7 @@ async def security_setup(interaction: discord.Interaction):
         await progress_msg.edit(content="❌ Fehler: Bot hat nicht genügend Berechtigungen!")
     except Exception as e:
         await progress_msg.edit(content=f"❌ Fehler: {e}")
+
 
 @bot.tree.command(name="zen-security-check", description="🔍 Prüft aktuelle Server-Sicherheit")
 @app_commands.checks.has_permissions(administrator=True)
@@ -269,32 +261,21 @@ async def security_check(interaction: discord.Interaction):
 
     # Erstelle Embed
     if issues:
-        embed = discord.Embed(
-            title="🔍 Sicherheits-Check: PROBLEME GEFUNDEN",
-            color=ERROR_COLOR
-        )
+        embed = discord.Embed(title="🔍 Sicherheits-Check: PROBLEME GEFUNDEN", color=ERROR_COLOR)
         embed.description = "\n".join(issues)
-        embed.add_field(
-            name="Status",
-            value="\n".join(status) if status else "Keine Status-Infos",
-            inline=False
-        )
+        embed.add_field(name="Status", value="\n".join(status) if status else "Keine Status-Infos", inline=False)
         embed.set_footer(text="Führe /zen-security-setup aus um Probleme zu beheben")
     else:
         embed = discord.Embed(
-            title="🔍 Sicherheits-Check: ALLES OK",
-            description="✅ Der Server ist korrekt konfiguriert!",
-            color=SUCCESS_COLOR
+            title="🔍 Sicherheits-Check: ALLES OK", description="✅ Der Server ist korrekt konfiguriert!", color=SUCCESS_COLOR
         )
 
     await interaction.followup.send(embed=embed, ephemeral=True)
 
+
 @bot.tree.command(name="zen-add-member", description="➕ Weist einem Benutzer die Member-Rolle zu")
 @app_commands.checks.has_permissions(manage_roles=True)
-async def add_member(
-    interaction: discord.Interaction,
-    user: discord.Member
-):
+async def add_member(interaction: discord.Interaction, user: discord.Member):
     """Weist einem Benutzer die Member-Rolle zu"""
     await interaction.response.defer(ephemeral=True)
 
@@ -303,29 +284,20 @@ async def add_member(
 
     if not member_role:
         await interaction.followup.send(
-            "❌ Member-Rolle nicht gefunden! Führe zuerst /zen-security-setup aus.",
-            ephemeral=True
+            "❌ Member-Rolle nicht gefunden! Führe zuerst /zen-security-setup aus.", ephemeral=True
         )
         return
 
     if member_role in user.roles:
-        await interaction.followup.send(
-            f"ℹ️ {user.mention} hat bereits die Member-Rolle.",
-            ephemeral=True
-        )
+        await interaction.followup.send(f"ℹ️ {user.mention} hat bereits die Member-Rolle.", ephemeral=True)
         return
 
     try:
         await user.add_roles(member_role, reason=f"Durch {interaction.user}")
-        await interaction.followup.send(
-            f"✅ {user.mention} wurde die Member-Rolle zugewiesen!",
-            ephemeral=True
-        )
+        await interaction.followup.send(f"✅ {user.mention} wurde die Member-Rolle zugewiesen!", ephemeral=True)
     except discord.Forbidden:
-        await interaction.followup.send(
-            "❌ Keine Berechtigung! Bot-Rolle muss über Member-Rolle sein.",
-            ephemeral=True
-        )
+        await interaction.followup.send("❌ Keine Berechtigung! Bot-Rolle muss über Member-Rolle sein.", ephemeral=True)
+
 
 @bot.event
 async def on_member_join(member):
@@ -341,26 +313,23 @@ async def on_member_join(member):
         except Exception:
             pass
 
+
 @security_setup.error
 @security_check.error
 async def admin_error(interaction: discord.Interaction, error):
     if isinstance(error, app_commands.MissingPermissions):
-        await interaction.response.send_message(
-            "❌ Du brauchst Administrator-Rechte für diesen Befehl!",
-            ephemeral=True
-        )
+        await interaction.response.send_message("❌ Du brauchst Administrator-Rechte für diesen Befehl!", ephemeral=True)
+
 
 @add_member.error
 async def mod_error(interaction: discord.Interaction, error):
     if isinstance(error, app_commands.MissingPermissions):
-        await interaction.response.send_message(
-            "❌ Du brauchst Rollen-Verwaltungs-Rechte für diesen Befehl!",
-            ephemeral=True
-        )
+        await interaction.response.send_message("❌ Du brauchst Rollen-Verwaltungs-Rechte für diesen Befehl!", ephemeral=True)
+
 
 def main():
     """Hauptfunktion"""
-    token = os.getenv('DISCORD_BOT_TOKEN')
+    token = os.getenv("DISCORD_BOT_TOKEN")
 
     if not token:
         print("❌ DISCORD_BOT_TOKEN nicht gefunden!")
@@ -375,6 +344,7 @@ def main():
     print("  /zen-add-member      - Member-Rolle zuweisen")
 
     bot.run(token)
+
 
 if __name__ == "__main__":
     main()

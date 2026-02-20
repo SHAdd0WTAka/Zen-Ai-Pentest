@@ -4,15 +4,16 @@ Dashboard Event System
 Event types and streaming for real-time dashboard updates.
 """
 
-from enum import Enum
-from typing import Dict, Any, Optional
+import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
-import uuid
+from enum import Enum
+from typing import Any, Dict, Optional
 
 
 class EventType(Enum):
     """Dashboard event types"""
+
     # Task Events
     TASK_CREATED = "task.created"
     TASK_STARTED = "task.started"
@@ -66,6 +67,7 @@ class DashboardEvent:
         user_id: Associated user ID
         session_id: Associated session ID
     """
+
     type: EventType
     data: Dict[str, Any] = field(default_factory=dict)
     timestamp: datetime = field(default_factory=datetime.utcnow)
@@ -85,7 +87,7 @@ class DashboardEvent:
             "source": self.source,
             "priority": self.priority,
             "user_id": self.user_id,
-            "session_id": self.session_id
+            "session_id": self.session_id,
         }
 
     @classmethod
@@ -100,63 +102,32 @@ class DashboardEvent:
             source=data.get("source", "system"),
             priority=data.get("priority", 3),
             user_id=data.get("user_id"),
-            session_id=data.get("session_id")
+            session_id=data.get("session_id"),
         )
 
     @classmethod
-    def task_progress(
-        cls,
-        task_id: str,
-        progress: float,
-        message: str = "",
-        **kwargs
-    ) -> "DashboardEvent":
+    def task_progress(cls, task_id: str, progress: float, message: str = "", **kwargs) -> "DashboardEvent":
         """Create task progress event"""
         return cls(
             type=EventType.TASK_PROGRESS,
-            data={
-                "task_id": task_id,
-                "progress": progress,
-                "message": message,
-                **kwargs
-            },
-            source="task_manager"
+            data={"task_id": task_id, "progress": progress, "message": message, **kwargs},
+            source="task_manager",
         )
 
     @classmethod
     def system_metrics(cls, metrics: Dict[str, Any]) -> "DashboardEvent":
         """Create system metrics event"""
-        return cls(
-            type=EventType.SYSTEM_METRICS,
-            data=metrics,
-            source="metrics_collector",
-            priority=2
-        )
+        return cls(type=EventType.SYSTEM_METRICS, data=metrics, source="metrics_collector", priority=2)
 
     @classmethod
-    def security_alert(
-        cls,
-        alert_type: str,
-        severity: str,
-        details: Dict[str, Any]
-    ) -> "DashboardEvent":
+    def security_alert(cls, alert_type: str, severity: str, details: Dict[str, Any]) -> "DashboardEvent":
         """Create security alert event"""
-        priority_map = {
-            "critical": 5,
-            "high": 4,
-            "medium": 3,
-            "low": 2,
-            "info": 1
-        }
+        priority_map = {"critical": 5, "high": 4, "medium": 3, "low": 2, "info": 1}
         return cls(
             type=EventType.SECURITY_ALERT,
-            data={
-                "alert_type": alert_type,
-                "severity": severity,
-                "details": details
-            },
+            data={"alert_type": alert_type, "severity": severity, "details": details},
             source="security_monitor",
-            priority=priority_map.get(severity.lower(), 3)
+            priority=priority_map.get(severity.lower(), 3),
         )
 
 
@@ -168,12 +139,7 @@ class EventStream:
     and receive buffered events on connection.
     """
 
-    def __init__(
-        self,
-        event_types: Optional[list] = None,
-        min_priority: int = 1,
-        buffer_size: int = 100
-    ):
+    def __init__(self, event_types: Optional[list] = None, min_priority: int = 1, buffer_size: int = 100):
         self.event_types = set(event_types) if event_types else None
         self.min_priority = min_priority
         self.buffer_size = buffer_size
@@ -198,7 +164,7 @@ class EventStream:
 
         # Trim buffer
         if len(self._buffer) > self.buffer_size:
-            self._buffer = self._buffer[-self.buffer_size:]
+            self._buffer = self._buffer[-self.buffer_size :]
 
     def get_recent(self, count: int = 10) -> list:
         """Get recent events from buffer"""

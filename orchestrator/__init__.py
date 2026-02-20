@@ -20,11 +20,11 @@ Usage:
     })
 """
 
-from .core import ZenOrchestrator, OrchestratorConfig
-from .state import StateManager, TaskState
-from .events import EventBus, Event, EventType
-from .tasks import TaskManager, Task, TaskPriority
+from .core import OrchestratorConfig, ZenOrchestrator
+from .events import Event, EventBus, EventType
 from .integration import ComponentRegistry
+from .state import StateManager, TaskState
+from .tasks import Task, TaskManager, TaskPriority
 
 __all__ = [
     "ZenOrchestrator",

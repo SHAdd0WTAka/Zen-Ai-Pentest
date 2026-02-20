@@ -8,6 +8,7 @@ import pytest
 # Try to import core modules
 try:
     from core.orchestrator import ZenOrchestrator
+
     CORE_AVAILABLE = True
 except ImportError:
     CORE_AVAILABLE = False
@@ -27,9 +28,9 @@ class TestZenOrchestrator:
         orch = ZenOrchestrator()
 
         # Check for common attributes
-        assert hasattr(orch, 'backends')
-        assert hasattr(orch, 'results_cache')
-        assert hasattr(orch, 'request_count')
+        assert hasattr(orch, "backends")
+        assert hasattr(orch, "results_cache")
+        assert hasattr(orch, "request_count")
 
     def test_orchestrator_repr(self):
         """Test orchestrator string representation"""
@@ -53,16 +54,16 @@ class TestOrchestratorStateManagement:
         orch = ZenOrchestrator()
 
         # State should be initialized
-        if hasattr(orch, 'state'):
+        if hasattr(orch, "state"):
             assert orch.state is not None
-        elif hasattr(orch, '_state'):
+        elif hasattr(orch, "_state"):
             assert orch._state is not None
 
     def test_state_dict_structure(self):
         """Test state has dictionary structure"""
         orch = ZenOrchestrator()
 
-        state = getattr(orch, 'state', getattr(orch, '_state', {}))
+        state = getattr(orch, "state", getattr(orch, "_state", {}))
         assert isinstance(state, dict)
 
 
@@ -75,7 +76,7 @@ class TestOrchestratorConfiguration:
         orch = ZenOrchestrator()
 
         # Check for config attribute
-        if hasattr(orch, 'config'):
+        if hasattr(orch, "config"):
             assert isinstance(orch.config, dict)
 
     def test_configuration_values(self):
@@ -83,7 +84,7 @@ class TestOrchestratorConfiguration:
         orch = ZenOrchestrator()
 
         # Common config keys
-        config = getattr(orch, 'config', {})
+        config = getattr(orch, "config", {})
 
         # Should have some configuration
         assert isinstance(config, dict)
@@ -95,6 +96,7 @@ class TestOrchestratorConfiguration:
 
 try:
     from database import models as db_models
+
     DB_MODELS_AVAILABLE = True
 except ImportError:
     DB_MODELS_AVAILABLE = False
@@ -107,11 +109,7 @@ class TestDatabaseUserModel:
     def test_user_creation(self):
         """Test user can be created"""
         user = db_models.User(
-            username="testuser",
-            email="test@example.com",
-            hashed_password="hashed_pass",
-            role="user",
-            is_active=True
+            username="testuser", email="test@example.com", hashed_password="hashed_pass", role="user", is_active=True
         )
 
         assert user.username == "testuser"
@@ -131,7 +129,7 @@ class TestDatabaseUserModel:
         user = db_models.User(username="defaultuser", email="default@test.com")
 
         # Check defaults - is_active might be None or bool
-        if hasattr(user, 'is_active') and user.is_active is not None:
+        if hasattr(user, "is_active") and user.is_active is not None:
             # Default should be True or False
             assert isinstance(user.is_active, bool)
 
@@ -140,7 +138,7 @@ class TestDatabaseUserModel:
         user = db_models.User(username="test")
 
         # ID should exist (either auto-generated or None initially)
-        assert hasattr(user, 'id')
+        assert hasattr(user, "id")
 
 
 @pytest.mark.skipif(not DB_MODELS_AVAILABLE, reason="Database models not available")
@@ -149,11 +147,7 @@ class TestDatabaseScanModel:
 
     def test_scan_creation(self):
         """Test scan can be created"""
-        scan = db_models.Scan(
-            target="example.com",
-            scan_type="full",
-            status="pending"
-        )
+        scan = db_models.Scan(target="example.com", scan_type="full", status="pending")
 
         assert scan.target == "example.com"
         assert scan.scan_type == "full"
@@ -182,11 +176,7 @@ class TestDatabaseFindingModel:
 
     def test_finding_creation(self):
         """Test finding can be created"""
-        finding = db_models.Finding(
-            title="SQL Injection",
-            severity="high",
-            description="Test finding"
-        )
+        finding = db_models.Finding(title="SQL Injection", severity="high", description="Test finding")
 
         assert finding.title == "SQL Injection"
         assert finding.severity == "high"
@@ -196,20 +186,12 @@ class TestDatabaseFindingModel:
         severities = ["critical", "high", "medium", "low", "info"]
 
         for severity in severities:
-            finding = db_models.Finding(
-                title=f"Test {severity}",
-                severity=severity
-            )
+            finding = db_models.Finding(title=f"Test {severity}", severity=severity)
             assert finding.severity == severity
 
     def test_finding_optional_fields(self):
         """Test finding with optional fields"""
-        finding = db_models.Finding(
-            title="Test",
-            severity="medium",
-            target="http://example.com",
-            cvss_score=7.5
-        )
+        finding = db_models.Finding(title="Test", severity="medium", target="http://example.com", cvss_score=7.5)
 
         assert finding.title == "Test"
 
@@ -239,6 +221,7 @@ class TestDatabaseRelationships:
 
 try:
     from utils import helpers
+
     UTILS_AVAILABLE = True
 except ImportError:
     UTILS_AVAILABLE = False
@@ -254,21 +237,21 @@ class TestUtilsHelpers:
 
     def test_colorize_function_exists(self):
         """Test colorize function exists"""
-        assert hasattr(helpers, 'colorize')
+        assert hasattr(helpers, "colorize")
 
     def test_colorize_returns_string(self):
         """Test colorize returns string"""
-        if hasattr(helpers, 'colorize'):
+        if hasattr(helpers, "colorize"):
             result = helpers.colorize("test", "red")
             assert isinstance(result, str)
 
     def test_banner_function_exists(self):
         """Test banner function exists"""
-        assert hasattr(helpers, 'banner')
+        assert hasattr(helpers, "banner")
 
     def test_load_config_function(self):
         """Test load_config function"""
-        if hasattr(helpers, 'load_config'):
+        if hasattr(helpers, "load_config"):
             # Should handle missing config gracefully
             try:
                 config = helpers.load_config("nonexistent.json")
@@ -280,6 +263,7 @@ class TestUtilsHelpers:
 # ============================================================================
 # SIMPLE BOOSTER TESTS
 # ============================================================================
+
 
 class TestBoosterForCoverage:
     """Simple tests to boost coverage numbers"""

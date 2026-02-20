@@ -6,7 +6,6 @@ Inklusive VMs, Router, Drucker, etc.
 
 import socket
 import subprocess
-
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 

@@ -2,13 +2,13 @@
 Risk Engine - Combines CVSS + EPSS + Business Impact
 """
 
-from typing import Dict, List, Optional
 from dataclasses import dataclass
 from datetime import datetime
+from typing import Dict, List, Optional
 
+from .business_impact import BusinessContext, BusinessImpactScorer
 from .cvss import CVSSCalculator, CVSSVector
 from .epss import EPSSClient
-from .business_impact import BusinessImpactScorer, BusinessContext
 
 
 @dataclass

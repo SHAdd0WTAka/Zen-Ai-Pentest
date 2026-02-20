@@ -7,21 +7,21 @@ including unit tests with mocked subprocess calls and cloud credential checks.
 import asyncio
 import json
 import os
+from unittest.mock import MagicMock, Mock, patch
+
 import pytest
-from unittest.mock import Mock, patch, MagicMock
 
 # Import the module under test
 from tools.scout_integration import (
-    ScoutSuiteScanner,
+    CloudProvider,
     ScoutFinding,
     ScoutResult,
-    CloudProvider,
+    ScoutSuiteScanner,
+    scoutsuite_quick_scan,
     scoutsuite_scan_aws,
     scoutsuite_scan_azure,
     scoutsuite_scan_gcp,
-    scoutsuite_quick_scan,
 )
-
 
 # Sample ScoutSuite report data for testing
 SAMPLE_SCOUTSUITE_REPORT = {
@@ -264,9 +264,7 @@ class TestReportParsing:
         scanner = ScoutSuiteScanner(provider=CloudProvider.AWS)
 
         with patch("builtins.open", MagicMock()) as mock_open:
-            mock_open.return_value.__enter__.return_value.read.return_value = json.dumps(
-                SAMPLE_SCOUTSUITE_REPORT
-            )
+            mock_open.return_value.__enter__.return_value.read.return_value = json.dumps(SAMPLE_SCOUTSUITE_REPORT)
             data = scanner._parse_report("/tmp/report.json")
             assert data["provider_code"] == "aws"
 

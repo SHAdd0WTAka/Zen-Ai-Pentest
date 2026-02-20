@@ -12,23 +12,19 @@ Rechte: repo, workflow
 """
 
 import argparse
+import json
 import os
 import sys
-import urllib.request
 import urllib.error
-import json
+import urllib.request
 
 
 def get_repo_info():
     """Versucht Repo-Info aus git remote zu ermitteln"""
     import subprocess
+
     try:
-        result = subprocess.run(
-            ["git", "remote", "get-url", "origin"],
-            capture_output=True,
-            text=True,
-            check=True
-        )
+        result = subprocess.run(["git", "remote", "get-url", "origin"], capture_output=True, text=True, check=True)
         url = result.stdout.strip()
         # Parse github.com/owner/repo.git
         if "github.com" in url:
@@ -42,38 +38,37 @@ def get_repo_info():
 
 def create_secret(owner, repo, secret_name, secret_value, token):
     """Erstellt ein GitHub Secret"""
-    
+
     # GitHub API URL
-    url = f"https://api.github.com/repos/{owner}/{repo}/actions/secrets/{secret_name}"
-    
+
     # Get public key for encryption
     key_url = f"https://api.github.com/repos/{owner}/{repo}/actions/secrets/public-key"
-    
+
     headers = {
         "Accept": "application/vnd.github.v3+json",
         "Authorization": f"token {token}",
-        "X-GitHub-Api-Version": "2022-11-28"
+        "X-GitHub-Api-Version": "2022-11-28",
     }
-    
+
     try:
         # Get public key
         req = urllib.request.Request(key_url, headers=headers)
         with urllib.request.urlopen(req) as response:
-            key_data = json.loads(response.read().decode())
-        
+            json.loads(response.read().decode())
+
         # For simplicity, we'll use the GitHub API with sodium encryption
         # But actually, we need to encrypt the secret value with libsodium
         # For this script, we'll use the PUT endpoint with encrypted_value
         # However, doing libsodium encryption in pure Python is complex
-        
+
         print(f"  ℹ️  Secret '{secret_name}' erfordert libsodium Verschlüsselung")
-        print(f"  🔧 Manuelle Anleitung:")
+        print("  🔧 Manuelle Anleitung:")
         print(f"     1. Gehe zu: https://github.com/{owner}/{repo}/settings/secrets/actions")
-        print(f"     2. Klicke 'New repository secret'")
+        print("     2. Klicke 'New repository secret'")
         print(f"     3. Name: {secret_name}")
         print(f"     4. Value: {secret_value[:10]}... (ausgeblendet)")
         return False
-        
+
     except urllib.error.HTTPError as e:
         print(f"  ❌ Fehler: {e.code} - {e.reason}")
         return False
@@ -88,7 +83,7 @@ def main():
 
     print("☁️  Cloudflare Secrets Setup für GitHub Actions")
     print("=" * 50)
-    
+
     # Get GitHub Token
     github_token = os.environ.get("GITHUB_TOKEN")
     if not github_token:
@@ -108,9 +103,9 @@ def main():
         print("\n❌ Konnte Repository nicht ermitteln!")
         print("Stelle sicher, dass du im Git Repository bist.")
         sys.exit(1)
-    
+
     print(f"\n📁 Repository: {owner}/{repo}")
-    
+
     # Get Cloudflare credentials
     cf_token = args.token or input("\n🔑 Cloudflare API Token: ").strip()
     cf_account = args.account_id or input("🔑 Cloudflare Account ID: ").strip()
@@ -121,21 +116,21 @@ def main():
         sys.exit(1)
 
     print("\n📝 Füge Secrets hinzu...")
-    
+
     # We can't actually create secrets via API without libsodium encryption
     # So we'll show the manual instructions
-    print(f"\n📋 Manuelle Schritte:")
+    print("\n📋 Manuelle Schritte:")
     print(f"\n1. Öffne: https://github.com/{owner}/{repo}/settings/secrets/actions")
-    print(f"\n2. Füge diese Secrets hinzu:\n")
-    
+    print("\n2. Füge diese Secrets hinzu:\n")
+
     secrets = [
         ("CLOUDFLARE_API_TOKEN", cf_token),
         ("CLOUDFLARE_ACCOUNT_ID", cf_account),
     ]
-    
+
     if cf_kv:
         secrets.append(("CLOUDFLARE_KV_ID", cf_kv))
-    
+
     for name, value in secrets:
         print(f"   Name: {name}")
         print(f"   Value: {value[:10]}{'*' * (len(value) - 10) if len(value) > 10 else ''}")
@@ -144,9 +139,9 @@ def main():
     print("3. Klicke jeweils 'Add secret'")
     print("\n✅ Danach ist die GitHub Actions CI/CD bereit!")
     print("\n🚀 Testen mit:")
-    print(f"   git push origin main")
-    print(f"\n🌐 Danach verfügbar unter:")
-    print(f"   https://zen-ai-pentest.pages.dev")
+    print("   git push origin main")
+    print("\n🌐 Danach verfügbar unter:")
+    print("   https://zen-ai-pentest.pages.dev")
 
 
 if __name__ == "__main__":

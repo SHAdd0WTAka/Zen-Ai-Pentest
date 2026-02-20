@@ -7,7 +7,7 @@ Provides dashboard statistics, real-time updates, and monitoring endpoints.
 import json
 import logging
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any
+from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect
 from pydantic import BaseModel
@@ -16,7 +16,7 @@ from sqlalchemy.orm import Session
 
 from api.auth import verify_token
 from api.websocket import ConnectionManager
-from database.models import Scan, Finding, Report, get_db
+from database.models import Finding, Report, Scan, get_db
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])

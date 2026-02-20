@@ -2,10 +2,10 @@
 Memory lifecycle management and factory
 """
 
-from typing import Optional, Dict
+from typing import Dict, Optional
 
 from .conversation import ConversationMemory
-from .storage import SQLiteStorage, RedisStorage
+from .storage import RedisStorage, SQLiteStorage
 
 
 class MemoryManager:

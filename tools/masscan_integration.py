@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class MasscanPort:
     """Masscan port result"""
+
     port: int
     protocol: str = "tcp"
     state: str = "open"
@@ -24,6 +25,7 @@ class MasscanPort:
 @dataclass
 class MasscanResult:
     """Masscan scan result"""
+
     success: bool
     ports: List[MasscanPort] = field(default_factory=list)
     command: str = ""
@@ -42,12 +44,7 @@ class MasscanIntegration:
         """
         self.rate = rate
 
-    async def scan(
-        self,
-        target: str,
-        ports: str = "1-65535",
-        exclude_file: Optional[str] = None
-    ) -> MasscanResult:
+    async def scan(self, target: str, ports: str = "1-65535", exclude_file: Optional[str] = None) -> MasscanResult:
         """
         Fast port scan with Masscan
 
@@ -60,16 +57,10 @@ class MasscanIntegration:
             MasscanResult with open ports
         """
         import time
+
         start_time = time.time()
 
-        cmd = [
-            "masscan",
-            target,
-            "-p", ports,
-            "--rate", str(self.rate),
-            "-oX", "-",  # XML output to stdout
-            "--wait", "2"
-        ]
+        cmd = ["masscan", target, "-p", ports, "--rate", str(self.rate), "-oX", "-", "--wait", "2"]  # XML output to stdout
 
         if exclude_file:
             cmd.extend(["--excludefile", exclude_file])
@@ -78,15 +69,10 @@ class MasscanIntegration:
 
         try:
             process = await asyncio.create_subprocess_exec(
-                *cmd,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE
+                *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
             )
 
-            stdout, stderr = await asyncio.wait_for(
-                process.communicate(),
-                timeout=600  # 10 min timeout
-            )
+            stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=600)  # 10 min timeout
 
             # Parse XML output
             ports = []
@@ -99,7 +85,7 @@ class MasscanIntegration:
                             port=int(port_elem.get("portid")),
                             protocol=port_elem.get("protocol", "tcp"),
                             state=port_elem.find("state").get("state", "open"),
-                            ip=ip
+                            ip=ip,
                         )
                         ports.append(port)
             except ET.ParseError as e:
@@ -108,11 +94,7 @@ class MasscanIntegration:
             duration = time.time() - start_time
 
             return MasscanResult(
-                success=True,
-                ports=ports,
-                command=" ".join(cmd),
-                duration=duration,
-                total_hosts=len(set(p.ip for p in ports))
+                success=True, ports=ports, command=" ".join(cmd), duration=duration, total_hosts=len(set(p.ip for p in ports))
             )
 
         except asyncio.TimeoutError:
@@ -136,13 +118,14 @@ def scan_sync(target: str, ports: str = "1-65535") -> MasscanResult:
 
 if __name__ == "__main__":
     import logging
+
     logging.basicConfig(level=logging.INFO)
 
     print("Testing Masscan Integration...")
-    print("="*60)
+    print("=" * 60)
     print("⚠️  Note: Masscan requires root privileges")
     print("⚠️  Testing with --dry-run mode")
-    print("="*60)
+    print("=" * 60)
 
     # Test parsing
     masscan = MasscanIntegration()

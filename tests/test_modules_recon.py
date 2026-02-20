@@ -1,7 +1,9 @@
 """Tests for recon module"""
 
-import pytest  # noqa: F401
 from unittest.mock import patch
+
+import pytest  # noqa: F401
+
 from modules.recon import ReconModule
 
 

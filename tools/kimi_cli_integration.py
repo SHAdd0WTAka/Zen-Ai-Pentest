@@ -14,8 +14,9 @@ PERSONAS = {
     "report": "📝 Technical Writer - Fokus auf CVSS, Remediation, Reports",
     "audit": "🔐 Code Auditor - Fokus auf Security Review, Bug Bounty",
     "network": "🌐 Network Pentester - Infrastruktur, AD, Lateral Movement",
-    "redteam": "🕵️ Red Team Operator - Adversary Simulation, APT TTPs"
+    "redteam": "🕵️ Red Team Operator - Adversary Simulation, APT TTPs",
 }
+
 
 def check_kimi_installed():
     """Prüft ob kimi CLI installiert ist"""
@@ -25,10 +26,12 @@ def check_kimi_installed():
     except (subprocess.CalledProcessError, FileNotFoundError):
         return False
 
+
 def check_kimi_logged_in():
     """Prüft ob Session existiert (via kimi status oder einfacher Test)"""
     kimi_dir = Path.home() / ".kimi"
     return kimi_dir.exists()
+
 
 def start_kimi_with_persona(persona, context=""):
     """Startet kimi mit Persona-Context"""
@@ -60,6 +63,7 @@ Persona: {persona_desc}
     except KeyboardInterrupt:
         print("\n👋 Beendet.")
 
+
 def main():
     import argparse
 
@@ -71,11 +75,12 @@ Beispiele:
   zen-kimi -p recon "Scanne example.com"     # One-shot mit Prompt
   zen-kimi -p exploit                         # Interaktiver Chat
   zlogin                                      # Bei kimi einloggen
-        """
+        """,
     )
     parser.add_argument("context", nargs="?", help="Initialer Prompt/Context")
-    parser.add_argument("-p", "--persona", choices=list(PERSONAS.keys()),
-                       default="recon", help="Pentest Persona (default: recon)")
+    parser.add_argument(
+        "-p", "--persona", choices=list(PERSONAS.keys()), default="recon", help="Pentest Persona (default: recon)"
+    )
     parser.add_argument("--login", action="store_true", help="Login durchführen")
     parser.add_argument("--check", action="store_true", help="Status prüfen")
     parser.add_argument("--list-personas", action="store_true", help="Zeige alle Personas")
@@ -121,6 +126,7 @@ Beispiele:
 
     # Kimi starten
     start_kimi_with_persona(args.persona, args.context or "")
+
 
 if __name__ == "__main__":
     main()

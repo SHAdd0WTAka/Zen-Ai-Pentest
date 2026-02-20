@@ -3,9 +3,9 @@
 Test Runner for Zen AI Pentest
 """
 
+import os
 import subprocess
 import sys
-import os
 
 
 def run_tests():

@@ -3,6 +3,7 @@
 
 import sys
 
+
 def test_imports():
     """Test that all main modules can be imported"""
     print("Testing module imports...")
@@ -31,6 +32,7 @@ def test_imports():
 
     return passed, failed
 
+
 def test_core_functionality():
     """Test core functionality"""
     print("\nTesting core functionality...")
@@ -41,6 +43,7 @@ def test_core_functionality():
     # Test 1: Secure Validator
     try:
         from core.secure_input_validator import SecureInputValidator
+
         validator = SecureInputValidator()
         result = validator.validate_url("https://example.com")
         print("  [OK] Secure Validator: URL validation works")
@@ -52,6 +55,7 @@ def test_core_functionality():
     # Test 2: Tool Checker
     try:
         from tools.integrations.tool_checker import ToolChecker
+
         checker = ToolChecker()
         report = checker.get_status_report()
         print(f"  [OK] Tool Checker: Found {report['required']['available']}/{report['required']['total']} required tools")
@@ -63,6 +67,7 @@ def test_core_functionality():
     # Test 3: Cache Manager
     try:
         import asyncio
+
         from performance import CacheManager
 
         async def test_cache():
@@ -86,10 +91,11 @@ def test_core_functionality():
 
     return passed, failed
 
+
 def main():
-    print("="*60)
+    print("=" * 60)
     print("ZEN-AI-PENTEST QUICK INTEGRATION TEST")
-    print("="*60)
+    print("=" * 60)
     print()
 
     p1, f1 = test_imports()
@@ -99,9 +105,9 @@ def main():
     total_failed = f1 + f2
 
     print()
-    print("="*60)
+    print("=" * 60)
     print(f"RESULTS: {total_passed} passed, {total_failed} failed")
-    print("="*60)
+    print("=" * 60)
 
     if total_failed == 0:
         print("\n✅ ALL TESTS PASSED - System is functional!")
@@ -109,6 +115,7 @@ def main():
     else:
         print(f"\n⚠️  {total_failed} test(s) failed - Check output above")
         return 1
+
 
 if __name__ == "__main__":
     sys.exit(main())

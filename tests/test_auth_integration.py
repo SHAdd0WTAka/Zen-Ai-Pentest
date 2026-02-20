@@ -20,11 +20,9 @@ os.environ["DATABASE_URL"] = "sqlite:///./test_integration.db"
 # Add parent to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 
 # Import and initialize database
-from database.auth_models import Base, init_auth_db
+from database.auth_models import init_auth_db
 from database.models import init_db
 
 # Initialize databases

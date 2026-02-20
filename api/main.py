@@ -9,9 +9,10 @@ import sys
 from pathlib import Path
 
 # Windows Asyncio Fix (must be first)
-if sys.platform == 'win32':
+if sys.platform == "win32":
     import warnings
-    warnings.filterwarnings('ignore', message='unclosed transport', category=ResourceWarning)
+
+    warnings.filterwarnings("ignore", message="unclosed transport", category=ResourceWarning)
 
 # Add parent to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -21,7 +22,6 @@ import logging
 from contextlib import asynccontextmanager
 from datetime import datetime
 from typing import List, Optional
-from urllib.parse import urlparse
 
 from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, Request, Response, WebSocket, WebSocketDisconnect, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -87,8 +87,9 @@ from api.websocket_manager import manager
 
 # Import Agent v2 routes
 try:
+    from api.routes.agents_v2 import agent_manager, agent_websocket
     from api.routes.agents_v2 import router as agents_v2_router
-    from api.routes.agents_v2 import agent_websocket, agent_manager
+
     AGENTS_V2_AVAILABLE = True
 except ImportError as e:
     logger = logging.getLogger(__name__)
@@ -915,30 +916,31 @@ async def websocket_endpoint(websocket: WebSocket, client_id: str):
 # AGENT COMMUNICATION V2 WEBSOCKET
 # ============================================================================
 
+
 class SimpleAgentConnection:
     """Simple agent connection manager with task support"""
-    
+
     def __init__(self):
         self.active_connections: dict[str, WebSocket] = {}
         self.agent_info: dict[str, dict] = {}  # agent_id -> {api_key, connected_at, ...}
-    
+
     async def connect(self, websocket: WebSocket, agent_id: str, api_key: str = None):
         await websocket.accept()
         self.active_connections[agent_id] = websocket
         self.agent_info[agent_id] = {
             "api_key": api_key,
             "connected_at": datetime.utcnow().isoformat(),
-            "last_seen": datetime.utcnow().isoformat()
+            "last_seen": datetime.utcnow().isoformat(),
         }
         logger.info(f"✅ Agent {agent_id} connected via WebSocket")
-    
+
     def disconnect(self, agent_id: str):
         if agent_id in self.active_connections:
             del self.active_connections[agent_id]
         if agent_id in self.agent_info:
             del self.agent_info[agent_id]
         logger.info(f"🔌 Agent {agent_id} disconnected")
-    
+
     async def send_to_agent(self, agent_id: str, message: dict) -> bool:
         """Send message to specific agent. Returns True if sent."""
         if agent_id in self.active_connections:
@@ -950,15 +952,11 @@ class SimpleAgentConnection:
                 logger.error(f"❌ Failed to send to {agent_id}: {e}")
                 return False
         return False
-    
+
     async def send_task(self, agent_id: str, task: dict) -> bool:
         """Send task to agent"""
-        return await self.send_to_agent(agent_id, {
-            "type": "task",
-            "task": task,
-            "timestamp": datetime.utcnow().isoformat()
-        })
-    
+        return await self.send_to_agent(agent_id, {"type": "task", "task": task, "timestamp": datetime.utcnow().isoformat()})
+
     async def broadcast(self, message: dict, exclude: Optional[str] = None):
         for agent_id, ws in self.active_connections.items():
             if agent_id != exclude:
@@ -967,11 +965,11 @@ class SimpleAgentConnection:
                     self.agent_info[agent_id]["last_seen"] = datetime.utcnow().isoformat()
                 except Exception as e:
                     logger.error(f"❌ Failed to send to {agent_id}: {e}")
-    
+
     def get_connected_agents(self) -> list:
         """Get list of connected agent IDs"""
         return list(self.active_connections.keys())
-    
+
     def is_agent_connected(self, agent_id: str) -> bool:
         """Check if agent is connected"""
         return agent_id in self.active_connections
@@ -984,7 +982,7 @@ agent_connection_manager = SimpleAgentConnection()
 async def agent_websocket_endpoint(websocket: WebSocket):
     """
     Agent Communication WebSocket Endpoint with API Key Auth
-    
+
     Protocol:
     1. Auth: {"type": "auth", "agent_id": "...", "api_key": "...", "api_secret": "..."}
     2. Receive: {"type": "auth_success", "agent_id": "..."}
@@ -994,140 +992,131 @@ async def agent_websocket_endpoint(websocket: WebSocket):
     """
     agent_id: Optional[str] = None
     api_key: Optional[str] = None
-    
+
     try:
         await websocket.accept()
-        
+
         # Receive auth message
         auth_data = await websocket.receive_json()
-        
+
         if auth_data.get("type") != "auth":
-            await websocket.send_json({
-                "type": "auth_failed",
-                "error": "Expected auth message with type 'auth'"
-            })
+            await websocket.send_json({"type": "auth_failed", "error": "Expected auth message with type 'auth'"})
             await websocket.close()
             return
-        
+
         agent_id = auth_data.get("agent_id")
         api_key = auth_data.get("api_key")
-        api_secret = auth_data.get("api_secret")
-        
+        auth_data.get("api_secret")
+
         if not agent_id:
-            await websocket.send_json({
-                "type": "auth_failed",
-                "error": "agent_id required"
-            })
+            await websocket.send_json({"type": "auth_failed", "error": "agent_id required"})
             await websocket.close()
             return
-        
+
         # Validate API Key (simple check for now)
         # In production: Use AgentAuthenticator to validate
         if not api_key or not api_key.startswith("zen_"):
-            await websocket.send_json({
-                "type": "auth_failed",
-                "error": "Invalid API key format"
-            })
+            await websocket.send_json({"type": "auth_failed", "error": "Invalid API key format"})
             await websocket.close()
             return
-        
+
         # Connect agent
         await agent_connection_manager.connect(websocket, agent_id, api_key)
-        
-        await websocket.send_json({
-            "type": "auth_success",
-            "agent_id": agent_id,
-            "message": "Connected to Zen-AI-Pentest Agent Network"
-        })
-        
+
+        await websocket.send_json(
+            {"type": "auth_success", "agent_id": agent_id, "message": "Connected to Zen-AI-Pentest Agent Network"}
+        )
+
         logger.info(f"🔌 Agent {agent_id} authenticated with API key {api_key[:15]}...")
-        
+
         # Main message loop
         while True:
             try:
                 data = await websocket.receive_json()
                 msg_type = data.get("type")
-                
+
                 if msg_type == "task_result":
                     # Receive task result from agent
                     task_id = data.get("task_id")
                     result = data.get("result", {})
-                    
+
                     logger.info(f"✅ Task result received from {agent_id}: {task_id}")
-                    
+
                     # Forward to workflow orchestrator
                     try:
                         from agents.workflows.orchestrator import get_workflow_orchestrator
+
                         orchestrator = get_workflow_orchestrator()
                         await orchestrator.submit_task_result(task_id, result)
-                        
-                        await websocket.send_json({
-                            "type": "ack",
-                            "message_id": task_id,
-                            "status": "result_received",
-                            "timestamp": datetime.utcnow().isoformat()
-                        })
+
+                        await websocket.send_json(
+                            {
+                                "type": "ack",
+                                "message_id": task_id,
+                                "status": "result_received",
+                                "timestamp": datetime.utcnow().isoformat(),
+                            }
+                        )
                     except Exception as e:
                         logger.error(f"Failed to process task result: {e}")
-                
+
                 elif msg_type == "task_ack":
                     # Agent acknowledged task receipt
                     task_id = data.get("task_id")
                     logger.debug(f"📋 Task {task_id} acknowledged by {agent_id}")
-                
+
                 elif msg_type == "message":
                     # Agent-to-agent messaging
                     recipient = data.get("recipient", "broadcast")
                     payload = data.get("payload", {})
-                    
-                    await websocket.send_json({
-                        "type": "ack",
-                        "message_id": data.get("message_id", "unknown"),
-                        "status": "received",
-                        "timestamp": datetime.utcnow().isoformat()
-                    })
-                    
+
+                    await websocket.send_json(
+                        {
+                            "type": "ack",
+                            "message_id": data.get("message_id", "unknown"),
+                            "status": "received",
+                            "timestamp": datetime.utcnow().isoformat(),
+                        }
+                    )
+
                     if recipient == "broadcast":
-                        await agent_connection_manager.broadcast({
-                            "type": "message",
-                            "sender": agent_id,
-                            "payload": payload,
-                            "timestamp": datetime.utcnow().isoformat()
-                        }, exclude=agent_id)
+                        await agent_connection_manager.broadcast(
+                            {
+                                "type": "message",
+                                "sender": agent_id,
+                                "payload": payload,
+                                "timestamp": datetime.utcnow().isoformat(),
+                            },
+                            exclude=agent_id,
+                        )
                     else:
                         # Direct message
-                        await agent_connection_manager.send_to_agent(recipient, {
-                            "type": "message",
-                            "sender": agent_id,
-                            "payload": payload,
-                            "timestamp": datetime.utcnow().isoformat()
-                        })
-                
+                        await agent_connection_manager.send_to_agent(
+                            recipient,
+                            {
+                                "type": "message",
+                                "sender": agent_id,
+                                "payload": payload,
+                                "timestamp": datetime.utcnow().isoformat(),
+                            },
+                        )
+
                 elif msg_type == "heartbeat":
-                    await websocket.send_json({
-                        "type": "heartbeat_ack",
-                        "timestamp": datetime.utcnow().isoformat()
-                    })
-                
+                    await websocket.send_json({"type": "heartbeat_ack", "timestamp": datetime.utcnow().isoformat()})
+
                 elif msg_type == "disconnect":
                     break
-                    
+
             except WebSocketDisconnect:
                 break
             except json.JSONDecodeError:
-                await websocket.send_json({
-                    "type": "error",
-                    "error": "Invalid JSON"
-                })
+                await websocket.send_json({"type": "error", "error": "Invalid JSON"})
             except Exception as e:
                 logger.error(f"WebSocket message error: {e}")
-                await websocket.send_json({
-                    "type": "error",
-                    "error": str(e)
-                })
-    
+                await websocket.send_json({"type": "error", "error": str(e)})
+
     except WebSocketDisconnect:
-        logger.info(f"Agent WebSocket disconnected")
+        logger.info("Agent WebSocket disconnected")
     except Exception as e:
         logger.error(f"Agent WebSocket error: {e}")
     finally:
@@ -1654,13 +1643,13 @@ try:
     import importlib.util
     import sys
     from pathlib import Path
-    
+
     workflows_path = Path(__file__).parent / "routes" / "workflows.py"
     spec = importlib.util.spec_from_file_location("workflows", workflows_path)
     workflows_module = importlib.util.module_from_spec(spec)
     sys.modules["workflows"] = workflows_module
     spec.loader.exec_module(workflows_module)
-    
+
     app.include_router(workflows_module.router)
     logger.info("✅ Workflow endpoints loaded")
 except Exception as e:

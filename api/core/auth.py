@@ -1,6 +1,6 @@
 """API Authentication Module (Stub)"""
 
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Optional
 
 
 def get_current_user(token: Optional[str] = None) -> Optional[Dict[str, Any]]:

@@ -2,8 +2,8 @@
 Self-Correction - Automatic output improvement
 """
 
-from typing import Dict, Any, List
 import re
+from typing import Any, Dict, List
 
 
 class SelfCorrection:

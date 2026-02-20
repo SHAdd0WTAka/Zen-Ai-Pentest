@@ -4,11 +4,11 @@ API Cache Module
 Provides caching with Redis support (production) and in-memory fallback (development).
 """
 
-import os
 import json
 import logging
-from typing import Any, Optional
+import os
 from datetime import datetime, timedelta
+from typing import Any, Optional
 
 logger = logging.getLogger(__name__)
 

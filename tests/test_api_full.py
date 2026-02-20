@@ -1,6 +1,7 @@
 """
 Vollständige API Tests
 """
+
 from fastapi.testclient import TestClient
 
 
@@ -27,10 +28,7 @@ class TestAuth:
 
     def test_login_success(self, client: TestClient):
         """Login mit gültigen Credentials"""
-        response = client.post("/auth/login", json={
-            "username": "admin",
-            "password": "admin123"
-        })
+        response = client.post("/auth/login", json={"username": "admin", "password": "admin123"})
         assert response.status_code == 200
         data = response.json()
         assert "access_token" in data
@@ -38,10 +36,7 @@ class TestAuth:
 
     def test_login_failure(self, client: TestClient):
         """Login mit falschen Credentials"""
-        response = client.post("/auth/login", json={
-            "username": "admin",
-            "password": "wrongpassword"
-        })
+        response = client.post("/auth/login", json={"username": "admin", "password": "wrongpassword"})
         assert response.status_code == 401
 
     def test_protected_endpoint_without_auth(self, client: TestClient):

@@ -4,8 +4,9 @@ Integration Test Configuration
 Fixtures and configuration for integration tests.
 """
 
-import pytest
 import asyncio
+
+import pytest
 
 
 @pytest.fixture(scope="session")
@@ -19,13 +20,11 @@ def event_loop():
 @pytest.fixture
 async def mock_task_callback():
     """Mock task callback for testing"""
+
     async def callback(task_data):
         await asyncio.sleep(0.01)  # Simulate work
-        return {
-            "status": "completed",
-            "results": {"findings": []},
-            "execution_time": 0.01
-        }
+        return {"status": "completed", "results": {"findings": []}, "execution_time": 0.01}
+
     return callback
 
 
@@ -39,7 +38,7 @@ def sample_vulnerability_data():
         "cvss_score": 8.5,
         "description": "Test vulnerability for integration testing",
         "affected_component": "test-service",
-        "remediation": "Update to latest version"
+        "remediation": "Update to latest version",
     }
 
 
@@ -49,22 +48,14 @@ def sample_task_data():
     return {
         "type": "vulnerability_scan",
         "target": "test.example.com",
-        "options": {
-            "ports": "80,443,8080",
-            "scan_type": "quick"
-        }
+        "options": {"ports": "80,443,8080", "scan_type": "quick"},
     }
 
 
 @pytest.fixture
 def sample_cron_schedules():
     """Sample cron schedules for testing"""
-    return {
-        "daily": "0 2 * * *",
-        "hourly": "0 * * * *",
-        "weekly": "0 0 * * 0",
-        "every_5_minutes": "*/5 * * * *"
-    }
+    return {"daily": "0 2 * * *", "hourly": "0 * * * *", "weekly": "0 0 * * 0", "every_5_minutes": "*/5 * * * *"}
 
 
 # Markers

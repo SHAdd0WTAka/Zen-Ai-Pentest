@@ -2,8 +2,9 @@
 LLM Backend Module - Stub for testing
 Full implementation needed for production
 """
-from typing import Optional, Dict, Any
+
 import logging
+from typing import Any, Dict, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -22,8 +23,4 @@ class LLMBackend:
 
     async def chat(self, messages: list, **kwargs) -> Dict[str, Any]:
         """Chat completion - stub implementation"""
-        return {
-            "content": "Stub chat response",
-            "model": self.model,
-            "usage": {"prompt_tokens": 10, "completion_tokens": 10}
-        }
+        return {"content": "Stub chat response", "model": self.model, "usage": {"prompt_tokens": 10, "completion_tokens": 10}}

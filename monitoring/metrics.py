@@ -10,11 +10,10 @@ Provides:
 """
 
 import time
-from typing import Callable, Optional
 from functools import wraps
+from typing import Callable, Optional
 
-from prometheus_client import Counter, Histogram, Gauge, Info, CollectorRegistry, generate_latest
-
+from prometheus_client import CollectorRegistry, Counter, Gauge, Histogram, Info, generate_latest
 
 # Custom registry
 METRICS_REGISTRY = CollectorRegistry()

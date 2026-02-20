@@ -11,24 +11,25 @@ Usage:
     python -m benchmarks.performance_test --compare
 """
 
-import asyncio
-import time
-import json
-import sys
 import argparse
+import asyncio
+import json
 import statistics
-from dataclasses import dataclass, asdict
-from typing import List, Dict, Callable, Any
+import sys
+import time
 from contextlib import contextmanager
+from dataclasses import asdict, dataclass
 from datetime import datetime
+from typing import Any, Callable, Dict, List
 
 # Add parent directory to path
-sys.path.insert(0, str(__import__('pathlib').Path(__file__).parent.parent))
+sys.path.insert(0, str(__import__("pathlib").Path(__file__).parent.parent))
 
 
 @dataclass
 class BenchmarkResult:
     """Result of a single benchmark run."""
+
     name: str
     component: str
     iterations: int
@@ -48,6 +49,7 @@ class BenchmarkResult:
 @dataclass
 class ComparisonResult:
     """Comparison between before and after optimization."""
+
     benchmark_name: str
     before_avg: float
     after_avg: float
@@ -71,13 +73,7 @@ class PerformanceBenchmarks:
         elapsed.append(time.perf_counter() - start)
 
     def _run_benchmark(
-        self,
-        name: str,
-        component: str,
-        func: Callable,
-        iterations: int = 100,
-        warmup: int = 10,
-        metadata: Dict = None
+        self, name: str, component: str, func: Callable, iterations: int = 100, warmup: int = 10, metadata: Dict = None
     ) -> BenchmarkResult:
         """Run a single benchmark with warmup and multiple iterations."""
         print(f"  Running {name} ({iterations} iterations)...", end=" ")
@@ -117,7 +113,7 @@ class PerformanceBenchmarks:
             median_time=statistics.median(times),
             std_dev=statistics.stdev(times) if len(times) > 1 else 0,
             ops_per_second=len(times) / sum(times) if sum(times) > 0 else 0,
-            metadata=metadata or {}
+            metadata=metadata or {},
         )
 
         print(f"✓ {result.avg_time*1000:.3f}ms avg")
@@ -148,26 +144,26 @@ class PerformanceBenchmarks:
             for i in range(100):
                 await cache.get(f"key_{i}")
 
-        results.append(self._run_benchmark(
-            "Memory Cache Operations",
-            "cache",
-            memory_cache_ops,
-            iterations=50,
-            metadata={"cache_type": "memory", "operations": 200}
-        ))
+        results.append(
+            self._run_benchmark(
+                "Memory Cache Operations",
+                "cache",
+                memory_cache_ops,
+                iterations=50,
+                metadata={"cache_type": "memory", "operations": 200},
+            )
+        )
 
         # Cache key generation benchmark
         def cache_key_gen():
             for i in range(100):
-                generate_cache_key("test_func", i, foo="bar", baz=i*2)
+                generate_cache_key("test_func", i, foo="bar", baz=i * 2)
 
-        results.append(self._run_benchmark(
-            "Cache Key Generation",
-            "cache",
-            cache_key_gen,
-            iterations=1000,
-            metadata={"operation": "key_generation"}
-        ))
+        results.append(
+            self._run_benchmark(
+                "Cache Key Generation", "cache", cache_key_gen, iterations=1000, metadata={"operation": "key_generation"}
+            )
+        )
 
         return results
 
@@ -183,43 +179,36 @@ class PerformanceBenchmarks:
         results = []
 
         # Model instantiation benchmark
-        from database.models import Scan, Finding
+        from database.models import Finding, Scan
 
         def model_instantiation():
             for i in range(100):
-                Scan(
-                    name=f"Test Scan {i}",
-                    target=f"192.168.1.{i}",
-                    scan_type="network",
-                    status="pending"
-                )
+                Scan(name=f"Test Scan {i}", target=f"192.168.1.{i}", scan_type="network", status="pending")
 
-        results.append(self._run_benchmark(
-            "Model Instantiation",
-            "database",
-            model_instantiation,
-            iterations=100,
-            metadata={"model": "Scan", "operations": 100}
-        ))
+        results.append(
+            self._run_benchmark(
+                "Model Instantiation",
+                "database",
+                model_instantiation,
+                iterations=100,
+                metadata={"model": "Scan", "operations": 100},
+            )
+        )
 
         # Finding model benchmark
         def finding_model_ops():
             for i in range(100):
-                Finding(
-                    scan_id=i,
-                    title=f"Vulnerability {i}",
-                    description="Test description",
-                    severity="high",
-                    cvss_score=7.5
-                )
+                Finding(scan_id=i, title=f"Vulnerability {i}", description="Test description", severity="high", cvss_score=7.5)
 
-        results.append(self._run_benchmark(
-            "Finding Model Operations",
-            "database",
-            finding_model_ops,
-            iterations=100,
-            metadata={"model": "Finding", "operations": 100}
-        ))
+        results.append(
+            self._run_benchmark(
+                "Finding Model Operations",
+                "database",
+                finding_model_ops,
+                iterations=100,
+                metadata={"model": "Finding", "operations": 100},
+            )
+        )
 
         return results
 
@@ -241,50 +230,59 @@ class PerformanceBenchmarks:
         def cve_lookup():
             cve_db.search_cve("CVE-2021-44228")
 
-        results.append(self._run_benchmark(
-            "Single CVE Lookup",
-            "cve_database",
-            cve_lookup,
-            iterations=1000,
-            metadata={"operation": "single_lookup", "cve": "CVE-2021-44228"}
-        ))
+        results.append(
+            self._run_benchmark(
+                "Single CVE Lookup",
+                "cve_database",
+                cve_lookup,
+                iterations=1000,
+                metadata={"operation": "single_lookup", "cve": "CVE-2021-44228"},
+            )
+        )
 
         # Batch CVE lookup
         test_cves = ["CVE-2021-44228", "CVE-2021-45046", "CVE-2021-45105"]
+
         def batch_cve_lookup():
             cve_db.search_cve_batch(test_cves)
 
-        results.append(self._run_benchmark(
-            "Batch CVE Lookup (3)",
-            "cve_database",
-            batch_cve_lookup,
-            iterations=500,
-            metadata={"operation": "batch_lookup", "batch_size": 3}
-        ))
+        results.append(
+            self._run_benchmark(
+                "Batch CVE Lookup (3)",
+                "cve_database",
+                batch_cve_lookup,
+                iterations=500,
+                metadata={"operation": "batch_lookup", "batch_size": 3},
+            )
+        )
 
         # Severity-based lookup
         def severity_lookup():
             cve_db.get_cves_by_severity("Critical")
 
-        results.append(self._run_benchmark(
-            "Severity-based Lookup",
-            "cve_database",
-            severity_lookup,
-            iterations=100,
-            metadata={"operation": "severity_lookup", "severity": "Critical"}
-        ))
+        results.append(
+            self._run_benchmark(
+                "Severity-based Lookup",
+                "cve_database",
+                severity_lookup,
+                iterations=100,
+                metadata={"operation": "severity_lookup", "severity": "Critical"},
+            )
+        )
 
         # Cached lookup
         def cached_cve_lookup():
             search_cve_cached("CVE-2021-44228")
 
-        results.append(self._run_benchmark(
-            "Cached CVE Lookup",
-            "cve_database",
-            cached_cve_lookup,
-            iterations=1000,
-            metadata={"operation": "cached_lookup"}
-        ))
+        results.append(
+            self._run_benchmark(
+                "Cached CVE Lookup",
+                "cve_database",
+                cached_cve_lookup,
+                iterations=1000,
+                metadata={"operation": "cached_lookup"},
+            )
+        )
 
         return results
 
@@ -297,7 +295,7 @@ class PerformanceBenchmarks:
         print("\n🔧 Tool Execution Performance Benchmarks")
         print("-" * 50)
 
-        from autonomous.tool_executor import ToolRegistry, ToolExecutor, ToolExecutionCache
+        from autonomous.tool_executor import ToolExecutionCache, ToolExecutor, ToolRegistry
 
         results = []
 
@@ -308,17 +306,19 @@ class PerformanceBenchmarks:
                 registry.check_installed("nmap")
                 registry.list_tools(category="recon")
 
-        results.append(self._run_benchmark(
-            "Tool Registry Operations",
-            "tool_execution",
-            registry_ops,
-            iterations=100,
-            metadata={"operations": "check_installed + list_tools"}
-        ))
+        results.append(
+            self._run_benchmark(
+                "Tool Registry Operations",
+                "tool_execution",
+                registry_ops,
+                iterations=100,
+                metadata={"operations": "check_installed + list_tools"},
+            )
+        )
 
         # Command building
         executor = ToolExecutor()
-        from autonomous.tool_executor import ToolDefinition, SafetyLevel
+        from autonomous.tool_executor import SafetyLevel, ToolDefinition
 
         def command_build():
             tool = ToolDefinition(
@@ -326,18 +326,20 @@ class PerformanceBenchmarks:
                 description="Test",
                 command_template="nmap {options} {target}",
                 safety_level=SafetyLevel.READ_ONLY,
-                category="recon"
+                category="recon",
             )
             for i in range(100):
                 executor._build_command(tool, {"target": f"192.168.1.{i}", "options": "-sS -p80,443"})
 
-        results.append(self._run_benchmark(
-            "Command Building",
-            "tool_execution",
-            command_build,
-            iterations=500,
-            metadata={"tool": "nmap", "operations": 100}
-        ))
+        results.append(
+            self._run_benchmark(
+                "Command Building",
+                "tool_execution",
+                command_build,
+                iterations=500,
+                metadata={"tool": "nmap", "operations": 100},
+            )
+        )
 
         # Tool execution cache
         async def execution_cache_ops():
@@ -350,13 +352,15 @@ class PerformanceBenchmarks:
             for i in range(50):
                 await cache.get("nmap", {"target": f"host_{i}"})
 
-        results.append(self._run_benchmark(
-            "Tool Execution Cache",
-            "tool_execution",
-            execution_cache_ops,
-            iterations=100,
-            metadata={"cache_operations": 100}
-        ))
+        results.append(
+            self._run_benchmark(
+                "Tool Execution Cache",
+                "tool_execution",
+                execution_cache_ops,
+                iterations=100,
+                metadata={"cache_operations": 100},
+            )
+        )
 
         return results
 
@@ -376,7 +380,7 @@ class PerformanceBenchmarks:
         # Context window management
         def context_window_ops():
             manager = ContextWindowManager(max_messages=20)
-            from langchain_core.messages import HumanMessage, AIMessage
+            from langchain_core.messages import AIMessage, HumanMessage
 
             for i in range(50):
                 manager.add_message(HumanMessage(content=f"Message {i}"))
@@ -384,18 +388,16 @@ class PerformanceBenchmarks:
 
             manager.get_context_messages([])
 
-        results.append(self._run_benchmark(
-            "Context Window Management",
-            "agent",
-            context_window_ops,
-            iterations=200,
-            metadata={"messages": 100}
-        ))
+        results.append(
+            self._run_benchmark(
+                "Context Window Management", "agent", context_window_ops, iterations=200, metadata={"messages": 100}
+            )
+        )
 
         # LLM cache operations
         async def llm_cache_ops():
             cache = LLMResponseCache(ttl_seconds=300)
-            from langchain_core.messages import HumanMessage, AIMessage
+            from langchain_core.messages import AIMessage, HumanMessage
 
             messages = [HumanMessage(content="Test message")]
             tools = []
@@ -405,13 +407,11 @@ class PerformanceBenchmarks:
                 cache.set(messages, tools, response)
                 cache.get(messages, tools)
 
-        results.append(self._run_benchmark(
-            "LLM Response Cache",
-            "agent",
-            llm_cache_ops,
-            iterations=200,
-            metadata={"cache_operations": 100}
-        ))
+        results.append(
+            self._run_benchmark(
+                "LLM Response Cache", "agent", llm_cache_ops, iterations=200, metadata={"cache_operations": 100}
+            )
+        )
 
         return results
 
@@ -424,8 +424,9 @@ class PerformanceBenchmarks:
         print("\n💾 Memory Usage Benchmarks")
         print("-" * 50)
 
-        import psutil
         import os
+
+        import psutil
 
         results = []
         process = psutil.Process(os.getpid())
@@ -442,13 +443,11 @@ class PerformanceBenchmarks:
             db.search_cve("CVE-2021-44228")
             db.get_cves_by_severity("Critical")
 
-        results.append(self._run_benchmark(
-            "CVE DB Initialization",
-            "memory",
-            cve_db_memory,
-            iterations=10,
-            metadata={"component": "CVEDatabase"}
-        ))
+        results.append(
+            self._run_benchmark(
+                "CVE DB Initialization", "memory", cve_db_memory, iterations=10, metadata={"component": "CVEDatabase"}
+            )
+        )
 
         # Tool executor memory
         from autonomous.tool_executor import ToolExecutor, ToolRegistry
@@ -458,13 +457,15 @@ class PerformanceBenchmarks:
             executor = ToolExecutor(registry=registry)
             _ = executor.get_available_tools()
 
-        results.append(self._run_benchmark(
-            "Tool Executor Initialization",
-            "memory",
-            tool_executor_memory,
-            iterations=50,
-            metadata={"component": "ToolExecutor"}
-        ))
+        results.append(
+            self._run_benchmark(
+                "Tool Executor Initialization",
+                "memory",
+                tool_executor_memory,
+                iterations=50,
+                metadata={"component": "ToolExecutor"},
+            )
+        )
 
         # Memory after
         mem_after = process.memory_info().rss
@@ -501,21 +502,25 @@ class PerformanceBenchmarks:
 
             await asyncio.gather(*[task(i) for i in range(10)])
 
-        results.append(self._run_benchmark(
-            "Sequential Async Operations",
-            "async",
-            sequential_ops,
-            iterations=50,
-            metadata={"tasks": 10, "pattern": "sequential"}
-        ))
+        results.append(
+            self._run_benchmark(
+                "Sequential Async Operations",
+                "async",
+                sequential_ops,
+                iterations=50,
+                metadata={"tasks": 10, "pattern": "sequential"},
+            )
+        )
 
-        results.append(self._run_benchmark(
-            "Parallel Async Operations",
-            "async",
-            parallel_ops,
-            iterations=50,
-            metadata={"tasks": 10, "pattern": "parallel"}
-        ))
+        results.append(
+            self._run_benchmark(
+                "Parallel Async Operations",
+                "async",
+                parallel_ops,
+                iterations=50,
+                metadata={"tasks": 10, "pattern": "parallel"},
+            )
+        )
 
         return results
 
@@ -553,6 +558,7 @@ class PerformanceBenchmarks:
                 except Exception as e:
                     print(f"\n❌ Error in {name} benchmarks: {e}")
                     import traceback
+
                     traceback.print_exc()
 
         return all_results
@@ -571,30 +577,32 @@ class PerformanceBenchmarks:
 
         for result in self.results:
             avg_ms = result.avg_time * 1000
-            report_lines.append(
-                f"| {result.component} | {result.name} | {avg_ms:.3f} | {result.ops_per_second:.1f} |"
-            )
+            report_lines.append(f"| {result.component} | {result.name} | {avg_ms:.3f} | {result.ops_per_second:.1f} |")
 
-        report_lines.extend([
-            "",
-            "## Detailed Results",
-            "",
-        ])
+        report_lines.extend(
+            [
+                "",
+                "## Detailed Results",
+                "",
+            ]
+        )
 
         for result in self.results:
-            report_lines.extend([
-                f"### {result.name}",
-                f"- **Component**: {result.component}",
-                f"- **Iterations**: {result.iterations}",
-                f"- **Total Time**: {result.total_time:.3f}s",
-                f"- **Average**: {result.avg_time*1000:.3f}ms",
-                f"- **Median**: {result.median_time*1000:.3f}ms",
-                f"- **Min**: {result.min_time*1000:.3f}ms",
-                f"- **Max**: {result.max_time*1000:.3f}ms",
-                f"- **Std Dev**: {result.std_dev*1000:.3f}ms",
-                f"- **Ops/Sec**: {result.ops_per_second:.1f}",
-                "",
-            ])
+            report_lines.extend(
+                [
+                    f"### {result.name}",
+                    f"- **Component**: {result.component}",
+                    f"- **Iterations**: {result.iterations}",
+                    f"- **Total Time**: {result.total_time:.3f}s",
+                    f"- **Average**: {result.avg_time*1000:.3f}ms",
+                    f"- **Median**: {result.median_time*1000:.3f}ms",
+                    f"- **Min**: {result.min_time*1000:.3f}ms",
+                    f"- **Max**: {result.max_time*1000:.3f}ms",
+                    f"- **Std Dev**: {result.std_dev*1000:.3f}ms",
+                    f"- **Ops/Sec**: {result.ops_per_second:.1f}",
+                    "",
+                ]
+            )
 
         report = "\n".join(report_lines)
 
@@ -610,7 +618,7 @@ class PerformanceBenchmarks:
         data = {
             "timestamp": datetime.now().isoformat(),
             "python_version": sys.version,
-            "benchmarks": [r.to_dict() for r in self.results]
+            "benchmarks": [r.to_dict() for r in self.results],
         }
 
         with open(output_file, "w") as f:
@@ -624,9 +632,7 @@ class PerformanceBenchmarks:
             with open(baseline_file, "r") as f:
                 baseline = json.load(f)
 
-            baseline_by_name = {
-                b["name"]: b for b in baseline.get("benchmarks", [])
-            }
+            baseline_by_name = {b["name"]: b for b in baseline.get("benchmarks", [])}
 
             comparisons = []
             for result in self.results:
@@ -638,13 +644,15 @@ class PerformanceBenchmarks:
                     improvement = ((before_avg - after_avg) / before_avg) * 100
                     speedup = before_avg / after_avg if after_avg > 0 else 1
 
-                    comparisons.append(ComparisonResult(
-                        benchmark_name=result.name,
-                        before_avg=before_avg,
-                        after_avg=after_avg,
-                        improvement_pct=improvement,
-                        speedup_factor=speedup
-                    ))
+                    comparisons.append(
+                        ComparisonResult(
+                            benchmark_name=result.name,
+                            before_avg=before_avg,
+                            after_avg=after_avg,
+                            improvement_pct=improvement,
+                            speedup_factor=speedup,
+                        )
+                    )
 
             self.comparison_results = comparisons
             return comparisons
@@ -659,7 +667,7 @@ def main():
     parser.add_argument(
         "--component",
         choices=["cache", "database", "cve_database", "tool_execution", "agent", "memory", "async"],
-        help="Run benchmarks for specific component only"
+        help="Run benchmarks for specific component only",
     )
     parser.add_argument("--output", "-o", help="Output file for report (markdown)")
     parser.add_argument("--json", "-j", help="Output file for JSON results")

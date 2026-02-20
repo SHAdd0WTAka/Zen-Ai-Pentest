@@ -20,10 +20,10 @@ Usage:
     })
 """
 
-from .manager import DashboardManager, DashboardConfig
-from .websocket import DashboardWebSocket
-from .metrics import MetricsCollector
 from .events import DashboardEvent, EventStream, EventType
+from .manager import DashboardConfig, DashboardManager
+from .metrics import MetricsCollector
+from .websocket import DashboardWebSocket
 
 __all__ = [
     "DashboardManager",

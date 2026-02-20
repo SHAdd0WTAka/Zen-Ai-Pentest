@@ -4,16 +4,15 @@ ReAct Agent mit VirtualBox VM-Integration
 Erweiterung des ReAct Agents für isolierte VM-basierte Pentests.
 """
 
-from typing import List
 import logging
+from typing import List
 
-from langchain_core.messages import HumanMessage, AIMessage, SystemMessage, ToolMessage
-from langgraph.graph import StateGraph, START, END
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
 from langgraph.checkpoint.memory import MemorySaver
+from langgraph.graph import END, START, StateGraph
 
-from .react_agent import ReActAgent, ReActAgentConfig, AgentState
-from ..virtualization.vm_manager import VirtualBoxManager, PentestSandbox
-
+from ..virtualization.vm_manager import PentestSandbox, VirtualBoxManager
+from .react_agent import AgentState, ReActAgent, ReActAgentConfig
 
 logger = logging.getLogger(__name__)
 

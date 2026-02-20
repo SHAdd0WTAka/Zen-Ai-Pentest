@@ -163,9 +163,7 @@ class TrivyScanner:
         """Validate trivy binary exists"""
         trivy_path = shutil.which(path)
         if not trivy_path:
-            raise RuntimeError(
-                f"trivy not found at '{path}'. Install from: https://aquasecurity.github.io/trivy/"
-            )
+            raise RuntimeError(f"trivy not found at '{path}'. Install from: https://aquasecurity.github.io/trivy/")
         return trivy_path
 
     def _get_version(self) -> str:
@@ -513,7 +511,8 @@ class TrivyScanner:
             self.trivy_path,
             "sbom",
             target,
-            "--format", sbom_format,
+            "--format",
+            sbom_format,
         ]
 
         if self.cache_dir:
@@ -549,46 +548,52 @@ class TrivyScanner:
 
         # Parse vulnerabilities
         for vuln in result.vulnerabilities:
-            parsed["vulnerabilities"].append({
-                "tool": "trivy",
-                "type": "vulnerability",
-                "id": vuln.vulnerability_id,
-                "package": vuln.pkg_name,
-                "installed_version": vuln.installed_version,
-                "fixed_version": vuln.fixed_version,
-                "severity": vuln.severity.lower(),
-                "title": vuln.title,
-                "description": vuln.description,
-                "cvss_score": vuln.cvss_score,
-                "references": vuln.references,
-                "primary_url": vuln.primary_url,
-            })
+            parsed["vulnerabilities"].append(
+                {
+                    "tool": "trivy",
+                    "type": "vulnerability",
+                    "id": vuln.vulnerability_id,
+                    "package": vuln.pkg_name,
+                    "installed_version": vuln.installed_version,
+                    "fixed_version": vuln.fixed_version,
+                    "severity": vuln.severity.lower(),
+                    "title": vuln.title,
+                    "description": vuln.description,
+                    "cvss_score": vuln.cvss_score,
+                    "references": vuln.references,
+                    "primary_url": vuln.primary_url,
+                }
+            )
 
         # Parse misconfigurations
         for misconf in result.misconfigurations:
-            parsed["misconfigurations"].append({
-                "tool": "trivy",
-                "type": "misconfiguration",
-                "id": misconf.id,
-                "misconfiguration_type": misconf.type,
-                "severity": misconf.severity.lower(),
-                "title": misconf.title,
-                "description": misconf.description,
-                "message": misconf.message,
-                "resolution": misconf.resolution,
-                "references": misconf.references,
-            })
+            parsed["misconfigurations"].append(
+                {
+                    "tool": "trivy",
+                    "type": "misconfiguration",
+                    "id": misconf.id,
+                    "misconfiguration_type": misconf.type,
+                    "severity": misconf.severity.lower(),
+                    "title": misconf.title,
+                    "description": misconf.description,
+                    "message": misconf.message,
+                    "resolution": misconf.resolution,
+                    "references": misconf.references,
+                }
+            )
 
         # Parse secrets
         for secret in result.secrets:
-            parsed["secrets"].append({
-                "tool": "trivy",
-                "type": "secret",
-                "rule_id": secret.rule_id,
-                "category": secret.category,
-                "severity": secret.severity.lower(),
-                "title": secret.title,
-            })
+            parsed["secrets"].append(
+                {
+                    "tool": "trivy",
+                    "type": "secret",
+                    "rule_id": secret.rule_id,
+                    "category": secret.category,
+                    "severity": secret.severity.lower(),
+                    "title": secret.title,
+                }
+            )
 
         return parsed
 
@@ -606,63 +611,69 @@ class TrivyScanner:
 
         # Normalize vulnerabilities
         for vuln in result.vulnerabilities:
-            normalized.append({
-                "tool": "trivy",
-                "target": result.target,
-                "severity": vuln.severity.lower(),
-                "title": vuln.title or vuln.vulnerability_id,
-                "description": vuln.description,
-                "evidence": {
-                    "package": vuln.pkg_name,
-                    "installed_version": vuln.installed_version,
-                    "fixed_version": vuln.fixed_version,
-                    "vulnerability_id": vuln.vulnerability_id,
-                },
-                "remediation": (
-                    f"Update {vuln.pkg_name} to version {vuln.fixed_version}"
-                    if vuln.fixed_version
-                    else "Check vendor advisory for remediation"
-                ),
-                "references": [vuln.primary_url] + vuln.references if vuln.primary_url else vuln.references,
-                "cvss_score": vuln.cvss_score,
-            })
+            normalized.append(
+                {
+                    "tool": "trivy",
+                    "target": result.target,
+                    "severity": vuln.severity.lower(),
+                    "title": vuln.title or vuln.vulnerability_id,
+                    "description": vuln.description,
+                    "evidence": {
+                        "package": vuln.pkg_name,
+                        "installed_version": vuln.installed_version,
+                        "fixed_version": vuln.fixed_version,
+                        "vulnerability_id": vuln.vulnerability_id,
+                    },
+                    "remediation": (
+                        f"Update {vuln.pkg_name} to version {vuln.fixed_version}"
+                        if vuln.fixed_version
+                        else "Check vendor advisory for remediation"
+                    ),
+                    "references": [vuln.primary_url] + vuln.references if vuln.primary_url else vuln.references,
+                    "cvss_score": vuln.cvss_score,
+                }
+            )
 
         # Normalize misconfigurations
         for misconf in result.misconfigurations:
-            normalized.append({
-                "tool": "trivy",
-                "target": result.target,
-                "severity": misconf.severity.lower(),
-                "title": misconf.title,
-                "description": misconf.description,
-                "evidence": {
-                    "type": misconf.type,
-                    "message": misconf.message,
-                },
-                "remediation": misconf.resolution,
-                "references": misconf.references,
-            })
+            normalized.append(
+                {
+                    "tool": "trivy",
+                    "target": result.target,
+                    "severity": misconf.severity.lower(),
+                    "title": misconf.title,
+                    "description": misconf.description,
+                    "evidence": {
+                        "type": misconf.type,
+                        "message": misconf.message,
+                    },
+                    "remediation": misconf.resolution,
+                    "references": misconf.references,
+                }
+            )
 
         # Normalize secrets
         for secret in result.secrets:
-            normalized.append({
-                "tool": "trivy",
-                "target": result.target,
-                "severity": secret.severity.lower(),
-                "title": f"Secret Found: {secret.title}",
-                "description": f"Detected {secret.category} secret in code",
-                "evidence": {
-                    "category": secret.category,
-                    "file": secret.file_path,
-                    "match": secret.match,
-                },
-                "remediation": (
-                    "1. Remove the secret from the code\n"
-                    "2. Rotate the exposed secret\n"
-                    "3. Use environment variables or secret management"
-                ),
-                "references": [],
-            })
+            normalized.append(
+                {
+                    "tool": "trivy",
+                    "target": result.target,
+                    "severity": secret.severity.lower(),
+                    "title": f"Secret Found: {secret.title}",
+                    "description": f"Detected {secret.category} secret in code",
+                    "evidence": {
+                        "category": secret.category,
+                        "file": secret.file_path,
+                        "match": secret.match,
+                    },
+                    "remediation": (
+                        "1. Remove the secret from the code\n"
+                        "2. Rotate the exposed secret\n"
+                        "3. Use environment variables or secret management"
+                    ),
+                    "references": [],
+                }
+            )
 
         return normalized
 
@@ -674,6 +685,7 @@ class TrivyScanner:
 # LangChain Tool integration
 try:
     from langchain_core.tools import tool
+
     LANGCHAIN_AVAILABLE = True
 except ImportError:
     LANGCHAIN_AVAILABLE = False
@@ -836,6 +848,7 @@ def trivy_generate_sbom(image: str) -> str:
 # Tool Registry integration
 try:
     from .tool_registry import ToolCategory, ToolSafetyLevel, registry
+
     TOOL_REGISTRY_AVAILABLE = True
 except ImportError:
     TOOL_REGISTRY_AVAILABLE = False

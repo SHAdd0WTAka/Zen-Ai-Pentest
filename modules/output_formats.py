@@ -10,15 +10,15 @@ Version: 2.0.0
 Author: Zen-AI-Pentest Team
 """
 
-import json
-import xml.etree.ElementTree as ET
-import xml.dom.minidom as minidom
-from datetime import datetime
-from typing import List, Dict, Any, Optional, Union
-from dataclasses import dataclass, asdict
-from pathlib import Path
-import html
 import hashlib
+import html
+import json
+import xml.dom.minidom as minidom
+import xml.etree.ElementTree as ET
+from dataclasses import asdict, dataclass
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Union
 
 
 @dataclass

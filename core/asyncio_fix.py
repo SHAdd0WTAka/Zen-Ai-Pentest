@@ -9,11 +9,11 @@ Fix für bekannte Probleme:
 - Event loop policy conflicts
 """
 
-import sys
 import asyncio
-import platform
-from typing import Optional
 import logging
+import platform
+import sys
+from typing import Optional
 
 logger = logging.getLogger(__name__)
 

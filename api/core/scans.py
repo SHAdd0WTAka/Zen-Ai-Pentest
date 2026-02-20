@@ -1,7 +1,7 @@
 """API Scans Module (Stub)"""
 
-from typing import Any, Dict, List, Optional
 from datetime import datetime
+from typing import Any, Dict, List, Optional
 
 
 class ScanManager:

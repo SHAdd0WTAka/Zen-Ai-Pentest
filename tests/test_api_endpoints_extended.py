@@ -3,13 +3,15 @@ Extended API Endpoint Tests
 Comprehensive tests for FastAPI endpoints
 """
 
+from unittest.mock import patch
+
 import pytest
 from fastapi.testclient import TestClient
-from unittest.mock import patch
 
 # Import the FastAPI app
 try:
     from api.main import app
+
     client = TestClient(app)
     API_AVAILABLE = True
 except ImportError:
@@ -24,18 +26,10 @@ class TestAuthEndpoints:
 
     def test_login_success(self):
         """Test successful login"""
-        with patch('api.auth.authenticate_user') as mock_auth:
-            mock_auth.return_value = {
-                "id": "1",
-                "username": "admin",
-                "email": "admin@test.com",
-                "role": "admin"
-            }
+        with patch("api.auth.authenticate_user") as mock_auth:
+            mock_auth.return_value = {"id": "1", "username": "admin", "email": "admin@test.com", "role": "admin"}
 
-            response = client.post(
-                "/api/auth/login",
-                json={"username": "admin", "password": "admin"}
-            )
+            response = client.post("/api/auth/login", json={"username": "admin", "password": "admin"})
 
             assert response.status_code == 200
             data = response.json()
@@ -44,50 +38,30 @@ class TestAuthEndpoints:
 
     def test_login_failure(self):
         """Test failed login"""
-        with patch('api.auth.authenticate_user') as mock_auth:
+        with patch("api.auth.authenticate_user") as mock_auth:
             mock_auth.return_value = None
 
-            response = client.post(
-                "/api/auth/login",
-                json={"username": "wrong", "password": "wrong"}
-            )
+            response = client.post("/api/auth/login", json={"username": "wrong", "password": "wrong"})
 
             assert response.status_code == 401
 
     def test_register_user(self):
         """Test user registration"""
-        with patch('api.auth.create_user') as mock_create:
-            mock_create.return_value = {
-                "id": "2",
-                "username": "newuser",
-                "email": "new@test.com",
-                "role": "user"
-            }
+        with patch("api.auth.create_user") as mock_create:
+            mock_create.return_value = {"id": "2", "username": "newuser", "email": "new@test.com", "role": "user"}
 
             response = client.post(
-                "/api/auth/register",
-                json={
-                    "username": "newuser",
-                    "email": "new@test.com",
-                    "password": "password123"
-                }
+                "/api/auth/register", json={"username": "newuser", "email": "new@test.com", "password": "password123"}
             )
 
             assert response.status_code in [200, 201]
 
     def test_get_current_user(self):
         """Test getting current user info"""
-        with patch('api.auth.get_current_user') as mock_user:
-            mock_user.return_value = {
-                "id": "1",
-                "username": "admin",
-                "email": "admin@test.com"
-            }
+        with patch("api.auth.get_current_user") as mock_user:
+            mock_user.return_value = {"id": "1", "username": "admin", "email": "admin@test.com"}
 
-            response = client.get(
-                "/api/auth/me",
-                headers={"Authorization": "Bearer test_token"}
-            )
+            response = client.get("/api/auth/me", headers={"Authorization": "Bearer test_token"})
 
             # Will fail without proper auth, but tests structure
             assert response.status_code in [200, 401, 403]
@@ -99,15 +73,8 @@ class TestScanEndpoints:
 
     def test_get_scans_list(self):
         """Test getting list of scans"""
-        with patch('api.routes.scans.get_scans') as mock_scans:
-            mock_scans.return_value = [
-                {
-                    "id": "1",
-                    "target": "example.com",
-                    "status": "completed",
-                    "type": "full"
-                }
-            ]
+        with patch("api.routes.scans.get_scans") as mock_scans:
+            mock_scans.return_value = [{"id": "1", "target": "example.com", "status": "completed", "type": "full"}]
 
             response = client.get("/api/scans")
 
@@ -115,30 +82,17 @@ class TestScanEndpoints:
 
     def test_create_scan(self):
         """Test creating a new scan"""
-        with patch('api.routes.scans.create_scan') as mock_create:
-            mock_create.return_value = {
-                "id": "123",
-                "target": "test.com",
-                "status": "pending",
-                "type": "quick"
-            }
+        with patch("api.routes.scans.create_scan") as mock_create:
+            mock_create.return_value = {"id": "123", "target": "test.com", "status": "pending", "type": "quick"}
 
-            response = client.post(
-                "/api/scans",
-                json={"target": "test.com", "type": "quick"}
-            )
+            response = client.post("/api/scans", json={"target": "test.com", "type": "quick"})
 
             assert response.status_code in [200, 201, 401, 422]
 
     def test_get_scan_details(self):
         """Test getting scan details"""
-        with patch('api.routes.scans.get_scan') as mock_scan:
-            mock_scan.return_value = {
-                "id": "1",
-                "target": "example.com",
-                "status": "completed",
-                "results": {"findings": []}
-            }
+        with patch("api.routes.scans.get_scan") as mock_scan:
+            mock_scan.return_value = {"id": "1", "target": "example.com", "status": "completed", "results": {"findings": []}}
 
             response = client.get("/api/scans/1")
 
@@ -146,7 +100,7 @@ class TestScanEndpoints:
 
     def test_delete_scan(self):
         """Test deleting a scan"""
-        with patch('api.routes.scans.delete_scan') as mock_delete:
+        with patch("api.routes.scans.delete_scan") as mock_delete:
             mock_delete.return_value = {"message": "Scan deleted"}
 
             response = client.delete("/api/scans/1")
@@ -155,7 +109,7 @@ class TestScanEndpoints:
 
     def test_stop_scan(self):
         """Test stopping a running scan"""
-        with patch('api.routes.scans.stop_scan') as mock_stop:
+        with patch("api.routes.scans.stop_scan") as mock_stop:
             mock_stop.return_value = {"message": "Scan stopped"}
 
             response = client.post("/api/scans/1/stop")
@@ -181,16 +135,10 @@ class TestToolEndpoints:
 
     def test_execute_tool(self):
         """Test executing a tool"""
-        with patch('api.routes.tools.execute_tool') as mock_execute:
-            mock_execute.return_value = {
-                "success": True,
-                "output": "Tool output"
-            }
+        with patch("api.routes.tools.execute_tool") as mock_execute:
+            mock_execute.return_value = {"success": True, "output": "Tool output"}
 
-            response = client.post(
-                "/api/tools/nmap/execute",
-                json={"target": "example.com", "options": {}}
-            )
+            response = client.post("/api/tools/nmap/execute", json={"target": "example.com", "options": {}})
 
             assert response.status_code in [200, 401, 422]
 
@@ -201,17 +149,10 @@ class TestReportEndpoints:
 
     def test_generate_report(self):
         """Test report generation"""
-        with patch('api.routes.reports.generate_report') as mock_gen:
-            mock_gen.return_value = {
-                "id": "report1",
-                "format": "pdf",
-                "url": "/reports/report1.pdf"
-            }
+        with patch("api.routes.reports.generate_report") as mock_gen:
+            mock_gen.return_value = {"id": "report1", "format": "pdf", "url": "/reports/report1.pdf"}
 
-            response = client.post(
-                "/api/reports",
-                json={"scan_id": "1", "format": "pdf"}
-            )
+            response = client.post("/api/reports", json={"scan_id": "1", "format": "pdf"})
 
             assert response.status_code in [200, 201, 401]
 
@@ -258,10 +199,7 @@ class TestAPIErrorHandling:
 
     def test_validation_error(self):
         """Test validation error response"""
-        response = client.post(
-            "/api/scans",
-            json={"invalid": "data"}  # Missing required fields
-        )
+        response = client.post("/api/scans", json={"invalid": "data"})  # Missing required fields
 
         assert response.status_code in [400, 422]
 

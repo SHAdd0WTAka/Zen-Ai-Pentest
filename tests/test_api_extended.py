@@ -1,12 +1,14 @@
 """
 Extended API Tests
 """
+
 import pytest
 
-
 try:
-    from api.main import app
     from fastapi.testclient import TestClient
+
+    from api.main import app
+
     API_AVAILABLE = True
 except ImportError:
     API_AVAILABLE = False
@@ -39,6 +41,7 @@ class TestAPISchemas:
     def test_schemas_import(self):
         try:
             from api import schemas
+
             assert True
         except ImportError:
             pytest.skip("Schemas not available")
@@ -46,6 +49,7 @@ class TestAPISchemas:
     def test_user_base_exists(self):
         try:
             from api.schemas import UserBase
+
             assert True
         except ImportError:
             pytest.skip("UserBase not available")
@@ -53,6 +57,7 @@ class TestAPISchemas:
     def test_scan_create_exists(self):
         try:
             from api.schemas import ScanCreate
+
             assert True
         except ImportError:
             pytest.skip("ScanCreate not available")
@@ -64,6 +69,7 @@ class TestAPIAuth:
     def test_auth_import(self):
         try:
             from api import auth
+
             assert True
         except ImportError:
             pytest.skip("Auth not available")
@@ -71,6 +77,7 @@ class TestAPIAuth:
     def test_auth_simple_import(self):
         try:
             from api import auth_simple
+
             assert True
         except ImportError:
             pytest.skip("Auth simple not available")

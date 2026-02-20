@@ -1,9 +1,9 @@
 """Tests for API Key Manager module"""
 
-import pytest
-import tempfile
 import os
+import tempfile
 
+import pytest
 
 from modules.api_key_manager import APIKeyManager, KeyStatus
 

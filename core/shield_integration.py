@@ -237,9 +237,7 @@ Be concise and technical."""
                         results["findings"].append({"tool": tool, "analysis": analysis})
                     else:
                         # Raw output without sanitization (not recommended)
-                        results["findings"].append(
-                            {"tool": tool, "raw": raw_output[:1000]}  # Truncate
-                        )
+                        results["findings"].append({"tool": tool, "raw": raw_output[:1000]})  # Truncate
 
                 except Exception as e:
                     logger.error(f"Tool {tool} failed: {e}")

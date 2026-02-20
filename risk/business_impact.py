@@ -3,9 +3,9 @@ Business Impact Scorer
 Assesses business impact of vulnerabilities
 """
 
-from typing import Dict, List
 from dataclasses import dataclass
 from enum import Enum
+from typing import Dict, List
 
 
 class ImpactLevel(Enum):

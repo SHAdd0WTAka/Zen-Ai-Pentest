@@ -1,7 +1,7 @@
 """SQLMap Integration für automatisierte SQL Injection Tests"""
 
-import subprocess
 import logging
+import subprocess
 from typing import Dict, List
 
 logger = logging.getLogger(__name__)

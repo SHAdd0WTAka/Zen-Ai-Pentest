@@ -192,10 +192,7 @@ class RecurringSchedule:
         return f"{minute} {hour} 31 12 *"
 
 
-def calculate_next_occurrence(
-    base_time: datetime,
-    interval_minutes: int
-) -> datetime:
+def calculate_next_occurrence(base_time: datetime, interval_minutes: int) -> datetime:
     """
     Calculate next occurrence based on interval
 
@@ -213,9 +210,7 @@ def calculate_next_occurrence(
     intervals_passed = int(elapsed / interval_minutes)
 
     # Calculate next occurrence
-    next_occurrence = base_time + timedelta(
-        minutes=(intervals_passed + 1) * interval_minutes
-    )
+    next_occurrence = base_time + timedelta(minutes=(intervals_passed + 1) * interval_minutes)
 
     return next_occurrence
 

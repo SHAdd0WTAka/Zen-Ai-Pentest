@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Merge release/v2.0.0 to master via PR"""
 
-import requests
 import os
+
+import requests
 
 # GitHub API configuration
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN") or ""

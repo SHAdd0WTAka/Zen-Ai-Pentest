@@ -4,9 +4,10 @@ Discord Server - Make Public
 Setzt den Discord-Server auf oeffentlich sichtbar
 """
 
-import requests
-import sys
 import getpass
+import sys
+
+import requests
 
 # === KONFIGURATION ===
 GUILD_ID = "1470531751595086017"
@@ -14,13 +15,11 @@ API_BASE = "https://discord.com/api/v10"
 
 # === FUNKTIONEN ===
 
+
 def update_server_settings(token):
     """Aktualisiert die Server-Einstellungen fuer oeffentliche Sichtbarkeit"""
 
-    headers = {
-        "Authorization": f"Bot {token}",
-        "Content-Type": "application/json"
-    }
+    headers = {"Authorization": f"Bot {token}", "Content-Type": "application/json"}
 
     print("[INFO] Aktualisiere Server-Einstellungen...")
 
@@ -50,7 +49,7 @@ def update_server_settings(token):
         "enabled": True,
         "default_channel_id": None,  # Wird automatisch gesetzt
         "description": "Professional AI-Powered Penetration Testing Framework - Community",
-        "preferred_locale": "en-US"
+        "preferred_locale": "en-US",
     }
 
     response = requests.put(community_url, headers=headers, json=community_payload)
@@ -68,7 +67,7 @@ def update_server_settings(token):
 
     if response.status_code == 200:
         data = response.json()
-        current_code = data.get('code', 'N/A')
+        current_code = data.get("code", "N/A")
         print(f"[OK] Vanity URL: discord.gg/{current_code}")
     else:
         print(f"[WARN] Vanity URL konnte nicht geprueft werden: {response.status_code}")
@@ -79,10 +78,7 @@ def update_server_settings(token):
 def create_invite(token, max_age=0, max_uses=0):
     """Erstellt einen permanenten Einladungslink"""
 
-    headers = {
-        "Authorization": f"Bot {token}",
-        "Content-Type": "application/json"
-    }
+    headers = {"Authorization": f"Bot {token}", "Content-Type": "application/json"}
 
     # Ersten Text-Channel finden
     channels_url = f"{API_BASE}/guilds/{GUILD_ID}/channels"
@@ -96,8 +92,8 @@ def create_invite(token, max_age=0, max_uses=0):
     text_channel = None
 
     for channel in channels:
-        if channel['type'] == 0:  # Text channel
-            text_channel = channel['id']
+        if channel["type"] == 0:  # Text channel
+            text_channel = channel["id"]
             break
 
     if not text_channel:
@@ -111,14 +107,14 @@ def create_invite(token, max_age=0, max_uses=0):
         "max_age": max_age,  # 0 = nie ablaufen
         "max_uses": max_uses,  # 0 = unbegrenzt
         "temporary": False,
-        "unique": False
+        "unique": False,
     }
 
     response = requests.post(invite_url, headers=headers, json=payload)
 
     if response.status_code == 200:
         data = response.json()
-        invite_code = data['code']
+        invite_code = data["code"]
         print(f"[OK] Einladungslink erstellt: https://discord.gg/{invite_code}")
         return invite_code
     else:

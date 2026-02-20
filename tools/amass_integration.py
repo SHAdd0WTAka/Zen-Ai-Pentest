@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class AmassResult:
     """Amass enumeration result"""
+
     success: bool
     domain: str = ""
     subdomains: List[str] = field(default_factory=list)
@@ -29,12 +30,7 @@ class AmassIntegration:
     def __init__(self, timeout: int = 600):
         self.timeout = timeout
 
-    async def enumerate(
-        self,
-        domain: str,
-        passive: bool = True,
-        brute: bool = False
-    ) -> AmassResult:
+    async def enumerate(self, domain: str, passive: bool = True, brute: bool = False) -> AmassResult:
         """
         Enumerate subdomains with Amass
 
@@ -47,6 +43,7 @@ class AmassIntegration:
             AmassResult with subdomains
         """
         import time
+
         start_time = time.time()
 
         cmd = ["amass", "enum", "-d", domain, "-json", "-o", "-"]
@@ -60,20 +57,15 @@ class AmassIntegration:
 
         try:
             process = await asyncio.create_subprocess_exec(
-                *cmd,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE
+                *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
             )
 
-            stdout, stderr = await asyncio.wait_for(
-                process.communicate(),
-                timeout=self.timeout
-            )
+            stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=self.timeout)
 
             subdomains = []
 
             # Parse JSON output (one JSON object per line)
-            for line in stdout.decode().strip().split('\n'):
+            for line in stdout.decode().strip().split("\n"):
                 if not line:
                     continue
                 try:
@@ -85,20 +77,14 @@ class AmassIntegration:
                             subdomains.append(name)
                 except json.JSONDecodeError:
                     # Try plain text fallback
-                    if line and not line.startswith('['):
+                    if line and not line.startswith("["):
                         subdomains.append(line.strip())
 
             # Remove duplicates and sort
             subdomains = sorted(set(subdomains))
             duration = time.time() - start_time
 
-            return AmassResult(
-                success=True,
-                domain=domain,
-                subdomains=subdomains,
-                count=len(subdomains),
-                duration=duration
-            )
+            return AmassResult(success=True, domain=domain, subdomains=subdomains, count=len(subdomains), duration=duration)
 
         except asyncio.TimeoutError:
             logger.error("Amass timed out")
@@ -123,24 +109,14 @@ class AmassIntegration:
 
         try:
             process = await asyncio.create_subprocess_exec(
-                *cmd,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE
+                *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
             )
 
-            stdout, stderr = await asyncio.wait_for(
-                process.communicate(),
-                timeout=300
-            )
+            stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=300)
 
-            results = stdout.decode().strip().split('\n')
+            results = stdout.decode().strip().split("\n")
 
-            return {
-                "success": True,
-                "domain": domain,
-                "related_domains": results,
-                "count": len(results)
-            }
+            return {"success": True, "domain": domain, "related_domains": results, "count": len(results)}
 
         except Exception as e:
             logger.error(f"Amass intel error: {e}")
@@ -162,10 +138,11 @@ def intel_sync(domain: str) -> dict:
 
 if __name__ == "__main__":
     import logging
+
     logging.basicConfig(level=logging.INFO)
 
     print("Testing Amass Integration...")
-    print("="*60)
+    print("=" * 60)
 
     result = enumerate_sync("scanme.nmap.org", passive=True)
 

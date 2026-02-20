@@ -26,9 +26,17 @@ apply_windows_async_fixes()
 
 # Import new components (with graceful fallback)
 try:
-    from autonomous import AutonomousAgentLoop, AgentState, AgentMemory
-    from autonomous import ExploitValidator, ExploitValidatorPool, ExploitType
-    from autonomous import ScopeConfig, SandboxConfig, ExploitResult
+    from autonomous import (
+        AgentMemory,
+        AgentState,
+        AutonomousAgentLoop,
+        ExploitResult,
+        ExploitType,
+        ExploitValidator,
+        ExploitValidatorPool,
+        SandboxConfig,
+        ScopeConfig,
+    )
 
     AUTONOMOUS_AVAILABLE = True
 except ImportError as e:
@@ -45,9 +53,16 @@ except ImportError as e:
     ExploitResult = None
 
 try:
-    from risk_engine import FalsePositiveEngine, BusinessImpactCalculator
-    from risk_engine import Finding, FindingStatus, ValidationResult
-    from risk_engine import ConfidenceLevel, ComplianceType, DataClassification
+    from risk_engine import (
+        BusinessImpactCalculator,
+        ComplianceType,
+        ConfidenceLevel,
+        DataClassification,
+        FalsePositiveEngine,
+        Finding,
+        FindingStatus,
+        ValidationResult,
+    )
 
     RISK_ENGINE_AVAILABLE = True
 except ImportError as e:

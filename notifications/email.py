@@ -2,13 +2,13 @@
 Email Notifications für Zen-AI-Pentest
 """
 
-import smtplib
 import logging
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-from email.mime.application import MIMEApplication
-from typing import List, Dict
+import smtplib
 from datetime import datetime
+from email.mime.application import MIMEApplication
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from typing import Dict, List
 
 logger = logging.getLogger(__name__)
 

@@ -2,10 +2,10 @@
 Tests für API Endpoints
 """
 
-import pytest
-import sys
 import os
+import sys
 
+import pytest
 
 sys.path.insert(0, "C:\\Users\\Ataka\\source\\repos\\SHAdd0WTAka\\Zen-Ai-Pentest")
 
@@ -14,6 +14,7 @@ os.environ["JWT_SECRET_KEY"] = "test-secret"
 os.environ["ADMIN_PASSWORD"] = "admin123"
 
 from fastapi.testclient import TestClient
+
 from api.main import app
 
 client = TestClient(app)

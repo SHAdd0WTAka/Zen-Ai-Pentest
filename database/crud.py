@@ -2,9 +2,11 @@
 CRUD Operations for Zen-AI-Pentest Database
 """
 
-from sqlalchemy.orm import Session
-from . import models
 from datetime import datetime
+
+from sqlalchemy.orm import Session
+
+from . import models
 
 # ============================================================================
 # SCAN CRUD

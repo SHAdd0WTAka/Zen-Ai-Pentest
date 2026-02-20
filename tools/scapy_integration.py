@@ -1,10 +1,10 @@
 """Scapy Integration für Zen-AI-Pentest"""
 
 import logging
-from typing import List, Dict
+from typing import Dict, List
 
 try:
-    from scapy.all import IP, TCP, ICMP, ARP, Ether, sr1, srp, conf
+    from scapy.all import ARP, ICMP, IP, TCP, Ether, conf, sr1, srp
 
     SCAPY_AVAILABLE = True
 except ImportError:

@@ -5,14 +5,14 @@ Comprehensive metrics collection for security testing benchmarks.
 Provides statistical analysis and performance tracking.
 """
 
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Any
-from datetime import datetime
-from enum import Enum
 import json
 import math
 import statistics
 from collections import defaultdict
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum
+from typing import Any, Dict, List, Optional
 
 
 class SeverityLevel(Enum):

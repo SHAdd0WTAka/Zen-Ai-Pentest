@@ -9,8 +9,8 @@ from typing import Any, Dict, List, Optional
 
 from core.orchestrator import ZenOrchestrator
 from tools.ffuf_integration_enhanced import FFuFIntegration, directory_bruteforce_sync
-from tools.whatweb_integration import WhatWebIntegration, scan_sync
 from tools.wafw00f_integration import WAFW00FIntegration, detect_sync
+from tools.whatweb_integration import WhatWebIntegration, scan_sync
 
 logger = logging.getLogger(__name__)
 
@@ -44,25 +44,16 @@ class EnhancedReconModule:
         result = scan_sync(target)
 
         if not result.success:
-            return {
-                "success": False,
-                "error": result.error,
-                "technologies": []
-            }
+            return {"success": False, "error": result.error, "technologies": []}
 
         return {
             "success": True,
             "url": result.url,
             "technologies": [
-                {
-                    "name": t.name,
-                    "version": t.version,
-                    "confidence": t.confidence,
-                    "category": t.category
-                }
+                {"name": t.name, "version": t.version, "confidence": t.confidence, "category": t.category}
                 for t in result.technologies
             ],
-            "headers": result.headers
+            "headers": result.headers,
         }
 
     def waf_detection(self, target: str) -> Dict[str, Any]:
@@ -83,18 +74,12 @@ class EnhancedReconModule:
             "success": result.success,
             "url": result.url,
             "firewall_detected": result.firewall_detected,
-            "wafs": [
-                {"name": w.name, "confidence": w.confidence}
-                for w in result.wafs
-            ],
-            "error": result.error
+            "wafs": [{"name": w.name, "confidence": w.confidence} for w in result.wafs],
+            "error": result.error,
         }
 
     def directory_bruteforce(
-        self,
-        target: str,
-        extensions: Optional[List[str]] = None,
-        wordlist: Optional[str] = None
+        self, target: str, extensions: Optional[List[str]] = None, wordlist: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         Directory Bruteforce mit FFuF
@@ -112,11 +97,7 @@ class EnhancedReconModule:
         if not target.endswith("/FUZZ") and "/FUZZ" not in target:
             target = f"{target.rstrip('/')}/FUZZ"
 
-        result = directory_bruteforce_sync(
-            target,
-            wordlist=wordlist,
-            extensions=extensions
-        )
+        result = directory_bruteforce_sync(target, wordlist=wordlist, extensions=extensions)
 
         return {
             "success": result.success,
@@ -125,13 +106,13 @@ class EnhancedReconModule:
                     "url": f.url,
                     "status_code": f.status_code,
                     "content_length": f.content_length,
-                    "content_words": f.content_words
+                    "content_words": f.content_words,
                 }
                 for f in result.findings
             ],
             "total_requests": result.total_requests,
             "duration": result.duration,
-            "error": result.error
+            "error": result.error,
         }
 
     def full_recon(self, target: str) -> Dict[str, Any]:
@@ -191,8 +172,8 @@ class EnhancedReconModule:
                 "technologies_found": len(tech_result.get("technologies", [])),
                 "waf_detected": waf_result.get("firewall_detected", False),
                 "directories_found": len(dir_result.get("findings", [])),
-                "recommendations": recommendations
-            }
+                "recommendations": recommendations,
+            },
         }
 
 
@@ -203,10 +184,12 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Enhanced Reconnaissance Module")
     parser.add_argument("--target", "-t", required=True, help="Target domain or URL")
-    parser.add_argument("--mode", "-m", choices=["tech", "waf", "dir", "full"], default="full",
-                       help="Scan mode (default: full)")
-    parser.add_argument("--extensions", "-e", default="php,html,txt",
-                       help="File extensions for directory scan (comma-separated)")
+    parser.add_argument(
+        "--mode", "-m", choices=["tech", "waf", "dir", "full"], default="full", help="Scan mode (default: full)"
+    )
+    parser.add_argument(
+        "--extensions", "-e", default="php,html,txt", help="File extensions for directory scan (comma-separated)"
+    )
     parser.add_argument("--output", "-o", help="Output file for JSON report")
     parser.add_argument("--quiet", "-q", action="store_true", help="Minimal output")
 

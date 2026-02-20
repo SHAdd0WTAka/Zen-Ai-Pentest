@@ -148,9 +148,7 @@ class ScoutSuiteScanner:
                     break
 
         if not scout_path:
-            raise RuntimeError(
-                "ScoutSuite not found. Install with: pip install scoutsuite"
-            )
+            raise RuntimeError("ScoutSuite not found. Install with: pip install scoutsuite")
         return scout_path
 
     def _get_version(self) -> str:
@@ -171,8 +169,10 @@ class ScoutSuiteScanner:
         cmd = [
             self.scout_path,
             self.provider,
-            "--report-dir", self.output_dir,
-            "--thread-config", str(self.thread_config),
+            "--report-dir",
+            self.output_dir,
+            "--thread-config",
+            str(self.thread_config),
         ]
 
         if self.skip_prompt:
@@ -422,6 +422,7 @@ class ScoutSuiteScanner:
         # Check if using IAM role (EC2 instance profile)
         try:
             import subprocess
+
             result = subprocess.run(
                 ["aws", "sts", "get-caller-identity"],
                 capture_output=True,
@@ -547,6 +548,7 @@ class ScoutSuiteScanner:
 # LangChain Tool integration
 try:
     from langchain_core.tools import tool
+
     LANGCHAIN_AVAILABLE = True
 except ImportError:
     LANGCHAIN_AVAILABLE = False
@@ -627,11 +629,7 @@ def scoutsuite_scan_azure() -> str:
     if not result.success:
         return f"ScoutSuite Azure scan failed: {result.error}"
 
-    return (
-        f"Azure Scan Complete:\n"
-        f"  Findings: {len(result.findings)}\n"
-        f"  Report: {result.report_path}"
-    )
+    return f"Azure Scan Complete:\n" f"  Findings: {len(result.findings)}\n" f"  Report: {result.report_path}"
 
 
 @tool
@@ -697,10 +695,7 @@ def scoutsuite_quick_scan(provider: str) -> str:
     if not result.success:
         return f"Scan failed: {result.error}"
 
-    high_critical = sum(
-        1 for f in result.findings
-        if f.severity in ["critical", "high"]
-    )
+    high_critical = sum(1 for f in result.findings if f.severity in ["critical", "high"])
 
     return (
         f"{provider.upper()} Quick Scan Results:\n"
@@ -713,6 +708,7 @@ def scoutsuite_quick_scan(provider: str) -> str:
 # Tool Registry integration
 try:
     from .tool_registry import ToolCategory, ToolSafetyLevel, registry
+
     TOOL_REGISTRY_AVAILABLE = True
 except ImportError:
     TOOL_REGISTRY_AVAILABLE = False

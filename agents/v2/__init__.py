@@ -14,21 +14,21 @@ Features:
 
 Usage:
     from agents.v2 import AgentClient, SecureMessage
-    
+
     agent = AgentClient(agent_id="agt_xxx", api_key="key_xxx")
     await agent.connect()
     await agent.send_message(recipient="agt_yyy", payload={...})
 """
 
-from .secure_message import SecureMessage, MessageEncryption, EncryptedPayload
 from .agent_client import AgentClient, AgentConnectionError
 from .auth_manager import AgentAuthenticator, AgentCredentials
+from .secure_message import EncryptedPayload, MessageEncryption, SecureMessage
 
 __version__ = "2.0.0"
 
 __all__ = [
     "SecureMessage",
-    "MessageEncryption", 
+    "MessageEncryption",
     "EncryptedPayload",
     "AgentClient",
     "AgentConnectionError",

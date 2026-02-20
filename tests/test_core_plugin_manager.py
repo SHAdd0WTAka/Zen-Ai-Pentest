@@ -6,25 +6,28 @@ Comprehensive tests for the PluginManager, HookManager, and BasePlugin classes.
 
 import json
 import os
-import pytest
-import tempfile
 import shutil
+import tempfile
+
+import pytest
 
 from core.plugin_manager import (
     BasePlugin,
     HookManager,
-    PluginManager,
-    PluginType,
-    PluginStatus,
     PluginInfo,
-    plugin_manager as global_plugin_manager,
-    register_hook,
+    PluginManager,
+    PluginStatus,
+    PluginType,
     apply_filter,
     execute_hook,
 )
-
+from core.plugin_manager import plugin_manager as global_plugin_manager
+from core.plugin_manager import (
+    register_hook,
+)
 
 # ==================== Test Fixtures ====================
+
 
 @pytest.fixture
 def temp_plugin_dir():
@@ -48,6 +51,7 @@ def plugin_manager(temp_plugin_dir):
 
 class SampleTestPlugin(BasePlugin):
     """Test plugin implementation"""
+
     NAME = "test_plugin"
     VERSION = "1.0.0"
     DESCRIPTION = "A test plugin"
@@ -63,6 +67,7 @@ class SampleTestPlugin(BasePlugin):
 
 class FailingInitPlugin(BasePlugin):
     """Plugin that fails initialization"""
+
     NAME = "failing_init_plugin"
     VERSION = "1.0.0"
     PLUGIN_TYPE = PluginType.TOOL
@@ -76,6 +81,7 @@ class FailingInitPlugin(BasePlugin):
 
 class FailingExecutePlugin(BasePlugin):
     """Plugin that fails execution"""
+
     NAME = "failing_execute_plugin"
     VERSION = "1.0.0"
     PLUGIN_TYPE = PluginType.TOOL
@@ -89,6 +95,7 @@ class FailingExecutePlugin(BasePlugin):
 
 class ConfigurablePlugin(BasePlugin):
     """Plugin with configuration"""
+
     NAME = "configurable_plugin"
     VERSION = "2.0.0"
     PLUGIN_TYPE = PluginType.SCANNER
@@ -108,6 +115,7 @@ class ConfigurablePlugin(BasePlugin):
 
 class HookPlugin(BasePlugin):
     """Plugin with hooks"""
+
     NAME = "hook_plugin"
     VERSION = "1.0.0"
     PLUGIN_TYPE = PluginType.NOTIFIER
@@ -128,12 +136,14 @@ class HookPlugin(BasePlugin):
 
 # ==================== HookManager Tests ====================
 
+
 class TestHookManager:
     """Test HookManager functionality"""
 
     @pytest.mark.asyncio
     async def test_register_single_hook(self, hook_manager):
         """Test registering a single hook"""
+
         async def callback(data: str) -> str:
             return f"processed_{data}"
 
@@ -145,6 +155,7 @@ class TestHookManager:
     @pytest.mark.asyncio
     async def test_register_multiple_hooks_same_name(self, hook_manager):
         """Test registering multiple hooks with same name"""
+
         async def callback1(data: str) -> str:
             return f"cb1_{data}"
 
@@ -161,6 +172,7 @@ class TestHookManager:
     @pytest.mark.asyncio
     async def test_execute_hook(self, hook_manager):
         """Test executing a registered hook"""
+
         async def callback(data: str) -> str:
             return f"processed_{data}"
 
@@ -201,6 +213,7 @@ class TestHookManager:
     @pytest.mark.asyncio
     async def test_execute_hook_callback_exception(self, hook_manager):
         """Test that hook execution continues despite callback exception"""
+
         async def failing_callback(data: str):
             raise Exception("Hook failed")
 
@@ -218,6 +231,7 @@ class TestHookManager:
     @pytest.mark.asyncio
     async def test_unregister_hook(self, hook_manager):
         """Test unregistering a hook callback"""
+
         async def callback(data: str):
             return "result"
 
@@ -230,6 +244,7 @@ class TestHookManager:
     @pytest.mark.asyncio
     async def test_filter_registration(self, hook_manager):
         """Test registering a filter"""
+
         async def add_prefix(data: str, **kwargs) -> str:
             return f"prefix_{data}"
 
@@ -240,6 +255,7 @@ class TestHookManager:
     @pytest.mark.asyncio
     async def test_apply_filter(self, hook_manager):
         """Test applying filters"""
+
         async def add_prefix(data: str, **kwargs) -> str:
             return f"prefix_{data}"
 
@@ -263,6 +279,7 @@ class TestHookManager:
     @pytest.mark.asyncio
     async def test_apply_filter_exception_handling(self, hook_manager):
         """Test filter execution with exception"""
+
         async def failing_filter(data: str, **kwargs):
             raise Exception("Filter failed")
 
@@ -279,6 +296,7 @@ class TestHookManager:
 
 
 # ==================== PluginManager Tests ====================
+
 
 class TestPluginManagerInitialization:
     """Test PluginManager initialization"""
@@ -298,7 +316,7 @@ class TestPluginManagerInitialization:
     def test_directory_creation(self, temp_plugin_dir):
         """Test that plugin directories are created"""
         new_dir = os.path.join(temp_plugin_dir, "new_plugins")
-        pm = PluginManager(plugin_dirs=[new_dir])
+        PluginManager(plugin_dirs=[new_dir])
         assert os.path.exists(new_dir)
 
 
@@ -322,7 +340,7 @@ class TestPluginDiscovery:
             "author": "Test",
             "type": "scanner",
             "dependencies": [],
-            "hooks": ["pre_scan"]
+            "hooks": ["pre_scan"],
         }
 
         with open(os.path.join(plugin_path, "plugin.json"), "w") as f:
@@ -393,12 +411,7 @@ class TestPluginLoading:
         plugin_path = os.path.join(temp_plugin_dir, "dependent_plugin")
         os.makedirs(plugin_path)
 
-        manifest = {
-            "name": "dependent_plugin",
-            "version": "1.0.0",
-            "type": "tool",
-            "dependencies": ["nonexistent_dep"]
-        }
+        manifest = {"name": "dependent_plugin", "version": "1.0.0", "type": "tool", "dependencies": ["nonexistent_dep"]}
 
         with open(os.path.join(plugin_path, "plugin.json"), "w") as f:
             json.dump(manifest, f)
@@ -415,7 +428,7 @@ class TestPluginLoading:
 
         # Note: This test is limited since we can't easily create
         # a full Python module dynamically
-        discovered = plugin_manager.discover_plugins()
+        plugin_manager.discover_plugins()
 
         # Should not crash even with empty discovery
         await plugin_manager.load_all_plugins()
@@ -510,11 +523,12 @@ class TestPluginManagement:
     async def test_reload_plugin(self, plugin_manager):
         """Test reloading a plugin"""
         # Just test that it doesn't crash - actual reload requires file system
-        result = await plugin_manager.reload_plugin("nonexistent")
+        await plugin_manager.reload_plugin("nonexistent")
         # Will fail because plugin doesn't exist, but shouldn't crash
 
 
 # ==================== BasePlugin Tests ====================
+
 
 class TestBasePlugin:
     """Test BasePlugin abstract class"""
@@ -561,6 +575,7 @@ class TestBasePlugin:
 
 # ==================== PluginType and PluginStatus Tests ====================
 
+
 class TestPluginEnums:
     """Test PluginType and PluginStatus enums"""
 
@@ -586,6 +601,7 @@ class TestPluginEnums:
 
 # ==================== PluginInfo Tests ====================
 
+
 class TestPluginInfo:
     """Test PluginInfo dataclass"""
 
@@ -598,7 +614,7 @@ class TestPluginInfo:
             author="Test",
             plugin_type=PluginType.TOOL,
             dependencies=["dep1"],
-            hooks=["hook1"]
+            hooks=["hook1"],
         )
 
         assert info.name == "test"
@@ -608,13 +624,7 @@ class TestPluginInfo:
 
     def test_plugin_info_defaults(self):
         """Test PluginInfo default values"""
-        info = PluginInfo(
-            name="test",
-            version="1.0.0",
-            description="",
-            author="",
-            plugin_type=PluginType.TOOL
-        )
+        info = PluginInfo(name="test", version="1.0.0", description="", author="", plugin_type=PluginType.TOOL)
 
         assert info.dependencies == []
         assert info.hooks == []
@@ -624,12 +634,14 @@ class TestPluginInfo:
 
 # ==================== Global Functions Tests ====================
 
+
 class TestGlobalFunctions:
     """Test global convenience functions"""
 
     @pytest.mark.asyncio
     async def test_global_register_hook(self):
         """Test global register_hook function"""
+
         async def callback(data):
             return data
 
@@ -643,6 +655,7 @@ class TestGlobalFunctions:
     @pytest.mark.asyncio
     async def test_global_execute_hook(self):
         """Test global execute_hook function"""
+
         async def callback(data):
             return f"processed_{data}"
 
@@ -656,6 +669,7 @@ class TestGlobalFunctions:
     @pytest.mark.asyncio
     async def test_global_apply_filter(self):
         """Test global apply_filter function"""
+
         async def add_prefix(data, **kwargs):
             return f"prefix_{data}"
 
@@ -668,6 +682,7 @@ class TestGlobalFunctions:
 
 
 # ==================== Error Handling Tests ====================
+
 
 class TestErrorHandling:
     """Test error handling scenarios"""
@@ -695,6 +710,7 @@ class TestErrorHandling:
 
     def test_missing_abstract_methods(self):
         """Test plugin without required abstract methods"""
+
         class IncompletePlugin(BasePlugin):
             NAME = "incomplete"
 

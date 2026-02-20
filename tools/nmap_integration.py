@@ -168,10 +168,7 @@ class NmapScanner:
         """Validate nmap binary exists"""
         nmap_path = shutil.which(path)
         if not nmap_path:
-            raise RuntimeError(
-                f"nmap not found at '{path}'. Please install nmap: "
-                "https://nmap.org/download.html"
-            )
+            raise RuntimeError(f"nmap not found at '{path}'. Please install nmap: " "https://nmap.org/download.html")
         return nmap_path
 
     def _validate_targets(self, targets: Union[str, List[str]]) -> List[str]:
@@ -481,7 +478,7 @@ class NmapScanner:
         hosts = []
 
         # Try to find host elements with regex
-        host_pattern = re.compile(r'<host[^>]*>.*?</host>', re.DOTALL)
+        host_pattern = re.compile(r"<host[^>]*>.*?</host>", re.DOTALL)
         for match in host_pattern.finditer(xml_string):
             try:
                 host_xml = match.group(0)
@@ -547,9 +544,7 @@ class NmapScanner:
                 "total_hosts": len(hosts),
                 "up_hosts": sum(1 for h in hosts if h.status == "up"),
                 "total_ports": sum(len(h.ports) for h in hosts),
-                "open_ports": sum(
-                    1 for h in hosts for p in h.ports if p.state == "open"
-                ),
+                "open_ports": sum(1 for h in hosts for p in h.ports if p.state == "open"),
             }
 
             return NmapResult(
@@ -743,9 +738,11 @@ def create_nmap_result_dict(hosts: List[NmapHost]) -> Dict[str, Any]:
 # LangChain Tool integration
 try:
     from langchain_core.tools import tool
+
     LANGCHAIN_AVAILABLE = True
 except ImportError:
     LANGCHAIN_AVAILABLE = False
+
     # Define a dummy decorator if langchain is not available
     def tool(func=None, **kwargs):
         if func:
@@ -893,6 +890,7 @@ def nmap_vuln_scan(target: str, ports: str = "top-100") -> str:
 # Tool Registry integration
 try:
     from .tool_registry import ToolCategory, ToolSafetyLevel, registry
+
     TOOL_REGISTRY_AVAILABLE = True
 except ImportError:
     TOOL_REGISTRY_AVAILABLE = False

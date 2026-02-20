@@ -4,8 +4,8 @@ Test Runner
 Runs all test suites with proper configuration.
 """
 
-import sys
 import subprocess
+import sys
 from pathlib import Path
 
 
@@ -15,13 +15,10 @@ def run_unit_tests():
     print("RUNNING UNIT TESTS")
     print("=" * 70)
 
-    result = subprocess.run([
-        sys.executable, "-m", "pytest",
-        "tests/unit",
-        "-v",
-        "--tb=short",
-        "-x"  # Stop on first failure
-    ], cwd=Path(__file__).parent.parent)
+    result = subprocess.run(
+        [sys.executable, "-m", "pytest", "tests/unit", "-v", "--tb=short", "-x"],  # Stop on first failure
+        cwd=Path(__file__).parent.parent,
+    )
 
     return result.returncode
 
@@ -32,13 +29,10 @@ def run_integration_tests():
     print("RUNNING INTEGRATION TESTS")
     print("=" * 70)
 
-    result = subprocess.run([
-        sys.executable, "-m", "pytest",
-        "tests/integration",
-        "-v",
-        "--tb=short",
-        "-m", "not e2e"  # Skip E2E tests
-    ], cwd=Path(__file__).parent.parent)
+    result = subprocess.run(
+        [sys.executable, "-m", "pytest", "tests/integration", "-v", "--tb=short", "-m", "not e2e"],  # Skip E2E tests
+        cwd=Path(__file__).parent.parent,
+    )
 
     return result.returncode
 
@@ -49,13 +43,9 @@ def run_e2e_tests():
     print("RUNNING E2E TESTS")
     print("=" * 70)
 
-    result = subprocess.run([
-        sys.executable, "-m", "pytest",
-        "tests/e2e",
-        "-v",
-        "--tb=short",
-        "-m", "e2e"
-    ], cwd=Path(__file__).parent.parent)
+    result = subprocess.run(
+        [sys.executable, "-m", "pytest", "tests/e2e", "-v", "--tb=short", "-m", "e2e"], cwd=Path(__file__).parent.parent
+    )
 
     return result.returncode
 
@@ -66,14 +56,10 @@ def run_with_coverage():
     print("RUNNING TESTS WITH COVERAGE")
     print("=" * 70)
 
-    result = subprocess.run([
-        sys.executable, "-m", "pytest",
-        "tests/",
-        "--cov=.",
-        "--cov-report=html",
-        "--cov-report=term-missing",
-        "-v"
-    ], cwd=Path(__file__).parent.parent)
+    result = subprocess.run(
+        [sys.executable, "-m", "pytest", "tests/", "--cov=.", "--cov-report=html", "--cov-report=term-missing", "-v"],
+        cwd=Path(__file__).parent.parent,
+    )
 
     return result.returncode
 
@@ -83,31 +69,11 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(description="Run Zen-AI-Pentest tests")
-    parser.add_argument(
-        "--unit",
-        action="store_true",
-        help="Run unit tests only"
-    )
-    parser.add_argument(
-        "--integration",
-        action="store_true",
-        help="Run integration tests only"
-    )
-    parser.add_argument(
-        "--e2e",
-        action="store_true",
-        help="Run E2E tests only"
-    )
-    parser.add_argument(
-        "--coverage",
-        action="store_true",
-        help="Run with coverage"
-    )
-    parser.add_argument(
-        "--all",
-        action="store_true",
-        help="Run all tests"
-    )
+    parser.add_argument("--unit", action="store_true", help="Run unit tests only")
+    parser.add_argument("--integration", action="store_true", help="Run integration tests only")
+    parser.add_argument("--e2e", action="store_true", help="Run E2E tests only")
+    parser.add_argument("--coverage", action="store_true", help="Run with coverage")
+    parser.add_argument("--all", action="store_true", help="Run all tests")
 
     args = parser.parse_args()
 

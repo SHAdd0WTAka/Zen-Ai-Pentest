@@ -5,12 +5,12 @@ Main orchestration class that coordinates all system components.
 """
 
 import asyncio
+import logging
 import uuid
-from typing import Dict, Any, List, Optional, Callable
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-import logging
+from typing import Any, Callable, Dict, List, Optional
 
 # Component imports
 try:
@@ -22,17 +22,17 @@ except ImportError:
     AuditLogger = None
     SecureInputValidator = None
 
-from .state import StateManager, TaskState
-from .events import EventBus, Event, EventType
-from .tasks import TaskManager, Task, TaskPriority
+from .events import Event, EventBus, EventType
 from .integration import ComponentRegistry
-
+from .state import StateManager, TaskState
+from .tasks import Task, TaskManager, TaskPriority
 
 logger = logging.getLogger(__name__)
 
 
 class OrchestratorStatus(Enum):
     """Orchestrator lifecycle states"""
+
     INITIALIZING = "initializing"
     READY = "ready"
     RUNNING = "running"
@@ -80,7 +80,7 @@ class OrchestratorConfig:
             max_workers=8,
             enable_audit_logging=True,
             enable_secure_validation=True,
-            health_check_interval=10
+            health_check_interval=10,
         )
 
     @classmethod
@@ -90,7 +90,7 @@ class OrchestratorConfig:
             max_workers=2,
             enable_audit_logging=True,
             enable_secure_validation=True,
-            task_timeout=600  # 10 minutes for dev
+            task_timeout=600,  # 10 minutes for dev
         )
 
 
@@ -172,8 +172,7 @@ class ZenOrchestrator:
 
             # Start task manager
             self.task_manager = TaskManager(
-                max_workers=self.config.max_workers,
-                max_concurrent=self.config.max_concurrent_tasks
+                max_workers=self.config.max_workers, max_concurrent=self.config.max_concurrent_tasks
             )
             await self.task_manager.start()
 
@@ -185,14 +184,10 @@ class ZenOrchestrator:
 
             # Start background tasks
             if self.config.health_check_interval > 0:
-                self._health_check_task = asyncio.create_task(
-                    self._health_check_loop()
-                )
+                self._health_check_task = asyncio.create_task(self._health_check_loop())
 
             if self.config.metrics_enabled:
-                self._metrics_task = asyncio.create_task(
-                    self._metrics_loop()
-                )
+                self._metrics_task = asyncio.create_task(self._metrics_loop())
 
             # Mark as running
             self._running = True
@@ -201,9 +196,7 @@ class ZenOrchestrator:
 
             # Log startup
             await self._log_event(
-                "orchestrator_started",
-                f"Orchestrator started successfully (ID: {self.instance_id})",
-                level="info"
+                "orchestrator_started", f"Orchestrator started successfully (ID: {self.instance_id})", level="info"
             )
 
             logger.info(f"✅ ZenOrchestrator running (ID: {self.instance_id})")
@@ -212,11 +205,7 @@ class ZenOrchestrator:
         except Exception as e:
             self.status = OrchestratorStatus.ERROR
             logger.error(f"Failed to start orchestrator: {e}")
-            await self._log_event(
-                "orchestrator_start_failed",
-                f"Failed to start: {str(e)}",
-                level="error"
-            )
+            await self._log_event("orchestrator_start_failed", f"Failed to start: {str(e)}", level="error")
             raise
 
     async def stop(self, timeout: int = 30) -> bool:
@@ -262,11 +251,7 @@ class ZenOrchestrator:
             await self.event_bus.stop()
 
             # Log shutdown
-            await self._log_event(
-                "orchestrator_stopped",
-                "Orchestrator stopped gracefully",
-                level="info"
-            )
+            await self._log_event("orchestrator_stopped", "Orchestrator stopped gracefully", level="info")
 
             self._running = False
             self.status = OrchestratorStatus.READY
@@ -295,6 +280,7 @@ class ZenOrchestrator:
         if self.config.enable_audit_logging and AuditLogger:
             try:
                 from audit.config import AuditConfig
+
                 audit_config = AuditConfig.default()
                 self.audit_logger = AuditLogger(audit_config)
                 await self.audit_logger.start()
@@ -316,22 +302,13 @@ class ZenOrchestrator:
         """Register default event handlers"""
 
         # Task completion handler
-        await self.event_bus.subscribe(
-            EventType.TASK_COMPLETED,
-            self._on_task_completed
-        )
+        await self.event_bus.subscribe(EventType.TASK_COMPLETED, self._on_task_completed)
 
         # Task failure handler
-        await self.event_bus.subscribe(
-            EventType.TASK_FAILED,
-            self._on_task_failed
-        )
+        await self.event_bus.subscribe(EventType.TASK_FAILED, self._on_task_failed)
 
         # Security event handler
-        await self.event_bus.subscribe(
-            EventType.SECURITY_ALERT,
-            self._on_security_alert
-        )
+        await self.event_bus.subscribe(EventType.SECURITY_ALERT, self._on_security_alert)
 
     # ==================== Task Management ====================
 
@@ -339,7 +316,7 @@ class ZenOrchestrator:
         self,
         task_data: Dict[str, Any],
         priority: TaskPriority = TaskPriority.NORMAL,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: Optional[Dict[str, Any]] = None,
     ) -> str:
         """
         Submit a new task to the orchestrator
@@ -363,11 +340,7 @@ class ZenOrchestrator:
                 try:
                     self.validator.validate_url(target)
                 except Exception as e:
-                    await self._log_event(
-                        "task_validation_failed",
-                        f"Task validation failed: {e}",
-                        level="warning"
-                    )
+                    await self._log_event("task_validation_failed", f"Task validation failed: {e}", level="warning")
                     raise ValueError(f"Invalid target: {e}")
 
         # Create task
@@ -377,7 +350,7 @@ class ZenOrchestrator:
             data=task_data,
             priority=priority,
             metadata=metadata or {},
-            created_at=datetime.utcnow()
+            created_at=datetime.utcnow(),
         )
 
         # Submit to task manager
@@ -391,15 +364,13 @@ class ZenOrchestrator:
             "task_submitted",
             f"Task {task_id} submitted ({task.type})",
             level="info",
-            details={"task_id": task_id, "type": task.type}
+            details={"task_id": task_id, "type": task.type},
         )
 
         # Emit event
-        await self.event_bus.publish(Event(
-            type=EventType.TASK_SUBMITTED,
-            source="orchestrator",
-            data={"task_id": task_id, "task_type": task.type}
-        ))
+        await self.event_bus.publish(
+            Event(type=EventType.TASK_SUBMITTED, source="orchestrator", data={"task_id": task_id, "task_type": task.type})
+        )
 
         return task_id
 
@@ -412,11 +383,7 @@ class ZenOrchestrator:
 
         if success:
             await self.state_manager.set_task_state(task_id, TaskState.CANCELLED)
-            await self._log_event(
-                "task_cancelled",
-                f"Task {task_id} cancelled",
-                level="info"
-            )
+            await self._log_event("task_cancelled", f"Task {task_id} cancelled", level="info")
 
         return success
 
@@ -438,7 +405,7 @@ class ZenOrchestrator:
             "started_at": task.started_at.isoformat() if task.started_at else None,
             "completed_at": task.completed_at.isoformat() if task.completed_at else None,
             "progress": task.progress,
-            "error": task.error
+            "error": task.error,
         }
 
     async def get_task_results(self, task_id: str) -> Optional[Dict[str, Any]]:
@@ -449,44 +416,32 @@ class ZenOrchestrator:
         return await self.task_manager.get_results(task_id)
 
     async def list_tasks(
-        self,
-        status: Optional[str] = None,
-        task_type: Optional[str] = None,
-        limit: int = 100
+        self, status: Optional[str] = None, task_type: Optional[str] = None, limit: int = 100
     ) -> List[Dict[str, Any]]:
         """List tasks with optional filtering"""
         if not self.task_manager:
             return []
 
-        tasks = await self.task_manager.list_tasks(
-            status=status,
-            task_type=task_type,
-            limit=limit
-        )
+        tasks = await self.task_manager.list_tasks(status=status, task_type=task_type, limit=limit)
 
-        return [{
-            "id": t.id,
-            "type": t.type,
-            "state": t.state.value,
-            "priority": t.priority.value,
-            "created_at": t.created_at.isoformat()
-        } for t in tasks]
+        return [
+            {
+                "id": t.id,
+                "type": t.type,
+                "state": t.state.value,
+                "priority": t.priority.value,
+                "created_at": t.created_at.isoformat(),
+            }
+            for t in tasks
+        ]
 
     # ==================== Event Handling ====================
 
-    async def subscribe(
-        self,
-        event_type: EventType,
-        handler: Callable[[Event], None]
-    ) -> None:
+    async def subscribe(self, event_type: EventType, handler: Callable[[Event], None]) -> None:
         """Subscribe to events"""
         await self.event_bus.subscribe(event_type, handler)
 
-    async def unsubscribe(
-        self,
-        event_type: EventType,
-        handler: Callable[[Event], None]
-    ) -> None:
+    async def unsubscribe(self, event_type: EventType, handler: Callable[[Event], None]) -> None:
         """Unsubscribe from events"""
         await self.event_bus.unsubscribe(event_type, handler)
 
@@ -497,19 +452,11 @@ class ZenOrchestrator:
         except ValueError:
             event_type_enum = EventType.CUSTOM
 
-        await self.event_bus.publish(Event(
-            type=event_type_enum,
-            source="user",
-            data=data
-        ))
+        await self.event_bus.publish(Event(type=event_type_enum, source="user", data=data))
 
     # ==================== Analysis Integration ====================
 
-    async def analyze_results(
-        self,
-        results: Dict[str, Any],
-        analysis_type: str = "vulnerability"
-    ) -> Dict[str, Any]:
+    async def analyze_results(self, results: Dict[str, Any], analysis_type: str = "vulnerability") -> Dict[str, Any]:
         """
         Analyze scan results using Analysis Bot
 
@@ -527,11 +474,7 @@ class ZenOrchestrator:
             # Run analysis
             analysis = self.analysis_bot.analyze(results)
 
-            await self._log_event(
-                "analysis_completed",
-                f"Analysis completed for {analysis_type}",
-                level="info"
-            )
+            await self._log_event("analysis_completed", f"Analysis completed for {analysis_type}", level="info")
 
             return analysis
 
@@ -548,10 +491,7 @@ class ZenOrchestrator:
         await self.state_manager.set_task_state(task_id, TaskState.COMPLETED)
 
         await self._log_event(
-            "task_completed",
-            f"Task {task_id} completed successfully",
-            level="info",
-            details={"task_id": task_id}
+            "task_completed", f"Task {task_id} completed successfully", level="info", details={"task_id": task_id}
         )
 
         # Auto-analyze if enabled
@@ -568,10 +508,7 @@ class ZenOrchestrator:
         await self.state_manager.set_task_state(task_id, TaskState.FAILED)
 
         await self._log_event(
-            "task_failed",
-            f"Task {task_id} failed: {error}",
-            level="error",
-            details={"task_id": task_id, "error": error}
+            "task_failed", f"Task {task_id} failed: {error}", level="error", details={"task_id": task_id, "error": error}
         )
 
         # Retry if enabled
@@ -586,12 +523,7 @@ class ZenOrchestrator:
         alert_type = event.data.get("alert_type")
         details = event.data.get("details", {})
 
-        await self._log_event(
-            "security_alert",
-            f"Security alert: {alert_type}",
-            level="alert",
-            details=details
-        )
+        await self._log_event("security_alert", f"Security alert: {alert_type}", level="alert", details=details)
 
     # ==================== Background Loops ====================
 
@@ -608,15 +540,17 @@ class ZenOrchestrator:
                         logger.warning("Task manager health check failed")
 
                 # Emit health status
-                await self.event_bus.publish(Event(
-                    type=EventType.SYSTEM_HEALTH,
-                    source="orchestrator",
-                    data={
-                        "status": self.status.value,
-                        "tasks_running": len(self.task_manager.running_tasks) if self.task_manager else 0,
-                        "tasks_pending": len(self.task_manager.pending_tasks) if self.task_manager else 0
-                    }
-                ))
+                await self.event_bus.publish(
+                    Event(
+                        type=EventType.SYSTEM_HEALTH,
+                        source="orchestrator",
+                        data={
+                            "status": self.status.value,
+                            "tasks_running": len(self.task_manager.running_tasks) if self.task_manager else 0,
+                            "tasks_pending": len(self.task_manager.pending_tasks) if self.task_manager else 0,
+                        },
+                    )
+                )
 
             except asyncio.CancelledError:
                 break
@@ -631,11 +565,7 @@ class ZenOrchestrator:
 
                 metrics = await self._collect_metrics()
 
-                await self.event_bus.publish(Event(
-                    type=EventType.METRICS,
-                    source="orchestrator",
-                    data=metrics
-                ))
+                await self.event_bus.publish(Event(type=EventType.METRICS, source="orchestrator", data=metrics))
 
             except asyncio.CancelledError:
                 break
@@ -648,30 +578,25 @@ class ZenOrchestrator:
             "timestamp": datetime.utcnow().isoformat(),
             "orchestrator_id": self.instance_id,
             "status": self.status.value,
-            "uptime_seconds": (
-                (datetime.utcnow() - self.started_at).total_seconds()
-                if self.started_at else 0
-            )
+            "uptime_seconds": ((datetime.utcnow() - self.started_at).total_seconds() if self.started_at else 0),
         }
 
         if self.task_manager:
-            metrics.update({
-                "tasks_pending": len(self.task_manager.pending_tasks),
-                "tasks_running": len(self.task_manager.running_tasks),
-                "tasks_completed": self.task_manager.completed_count,
-                "tasks_failed": self.task_manager.failed_count
-            })
+            metrics.update(
+                {
+                    "tasks_pending": len(self.task_manager.pending_tasks),
+                    "tasks_running": len(self.task_manager.running_tasks),
+                    "tasks_completed": self.task_manager.completed_count,
+                    "tasks_failed": self.task_manager.failed_count,
+                }
+            )
 
         return metrics
 
     # ==================== Utility ====================
 
     async def _log_event(
-        self,
-        event_type: str,
-        message: str,
-        level: str = "info",
-        details: Optional[Dict[str, Any]] = None
+        self, event_type: str, message: str, level: str = "info", details: Optional[Dict[str, Any]] = None
     ) -> None:
         """Log event to audit logger"""
         if not self.audit_logger:
@@ -680,12 +605,7 @@ class ZenOrchestrator:
         try:
             log_method = getattr(self.audit_logger, level, self.audit_logger.info)
 
-            await log_method(
-                category=EventCategory.SYSTEM,
-                event_type=event_type,
-                message=message,
-                details=details
-            )
+            await log_method(category=EventCategory.SYSTEM, event_type=event_type, message=message, details=details)
         except Exception as e:
             logger.error(f"Failed to log event: {e}")
 
@@ -695,23 +615,20 @@ class ZenOrchestrator:
             "instance_id": self.instance_id,
             "status": self.status.value,
             "started_at": self.started_at.isoformat() if self.started_at else None,
-            "uptime_seconds": (
-                (datetime.utcnow() - self.started_at).total_seconds()
-                if self.started_at else 0
-            ),
+            "uptime_seconds": ((datetime.utcnow() - self.started_at).total_seconds() if self.started_at else 0),
             "config": {
                 "max_concurrent_tasks": self.config.max_concurrent_tasks,
                 "max_workers": self.config.max_workers,
                 "enable_analysis_bot": self.config.enable_analysis_bot,
                 "enable_audit_logging": self.config.enable_audit_logging,
-                "enable_secure_validation": self.config.enable_secure_validation
+                "enable_secure_validation": self.config.enable_secure_validation,
             },
             "components": {
                 "analysis_bot": self.analysis_bot is not None,
                 "audit_logger": self.audit_logger is not None,
                 "validator": self.validator is not None,
-                "task_manager": self.task_manager is not None if self.task_manager else False
-            }
+                "task_manager": self.task_manager is not None if self.task_manager else False,
+            },
         }
 
     async def health_check(self) -> Dict[str, Any]:
@@ -719,8 +636,8 @@ class ZenOrchestrator:
         checks = {
             "orchestrator": self._running and self.status == OrchestratorStatus.RUNNING,
             "state_manager": True,  # Always available
-            "event_bus": self.event_bus.is_running if hasattr(self.event_bus, 'is_running') else True,
-            "task_manager": False
+            "event_bus": self.event_bus.is_running if hasattr(self.event_bus, "is_running") else True,
+            "task_manager": False,
         }
 
         if self.task_manager:
@@ -734,8 +651,4 @@ class ZenOrchestrator:
 
         all_healthy = all(checks.values())
 
-        return {
-            "healthy": all_healthy,
-            "checks": checks,
-            "timestamp": datetime.utcnow().isoformat()
-        }
+        return {"healthy": all_healthy, "checks": checks, "timestamp": datetime.utcnow().isoformat()}

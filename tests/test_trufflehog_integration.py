@@ -5,19 +5,19 @@ including unit tests with mocked subprocess calls.
 """
 
 import asyncio
-import pytest
 from unittest.mock import Mock, patch
+
+import pytest
 
 # Import the module under test
 from tools.trufflehog_integration import (
-    TruffleHogScanner,
     TruffleHogFinding,
     TruffleHogResult,
+    TruffleHogScanner,
     trufflehog_scan_git,
-    trufflehog_scan_path,
     trufflehog_scan_local_repo,
+    trufflehog_scan_path,
 )
-
 
 # Sample TruffleHog JSON output for testing
 SAMPLE_TRUFFLEHOG_OUTPUT = """{"SourceMetadata":{"Data":{"Git":{"commit":"abc123","file":"config.py","email":"test@example.com","repository":"https://github.com/test/repo","timestamp":"2023-01-01T00:00:00Z","line":10}}},"SourceID":0,"SourceType":15,"SourceName":"trufflehog - git","DetectorType":17,"DetectorName":"AWS","DecoderName":"PLAIN","Verified":true,"Raw":"AKIAIOSFODNN7EXAMPLE","Redacted":"AKIAIOSFODNN7EXAMPLE","ExtraData":null,"StructuredData":null}

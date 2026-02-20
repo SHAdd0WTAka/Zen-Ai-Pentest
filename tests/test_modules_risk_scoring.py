@@ -1,7 +1,8 @@
 """Tests for risk scoring module"""
 
 import pytest  # noqa: F401
-from modules.risk_scoring import RiskScoringModule, RiskFactors, SeverityLevel
+
+from modules.risk_scoring import RiskFactors, RiskScoringModule, SeverityLevel
 
 
 class TestRiskScoringModule:

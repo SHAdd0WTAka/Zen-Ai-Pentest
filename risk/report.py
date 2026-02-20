@@ -3,9 +3,9 @@ Risk Report Generator
 Creates comprehensive risk reports
 """
 
-from typing import List, Dict, Any, Optional
-from datetime import datetime
 import json
+from datetime import datetime
+from typing import Any, Dict, List, Optional
 
 from .risk_engine import RiskScore
 

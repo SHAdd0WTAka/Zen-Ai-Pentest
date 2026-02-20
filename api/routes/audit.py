@@ -9,19 +9,21 @@ Provides endpoints for:
 """
 
 from datetime import datetime
-from typing import Optional, List
+from typing import List, Optional
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 
 # Import audit components
 try:
     from audit import AuditLogger, ComplianceReporter
-    from audit.config import AuditConfig, LogLevel, EventCategory
+    from audit.config import AuditConfig, EventCategory, LogLevel
 except ImportError:
     import sys
+
     sys.path.insert(0, "..")
     from audit import AuditLogger, ComplianceReporter
-    from audit.config import AuditConfig, LogLevel, EventCategory
+    from audit.config import AuditConfig, EventCategory, LogLevel
 
 
 router = APIRouter(prefix="/api/v1/audit", tags=["Audit Logging"])
@@ -104,6 +106,7 @@ class IntegrityResponse(BaseModel):
 
 # Routes
 
+
 @router.get("/logs", response_model=List[LogEntryResponse])
 async def query_logs(
     start_time: Optional[datetime] = None,
@@ -113,7 +116,7 @@ async def query_logs(
     user_id: Optional[str] = None,
     limit: int = Query(default=100, ge=1, le=1000),
     offset: int = Query(default=0, ge=0),
-    logger: AuditLogger = Depends(get_audit_logger)
+    logger: AuditLogger = Depends(get_audit_logger),
 ):
     """
     Query audit logs with filters
@@ -143,17 +146,14 @@ async def query_logs(
         category=category_enum,
         user_id=user_id,
         limit=limit,
-        offset=offset
+        offset=offset,
     )
 
     return [LogEntryResponse(**e.to_dict()) for e in entries]
 
 
 @router.post("/logs/export")
-async def export_logs(
-    request: LogExportRequest,
-    logger: AuditLogger = Depends(get_audit_logger)
-):
+async def export_logs(request: LogExportRequest, logger: AuditLogger = Depends(get_audit_logger)):
     """
     Export audit logs to various formats
 
@@ -174,30 +174,23 @@ async def export_logs(
         start_time=request.start_time,
         end_time=request.end_time,
         level=level_enum,
-        category=category_enum
+        category=category_enum,
     )
 
     # Set content type based on format
-    content_types = {
-        "json": "application/json",
-        "csv": "text/csv",
-        "syslog": "text/plain"
-    }
+    content_types = {"json": "application/json", "csv": "text/csv", "syslog": "text/plain"}
 
     from fastapi.responses import PlainTextResponse
+
     return PlainTextResponse(
         content=data,
         media_type=content_types[request.format],
-        headers={
-            "Content-Disposition": f"attachment; filename=audit_logs.{request.format}"
-        }
+        headers={"Content-Disposition": f"attachment; filename=audit_logs.{request.format}"},
     )
 
 
 @router.get("/integrity", response_model=IntegrityResponse)
-async def verify_integrity(
-    logger: AuditLogger = Depends(get_audit_logger)
-):
+async def verify_integrity(logger: AuditLogger = Depends(get_audit_logger)):
     """
     Verify integrity of all audit logs
 
@@ -213,18 +206,14 @@ async def verify_integrity(
         valid_signatures=result["valid_signatures"],
         invalid_signatures=result["invalid_signatures"],
         chain_breaks=result["chain_breaks"],
-        is_valid=(
-            result["invalid_signatures"] == 0 and
-            result["chain_breaks"] == 0
-        ),
-        errors=result["errors"]
+        is_valid=(result["invalid_signatures"] == 0 and result["chain_breaks"] == 0),
+        errors=result["errors"],
     )
 
 
 @router.post("/compliance/report")
 async def generate_compliance_report(
-    request: ComplianceReportRequest,
-    reporter: ComplianceReporter = Depends(get_compliance_reporter)
+    request: ComplianceReportRequest, reporter: ComplianceReporter = Depends(get_compliance_reporter)
 ):
     """
     Generate compliance report for a specific standard
@@ -244,28 +233,20 @@ async def generate_compliance_report(
     except ValueError:
         raise HTTPException(status_code=400, detail=f"Invalid standard: {request.standard}")
 
-    report = await reporter.generate_report(
-        standard=standard,
-        start_date=request.start_date,
-        end_date=request.end_date
-    )
+    report = await reporter.generate_report(standard=standard, start_date=request.start_date, end_date=request.end_date)
 
     # Export to requested format
     if request.format != "json":
         data = await reporter.export_report(report, request.format)
 
-        content_types = {
-            "markdown": "text/markdown",
-            "csv": "text/csv"
-        }
+        content_types = {"markdown": "text/markdown", "csv": "text/csv"}
 
         from fastapi.responses import PlainTextResponse
+
         return PlainTextResponse(
             content=data,
             media_type=content_types[request.format],
-            headers={
-                "Content-Disposition": f"attachment; filename=compliance_report.{request.format}"
-            }
+            headers={"Content-Disposition": f"attachment; filename=compliance_report.{request.format}"},
         )
 
     return report
@@ -280,38 +261,23 @@ async def list_compliance_standards():
                 "id": "iso27001",
                 "name": "ISO/IEC 27001",
                 "description": "Information Security Management System",
-                "controls_count": 10
+                "controls_count": 10,
             },
-            {
-                "id": "soc2",
-                "name": "SOC 2",
-                "description": "Service Organization Control 2",
-                "controls_count": 0
-            },
-            {
-                "id": "gdpr",
-                "name": "GDPR",
-                "description": "General Data Protection Regulation",
-                "controls_count": 4
-            },
+            {"id": "soc2", "name": "SOC 2", "description": "Service Organization Control 2", "controls_count": 0},
+            {"id": "gdpr", "name": "GDPR", "description": "General Data Protection Regulation", "controls_count": 4},
             {
                 "id": "pci_dss",
                 "name": "PCI DSS",
                 "description": "Payment Card Industry Data Security Standard",
-                "controls_count": 4
+                "controls_count": 4,
             },
-            {
-                "id": "nist_csf",
-                "name": "NIST CSF",
-                "description": "NIST Cybersecurity Framework",
-                "controls_count": 0
-            },
+            {"id": "nist_csf", "name": "NIST CSF", "description": "NIST Cybersecurity Framework", "controls_count": 0},
             {
                 "id": "hipaa",
                 "name": "HIPAA",
                 "description": "Health Insurance Portability and Accountability Act",
-                "controls_count": 0
-            }
+                "controls_count": 0,
+            },
         ]
     }
 
@@ -325,19 +291,11 @@ async def siem_health():
     """
     # This would check actual SIEM connections
     # For now, return placeholder
-    return SIEMHealthResponse(
-        backends={
-            "Splunk": True,
-            "Elasticsearch": True
-        },
-        all_healthy=True
-    )
+    return SIEMHealthResponse(backends={"Splunk": True, "Elasticsearch": True}, all_healthy=True)
 
 
 @router.get("/stats")
-async def get_audit_stats(
-    logger: AuditLogger = Depends(get_audit_logger)
-):
+async def get_audit_stats(logger: AuditLogger = Depends(get_audit_logger)):
     """
     Get audit logging statistics
 
@@ -361,12 +319,12 @@ async def get_audit_stats(
         "total_events": len(entries),
         "time_range": {
             "first_event": entries[0].timestamp.isoformat() if entries else None,
-            "last_event": entries[-1].timestamp.isoformat() if entries else None
+            "last_event": entries[-1].timestamp.isoformat() if entries else None,
         },
         "by_category": by_category,
         "by_level": by_level,
         "by_user": by_user,
-        "integrity": await logger.verify_integrity()
+        "integrity": await logger.verify_integrity(),
     }
 
 
@@ -398,8 +356,8 @@ async def audit_middleware(request, call_next):
             "method": request.method,
             "path": request.url.path,
             "status_code": response.status_code,
-            "duration_ms": round(duration * 1000, 2)
-        }
+            "duration_ms": round(duration * 1000, 2),
+        },
     )
 
     return response

@@ -9,24 +9,23 @@ Verbessert den bestehenden ReAct Agent um:
 4. Better Error Recovery - Robuste Fehlerbehandlung
 """
 
-from typing import List, TypedDict, Annotated, Literal, Dict, Optional, Any
-from dataclasses import dataclass
-from datetime import datetime
 import json
 import logging
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Annotated, Any, Dict, List, Literal, Optional, TypedDict
 
+from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage, ToolMessage
 from langchain_core.tools import tool
-from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, ToolMessage, SystemMessage
-
-from langgraph.graph import StateGraph, START, END, add_messages
 from langgraph.checkpoint.memory import MemorySaver
+from langgraph.graph import END, START, StateGraph, add_messages
 
 from ..core.llm_backend import LLMBackend
+from ..database.cve_database import CVEDatabase
+from ..tools.ffuf_integration import FfufTool
 from ..tools.nmap_integration import NmapTool
 from ..tools.nuclei_integration import NucleiTool
-from ..tools.ffuf_integration import FfufTool
-from ..database.cve_database import CVEDatabase
-from ..tools.tool_registry import ToolRegistry, ToolCategory, ToolSafetyLevel
+from ..tools.tool_registry import ToolCategory, ToolRegistry, ToolSafetyLevel
 
 logger = logging.getLogger(__name__)
 

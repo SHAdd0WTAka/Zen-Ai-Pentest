@@ -4,8 +4,9 @@ Pytest configuration and fixtures for Zen AI Pentest tests.
 
 import os
 import sys
-import pytest
 from pathlib import Path
+
+import pytest
 
 # Add project root to path
 project_root = Path(__file__).parent.parent
@@ -33,17 +34,16 @@ def setup_test_env():
 def test_client():
     """Create a test client for the FastAPI app."""
     from fastapi.testclient import TestClient
+
     from api.main import app
+
     return TestClient(app)
 
 
 @pytest.fixture
 def auth_headers(test_client):
     """Get authentication headers with valid token."""
-    response = test_client.post(
-        "/token",
-        data={"username": "admin", "password": "testpass"}
-    )
+    response = test_client.post("/token", data={"username": "admin", "password": "testpass"})
     if response.status_code == 200:
         token = response.json()["access_token"]
         return {"Authorization": f"Bearer {token}"}

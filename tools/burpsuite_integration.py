@@ -1,8 +1,9 @@
 """BurpSuite Integration"""
 
-import requests
 import logging
 from typing import Dict, List
+
+import requests
 
 logger = logging.getLogger(__name__)
 

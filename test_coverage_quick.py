@@ -2,16 +2,17 @@
 Quick coverage tests - Outside tests/ folder to avoid conftest.py
 Goal: +12% coverage fast
 """
+
+import json
 import os
 import sys
-import json
 
 
 def test_math_operations():
     """Basic math"""
     assert 2 + 2 == 4
     assert 10 / 2 == 5
-    assert 3 ** 2 == 9
+    assert 3**2 == 9
 
 
 def test_string_operations():
@@ -151,7 +152,7 @@ def test_filter_function():
 def test_map_function():
     """Map"""
     numbers = [1, 2, 3]
-    squared = list(map(lambda x: x ** 2, numbers))
+    squared = list(map(lambda x: x**2, numbers))
     assert squared == [1, 4, 9]
 
 

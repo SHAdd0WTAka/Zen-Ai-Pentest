@@ -8,7 +8,6 @@ Erstellt und konfiguriert Kali Linux, Windows und macOS VMs für Pentesting.
 import argparse
 import json
 import logging
-
 import subprocess
 import sys
 from pathlib import Path
@@ -93,8 +92,8 @@ class VMSetup:
 
     def download_kali(self, version: str = "2024.3") -> Optional[Path]:
         """Lädt Kali Linux VM herunter"""
-        import urllib.request
         import shutil
+        import urllib.request
 
         filename = f"kali-linux-{version}-virtualbox-amd64.7z"
         url = f"https://kali.download/virtual-images/kali-{version}/{filename}"

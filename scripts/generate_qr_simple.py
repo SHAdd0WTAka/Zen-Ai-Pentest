@@ -3,8 +3,10 @@
 Simple QR Code Generator - Compatible format
 """
 
-import qrcode
 import os
+
+import qrcode
+
 
 def create_qr(url, filename, output_dir="docs/qr_codes"):
     """Erstellt einen einfachen QR-Code"""
@@ -23,13 +25,14 @@ def create_qr(url, filename, output_dir="docs/qr_codes"):
     img = qr.make_image(fill_color="black", back_color="white")
 
     # Konvertiere zu RGB
-    img = img.convert('RGB')
+    img = img.convert("RGB")
 
     # Speichern
     filepath = os.path.join(output_dir, filename)
-    img.save(filepath, 'PNG')
+    img.save(filepath, "PNG")
     print(f"[OK] {filepath}")
     return filepath
+
 
 def main():
     print("=" * 60)
@@ -49,6 +52,7 @@ def main():
 
     print("=" * 60)
     print("Fertig!")
+
 
 if __name__ == "__main__":
     main()

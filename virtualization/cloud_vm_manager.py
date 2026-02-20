@@ -9,7 +9,7 @@ import logging
 import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Optional, List, Dict, Literal
+from typing import Dict, List, Literal, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -252,9 +252,9 @@ class AzureProvider(CloudProviderBase):
         try:
             from azure.mgmt.compute.models import (
                 HardwareProfile,
-                OSProfile,
-                NetworkProfile,
                 NetworkInterfaceReference,
+                NetworkProfile,
+                OSProfile,
                 VirtualMachine,
             )
 

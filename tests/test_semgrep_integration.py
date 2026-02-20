@@ -6,22 +6,22 @@ including unit tests with mocked subprocess calls.
 
 import asyncio
 import json
-import pytest
 from unittest.mock import Mock, patch
+
+import pytest
 
 # Import the module under test
 from tools.semgrep_integration import (
-    SemgrepScanner,
+    SemgrepConfidence,
     SemgrepFinding,
     SemgrepResult,
+    SemgrepScanner,
     SemgrepSeverity,
-    SemgrepConfidence,
+    semgrep_scan_ci,
     semgrep_scan_code,
     semgrep_scan_owasp,
     semgrep_scan_secrets,
-    semgrep_scan_ci,
 )
-
 
 # Sample Semgrep JSON output for testing
 SAMPLE_SEMGREP_OUTPUT = {

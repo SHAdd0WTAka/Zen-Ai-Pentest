@@ -4,16 +4,18 @@ Integration Tests
 Tests the integration between all components.
 """
 
-import pytest
 import asyncio
+
+import pytest
 
 # Import app components
 try:
-    from app import create_app, ApplicationFactory
+    from app import ApplicationFactory, create_app
     from app.container import DependencyContainer, ServiceProvider
     from app.lifecycle import ApplicationLifecycle, LifecyclePhase
 except ImportError:
     import sys
+
     sys.path.insert(0, "../../..")
     from app import ApplicationFactory
     from app.container import DependencyContainer, ServiceProvider
@@ -39,6 +41,7 @@ class TestDependencyContainer:
         container = DependencyContainer()
 
         call_count = 0
+
         def create_service():
             nonlocal call_count
             call_count += 1
@@ -58,6 +61,7 @@ class TestDependencyContainer:
         container = DependencyContainer()
 
         call_count = 0
+
         def create_singleton():
             nonlocal call_count
             call_count += 1
@@ -112,6 +116,7 @@ class TestServiceProvider:
         container = DependencyContainer()
 
         call_count = 0
+
         def create_service():
             nonlocal call_count
             call_count += 1
@@ -232,8 +237,11 @@ class TestApplicationLifecycle:
         """Test status reporting"""
         lifecycle = ApplicationLifecycle()
 
-        def hook1(): pass
-        def hook2(): pass
+        def hook1():
+            pass
+
+        def hook2():
+            pass
 
         lifecycle.on_start("h1", hook1)
         lifecycle.on_start("h2", hook2)

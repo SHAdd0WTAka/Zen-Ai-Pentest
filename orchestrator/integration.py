@@ -4,15 +4,16 @@ Component Integration Module
 Registry and integration layer for connecting all orchestrator components.
 """
 
-from typing import Dict, Any, Optional, List, Callable
+import asyncio
 from dataclasses import dataclass
 from datetime import datetime
-import asyncio
+from typing import Any, Callable, Dict, List, Optional
 
 
 @dataclass
 class ComponentInfo:
     """Information about a registered component"""
+
     name: str
     instance: Any
     component_type: str
@@ -55,12 +56,7 @@ class ComponentRegistry:
     def __init__(self):
         self._components: Dict[str, ComponentInfo] = {}
         self._dependencies: Dict[str, List[str]] = {}
-        self._hooks: Dict[str, List[Callable]] = {
-            "before_start": [],
-            "after_start": [],
-            "before_stop": [],
-            "after_stop": []
-        }
+        self._hooks: Dict[str, List[Callable]] = {"before_start": [], "after_start": [], "before_stop": [], "after_stop": []}
 
     # ==================== Registration ====================
 
@@ -71,7 +67,7 @@ class ComponentRegistry:
         component_type: str = None,
         version: str = "1.0.0",
         dependencies: List[str] = None,
-        metadata: Dict[str, Any] = None
+        metadata: Dict[str, Any] = None,
     ) -> ComponentInfo:
         """
         Register a component
@@ -95,7 +91,7 @@ class ComponentRegistry:
             instance=instance,
             component_type=component_type or type(instance).__name__,
             version=version,
-            metadata=metadata or {}
+            metadata=metadata or {},
         )
 
         self._components[name] = info
@@ -133,10 +129,7 @@ class ComponentRegistry:
 
     def list_by_type(self, component_type: str) -> List[ComponentInfo]:
         """List components by type"""
-        return [
-            info for info in self._components.values()
-            if info.component_type == component_type
-        ]
+        return [info for info in self._components.values() if info.component_type == component_type]
 
     # ==================== Dependency Management ====================
 
@@ -200,7 +193,7 @@ class ComponentRegistry:
             try:
                 # Try to call health check method if available
                 instance = info.instance
-                if hasattr(instance, 'health_check'):
+                if hasattr(instance, "health_check"):
                     if asyncio.iscoroutinefunction(instance.health_check):
                         healthy = await instance.health_check()
                     else:
@@ -209,18 +202,11 @@ class ComponentRegistry:
                     healthy = True  # Assume healthy if no check
 
                 info.status = "healthy" if healthy else "unhealthy"
-                results[name] = {
-                    "healthy": healthy,
-                    "type": info.component_type,
-                    "version": info.version
-                }
+                results[name] = {"healthy": healthy, "type": info.component_type, "version": info.version}
 
             except Exception as e:
                 info.status = "error"
-                results[name] = {
-                    "healthy": False,
-                    "error": str(e)
-                }
+                results[name] = {"healthy": False, "error": str(e)}
 
         return results
 
@@ -232,7 +218,7 @@ class ComponentRegistry:
                 "status": info.status,
                 "type": info.component_type,
                 "version": info.version,
-                "registered_at": info.registered_at.isoformat()
+                "registered_at": info.registered_at.isoformat(),
             }
 
         return {
@@ -240,7 +226,7 @@ class ComponentRegistry:
             "healthy": sum(1 for s in statuses.values() if s["status"] == "healthy"),
             "unhealthy": sum(1 for s in statuses.values() if s["status"] == "unhealthy"),
             "unknown": sum(1 for s in statuses.values() if s["status"] == "unknown"),
-            "components": statuses
+            "components": statuses,
         }
 
     # ==================== Dependency Injection ====================
@@ -296,7 +282,7 @@ class ComponentInitializer:
 
             # Initialize
             info = self.registry.get_info(name)
-            if info and hasattr(info.instance, 'start'):
+            if info and hasattr(info.instance, "start"):
                 try:
                     if asyncio.iscoroutinefunction(info.instance.start):
                         await info.instance.start()
@@ -337,7 +323,7 @@ class ComponentInitializer:
 
         for name in reversed(components):
             info = self.registry.get_info(name)
-            if info and hasattr(info.instance, 'stop'):
+            if info and hasattr(info.instance, "stop"):
                 try:
                     if asyncio.iscoroutinefunction(info.instance.stop):
                         await info.instance.stop()

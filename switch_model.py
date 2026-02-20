@@ -2,32 +2,34 @@
 import re
 import sys
 from pathlib import Path
+
 import questionary
 from rich.console import Console
-from rich.table import Table
 from rich.panel import Panel
+from rich.table import Table
 
 console = Console()
 
 # Bekannte Backends und ihre Keys
 BACKENDS = {
     "kimi": {"name": "🌙 Kimi", "key_var": "KIMI_API_KEY", "models": ["kimi-k2.5", "kimi-k1.5", "kimi-latest"]},
-    "openrouter": {"name": "🔀 OpenRouter", "key_var": "OPENROUTER_API_KEY", "models": ["openrouter/auto", "anthropic/claude-3.5-sonnet", "openai/gpt-4o", "google/gemini-pro"]},
-    "openai": {"name": "🤖 OpenAI", "key_var": "OPENAI_API_KEY", "models": ["gpt-4o", "gpt-4o-mini", "gpt-3.5-turbo"]}
+    "openrouter": {
+        "name": "🔀 OpenRouter",
+        "key_var": "OPENROUTER_API_KEY",
+        "models": ["openrouter/auto", "anthropic/claude-3.5-sonnet", "openai/gpt-4o", "google/gemini-pro"],
+    },
+    "openai": {"name": "🤖 OpenAI", "key_var": "OPENAI_API_KEY", "models": ["gpt-4o", "gpt-4o-mini", "gpt-3.5-turbo"]},
 }
+
 
 def parse_env(env_path):
     """Liest .env und extrahiert Konfiguration"""
-    config = {
-        "current_backend": None,
-        "current_model": None,
-        "available": {}
-    }
+    config = {"current_backend": None, "current_model": None, "available": {}}
 
     if not env_path.exists():
         return config
 
-    with open(env_path, 'r') as f:
+    with open(env_path, "r") as f:
         content = f.read()
 
     # Aktuelles Backend/Modell finden
@@ -47,6 +49,7 @@ def parse_env(env_path):
 
     return config
 
+
 def show_status(config):
     """Zeigt aktuelle Konfiguration"""
     table = Table(title="🧠 Zen-AI Aktuelle Konfiguration", show_header=True, header_style="bold cyan")
@@ -62,6 +65,7 @@ def show_status(config):
 
     console.print(table)
 
+
 def switch_backend(config, env_path):
     """Wechselt zwischen konfigurierten Backends"""
     available = config["available"]
@@ -74,18 +78,11 @@ def switch_backend(config, env_path):
     for key in available.keys():
         backend_info = BACKENDS[key]
         is_active = "✓ " if config["current_backend"] == key else "  "
-        choices.append(questionary.Choice(
-            title=f"{is_active}{backend_info['name']}",
-            value=key
-        ))
+        choices.append(questionary.Choice(title=f"{is_active}{backend_info['name']}", value=key))
 
     choices.append(questionary.Choice(title="❌ Abbrechen", value=None))
 
-    new_backend = questionary.select(
-        "Wähle Backend:",
-        choices=choices,
-        instruction="(✓ = Aktiv)"
-    ).ask()
+    new_backend = questionary.select("Wähle Backend:", choices=choices, instruction="(✓ = Aktiv)").ask()
 
     if not new_backend:
         return
@@ -101,13 +98,12 @@ def switch_backend(config, env_path):
         default_model = backend_data["models"][0]
 
     new_model = questionary.select(
-        f"Modell für {backend_data['name']}:",
-        choices=backend_data["models"],
-        default=default_model
+        f"Modell für {backend_data['name']}:", choices=backend_data["models"], default=default_model
     ).ask()
 
     update_env(env_path, new_backend, new_model)
     console.print(f"[green]✅ Gewechselt zu:[/green] {backend_data['name']} mit {new_model}")
+
 
 def update_env(env_path, backend, model):
     """Aktualisiert die .env Datei"""
@@ -115,7 +111,7 @@ def update_env(env_path, backend, model):
         console.print("[red]❌ .env nicht gefunden![/red]")
         return
 
-    with open(env_path, 'r') as f:
+    with open(env_path, "r") as f:
         lines = f.readlines()
 
     new_lines = []
@@ -127,8 +123,9 @@ def update_env(env_path, backend, model):
         else:
             new_lines.append(line)
 
-    with open(env_path, 'w') as f:
+    with open(env_path, "w") as f:
         f.writelines(new_lines)
+
 
 def quick_switch(config, env_path):
     """Schneller Wechsel zwischen nur den verfügbaren Backends"""
@@ -144,8 +141,7 @@ def quick_switch(config, env_path):
         console.print(f"{marker}{BACKENDS[key]['name']}")
 
     choice = questionary.select(
-        "Schnellwechsel:",
-        choices=[(BACKENDS[k]['name'], k) for k in available] + [("❌ Abbrechen", None)]
+        "Schnellwechsel:", choices=[(BACKENDS[k]["name"], k) for k in available] + [("❌ Abbrechen", None)]
     ).ask()
 
     if choice:
@@ -156,18 +152,19 @@ def quick_switch(config, env_path):
         update_env(env_path, choice, current_model)
         console.print(f"[green]✅ Aktiv:[/green] {BACKENDS[choice]['name']}")
 
+
 def main():
     env_path = Path(__file__).parent / ".env"
     config = parse_env(env_path)
 
     if not config["available"]:
-        console.print(Panel.fit(
-            "[red]Keine API Keys gefunden![/red]\n\n"
-            "Führe zuerst aus:\n"
-            "[cyan]python3 setup_wizard.py[/cyan]",
-            title="Zen-AI Switch",
-            border_style="red"
-        ))
+        console.print(
+            Panel.fit(
+                "[red]Keine API Keys gefunden![/red]\n\n" "Führe zuerst aus:\n" "[cyan]python3 setup_wizard.py[/cyan]",
+                title="Zen-AI Switch",
+                border_style="red",
+            )
+        )
         sys.exit(1)
 
     show_status(config)
@@ -177,8 +174,8 @@ def main():
         choices=[
             questionary.Choice("🔄 Backend & Modell wechseln", value="full"),
             questionary.Choice("⚡ Schnellwechsel (nur Backend)", value="quick"),
-            questionary.Choice("❌ Beenden", value="exit")
-        ]
+            questionary.Choice("❌ Beenden", value="exit"),
+        ],
     ).ask()
 
     if action == "full":
@@ -187,6 +184,7 @@ def main():
         quick_switch(config, env_path)
     else:
         console.print("[dim]Tschüss![/dim]")
+
 
 if __name__ == "__main__":
     try:

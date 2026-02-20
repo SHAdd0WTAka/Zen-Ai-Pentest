@@ -2,7 +2,7 @@
 Risk Scoring Examples
 """
 
-from risk import RiskEngine, CVSSVector, BusinessContext, ImpactLevel, RiskReportGenerator
+from risk import BusinessContext, CVSSVector, ImpactLevel, RiskEngine, RiskReportGenerator
 
 
 def example_basic_risk():

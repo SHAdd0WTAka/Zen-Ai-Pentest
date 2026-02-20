@@ -10,7 +10,6 @@ from typing import Dict, Set
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
-
 router = APIRouter()
 
 # Store active connections

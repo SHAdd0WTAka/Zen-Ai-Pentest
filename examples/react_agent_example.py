@@ -5,8 +5,8 @@ Dieses Beispiel zeigt, wie der autonome Agent für verschiedene
 Pentest-Szenarien verwendet wird.
 """
 
-import sys
 import os
+import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
@@ -136,6 +136,7 @@ def example_5_continuous_mode():
     print()
 
     import time
+
     import schedule
 
     config = ReActAgentConfig(max_iterations=5, enable_sandbox=True)

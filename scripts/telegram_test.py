@@ -4,9 +4,11 @@ Telegram Bot Test Script
 Testet die Telegram-Integration und sendet Testnachrichten
 """
 
-import requests
-import sys
 import os
+import sys
+
+import requests
+
 
 def test_connection(token, chat_id):
     """Testet die Verbindung zum Telegram Bot"""
@@ -22,8 +24,8 @@ def test_connection(token, chat_id):
 
     if response.status_code == 200:
         data = response.json()
-        if data.get('ok'):
-            bot_info = data['result']
+        if data.get("ok"):
+            bot_info = data["result"]
             print("[OK] Bot gefunden:")
             print(f"     Name: {bot_info.get('first_name')}")
             print(f"     Username: @{bot_info.get('username')}")
@@ -51,18 +53,13 @@ def test_connection(token, chat_id):
     )
 
     url = f"https://api.telegram.org/bot{token}/sendMessage"
-    payload = {
-        'chat_id': chat_id,
-        'text': message,
-        'parse_mode': 'HTML',
-        'disable_web_page_preview': True
-    }
+    payload = {"chat_id": chat_id, "text": message, "parse_mode": "HTML", "disable_web_page_preview": True}
 
     response = requests.post(url, data=payload)
 
     if response.status_code == 200:
         data = response.json()
-        if data.get('ok'):
+        if data.get("ok"):
             print("[OK] Testnachricht gesendet!")
             print(f"     Message ID: {data['result'].get('message_id')}")
             print(f"     Chat: {data['result']['chat'].get('title', data['result']['chat'].get('first_name'))}")
@@ -89,16 +86,16 @@ def get_chat_id(token):
 
     if response.status_code == 200:
         data = response.json()
-        if data.get('ok') and data.get('result'):
-            updates = data['result']
+        if data.get("ok") and data.get("result"):
+            updates = data["result"]
             print(f"[INFO] {len(updates)} Updates gefunden")
 
             for update in updates:
-                if 'message' in update:
-                    chat = update['message']['chat']
-                    chat_id = chat['id']
-                    chat_type = chat['type']
-                    chat_name = chat.get('title', chat.get('first_name', 'Unknown'))
+                if "message" in update:
+                    chat = update["message"]["chat"]
+                    chat_id = chat["id"]
+                    chat_type = chat["type"]
+                    chat_name = chat.get("title", chat.get("first_name", "Unknown"))
                     print(f"\n[FOUND] Chat ID: {chat_id}")
                     print(f"        Type: {chat_type}")
                     print(f"        Name: {chat_name}")
@@ -116,7 +113,7 @@ def main():
     print()
 
     # Token aus Umgebungsvariable oder Eingabe
-    token = os.getenv('TELEGRAM_BOT_TOKEN')
+    token = os.getenv("TELEGRAM_BOT_TOKEN")
     if not token:
         print("[ERROR] TELEGRAM_BOT_TOKEN nicht gesetzt")
         print("Nutze: $env:TELEGRAM_BOT_TOKEN='dein-token'")
@@ -125,7 +122,7 @@ def main():
         print("https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/actions/workflows/telegram-notifications.yml")
         return
 
-    chat_id = os.getenv('TELEGRAM_CHAT_ID')
+    chat_id = os.getenv("TELEGRAM_CHAT_ID")
 
     if not chat_id:
         print("[INFO] TELEGRAM_CHAT_ID nicht gesetzt")

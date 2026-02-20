@@ -13,7 +13,7 @@ Models:
 """
 
 import os
-from datetime import datetime, timedelta
+from datetime import datetime
 from enum import Enum as PyEnum
 
 from sqlalchemy import JSON, Boolean, Column, DateTime, Enum, ForeignKey, Index, Integer, String, Text, create_engine
@@ -424,9 +424,7 @@ def create_session(
 
 def get_session_by_refresh_jti(db, refresh_token_jti: str):
     """Get session by refresh token JTI"""
-    return (
-        db.query(UserSession).filter(UserSession.refresh_token_jti == refresh_token_jti, UserSession.is_active == True).first()
-    )
+    return db.query(UserSession).filter(UserSession.refresh_token_jti == refresh_token_jti, UserSession.is_active).first()
 
 
 def revoke_session(db, session_id: str, reason: str = "logout"):
@@ -443,7 +441,7 @@ def revoke_session(db, session_id: str, reason: str = "logout"):
 
 def revoke_all_user_sessions(db, user_id: int, reason: str = "security"):
     """Revoke all sessions for a user"""
-    sessions = db.query(UserSession).filter(UserSession.user_id == user_id, UserSession.is_active == True).all()
+    sessions = db.query(UserSession).filter(UserSession.user_id == user_id, UserSession.is_active).all()
 
     for session in sessions:
         session.is_active = False

@@ -14,11 +14,11 @@ Usage:
 import argparse
 import json
 import logging
+import random
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Any, Tuple
-import random
+from typing import Any, Dict, List, Optional, Tuple
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -26,9 +26,9 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from benchmarks.comparison.common_benchmarks import (
     BenchmarkTestCase,
     CompetitorResult,
-    TestStatus,
     FindingResult,
     TestCategory,
+    TestStatus,
     load_test_case,
 )
 

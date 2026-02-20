@@ -5,11 +5,11 @@ Berechnet den geschäftlichen Impact von Sicherheitsfindings basierend auf
 Asset-Wertung, Datenklassifizierung, Compliance-Anforderungen und finanziellen Faktoren.
 """
 
-from enum import Enum
-from typing import Dict, List, Optional, Set, Tuple
+import logging
 from dataclasses import dataclass, field
 from datetime import datetime
-import logging
+from enum import Enum
+from typing import Dict, List, Optional, Set, Tuple
 
 # Logger konfigurieren
 logger = logging.getLogger(__name__)

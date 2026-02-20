@@ -4,13 +4,14 @@ Tests for modules that are NOT omitted in .coveragerc
 Target: 20% coverage (currently at 2%)
 """
 
-import pytest
-from unittest.mock import patch, MagicMock, AsyncMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
+import pytest
 
 # ============================================================================
 # CORE MODULE TESTS
 # ============================================================================
+
 
 class TestCoreModules:
     """Test core module components"""
@@ -18,10 +19,8 @@ class TestCoreModules:
     def test_core_imports(self):
         """Test that core modules can be imported"""
         try:
-            from core import orchestrator
-            from core import models
-            from core import cache
-            from core import database
+            from core import cache, database, models, orchestrator
+
             assert True
         except ImportError as e:
             pytest.skip(f"Core modules not available: {e}")
@@ -30,6 +29,7 @@ class TestCoreModules:
         """Test core orchestrator"""
         try:
             from core.orchestrator import ZenOrchestrator
+
             orch = ZenOrchestrator()
             assert orch is not None
         except ImportError:
@@ -40,14 +40,15 @@ class TestCoreModules:
 # UTILS MODULE TESTS
 # ============================================================================
 
+
 class TestUtilsModules:
     """Test utils module components"""
 
     def test_utils_imports(self):
         """Test utils imports"""
         try:
-            from utils import helpers
-            from utils import async_fixes
+            from utils import async_fixes, helpers
+
             assert True
         except ImportError:
             pytest.skip("Utils not available")
@@ -56,6 +57,7 @@ class TestUtilsModules:
         """Test helper functions"""
         try:
             from utils.helpers import banner, colorize
+
             # Test colorize
             result = colorize("test", "red")
             assert "test" in result or result == "test"
@@ -67,6 +69,7 @@ class TestUtilsModules:
 # SAFETY MODULE TESTS
 # ============================================================================
 
+
 class TestSafetyModules:
     """Test safety module components"""
 
@@ -74,6 +77,7 @@ class TestSafetyModules:
         """Test safety imports"""
         try:
             from safety import validator
+
             assert True
         except ImportError:
             pytest.skip("Safety not available")
@@ -83,6 +87,7 @@ class TestSafetyModules:
 # MEMORY MODULE TESTS
 # ============================================================================
 
+
 class TestMemoryModules:
     """Test memory module components"""
 
@@ -90,6 +95,7 @@ class TestMemoryModules:
         """Test memory imports"""
         try:
             from memory import manager
+
             assert True
         except ImportError:
             pytest.skip("Memory not available")
@@ -99,14 +105,15 @@ class TestMemoryModules:
 # AGENTS MODULE TESTS
 # ============================================================================
 
+
 class TestAgentsModules:
     """Test agents module components"""
 
     def test_agents_imports(self):
         """Test agents imports"""
         try:
-            from agents import react_agent
-            from agents import agent_base
+            from agents import agent_base, react_agent
+
             assert True
         except ImportError:
             pytest.skip("Agents not available")
@@ -116,6 +123,7 @@ class TestAgentsModules:
 # DATABASE MODEL TESTS (repeated for codecov)
 # ============================================================================
 
+
 class TestDatabaseModelsCodecov:
     """Database model tests that count for codecov"""
 
@@ -123,6 +131,7 @@ class TestDatabaseModelsCodecov:
         """Test database imports"""
         try:
             from database import models
+
             assert True
         except ImportError:
             pytest.skip("Database not available")
@@ -132,14 +141,15 @@ class TestDatabaseModelsCodecov:
 # RISK ENGINE TESTS
 # ============================================================================
 
+
 class TestRiskEngine:
     """Test risk engine components"""
 
     def test_risk_engine_imports(self):
         """Test risk engine imports"""
         try:
-            from risk_engine import cvss
-            from risk_engine import epss
+            from risk_engine import cvss, epss
+
             assert True
         except ImportError:
             pytest.skip("Risk engine not available")
@@ -149,14 +159,15 @@ class TestRiskEngine:
 # AUTONOMOUS MODULE TESTS
 # ============================================================================
 
+
 class TestAutonomousModules:
     """Test autonomous module components"""
 
     def test_autonomous_imports(self):
         """Test autonomous imports"""
         try:
-            from autonomous import agent_loop
-            from autonomous import memory
+            from autonomous import agent_loop, memory
+
             assert True
         except ImportError:
             pytest.skip("Autonomous not available")
@@ -166,60 +177,63 @@ class TestAutonomousModules:
 # MODULES/ TESTS (Enhanced Recon, OSINT, Super Scanner)
 # ============================================================================
 
+
 class TestModulesForCodecov:
     """Test modules that count for coverage"""
 
     def test_modules_enhanced_recon_import(self):
         """Test enhanced_recon imports"""
         from modules.enhanced_recon import EnhancedReconModule
+
         assert EnhancedReconModule is not None
 
     def test_modules_osint_super_import(self):
         """Test osint_super imports"""
         from modules.osint_super import OSINTSuperModule
+
         assert OSINTSuperModule is not None
 
     def test_modules_super_scanner_import(self):
         """Test super_scanner imports"""
         from modules.super_scanner import SuperScanner
+
         assert SuperScanner is not None
 
     def test_enhanced_recon_initialization(self):
         """Test EnhancedReconModule init"""
         from modules.enhanced_recon import EnhancedReconModule
+
         recon = EnhancedReconModule()
         assert recon is not None
-        assert hasattr(recon, 'ffuf')
-        assert hasattr(recon, 'whatweb')
-        assert hasattr(recon, 'wafw00f')
+        assert hasattr(recon, "ffuf")
+        assert hasattr(recon, "whatweb")
+        assert hasattr(recon, "wafw00f")
 
     def test_osint_super_initialization(self):
         """Test OSINTSuperModule init"""
         from modules.osint_super import OSINTSuperModule
+
         osint = OSINTSuperModule()
         assert osint is not None
-        assert hasattr(osint, 'sherlock')
-        assert hasattr(osint, 'ignorant')
-        assert hasattr(osint, 'subfinder')
+        assert hasattr(osint, "sherlock")
+        assert hasattr(osint, "ignorant")
+        assert hasattr(osint, "subfinder")
 
     def test_super_scanner_initialization(self):
         """Test SuperScanner init"""
         from modules.super_scanner import SuperScanner
+
         scanner = SuperScanner()
         assert scanner is not None
-        assert hasattr(scanner, 'ffuf')
-        assert hasattr(scanner, 'subfinder')
+        assert hasattr(scanner, "ffuf")
+        assert hasattr(scanner, "subfinder")
 
-    @patch('modules.enhanced_recon.WhatWebIntegration.scan')
+    @patch("modules.enhanced_recon.WhatWebIntegration.scan")
     def test_enhanced_recon_technology_detection(self, mock_scan):
         """Test technology detection"""
         from modules.enhanced_recon import EnhancedReconModule
 
-        mock_scan.return_value = MagicMock(
-            success=True,
-            technologies=[],
-            headers={}
-        )
+        mock_scan.return_value = MagicMock(success=True, technologies=[], headers={})
 
         recon = EnhancedReconModule()
         result = recon.technology_detection("test.com")
@@ -227,16 +241,12 @@ class TestModulesForCodecov:
         assert result is not None
         assert "success" in result
 
-    @patch('modules.enhanced_recon.WAFW00FIntegration.detect')
+    @patch("modules.enhanced_recon.WAFW00FIntegration.detect")
     def test_enhanced_recon_waf_detection(self, mock_detect):
         """Test WAF detection"""
         from modules.enhanced_recon import EnhancedReconModule
 
-        mock_detect.return_value = MagicMock(
-            success=True,
-            firewall_detected=False,
-            wafs=[]
-        )
+        mock_detect.return_value = MagicMock(success=True, firewall_detected=False, wafs=[])
 
         recon = EnhancedReconModule()
         result = recon.waf_detection("test.com")
@@ -248,6 +258,7 @@ class TestModulesForCodecov:
 # ============================================================================
 # SIMPLE FUNCTION TESTS TO BOOST COVERAGE
 # ============================================================================
+
 
 class TestSimpleFunctions:
     """Simple function tests to boost coverage numbers"""
@@ -281,10 +292,11 @@ class TestSimpleFunctions:
 # MOCK-BASED MODULE TESTS
 # ============================================================================
 
+
 class TestWithMocks:
     """Tests using mocks to avoid external dependencies"""
 
-    @patch('builtins.open')
+    @patch("builtins.open")
     def test_file_operations_mock(self, mock_open):
         """Test file operations with mock"""
         mock_open.return_value.__enter__.return_value.read.return_value = "test"
@@ -318,12 +330,14 @@ class TestWithMocks:
 # ASYNC TESTS
 # ============================================================================
 
+
 @pytest.mark.asyncio
 class TestAsyncFunctions:
     """Async function tests"""
 
     async def test_simple_async(self):
         """Simple async test"""
+
         async def async_func():
             return "result"
 

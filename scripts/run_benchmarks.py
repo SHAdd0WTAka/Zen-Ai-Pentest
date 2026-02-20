@@ -5,21 +5,21 @@ Command-line interface for running all benchmarks locally.
 Generates reports, compares with baselines, and outputs results.
 """
 
-import asyncio
 import argparse
+import asyncio
 import json
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import Any, Dict, List
 
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from modules.benchmark import BenchmarkResult, BenchmarkCategory
-from benchmarks.scan_performance import ScanPerformanceBenchmark
 from benchmarks.agent_performance import AgentPerformanceBenchmark
 from benchmarks.api_performance import APIPerformanceBenchmark
+from benchmarks.scan_performance import ScanPerformanceBenchmark
+from modules.benchmark import BenchmarkCategory, BenchmarkResult
 
 
 class LocalBenchmarkRunner:

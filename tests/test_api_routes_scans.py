@@ -4,13 +4,13 @@ Tests for api/routes/scans.py - Scan Management Endpoints
 Comprehensive tests for scan creation, management, and monitoring.
 """
 
-import pytest
-from datetime import datetime
-from unittest.mock import Mock, patch, AsyncMock, MagicMock
-from fastapi import HTTPException, BackgroundTasks
-
 # Mock dependencies
 import sys
+from datetime import datetime
+from unittest.mock import AsyncMock, MagicMock, Mock, patch
+
+import pytest
+from fastapi import BackgroundTasks, HTTPException
 
 mock_auth = MagicMock()
 mock_auth.get_current_user = MagicMock()
@@ -29,21 +29,21 @@ mock_scan_model.ScanType.QUICK = "quick"
 mock_user = MagicMock()
 mock_user.User = MagicMock()
 
-sys.modules['api.core.auth'] = mock_auth
-sys.modules['api.models.scan'] = mock_scan_model
-sys.modules['api.models.user'] = mock_user
+sys.modules["api.core.auth"] = mock_auth
+sys.modules["api.models.scan"] = mock_scan_model
+sys.modules["api.models.user"] = mock_user
 
 from api.routes.scans import (
     create_scan,
-    list_scans,
-    get_scan,
-    stop_scan,
     delete_scan,
+    get_scan,
+    list_scans,
     run_scan,
+    stop_scan,
 )
 
-
 # ==================== Test Fixtures ====================
+
 
 @pytest.fixture
 def mock_current_user():
@@ -106,13 +106,14 @@ def mock_scan_create_data():
 
 # ==================== Create Scan Tests ====================
 
+
 class TestCreateScan:
     """Test create_scan endpoint"""
 
     @pytest.mark.asyncio
     async def test_create_scan_success(self, mock_current_user, mock_scan, mock_scan_create_data):
         """Test successful scan creation"""
-        with patch('api.routes.scans.Scan', mock_scan_model.Scan):
+        with patch("api.routes.scans.Scan", mock_scan_model.Scan):
             mock_scan_model.Scan.return_value = mock_scan
 
             background_tasks = BackgroundTasks()
@@ -126,12 +127,12 @@ class TestCreateScan:
     @pytest.mark.asyncio
     async def test_create_scan_auto_name(self, mock_current_user, mock_scan, mock_scan_create_data):
         """Test scan creation with auto-generated name"""
-        with patch('api.routes.scans.Scan', mock_scan_model.Scan):
+        with patch("api.routes.scans.Scan", mock_scan_model.Scan):
             mock_scan_create_data.name = None
             mock_scan_model.Scan.return_value = mock_scan
 
             background_tasks = BackgroundTasks()
-            result = await create_scan(mock_scan_create_data, background_tasks, mock_current_user)
+            await create_scan(mock_scan_create_data, background_tasks, mock_current_user)
 
             # Name should be auto-generated
             assert "scan" in mock_scan.name.lower() or "Scan" in mock_scan.name
@@ -139,17 +140,18 @@ class TestCreateScan:
     @pytest.mark.asyncio
     async def test_create_scan_custom_name(self, mock_current_user, mock_scan, mock_scan_create_data):
         """Test scan creation with custom name"""
-        with patch('api.routes.scans.Scan', mock_scan_model.Scan):
+        with patch("api.routes.scans.Scan", mock_scan_model.Scan):
             mock_scan_create_data.name = "My Custom Scan"
             mock_scan_model.Scan.return_value = mock_scan
 
             background_tasks = BackgroundTasks()
-            result = await create_scan(mock_scan_create_data, background_tasks, mock_current_user)
+            await create_scan(mock_scan_create_data, background_tasks, mock_current_user)
 
             assert mock_scan.name == "My Custom Scan"
 
 
 # ==================== List Scans Tests ====================
+
 
 class TestListScans:
     """Test list_scans endpoint"""
@@ -161,7 +163,7 @@ class TestListScans:
         mock_query.to_list.return_value = []
         mock_scan_model.Scan.find_many.return_value.limit.return_value.skip.return_value = mock_query
 
-        with patch('api.routes.scans.Scan', mock_scan_model.Scan):
+        with patch("api.routes.scans.Scan", mock_scan_model.Scan):
             result = await list_scans(None, None, 20, 0, mock_current_user)
 
             assert result == []
@@ -173,7 +175,7 @@ class TestListScans:
         mock_query.to_list.return_value = [mock_scan]
         mock_scan_model.Scan.find_many.return_value.limit.return_value.skip.return_value = mock_query
 
-        with patch('api.routes.scans.Scan', mock_scan_model.Scan):
+        with patch("api.routes.scans.Scan", mock_scan_model.Scan):
             result = await list_scans(None, None, 20, 0, mock_current_user)
 
             assert len(result) == 1
@@ -186,7 +188,7 @@ class TestListScans:
         mock_query.to_list.return_value = [mock_scan]
         mock_scan_model.Scan.find_many.return_value.limit.return_value.skip.return_value = mock_query
 
-        with patch('api.routes.scans.Scan', mock_scan_model.Scan):
+        with patch("api.routes.scans.Scan", mock_scan_model.Scan):
             result = await list_scans(mock_scan_model.ScanStatus.PENDING, None, 20, 0, mock_current_user)
 
             assert len(result) == 1
@@ -198,7 +200,7 @@ class TestListScans:
         mock_query.to_list.return_value = [mock_scan]
         mock_scan_model.Scan.find_many.return_value.limit.return_value.skip.return_value = mock_query
 
-        with patch('api.routes.scans.Scan', mock_scan_model.Scan):
+        with patch("api.routes.scans.Scan", mock_scan_model.Scan):
             result = await list_scans(None, mock_scan_model.ScanType.FULL, 20, 0, mock_current_user)
 
             assert len(result) == 1
@@ -209,14 +211,15 @@ class TestListScans:
         mock_scan_model.Scan.find_many.return_value.limit.return_value.skip.return_value = AsyncMock()
         mock_scan_model.Scan.find_many.return_value.limit.return_value.skip.return_value.to_list.return_value = []
 
-        with patch('api.routes.scans.Scan', mock_scan_model.Scan):
-            result = await list_scans(None, None, 10, 20, mock_current_user)
+        with patch("api.routes.scans.Scan", mock_scan_model.Scan):
+            await list_scans(None, None, 10, 20, mock_current_user)
 
             # Verify limit and offset were applied
             mock_scan_model.Scan.find_many.return_value.limit.assert_called_once_with(10)
 
 
 # ==================== Get Scan Tests ====================
+
 
 class TestGetScan:
     """Test get_scan endpoint"""
@@ -226,7 +229,7 @@ class TestGetScan:
         """Test getting a specific scan"""
         mock_scan_model.Scan.find_one.return_value = mock_scan
 
-        with patch('api.routes.scans.Scan', mock_scan_model.Scan):
+        with patch("api.routes.scans.Scan", mock_scan_model.Scan):
             result = await get_scan("scan-001", mock_current_user)
 
             assert result["id"] == "scan-001"
@@ -237,7 +240,7 @@ class TestGetScan:
         """Test getting non-existent scan"""
         mock_scan_model.Scan.find_one.return_value = None
 
-        with patch('api.routes.scans.Scan', mock_scan_model.Scan):
+        with patch("api.routes.scans.Scan", mock_scan_model.Scan):
             with pytest.raises(HTTPException) as exc_info:
                 await get_scan("nonexistent", mock_current_user)
 
@@ -249,7 +252,7 @@ class TestGetScan:
         """Test getting scan belonging to another user"""
         mock_scan_model.Scan.find_one.return_value = None
 
-        with patch('api.routes.scans.Scan', mock_scan_model.Scan):
+        with patch("api.routes.scans.Scan", mock_scan_model.Scan):
             with pytest.raises(HTTPException) as exc_info:
                 await get_scan("scan-002", mock_current_user)
 
@@ -257,6 +260,7 @@ class TestGetScan:
 
 
 # ==================== Stop Scan Tests ====================
+
 
 class TestStopScan:
     """Test stop_scan endpoint"""
@@ -267,7 +271,7 @@ class TestStopScan:
         mock_scan.status = mock_scan_model.ScanStatus.RUNNING
         mock_scan_model.Scan.find_one.return_value = mock_scan
 
-        with patch('api.routes.scans.Scan', mock_scan_model.Scan):
+        with patch("api.routes.scans.Scan", mock_scan_model.Scan):
             result = await stop_scan("scan-001", mock_current_user)
 
             assert "stopped" in result["message"].lower()
@@ -279,7 +283,7 @@ class TestStopScan:
         mock_scan.status = mock_scan_model.ScanStatus.PENDING
         mock_scan_model.Scan.find_one.return_value = mock_scan
 
-        with patch('api.routes.scans.Scan', mock_scan_model.Scan):
+        with patch("api.routes.scans.Scan", mock_scan_model.Scan):
             result = await stop_scan("scan-001", mock_current_user)
 
             assert "stopped" in result["message"].lower()
@@ -290,7 +294,7 @@ class TestStopScan:
         mock_scan.status = mock_scan_model.ScanStatus.COMPLETED
         mock_scan_model.Scan.find_one.return_value = mock_scan
 
-        with patch('api.routes.scans.Scan', mock_scan_model.Scan):
+        with patch("api.routes.scans.Scan", mock_scan_model.Scan):
             with pytest.raises(HTTPException) as exc_info:
                 await stop_scan("scan-001", mock_current_user)
 
@@ -302,7 +306,7 @@ class TestStopScan:
         """Test stopping non-existent scan"""
         mock_scan_model.Scan.find_one.return_value = None
 
-        with patch('api.routes.scans.Scan', mock_scan_model.Scan):
+        with patch("api.routes.scans.Scan", mock_scan_model.Scan):
             with pytest.raises(HTTPException) as exc_info:
                 await stop_scan("nonexistent", mock_current_user)
 
@@ -310,6 +314,7 @@ class TestStopScan:
 
 
 # ==================== Delete Scan Tests ====================
+
 
 class TestDeleteScan:
     """Test delete_scan endpoint"""
@@ -319,7 +324,7 @@ class TestDeleteScan:
         """Test successful scan deletion"""
         mock_scan_model.Scan.find_one.return_value = mock_scan
 
-        with patch('api.routes.scans.Scan', mock_scan_model.Scan):
+        with patch("api.routes.scans.Scan", mock_scan_model.Scan):
             result = await delete_scan("scan-001", mock_current_user)
 
             assert "deleted" in result["message"].lower()
@@ -330,7 +335,7 @@ class TestDeleteScan:
         """Test deleting non-existent scan"""
         mock_scan_model.Scan.find_one.return_value = None
 
-        with patch('api.routes.scans.Scan', mock_scan_model.Scan):
+        with patch("api.routes.scans.Scan", mock_scan_model.Scan):
             with pytest.raises(HTTPException) as exc_info:
                 await delete_scan("nonexistent", mock_current_user)
 
@@ -338,6 +343,7 @@ class TestDeleteScan:
 
 
 # ==================== Run Scan Background Task Tests ====================
+
 
 class TestRunScan:
     """Test run_scan background task"""
@@ -354,8 +360,8 @@ class TestRunScan:
         mock_scanner_instance.scan.return_value.__aiter__.return_value = [25, 50, 75, 100]
         mock_vuln_scanner.VulnScannerModule.return_value = mock_scanner_instance
 
-        with patch('api.routes.scans.Scan', mock_scan_model.Scan):
-            with patch.dict('sys.modules', {'modules.vuln_scanner': mock_vuln_scanner}):
+        with patch("api.routes.scans.Scan", mock_scan_model.Scan):
+            with patch.dict("sys.modules", {"modules.vuln_scanner": mock_vuln_scanner}):
                 await run_scan("scan-001")
 
                 mock_scan.update_status.assert_any_call(mock_scan_model.ScanStatus.RUNNING)
@@ -366,7 +372,7 @@ class TestRunScan:
         """Test running non-existent scan"""
         mock_scan_model.Scan.find_one.return_value = None
 
-        with patch('api.routes.scans.Scan', mock_scan_model.Scan):
+        with patch("api.routes.scans.Scan", mock_scan_model.Scan):
             # Should return early without error
             await run_scan("nonexistent")
 
@@ -375,10 +381,10 @@ class TestRunScan:
         """Test scan execution failure"""
         mock_scan_model.Scan.find_one.return_value = mock_scan
 
-        with patch('api.routes.scans.Scan', mock_scan_model.Scan):
-            with patch.dict('sys.modules', {'modules.vuln_scanner': MagicMock()}):
+        with patch("api.routes.scans.Scan", mock_scan_model.Scan):
+            with patch.dict("sys.modules", {"modules.vuln_scanner": MagicMock()}):
                 # Make the import fail to trigger exception handling
-                sys.modules['modules.vuln_scanner'].VulnScannerModule = Mock(side_effect=Exception("Import failed"))
+                sys.modules["modules.vuln_scanner"].VulnScannerModule = Mock(side_effect=Exception("Import failed"))
 
                 await run_scan("scan-001")
 
@@ -387,13 +393,15 @@ class TestRunScan:
 
 # ==================== Model Tests ====================
 
+
 class TestScanModels:
     """Test Pydantic models for scans"""
 
     def test_scan_create_model(self):
         """Test ScanCreate model validation"""
-        from pydantic import BaseModel, Field
         from typing import Optional
+
+        from pydantic import BaseModel, Field
 
         class ScanCreate(BaseModel):
             target: str
@@ -414,9 +422,10 @@ class TestScanModels:
 
     def test_scan_response_model(self):
         """Test ScanResponse model"""
-        from pydantic import BaseModel, Field
         from datetime import datetime
         from typing import Optional
+
+        from pydantic import BaseModel, Field
 
         class ScanResponse(BaseModel):
             id: str
@@ -442,7 +451,7 @@ class TestScanModels:
             completed_at=None,
             progress=0,
             findings_count=0,
-            error_message=None
+            error_message=None,
         )
         assert response.progress == 0
 
@@ -457,7 +466,7 @@ class TestScanModels:
                 created_at=datetime.utcnow(),
                 progress=150,  # Invalid: > 100
                 findings_count=0,
-                error_message=None
+                error_message=None,
             )
 
     def test_scan_status_enum(self):

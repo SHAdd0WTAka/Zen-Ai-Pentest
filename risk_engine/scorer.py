@@ -7,9 +7,9 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
+from .business_impact import BusinessImpactCalculator
 from .cvss import CVSSCalculator
 from .epss import EPSSClient
-from .business_impact import BusinessImpactCalculator
 
 
 class SeverityLevel(Enum):

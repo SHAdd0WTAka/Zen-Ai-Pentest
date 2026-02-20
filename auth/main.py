@@ -20,14 +20,13 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from fastapi.responses import JSONResponse
 
+from .audit_logger import AuditEventType, AuditSeverity, get_audit_logger
+from .config import Environment, get_config
+from .jwt_handler import TokenBlacklistedError, TokenExpiredError, TokenInvalidError
 from .router import router
-from .config import get_config, Environment
-from .jwt_handler import JWTHandler, TokenExpiredError, TokenInvalidError, TokenBlacklistedError
-from .audit_logger import get_audit_logger, AuditEventType, AuditSeverity
-
 
 # Get configuration
 config = get_config()
@@ -37,7 +36,7 @@ config = get_config()
 async def lifespan(app: FastAPI):
     """
     Application lifespan manager
-    
+
     Handles startup and shutdown events.
     """
     # Startup
@@ -50,9 +49,9 @@ async def lifespan(app: FastAPI):
     print(f"Refresh Token Expiry: {config.jwt.refresh_token_expire_days} days")
     print(f"MFA Enabled: {config.require_mfa}")
     print("=" * 60)
-    
+
     yield
-    
+
     # Shutdown
     print("Shutting down authentication system...")
 
@@ -62,9 +61,9 @@ app = FastAPI(
     title="Zen-AI-Pentest Auth API",
     description="""
     Secure Authentication System for Zen-AI-Pentest
-    
+
     ## Features
-    
+
     * **JWT Authentication** - Access and refresh tokens
     * **OAuth2 Password Flow** - Standard OAuth2 implementation
     * **Role-Based Access Control** - Granular permissions
@@ -73,9 +72,9 @@ app = FastAPI(
     * **Session Management** - Secure session handling
     * **Rate Limiting** - Protection against brute force
     * **Audit Logging** - Comprehensive security logging
-    
+
     ## Compliance
-    
+
     * ISO 27001
     * OWASP ASVS 2026
     * Zero-Trust Architecture
@@ -161,9 +160,9 @@ async def generic_exception_handler(request: Request, exc: Exception):
             "path": str(request.url),
             "method": request.method,
             "error": str(exc),
-        }
+        },
     )
-    
+
     # Return generic error in production
     if config.environment == Environment.PRODUCTION:
         return JSONResponse(
@@ -194,7 +193,7 @@ app.include_router(router)
 async def health_check():
     """
     Health check endpoint
-    
+
     Returns the health status of the authentication system.
     """
     return {
@@ -210,7 +209,7 @@ async def health_check():
 async def readiness_check():
     """
     Readiness check endpoint
-    
+
     Returns whether the service is ready to accept requests.
     """
     # Check JWT configuration
@@ -222,7 +221,7 @@ async def readiness_check():
                 "reason": "JWT secret key not configured",
             },
         )
-    
+
     return {
         "status": "ready",
         "checks": {
@@ -237,7 +236,7 @@ async def readiness_check():
 async def security_headers_middleware(request: Request, call_next):
     """Add security headers to all responses"""
     response = await call_next(request)
-    
+
     # Security headers
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Frame-Options"] = "DENY"
@@ -246,10 +245,10 @@ async def security_headers_middleware(request: Request, call_next):
     response.headers["Content-Security-Policy"] = "default-src 'self'"
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
     response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
-    
+
     # Remove server header
     response.headers.pop("Server", None)
-    
+
     return response
 
 
@@ -258,18 +257,18 @@ async def security_headers_middleware(request: Request, call_next):
 async def request_logging_middleware(request: Request, call_next):
     """Log all requests"""
     from datetime import datetime
-    
+
     start_time = datetime.utcnow()
-    
+
     response = await call_next(request)
-    
+
     end_time = datetime.utcnow()
     duration = (end_time - start_time).total_seconds()
-    
+
     # Log request (in production, use proper logging)
     if config.environment != Environment.PRODUCTION:
         print(f"{request.method} {request.url.path} - {response.status_code} - {duration:.3f}s")
-    
+
     return response
 
 
@@ -278,7 +277,7 @@ async def request_logging_middleware(request: Request, call_next):
 async def root():
     """
     Root endpoint
-    
+
     Returns basic information about the authentication system.
     """
     return {
@@ -294,7 +293,7 @@ async def root():
 async def security_info():
     """
     Security information endpoint
-    
+
     Returns security-related configuration information.
     """
     return {
@@ -324,7 +323,7 @@ async def security_info():
 
 if __name__ == "__main__":
     import uvicorn
-    
+
     uvicorn.run(
         "auth.main:app",
         host="0.0.0.0",

@@ -19,12 +19,11 @@ Usage:
 """
 
 import asyncio
-import json
 import logging
 import uuid
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
-from enum import Enum, auto
+from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Set
 
 # Import guardrails for security validation
@@ -452,7 +451,7 @@ class WorkflowOrchestrator:
 
     async def _execute_step(self, workflow_id: str, step: str) -> bool:
         """Execute a single workflow step"""
-        workflow = self.workflows[workflow_id]
+        self.workflows[workflow_id]
 
         try:
             # Create tasks for this step
@@ -585,7 +584,7 @@ class WorkflowOrchestrator:
 
     async def _wait_for_tasks(self, workflow_id: str, tasks: List[Task], timeout: int) -> bool:
         """Wait for all tasks to complete"""
-        task_ids = {t.id for t in tasks}
+        {t.id for t in tasks}
         start_time = asyncio.get_event_loop().time()
 
         while True:

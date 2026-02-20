@@ -14,17 +14,19 @@ Usage:
     python tools/kimi_helper.py -i
 """
 
-import os
-import sys
 import argparse
+import os
 import subprocess
+import sys
 from pathlib import Path
+
 from rich.console import Console
-from rich.panel import Panel
 from rich.markdown import Markdown
+from rich.panel import Panel
 
 try:
     import requests
+
     REQUESTS_AVAILABLE = True
 except ImportError:
     REQUESTS_AVAILABLE = False
@@ -44,7 +46,7 @@ REGELN:
 - Output-Format: Markdown mit Code-Blocks für Befehle
 - Priorisierung: Critical (CVSS 9.0-10.0) > High > Medium > Low
 - Nutze Zen-AI-Pentest Konventionen: Python 3.13, virtuelle Umgebungen
-- Wenn unsicher: Frage nach Verifikation statt zu raten"""
+- Wenn unsicher: Frage nach Verifikation statt zu raten""",
     },
     "exploit": {
         "name": "[Exploit] Developer",
@@ -58,7 +60,7 @@ CODE-REGELN:
 - Kein Pseudo-Code, nur funktionierende Implementationen
 - Docstrings für alle Funktionen (Google-Stil)
 - Respektiere Rate-Limits: max 10 req/min, Backoff 60s
-- Stealth-Mode: Zufällige Delays (1-3s), User-Agent Rotation"""
+- Stealth-Mode: Zufällige Delays (1-3s), User-Agent Rotation""",
     },
     "report": {
         "name": "[Report] Technical Writer",
@@ -73,7 +75,7 @@ STRUKTUR:
 FORMAT:
 - Markdown für GitHub/GitLab
 - Tabellen für Vergleiche
-- Code-Blocks für PoCs"""
+- Code-Blocks für PoCs""",
     },
     "audit": {
         "name": "[Audit] Code Auditor",
@@ -88,7 +90,7 @@ FOKUS:
 OUTPUT:
 - Zeilennummern referenzieren
 - CWE-IDs nennen
-- Fix-Vorschläge mit Diff-Format"""
+- Fix-Vorschläge mit Diff-Format""",
     },
     "network": {
         "name": "[Network] Pentester",
@@ -103,7 +105,7 @@ SPEZIALISIERUNG:
 TOOLS:
 - impacket, bloodhound, crackmapexec
 - nmap, responder, mitm6
-- chisel, ligolo-ng, sshuttle"""
+- chisel, ligolo-ng, sshuttle""",
     },
     "redteam": {
         "name": "[RedTeam] Operator",
@@ -118,9 +120,10 @@ FOKUS:
 FRAMEWORKS:
 - MITRE ATT&CK Mapping
 - Cyber Kill Chain
-- Unified Kill Chain"""
-    }
+- Unified Kill Chain""",
+    },
 }
+
 
 def check_kimi_cli():
     """Prüft ob kimi CLI installiert ist"""
@@ -130,32 +133,33 @@ def check_kimi_cli():
     except (subprocess.CalledProcessError, FileNotFoundError):
         return False
 
+
 def check_kimi_logged_in():
     """Prüft ob Session existiert"""
     kimi_dir = Path.home() / ".kimi"
     return kimi_dir.exists()
 
+
 def get_api_key():
     """Holt API Key aus Umgebungsvariable oder .env"""
-    api_key = os.environ.get('KIMI_API_KEY')
+    api_key = os.environ.get("KIMI_API_KEY")
     if api_key:
         return api_key
 
     # Versuche .env Datei
-    env_paths = [
-        Path(__file__).parent.parent / ".env",
-        Path.cwd() / ".env"
-    ]
+    env_paths = [Path(__file__).parent.parent / ".env", Path.cwd() / ".env"]
 
     for env_path in env_paths:
         if env_path.exists():
             content = env_path.read_text()
             import re
+
             match = re.search(r'export KIMI_API_KEY="([^"]+)"', content)
             if match:
                 return match.group(1)
 
     return None
+
 
 def query_kimi_api(prompt, system_prompt, model="kimi-k2.5", temperature=0.7):
     """Sendet Query an Kimi oder OpenRouter API"""
@@ -176,35 +180,30 @@ def query_kimi_api(prompt, system_prompt, model="kimi-k2.5", temperature=0.7):
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json",
             "HTTP-Referer": "https://zen-ai-pentest.local",
-            "X-Title": "Zen-AI Pentest"
+            "X-Title": "Zen-AI Pentest",
         }
         # Für OpenRouter: nutze free model falls nicht anders angegeben
         if model == "kimi-k2.5":
             model = "openrouter/free"
     else:
-            headers = {
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json"
-        }
+        headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
 
     data = {
         "model": model,
-        "messages": [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": prompt}
-        ],
+        "messages": [{"role": "system", "content": system_prompt}, {"role": "user", "content": prompt}],
         "temperature": temperature,
-        "max_tokens": 4096
+        "max_tokens": 4096,
     }
 
     try:
         with console.status("[cyan]Frage Kimi...[/cyan]"):
             response = requests.post(url, headers=headers, json=data, timeout=60)
             response.raise_for_status()
-            return response.json()['choices'][0]['message']['content']
+            return response.json()["choices"][0]["message"]["content"]
     except Exception as e:
         console.print(f"[red]API Fehler: {e}[/red]")
         return None
+
 
 def query_kimi_cli(prompt, persona):
     """Nutzt lokale kimi CLI"""
@@ -222,13 +221,7 @@ def query_kimi_cli(prompt, persona):
     full_prompt = f"{system_prompt}\n\n{prompt}" if system_prompt else prompt
 
     try:
-        result = subprocess.run(
-            ["kimi", "ask"],
-            input=full_prompt,
-            capture_output=True,
-            text=True,
-            timeout=120
-        )
+        result = subprocess.run(["kimi", "ask"], input=full_prompt, capture_output=True, text=True, timeout=120)
         return result.stdout
     except subprocess.TimeoutExpired:
         console.print("[red]Timeout - Kimi CLI hat nicht rechtzeitig geantwortet[/red]")
@@ -237,14 +230,18 @@ def query_kimi_cli(prompt, persona):
         console.print(f"[red]CLI Fehler: {e}[/red]")
         return None
 
+
 def interactive_mode(use_cli=False):
     """Interaktiver Modus mit Context-Erhaltung"""
-    console.print(Panel.fit(
-        f"Zen-AI Kimi Helper - Interactive Mode\n"
-        f"Mode: {'CLI' if use_cli else 'API'}\n"
-        "Befehle: /recon, /exploit, /report, /audit, /network, /red, /clear, /exit",
-        title="Interactive", border_style="cyan"
-    ))
+    console.print(
+        Panel.fit(
+            f"Zen-AI Kimi Helper - Interactive Mode\n"
+            f"Mode: {'CLI' if use_cli else 'API'}\n"
+            "Befehle: /recon, /exploit, /report, /audit, /network, /red, /clear, /exit",
+            title="Interactive",
+            border_style="cyan",
+        )
+    )
 
     current_persona = "recon"
     history = []
@@ -295,6 +292,7 @@ def interactive_mode(use_cli=False):
 
     console.print("[dim]Auf Wiedersehen![/dim]")
 
+
 def main():
     parser = argparse.ArgumentParser(
         description="Kimi AI Helper für Zen-AI-Pentest",
@@ -312,26 +310,20 @@ Beispiele:
   # Interaktiver Modus
   %(prog)s -i
   %(prog)s --cli -i
-        """
+        """,
     )
 
     parser.add_argument("prompt", nargs="?", help="Die Anfrage/Prompt")
-    parser.add_argument("-p", "--persona", choices=list(PERSONAS.keys()),
-                       default="recon", help="Pentest Persona (default: recon)")
-    parser.add_argument("--cli", action="store_true",
-                       help="Nutze lokale kimi CLI statt API")
-    parser.add_argument("-i", "--interactive", action="store_true",
-                       help="Interaktiver Modus")
-    parser.add_argument("-t", "--temperature", type=float, default=0.7,
-                       help="Temperature 0.0-1.0 (default: 0.7)")
-    parser.add_argument("-m", "--model", default="kimi-k2.5",
-                       help="Model für API Mode (default: kimi-k2.5)")
-    parser.add_argument("--login", action="store_true",
-                       help="Bei kimi CLI einloggen")
-    parser.add_argument("--check", action="store_true",
-                       help="Status prüfen")
-    parser.add_argument("--list", action="store_true",
-                       help="Personas auflisten")
+    parser.add_argument(
+        "-p", "--persona", choices=list(PERSONAS.keys()), default="recon", help="Pentest Persona (default: recon)"
+    )
+    parser.add_argument("--cli", action="store_true", help="Nutze lokale kimi CLI statt API")
+    parser.add_argument("-i", "--interactive", action="store_true", help="Interaktiver Modus")
+    parser.add_argument("-t", "--temperature", type=float, default=0.7, help="Temperature 0.0-1.0 (default: 0.7)")
+    parser.add_argument("-m", "--model", default="kimi-k2.5", help="Model für API Mode (default: kimi-k2.5)")
+    parser.add_argument("--login", action="store_true", help="Bei kimi CLI einloggen")
+    parser.add_argument("--check", action="store_true", help="Status prüfen")
+    parser.add_argument("--list", action="store_true", help="Personas auflisten")
 
     args = parser.parse_args()
 
@@ -386,11 +378,13 @@ Beispiele:
 
     system_prompt = PERSONAS[args.persona]["prompt"]
 
-    console.print(Panel(
-        f"{PERSONAS[args.persona]['emoji']} [bold]{PERSONAS[args.persona]['name']}[/bold]\n"
-        f"Mode: {'CLI' if args.cli else 'API'}",
-        border_style="cyan"
-    ))
+    console.print(
+        Panel(
+            f"{PERSONAS[args.persona]['emoji']} [bold]{PERSONAS[args.persona]['name']}[/bold]\n"
+            f"Mode: {'CLI' if args.cli else 'API'}",
+            border_style="cyan",
+        )
+    )
 
     if args.cli:
         response = query_kimi_cli(args.prompt, args.persona)
@@ -399,6 +393,7 @@ Beispiele:
 
     if response:
         console.print(Markdown(response))
+
 
 if __name__ == "__main__":
     try:

@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Autonomer Scan uber API"""
 
-import requests
 import time
+
+import requests
 
 BASE = "http://localhost:8000"
 

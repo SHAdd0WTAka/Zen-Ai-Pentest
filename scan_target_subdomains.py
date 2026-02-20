@@ -26,11 +26,7 @@ async def main():
     scanner = SubdomainScanner(max_workers=50, timeout=10)
 
     try:
-        results = await scanner.scan(
-            domain=target,
-            techniques=["dns", "wordlist", "crt"],
-            check_http=True
-        )
+        results = await scanner.scan(domain=target, techniques=["dns", "wordlist", "crt"], check_http=True)
 
         print(f"\n[+] Scan complete! Found {len(results)} subdomains\n")
 

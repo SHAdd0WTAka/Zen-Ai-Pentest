@@ -5,11 +5,11 @@ Tools for optimizing async performance.
 """
 
 import asyncio
-import time
-from typing import List, Any, Callable, Coroutine, Optional
-from concurrent.futures import ThreadPoolExecutor
 import functools
 import logging
+import time
+from concurrent.futures import ThreadPoolExecutor
+from typing import Any, Callable, Coroutine, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -25,33 +25,17 @@ class AsyncOptimizer:
     - Thread pool for sync operations
     """
 
-    def __init__(
-        self,
-        max_workers: int = 10,
-        batch_size: int = 100
-    ):
+    def __init__(self, max_workers: int = 10, batch_size: int = 100):
         self.max_workers = max_workers
         self.batch_size = batch_size
         self._thread_pool = ThreadPoolExecutor(max_workers=max_workers)
 
-    async def run_in_thread(
-        self,
-        func: Callable,
-        *args,
-        **kwargs
-    ) -> Any:
+    async def run_in_thread(self, func: Callable, *args, **kwargs) -> Any:
         """Run sync function in thread pool"""
         loop = asyncio.get_event_loop()
-        return await loop.run_in_executor(
-            self._thread_pool,
-            functools.partial(func, *args, **kwargs)
-        )
+        return await loop.run_in_executor(self._thread_pool, functools.partial(func, *args, **kwargs))
 
-    async def gather_limit(
-        self,
-        coroutines: List[Coroutine],
-        limit: Optional[int] = None
-    ) -> List[Any]:
+    async def gather_limit(self, coroutines: List[Coroutine], limit: Optional[int] = None) -> List[Any]:
         """
         Gather coroutines with concurrency limit
 
@@ -68,10 +52,7 @@ class AsyncOptimizer:
         return await asyncio.gather(*[sem_task(c) for c in coroutines])
 
     async def batch_process(
-        self,
-        items: List[Any],
-        processor: Callable[[Any], Coroutine],
-        batch_size: Optional[int] = None
+        self, items: List[Any], processor: Callable[[Any], Coroutine], batch_size: Optional[int] = None
     ) -> List[Any]:
         """
         Process items in batches
@@ -88,20 +69,13 @@ class AsyncOptimizer:
         results = []
 
         for i in range(0, len(items), batch_size):
-            batch = items[i:i + batch_size]
-            batch_results = await asyncio.gather(*[
-                processor(item) for item in batch
-            ])
+            batch = items[i : i + batch_size]
+            batch_results = await asyncio.gather(*[processor(item) for item in batch])
             results.extend(batch_results)
 
         return results
 
-    async def rate_limit(
-        self,
-        coroutines: List[Coroutine],
-        rate: int = 10,  # per second
-        burst: int = 5
-    ) -> List[Any]:
+    async def rate_limit(self, coroutines: List[Coroutine], rate: int = 10, burst: int = 5) -> List[Any]:  # per second
         """
         Execute coroutines with rate limiting
 
@@ -135,9 +109,7 @@ class AsyncOptimizer:
 
                 return await coro
 
-        return await asyncio.gather(*[
-            rate_limited_task(c) for c in coroutines
-        ])
+        return await asyncio.gather(*[rate_limited_task(c) for c in coroutines])
 
     def shutdown(self):
         """Shutdown thread pool"""
@@ -148,6 +120,7 @@ class SemaphoreGroup:
     """
     Group of semaphores for different resource types
     """
+
     def __init__(self):
         self._semaphores: dict = {}
 
@@ -177,12 +150,7 @@ class CircuitBreaker:
     a service is experiencing problems.
     """
 
-    def __init__(
-        self,
-        failure_threshold: int = 5,
-        recovery_timeout: int = 60,
-        half_open_max_calls: int = 3
-    ):
+    def __init__(self, failure_threshold: int = 5, recovery_timeout: int = 60, half_open_max_calls: int = 3):
         self.failure_threshold = failure_threshold
         self.recovery_timeout = recovery_timeout
         self.half_open_max_calls = half_open_max_calls
@@ -222,6 +190,7 @@ class CircuitBreaker:
         if self._last_failure_time is None:
             return True
         import time
+
         return (time.time() - self._last_failure_time) >= self.recovery_timeout
 
     async def _on_success(self):
@@ -252,6 +221,7 @@ class CircuitBreaker:
 
 class CircuitBreakerOpen(Exception):
     """Exception raised when circuit breaker is open"""
+
     pass
 
 
@@ -260,24 +230,13 @@ class RetryHandler:
     Retry logic with exponential backoff
     """
 
-    def __init__(
-        self,
-        max_retries: int = 3,
-        base_delay: float = 1.0,
-        max_delay: float = 60.0,
-        exponential_base: float = 2.0
-    ):
+    def __init__(self, max_retries: int = 3, base_delay: float = 1.0, max_delay: float = 60.0, exponential_base: float = 2.0):
         self.max_retries = max_retries
         self.base_delay = base_delay
         self.max_delay = max_delay
         self.exponential_base = exponential_base
 
-    async def execute(
-        self,
-        func: Callable,
-        *args,
-        **kwargs
-    ) -> Any:
+    async def execute(self, func: Callable, *args, **kwargs) -> Any:
         """Execute function with retry logic"""
         last_exception = None
 
@@ -291,10 +250,7 @@ class RetryHandler:
                 last_exception = e
 
                 if attempt < self.max_retries:
-                    delay = min(
-                        self.base_delay * (self.exponential_base ** attempt),
-                        self.max_delay
-                    )
+                    delay = min(self.base_delay * (self.exponential_base**attempt), self.max_delay)
                     logger.warning(f"Attempt {attempt + 1} failed, retrying in {delay}s: {e}")
                     await asyncio.sleep(delay)
 

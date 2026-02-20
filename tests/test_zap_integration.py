@@ -4,21 +4,21 @@ This module contains comprehensive tests for the zap_integration module,
 including unit tests with mocked API calls.
 """
 
+from unittest.mock import AsyncMock, Mock, patch
+
 import pytest
-from unittest.mock import Mock, patch, AsyncMock
 
 # Import the module under test
 from tools.zap_integration import (
-    ZAPScanner,
     ZAPAlert,
-    ZAPScanResult,
-    ZAPScanPolicy,
     ZAPAlertRisk,
-    zap_scan_url,
+    ZAPScanner,
+    ZAPScanPolicy,
+    ZAPScanResult,
     zap_quick_scan,
+    zap_scan_url,
     zap_spider_only,
 )
-
 
 # Sample ZAP API responses for testing
 SAMPLE_SPIDER_STATUS = {"status": "50"}
@@ -46,9 +46,7 @@ SAMPLE_ALERT = {
     "id": "0",
 }
 
-SAMPLE_ALERTS_RESPONSE = {
-    "alerts": [SAMPLE_ALERT]
-}
+SAMPLE_ALERTS_RESPONSE = {"alerts": [SAMPLE_ALERT]}
 
 SAMPLE_SCAN_ID_RESPONSE = {"scan": "1"}
 
@@ -332,9 +330,7 @@ class TestReferenceParsing:
     def test_parse_multiple_references(self):
         """Test parsing multiple references"""
         scanner = ZAPScanner(target="http://example.com")
-        refs = scanner._parse_references(
-            "https://owasp.org/test https://cwe.mitre.org/79"
-        )
+        refs = scanner._parse_references("https://owasp.org/test https://cwe.mitre.org/79")
         assert "https://owasp.org/test" in refs
         assert "https://cwe.mitre.org/79" in refs
 
@@ -347,9 +343,7 @@ class TestReferenceParsing:
     def test_parse_multiline_reference(self):
         """Test parsing multiline references"""
         scanner = ZAPScanner(target="http://example.com")
-        refs = scanner._parse_references(
-            "https://owasp.org/test\nhttps://example.com/ref"
-        )
+        refs = scanner._parse_references("https://owasp.org/test\nhttps://example.com/ref")
         assert len(refs) == 2
 
 
@@ -390,8 +384,8 @@ class TestProgressCallbacks:
             # Simulate progress
             mock_api.side_effect = [
                 SAMPLE_SCAN_ID_RESPONSE,  # Start scan
-                SAMPLE_SPIDER_STATUS,      # Progress 50%
-                SAMPLE_SPIDER_COMPLETE,    # Complete
+                SAMPLE_SPIDER_STATUS,  # Progress 50%
+                SAMPLE_SPIDER_COMPLETE,  # Complete
                 {"urls": ["http://example.com/"]},  # URLs for stats
             ]
 

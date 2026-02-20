@@ -4,10 +4,10 @@ Uses ML-based heuristics and rule-based filters to reduce false positives.
 Addresses Issue #14
 """
 
-from typing import Dict, List, Tuple
+import re
 from dataclasses import dataclass
 from enum import Enum
-import re
+from typing import Dict, List, Tuple
 
 
 class ConfidenceLevel(Enum):

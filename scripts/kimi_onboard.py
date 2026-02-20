@@ -6,14 +6,14 @@ Kimi Onboard Script - Quick Start fuer neue Kimi Instanzen
 import subprocess
 from pathlib import Path
 
+
 def run_git_command(cmd):
     try:
-        result = subprocess.run(
-            cmd, shell=True, capture_output=True, text=True, cwd=Path(__file__).parent.parent
-        )
+        result = subprocess.run(cmd, shell=True, capture_output=True, text=True, cwd=Path(__file__).parent.parent)
         return result.stdout.strip() if result.returncode == 0 else "N/A"
     except Exception:
         return "N/A"
+
 
 def main():
     print("=" * 70)
@@ -51,10 +51,10 @@ def main():
     print("  Docs:         60+")
     print()
 
-    if stats['uncommitted']:
+    if stats["uncommitted"]:
         print("ACHTUNG: Uncommitted Changes!")
         print("-" * 70)
-        print(stats['uncommitted'])
+        print(stats["uncommitted"])
         print()
 
     print("OFFENE TASKS")
@@ -105,6 +105,7 @@ def main():
     print("  Bereit! Frage den User: 'Was sollen wir als naechstes machen?'")
     print("=" * 70)
     print()
+
 
 if __name__ == "__main__":
     main()

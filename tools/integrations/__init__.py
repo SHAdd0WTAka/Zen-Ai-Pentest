@@ -4,7 +4,7 @@ Pentest Tool Integrations
 Wrappers and integrations for external security tools.
 """
 
-from .tool_checker import ToolChecker, ToolAvailability
+from .tool_checker import ToolAvailability, ToolChecker
 
 try:
     from .nmap_wrapper import NmapWrapper

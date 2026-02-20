@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class IgnorantCheck:
     """Single platform check result"""
+
     platform: str
     exists: bool
     url: str = ""
@@ -24,6 +25,7 @@ class IgnorantCheck:
 @dataclass
 class IgnorantResult:
     """Ignorant email check result"""
+
     email: str
     username: str
     domain: str
@@ -59,16 +61,10 @@ class IgnorantIntegration:
             IgnorantResult with findings
         """
         # Parse email
-        if '@' not in email:
-            return IgnorantResult(
-                email=email,
-                username=email,
-                domain="",
-                success=False,
-                error="Invalid email format"
-            )
+        if "@" not in email:
+            return IgnorantResult(email=email, username=email, domain="", success=False, error="Invalid email format")
 
-        username, domain = email.rsplit('@', 1)
+        username, domain = email.rsplit("@", 1)
 
         cmd = ["ignorant", email, "--json"]
 
@@ -76,15 +72,10 @@ class IgnorantIntegration:
 
         try:
             process = await asyncio.create_subprocess_exec(
-                *cmd,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE
+                *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
             )
 
-            stdout, stderr = await asyncio.wait_for(
-                process.communicate(),
-                timeout=self.timeout
-            )
+            stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=self.timeout)
 
             found_platforms = []
             not_found_platforms = []
@@ -93,7 +84,7 @@ class IgnorantIntegration:
             try:
                 output = stdout.decode().strip()
                 if output:
-                    lines = output.split('\n')
+                    lines = output.split("\n")
                     for line in lines:
                         if not line:
                             continue
@@ -101,11 +92,9 @@ class IgnorantIntegration:
                             data = json.loads(line)
 
                             if data.get("exists") is True:
-                                found_platforms.append(IgnorantCheck(
-                                    platform=data.get("name", "Unknown"),
-                                    exists=True,
-                                    url=data.get("url", "")
-                                ))
+                                found_platforms.append(
+                                    IgnorantCheck(platform=data.get("name", "Unknown"), exists=True, url=data.get("url", ""))
+                                )
                             else:
                                 not_found_platforms.append(data.get("name", "Unknown"))
                         except json.JSONDecodeError:
@@ -121,27 +110,15 @@ class IgnorantIntegration:
                 found_platforms=found_platforms,
                 not_found_platforms=not_found_platforms,
                 total_checked=len(found_platforms) + len(not_found_platforms),
-                success=True
+                success=True,
             )
 
         except asyncio.TimeoutError:
             logger.error("Ignorant check timed out")
-            return IgnorantResult(
-                email=email,
-                username=username,
-                domain=domain,
-                success=False,
-                error="Timeout"
-            )
+            return IgnorantResult(email=email, username=username, domain=domain, success=False, error="Timeout")
         except Exception as e:
             logger.error(f"Ignorant error: {e}")
-            return IgnorantResult(
-                email=email,
-                username=username,
-                domain=domain,
-                success=False,
-                error=str(e)
-            )
+            return IgnorantResult(email=email, username=username, domain=domain, success=False, error=str(e))
 
     async def check_emails(self, emails: List[str]) -> Dict[str, IgnorantResult]:
         """
@@ -168,10 +145,11 @@ def check_email_sync(email: str) -> IgnorantResult:
 
 if __name__ == "__main__":
     import logging
+
     logging.basicConfig(level=logging.INFO)
 
     print("Testing Ignorant Integration...")
-    print("="*60)
+    print("=" * 60)
 
     # Test with a sample email
     result = check_email_sync("test@example.com")

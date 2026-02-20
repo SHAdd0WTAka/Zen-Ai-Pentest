@@ -5,8 +5,8 @@ Parses and evaluates cron expressions for scheduling.
 Supports standard cron syntax with extensions.
 """
 
-from typing import Set, Optional
 from datetime import datetime, timedelta
+from typing import Optional, Set
 
 
 class CronExpression:
@@ -18,8 +18,7 @@ class CronExpression:
 
         if len(self.parts) != 5:
             raise ValueError(
-                f"Invalid cron expression: '{expression}'. "
-                "Expected 5 fields: minute hour day month day_of_week"
+                f"Invalid cron expression: '{expression}'. " "Expected 5 fields: minute hour day month day_of_week"
             )
 
         self.minutes = self._parse_field(self.parts[0], 0, 59)
@@ -73,11 +72,11 @@ class CronExpression:
     def matches(self, dt: datetime) -> bool:
         """Check if the datetime matches this cron expression"""
         return (
-            dt.minute in self.minutes and
-            dt.hour in self.hours and
-            dt.day in self.days_of_month and
-            dt.month in self.months and
-            dt.weekday() in self.days_of_week
+            dt.minute in self.minutes
+            and dt.hour in self.hours
+            and dt.day in self.days_of_month
+            and dt.month in self.months
+            and dt.weekday() in self.days_of_week
         )
 
     def next_occurrence(self, from_time: Optional[datetime] = None) -> datetime:

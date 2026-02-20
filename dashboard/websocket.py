@@ -5,12 +5,11 @@ Manages WebSocket connections for real-time dashboard updates.
 """
 
 import asyncio
-from typing import Dict, Set, Optional, Any
-from datetime import datetime
 import logging
+from datetime import datetime
+from typing import Any, Dict, Optional, Set
 
 from .events import DashboardEvent, EventType
-
 
 logger = logging.getLogger(__name__)
 
@@ -63,11 +62,7 @@ class DashboardWebSocket:
             await ws_manager.connect(websocket)
     """
 
-    def __init__(
-        self,
-        ping_interval: int = 30,
-        max_connections: int = 100
-    ):
+    def __init__(self, ping_interval: int = 30, max_connections: int = 100):
         self.ping_interval = ping_interval
         self.max_connections = max_connections
 
@@ -144,11 +139,7 @@ class DashboardWebSocket:
         logger.info(f"WebSocket connected: {conn_id} (total: {len(self._connections)})")
 
         # Send welcome message
-        await conn.send({
-            "type": "connected",
-            "connection_id": conn_id,
-            "timestamp": datetime.utcnow().isoformat()
-        })
+        await conn.send({"type": "connected", "connection_id": conn_id, "timestamp": datetime.utcnow().isoformat()})
 
         return conn_id
 
@@ -161,11 +152,7 @@ class DashboardWebSocket:
             await conn.close()
             logger.info(f"WebSocket disconnected: {connection_id}")
 
-    async def handle_message(
-        self,
-        connection_id: str,
-        message: Dict[str, Any]
-    ) -> None:
+    async def handle_message(self, connection_id: str, message: Dict[str, Any]) -> None:
         """
         Handle incoming message from client
 
@@ -189,10 +176,7 @@ class DashboardWebSocket:
                 except ValueError:
                     pass
 
-            await conn.send({
-                "type": "subscribed",
-                "subscriptions": [et.value for et in conn.subscriptions]
-            })
+            await conn.send({"type": "subscribed", "subscriptions": [et.value for et in conn.subscriptions]})
 
         elif action == "unsubscribe":
             event_types = message.get("event_types", [])
@@ -210,20 +194,18 @@ class DashboardWebSocket:
             conn.min_priority = message.get("min_priority", 1)
 
         elif action == "get_stats":
-            await conn.send({
-                "type": "stats",
-                "data": {
-                    "connection_id": connection_id,
-                    "connected_at": conn.connected_at.isoformat(),
-                    "subscriptions": len(conn.subscriptions)
+            await conn.send(
+                {
+                    "type": "stats",
+                    "data": {
+                        "connection_id": connection_id,
+                        "connected_at": conn.connected_at.isoformat(),
+                        "subscriptions": len(conn.subscriptions),
+                    },
                 }
-            })
+            )
 
-    async def broadcast(
-        self,
-        event: DashboardEvent,
-        exclude: Optional[Set[str]] = None
-    ) -> int:
+    async def broadcast(self, event: DashboardEvent, exclude: Optional[Set[str]] = None) -> int:
         """
         Broadcast event to all connected clients
 
@@ -268,11 +250,7 @@ class DashboardWebSocket:
         self._messages_sent += sent_count
         return sent_count
 
-    async def send_to_user(
-        self,
-        user_id: str,
-        event: DashboardEvent
-    ) -> int:
+    async def send_to_user(self, user_id: str, event: DashboardEvent) -> int:
         """
         Send event to specific user
 
@@ -287,10 +265,7 @@ class DashboardWebSocket:
         sent_count = 0
 
         async with self._lock:
-            connections = [
-                conn for conn in self._connections.values()
-                if conn.user_id == user_id
-            ]
+            connections = [conn for conn in self._connections.values() if conn.user_id == user_id]
 
         for conn in connections:
             if await conn.send(message):
@@ -298,11 +273,7 @@ class DashboardWebSocket:
 
         return sent_count
 
-    async def send_to_connection(
-        self,
-        connection_id: str,
-        message: Dict[str, Any]
-    ) -> bool:
+    async def send_to_connection(self, connection_id: str, message: Dict[str, Any]) -> bool:
         """Send message to specific connection"""
         conn = self._connections.get(connection_id)
         if conn and conn.is_alive:
@@ -348,7 +319,7 @@ class DashboardWebSocket:
             "active_connections": len(self._connections),
             "total_connections": self._total_connections,
             "messages_sent": self._messages_sent,
-            "max_connections": self.max_connections
+            "max_connections": self.max_connections,
         }
 
     def get_connection_info(self, connection_id: str) -> Optional[Dict[str, Any]]:
@@ -363,5 +334,5 @@ class DashboardWebSocket:
             "connected_at": conn.connected_at.isoformat(),
             "last_ping": conn.last_ping.isoformat(),
             "subscriptions": [et.value for et in conn.subscriptions],
-            "is_alive": conn.is_alive
+            "is_alive": conn.is_alive,
         }

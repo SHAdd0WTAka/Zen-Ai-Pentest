@@ -6,15 +6,16 @@ Supports publish/subscribe pattern with filtering and priority.
 """
 
 import asyncio
-from typing import Dict, Any, List, Optional, Callable, Set
+import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-import uuid
+from typing import Any, Callable, Dict, List, Optional, Set
 
 
 class EventType(Enum):
     """System event types"""
+
     # Task Events
     TASK_SUBMITTED = "task.submitted"
     TASK_STARTED = "task.started"
@@ -60,6 +61,7 @@ class EventType(Enum):
 
 class EventPriority(Enum):
     """Event priority levels"""
+
     CRITICAL = 0
     HIGH = 1
     NORMAL = 2
@@ -81,6 +83,7 @@ class Event:
         id: Unique event ID
         correlation_id: ID to correlate related events
     """
+
     type: EventType
     source: str
     data: Dict[str, Any] = field(default_factory=dict)
@@ -98,13 +101,14 @@ class Event:
             "data": self.data,
             "priority": self.priority.value,
             "timestamp": self.timestamp.isoformat(),
-            "correlation_id": self.correlation_id
+            "correlation_id": self.correlation_id,
         }
 
 
 @dataclass
 class Subscription:
     """Event subscription"""
+
     id: str
     event_type: EventType
     handler: Callable[[Event], None]
@@ -154,9 +158,7 @@ class EventBus:
         self.history_size = history_size
 
         # Subscriptions
-        self._subscriptions: Dict[EventType, List[Subscription]] = {
-            event_type: [] for event_type in EventType
-        }
+        self._subscriptions: Dict[EventType, List[Subscription]] = {event_type: [] for event_type in EventType}
         self._subscription_counter = 0
 
         # Event queue
@@ -213,7 +215,7 @@ class EventBus:
         event_type: EventType,
         handler: Callable[[Event], None],
         priority_filter: Optional[List[EventPriority]] = None,
-        source_filter: Optional[List[str]] = None
+        source_filter: Optional[List[str]] = None,
     ) -> str:
         """
         Subscribe to events
@@ -236,18 +238,14 @@ class EventBus:
                 event_type=event_type,
                 handler=handler,
                 priority_filter=set(priority_filter) if priority_filter else None,
-                source_filter=set(source_filter) if source_filter else None
+                source_filter=set(source_filter) if source_filter else None,
             )
 
             self._subscriptions[event_type].append(subscription)
 
             return sub_id
 
-    async def unsubscribe(
-        self,
-        event_type: EventType,
-        handler: Callable[[Event], None]
-    ) -> bool:
+    async def unsubscribe(self, event_type: EventType, handler: Callable[[Event], None]) -> bool:
         """Unsubscribe from events"""
         async with self._lock:
             subs = self._subscriptions[event_type]
@@ -305,10 +303,7 @@ class EventBus:
         while self._running:
             try:
                 # Get event from queue
-                event = await asyncio.wait_for(
-                    self._queue.get(),
-                    timeout=1.0
-                )
+                event = await asyncio.wait_for(self._queue.get(), timeout=1.0)
 
                 # Process event
                 await self._deliver_event(event)
@@ -335,20 +330,14 @@ class EventBus:
         tasks = []
         for sub in subscribers:
             if sub.matches(event):
-                task = asyncio.create_task(
-                    self._call_handler(sub.handler, event)
-                )
+                task = asyncio.create_task(self._call_handler(sub.handler, event))
                 tasks.append(task)
 
         if tasks:
             await asyncio.gather(*tasks, return_exceptions=True)
             self._delivered += len(tasks)
 
-    async def _call_handler(
-        self,
-        handler: Callable[[Event], None],
-        event: Event
-    ) -> None:
+    async def _call_handler(self, handler: Callable[[Event], None], event: Event) -> None:
         """Call event handler with error handling"""
         try:
             result = handler(event)
@@ -363,15 +352,12 @@ class EventBus:
 
         # Trim history
         if len(self._history) > self.history_size:
-            self._history = self._history[-self.history_size:]
+            self._history = self._history[-self.history_size :]
 
     # ==================== Event History ====================
 
     async def get_history(
-        self,
-        event_type: Optional[EventType] = None,
-        source: Optional[str] = None,
-        limit: int = 100
+        self, event_type: Optional[EventType] = None, source: Optional[str] = None, limit: int = 100
     ) -> List[Event]:
         """Get event history with filtering"""
         history = self._history
@@ -398,18 +384,13 @@ class EventBus:
             "dropped": self._dropped,
             "queue_size": self._queue.qsize(),
             "history_size": len(self._history),
-            "subscriptions": sum(
-                len(subs) for subs in self._subscriptions.values()
-            )
+            "subscriptions": sum(len(subs) for subs in self._subscriptions.values()),
         }
 
     # ==================== Utility ====================
 
     async def wait_for_event(
-        self,
-        event_type: EventType,
-        timeout: Optional[float] = None,
-        predicate: Optional[Callable[[Event], bool]] = None
+        self, event_type: EventType, timeout: Optional[float] = None, predicate: Optional[Callable[[Event], bool]] = None
     ) -> Optional[Event]:
         """
         Wait for a specific event
@@ -450,12 +431,7 @@ class EventStream:
     Provides async iterator interface for consuming events.
     """
 
-    def __init__(
-        self,
-        event_bus: EventBus,
-        event_types: List[EventType],
-        buffer_size: int = 100
-    ):
+    def __init__(self, event_bus: EventBus, event_types: List[EventType], buffer_size: int = 100):
         self.event_bus = event_bus
         self.event_types = event_types
         self.buffer: asyncio.Queue = asyncio.Queue(maxsize=buffer_size)
@@ -467,10 +443,7 @@ class EventStream:
         self._running = True
 
         for event_type in self.event_types:
-            sub_id = await self.event_bus.subscribe(
-                event_type,
-                self._on_event
-            )
+            sub_id = await self.event_bus.subscribe(event_type, self._on_event)
             self._subscription_ids.append(sub_id)
 
     async def stop(self) -> None:

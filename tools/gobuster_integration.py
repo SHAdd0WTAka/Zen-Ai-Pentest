@@ -1,9 +1,9 @@
 """Gobuster Integration - Directory/File/DNS/VHost Busting"""
 
-import subprocess
 import logging
-from typing import List
+import subprocess
 from dataclasses import dataclass
+from typing import List
 
 logger = logging.getLogger(__name__)
 

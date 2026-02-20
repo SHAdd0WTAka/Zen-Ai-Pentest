@@ -2,23 +2,23 @@
 Tests für Monitoring Metrics
 """
 
-import pytest
 import sys
 from pathlib import Path
-
 from unittest.mock import Mock
+
+import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from monitoring.metrics import (
-    record_scan_created,
-    record_scan_completed,
-    record_finding,
-    record_report_generated,
-    record_auth_attempt,
-    record_rate_limit_hit,
     get_health_status,
     init_app_info,
+    record_auth_attempt,
+    record_finding,
+    record_rate_limit_hit,
+    record_report_generated,
+    record_scan_completed,
+    record_scan_created,
 )
 
 

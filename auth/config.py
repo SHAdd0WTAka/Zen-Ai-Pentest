@@ -8,8 +8,8 @@ All security-sensitive settings should be loaded from environment variables.
 
 import os
 from dataclasses import dataclass
-from typing import Optional, List
 from enum import Enum
+from typing import List, Optional
 
 
 class Environment(Enum):
@@ -21,14 +21,15 @@ class Environment(Enum):
 @dataclass
 class JWTConfig:
     """JWT Configuration Settings"""
+
     secret_key: str
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 15  # Short-lived access tokens
-    refresh_token_expire_days: int = 7     # Longer-lived refresh tokens
+    refresh_token_expire_days: int = 7  # Longer-lived refresh tokens
     issuer: str = "zen-ai-pentest"
     audience: str = "zen-ai-pentest-api"
     token_type_header: str = "Bearer"
-    
+
     @classmethod
     def from_env(cls) -> "JWTConfig":
         return cls(
@@ -44,8 +45,9 @@ class JWTConfig:
 @dataclass
 class BcryptConfig:
     """Bcrypt Password Hashing Configuration"""
+
     rounds: int = 12  # Work factor (2^12 iterations)
-    
+
     @classmethod
     def from_env(cls) -> "BcryptConfig":
         return cls(
@@ -56,12 +58,13 @@ class BcryptConfig:
 @dataclass
 class MFAConfig:
     """Multi-Factor Authentication Configuration"""
+
     issuer_name: str = "Zen-AI-Pentest"
     digits: int = 6
     interval: int = 30  # TOTP time window in seconds
-    window: int = 1     # Allowed time drift windows
+    window: int = 1  # Allowed time drift windows
     backup_codes_count: int = 10
-    
+
     @classmethod
     def from_env(cls) -> "MFAConfig":
         return cls(
@@ -76,13 +79,14 @@ class MFAConfig:
 @dataclass
 class RateLimitConfig:
     """Rate Limiting Configuration"""
+
     login_attempts: int = 5
     login_window_seconds: int = 300  # 5 minutes
     api_key_requests: int = 100
     api_key_window_seconds: int = 60  # 1 minute
     mfa_attempts: int = 3
     mfa_window_seconds: int = 300
-    
+
     @classmethod
     def from_env(cls) -> "RateLimitConfig":
         return cls(
@@ -98,11 +102,12 @@ class RateLimitConfig:
 @dataclass
 class SessionConfig:
     """Session Management Configuration"""
+
     max_sessions_per_user: int = 5
     session_timeout_minutes: int = 30
     absolute_timeout_hours: int = 8
     cleanup_interval_minutes: int = 60
-    
+
     @classmethod
     def from_env(cls) -> "SessionConfig":
         return cls(
@@ -116,11 +121,12 @@ class SessionConfig:
 @dataclass
 class APIKeyConfig:
     """API Key Management Configuration"""
+
     key_prefix: str = "zap_"
     key_length: int = 32
     max_keys_per_user: int = 5
     default_expiry_days: int = 90
-    
+
     @classmethod
     def from_env(cls) -> "APIKeyConfig":
         return cls(
@@ -134,16 +140,17 @@ class APIKeyConfig:
 @dataclass
 class AuditConfig:
     """Audit Logging Configuration"""
+
     log_file_path: str = "/var/log/zen-ai-pentest/auth.log"
     max_file_size_mb: int = 100
     backup_count: int = 10
     log_to_console: bool = True
     sensitive_fields: List[str] = None
-    
+
     def __post_init__(self):
         if self.sensitive_fields is None:
             self.sensitive_fields = ["password", "token", "secret", "api_key", "mfa_code"]
-    
+
     @classmethod
     def from_env(cls) -> "AuditConfig":
         config = cls(
@@ -158,6 +165,7 @@ class AuditConfig:
 @dataclass
 class AuthConfig:
     """Main Authentication Configuration"""
+
     environment: Environment
     jwt: JWTConfig
     bcrypt: BcryptConfig
@@ -166,7 +174,7 @@ class AuthConfig:
     session: SessionConfig
     api_key: APIKeyConfig
     audit: AuditConfig
-    
+
     # Security settings
     require_mfa: bool = False
     allow_registration: bool = True
@@ -177,12 +185,12 @@ class AuthConfig:
     password_require_special: bool = True
     max_failed_logins: int = 5
     lockout_duration_minutes: int = 30
-    
+
     @classmethod
     def from_env(cls) -> "AuthConfig":
         env_str = os.getenv("ENVIRONMENT", "development").lower()
         environment = Environment(env_str) if env_str in [e.value for e in Environment] else Environment.DEVELOPMENT
-        
+
         return cls(
             environment=environment,
             jwt=JWTConfig.from_env(),

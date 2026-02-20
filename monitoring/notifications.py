@@ -8,13 +8,14 @@ Sends real-time alerts for:
 - Scan completions
 """
 
-import os
 import asyncio
-import aiohttp
-from typing import Optional, Dict, Any
+import logging
+import os
 from datetime import datetime
 from enum import Enum
-import logging
+from typing import Any, Dict, Optional
+
+import aiohttp
 
 logger = logging.getLogger(__name__)
 

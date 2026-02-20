@@ -11,13 +11,11 @@ Author: SHAdd0WTAka
 """
 
 import asyncio
-
 import logging
 import random
 import subprocess
 from dataclasses import dataclass, field
 from enum import Enum
-
 from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger("ZenAI.ProtonVPN")

@@ -2,11 +2,11 @@
 Tests für CRUD Operations
 """
 
-import pytest
-import sys
 import os
+import sys
+from unittest.mock import MagicMock, Mock, patch
 
-from unittest.mock import Mock, patch, MagicMock
+import pytest
 
 sys.path.insert(0, "C:\\Users\\Ataka\\source\\repos\\SHAdd0WTAka\\Zen-Ai-Pentest")
 

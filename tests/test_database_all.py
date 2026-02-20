@@ -1,11 +1,12 @@
 """
 Alle Database Model Tests
 """
+
 import pytest
 
-
 try:
-    from database.models import User, Scan, Finding, Report, ScanStatus, Severity
+    from database.models import Finding, Report, Scan, ScanStatus, Severity, User
+
     DB_AVAILABLE = True
 except ImportError:
     DB_AVAILABLE = False
@@ -29,7 +30,7 @@ class TestUserModelAll:
 
     def test_user_4(self):
         u = User(username="test4")
-        assert hasattr(u, 'id')
+        assert hasattr(u, "id")
 
     def test_user_5(self):
         u = User(username="test5")

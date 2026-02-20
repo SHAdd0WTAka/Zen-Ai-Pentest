@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class SubfinderResult:
     """Subfinder scan result"""
+
     success: bool
     domain: str = ""
     subdomains: List[str] = field(default_factory=list)
@@ -41,6 +42,7 @@ class SubfinderIntegration:
             SubfinderResult with found subdomains
         """
         import time
+
         start_time = time.time()
 
         cmd = ["subfinder", "-d", domain, "-json", "-silent"]
@@ -52,20 +54,15 @@ class SubfinderIntegration:
 
         try:
             process = await asyncio.create_subprocess_exec(
-                *cmd,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE
+                *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
             )
 
-            stdout, stderr = await asyncio.wait_for(
-                process.communicate(),
-                timeout=self.timeout
-            )
+            stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=self.timeout)
 
             subdomains = []
 
             # Parse JSON output (one JSON object per line)
-            for line in stdout.decode().strip().split('\n'):
+            for line in stdout.decode().strip().split("\n"):
                 if not line:
                     continue
                 try:
@@ -75,33 +72,21 @@ class SubfinderIntegration:
                         subdomains.append(host)
                 except json.JSONDecodeError:
                     # Fallback: treat as plain text
-                    if line and not line.startswith('['):
+                    if line and not line.startswith("["):
                         subdomains.append(line.strip())
 
             duration = time.time() - start_time
 
             return SubfinderResult(
-                success=True,
-                domain=domain,
-                subdomains=sorted(set(subdomains)),
-                count=len(subdomains),
-                duration=duration
+                success=True, domain=domain, subdomains=sorted(set(subdomains)), count=len(subdomains), duration=duration
             )
 
         except asyncio.TimeoutError:
             logger.error("Subfinder enumeration timed out")
-            return SubfinderResult(
-                success=False,
-                domain=domain,
-                error="Timeout"
-            )
+            return SubfinderResult(success=False, domain=domain, error="Timeout")
         except Exception as e:
             logger.error(f"Subfinder error: {e}")
-            return SubfinderResult(
-                success=False,
-                domain=domain,
-                error=str(e)
-            )
+            return SubfinderResult(success=False, domain=domain, error=str(e))
 
 
 # Sync wrapper
@@ -113,10 +98,11 @@ def enumerate_sync(domain: str, recursive: bool = False) -> SubfinderResult:
 
 if __name__ == "__main__":
     import logging
+
     logging.basicConfig(level=logging.INFO)
 
     print("Testing Subfinder Integration...")
-    print("="*60)
+    print("=" * 60)
 
     result = enumerate_sync("scanme.nmap.org")
 

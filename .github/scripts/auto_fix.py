@@ -14,14 +14,15 @@ Usage:
     Optionally set FIX_LEVEL (safe/aggressive) and HEALTH_SCORE.
 """
 
+import json
 import os
 import sys
-import json
-from datetime import datetime, timedelta
-from typing import Dict, List, Any, Optional
 from dataclasses import dataclass
-import requests
+from datetime import datetime, timedelta
+from typing import Any, Dict, List, Optional
 from urllib.parse import urljoin
+
+import requests
 
 # Constants
 GITHUB_API_URL = "https://api.github.com"

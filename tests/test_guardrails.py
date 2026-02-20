@@ -9,15 +9,12 @@ Tests for security guardrails:
 - Rate limiting (prevent abuse)
 """
 
-import asyncio
-import time
-
 import pytest
 
-from guardrails.domain_validator import DomainValidator, validate_domain, validate_url
+from guardrails.domain_validator import DomainValidator, validate_domain
 from guardrails.ip_validator import IPValidator, validate_target
 from guardrails.rate_limiter import RateLimitConfig, RateLimiter, ToolRateLimiter, check_tool_execution
-from guardrails.risk_levels import RiskLevel, RiskLevelManager, ToolRiskProfile, can_run_tool, validate_tool
+from guardrails.risk_levels import RiskLevel, RiskLevelManager, ToolRiskProfile, can_run_tool
 
 
 class TestIPValidator:
@@ -555,7 +552,7 @@ class TestToolRateLimiter:
             await limiter.record_execution("nmap", "scanme.nmap.org")
 
         # Should be rate limited now
-        result = await limiter.check_tool_execution("nmap", "scanme.nmap.org")
+        await limiter.check_tool_execution("nmap", "scanme.nmap.org")
         # May or may not be blocked depending on limits
 
     @pytest.mark.asyncio

@@ -21,19 +21,17 @@ from typing import Any, Dict, List, Optional
 sys.path.insert(0, str(Path(__file__).parent))
 
 from ffuf_integration_enhanced import FFuFIntegration
-from whatweb_integration import WhatWebIntegration
 from wafw00f_integration import WAFW00FIntegration
+from whatweb_integration import WhatWebIntegration
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 
 @dataclass
 class ReconResult:
     """Complete reconnaissance result"""
+
     target: str
     timestamp: str
     technology_scan: Dict[str, Any] = field(default_factory=dict)
@@ -58,10 +56,7 @@ class UnifiedReconScanner:
         """Run complete reconnaissance scan"""
         logger.info(f"Starting unified reconnaissance on {target}")
 
-        result = ReconResult(
-            target=target,
-            timestamp=datetime.now().isoformat()
-        )
+        result = ReconResult(target=target, timestamp=datetime.now().isoformat())
 
         # 1. Technology Detection
         logger.info("[1/3] Running technology detection...")
@@ -70,16 +65,11 @@ class UnifiedReconScanner:
             result.technology_scan = {
                 "success": tech_result.success,
                 "technologies": [
-                    {
-                        "name": t.name,
-                        "version": t.version,
-                        "confidence": t.confidence,
-                        "category": t.category
-                    }
+                    {"name": t.name, "version": t.version, "confidence": t.confidence, "category": t.category}
                     for t in tech_result.technologies
                 ],
                 "headers": tech_result.headers,
-                "error": tech_result.error
+                "error": tech_result.error,
             }
         except Exception as e:
             logger.error(f"Technology scan failed: {e}")
@@ -92,11 +82,8 @@ class UnifiedReconScanner:
             result.waf_detection = {
                 "success": waf_result.success,
                 "firewall_detected": waf_result.firewall_detected,
-                "wafs": [
-                    {"name": w.name, "confidence": w.confidence}
-                    for w in waf_result.wafs
-                ],
-                "error": waf_result.error
+                "wafs": [{"name": w.name, "confidence": w.confidence} for w in waf_result.wafs],
+                "error": waf_result.error,
             }
         except Exception as e:
             logger.error(f"WAF detection failed: {e}")
@@ -107,23 +94,17 @@ class UnifiedReconScanner:
         try:
             # Use smaller wordlist for quick scan
             ffuf_result = await self.ffuf.directory_bruteforce(
-                target=f"http://{target}/FUZZ",
-                extensions=["php", "html", "txt"],
-                threads=20
+                target=f"http://{target}/FUZZ", extensions=["php", "html", "txt"], threads=20
             )
             result.directory_bruteforce = {
                 "success": ffuf_result.success,
                 "findings": [
-                    {
-                        "url": f.url,
-                        "status_code": f.status_code,
-                        "content_length": f.content_length
-                    }
+                    {"url": f.url, "status_code": f.status_code, "content_length": f.content_length}
                     for f in ffuf_result.findings
                 ],
                 "total_requests": ffuf_result.total_requests,
                 "duration": ffuf_result.duration,
-                "error": ffuf_result.error
+                "error": ffuf_result.error,
             }
         except Exception as e:
             logger.error(f"Directory bruteforce failed: {e}")
@@ -152,7 +133,7 @@ class UnifiedReconScanner:
             "waf_detected": waf_detected,
             "directories_found": dir_count,
             "risk_level": risk_level,
-            "recommendations": self._generate_recommendations(result)
+            "recommendations": self._generate_recommendations(result),
         }
 
     def _generate_recommendations(self, result: ReconResult) -> List[str]:
@@ -193,22 +174,22 @@ class UnifiedReconScanner:
 
     def print_report(self, result: ReconResult):
         """Print formatted report to console"""
-        print("\n" + "="*70)
+        print("\n" + "=" * 70)
         print("🎯 UNIFIED RECONNAISSANCE REPORT")
-        print("="*70)
+        print("=" * 70)
         print(f"Target: {result.target}")
         print(f"Timestamp: {result.timestamp}")
         print()
 
         # Technology Scan
         print("📊 TECHNOLOGY DETECTION")
-        print("-"*70)
+        print("-" * 70)
         tech_scan = result.technology_scan
         if tech_scan.get("success"):
             techs = tech_scan.get("technologies", [])
             print(f"Found {len(techs)} technologies:")
             for tech in techs:
-                version = f" ({tech.get('version')})" if tech.get('version') else ""
+                version = f" ({tech.get('version')})" if tech.get("version") else ""
                 print(f"  • {tech['name']}{version} [{tech['confidence']}%]")
         else:
             print(f"Failed: {tech_scan.get('error', 'Unknown error')}")
@@ -216,7 +197,7 @@ class UnifiedReconScanner:
 
         # WAF Detection
         print("🛡️  WAF DETECTION")
-        print("-"*70)
+        print("-" * 70)
         waf_scan = result.waf_detection
         if waf_scan.get("success"):
             if waf_scan.get("firewall_detected"):
@@ -231,7 +212,7 @@ class UnifiedReconScanner:
 
         # Directory Bruteforce
         print("📁 DIRECTORY BRUTEFORCE")
-        print("-"*70)
+        print("-" * 70)
         dir_scan = result.directory_bruteforce
         if dir_scan.get("success"):
             findings = dir_scan.get("findings", [])
@@ -248,7 +229,7 @@ class UnifiedReconScanner:
 
         # Summary
         print("📝 SUMMARY & RECOMMENDATIONS")
-        print("-"*70)
+        print("-" * 70)
         summary = result.summary
         print(f"Risk Level: {summary.get('risk_level', 'unknown').upper()}")
         print(f"Technologies: {summary.get('technologies_detected', 0)}")
@@ -257,7 +238,7 @@ class UnifiedReconScanner:
         print("Recommendations:")
         for rec in summary.get("recommendations", []):
             print(f"  • {rec}")
-        print("="*70)
+        print("=" * 70)
 
 
 def main():
@@ -268,32 +249,20 @@ def main():
 Examples:
   python unified_recon.py --target example.com
   python unified_recon.py --target example.com --output-dir ./reports
-        """
+        """,
     )
 
-    parser.add_argument(
-        "--target", "-t",
-        required=True,
-        help="Target domain or URL"
-    )
+    parser.add_argument("--target", "-t", required=True, help="Target domain or URL")
 
-    parser.add_argument(
-        "--output-dir", "-o",
-        default="reports",
-        help="Output directory for reports (default: reports)"
-    )
+    parser.add_argument("--output-dir", "-o", default="reports", help="Output directory for reports (default: reports)")
 
-    parser.add_argument(
-        "--quiet", "-q",
-        action="store_true",
-        help="Minimal output"
-    )
+    parser.add_argument("--quiet", "-q", action="store_true", help="Minimal output")
 
     args = parser.parse_args()
 
     # Safety check
     print("⚠️  SAFETY CHECK")
-    print("="*70)
+    print("=" * 70)
     print(f"Target: {args.target}")
     print("\nEnsure you have authorization to scan this target!")
     confirm = input("\nContinue? (yes/no): ")

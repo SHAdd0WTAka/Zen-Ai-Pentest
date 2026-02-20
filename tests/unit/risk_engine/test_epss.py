@@ -4,9 +4,11 @@ Unit Tests für risk_engine/epss.py
 Tests EPSS client with mocked HTTP requests.
 """
 
-import pytest
 from datetime import timedelta
 from unittest.mock import Mock, patch
+
+import pytest
+
 from risk_engine.epss import EPSSClient
 
 pytestmark = pytest.mark.unit
@@ -20,7 +22,7 @@ class TestEPSSClientInit:
         client = EPSSClient()
         assert client.cache == {}
         assert client.cache_duration == timedelta(hours=24)
-        assert hasattr(client, 'logger')
+        assert hasattr(client, "logger")
 
     def test_custom_cache_duration(self):
         """Test custom cache duration"""
@@ -40,12 +42,10 @@ class TestEPSSGetScore:
         client = EPSSClient()
 
         mock_response = Mock()
-        mock_response.json.return_value = {
-            "data": [{"cve": "CVE-2021-44228", "epss": "0.95"}]
-        }
+        mock_response.json.return_value = {"data": [{"cve": "CVE-2021-44228", "epss": "0.95"}]}
         mock_response.raise_for_status = Mock()
 
-        with patch('requests.get', return_value=mock_response):
+        with patch("requests.get", return_value=mock_response):
             score = client.get_score("CVE-2021-44228")
             assert score == 0.95
 
@@ -54,12 +54,10 @@ class TestEPSSGetScore:
         client = EPSSClient()
 
         mock_response = Mock()
-        mock_response.json.return_value = {
-            "data": [{"cve": "CVE-2021-44228", "epss": "0.95"}]
-        }
+        mock_response.json.return_value = {"data": [{"cve": "CVE-2021-44228", "epss": "0.95"}]}
         mock_response.raise_for_status = Mock()
 
-        with patch('requests.get', return_value=mock_response) as mock_get:
+        with patch("requests.get", return_value=mock_response) as mock_get:
             # First call - should hit API
             score1 = client.get_score("CVE-2021-44228")
             # Second call - should use cache
@@ -74,12 +72,10 @@ class TestEPSSGetScore:
         client = EPSSClient(cache_duration=0)  # Immediate expiration
 
         mock_response = Mock()
-        mock_response.json.return_value = {
-            "data": [{"cve": "CVE-2021-44228", "epss": "0.95"}]
-        }
+        mock_response.json.return_value = {"data": [{"cve": "CVE-2021-44228", "epss": "0.95"}]}
         mock_response.raise_for_status = Mock()
 
-        with patch('requests.get', return_value=mock_response) as mock_get:
+        with patch("requests.get", return_value=mock_response) as mock_get:
             # First call
             client.get_score("CVE-2021-44228")
             # Second call - cache expired, should hit API again
@@ -91,7 +87,7 @@ class TestEPSSGetScore:
         """Test handling API error"""
         client = EPSSClient()
 
-        with patch('requests.get', side_effect=Exception("API Error")):
+        with patch("requests.get", side_effect=Exception("API Error")):
             score = client.get_score("CVE-2021-44228")
             assert score == 0.0
 
@@ -103,7 +99,7 @@ class TestEPSSGetScore:
         mock_response.json.return_value = {"data": []}
         mock_response.raise_for_status = Mock()
 
-        with patch('requests.get', return_value=mock_response):
+        with patch("requests.get", return_value=mock_response):
             score = client.get_score("CVE-2021-44228")
             assert score == 0.0
 
@@ -115,7 +111,7 @@ class TestEPSSGetScore:
         mock_response.json.return_value = {"data": [{"cve": "CVE-2021-44228"}]}
         mock_response.raise_for_status = Mock()
 
-        with patch('requests.get', return_value=mock_response):
+        with patch("requests.get", return_value=mock_response):
             score = client.get_score("CVE-2021-44228")
             assert score == 0.0
 
@@ -124,12 +120,10 @@ class TestEPSSGetScore:
         client = EPSSClient()
 
         mock_response = Mock()
-        mock_response.json.return_value = {
-            "data": [{"cve": "CVE-2021-44228", "epss": "0.95"}]
-        }
+        mock_response.json.return_value = {"data": [{"cve": "CVE-2021-44228", "epss": "0.95"}]}
         mock_response.raise_for_status = Mock()
 
-        with patch('requests.get', return_value=mock_response):
+        with patch("requests.get", return_value=mock_response):
             score = client.get_score("cve-2021-44228")  # lowercase
             assert score == 0.95
 
@@ -150,7 +144,7 @@ class TestEPSSBatchScores:
         }
         mock_response.raise_for_status = Mock()
 
-        with patch('requests.get', return_value=mock_response):
+        with patch("requests.get", return_value=mock_response):
             results = client.get_batch_scores(["CVE-2021-44228", "CVE-2017-0144"])
 
             assert results["CVE-2021-44228"] == 0.95
@@ -170,27 +164,25 @@ class TestEPSSBatchScores:
         mock_response.json.return_value = {"data": []}
         mock_response.raise_for_status = Mock()
 
-        with patch('requests.get', return_value=mock_response) as mock_get:
+        with patch("requests.get", return_value=mock_response) as mock_get:
             cves = [f"CVE-2021-{i:05d}" for i in range(150)]
             client.get_batch_scores(cves)
 
             # Check that only first 100 were passed
             call_args = mock_get.call_args
-            params = call_args[1].get('params', {})
-            cve_param = params.get('cve', '')
-            assert len(cve_param.split(',')) == 100
+            params = call_args[1].get("params", {})
+            cve_param = params.get("cve", "")
+            assert len(cve_param.split(",")) == 100
 
     def test_batch_scores_missing_cves(self):
         """Test batch with missing CVEs"""
         client = EPSSClient()
 
         mock_response = Mock()
-        mock_response.json.return_value = {
-            "data": [{"cve": "CVE-2021-44228", "epss": "0.95"}]
-        }
+        mock_response.json.return_value = {"data": [{"cve": "CVE-2021-44228", "epss": "0.95"}]}
         mock_response.raise_for_status = Mock()
 
-        with patch('requests.get', return_value=mock_response):
+        with patch("requests.get", return_value=mock_response):
             results = client.get_batch_scores(["CVE-2021-44228", "CVE-9999-99999"])
 
             assert results["CVE-2021-44228"] == 0.95
@@ -200,7 +192,7 @@ class TestEPSSBatchScores:
         """Test batch with API error"""
         client = EPSSClient()
 
-        with patch('requests.get', side_effect=Exception("API Error")):
+        with patch("requests.get", side_effect=Exception("API Error")):
             results = client.get_batch_scores(["CVE-2021-44228"])
 
             assert results["CVE-2021-44228"] == 0.0
@@ -214,12 +206,10 @@ class TestEPSSGetPercentile:
         client = EPSSClient()
 
         mock_response = Mock()
-        mock_response.json.return_value = {
-            "data": [{"cve": "CVE-2021-44228", "epss": "0.95", "percentile": "0.99"}]
-        }
+        mock_response.json.return_value = {"data": [{"cve": "CVE-2021-44228", "epss": "0.95", "percentile": "0.99"}]}
         mock_response.raise_for_status = Mock()
 
-        with patch('requests.get', return_value=mock_response):
+        with patch("requests.get", return_value=mock_response):
             percentile = client.get_percentile("CVE-2021-44228")
             assert percentile == 0.99
 
@@ -231,7 +221,7 @@ class TestEPSSGetPercentile:
         mock_response.json.return_value = {"data": []}
         mock_response.raise_for_status = Mock()
 
-        with patch('requests.get', return_value=mock_response):
+        with patch("requests.get", return_value=mock_response):
             percentile = client.get_percentile("CVE-2021-44228")
             assert percentile is None
 
@@ -239,7 +229,7 @@ class TestEPSSGetPercentile:
         """Test percentile with API error"""
         client = EPSSClient()
 
-        with patch('requests.get', side_effect=Exception("API Error")):
+        with patch("requests.get", side_effect=Exception("API Error")):
             percentile = client.get_percentile("CVE-2021-44228")
             assert percentile is None
 
@@ -248,12 +238,10 @@ class TestEPSSGetPercentile:
         client = EPSSClient()
 
         mock_response = Mock()
-        mock_response.json.return_value = {
-            "data": [{"cve": "CVE-2021-44228", "epss": "0.95"}]
-        }
+        mock_response.json.return_value = {"data": [{"cve": "CVE-2021-44228", "epss": "0.95"}]}
         mock_response.raise_for_status = Mock()
 
-        with patch('requests.get', return_value=mock_response):
+        with patch("requests.get", return_value=mock_response):
             percentile = client.get_percentile("CVE-2021-44228")
             assert percentile is None
 
@@ -315,12 +303,10 @@ class TestEPSSShouldPrioritize:
         client = EPSSClient()
 
         mock_response = Mock()
-        mock_response.json.return_value = {
-            "data": [{"cve": "CVE-2021-44228", "epss": "0.5"}]
-        }
+        mock_response.json.return_value = {"data": [{"cve": "CVE-2021-44228", "epss": "0.5"}]}
         mock_response.raise_for_status = Mock()
 
-        with patch('requests.get', return_value=mock_response):
+        with patch("requests.get", return_value=mock_response):
             assert client.should_prioritize("CVE-2021-44228") is True
 
     def test_should_not_prioritize_low_score(self):
@@ -328,12 +314,10 @@ class TestEPSSShouldPrioritize:
         client = EPSSClient()
 
         mock_response = Mock()
-        mock_response.json.return_value = {
-            "data": [{"cve": "CVE-2021-44228", "epss": "0.05"}]
-        }
+        mock_response.json.return_value = {"data": [{"cve": "CVE-2021-44228", "epss": "0.05"}]}
         mock_response.raise_for_status = Mock()
 
-        with patch('requests.get', return_value=mock_response):
+        with patch("requests.get", return_value=mock_response):
             assert client.should_prioritize("CVE-2021-44228") is False
 
     def test_should_prioritize_custom_threshold(self):
@@ -341,12 +325,10 @@ class TestEPSSShouldPrioritize:
         client = EPSSClient()
 
         mock_response = Mock()
-        mock_response.json.return_value = {
-            "data": [{"cve": "CVE-2021-44228", "epss": "0.15"}]
-        }
+        mock_response.json.return_value = {"data": [{"cve": "CVE-2021-44228", "epss": "0.15"}]}
         mock_response.raise_for_status = Mock()
 
-        with patch('requests.get', return_value=mock_response):
+        with patch("requests.get", return_value=mock_response):
             # Default threshold 0.2
             assert client.should_prioritize("CVE-2021-44228") is False
             # Custom threshold 0.1

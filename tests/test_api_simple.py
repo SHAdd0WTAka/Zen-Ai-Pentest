@@ -1,13 +1,16 @@
 """
 Einfache API Tests für Coverage
 """
-import pytest
+
 from unittest.mock import MagicMock
 
+import pytest
 
 try:
-    from api.main import app
     from fastapi.testclient import TestClient
+
+    from api.main import app
+
     API_AVAILABLE = True
 except ImportError:
     API_AVAILABLE = False

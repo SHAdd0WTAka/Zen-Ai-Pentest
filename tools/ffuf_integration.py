@@ -2,8 +2,9 @@
 FFUF Integration - Stub for testing
 Full implementation needed for production
 """
-from typing import Dict, Any, Optional
+
 import logging
+from typing import Any, Dict, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -17,12 +18,7 @@ class FfufTool:
 
     async def fuzz(self, url: str, **kwargs) -> Dict[str, Any]:
         """Run ffuf fuzzing - stub implementation"""
-        return {
-            "tool": "ffuf",
-            "target": url,
-            "findings": [],
-            "status": "stub"
-        }
+        return {"tool": "ffuf", "target": url, "findings": [], "status": "stub"}
 
     async def directory_bruteforce(self, base_url: str) -> Dict[str, Any]:
         """Directory brute force - stub implementation"""

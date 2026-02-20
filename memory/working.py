@@ -2,9 +2,9 @@
 Working memory (scratchpad) for agent context
 """
 
-from typing import Any, Dict, List, Optional
-from datetime import datetime
 import uuid
+from datetime import datetime
+from typing import Any, Dict, List, Optional
 
 from .base import BaseMemory, MemoryEntry, MemoryType
 

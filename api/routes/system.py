@@ -1,8 +1,10 @@
-from fastapi import APIRouter, BackgroundTasks
 import logging
+
+from fastapi import APIRouter, BackgroundTasks
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
+
 
 @router.get("/tools/status")
 async def get_tools_status():
@@ -15,11 +17,7 @@ async def get_tools_status():
 
         return report
     except Exception as e:
-        return {
-            "ready": False,
-            "error": str(e),
-            "message": "Tool checker not available"
-        }
+        return {"ready": False, "error": str(e), "message": "Tool checker not available"}
 
 
 @router.post("/tools/install")
@@ -41,8 +39,10 @@ async def install_tools(background_tasks: BackgroundTasks):
 
     return {
         "status": "installation_started",
-        "message": "Tool installation started in background. Check /system/tools/status for progress."
+        "message": "Tool installation started in background. Check /system/tools/status for progress.",
     }
+
+
 """
 System Management Endpoints
 
@@ -51,7 +51,6 @@ System status, health checks, and administrative functions.
 
 import platform
 from datetime import datetime
-
 
 import psutil
 from fastapi import APIRouter, Depends

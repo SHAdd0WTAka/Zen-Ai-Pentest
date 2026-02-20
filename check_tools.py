@@ -6,9 +6,9 @@ from tools.integrations.tool_checker import ToolChecker
 checker = ToolChecker()
 report = checker.get_status_report()
 
-print("="*60)
+print("=" * 60)
 print("PENTEST TOOLS STATUS CHECK")
-print("="*60)
+print("=" * 60)
 print()
 ready_status = "YES" if report["ready"] else "NO"
 print(f"System Ready: {ready_status}")

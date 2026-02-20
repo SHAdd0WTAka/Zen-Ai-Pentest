@@ -204,9 +204,7 @@ class ZAPScanner:
     async def start_daemon(self, port: int = 8080) -> bool:
         """Start ZAP daemon"""
         if not self._check_zap_installed():
-            raise RuntimeError(
-                "ZAP not found. Install ZAP from: https://www.zaproxy.org/download/"
-            )
+            raise RuntimeError("ZAP not found. Install ZAP from: https://www.zaproxy.org/download/")
 
         if self.use_docker:
             return await self._start_docker_daemon(port)
@@ -220,10 +218,14 @@ class ZAPScanner:
         cmd = [
             self.zap_path,
             "-daemon",
-            "-port", str(port),
-            "-config", "api.disablekey=true",
-            "-config", "api.addrs.addr.regex=true",
-            "-config", "api.addrs.addr.name=.*",
+            "-port",
+            str(port),
+            "-config",
+            "api.disablekey=true",
+            "-config",
+            "api.addrs.addr.regex=true",
+            "-config",
+            "api.addrs.addr.name=.*",
         ]
 
         try:
@@ -245,15 +247,24 @@ class ZAPScanner:
         import subprocess
 
         cmd = [
-            "docker", "run", "-d",
-            "-p", f"{port}:{port}",
-            "--name", f"zap_daemon_{port}",
+            "docker",
+            "run",
+            "-d",
+            "-p",
+            f"{port}:{port}",
+            "--name",
+            f"zap_daemon_{port}",
             "ghcr.io/zaproxy/zaproxy:stable",
-            "zap.sh", "-daemon",
-            "-port", str(port),
-            "-config", "api.disablekey=true",
-            "-config", "api.addrs.addr.regex=true",
-            "-config", "api.addrs.addr.name=.*",
+            "zap.sh",
+            "-daemon",
+            "-port",
+            str(port),
+            "-config",
+            "api.disablekey=true",
+            "-config",
+            "api.addrs.addr.regex=true",
+            "-config",
+            "api.addrs.addr.name=.*",
         ]
 
         try:
@@ -274,6 +285,7 @@ class ZAPScanner:
         """Stop ZAP daemon"""
         if self._docker_container:
             import subprocess
+
             subprocess.run(
                 ["docker", "stop", self._docker_container],
                 capture_output=True,
@@ -649,6 +661,7 @@ class ZAPScanner:
         """Get ZAP version"""
         try:
             import asyncio
+
             result = asyncio.run(self._api_request("core/view/version/"))
             return result.get("version", "unknown")
         except Exception:
@@ -658,9 +671,11 @@ class ZAPScanner:
 # LangChain Tool integration
 try:
     from langchain_core.tools import tool
+
     LANGCHAIN_AVAILABLE = True
 except ImportError:
     LANGCHAIN_AVAILABLE = False
+
     # Define a dummy decorator if langchain is not available
     def tool(func=None, **kwargs):
         if func:
@@ -807,6 +822,7 @@ def zap_spider_only(target: str, api_url: str = "http://localhost:8080") -> str:
 # Tool Registry integration
 try:
     from .tool_registry import ToolCategory, ToolSafetyLevel, registry
+
     TOOL_REGISTRY_AVAILABLE = True
 except ImportError:
     TOOL_REGISTRY_AVAILABLE = False

@@ -3,12 +3,12 @@
 ECHTER Security Scan - Auf localhost/VM
 """
 
-import socket
-import sys
 import json
 import os
-from datetime import datetime
+import socket
+import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from datetime import datetime
 
 print("=" * 70)
 print("ZEN AI PENTEST - ECHTER SCAN")

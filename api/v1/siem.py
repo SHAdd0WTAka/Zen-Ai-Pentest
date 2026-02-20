@@ -2,12 +2,13 @@
 SIEM Integration API v1.0
 """
 
+from datetime import datetime
+from typing import Any, Dict, List, Optional
+
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from typing import List, Optional, Dict, Any
-from datetime import datetime
 
-from modules.siem_integration import SIEMIntegrationManager, SIEMConfig, SecurityEvent
+from modules.siem_integration import SecurityEvent, SIEMConfig, SIEMIntegrationManager
 
 router = APIRouter()
 

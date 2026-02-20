@@ -4,8 +4,10 @@ Unit Tests für utils/stealth.py
 Tests StealthManager without actual network calls.
 """
 
-import pytest
 from unittest.mock import patch
+
+import pytest
+
 from utils.stealth import StealthManager
 
 pytestmark = pytest.mark.unit
@@ -23,11 +25,7 @@ class TestStealthManagerInit:
 
     def test_custom_config(self):
         """Test initialization with custom config"""
-        config = {
-            "delay_min": 2,
-            "delay_max": 5,
-            "random_user_agent": False
-        }
+        config = {"delay_min": 2, "delay_max": 5, "random_user_agent": False}
         sm = StealthManager(config)
         assert sm.delay_min == 2
         assert sm.delay_max == 5
@@ -118,7 +116,7 @@ class TestGetRandomUserAgent:
 class TestDelay:
     """Test delay methods"""
 
-    @patch('time.sleep')
+    @patch("time.sleep")
     def test_default_delay(self, mock_sleep):
         """Test default delay behavior"""
         sm = StealthManager()
@@ -129,7 +127,7 @@ class TestDelay:
         call_args = mock_sleep.call_args[0][0]
         assert 1 <= call_args <= 3
 
-    @patch('time.sleep')
+    @patch("time.sleep")
     def test_custom_delay(self, mock_sleep):
         """Test custom delay parameters"""
         sm = StealthManager()
@@ -138,7 +136,7 @@ class TestDelay:
         call_args = mock_sleep.call_args[0][0]
         assert 5 <= call_args <= 10
 
-    @patch('time.sleep')
+    @patch("time.sleep")
     def test_config_delay(self, mock_sleep):
         """Test delay from config"""
         sm = StealthManager({"delay_min": 0.1, "delay_max": 0.5})
@@ -151,34 +149,34 @@ class TestDelay:
 class TestJitterDelay:
     """Test jitter_delay method"""
 
-    @patch('time.sleep')
+    @patch("time.sleep")
     def test_jitter_positive(self, mock_sleep):
         """Test jitter delay with positive result"""
         sm = StealthManager()
 
         # Patch random to return predictable value
-        with patch('random.uniform', return_value=0.3):
+        with patch("random.uniform", return_value=0.3):
             sm.jitter_delay(base_delay=1.0, jitter=0.5)
 
         mock_sleep.assert_called_once_with(1.3)
 
-    @patch('time.sleep')
+    @patch("time.sleep")
     def test_jitter_negative(self, mock_sleep):
         """Test jitter delay clamps to positive"""
         sm = StealthManager()
 
-        with patch('random.uniform', return_value=-2.0):
+        with patch("random.uniform", return_value=-2.0):
             sm.jitter_delay(base_delay=1.0, jitter=0.5)
 
         # Should not sleep if delay <= 0
         mock_sleep.assert_not_called()
 
-    @patch('time.sleep')
+    @patch("time.sleep")
     def test_jitter_range(self, mock_sleep):
         """Test jitter stays within expected range"""
         sm = StealthManager()
 
-        with patch('random.uniform', return_value=0.0):
+        with patch("random.uniform", return_value=0.0):
             sm.jitter_delay(base_delay=2.0, jitter=0.5)
 
         mock_sleep.assert_called_once_with(2.0)
@@ -187,47 +185,47 @@ class TestJitterDelay:
 class TestExponentialBackoff:
     """Test exponential_backoff method"""
 
-    @patch('time.sleep')
+    @patch("time.sleep")
     def test_backoff_attempt_0(self, mock_sleep):
         """Test backoff for attempt 0"""
         sm = StealthManager()
 
-        with patch('random.uniform', return_value=0.5):
+        with patch("random.uniform", return_value=0.5):
             sm.exponential_backoff(attempt=0, base_delay=1.0)
 
         call_args = mock_sleep.call_args[0][0]
         assert call_args == 1.5  # 1 * 2^0 + 0.5
 
-    @patch('time.sleep')
+    @patch("time.sleep")
     def test_backoff_attempt_1(self, mock_sleep):
         """Test backoff for attempt 1"""
         sm = StealthManager()
 
-        with patch('random.uniform', return_value=0.0):
+        with patch("random.uniform", return_value=0.0):
             sm.exponential_backoff(attempt=1, base_delay=1.0)
 
         call_args = mock_sleep.call_args[0][0]
         assert call_args == 2.0  # 1 * 2^1 + 0
 
-    @patch('time.sleep')
+    @patch("time.sleep")
     def test_backoff_attempt_3(self, mock_sleep):
         """Test backoff for attempt 3"""
         sm = StealthManager()
 
-        with patch('random.uniform', return_value=0.0):
+        with patch("random.uniform", return_value=0.0):
             sm.exponential_backoff(attempt=3, base_delay=1.0)
 
         call_args = mock_sleep.call_args[0][0]
         assert call_args == 8.0  # 1 * 2^3 + 0
 
-    @patch('time.sleep')
+    @patch("time.sleep")
     def test_backoff_increases(self, mock_sleep):
         """Test that backoff increases with attempt"""
         sm = StealthManager()
         delays = []
 
         for attempt in range(5):
-            with patch('random.uniform', return_value=0.0):
+            with patch("random.uniform", return_value=0.0):
                 sm.exponential_backoff(attempt=attempt, base_delay=1.0)
 
             call_args = mock_sleep.call_args[0][0]
@@ -236,7 +234,7 @@ class TestExponentialBackoff:
 
         # Each delay should be >= previous
         for i in range(1, len(delays)):
-            assert delays[i] >= delays[i-1]
+            assert delays[i] >= delays[i - 1]
 
 
 class TestPredefinedLists:

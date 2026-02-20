@@ -3,13 +3,13 @@ Tests für Python 3.13 Windows AsyncIO Fix
 Issue #10
 """
 
-import pytest
 import asyncio
-import sys
 import platform
+import sys
 
+import pytest
 
-from core.asyncio_fix import is_windows, is_python_313_or_higher, SafeAsyncioRunner, safe_asyncio_run, AsyncIOContext
+from core.asyncio_fix import AsyncIOContext, SafeAsyncioRunner, is_python_313_or_higher, is_windows, safe_asyncio_run
 
 
 class TestAsyncIOFixUtils:

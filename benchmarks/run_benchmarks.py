@@ -6,19 +6,19 @@ and generating comparison reports.
 """
 
 import asyncio
-from datetime import datetime
 import json
 import logging
 import sys
+from datetime import datetime
 from pathlib import Path
-from typing import Optional, List
+from typing import List, Optional
 
 # Rich for beautiful CLI output
 try:
-    from rich.console import Console
-    from rich.table import Table
-    from rich.panel import Panel
     from rich import box
+    from rich.console import Console
+    from rich.panel import Panel
+    from rich.table import Table
     from rich.tree import Tree
 
     RICH_AVAILABLE = True
@@ -27,17 +27,17 @@ except ImportError:
 
 # Matplotlib for charts
 try:
-    import matplotlib.pyplot as plt
     import matplotlib
+    import matplotlib.pyplot as plt
 
     matplotlib.use("Agg")  # Non-interactive backend
     MATPLOTLIB_AVAILABLE = True
 except ImportError:
     MATPLOTLIB_AVAILABLE = False
 
-from .benchmark_engine import BenchmarkEngine, BenchmarkConfig, BenchmarkReport, BenchmarkStatus
-from .scenarios import list_all_scenarios, ScenarioType, DifficultyLevel, ALL_SCENARIOS
+from .benchmark_engine import BenchmarkConfig, BenchmarkEngine, BenchmarkReport, BenchmarkStatus
 from .ci_benchmark import CIBenchmarkRunner, CIConfig
+from .scenarios import ALL_SCENARIOS, DifficultyLevel, ScenarioType, list_all_scenarios
 
 # Setup logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")

@@ -5,23 +5,23 @@ including unit tests with mocked subprocess calls.
 """
 
 import asyncio
-import pytest
 from unittest.mock import Mock, patch
+
+import pytest
 
 # Import the module under test
 from tools.nmap_integration import (
-    NmapScanner,
-    NmapPort,
     NmapHost,
+    NmapPort,
     NmapResult,
+    NmapScanner,
     ScanType,
     TimingTemplate,
-    nmap_scan,
-    nmap_quick_scan,
-    nmap_vuln_scan,
     create_nmap_result_dict,
+    nmap_quick_scan,
+    nmap_scan,
+    nmap_vuln_scan,
 )
-
 
 # Sample XML output for testing
 SAMPLE_NMAP_XML = """<?xml version="1.0" encoding="UTF-8"?>
@@ -328,7 +328,7 @@ class TestXMLParsing:
         """Test fallback parsing for malformed XML"""
         with patch("shutil.which", return_value="/usr/bin/nmap"):
             scanner = NmapScanner("192.168.1.1")
-            malformed = "<host><address addr=\"192.168.1.1\" addrtype=\"ipv4\"/></invalid>"
+            malformed = '<host><address addr="192.168.1.1" addrtype="ipv4"/></invalid>'
             # Should not raise exception
             hosts = scanner.parse_xml_output(malformed)
             # May have partial results or empty list
@@ -449,11 +449,13 @@ class TestConvenienceMethods:
             mock_result.stderr = ""
 
             with patch.object(scanner, "_run_subprocess", return_value=mock_result):
-                result = asyncio.run(scanner.run_script(
-                    script_name="http-title",
-                    ports="80",
-                    script_args={"http.useragent": "Mozilla/5.0"},
-                ))
+                result = asyncio.run(
+                    scanner.run_script(
+                        script_name="http-title",
+                        ports="80",
+                        script_args={"http.useragent": "Mozilla/5.0"},
+                    )
+                )
 
                 assert result["success"] is True
                 assert scanner.options["script_scan"] == "http-title"

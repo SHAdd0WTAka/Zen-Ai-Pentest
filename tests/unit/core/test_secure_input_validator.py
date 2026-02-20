@@ -3,13 +3,14 @@ Unit Tests for Secure Input Validator
 """
 
 import pytest
+
 from core.secure_input_validator import (
     SecureInputValidator,
     ValidationError,
-    validate_url,
-    validate_ip,
     validate_command,
-    validate_sql
+    validate_ip,
+    validate_sql,
+    validate_url,
 )
 
 
@@ -145,8 +146,8 @@ class TestSecureInputValidator:
             pass
 
         stats = validator.get_stats()
-        assert stats['total_validated'] == 3
-        assert stats['rejected'] == 1
+        assert stats["total_validated"] == 3
+        assert stats["rejected"] == 1
 
 
 class TestConvenienceFunctions:

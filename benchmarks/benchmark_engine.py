@@ -10,31 +10,29 @@ import hashlib
 import json
 import logging
 import time
+import traceback
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum, auto
 from pathlib import Path
-from typing import Dict, List, Optional, Any
-import traceback
+from typing import Any, Dict, List, Optional
 
 # Type hints for Zen-AI-Pentest core
 from ..core.orchestrator import PentestOrchestrator
-
-
+from .comparison import ComparisonFramework, ToolBenchmarkResult, ToolCategory, ToolMetadata
 from .metrics import (
     BenchmarkMetrics,
     ClassificationMetrics,
     CoverageMetrics,
     ExploitMetrics,
-    TokenUsage,
     FindingMetrics,
-    SeverityLevel,
     FindingType,
     MetricsAggregator,
+    SeverityLevel,
+    TokenUsage,
 )
-from .scenarios import TestScenario, get_scenario, ALL_SCENARIOS, ScenarioType, DifficultyLevel
-from .comparison import ToolBenchmarkResult, ComparisonFramework, ToolMetadata, ToolCategory
+from .scenarios import ALL_SCENARIOS, DifficultyLevel, ScenarioType, TestScenario, get_scenario
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -513,9 +511,11 @@ class BenchmarkEngine:
                 metrics.findings.append(
                     FindingMetrics(
                         finding_type=FindingType.SQL_INJECTION,  # Simplified
-                        severity=SeverityLevel(vuln.severity)
-                        if vuln.severity in ["critical", "high", "medium", "low", "info"]
-                        else SeverityLevel.MEDIUM,
+                        severity=(
+                            SeverityLevel(vuln.severity)
+                            if vuln.severity in ["critical", "high", "medium", "low", "info"]
+                            else SeverityLevel.MEDIUM
+                        ),
                         confidence=0.85,
                         exploitability=0.7 if vuln.exploit_available else 0.3,
                         detection_time_ms=1500,

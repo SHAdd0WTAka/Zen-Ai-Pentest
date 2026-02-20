@@ -4,9 +4,9 @@ ZEN AI PENTEST - KOMPREHENSIVER REPO-TEST
 Testet ALLE Komponenten des gesamten Repositories
 """
 
-import sys
 import json
 import subprocess
+import sys
 from datetime import datetime
 from pathlib import Path
 
@@ -212,8 +212,8 @@ def test_report_generation():
     sys.path.insert(0, str(REPO_PATH))
 
     try:
-        from modules.report_gen import ReportGenerator
         from modules.report_export import ReportExporter
+        from modules.report_gen import ReportGenerator
 
         # Test ReportGenerator
         gen = ReportGenerator()
@@ -273,8 +273,8 @@ def test_backend_functionality():
     sys.path.insert(0, str(REPO_PATH))
 
     try:
-        from core.orchestrator import ZenOrchestrator
         from backends.duckduckgo import DuckDuckGoBackend
+        from core.orchestrator import ZenOrchestrator
 
         orch = ZenOrchestrator()
         log_test("Orchestrator init", True)

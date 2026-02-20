@@ -19,16 +19,13 @@ os.environ["DATABASE_URL"] = "sqlite:///./test_auth_db.db"
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from sqlalchemy import create_engine
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm import sessionmaker
 
 from auth.jwt_handler import JWTHandler
 from auth.password_hasher import PasswordHasher
 from auth.user_manager import UserManager
 from database.auth_models import (
-    APIKey,
     Base,
-    MFADevice,
-    TokenBlacklist,
     TokenType,
     User,
     UserAuditLog,
@@ -161,7 +158,7 @@ class TestUserSession:
     def test_revoke_session(self, db):
         """Test revoking a session"""
         user = create_user(db, "testuser", "test@example.com", "hashed", UserRole.USER)
-        session = create_session(db, user.id, "session_123", "jti_456", datetime.utcnow() + timedelta(days=7))
+        create_session(db, user.id, "session_123", "jti_456", datetime.utcnow() + timedelta(days=7))
 
         revoked = revoke_session(db, "session_123", "logout")
 
@@ -287,7 +284,7 @@ class TestUserManager:
         assert count == 3
 
         # Check all revoked
-        active_sessions = db.query(UserSession).filter(UserSession.user_id == user.id, UserSession.is_active == True).count()
+        active_sessions = db.query(UserSession).filter(UserSession.user_id == user.id, UserSession.is_active).count()
 
         assert active_sessions == 0
 

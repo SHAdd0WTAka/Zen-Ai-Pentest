@@ -8,15 +8,14 @@ Main dashboard coordinator that brings together:
 - Integration with orchestrator components
 """
 
-from typing import Dict, Any, Optional
+import logging
 from dataclasses import dataclass
 from datetime import datetime
-import logging
+from typing import Any, Dict, Optional
 
-from .websocket import DashboardWebSocket
-from .metrics import MetricsCollector
 from .events import DashboardEvent, EventType
-
+from .metrics import MetricsCollector
+from .websocket import DashboardWebSocket
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +23,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class DashboardConfig:
     """Dashboard configuration"""
+
     websocket_enabled: bool = True
     metrics_enabled: bool = True
     metrics_interval: int = 10
@@ -78,16 +78,12 @@ class DashboardManager:
 
         # Start WebSocket
         if self.config.websocket_enabled:
-            self.websocket = DashboardWebSocket(
-                max_connections=self.config.max_connections
-            )
+            self.websocket = DashboardWebSocket(max_connections=self.config.max_connections)
             await self.websocket.start()
 
         # Start metrics collector
         if self.config.metrics_enabled:
-            self.metrics = MetricsCollector(
-                collection_interval=self.config.metrics_interval
-            )
+            self.metrics = MetricsCollector(collection_interval=self.config.metrics_interval)
             self.metrics.on_metrics(self._on_metrics_collected)
             await self.metrics.start()
 
@@ -125,20 +121,9 @@ class DashboardManager:
 
         return 0
 
-    async def broadcast_task_progress(
-        self,
-        task_id: str,
-        progress: float,
-        message: str = "",
-        **kwargs
-    ) -> int:
+    async def broadcast_task_progress(self, task_id: str, progress: float, message: str = "", **kwargs) -> int:
         """Broadcast task progress update"""
-        event = DashboardEvent.task_progress(
-            task_id=task_id,
-            progress=progress,
-            message=message,
-            **kwargs
-        )
+        event = DashboardEvent.task_progress(task_id=task_id, progress=progress, message=message, **kwargs)
         return await self.broadcast(event)
 
     async def broadcast_system_metrics(self, metrics: Dict[str, Any]) -> int:
@@ -146,31 +131,17 @@ class DashboardManager:
         event = DashboardEvent.system_metrics(metrics)
         return await self.broadcast(event)
 
-    async def broadcast_security_alert(
-        self,
-        alert_type: str,
-        severity: str,
-        details: Dict[str, Any]
-    ) -> int:
+    async def broadcast_security_alert(self, alert_type: str, severity: str, details: Dict[str, Any]) -> int:
         """Broadcast security alert"""
         event = DashboardEvent.security_alert(alert_type, severity, details)
         return await self.broadcast(event)
 
-    async def broadcast_notification(
-        self,
-        title: str,
-        message: str,
-        level: str = "info"
-    ) -> int:
+    async def broadcast_notification(self, title: str, message: str, level: str = "info") -> int:
         """Broadcast user notification"""
         event = DashboardEvent(
             type=EventType.NOTIFICATION,
-            data={
-                "title": title,
-                "message": message,
-                "level": level
-            },
-            priority=4 if level == "error" else 3
+            data={"title": title, "message": message, "level": level},
+            priority=4 if level == "error" else 3,
         )
         return await self.broadcast(event)
 
@@ -179,7 +150,7 @@ class DashboardManager:
         self._event_buffer.append(event)
 
         if len(self._event_buffer) > self._max_buffer_size:
-            self._event_buffer = self._event_buffer[-self._max_buffer_size:]
+            self._event_buffer = self._event_buffer[-self._max_buffer_size :]
 
     # ==================== WebSocket Integration ====================
 
@@ -202,11 +173,7 @@ class DashboardManager:
         if self.websocket:
             await self.websocket.disconnect(connection_id)
 
-    async def handle_websocket_message(
-        self,
-        connection_id: str,
-        message: Dict[str, Any]
-    ) -> None:
+    async def handle_websocket_message(self, connection_id: str, message: Dict[str, Any]) -> None:
         """Handle incoming WebSocket message"""
         if self.websocket:
             await self.websocket.handle_message(connection_id, message)
@@ -264,7 +231,7 @@ class DashboardManager:
             "system_status": self._get_system_status(),
             "current_metrics": self.get_current_metrics(),
             "recent_events": [e.to_dict() for e in self._event_buffer[-20:]],
-            "statistics": self.get_statistics()
+            "statistics": self.get_statistics(),
         }
 
     def _get_system_status(self) -> Dict[str, Any]:

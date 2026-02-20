@@ -3,6 +3,7 @@ import json
 import os
 from pathlib import Path
 
+
 def load_config():
     """Lädt config.json und merged mit Environment Variables"""
 
@@ -16,7 +17,7 @@ def load_config():
         "KIMI_API_KEY": ("backends", "kimi_api_key"),
         "CHATGPT_TOKEN": ("backends", "chatgpt_token"),
         "CLAUDE_SESSION": ("backends", "claude_session"),
-        "LOG_LEVEL": ("output", "log_level")
+        "LOG_LEVEL": ("output", "log_level"),
     }
 
     for env_var, (section, key) in env_mapping.items():
@@ -25,6 +26,7 @@ def load_config():
             config[section][key] = value
 
     return config
+
 
 if __name__ == "__main__":
     cfg = load_config()

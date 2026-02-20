@@ -10,17 +10,17 @@ Implementiert einen vollständigen ReAct (Reasoning + Acting) Loop mit:
 Based on: ReAct Pattern (https://arxiv.org/abs/2210.03629)
 """
 
-from enum import Enum, auto
-from typing import Dict, List, Any, Optional, Callable, Tuple
-from dataclasses import dataclass, field
-from datetime import datetime
-from abc import ABC, abstractmethod
 import asyncio
 import json
 import logging
-import uuid
 import time
 import traceback
+import uuid
+from abc import ABC, abstractmethod
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum, auto
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -291,30 +291,29 @@ class NmapScanner(BaseTool):
                     tool_name=self.name,
                     success=False,
                     error_message=f"Safety validation failed: {error_msg}",
-                    execution_time=0.0
+                    execution_time=0.0,
                 )
 
             # Baue Nmap Kommando mit XML Output für besseres Parsing
-            cmd = [
-                "nmap",
-                "-oX", "-",  # XML Output to stdout
-                "-p", str(ports),
-            ] + options.split() + [target]
+            cmd = (
+                [
+                    "nmap",
+                    "-oX",
+                    "-",  # XML Output to stdout
+                    "-p",
+                    str(ports),
+                ]
+                + options.split()
+                + [target]
+            )
 
             self.logger.info(f"[REAL] Executing: {' '.join(cmd)}")
 
             # ECHTE AUSFÜHRUNG via subprocess
-            proc = await asyncio.create_subprocess_exec(
-                *cmd,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE
-            )
+            proc = await asyncio.create_subprocess_exec(*cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
 
             try:
-                stdout, stderr = await asyncio.wait_for(
-                    proc.communicate(),
-                    timeout=self.timeout
-                )
+                stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=self.timeout)
             except asyncio.TimeoutError:
                 proc.kill()
                 await proc.wait()
@@ -322,12 +321,12 @@ class NmapScanner(BaseTool):
                     tool_name=self.name,
                     success=False,
                     error_message=f"Nmap timeout after {self.timeout}s",
-                    execution_time=time.time() - start_time
+                    execution_time=time.time() - start_time,
                 )
 
             execution_time = time.time() - start_time
-            output = stdout.decode('utf-8', errors='replace')
-            stderr_text = stderr.decode('utf-8', errors='replace')
+            output = stdout.decode("utf-8", errors="replace")
+            stderr_text = stderr.decode("utf-8", errors="replace")
 
             # Parse XML Output
             parsed_data = self._parse_nmap_xml(output)
@@ -346,7 +345,7 @@ class NmapScanner(BaseTool):
                     "options": options,
                     "target": target,
                     "return_code": proc.returncode,
-                    "real_execution": True  # Mark as real (not simulated)
+                    "real_execution": True,  # Mark as real (not simulated)
                 },
             )
 
@@ -357,22 +356,17 @@ class NmapScanner(BaseTool):
                 tool_name=self.name,
                 success=False,
                 error_message="Nmap not found. Install: https://nmap.org/download.html",
-                execution_time=execution_time
+                execution_time=execution_time,
             )
         except Exception as e:
             execution_time = time.time() - start_time
             self.logger.error(f"Nmap execution failed: {str(e)}")
-            return ToolResult(
-                tool_name=self.name,
-                success=False,
-                error_message=str(e),
-                execution_time=execution_time
-            )
+            return ToolResult(tool_name=self.name, success=False, error_message=str(e), execution_time=execution_time)
 
     def _validate_target_safety(self, target: str) -> Tuple[bool, str]:
         """Validiert das Target für Safety (keine internen Netzwerke ohne Whitelist)."""
-        import re
         import ipaddress
+        import re
 
         # Blockiere private IPs ohne Whitelist
         try:
@@ -389,7 +383,7 @@ class NmapScanner(BaseTool):
             pass
 
         # Blockiere gefährliche Zeichen
-        if re.search(r'[;&|<>$`]', target):
+        if re.search(r"[;&|<>$`]", target):
             return False, "Invalid characters in target"
 
         return True, ""
@@ -423,40 +417,37 @@ OS and Service detection performed.
             services = []
             os_matches = []
 
-            for host in root.findall('host'):
-                for port in host.findall('.//port'):
-                    port_id = port.get('portid')
-                    protocol = port.get('protocol')
-                    state = port.find('state')
+            for host in root.findall("host"):
+                for port in host.findall(".//port"):
+                    port_id = port.get("portid")
+                    protocol = port.get("protocol")
+                    state = port.find("state")
 
-                    if state is not None and state.get('state') == 'open':
-                        service_elem = port.find('service')
-                        service_name = service_elem.get('name', 'unknown') if service_elem is not None else 'unknown'
-                        service_version = service_elem.get('version', '') if service_elem is not None else ''
-                        product = service_elem.get('product', '') if service_elem is not None else ''
+                    if state is not None and state.get("state") == "open":
+                        service_elem = port.find("service")
+                        service_name = service_elem.get("name", "unknown") if service_elem is not None else "unknown"
+                        service_version = service_elem.get("version", "") if service_elem is not None else ""
+                        product = service_elem.get("product", "") if service_elem is not None else ""
 
                         port_info = {
                             "port": int(port_id),
                             "protocol": protocol,
                             "service": service_name,
                             "version": f"{product} {service_version}".strip() or "unknown",
-                            "state": "open"
+                            "state": "open",
                         }
                         open_ports.append(port_info)
                         services.append(service_name)
 
                 # OS Detection
-                for osmatch in host.findall('.//osmatch'):
-                    os_matches.append({
-                        "name": osmatch.get('name', 'unknown'),
-                        "accuracy": osmatch.get('accuracy', '0')
-                    })
+                for osmatch in host.findall(".//osmatch"):
+                    os_matches.append({"name": osmatch.get("name", "unknown"), "accuracy": osmatch.get("accuracy", "0")})
 
             return {
                 "open_ports": open_ports,
                 "services": list(set(services)),
                 "port_count": len(open_ports),
-                "os_matches": os_matches[:3]  # Top 3 OS guesses
+                "os_matches": os_matches[:3],  # Top 3 OS guesses
             }
         except ET.ParseError as e:
             self.logger.error(f"Failed to parse Nmap XML: {e}")
@@ -506,33 +497,19 @@ class NucleiScanner(BaseTool):
                     tool_name=self.name,
                     success=False,
                     error_message=f"Safety validation failed: {error_msg}",
-                    execution_time=0.0
+                    execution_time=0.0,
                 )
 
             # Baue Nuclei Kommando mit JSON Output
-            cmd = [
-                "nuclei",
-                "-u", target,
-                "-t", templates,
-                "-severity", severity,
-                "-json",
-                "-silent"  # Reduce noise
-            ]
+            cmd = ["nuclei", "-u", target, "-t", templates, "-severity", severity, "-json", "-silent"]  # Reduce noise
 
             self.logger.info(f"[REAL] Executing: {' '.join(cmd)}")
 
             # ECHTE AUSFÜHRUNG
-            proc = await asyncio.create_subprocess_exec(
-                *cmd,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE
-            )
+            proc = await asyncio.create_subprocess_exec(*cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
 
             try:
-                stdout, stderr = await asyncio.wait_for(
-                    proc.communicate(),
-                    timeout=self.timeout
-                )
+                stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=self.timeout)
             except asyncio.TimeoutError:
                 proc.kill()
                 await proc.wait()
@@ -540,12 +517,12 @@ class NucleiScanner(BaseTool):
                     tool_name=self.name,
                     success=False,
                     error_message=f"Nuclei timeout after {self.timeout}s",
-                    execution_time=time.time() - start_time
+                    execution_time=time.time() - start_time,
                 )
 
             execution_time = time.time() - start_time
-            output = stdout.decode('utf-8', errors='replace')
-            stderr_text = stderr.decode('utf-8', errors='replace')
+            output = stdout.decode("utf-8", errors="replace")
+            stderr_text = stderr.decode("utf-8", errors="replace")
 
             # Parse JSON Output (one JSON object per line)
             findings = self._parse_nuclei_json(output)
@@ -562,7 +539,7 @@ class NucleiScanner(BaseTool):
                     "severity_filter": severity,
                     "target": target,
                     "return_code": proc.returncode,
-                    "real_execution": True
+                    "real_execution": True,
                 },
             )
 
@@ -573,22 +550,17 @@ class NucleiScanner(BaseTool):
                 tool_name=self.name,
                 success=False,
                 error_message="Nuclei not found. Install: https://github.com/projectdiscovery/nuclei",
-                execution_time=execution_time
+                execution_time=execution_time,
             )
         except Exception as e:
             execution_time = time.time() - start_time
             self.logger.error(f"Nuclei execution failed: {str(e)}")
-            return ToolResult(
-                tool_name=self.name,
-                success=False,
-                error_message=str(e),
-                execution_time=execution_time
-            )
+            return ToolResult(tool_name=self.name, success=False, error_message=str(e), execution_time=execution_time)
 
     def _parse_nuclei_json(self, output: str) -> List[Dict[str, Any]]:
         """Parst Nuclei JSON Output (one JSON object per line)."""
         findings = []
-        for line in output.strip().split('\n'):
+        for line in output.strip().split("\n"):
             if not line:
                 continue
             try:
@@ -616,8 +588,8 @@ class NucleiScanner(BaseTool):
 
     def _validate_target_safety(self, target: str) -> Tuple[bool, str]:
         """Validiert das Target für Safety."""
-        import re
         import ipaddress
+        import re
 
         try:
             ip = ipaddress.ip_address(target)
@@ -626,7 +598,7 @@ class NucleiScanner(BaseTool):
         except ValueError:
             pass
 
-        if re.search(r'[;&|<>$`]', target):
+        if re.search(r"[;&|<>$`]", target):
             return False, "Invalid characters in target"
 
         return True, ""

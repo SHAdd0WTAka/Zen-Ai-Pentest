@@ -6,9 +6,10 @@ Only run in safe environments with permission.
 """
 
 import asyncio
-import pytest
-import sys
 import os
+import sys
+
+import pytest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -30,11 +31,9 @@ async def test_nuclei_real_execution():
     scanner = NucleiScanner(timeout=120)
 
     # Test against scanme.nmap.org
-    result = await scanner.execute({
-        "target": "scanme.nmap.org",
-        "templates": "technologies",  # Fast technology detection
-        "severity": "info"
-    })
+    result = await scanner.execute(
+        {"target": "scanme.nmap.org", "templates": "technologies", "severity": "info"}  # Fast technology detection
+    )
 
     # Assertions
     assert result.success, f"Nuclei failed: {result.error_message}"
@@ -58,10 +57,7 @@ async def test_nuclei_safety_validation():
     """Test that private IPs are blocked."""
     scanner = NucleiScanner()
 
-    result = await scanner.execute({
-        "target": "192.168.1.1",
-        "templates": "technologies"
-    })
+    result = await scanner.execute({"target": "192.168.1.1", "templates": "technologies"})
 
     assert not result.success
     assert "blocked" in result.error_message.lower() or "private" in result.error_message.lower()

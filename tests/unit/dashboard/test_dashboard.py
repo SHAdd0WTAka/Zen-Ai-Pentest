@@ -7,22 +7,24 @@ Tests the dashboard components including:
 - Metrics collection
 """
 
-import pytest
 import asyncio
 from datetime import datetime, timedelta
 
+import pytest
+
 # Import dashboard components
 try:
-    from dashboard import DashboardManager, DashboardEvent, EventType
+    from dashboard import DashboardEvent, DashboardManager, EventType
     from dashboard.events import EventStream
+    from dashboard.metrics import MetricPoint, MetricsCollector
     from dashboard.websocket import DashboardWebSocket, WebSocketConnection
-    from dashboard.metrics import MetricsCollector, MetricPoint
 except ImportError:
     import sys
+
     sys.path.insert(0, "../../..")
-    from dashboard import DashboardManager, DashboardEvent, EventType
+    from dashboard import DashboardEvent, DashboardManager, EventType
     from dashboard.events import EventStream
-    from dashboard.metrics import MetricsCollector, MetricPoint
+    from dashboard.metrics import MetricPoint, MetricsCollector
 
 
 class TestDashboardEvent:
@@ -30,11 +32,7 @@ class TestDashboardEvent:
 
     def test_event_creation(self):
         """Test event creation"""
-        event = DashboardEvent(
-            type=EventType.TASK_PROGRESS,
-            data={"task_id": "123", "progress": 50},
-            source="test"
-        )
+        event = DashboardEvent(type=EventType.TASK_PROGRESS, data={"task_id": "123", "progress": 50}, source="test")
 
         assert event.type == EventType.TASK_PROGRESS
         assert event.data["progress"] == 50
@@ -43,11 +41,7 @@ class TestDashboardEvent:
 
     def test_event_to_dict(self):
         """Test event serialization"""
-        event = DashboardEvent(
-            type=EventType.SYSTEM_METRICS,
-            data={"cpu": 50},
-            priority=2
-        )
+        event = DashboardEvent(type=EventType.SYSTEM_METRICS, data={"cpu": 50}, priority=2)
 
         data = event.to_dict()
 
@@ -58,11 +52,7 @@ class TestDashboardEvent:
 
     def test_task_progress_factory(self):
         """Test task progress event factory"""
-        event = DashboardEvent.task_progress(
-            task_id="123",
-            progress=75,
-            message="Almost done"
-        )
+        event = DashboardEvent.task_progress(task_id="123", progress=75, message="Almost done")
 
         assert event.type == EventType.TASK_PROGRESS
         assert event.data["task_id"] == "123"
@@ -71,11 +61,7 @@ class TestDashboardEvent:
 
     def test_security_alert_factory(self):
         """Test security alert factory"""
-        event = DashboardEvent.security_alert(
-            alert_type="sql_injection",
-            severity="high",
-            details={"target": "example.com"}
-        )
+        event = DashboardEvent.security_alert(alert_type="sql_injection", severity="high", details={"target": "example.com"})
 
         assert event.type == EventType.SECURITY_ALERT
         assert event.data["severity"] == "high"
@@ -87,28 +73,16 @@ class TestEventStream:
 
     def test_stream_filtering(self):
         """Test event filtering"""
-        stream = EventStream(
-            event_types=[EventType.TASK_PROGRESS],
-            min_priority=3
-        )
+        stream = EventStream(event_types=[EventType.TASK_PROGRESS], min_priority=3)
 
         # Matching event
-        event_match = DashboardEvent(
-            type=EventType.TASK_PROGRESS,
-            priority=4
-        )
+        event_match = DashboardEvent(type=EventType.TASK_PROGRESS, priority=4)
 
         # Non-matching: wrong type
-        event_wrong_type = DashboardEvent(
-            type=EventType.SYSTEM_METRICS,
-            priority=4
-        )
+        event_wrong_type = DashboardEvent(type=EventType.SYSTEM_METRICS, priority=4)
 
         # Non-matching: priority too low
-        event_low_priority = DashboardEvent(
-            type=EventType.TASK_PROGRESS,
-            priority=1
-        )
+        event_low_priority = DashboardEvent(type=EventType.TASK_PROGRESS, priority=1)
 
         assert stream.matches(event_match) is True
         assert stream.matches(event_wrong_type) is False
@@ -120,10 +94,7 @@ class TestEventStream:
 
         # Add events
         for i in range(5):
-            event = DashboardEvent(
-                type=EventType.TASK_PROGRESS,
-                data={"index": i}
-            )
+            event = DashboardEvent(type=EventType.TASK_PROGRESS, data={"index": i})
             stream.add(event)
 
         # Buffer should only keep last 3
@@ -140,11 +111,7 @@ class TestDashboardManager:
         """Create test dashboard"""
         from dashboard import DashboardConfig
 
-        config = DashboardConfig(
-            websocket_enabled=False,  # Skip WebSocket for tests
-            metrics_enabled=True,
-            metrics_interval=1
-        )
+        config = DashboardConfig(websocket_enabled=False, metrics_enabled=True, metrics_interval=1)  # Skip WebSocket for tests
 
         db = DashboardManager(config)
         await db.start()
@@ -158,10 +125,7 @@ class TestDashboardManager:
         """Test dashboard lifecycle"""
         from dashboard import DashboardConfig
 
-        config = DashboardConfig(
-            websocket_enabled=False,
-            metrics_enabled=False
-        )
+        config = DashboardConfig(websocket_enabled=False, metrics_enabled=False)
 
         db = DashboardManager(config)
 
@@ -176,13 +140,10 @@ class TestDashboardManager:
     @pytest.mark.asyncio
     async def test_broadcast(self, dashboard):
         """Test event broadcasting"""
-        event = DashboardEvent(
-            type=EventType.NOTIFICATION,
-            data={"message": "Test"}
-        )
+        event = DashboardEvent(type=EventType.NOTIFICATION, data={"message": "Test"})
 
         # Should work even without WebSocket
-        count = await dashboard.broadcast(event)
+        await dashboard.broadcast(event)
 
         # Event should be buffered
         assert len(dashboard._event_buffer) > 0
@@ -190,15 +151,10 @@ class TestDashboardManager:
     @pytest.mark.asyncio
     async def test_broadcast_task_progress(self, dashboard):
         """Test task progress broadcast"""
-        count = await dashboard.broadcast_task_progress(
-            task_id="test-123",
-            progress=50,
-            message="Halfway there"
-        )
+        await dashboard.broadcast_task_progress(task_id="test-123", progress=50, message="Halfway there")
 
         # Check event was buffered
-        events = [e for e in dashboard._event_buffer
-                  if e.type == EventType.TASK_PROGRESS]
+        events = [e for e in dashboard._event_buffer if e.type == EventType.TASK_PROGRESS]
         assert len(events) > 0
 
     @pytest.mark.asyncio
@@ -239,11 +195,7 @@ class TestMetricsCollector:
 
     def test_metric_point(self):
         """Test MetricPoint"""
-        point = MetricPoint(
-            timestamp=datetime.utcnow(),
-            value=42.5,
-            labels={"host": "localhost"}
-        )
+        point = MetricPoint(timestamp=datetime.utcnow(), value=42.5, labels={"host": "localhost"})
 
         assert point.value == 42.5
         assert point.labels["host"] == "localhost"

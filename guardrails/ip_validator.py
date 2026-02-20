@@ -8,7 +8,7 @@ Blocks private networks, loopback, and other sensitive ranges.
 
 import ipaddress
 from dataclasses import dataclass
-from typing import List, Optional, Set, Union
+from typing import List, Optional, Set
 
 
 @dataclass

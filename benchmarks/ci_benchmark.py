@@ -9,15 +9,13 @@ import asyncio
 import json
 import logging
 import sys
+import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
-
 from enum import Enum
 from pathlib import Path
-from typing import Dict, List, Optional, Any, Tuple
-import xml.etree.ElementTree as ET
+from typing import Any, Dict, List, Optional, Tuple
 
-from .benchmark_engine import BenchmarkEngine, BenchmarkConfig, BenchmarkReport, BenchmarkStatus
-
+from .benchmark_engine import BenchmarkConfig, BenchmarkEngine, BenchmarkReport, BenchmarkStatus
 from .scenarios import ALL_SCENARIOS
 
 logger = logging.getLogger(__name__)

@@ -2,8 +2,9 @@
 Nuclei Integration - Stub for testing
 Full implementation needed for production
 """
-from typing import Dict, Any, List, Optional
+
 import logging
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -17,12 +18,7 @@ class NucleiTool:
 
     async def scan(self, target: str, **kwargs) -> Dict[str, Any]:
         """Run nuclei scan - stub implementation"""
-        return {
-            "tool": "nuclei",
-            "target": target,
-            "findings": [],
-            "status": "stub"
-        }
+        return {"tool": "nuclei", "target": target, "findings": [], "status": "stub"}
 
     async def scan_with_templates(self, target: str, templates: List[str]) -> Dict[str, Any]:
         """Scan with specific templates - stub implementation"""

@@ -5,30 +5,30 @@ Implementiert Reasoning-Acting-Observing-Reflecting Pattern mit LangGraph
 Phase 1: Echter agentischer Loop (2026 Roadmap)
 """
 
-from typing import List, TypedDict, Annotated, Literal
-from dataclasses import dataclass
 import json
 import logging
+from dataclasses import dataclass
+from typing import Annotated, List, Literal, TypedDict
 
-from langchain_core.tools import tool, BaseTool
-from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, ToolMessage, SystemMessage
-from langgraph.graph import StateGraph, START, END, add_messages
+from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage, ToolMessage
+from langchain_core.tools import BaseTool, tool
 from langgraph.checkpoint.memory import MemorySaver
+from langgraph.graph import END, START, StateGraph, add_messages
 
 # Zen-AI-Pentest Imports
 try:
     from ..core.llm_backend import LLMBackend
+    from ..database.cve_database import CVEDatabase
+    from ..tools.ffuf_integration import FfufTool
     from ..tools.nmap_integration import NmapTool
     from ..tools.nuclei_integration import NucleiTool
-    from ..tools.ffuf_integration import FfufTool
-    from ..database.cve_database import CVEDatabase
 except ImportError:
     # Fallback für direkte Ausführung
     from core.llm_backend import LLMBackend
+    from database.cve_database import CVEDatabase
+    from tools.ffuf_integration import FfufTool
     from tools.nmap_integration import NmapTool
     from tools.nuclei_integration import NucleiTool
-    from tools.ffuf_integration import FfufTool
-    from database.cve_database import CVEDatabase
 
 
 logger = logging.getLogger(__name__)

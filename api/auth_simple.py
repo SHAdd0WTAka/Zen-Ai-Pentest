@@ -1,13 +1,15 @@
 """
 Einfache JWT Authentication für Zen-AI Pentest API
 """
+
 import os
-import jwt
 from datetime import datetime, timedelta
-from fastapi import HTTPException, Depends, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from typing import Dict, Optional
+
+import jwt
+from fastapi import Depends, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from passlib.context import CryptContext
-from typing import Optional, Dict
 
 # Konfiguration
 SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-change-in-production")
@@ -22,12 +24,7 @@ security = HTTPBearer(auto_error=False)
 
 # In-memory user store (Production: Datenbank nutzen!)
 # Format: {username: {"password": hashed_password, "role": "admin|user"}}
-USERS_DB = {
-    "admin": {
-        "password": pwd_context.hash("admin123"),  # Ändern in Production!
-        "role": "admin"
-    }
-}
+USERS_DB = {"admin": {"password": pwd_context.hash("admin123"), "role": "admin"}}  # Ändern in Production!
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -103,10 +100,7 @@ def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)) 
 def require_admin(user: Dict = Depends(verify_token)) -> Dict:
     """Prüft ob User Admin-Rechte hat"""
     if user.get("role") != "admin":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Admin privileges required"
-        )
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin privileges required")
     return user
 
 
@@ -116,10 +110,7 @@ def create_user(username: str, password: str, role: str = "user") -> bool:
     if username in USERS_DB:
         return False
 
-    USERS_DB[username] = {
-        "password": get_password_hash(password),
-        "role": role
-    }
+    USERS_DB[username] = {"password": get_password_hash(password), "role": role}
     return True
 
 

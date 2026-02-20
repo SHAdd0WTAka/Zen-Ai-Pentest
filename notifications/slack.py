@@ -2,11 +2,12 @@
 Slack Integration für Zen-AI-Pentest
 """
 
-import requests
 import logging
-from typing import Dict
 from datetime import datetime
+from typing import Dict
 from urllib.parse import urlparse
+
+import requests
 
 logger = logging.getLogger(__name__)
 

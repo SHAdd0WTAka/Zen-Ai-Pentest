@@ -4,15 +4,17 @@ Unit Tests für utils/helpers.py
 Tests helper functions without file system dependencies.
 """
 
-import pytest
 import json
 import os
 import tempfile
+
+import pytest
+
 from utils.helpers import (
     load_config,
+    load_session,
     save_config,
     save_session,
-    load_session,
     validate_target,
 )
 
@@ -24,12 +26,9 @@ class TestLoadConfig:
 
     def test_load_existing_config(self):
         """Test loading existing config file"""
-        test_config = {
-            "backends": {"openrouter_api_key": "test_key"},
-            "custom_key": "custom_value"
-        }
+        test_config = {"backends": {"openrouter_api_key": "test_key"}, "custom_key": "custom_value"}
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
             json.dump(test_config, f)
             temp_path = f.name
 
@@ -54,7 +53,7 @@ class TestLoadConfig:
 
     def test_load_invalid_json(self):
         """Test loading invalid JSON"""
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
             f.write("invalid json")
             temp_path = f.name
 
@@ -67,12 +66,9 @@ class TestLoadConfig:
 
     def test_config_merge_deep(self):
         """Test deep merging of nested config"""
-        test_config = {
-            "backends": {"openrouter_api_key": "test"},
-            "rate_limits": {"requests_per_minute": 20}
-        }
+        test_config = {"backends": {"openrouter_api_key": "test"}, "rate_limits": {"requests_per_minute": 20}}
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
             json.dump(test_config, f)
             temp_path = f.name
 
@@ -95,14 +91,14 @@ class TestSaveConfig:
         """Test saving config to file"""
         test_config = {"key": "value", "nested": {"key": "value"}}
 
-        with tempfile.NamedTemporaryFile(suffix='.json', delete=False) as f:
+        with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as f:
             temp_path = f.name
 
         try:
             save_config(test_config, temp_path)
 
             # Verify file was written
-            with open(temp_path, 'r') as f:
+            with open(temp_path, "r") as f:
                 loaded = json.load(f)
                 assert loaded == test_config
         finally:
@@ -135,7 +131,7 @@ class TestSessionManagement:
         with tempfile.TemporaryDirectory() as tmpdir:
             # Create invalid JSON file
             filepath = os.path.join(tmpdir, "invalid_session.json")
-            with open(filepath, 'w') as f:
+            with open(filepath, "w") as f:
                 f.write("invalid json")
 
             result = load_session("invalid", tmpdir)

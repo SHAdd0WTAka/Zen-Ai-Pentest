@@ -8,7 +8,6 @@ Author: SHAdd0WTAka
 import asyncio
 import sys
 
-
 from backends.duckduckgo import DuckDuckGoBackend
 from core.orchestrator import ZenOrchestrator
 from utils.helpers import colorize

@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class HTTPXHost:
     """HTTPX host result"""
+
     url: str
     status_code: int = 0
     title: str = ""
@@ -31,6 +32,7 @@ class HTTPXHost:
 @dataclass
 class HTTPXResult:
     """HTTPX scan result"""
+
     success: bool
     hosts: List[HTTPXHost] = field(default_factory=list)
     count: int = 0
@@ -45,12 +47,7 @@ class HTTPXIntegration:
         self.timeout = timeout
         self.threads = threads
 
-    async def probe(
-        self,
-        targets: List[str],
-        probe_all_ips: bool = False,
-        follow_redirects: bool = True
-    ) -> HTTPXResult:
+    async def probe(self, targets: List[str], probe_all_ips: bool = False, follow_redirects: bool = True) -> HTTPXResult:
         """
         Probe targets for HTTP/HTTPS
 
@@ -68,17 +65,20 @@ class HTTPXIntegration:
         start_time = time.time()
 
         # Write targets to temp file
-        with NamedTemporaryFile(mode='w', suffix='.txt', delete=False) as f:
+        with NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as f:
             for target in targets:
-                f.write(target + '\n')
+                f.write(target + "\n")
             temp_file = f.name
 
         cmd = [
             "httpx",
-            "-l", temp_file,
+            "-l",
+            temp_file,
             "-json",
-            "-timeout", str(self.timeout),
-            "-threads", str(self.threads),
+            "-timeout",
+            str(self.timeout),
+            "-threads",
+            str(self.threads),
         ]
 
         if probe_all_ips:
@@ -90,20 +90,15 @@ class HTTPXIntegration:
 
         try:
             process = await asyncio.create_subprocess_exec(
-                *cmd,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE
+                *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
             )
 
-            stdout, stderr = await asyncio.wait_for(
-                process.communicate(),
-                timeout=self.timeout * 2
-            )
+            stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=self.timeout * 2)
 
             hosts = []
 
             # Parse JSON output
-            for line in stdout.decode().strip().split('\n'):
+            for line in stdout.decode().strip().split("\n"):
                 if not line:
                     continue
                 try:
@@ -119,7 +114,7 @@ class HTTPXIntegration:
                         technologies=data.get("tech", []),
                         ip=data.get("host", ""),
                         port=data.get("port", 0),
-                        scheme=data.get("scheme", "")
+                        scheme=data.get("scheme", ""),
                     )
                     hosts.append(host)
                 except json.JSONDecodeError:
@@ -129,14 +124,10 @@ class HTTPXIntegration:
 
             # Cleanup temp file
             import os
+
             os.unlink(temp_file)
 
-            return HTTPXResult(
-                success=True,
-                hosts=hosts,
-                count=len(hosts),
-                duration=duration
-            )
+            return HTTPXResult(success=True, hosts=hosts, count=len(hosts), duration=duration)
 
         except asyncio.TimeoutError:
             logger.error("HTTPX probe timed out")
@@ -168,10 +159,11 @@ def probe_single_sync(target: str) -> Optional[HTTPXHost]:
 
 if __name__ == "__main__":
     import logging
+
     logging.basicConfig(level=logging.INFO)
 
     print("Testing HTTPX Integration...")
-    print("="*60)
+    print("=" * 60)
 
     result = probe_sync(["scanme.nmap.org", "http://scanme.nmap.org"])
 

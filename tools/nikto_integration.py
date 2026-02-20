@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class NiktoFinding:
     """Nikto vulnerability finding"""
+
     id: str
     method: str
     path: str
@@ -27,6 +28,7 @@ class NiktoFinding:
 @dataclass
 class NiktoResult:
     """Nikto scan result"""
+
     success: bool
     target: str = ""
     findings: List[NiktoFinding] = field(default_factory=list)
@@ -42,11 +44,7 @@ class NiktoIntegration:
         self.timeout = timeout
 
     async def scan(
-        self,
-        target: str,
-        port: Optional[int] = None,
-        ssl: bool = False,
-        max_time: Optional[int] = None
+        self, target: str, port: Optional[int] = None, ssl: bool = False, max_time: Optional[int] = None
     ) -> NiktoResult:
         """
         Scan a target with Nikto
@@ -61,6 +59,7 @@ class NiktoIntegration:
             NiktoResult with vulnerabilities
         """
         import time
+
         start_time = time.time()
 
         cmd = ["nikto", "-h", target, "-Format", "json"]
@@ -76,15 +75,10 @@ class NiktoIntegration:
 
         try:
             process = await asyncio.create_subprocess_exec(
-                *cmd,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE
+                *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
             )
 
-            stdout, stderr = await asyncio.wait_for(
-                process.communicate(),
-                timeout=self.timeout
-            )
+            stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=self.timeout)
 
             output = stdout.decode()
 
@@ -98,18 +92,10 @@ class NiktoIntegration:
 
         except asyncio.TimeoutError:
             logger.error("Nikto scan timed out")
-            return NiktoResult(
-                success=False,
-                target=target,
-                error="Scan timeout"
-            )
+            return NiktoResult(success=False, target=target, error="Scan timeout")
         except Exception as e:
             logger.error(f"Nikto error: {e}")
-            return NiktoResult(
-                success=False,
-                target=target,
-                error=str(e)
-            )
+            return NiktoResult(success=False, target=target, error=str(e))
 
     def _parse_json_output(self, data: dict, target: str, duration: float) -> NiktoResult:
         """Parse Nikto JSON output"""
@@ -123,7 +109,7 @@ class NiktoIntegration:
                 path=vuln.get("url", ""),
                 description=vuln.get("msg", ""),
                 severity=self._classify_severity(vuln.get("id", ""), vuln.get("msg", "")),
-                references=vuln.get("references", [])
+                references=vuln.get("references", []),
             )
             findings.append(finding)
 
@@ -131,12 +117,8 @@ class NiktoIntegration:
             success=True,
             target=target,
             findings=findings,
-            scan_info={
-                "banner": data.get("banner", ""),
-                "ip": data.get("ip", ""),
-                "port": data.get("port", 0)
-            },
-            duration=duration
+            scan_info={"banner": data.get("banner", ""), "ip": data.get("ip", ""), "port": data.get("port", 0)},
+            duration=duration,
         )
 
     def _parse_text_output(self, output: str, target: str, duration: float) -> NiktoResult:
@@ -144,7 +126,7 @@ class NiktoIntegration:
         findings = []
 
         # Pattern: + OSVDB-XXXX: Description
-        pattern = r'\+\s*(OSVDB-\d+|Nikto-|CVE-[^:]+):\s*(.+)'
+        pattern = r"\+\s*(OSVDB-\d+|Nikto-|CVE-[^:]+):\s*(.+)"
         matches = re.findall(pattern, output)
 
         for match in matches:
@@ -156,7 +138,7 @@ class NiktoIntegration:
                 method="GET",
                 path="/",
                 description=description,
-                severity=self._classify_severity(finding_id, description)
+                severity=self._classify_severity(finding_id, description),
             )
             findings.append(finding)
 
@@ -165,7 +147,7 @@ class NiktoIntegration:
             target=target,
             findings=findings,
             duration=duration,
-            raw_output=output[:1000] if len(output) > 1000 else output
+            raw_output=output[:1000] if len(output) > 1000 else output,
         )
 
     def _classify_severity(self, finding_id: str, description: str) -> str:
@@ -195,10 +177,11 @@ def scan_sync(target: str, ssl: bool = False) -> NiktoResult:
 
 if __name__ == "__main__":
     import logging
+
     logging.basicConfig(level=logging.INFO)
 
     print("Testing Nikto Integration...")
-    print("="*60)
+    print("=" * 60)
 
     result = scan_sync("scanme.nmap.org")
 

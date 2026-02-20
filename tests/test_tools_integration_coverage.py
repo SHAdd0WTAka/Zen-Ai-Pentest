@@ -3,7 +3,7 @@ Tests for various tool integrations - Coverage Boost
 """
 
 import asyncio
-from unittest.mock import AsyncMock, MagicMock, Mock, patch
+from unittest.mock import AsyncMock, Mock
 
 import pytest
 
@@ -351,7 +351,7 @@ class TestAsyncToolOperations:
 
         # Should handle timeout gracefully
         try:
-            result = await asyncio.wait_for(caller.call_async("slow_tool", {}), timeout=0.1)
+            await asyncio.wait_for(caller.call_async("slow_tool", {}), timeout=0.1)
         except asyncio.TimeoutError:
             # Expected
             pass

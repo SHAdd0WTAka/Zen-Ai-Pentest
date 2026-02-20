@@ -6,10 +6,9 @@ Integration des neuen Auth-Systems in die bestehende API.
 Verbindet auth/ Modul mit api/main.py
 """
 
-import os
 from typing import Optional
 
-from fastapi import Depends, HTTPException, Request, status
+from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 # Import from new auth module
@@ -109,7 +108,7 @@ async def require_role(role: Role):
         if not AUTH_AVAILABLE:
             return user
 
-        rbac = get_rbac_manager()
+        get_rbac_manager()
         user_roles = [Role(r) for r in user.get("roles", [])]
 
         if role not in user_roles:
@@ -225,7 +224,7 @@ class AuthIntegration:
         @app.post("/auth/logout", tags=["Authentication"])
         async def logout(user: dict = Depends(get_current_user)):
             """Logout endpoint - blacklist token"""
-            jwt_handler = get_jwt_handler()
+            get_jwt_handler()
 
             # TODO: Get JTI from current token and blacklist it
             # jwt_handler.blacklist_token(jti)

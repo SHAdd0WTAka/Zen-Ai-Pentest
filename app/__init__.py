@@ -10,8 +10,8 @@ Usage:
     app.run()
 """
 
-from .factory import create_app, ApplicationFactory
 from .container import DependencyContainer
+from .factory import ApplicationFactory, create_app
 from .lifecycle import ApplicationLifecycle
 
 __all__ = [

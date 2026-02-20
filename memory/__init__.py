@@ -7,8 +7,8 @@ for intelligent agent interactions.
 
 from .base import BaseMemory, MemoryType
 from .conversation import ConversationMemory
-from .storage import SQLiteStorage, RedisStorage
 from .manager import MemoryManager
+from .storage import RedisStorage, SQLiteStorage
 
 __all__ = [
     "BaseMemory",
