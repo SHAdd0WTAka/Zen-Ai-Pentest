@@ -32,6 +32,12 @@ ENV/
 *.swo
 *~
 
+# Node.js (frontend dependencies)
+**/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
 # VS Code (allow shared settings, ignore local)
 .vscode/settings.json.local
 .vscode/launch.json.local
