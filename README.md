@@ -7,7 +7,7 @@
 [![codecov](https://codecov.io/gh/SHAdd0WTAka/Zen-Ai-Pentest/branch/main/graph/badge.svg)](https://codecov.io/gh/SHAdd0WTAka/Zen-Ai-Pentest)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Security Scan](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/workflows/Security%20Scan/badge.svg)](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/actions)
+[![Security Scan](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/workflows/Security%20Scan%20(Improved)/badge.svg)](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/actions)
 
 [![Version](https://img.shields.io/badge/Version-3.0.0-orange)](https://github.com/SHAdd0WTAka/zen-ai-pentest/releases)
 [![PyPI](https://img.shields.io/pypi/v/zen-ai-pentest?color=green)](https://pypi.org/project/zen-ai-pentest/)
