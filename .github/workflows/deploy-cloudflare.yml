@@ -28,13 +28,26 @@ jobs:
 
       - name: Install frontend dependencies
         working-directory: web_ui/frontend
-        run: npm ci
+        run: |
+          npm ci
+          npm list typescript
+
+      - name: Check TypeScript configuration
+        working-directory: web_ui/frontend
+        run: |
+          echo "=== tsconfig.json ==="
+          cat tsconfig.json
+          echo "=== tsconfig.app.json ==="
+          cat tsconfig.app.json
+          echo "=== src/lib directory ==="
+          ls -la src/lib/
 
       - name: Build frontend
         working-directory: web_ui/frontend
         run: npm run build
         env:
           VITE_API_URL: ${{ secrets.CF_API_URL }}
+          CI: false
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/pages-action@v1
