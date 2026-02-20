@@ -173,6 +173,7 @@ jobs:
   deploy-summary:
     needs: [pre-deploy-check, deploy-staging, deploy-production]
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     if: always()
     steps:
       - name: Generate Deploy Summary

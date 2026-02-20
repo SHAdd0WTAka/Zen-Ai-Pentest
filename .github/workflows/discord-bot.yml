@@ -37,7 +37,7 @@ jobs:
 
       - name: Send Discord Notification
         if: steps.check-secret.outputs.has_secret == 'true'
-        uses: Ilshidur/action-discord@0.3.2
+        uses: Ilshidur/action-discord@master
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
         with:

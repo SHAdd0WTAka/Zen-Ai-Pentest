@@ -1,116 +1,275 @@
 # Contributing to Zen-AI-Pentest
 
-Thank you for your interest in contributing to Zen-AI-Pentest! This document explains how you can contribute to the project.
+> **Thank you for your interest in contributing!**
 
-## 🚀 How to Contribute
+We welcome contributions from the community. This document provides detailed guidelines for contributing to Zen-AI-Pentest.
 
-### Reporting Bugs
+---
 
-If you find a bug, please report it by opening an issue on GitHub:
+## Table of Contents
 
-1. Go to [Issues](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/issues)
-2. Click "New Issue"
-3. Use the bug report template
-4. Provide as much detail as possible
+- [Code of Conduct](#code-of-conduct)
+- [Getting Started](#getting-started)
+- [Development Workflow](#development-workflow)
+- [Pull Request Checklist](#pull-request-checklist)
+- [Code Review Process](#code-review-process)
+- [Testing Requirements](#testing-requirements)
+- [Code Style Guide](#code-style-guide)
+- [Commit Message Convention](#commit-message-convention)
+- [Reporting Bugs](#reporting-bugs)
+- [Suggesting Features](#suggesting-features)
+- [Security Issues](#security-issues)
+- [Recognition](#recognition)
 
-Include:
-- Clear description of the bug
-- Steps to reproduce
-- Expected vs actual behavior
-- Environment details (OS, Python version)
-- Error messages or screenshots
+---
 
-### Suggesting Features
+## Code of Conduct
 
-We welcome feature suggestions! To suggest a feature:
+This project adheres to a [Code of Conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code.
 
-1. Open a new issue
-2. Label it as "enhancement"
-3. Describe the feature and its use case
-4. Explain why it would be useful
+**Key principles:**
+- Be respectful and inclusive
+- Welcome newcomers
+- Focus on constructive feedback
+- Respect different viewpoints
 
-### Pull Requests
+---
 
-To submit code changes:
+## Getting Started
 
-1. **Fork** the repository
-2. **Clone** your fork: `git clone https://github.com/YOUR_USERNAME/Zen-Ai-Pentest.git`
-3. **Create** a feature branch: `git checkout -b feature/amazing-feature`
-4. **Make** your changes
-5. **Test** your changes: `pytest tests/ -v`
-6. **Commit** your changes: `git commit -m 'feat: Add amazing feature'`
-7. **Push** to the branch: `git push origin feature/amazing-feature`
-8. **Open** a Pull Request against the `main` branch
+### Prerequisites
+
+- Python 3.11+
+- Docker (optional, but recommended)
+- Git
+- A GitHub account
 
 ### Development Setup
 
 ```bash
-# Clone the repository
-git clone https://github.com/SHAdd0WTAka/Zen-Ai-Pentest.git
-cd Zen-Ai-Pentest
+# 1. Fork the repository on GitHub
+# Click the "Fork" button on https://github.com/SHAdd0WTAka/zen-ai-pentest
 
-# Create virtual environment
+# 2. Clone your fork
+git clone https://github.com/YOUR_USERNAME/zen-ai-pentest.git
+cd zen-ai-pentest
+
+# 3. Add upstream remote
+git remote add upstream https://github.com/SHAdd0WTAka/zen-ai-pentest.git
+
+# 4. Create virtual environment
 python -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
 
-# Install dependencies
+# 5. Install dependencies
 pip install -r requirements.txt
+pip install -r requirements-dev.txt
 
-# Run tests
-pytest tests/ -v
+# 6. Copy and configure environment
+cp .env.example .env
+# Edit .env with your settings
+
+# 7. Run tests to verify setup
+pytest tests/unit/ -v
 ```
 
-See [docs/BUILD.md](docs/BUILD.md) for detailed build instructions.
+See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for detailed development setup.
 
-### Code Standards
+---
 
-We use the following tools for code quality:
+## Development Workflow
 
-- **Ruff**: Linting and formatting (`ruff check .`, `ruff format .`)
-- **Black**: Code formatting (line length 127)
-- **isort**: Import sorting
-- **mypy**: Type checking (optional)
-- **Bandit**: Security scanning
+### 1. Create a Branch
 
-All PRs must:
-- Follow PEP 8 style guidelines
-- Pass all automated tests
-- Include tests for new features
-- Update documentation as needed
-- Pass security scanning (Bandit)
+```bash
+# Sync with upstream
+git fetch upstream
+git checkout main
+git merge upstream/main
 
-### Testing
+# Create feature branch
+git checkout -b feature/your-feature-name
 
-All contributions must include appropriate tests. We require:
-- **Minimum 80% code coverage** for new features
-- **100% coverage** for critical security components
-- All tests must pass before PR can be merged
+# Branch naming conventions:
+# - feature/description    - New features
+# - fix/description        - Bug fixes
+# - docs/description       - Documentation
+# - refactor/description   - Code refactoring
+# - test/description       - Test additions/updates
+# - security/description   - Security fixes
+```
 
-See [docs/TESTING.md](docs/TESTING.md) for detailed testing information.
+### 2. Make Changes
 
-#### Running Tests
+- Write code following our style guide
+- Add/update tests as needed
+- Update documentation
+- Keep commits focused and atomic
+
+### 3. Test Your Changes
 
 ```bash
 # Run all tests
-pytest tests/ -v
+pytest
 
-# Run with coverage report
-pytest tests/ -v --cov=. --cov-report=html
+# Run with coverage
+pytest --cov=. --cov-report=term-missing
 
-# Unit tests only
-pytest tests/unit/ -v
+# Run specific test file
+pytest tests/unit/test_your_module.py -v
 
-# Exclude slow tests
-pytest -m "not slow"
+# Run linting
+ruff check .
+black --check .
 
-# Specific test file
-pytest tests/test_react_agent.py -v
-
-# Integration tests
-pytest tests/integration/ -v
+# Run security scan
+bandit -r . -ll
 ```
 
-#### Coverage Requirements
+### 4. Commit Changes
+
+```bash
+# Stage changes
+git add .
+
+# Commit with conventional message
+git commit -m "feat: add new vulnerability scanner
+
+- Implement scanner for CVE-2024-XXXX
+- Add safety controls for private IP blocking
+- Include comprehensive tests
+
+Closes #123"
+```
+
+### 5. Push and Create PR
+
+```bash
+# Push to your fork
+git push origin feature/your-feature-name
+
+# Create Pull Request via GitHub
+# https://github.com/SHAdd0WTAka/zen-ai-pentest/pulls
+```
+
+---
+
+## Pull Request Checklist
+
+Before submitting your PR, ensure:
+
+### Code Quality
+- [ ] Code follows the project's style guide
+- [ ] All tests pass locally
+- [ ] New code has test coverage (minimum 80%)
+- [ ] Security components have 100% coverage
+- [ ] No linting errors (`ruff check .`)
+- [ ] Code is formatted (`black .`)
+- [ ] Type hints are used where appropriate
+- [ ] No new security vulnerabilities (`bandit -r .`)
+
+### Documentation
+- [ ] Code includes docstrings
+- [ ] README is updated if needed
+- [ ] API documentation is updated
+- [ ] CHANGELOG.md is updated
+- [ ] Breaking changes are documented
+
+### Functionality
+- [ ] Feature works as described
+- [ ] Edge cases are handled
+- [ ] Error messages are helpful
+- [ ] Backwards compatibility is maintained (or breaking changes are justified)
+- [ ] Performance is acceptable
+
+### PR Description
+- [ ] Clear title following conventional commits
+- [ ] Detailed description of changes
+- [ ] Issue references (e.g., "Closes #123")
+- [ ] Screenshots/GIFs for UI changes
+- [ ] Testing instructions
+
+### Example PR Description
+
+```markdown
+## Description
+Add support for custom Nuclei templates in scan configuration.
+
+Fixes #456
+
+## Changes
+- Add `custom_templates` field to ScanConfig
+- Update NucleiIntegration to load custom templates
+- Add validation for template file paths
+- Update API documentation
+
+## Testing
+1. Create a custom template file
+2. Submit scan with `custom_templates` parameter
+3. Verify template is used during scan
+
+## Checklist
+- [x] Tests added for new functionality
+- [x] Documentation updated
+- [x] All tests pass
+- [x] Code follows style guide
+
+## Screenshots
+[If applicable]
+```
+
+---
+
+## Code Review Process
+
+### For Contributors
+
+1. **Submit PR**: Create a pull request with detailed description
+2. **Automated Checks**: CI will run tests and checks automatically
+3. **Reviewer Assignment**: Maintainers will be assigned automatically
+4. **Address Feedback**: Make requested changes
+5. **Approval**: At least one maintainer approval required
+6. **Merge**: Maintainer will merge when ready
+
+### For Reviewers
+
+#### Review Checklist
+- [ ] Code is correct and efficient
+- [ ] Tests cover new functionality
+- [ ] Security implications considered
+- [ ] Documentation is clear
+- [ ] No breaking changes without justification
+
+#### Review Guidelines
+
+**Be Constructive:**
+```
+✅ "Consider using a dictionary here for O(1) lookup instead of list"
+❌ "This is inefficient"
+```
+
+**Explain Why:**
+```
+✅ "This pattern could lead to SQL injection. Consider using parameterized queries instead."
+❌ "Security issue"
+```
+
+**Suggest Improvements:**
+```
+✅ "What do you think about extracting this into a separate function?"
+❌ "Refactor this"
+```
+
+#### Review Timeline
+- Initial review: Within 48 hours
+- Follow-up reviews: Within 24 hours
+- Emergency fixes: Within 4 hours
+
+---
+
+## Testing Requirements
+
+### Coverage Requirements
 
 | Component | Minimum Coverage |
 |-----------|------------------|
@@ -118,67 +277,303 @@ pytest tests/integration/ -v
 | API endpoints | 80% |
 | Tool integrations | 75% |
 | Security/guardrails | 100% |
+| Database models | 80% |
+| Risk engine | 90% |
 
-View coverage reports:
+### Running Tests
+
 ```bash
-# HTML report
-pytest --cov=. --cov-report=html
-open htmlcov/index.html
+# All tests
+pytest
 
-# Terminal report
-pytest --cov=. --cov-report=term-missing
+# With coverage report
+pytest --cov=. --cov-report=html
+
+# Unit tests only
+pytest tests/unit/ -v
+
+# Integration tests
+pytest tests/integration/ -v
+
+# Specific test
+pytest tests/unit/test_react_agent.py::TestReActAgent::test_reasoning -v
+
+# Exclude slow tests
+pytest -m "not slow"
 ```
 
-## 🛡️ Security
+### Writing Tests
 
-For security issues, please **DO NOT** open a public issue. Instead:
+See [docs/TESTING.md](docs/TESTING.md) for comprehensive testing guide.
 
-- Use [GitHub Security Advisories](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/security/advisories/new)
+```python
+# Example test
+def test_feature():
+    """Test description."""
+    # Arrange
+    input_data = {"key": "value"}
+    
+    # Act
+    result = function_under_test(input_data)
+    
+    # Assert
+    assert result == expected_output
+```
+
+---
+
+## Code Style Guide
+
+### Python Style
+
+We use:
+- **Black**: Code formatting (line length: 127)
+- **Ruff**: Linting
+- **isort**: Import sorting
+- **mypy**: Type checking (optional)
+
+```python
+# Line length: 127 characters (not 79)
+
+# Imports: grouped and sorted
+import asyncio
+import json
+from pathlib import Path
+from typing import Dict, List, Optional
+
+# Third-party
+import httpx
+from fastapi import FastAPI
+
+# Local
+from tools.nmap_integration import NmapScanner
+
+
+# Class naming: PascalCase
+class MyClassName:
+    """Docstring with description.
+    
+    Attributes:
+        attr1: Description of attr1
+        attr2: Description of attr2
+    """
+    
+    # Constants: UPPER_CASE
+    MAX_RETRIES = 3
+    
+    def __init__(self, param1: str, param2: int = 10):
+        """Initialize the class.
+        
+        Args:
+            param1: First parameter
+            param2: Second parameter (default: 10)
+        """
+        self.param1 = param1
+        self._param2 = param2  # Private
+```
+
+### Pre-commit Hooks
+
+```bash
+# Install pre-commit
+pip install pre-commit
+
+# Install hooks
+pre-commit install
+
+# Run manually on all files
+pre-commit run --all-files
+```
+
+---
+
+## Commit Message Convention
+
+We follow [Conventional Commits](https://www.conventionalcommits.org/):
+
+### Format
+
+```
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
+```
+
+### Types
+
+| Type | Description |
+|------|-------------|
+| `feat` | New feature |
+| `fix` | Bug fix |
+| `docs` | Documentation changes |
+| `test` | Adding or updating tests |
+| `refactor` | Code refactoring |
+| `perf` | Performance improvements |
+| `security` | Security improvements |
+| `chore` | Maintenance tasks |
+| `ci` | CI/CD changes |
+| `style` | Code style changes (formatting) |
+
+### Examples
+
+```bash
+# Feature
+feat(scans): add support for scheduled scans
+
+# Bug fix
+fix(nmap): handle timeout for large networks
+
+# Documentation
+docs(api): update authentication examples
+
+# Test
+test(guardrails): add tests for IP validation
+
+# Security
+security(auth): fix JWT token validation bypass
+```
+
+### Detailed Example
+
+```
+feat(orchestrator): implement task prioritization
+
+- Add priority queue for task scheduling
+- Implement priority inheritance for dependent tasks
+- Add API endpoints for priority management
+- Update documentation with examples
+
+Breaking Change: Task priority now required in API
+tasks must specify priority field
+
+Closes #123
+Relates to #456
+```
+
+---
+
+## Reporting Bugs
+
+### Before Reporting
+
+1. Search existing issues to avoid duplicates
+2. Check if issue is already fixed in latest version
+3. Try to isolate the problem
+
+### Bug Report Template
+
+```markdown
+**Description**
+Clear description of the bug
+
+**To Reproduce**
+1. Step 1
+2. Step 2
+3. Step 3
+
+**Expected Behavior**
+What should happen
+
+**Actual Behavior**
+What actually happens
+
+**Environment**
+- OS: [e.g., Ubuntu 22.04]
+- Python version: [e.g., 3.11.4]
+- Zen-AI-Pentest version: [e.g., 3.0.0]
+- Installation method: [e.g., Docker, pip]
+
+**Logs**
+```
+Paste relevant logs here
+```
+
+**Screenshots**
+If applicable
+
+**Additional Context**
+Any other relevant information
+```
+
+---
+
+## Suggesting Features
+
+### Feature Request Template
+
+```markdown
+**Is your feature request related to a problem?**
+A clear description of the problem
+
+**Describe the solution you'd like**
+What you want to happen
+
+**Describe alternatives you've considered**
+Other approaches you've thought about
+
+**Additional context**
+Mockups, examples, or use cases
+```
+
+---
+
+## Security Issues
+
+**DO NOT** report security vulnerabilities in public issues.
+
+Instead:
+- Use [GitHub Security Advisories](https://github.com/SHAdd0WTAka/zen-ai-pentest/security/advisories/new)
 - Or email: security@zen-ai-pentest.dev
+
+Include:
+- Description of vulnerability
+- Steps to reproduce
+- Potential impact
+- Suggested fix (if any)
+
+We will:
+1. Acknowledge receipt within 48 hours
+2. Investigate and verify
+3. Develop and test fix
+4. Coordinate disclosure
+5. Credit you (with permission)
 
 See [SECURITY.md](SECURITY.md) for details.
 
-## 📝 Commit Message Convention
+---
 
-We use [Conventional Commits](https://www.conventionalcommits.org/):
+## Recognition
 
-- `feat:` New feature
-- `fix:` Bug fix
-- `docs:` Documentation changes
-- `test:` Adding or updating tests
-- `refactor:` Code refactoring
-- `perf:` Performance improvements
-- `security:` Security improvements
-- `chore:` Maintenance tasks
+Contributors will be recognized in:
 
-Example:
-```
-feat: add nuclei integration
+- **README.md** - Contributors section
+- **Release notes** - Feature acknowledgments
+- **CHANGELOG.md** - Change attribution
 
-- Add Nuclei tool wrapper
-- Implement JSON output parsing
-- Add safety controls
+### Levels of Contribution
 
-Closes #123
-```
+| Level | Description | Recognition |
+|-------|-------------|-------------|
+| First-time | First PR merged | Mention in release notes |
+| Contributor | 3+ PRs merged | Listed in CONTRIBUTORS.md |
+| Regular | 10+ PRs merged | Listed in README.md |
+| Core | Significant features | Listed as core contributor |
 
-## 📋 Review Process
+---
 
-1. PRs require at least one maintainer review
-2. Automated checks must pass
-3. Security scanning must pass
-4. The PR description should reference related issues
+## Additional Resources
 
-## 🎉 Recognition
-
-Contributors will be recognized in our README and release notes!
-
-Thank you for helping make Zen-AI-Pentest better! 🦞
-
-## 📚 Additional Resources
-
-- [Code of Conduct](CODE_OF_CONDUCT.md)
-- [Security Policy](SECURITY.md)
-- [Build Instructions](docs/BUILD.md)
+- [Development Guide](docs/DEVELOPMENT.md)
 - [Testing Guide](docs/TESTING.md)
+- [API Guide](docs/API_GUIDE.md)
+- [Troubleshooting](docs/TROUBLESHOOTING.md)
 - [Project Governance](GOVERNANCE.md)
+
+---
+
+<p align="center">
+  <b>Thank you for contributing! 🚀</b><br>
+  <sub>Questions? Join our <a href="https://discord.gg/zJZUJwK9AC">Discord</a></sub>
+</p>

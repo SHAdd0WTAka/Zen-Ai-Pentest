@@ -432,6 +432,7 @@ jobs:
   validation-summary:
     name: PR Validation Summary
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     needs: [validate-title, validate-branch, file-checks, secrets-scan, dependency-review, auto-label]
     if: always()
     steps:

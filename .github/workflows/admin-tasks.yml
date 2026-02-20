@@ -1,4 +1,5 @@
 name: Admin Tasks - Branch Protection Bypass
+
 on:
   workflow_dispatch:
     inputs:
@@ -16,9 +17,19 @@ on:
         required: false
         default: ''
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  statuses: write
+  checks: read
+
 jobs:
   admin-task:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     environment: production  # Nutzt Environment Secrets mit Protection Rules
     
     steps:

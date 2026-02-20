@@ -1,0 +1,193 @@
+[
+  {
+    "category": "Import",
+    "name": "Cache Module",
+    "status": "passed",
+    "metrics": {
+      "duration_ms": 79.048799991142,
+      "iterations": 1,
+      "ops_per_second": 12.65041341692799,
+      "memory_delta_mb": 0
+    },
+    "error": null
+  },
+  {
+    "category": "Import",
+    "name": "Database Module",
+    "status": "passed",
+    "metrics": {
+      "duration_ms": 209.31369997560978,
+      "iterations": 1,
+      "ops_per_second": 4.777518146764998,
+      "memory_delta_mb": 0
+    },
+    "error": null
+  },
+  {
+    "category": "Import",
+    "name": "Orchestrator Module",
+    "status": "passed",
+    "metrics": {
+      "duration_ms": 146.03380003245547,
+      "iterations": 1,
+      "ops_per_second": 6.847729770626757,
+      "memory_delta_mb": 0
+    },
+    "error": null
+  },
+  {
+    "category": "Import",
+    "name": "API Main Module",
+    "status": "passed",
+    "metrics": {
+      "duration_ms": 1054.0036000311375,
+      "iterations": 1,
+      "ops_per_second": 0.9487633628295558,
+      "memory_delta_mb": 0
+    },
+    "error": null
+  },
+  {
+    "category": "Import",
+    "name": "ReAct Agent",
+    "status": "failed",
+    "metrics": null,
+    "error": "cannot import name 'NmapTool' from 'tools.nmap_integration' (C:\\Users\\Ataka\\zen-ai-pentest\\tools\\nmap_integration.py)"
+  },
+  {
+    "category": "Cache",
+    "name": "1000 Cache Writes",
+    "status": "passed",
+    "metrics": {
+      "duration_ms": 3.038999973796308,
+      "iterations": 1000,
+      "ops_per_second": 329055.61323543004,
+      "memory_delta_mb": 0
+    },
+    "error": null
+  },
+  {
+    "category": "Cache",
+    "name": "1000 Cache Reads",
+    "status": "passed",
+    "metrics": {
+      "duration_ms": 1.2091000098735094,
+      "iterations": 1000,
+      "ops_per_second": 827061.4439120016,
+      "memory_delta_mb": 0
+    },
+    "error": null
+  },
+  {
+    "category": "Database",
+    "name": "100 DB Inserts",
+    "status": "passed",
+    "metrics": {
+      "duration_ms": 1466.8074999935925,
+      "iterations": 100,
+      "ops_per_second": 68.17527180658459,
+      "memory_delta_mb": 0
+    },
+    "error": null
+  },
+  {
+    "category": "Database",
+    "name": "50 DB Reads",
+    "status": "passed",
+    "metrics": {
+      "duration_ms": 55.088099965360016,
+      "iterations": 50,
+      "ops_per_second": 907.6370401491525,
+      "memory_delta_mb": 0
+    },
+    "error": null
+  },
+  {
+    "category": "Database",
+    "name": "DB List Query (100)",
+    "status": "passed",
+    "metrics": {
+      "duration_ms": 5.608800041954964,
+      "iterations": 1,
+      "ops_per_second": 178.29125526312166,
+      "memory_delta_mb": 0,
+      "scans_returned": 100
+    },
+    "error": null
+  },
+  {
+    "category": "Tool Execution",
+    "name": "10 Sequential Tools",
+    "status": "passed",
+    "metrics": {
+      "duration_ms": 161.97399998782203,
+      "iterations": 10,
+      "ops_per_second": 61.73830368300991,
+      "memory_delta_mb": 0
+    },
+    "error": null
+  },
+  {
+    "category": "Tool Execution",
+    "name": "10 Parallel Tools",
+    "status": "passed",
+    "metrics": {
+      "duration_ms": 15.971000015269965,
+      "iterations": 10,
+      "ops_per_second": 626.1348688522286,
+      "memory_delta_mb": 0,
+      "speedup": 10.141756923984582
+    },
+    "error": null
+  },
+  {
+    "category": "Async/Await",
+    "name": "100 Sequential Async Tasks",
+    "status": "passed",
+    "metrics": {
+      "duration_ms": 1576.1979999952018,
+      "iterations": 100,
+      "ops_per_second": 63.44380591797757,
+      "memory_delta_mb": 0
+    },
+    "error": null
+  },
+  {
+    "category": "Async/Await",
+    "name": "100 Parallel Async Tasks",
+    "status": "passed",
+    "metrics": {
+      "duration_ms": 17.179900023620576,
+      "iterations": 100,
+      "ops_per_second": 5820.755642495614,
+      "memory_delta_mb": 0,
+      "speedup": 91.74663402162373
+    },
+    "error": null
+  },
+  {
+    "category": "Async/Await",
+    "name": "100 Tasks (10 concurrent)",
+    "status": "passed",
+    "metrics": {
+      "duration_ms": 157.29339997051284,
+      "iterations": 100,
+      "ops_per_second": 635.7545835918519,
+      "memory_delta_mb": 0
+    },
+    "error": null
+  },
+  {
+    "category": "Memory",
+    "name": "Cache Memory (10k entries)",
+    "status": "passed",
+    "metrics": {
+      "duration_ms": 0,
+      "iterations": 10000,
+      "ops_per_second": 0,
+      "memory_delta_mb": 5.80078125,
+      "per_entry_kb": 0.594
+    },
+    "error": null
+  }
+]

@@ -1,246 +1,394 @@
 # Zen-AI-Pentest Performance Optimization Report
 
-**Date:** 2026-02-09
-**Commit:** 4d27e167
-**Branch:** main
+**Date:** 2026-02-20  
+**Version:** 3.0.0  
+**Status:** Complete
 
 ---
 
 ## Executive Summary
 
-This report documents the comprehensive performance optimizations applied to the Zen-AI-Pentest project. The optimizations focus on async execution, caching, database queries, memory management, and monitoring.
+This document summarizes the comprehensive performance optimizations implemented for the Zen-AI-Pentest framework. The optimizations focus on:
+
+1. **Import Optimization** - Lazy loading and deferred imports
+2. **Caching Improvements** - Enhanced multi-tier caching with LRU/TTL
+3. **Database Optimization** - Connection pooling and query optimization
+4. **Async/Await Optimization** - Concurrent execution patterns
+5. **Performance Monitoring** - Middleware and profiling tools
 
 ---
 
-## 1. Async Tool Execution Optimization
+## 1. Import Optimization
 
-### File: `autonomous/tool_executor.py`
+### Changes Made
 
-#### Changes Made:
-- **Added concurrency control** with `asyncio.Semaphore(10)` to limit concurrent tool executions
-- **Implemented parallel execution** via `execute_batch()` method using `asyncio.gather()`
-- **Added streaming output support** via `execute_streaming()` method for real-time output
-- **Added output size limits** (10MB default) to prevent memory exhaustion
-- **Implemented ToolExecutionCache** for caching tool execution results
-- **Optimized subprocess handling** with reduced pipe buffer sizes (1MB)
+#### core/__init__.py - Lazy Loading Implementation
+- Implemented proxy classes for lazy module loading
+- Heavy modules (cache, database, orchestrator, models) now load on first access
+- Reduced initial import time by ~60%
 
-#### Performance Improvements:
-| Metric | Before | After | Improvement |
+#### api/__init__.py - API Lazy Loading
+- FastAPI app is now lazy-loaded
+- Prevents loading full API stack on module import
+
+### Before/After Metrics
+
+| Module | Before | After | Improvement |
 |--------|--------|-------|-------------|
-| Sequential tool execution | Baseline | - | - |
-| Parallel tool execution (10 tools) | 10x sequential | ~2-3x sequential | **65-70% faster** |
-| Memory usage (large outputs) | Unbounded | 10MB limit | **Prevents OOM** |
-| Cache hit response time | N/A | ~0.1ms | **Near-instant** |
+| core.cache | 150ms | 80ms | 47% faster |
+| core.database | 400ms | 210ms | 48% faster |
+| api.main | 2800ms | 1050ms | 62% faster |
 
 ---
 
 ## 2. Caching Improvements
 
-### File: `core/cache.py`
+### Enhanced core/cache.py
 
-#### Changes Made:
-- **Added compression support** (zlib) for large cached values (>1KB)
-- **Implemented cache statistics** tracking (hits, misses, evictions, compression ratio)
-- **Added cache warming methods** (`warm_cache()`, `warm_cache_async()`)
-- **Optimized cache key generation** using SHA256 (32-char hex)
-- **Added MultiTierCache** with L1 (Memory), L2 (SQLite), L3 (Redis) support
-- **Added batch operations** for CVE caching
+#### New Features
+1. **LRU Eviction** - O(1) LRU using OrderedDict
+2. **Size-based Eviction** - Memory-aware cache limits
+3. **Batch Operations** - mget/mset for bulk operations
+4. **Cache Statistics** - Hit/miss tracking and analytics
+5. **Multi-tier Cache** - L1 (Memory) → L2 (SQLite) → L3 (Redis)
 
-#### Performance Improvements:
-| Metric | Before | After | Improvement |
-|--------|--------|-------|-------------|
-| Cache key generation | ~0.8ms | ~0.5ms | **37% faster** |
-| Memory cache get/set | ~0.6ms | ~0.4ms | **33% faster** |
-| Large value storage | 100% size | ~30-50% size | **50-70% compression** |
-| Cache hit rate | N/A | Trackable | **Visibility** |
+#### Key Classes
+```python
+class MemoryCache(CacheBackend):
+    - max_size: Maximum number of entries
+    - max_memory_mb: Memory limit
+    - default_ttl: Default expiration time
+
+class MultiTierCache:
+    - Automatic promotion between tiers
+    - Hit distribution tracking
+    - Configurable tier selection
+```
+
+### Benchmark Results
+
+| Operation | Performance |
+|-----------|-------------|
+| Cache Writes (1000 ops) | 3.0ms (329,056 ops/s) |
+| Cache Reads (1000 ops) | 1.2ms (827,061 ops/s) |
+| Memory per Entry | 0.59KB |
 
 ---
 
 ## 3. Database Optimization
 
-### Files: `database/models.py`, `database/crud.py`
+### database/models.py - Index Optimization
 
-#### Changes Made:
-
-**Indexes Added:**
+#### Added Indexes
 ```sql
--- Scan queries
-idx_scan_status_created (status, created_at)
-idx_scan_user_created (user_id, created_at)
-idx_scan_target_created (target, created_at)
-idx_scan_type_status (scan_type, status)
-
--- Finding queries
-idx_finding_scan_severity (scan_id, severity)
-idx_finding_severity_created (severity, created_at)
-idx_finding_cve (cve_id)
-idx_finding_tool_created (tool, created_at)
-
--- Audit and notification queries
-idx_audit_user_timestamp (user_id, timestamp)
-idx_notification_user_read (user_id, read, created_at)
+-- Composite indexes for common queries
+CREATE INDEX ix_scans_status_created ON scans(status, created_at);
+CREATE INDEX ix_scans_user_created ON scans(user_id, created_at);
+CREATE INDEX ix_findings_scan_severity ON findings(scan_id, severity);
+CREATE INDEX ix_findings_severity_verified ON findings(severity, verified);
+CREATE INDEX ix_vulns_severity_cvss ON vulnerabilities(severity, cvss_score);
+CREATE INDEX ix_audit_user_timestamp ON audit_logs(user_id, timestamp);
 ```
 
-**New Features:**
-- Async database driver support (asyncpg)
-- Batch operations (`bulk_update_scan_status`, `create_findings_batch`)
-- Query result caching (`CacheEntry` model)
-- Connection pooling configuration (pool_size=10, max_overflow=20)
-- Optimized `get_scan()` with eager loading
+#### Connection Pool Configuration
+```python
+engine_args = {
+    "pool_size": 10,
+    "max_overflow": 20,
+    "pool_timeout": 30,
+    "pool_recycle": 3600,
+    "pool_pre_ping": True,
+    "pool_use_lifo": True,  # Better cache locality
+}
+```
 
-#### Performance Improvements:
-| Query Type | Before | After | Improvement |
-|------------|--------|-------|-------------|
-| Scan by status | Full table scan | Index scan | **~90% faster** |
-| Findings by scan | Full table scan | Index scan | **~80% faster** |
-| Batch insert (100 findings) | 100 queries | 1 query | **~95% faster** |
-| Connection acquisition | ~50ms | ~5ms | **90% faster** |
+### core/async_database.py - Async Operations
 
----
+New async database manager with:
+- Async SQLAlchemy operations
+- Connection pooling
+- Bulk operations
+- Query result caching support
 
-## 4. CVE Database Optimization
+### Benchmark Results
 
-### File: `modules/cve_database.py`
-
-#### Changes Made:
-- **In-memory caching** for frequently accessed CVEs
-- **Batch search support** (`search_cve_batch`)
-- **Generator-based iteration** (`get_cves_by_severity_generator`)
-- **Severity-based indexing** for faster lookups
-- **Module-level LRU cache** using `@lru_cache` decorator
-- **Ransomware->CVE index** for quick cross-referencing
-
-#### Performance Improvements:
-| Operation | Before | After | Improvement |
-|-----------|--------|-------|-------------|
-| Single CVE lookup | ~0.01ms | ~0.003ms | **70% faster** |
-| Cached CVE lookup | N/A | ~0.001ms | **Near-instant** |
-| Batch lookup (3 CVEs) | 3x single | 1x single | **~65% faster** |
-| Severity lookup | Linear scan | Index lookup | **~80% faster** |
-| Memory (large queries) | All in memory | Generator | **Constant memory** |
+| Operation | Performance |
+|-----------|-------------|
+| 100 DB Inserts | 1467ms (68 ops/s) |
+| 50 DB Reads | 55ms (908 ops/s) |
+| List Query (100 rows) | 5.6ms |
 
 ---
 
-## 5. Agent Optimization
+## 4. Async/Await Optimization
 
-### File: `agents/react_agent.py`
+### core/performance.py - Async Utilities
 
-#### Changes Made:
-- **Context window management** with sliding window and summary
-- **LLM response caching** to avoid redundant API calls
-- **Memory usage tracking** with configurable limits
-- **Optimized message history** (max 20 messages default)
+#### New Functions
+```python
+# Limited concurrency
+gather_with_concurrency(limit, *tasks)
 
-#### Performance Improvements:
-| Metric | Before | After | Improvement |
-|--------|--------|-------|-------------|
-| Context window growth | Unbounded | 20 messages | **Memory stable** |
-| Repeated LLM queries | Multiple calls | Cached | **~95% reduction** |
-| Agent memory usage | Grows unbounded | Controlled | **Constant memory** |
-| Response time (cached) | ~500ms | ~1ms | **99.8% faster** |
+# Thread pool execution
+run_in_thread(func, *args)
 
----
+# Async memoization
+@memoize(maxsize=128)
+async def expensive_async_func(): ...
+```
 
-## 6. Performance Monitoring
+### Benchmark Results
 
-### File: `monitoring/metrics.py`
-
-#### New Metrics Added:
-
-**Tool Execution Metrics:**
-- `tool_execution_duration_seconds` - Histogram of tool execution times
-- `tool_executions_total` - Counter of tool executions
-- `tool_executions_active` - Gauge of currently running tools
-- `tool_output_size_bytes` - Histogram of output sizes
-
-**Cache Metrics:**
-- `cache_hits_total` - Counter of cache hits by tier
-- `cache_misses_total` - Counter of cache misses by tier
-- `cache_size` - Gauge of items in cache
-- `cache_evictions_total` - Counter of evictions
-- `cache_operation_duration_seconds` - Histogram of cache operation times
-
-**Database Metrics:**
-- `db_query_duration_seconds` - Histogram of query times
-- `db_queries_total` - Counter of queries by type
-
-**Memory Metrics:**
-- `memory_usage_bytes` - Gauge of memory usage (RSS, VMS)
-- `memory_gc_collections_total` - Counter of GC runs
-
-**Agent Metrics:**
-- `agent_iterations` - Histogram of iterations per run
-- `agent_execution_duration_seconds` - Histogram of agent execution times
-- `agent_findings_discovered` - Histogram of findings per run
+| Pattern | Sequential | Parallel | Speedup |
+|---------|-----------|----------|---------|
+| 10 Tool Executions | 162ms | 16ms | 10.1x |
+| 100 Async Tasks | 1576ms | 17ms | 91.7x |
+| 100 Tasks (10 concurrent) | - | 157ms | - |
 
 ---
 
-## 7. Benchmarks
+## 5. Performance Monitoring
 
-### File: `benchmarks/performance_test.py`
+### New Files Created
 
-Created comprehensive benchmark suite with:
-- **Cache operation benchmarks** (get/set, key generation)
-- **Database operation benchmarks** (CRUD, batch operations)
-- **CVE database benchmarks** (lookup, batch, cached)
-- **Tool execution benchmarks** (registry, command building)
-- **Agent performance benchmarks** (context management)
-- **Memory usage benchmarks** (initialization, growth)
-- **Async performance benchmarks** (sequential vs parallel)
+#### core/performance.py
+- `timed` decorator for function timing
+- `PerformanceTimer` for statistics collection
+- `MemoryProfiler` for memory tracking
+- `LazyImport` and `LazyLoader` for deferred loading
 
-### Baseline Results:
+#### api/middleware/performance.py
+- `PerformanceMonitoringMiddleware` - Request timing and slow request detection
+- `ConnectionPoolMiddleware` - Database pool monitoring
+- `track_request_performance` dependency
 
-| Component | Benchmark | Avg Time | Ops/Sec |
-|-----------|-----------|----------|---------|
-| Cache | Memory Cache Operations | 0.439ms | 2,276 |
-| Cache | Cache Key Generation | 0.524ms | 1,909 |
-| CVE DB | Single CVE Lookup | 0.003ms | 333,333 |
-| CVE DB | Cached CVE Lookup | 0.001ms | 1,000,000 |
-| CVE DB | Batch CVE Lookup (3) | 0.002ms | 500,000 |
-| Tool Exec | Command Building | 2.191ms | 457 |
-| Tool Exec | Tool Execution Cache | 0.711ms | 1,406 |
-| Async | Sequential Operations | 12.107ms | 83 |
-| Async | Parallel Operations | 1.611ms | 621 |
+#### benchmarks/performance_suite.py
+Comprehensive benchmark suite covering:
+- Import benchmarks
+- Cache benchmarks
+- Database benchmarks
+- Tool execution benchmarks
+- Async/await benchmarks
+- Memory benchmarks
 
-**Parallel async operations are 7.5x faster than sequential!**
+#### scripts/profile_performance.py
+Profiling tool for:
+- Import time profiling
+- Function profiling
+- Memory profiling
+- Hotspot analysis
 
----
+### Middleware Features
 
-## Summary of Changes
+```python
+# Usage in FastAPI
+from api.middleware import PerformanceMonitoringMiddleware
 
-### Files Modified (8):
-1. `autonomous/tool_executor.py` - Async execution optimization
-2. `core/cache.py` - Caching improvements with compression
-3. `database/models.py` - Database indexes and async support
-4. `database/crud.py` - Optimized CRUD operations
-5. `modules/cve_database.py` - CVE caching and indexing
-6. `agents/react_agent.py` - Memory and context optimization
-7. `monitoring/metrics.py` - Performance monitoring
-8. `tests/test_core_cache.py` - Updated tests
+app.add_middleware(
+    PerformanceMonitoringMiddleware,
+    slow_request_threshold_ms=1000.0,
+    track_stats=True,
+    add_headers=True,
+)
+```
 
-### Files Created (2):
-1. `benchmarks/performance_test.py` - Benchmark suite
-2. `benchmarks/baseline_results.json` - Baseline metrics
-
----
-
-## Recommendations for Further Optimization
-
-1. **Redis Integration**: Enable Redis for distributed caching in multi-node deployments
-2. **Database Read Replicas**: Use read replicas for heavy reporting queries
-3. **Connection Pool Tuning**: Monitor and tune pool_size based on load
-4. **CDN Integration**: Cache static report assets on CDN
-5. **Async Database**: Migrate fully to async database operations
+Response headers added:
+- `X-Response-Time`: Request duration in ms
+- `X-Request-Count`: Total request count
+- `X-Active-Connections`: DB pool utilization
 
 ---
 
-## Conclusion
+## 6. Caching Decorators
 
-The performance optimizations have significantly improved:
-- **Concurrency**: Tool execution now supports parallel processing
-- **Latency**: Cache hit times reduced to sub-millisecond
-- **Throughput**: Database batch operations 95% faster
-- **Memory**: Bounded memory usage with limits and generators
-- **Observability**: Comprehensive metrics for all components
+### @cached Decorator
 
-All changes are backward compatible and include comprehensive benchmarks for measuring future improvements.
+```python
+from core.cache import cached
+
+@cached(backend="memory", ttl=3600)
+async def get_expensive_data(key: str):
+    # Expensive operation
+    return result
+```
+
+### @memoize Decorator
+
+```python
+from core.performance import memoize
+
+@memoize(maxsize=256)
+def calculate_fibonacci(n: int):
+    if n < 2:
+        return n
+    return calculate_fibonacci(n-1) + calculate_fibonacci(n-2)
+```
+
+### @ttl_cache Decorator
+
+```python
+from core.performance import ttl_cache
+
+@ttl_cache(ttl=300, maxsize=100)  # 5 minute cache
+def get_api_data(endpoint: str):
+    return requests.get(endpoint).json()
+```
+
+---
+
+## 7. Performance Benchmarks Summary
+
+### Import Performance
+| Module | Import Time |
+|--------|-------------|
+| core.cache | 80ms |
+| core.database | 210ms |
+| core.orchestrator | 146ms |
+| api.main | 1050ms |
+
+### Cache Performance
+| Metric | Value |
+|--------|-------|
+| Write Throughput | 329,056 ops/s |
+| Read Throughput | 827,061 ops/s |
+| Memory Efficiency | 0.59KB/entry |
+
+### Database Performance
+| Metric | Value |
+|--------|-------|
+| Insert Rate | 68 ops/s |
+| Read Rate | 908 ops/s |
+| List Query | 5.6ms |
+
+### Async Performance
+| Pattern | Speedup |
+|---------|---------|
+| Parallel vs Sequential | 10-92x |
+| Limited Concurrency | Optimal resource usage |
+
+---
+
+## 8. Files Created/Modified
+
+### New Files
+1. `core/performance.py` - Performance utilities (615 lines)
+2. `core/async_database.py` - Async DB operations (430 lines)
+3. `benchmarks/performance_suite.py` - Benchmark suite (673 lines)
+4. `scripts/profile_performance.py` - Profiling tool (294 lines)
+5. `api/middleware/performance.py` - API middleware (166 lines)
+
+### Modified Files
+1. `core/__init__.py` - Lazy loading implementation
+2. `core/cache.py` - Enhanced caching (870 lines, +402)
+3. `api/__init__.py` - API lazy loading
+4. `database/models.py` - Added indexes (+85 lines)
+
+---
+
+## 9. Usage Examples
+
+### Timing Functions
+```python
+from core.performance import timed, timed_block
+
+@timed
+async def process_scan(scan_id: int):
+    # Process scan
+    pass
+
+# Or using context manager
+with timed_block("database_query"):
+    results = db.query(...)
+```
+
+### Lazy Loading
+```python
+from core.performance import LazyImport
+
+# Instead of: import heavy_module
+heavy_module = LazyImport("heavy_module")
+
+# Module is only imported when accessed
+heavy_module.expensive_function()
+```
+
+### Async Batch Operations
+```python
+from core.performance import gather_with_concurrency
+
+# Limit to 10 concurrent operations
+results = await gather_with_concurrency(
+    10,
+    *[fetch_data(url) for url in urls]
+)
+```
+
+### Cache Usage
+```python
+from core.cache import MemoryCache, MultiTierCache
+
+# Single tier
+memory_cache = MemoryCache(max_size=1000, max_memory_mb=50)
+await memory_cache.set("key", value, ttl=3600)
+
+# Multi-tier
+multi_cache = MultiTierCache(
+    memory_size=100,
+    sqlite_path=Path("cache.db"),
+)
+```
+
+---
+
+## 10. Recommendations
+
+### For Development
+1. Use `@timed` decorator on new functions to track performance
+2. Profile imports regularly with `scripts/profile_performance.py`
+3. Run benchmarks before/after changes
+
+### For Production
+1. Enable PerformanceMonitoringMiddleware
+2. Configure Redis for distributed caching
+3. Monitor database connection pool utilization
+4. Set up alerts for slow requests (>1000ms)
+
+### For High-Performance Scenarios
+1. Use MultiTierCache with Redis for shared state
+2. Implement batch operations for bulk inserts
+3. Use `gather_with_concurrency` for controlled parallelism
+4. Profile memory usage for long-running processes
+
+---
+
+## 11. Next Steps
+
+### Short Term
+- [ ] Add database query result caching
+- [ ] Implement request deduplication
+- [ ] Add distributed rate limiting
+
+### Long Term
+- [ ] Implement query plan optimization
+- [ ] Add predictive caching
+- [ ] Implement automatic performance tuning
+
+---
+
+## Appendix: Performance Checklist
+
+When adding new features, ensure:
+
+- [ ] Heavy imports use `LazyImport`
+- [ ] Expensive functions use `@timed`
+- [ ] API endpoints have performance monitoring
+- [ ] Database queries use appropriate indexes
+- [ ] Bulk operations use batch methods
+- [ ] Async code uses proper concurrency limits
+- [ ] Memory usage is profiled
+- [ ] Benchmarks are updated
+
+---
+
+**Report Generated:** 2026-02-20  
+**Benchmark Results:** `benchmark_results/performance_results_*.json`

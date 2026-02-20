@@ -1,0 +1,217 @@
+{
+  "summary": {
+    "total_workflows": 67,
+    "workflows_with_issues": 8,
+    "total_issues": 28,
+    "issues_by_type": {
+      "missing_permissions": 4,
+      "missing_job_permissions": 4,
+      "missing_timeout": 16,
+      "missing_concurrency": 3,
+      "yaml_syntax": 1
+    },
+    "issues_by_severity": {
+      "error": 1,
+      "warning": 4,
+      "info": 23
+    }
+  },
+  "issues": [
+    {
+      "workflow": "auto-fix-repository.yml",
+      "type": "missing_permissions",
+      "message": "Workflow missing permissions block. Add 'permissions: contents: read' at minimum",
+      "severity": "warning",
+      "line": null
+    },
+    {
+      "workflow": "auto-fix-repository.yml",
+      "type": "missing_job_permissions",
+      "message": "Job 'notify' missing permissions. Consider adding job-level permissions",
+      "severity": "info",
+      "line": null
+    },
+    {
+      "workflow": "auto-fix-repository.yml",
+      "type": "missing_timeout",
+      "message": "Job 'fix-common-issues' missing timeout-minutes. Consider adding timeout to prevent hanging jobs",
+      "severity": "info",
+      "line": null
+    },
+    {
+      "workflow": "auto-fix-repository.yml",
+      "type": "missing_timeout",
+      "message": "Job 'security-patches' missing timeout-minutes. Consider adding timeout to prevent hanging jobs",
+      "severity": "info",
+      "line": null
+    },
+    {
+      "workflow": "auto-fix-repository.yml",
+      "type": "missing_timeout",
+      "message": "Job 'notify' missing timeout-minutes. Consider adding timeout to prevent hanging jobs",
+      "severity": "info",
+      "line": null
+    },
+    {
+      "workflow": "benchmark.yml",
+      "type": "missing_timeout",
+      "message": "Job 'pr-comment' missing timeout-minutes. Consider adding timeout to prevent hanging jobs",
+      "severity": "info",
+      "line": null
+    },
+    {
+      "workflow": "benchmark.yml",
+      "type": "missing_timeout",
+      "message": "Job 'update-benchmark-issue' missing timeout-minutes. Consider adding timeout to prevent hanging jobs",
+      "severity": "info",
+      "line": null
+    },
+    {
+      "workflow": "benchmark.yml",
+      "type": "missing_timeout",
+      "message": "Job 'regression-check' missing timeout-minutes. Consider adding timeout to prevent hanging jobs",
+      "severity": "info",
+      "line": null
+    },
+    {
+      "workflow": "coverage-quick.yml",
+      "type": "missing_permissions",
+      "message": "Workflow missing permissions block. Add 'permissions: contents: read' at minimum",
+      "severity": "warning",
+      "line": null
+    },
+    {
+      "workflow": "coverage-quick.yml",
+      "type": "missing_job_permissions",
+      "message": "Job 'coverage' missing permissions. Consider adding job-level permissions",
+      "severity": "info",
+      "line": null
+    },
+    {
+      "workflow": "coverage-quick.yml",
+      "type": "missing_concurrency",
+      "message": "Missing concurrency settings. Consider adding:\n  concurrency:\n    group: ${{ github.workflow }}-${{ github.ref }}\n    cancel-in-progress: true",
+      "severity": "info",
+      "line": null
+    },
+    {
+      "workflow": "coverage-quick.yml",
+      "type": "missing_timeout",
+      "message": "Job 'coverage' missing timeout-minutes. Consider adding timeout to prevent hanging jobs",
+      "severity": "info",
+      "line": null
+    },
+    {
+      "workflow": "coverage-simple.yml",
+      "type": "missing_permissions",
+      "message": "Workflow missing permissions block. Add 'permissions: contents: read' at minimum",
+      "severity": "warning",
+      "line": null
+    },
+    {
+      "workflow": "coverage-simple.yml",
+      "type": "missing_job_permissions",
+      "message": "Job 'test' missing permissions. Consider adding job-level permissions",
+      "severity": "info",
+      "line": null
+    },
+    {
+      "workflow": "coverage-simple.yml",
+      "type": "missing_concurrency",
+      "message": "Missing concurrency settings. Consider adding:\n  concurrency:\n    group: ${{ github.workflow }}-${{ github.ref }}\n    cancel-in-progress: true",
+      "severity": "info",
+      "line": null
+    },
+    {
+      "workflow": "coverage-simple.yml",
+      "type": "missing_timeout",
+      "message": "Job 'test' missing timeout-minutes. Consider adding timeout to prevent hanging jobs",
+      "severity": "info",
+      "line": null
+    },
+    {
+      "workflow": "coverage.yml",
+      "type": "missing_permissions",
+      "message": "Workflow missing permissions block. Add 'permissions: contents: read' at minimum",
+      "severity": "warning",
+      "line": null
+    },
+    {
+      "workflow": "coverage.yml",
+      "type": "missing_job_permissions",
+      "message": "Job 'coverage' missing permissions. Consider adding job-level permissions",
+      "severity": "info",
+      "line": null
+    },
+    {
+      "workflow": "coverage.yml",
+      "type": "missing_concurrency",
+      "message": "Missing concurrency settings. Consider adding:\n  concurrency:\n    group: ${{ github.workflow }}-${{ github.ref }}\n    cancel-in-progress: true",
+      "severity": "info",
+      "line": null
+    },
+    {
+      "workflow": "coverage.yml",
+      "type": "missing_timeout",
+      "message": "Job 'coverage' missing timeout-minutes. Consider adding timeout to prevent hanging jobs",
+      "severity": "info",
+      "line": null
+    },
+    {
+      "workflow": "discord-github-notify.yml",
+      "type": "yaml_syntax",
+      "message": "YAML syntax error: while scanning a simple key\n  in \"<unicode string>\", line 288, column 1:\n    import json\n    ^\ncould not find expected ':'\n  in \"<unicode string>\", line 289, column 1:\n    import sys\n    ^",
+      "severity": "error",
+      "line": null
+    },
+    {
+      "workflow": "tests-coverage.yml",
+      "type": "missing_timeout",
+      "message": "Job 'test' missing timeout-minutes. Consider adding timeout to prevent hanging jobs",
+      "severity": "info",
+      "line": null
+    },
+    {
+      "workflow": "tests-coverage.yml",
+      "type": "missing_timeout",
+      "message": "Job 'code-quality' missing timeout-minutes. Consider adding timeout to prevent hanging jobs",
+      "severity": "info",
+      "line": null
+    },
+    {
+      "workflow": "tests-coverage.yml",
+      "type": "missing_timeout",
+      "message": "Job 'security-scan' missing timeout-minutes. Consider adding timeout to prevent hanging jobs",
+      "severity": "info",
+      "line": null
+    },
+    {
+      "workflow": "tests-coverage.yml",
+      "type": "missing_timeout",
+      "message": "Job 'health-check' missing timeout-minutes. Consider adding timeout to prevent hanging jobs",
+      "severity": "info",
+      "line": null
+    },
+    {
+      "workflow": "tests-simple.yml",
+      "type": "missing_timeout",
+      "message": "Job 'quick-test' missing timeout-minutes. Consider adding timeout to prevent hanging jobs",
+      "severity": "info",
+      "line": null
+    },
+    {
+      "workflow": "tests-simple.yml",
+      "type": "missing_timeout",
+      "message": "Job 'coverage-simple' missing timeout-minutes. Consider adding timeout to prevent hanging jobs",
+      "severity": "info",
+      "line": null
+    },
+    {
+      "workflow": "tests-simple.yml",
+      "type": "missing_timeout",
+      "message": "Job 'lint-check' missing timeout-minutes. Consider adding timeout to prevent hanging jobs",
+      "severity": "info",
+      "line": null
+    }
+  ]
+}

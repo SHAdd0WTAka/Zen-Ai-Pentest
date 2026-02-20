@@ -230,6 +230,7 @@ jobs:
   security-summary:
     needs: [python-security, node-security, secret-scan, codeql]
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     if: always()
     steps:
       - name: Generate Security Summary

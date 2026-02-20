@@ -1,0 +1,100 @@
+======================================================================
+PERFORMANCE BENCHMARK REPORT
+======================================================================
+Generated: 2026-02-20 06:17:55
+Total Benchmarks: 16
+
+
+----------------------------------------------------------------------
+[ASYNC/AWAIT]
+----------------------------------------------------------------------
+
+  [OK] 100 Sequential Async Tasks
+    Duration: 1576.20ms
+    Throughput: 63 ops/s
+
+  [OK] 100 Parallel Async Tasks
+    Duration: 17.18ms
+    Throughput: 5821 ops/s
+
+  [OK] 100 Tasks (10 concurrent)
+    Duration: 157.29ms
+    Throughput: 636 ops/s
+
+----------------------------------------------------------------------
+[CACHE]
+----------------------------------------------------------------------
+
+  [OK] 1000 Cache Writes
+    Duration: 3.04ms
+    Throughput: 329056 ops/s
+
+  [OK] 1000 Cache Reads
+    Duration: 1.21ms
+    Throughput: 827061 ops/s
+
+----------------------------------------------------------------------
+[DATABASE]
+----------------------------------------------------------------------
+
+  [OK] 100 DB Inserts
+    Duration: 1466.81ms
+    Throughput: 68 ops/s
+
+  [OK] 50 DB Reads
+    Duration: 55.09ms
+    Throughput: 908 ops/s
+
+  [OK] DB List Query (100)
+    Duration: 5.61ms
+    Throughput: 178 ops/s
+
+----------------------------------------------------------------------
+[IMPORT]
+----------------------------------------------------------------------
+
+  [OK] Cache Module
+    Duration: 79.05ms
+    Throughput: 13 ops/s
+
+  [OK] Database Module
+    Duration: 209.31ms
+    Throughput: 5 ops/s
+
+  [OK] Orchestrator Module
+    Duration: 146.03ms
+    Throughput: 7 ops/s
+
+  [OK] API Main Module
+    Duration: 1054.00ms
+    Throughput: 1 ops/s
+
+  [FAIL] ReAct Agent
+    Error: cannot import name 'NmapTool' from 'tools.nmap_integration' (C:\Users\Ataka\zen-ai-pentest\tools\nmap_integration.py)
+
+----------------------------------------------------------------------
+[MEMORY]
+----------------------------------------------------------------------
+
+  [OK] Cache Memory (10k entries)
+    Duration: 0.00ms
+    Throughput: 0 ops/s
+    Memory: +5.80MB
+
+----------------------------------------------------------------------
+[TOOL EXECUTION]
+----------------------------------------------------------------------
+
+  [OK] 10 Sequential Tools
+    Duration: 161.97ms
+    Throughput: 62 ops/s
+
+  [OK] 10 Parallel Tools
+    Duration: 15.97ms
+    Throughput: 626 ops/s
+
+======================================================================
+SUMMARY
+======================================================================
+Passed: 15
+Failed: 1

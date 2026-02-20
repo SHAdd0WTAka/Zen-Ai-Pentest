@@ -226,7 +226,7 @@ jobs:
           fi
 
       - name: Create PR for Security Fixes
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: auto/security-fixes

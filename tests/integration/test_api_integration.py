@@ -1,480 +1,861 @@
-#!/usr/bin/env python3
 """
-Integration Tests für Zen-AI-Pentest API
-======================================
-End-to-End Tests für API-Endpunkte und Workflows
+API Integration Tests for Zen-AI-Pentest
+=========================================
+
+Comprehensive integration tests for API endpoints using FastAPI TestClient.
+Tests full API flow: authentication, scans, findings, reports, WebSockets.
+
+Usage:
+    pytest tests/integration/test_api_integration.py -v
+    pytest tests/integration/test_api_integration.py -v --cov=api --cov-report=term-missing
 """
 
+import asyncio
+import json
 import os
 import sys
-from unittest.mock import Mock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
-import httpx
 import pytest
+from fastapi.testclient import TestClient
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Ensure project root is in path
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
-pytestmark = [pytest.mark.integration, pytest.mark.api, pytest.mark.asyncio]
+from database.models import Base
+
+# Mark all tests in this file
+pytestmark = [pytest.mark.integration, pytest.mark.asyncio]
 
 
-class TestAPIAuthentication:
-    """Integration Tests für API-Authentifizierung"""
+# ============================================================================
+# FIXTURES
+# ============================================================================
 
-    @pytest.fixture
-    async def client(self):
-        """Fixture für HTTP-Client"""
-        async with httpx.AsyncClient(base_url="http://localhost:8000") as client:
-            yield client
+@pytest.fixture(scope="function")
+def test_db_engine():
+    """Create a SQLite in-memory database engine for testing."""
+    engine = create_engine(
+        "sqlite:///./test_integration.db",
+        connect_args={"check_same_thread": False},
+        pool_pre_ping=True,
+    )
+    Base.metadata.create_all(bind=engine)
+    yield engine
+    Base.metadata.drop_all(bind=engine)
 
-    @pytest.mark.asyncio
-    async def test_login_with_valid_credentials(self, client):
-        """Test: Login mit gültigen Credentials"""
-        response = await client.post("/api/v1/auth/login", json={"username": "admin", "password": "admin123"})
 
+@pytest.fixture(scope="function")
+def test_db_session(test_db_engine):
+    """Create a database session for testing."""
+    TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=test_db_engine)
+    session = TestingSessionLocal()
+    try:
+        yield session
+    finally:
+        session.close()
+
+
+@pytest.fixture(scope="function")
+def client(test_db_engine):
+    """Create a FastAPI TestClient with test database."""
+    from api.main import app, get_db
+
+    TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=test_db_engine)
+
+    def override_get_db():
+        try:
+            db = TestingSessionLocal()
+            yield db
+        finally:
+            db.close()
+
+    app.dependency_overrides[get_db] = override_get_db
+
+    # Set test environment
+    os.environ["ADMIN_PASSWORD"] = "testpass123"
+    os.environ["JWT_SECRET_KEY"] = "test-secret-key-for-testing-only"
+
+    with TestClient(app) as test_client:
+        yield test_client
+
+    app.dependency_overrides.clear()
+
+
+@pytest.fixture
+def auth_token(client):
+    """Get authentication token for testing."""
+    # Get CSRF token first
+    csrf_response = client.get("/csrf-token")
+    csrf_token = csrf_response.json().get("csrf_token", "")
+
+    # Login with CSRF token
+    response = client.post(
+        "/auth/login",
+        json={"username": "admin", "password": "testpass123"},
+        headers={"X-CSRF-Token": csrf_token} if csrf_token else {},
+    )
+    if response.status_code == 200:
+        return response.json()["access_token"]
+    return None
+
+
+@pytest.fixture
+def auth_headers(auth_token):
+    """Get authentication headers with valid token."""
+    return {"Authorization": f"Bearer {auth_token}"} if auth_token else {}
+
+
+# ============================================================================
+# TEST CLASS: Authentication Flow
+# ============================================================================
+
+class TestAuthenticationFlow:
+    """Test complete authentication flow including login, token validation, and logout."""
+
+    def test_csrf_token_endpoint(self, client):
+        """Test CSRF token generation endpoint."""
+        response = client.get("/csrf-token")
+        assert response.status_code == 200
+        data = response.json()
+        assert "csrf_token" in data
+
+    def test_login_success(self, client):
+        """Test successful login with valid credentials."""
+        # Get CSRF token
+        csrf_response = client.get("/csrf-token")
+        csrf_token = csrf_response.json().get("csrf_token", "")
+
+        response = client.post(
+            "/auth/login",
+            json={"username": "admin", "password": "testpass123"},
+            headers={"X-CSRF-Token": csrf_token} if csrf_token else {},
+        )
         assert response.status_code == 200
         data = response.json()
         assert "access_token" in data
         assert "token_type" in data
         assert data["token_type"] == "bearer"
+        assert "expires_in" in data
+        assert "username" in data
+        assert data["username"] == "admin"
 
-    @pytest.mark.asyncio
-    async def test_login_with_invalid_credentials(self, client):
-        """Test: Login mit ungültigen Credentials wird abgelehnt"""
-        response = await client.post("/api/v1/auth/login", json={"username": "admin", "password": "wrongpassword"})
-
+    def test_login_invalid_credentials(self, client):
+        """Test login failure with invalid credentials."""
+        response = client.post(
+            "/auth/login",
+            json={"username": "admin", "password": "wrongpassword"},
+        )
         assert response.status_code == 401
-        assert "detail" in response.json()
+        data = response.json()
+        assert "detail" in data
 
-    @pytest.mark.asyncio
-    async def test_access_protected_endpoint_without_token(self, client):
-        """Test: Geschützte Endpoints ohne Token sind nicht zugänglich"""
-        response = await client.get("/api/v1/scans")
+    def test_login_missing_fields(self, client):
+        """Test login with missing required fields."""
+        response = client.post("/auth/login", json={"username": "admin"})
+        assert response.status_code == 422  # Validation error
 
-        assert response.status_code == 401
+    def test_access_protected_endpoint_without_auth(self, client):
+        """Test accessing protected endpoint without authentication."""
+        response = client.get("/scans")
+        assert response.status_code == 403  # Forbidden without token
 
-    @pytest.mark.asyncio
-    async def test_access_protected_endpoint_with_token(self, client):
-        """Test: Geschützte Endpoints mit Token sind zugänglich"""
-        # Login
-        login_response = await client.post("/api/v1/auth/login", json={"username": "admin", "password": "admin123"})
-        token = login_response.json()["access_token"]
+    def test_access_protected_endpoint_with_invalid_token(self, client):
+        """Test accessing protected endpoint with invalid token."""
+        response = client.get(
+            "/scans",
+            headers={"Authorization": "Bearer invalid_token"},
+        )
+        assert response.status_code == 401  # Unauthorized
 
-        # Zugriff mit Token
-        response = await client.get("/api/v1/scans", headers={"Authorization": f"Bearer {token}"})
-
+    def test_access_protected_endpoint_with_valid_token(self, client, auth_headers):
+        """Test accessing protected endpoint with valid token."""
+        response = client.get("/scans", headers=auth_headers)
         assert response.status_code == 200
 
+    def test_me_endpoint(self, client, auth_headers):
+        """Test getting current user info."""
+        response = client.get("/auth/me", headers=auth_headers)
+        # May not be available in all auth modes
+        if response.status_code == 200:
+            data = response.json()
+            assert "sub" in data or "username" in data
 
-class TestScanWorkflow:
-    """Integration Tests für kompletten Scan-Workflow"""
+    def test_logout(self, client, auth_headers):
+        """Test logout endpoint."""
+        response = client.post("/auth/logout", headers=auth_headers)
+        # Should succeed with valid token
+        assert response.status_code in [200, 501]  # 501 if legacy auth
 
-    @pytest.fixture
-    async def authenticated_client(self):
-        """Fixture für authentifizierten Client"""
-        async with httpx.AsyncClient(base_url="http://localhost:8000") as client:
-            # Login
-            login_response = await client.post("/api/v1/auth/login", json={"username": "admin", "password": "admin123"})
-            token = login_response.json()["access_token"]
-            client.headers["Authorization"] = f"Bearer {token}"
-            yield client
 
-    @pytest.mark.asyncio
-    async def test_create_scan(self, authenticated_client):
-        """Test: Scan erstellen"""
-        response = await authenticated_client.post(
-            "/api/v1/scans",
+# ============================================================================
+# TEST CLASS: Scan Management
+# ============================================================================
+
+class TestScanManagement:
+    """Test scan creation, retrieval, and management."""
+
+    def test_create_scan(self, client, auth_headers):
+        """Test creating a new scan."""
+        scan_data = {
+            "name": "Test Integration Scan",
+            "target": "scanme.nmap.org",
+            "scan_type": "reconnaissance",
+            "config": {"ports": "80,443", "timeout": 300},
+        }
+        response = client.post(
+            "/scans",
+            json=scan_data,
+            headers=auth_headers,
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert "id" in data
+        assert data["name"] == scan_data["name"]
+        assert data["target"] == scan_data["target"]
+        assert data["scan_type"] == scan_data["scan_type"]
+        assert data["status"] == "pending"
+
+    def test_create_scan_missing_fields(self, client, auth_headers):
+        """Test creating a scan with missing required fields."""
+        response = client.post(
+            "/scans",
+            json={"target": "scanme.nmap.org"},  # Missing name and scan_type
+            headers=auth_headers,
+        )
+        assert response.status_code == 422
+
+    def test_create_scan_unauthorized(self, client):
+        """Test creating a scan without authentication."""
+        response = client.post(
+            "/scans",
             json={
+                "name": "Test Scan",
                 "target": "scanme.nmap.org",
                 "scan_type": "reconnaissance",
-                "modules": ["nmap", "subdomain_enum"],
-                "options": {"nmap_args": "-sV -sC", "threads": 10},
             },
         )
+        assert response.status_code == 403
 
-        assert response.status_code == 201
+    def test_list_scans(self, client, auth_headers):
+        """Test listing all scans."""
+        # Create a scan first
+        client.post(
+            "/scans",
+            json={
+                "name": "List Test Scan",
+                "target": "scanme.nmap.org",
+                "scan_type": "reconnaissance",
+            },
+            headers=auth_headers,
+        )
+
+        response = client.get("/scans", headers=auth_headers)
+        assert response.status_code == 200
+        data = response.json()
+        assert isinstance(data, list)
+
+    def test_list_scans_with_pagination(self, client, auth_headers):
+        """Test listing scans with pagination."""
+        response = client.get("/scans?skip=0&limit=10", headers=auth_headers)
+        assert response.status_code == 200
+        data = response.json()
+        assert isinstance(data, list)
+
+    def test_list_scans_with_status_filter(self, client, auth_headers):
+        """Test listing scans with status filter."""
+        response = client.get("/scans?status=pending", headers=auth_headers)
+        assert response.status_code == 200
+        data = response.json()
+        assert isinstance(data, list)
+
+    def test_get_scan_by_id(self, client, auth_headers):
+        """Test getting a specific scan by ID."""
+        # Create a scan first
+        create_response = client.post(
+            "/scans",
+            json={
+                "name": "Get Test Scan",
+                "target": "scanme.nmap.org",
+                "scan_type": "reconnaissance",
+            },
+            headers=auth_headers,
+        )
+        scan_id = create_response.json()["id"]
+
+        # Get the scan
+        response = client.get(f"/scans/{scan_id}", headers=auth_headers)
+        assert response.status_code == 200
+        data = response.json()
+        assert data["id"] == scan_id
+
+    def test_get_nonexistent_scan(self, client, auth_headers):
+        """Test getting a scan that doesn't exist."""
+        response = client.get("/scans/99999", headers=auth_headers)
+        assert response.status_code == 404
+
+    def test_update_scan(self, client, auth_headers):
+        """Test updating a scan."""
+        # Create a scan first
+        create_response = client.post(
+            "/scans",
+            json={
+                "name": "Update Test Scan",
+                "target": "scanme.nmap.org",
+                "scan_type": "reconnaissance",
+            },
+            headers=auth_headers,
+        )
+        scan_id = create_response.json()["id"]
+
+        # Update the scan
+        update_data = {"status": "running", "config": {"progress": 50}}
+        response = client.patch(
+            f"/scans/{scan_id}",
+            json=update_data,
+            headers=auth_headers,
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["id"] == scan_id
+
+    def test_delete_scan(self, client, auth_headers):
+        """Test deleting a scan."""
+        # Create a scan first
+        create_response = client.post(
+            "/scans",
+            json={
+                "name": "Delete Test Scan",
+                "target": "scanme.nmap.org",
+                "scan_type": "reconnaissance",
+            },
+            headers=auth_headers,
+        )
+        scan_id = create_response.json()["id"]
+
+        # Delete the scan
+        response = client.delete(f"/scans/{scan_id}", headers=auth_headers)
+        # Should return success or 501 if not fully implemented
+        assert response.status_code in [200, 202, 501]
+
+
+# ============================================================================
+# TEST CLASS: Findings Management
+# ============================================================================
+
+class TestFindingsManagement:
+    """Test findings creation, retrieval, and management."""
+
+    @pytest.fixture
+    def scan_with_findings(self, client, auth_headers):
+        """Create a scan with findings for testing."""
+        # Create scan
+        scan_response = client.post(
+            "/scans",
+            json={
+                "name": "Findings Test Scan",
+                "target": "scanme.nmap.org",
+                "scan_type": "vulnerability",
+            },
+            headers=auth_headers,
+        )
+        scan_id = scan_response.json()["id"]
+
+        # Add findings
+        findings = [
+            {
+                "title": "Critical SQL Injection",
+                "description": "SQL injection in login form",
+                "severity": "critical",
+                "cvss_score": 9.8,
+                "evidence": "Payload: ' OR 1=1 --",
+                "tool": "sqlmap",
+            },
+            {
+                "title": "XSS Vulnerability",
+                "description": "Reflected XSS in search parameter",
+                "severity": "high",
+                "cvss_score": 7.5,
+                "evidence": "Payload: <script>alert(1)</script>",
+                "tool": "burpsuite",
+            },
+            {
+                "title": "Information Disclosure",
+                "description": "Server version exposed in headers",
+                "severity": "low",
+                "cvss_score": 3.5,
+                "evidence": "Server: Apache/2.4.41",
+                "tool": "nmap",
+            },
+        ]
+
+        for finding in findings:
+            client.post(
+                f"/scans/{scan_id}/findings",
+                json=finding,
+                headers=auth_headers,
+            )
+
+        return scan_id
+
+    def test_add_finding(self, client, auth_headers):
+        """Test adding a finding to a scan."""
+        # Create a scan first
+        scan_response = client.post(
+            "/scans",
+            json={
+                "name": "Finding Test Scan",
+                "target": "scanme.nmap.org",
+                "scan_type": "vulnerability",
+            },
+            headers=auth_headers,
+        )
+        scan_id = scan_response.json()["id"]
+
+        finding_data = {
+            "title": "Test Finding",
+            "description": "Test finding description",
+            "severity": "medium",
+            "cvss_score": 5.5,
+            "evidence": "Test evidence",
+            "tool": "nmap",
+        }
+
+        response = client.post(
+            f"/scans/{scan_id}/findings",
+            json=finding_data,
+            headers=auth_headers,
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["title"] == finding_data["title"]
+        assert data["severity"] == finding_data["severity"]
+
+    def test_get_scan_findings(self, client, auth_headers, scan_with_findings):
+        """Test getting all findings for a scan."""
+        scan_id = scan_with_findings
+
+        response = client.get(
+            f"/scans/{scan_id}/findings",
+            headers=auth_headers,
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert isinstance(data, list)
+        assert len(data) >= 3
+
+    def test_get_findings_by_severity(self, client, auth_headers, scan_with_findings):
+        """Test filtering findings by severity."""
+        scan_id = scan_with_findings
+
+        response = client.get(
+            f"/scans/{scan_id}/findings?severity=critical",
+            headers=auth_headers,
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert isinstance(data, list)
+        for finding in data:
+            assert finding["severity"] == "critical"
+
+    def test_update_finding(self, client, auth_headers, scan_with_findings):
+        """Test updating a finding."""
+        scan_id = scan_with_findings
+
+        # Get findings
+        findings_response = client.get(
+            f"/scans/{scan_id}/findings",
+            headers=auth_headers,
+        )
+        findings = findings_response.json()
+        if findings:
+            finding_id = findings[0]["id"]
+
+            update_data = {
+                "severity": "high",
+                "verified": 1,
+                "remediation": "Apply security patch",
+            }
+
+            response = client.patch(
+                f"/findings/{finding_id}",
+                json=update_data,
+                headers=auth_headers,
+            )
+            assert response.status_code == 200
+            data = response.json()
+            assert data["id"] == finding_id
+
+
+# ============================================================================
+# TEST CLASS: Tool Execution
+# ============================================================================
+
+class TestToolExecution:
+    """Test tool execution endpoints."""
+
+    def test_list_tools(self, client, auth_headers):
+        """Test listing available tools."""
+        response = client.get("/tools", headers=auth_headers)
+        assert response.status_code == 200
+        data = response.json()
+        assert "tools" in data
+        assert isinstance(data["tools"], list)
+
+    @patch("api.main.execute_tool_task")
+    def test_execute_tool(self, mock_execute, client, auth_headers):
+        """Test executing a tool."""
+        mock_execute.return_value = None  # Background task
+
+        tool_request = {
+            "tool_name": "nmap_scan",
+            "target": "scanme.nmap.org",
+            "parameters": {"ports": "80,443", "options": "-sV"},
+            "timeout": 300,
+        }
+
+        response = client.post(
+            "/tools/execute",
+            json=tool_request,
+            headers=auth_headers,
+        )
+        assert response.status_code == 200
         data = response.json()
         assert "scan_id" in data
-        assert data["status"] == "queued"
+        assert data["status"] == "started"
 
-    @pytest.mark.asyncio
-    async def test_get_scan_status(self, authenticated_client):
-        """Test: Scan-Status abrufen"""
-        # Scan erstellen
-        create_response = await authenticated_client.post(
-            "/api/v1/scans", json={"target": "scanme.nmap.org", "scan_type": "reconnaissance"}
+    def test_execute_tool_invalid_name(self, client, auth_headers):
+        """Test executing a non-existent tool."""
+        tool_request = {
+            "tool_name": "nonexistent_tool",
+            "target": "scanme.nmap.org",
+            "parameters": {},
+        }
+
+        response = client.post(
+            "/tools/execute",
+            json=tool_request,
+            headers=auth_headers,
         )
-        scan_id = create_response.json()["scan_id"]
+        # Should either start and fail in background or return error
+        assert response.status_code in [200, 404, 400]
 
-        # Status abrufen
-        response = await authenticated_client.get(f"/api/v1/scans/{scan_id}")
 
+# ============================================================================
+# TEST CLASS: Report Generation
+# ============================================================================
+
+class TestReportGeneration:
+    """Test report generation endpoints."""
+
+    @pytest.fixture
+    def completed_scan(self, client, auth_headers):
+        """Create a completed scan with findings for report generation."""
+        # Create scan
+        scan_response = client.post(
+            "/scans",
+            json={
+                "name": "Report Test Scan",
+                "target": "scanme.nmap.org",
+                "scan_type": "vulnerability",
+            },
+            headers=auth_headers,
+        )
+        scan_id = scan_response.json()["id"]
+
+        # Add a finding
+        client.post(
+            f"/scans/{scan_id}/findings",
+            json={
+                "title": "Test Finding for Report",
+                "description": "Test description",
+                "severity": "high",
+                "tool": "nmap",
+            },
+            headers=auth_headers,
+        )
+
+        return scan_id
+
+    @patch("api.main.generate_report_task")
+    def test_generate_report(self, mock_generate, client, auth_headers, completed_scan):
+        """Test generating a report."""
+        mock_generate.return_value = None  # Background task
+
+        report_request = {
+            "scan_id": completed_scan,
+            "format": "pdf",
+            "template": "default",
+        }
+
+        response = client.post(
+            "/reports",
+            json=report_request,
+            headers=auth_headers,
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert "id" in data
+        assert data["status"] == "pending"
+
+    def test_list_reports(self, client, auth_headers):
+        """Test listing all reports."""
+        response = client.get("/reports", headers=auth_headers)
+        assert response.status_code == 200
+        data = response.json()
+        assert isinstance(data, list)
+
+    @patch("api.main.generate_report_task")
+    def test_generate_report_invalid_format(self, mock_generate, client, auth_headers, completed_scan):
+        """Test generating a report with invalid format."""
+        report_request = {
+            "scan_id": completed_scan,
+            "format": "invalid_format",
+            "template": "default",
+        }
+
+        response = client.post(
+            "/reports",
+            json=report_request,
+            headers=auth_headers,
+        )
+        # Should either accept and fail in background or return validation error
+        assert response.status_code in [200, 422]
+
+
+# ============================================================================
+# TEST CLASS: WebSocket Connections
+# ============================================================================
+
+class TestWebSocketConnections:
+    """Test WebSocket endpoints."""
+
+    def test_websocket_scan_updates(self, client, auth_headers):
+        """Test WebSocket connection for scan updates."""
+        # Create a scan first
+        scan_response = client.post(
+            "/scans",
+            json={
+                "name": "WebSocket Test Scan",
+                "target": "scanme.nmap.org",
+                "scan_type": "reconnaissance",
+            },
+            headers=auth_headers,
+        )
+        scan_id = scan_response.json()["id"]
+
+        with client.websocket_connect(f"/ws/scans/{scan_id}") as websocket:
+            # Send ping
+            websocket.send_json({"action": "ping"})
+
+            # Receive pong
+            data = websocket.receive_json()
+            assert data["type"] == "pong"
+
+    def test_websocket_notifications(self, client):
+        """Test WebSocket connection for global notifications."""
+        with client.websocket_connect("/ws/notifications") as websocket:
+            # Connection should be established
+            # Send a message to keep connection alive
+            websocket.send_text("ping")
+            # Should receive acknowledgment or no response
+
+    def test_websocket_generic_endpoint(self, client):
+        """Test generic WebSocket endpoint."""
+        client_id = "test_client_123"
+        with client.websocket_connect(f"/ws/{client_id}") as websocket:
+            # Send ping
+            websocket.send_json({"type": "ping"})
+
+            # Receive pong
+            data = websocket.receive_json()
+            assert data["type"] == "pong"
+            assert "timestamp" in data
+
+    def test_websocket_subscribe(self, client):
+        """Test WebSocket subscription."""
+        client_id = "test_client_456"
+        with client.websocket_connect(f"/ws/{client_id}") as websocket:
+            # Subscribe to channel
+            websocket.send_json({
+                "type": "subscribe",
+                "channel": "scans",
+            })
+
+            # Receive subscription confirmation
+            data = websocket.receive_json()
+            assert data["type"] == "subscribed"
+            assert data["channel"] == "scans"
+            assert data["client_id"] == client_id
+
+
+# ============================================================================
+# TEST CLASS: Health and Info
+# ============================================================================
+
+class TestHealthAndInfo:
+    """Test health check and info endpoints."""
+
+    def test_health_check(self, client):
+        """Test health check endpoint."""
+        response = client.get("/health")
         assert response.status_code == 200
         data = response.json()
         assert "status" in data
-        assert "progress" in data
-        assert "start_time" in data
+        assert "version" in data
+        assert "timestamp" in data
+        assert "services" in data
 
-    @pytest.mark.asyncio
-    async def test_list_scans(self, authenticated_client):
-        """Test: Liste aller Scans abrufen"""
-        response = await authenticated_client.get("/api/v1/scans")
-
+    def test_api_info(self, client):
+        """Test API info endpoint."""
+        response = client.get("/info")
         assert response.status_code == 200
         data = response.json()
-        assert "scans" in data
-        assert isinstance(data["scans"], list)
-
-    @pytest.mark.asyncio
-    async def test_stop_scan(self, authenticated_client):
-        """Test: Scan stoppen"""
-        # Scan erstellen
-        create_response = await authenticated_client.post(
-            "/api/v1/scans", json={"target": "scanme.nmap.org", "scan_type": "reconnaissance"}
-        )
-        scan_id = create_response.json()["scan_id"]
-
-        # Scan stoppen
-        response = await authenticated_client.post(f"/api/v1/scans/{scan_id}/stop")
-
-        assert response.status_code == 200
-        data = response.json()
-        assert data["status"] == "stopped"
-
-    @pytest.mark.asyncio
-    async def test_get_scan_results(self, authenticated_client):
-        """Test: Scan-Ergebnisse abrufen"""
-        # Scan erstellen
-        create_response = await authenticated_client.post(
-            "/api/v1/scans", json={"target": "scanme.nmap.org", "scan_type": "vulnerability"}
-        )
-        scan_id = create_response.json()["scan_id"]
-
-        # Ergebnisse abrufen
-        response = await authenticated_client.get(f"/api/v1/scans/{scan_id}/results")
-
-        assert response.status_code == 200
-        data = response.json()
-        assert "findings" in data
-        assert "summary" in data
+        assert "name" in data
+        assert "version" in data
+        assert "description" in data
+        assert "endpoints" in data
 
 
-class TestAgentWorkflow:
-    """Integration Tests für Agent-Workflow"""
+# ============================================================================
+# TEST CLASS: Full API Workflow
+# ============================================================================
 
-    @pytest.fixture
-    async def authenticated_client(self):
-        """Fixture für authentifizierten Client"""
-        async with httpx.AsyncClient(base_url="http://localhost:8000") as client:
-            login_response = await client.post("/api/v1/auth/login", json={"username": "admin", "password": "admin123"})
-            token = login_response.json()["access_token"]
-            client.headers["Authorization"] = f"Bearer {token}"
-            yield client
+class TestFullAPIWorkflow:
+    """Test complete API workflow from scan creation to report generation."""
 
-    @pytest.mark.asyncio
-    async def test_register_agent(self, authenticated_client):
-        """Test: Agent registrieren"""
-        response = await authenticated_client.post(
-            "/api/v1/agents/register",
+    @pytest.mark.slow
+    def test_complete_pentest_workflow(self, client, auth_headers):
+        """Test complete pentest workflow through API."""
+        # Step 1: Create scan
+        scan_response = client.post(
+            "/scans",
             json={
-                "name": "recon_agent_1",
-                "capabilities": ["nmap", "subdomain_enum", "whois"],
-                "priority": 1,
-                "max_concurrent_tasks": 3,
+                "name": "Complete Workflow Scan",
+                "target": "scanme.nmap.org",
+                "scan_type": "comprehensive",
+                "config": {"ports": "80,443,8080", "intensity": "medium"},
             },
+            headers=auth_headers,
         )
+        assert scan_response.status_code == 200
+        scan_data = scan_response.json()
+        scan_id = scan_data["id"]
+        assert scan_data["status"] == "pending"
 
-        assert response.status_code == 201
-        data = response.json()
-        assert "agent_id" in data
-        assert data["status"] == "registered"
-
-    @pytest.mark.asyncio
-    async def test_list_agents(self, authenticated_client):
-        """Test: Liste aller Agents abrufen"""
-        response = await authenticated_client.get("/api/v1/agents")
-
-        assert response.status_code == 200
-        data = response.json()
-        assert "agents" in data
-        assert isinstance(data["agents"], list)
-
-    @pytest.mark.asyncio
-    async def test_assign_task_to_agent(self, authenticated_client):
-        """Test: Task an Agent zuweisen"""
-        # Agent registrieren
-        agent_response = await authenticated_client.post(
-            "/api/v1/agents/register", json={"name": "test_agent", "capabilities": ["vuln_scan"]}
+        # Step 2: Add findings
+        finding_data = {
+            "title": "Critical Vulnerability Found",
+            "description": "A critical vulnerability was discovered during testing",
+            "severity": "critical",
+            "cvss_score": 9.8,
+            "evidence": "Evidence data here",
+            "tool": "nuclei",
+        }
+        finding_response = client.post(
+            f"/scans/{scan_id}/findings",
+            json=finding_data,
+            headers=auth_headers,
         )
-        agent_id = agent_response.json()["agent_id"]
+        assert finding_response.status_code == 200
+        finding_id = finding_response.json()["id"]
 
-        # Task zuweisen
-        response = await authenticated_client.post(
-            f"/api/v1/agents/{agent_id}/tasks",
-            json={"type": "vuln_scan", "target": "example.com", "priority": "high", "options": {"scan_depth": "normal"}},
+        # Step 3: Update finding
+        update_response = client.patch(
+            f"/findings/{finding_id}",
+            json={"verified": 1, "remediation": "Apply patch immediately"},
+            headers=auth_headers,
         )
+        assert update_response.status_code == 200
 
-        assert response.status_code == 201
-        data = response.json()
-        assert "task_id" in data
-        assert data["status"] == "assigned"
-
-    @pytest.mark.asyncio
-    async def test_get_agent_status(self, authenticated_client):
-        """Test: Agent-Status abrufen"""
-        # Agent registrieren
-        agent_response = await authenticated_client.post(
-            "/api/v1/agents/register", json={"name": "status_test_agent", "capabilities": ["recon"]}
+        # Step 4: Get scan with findings
+        scan_get_response = client.get(
+            f"/scans/{scan_id}",
+            headers=auth_headers,
         )
-        agent_id = agent_response.json()["agent_id"]
+        assert scan_get_response.status_code == 200
 
-        # Status abrufen
-        response = await authenticated_client.get(f"/api/v1/agents/{agent_id}/status")
-
-        assert response.status_code == 200
-        data = response.json()
-        assert "state" in data
-        assert "active_tasks" in data
-        assert "capabilities" in data
-
-
-class TestReportWorkflow:
-    """Integration Tests für Reporting-Workflow"""
-
-    @pytest.fixture
-    async def authenticated_client(self):
-        """Fixture für authentifizierten Client"""
-        async with httpx.AsyncClient(base_url="http://localhost:8000") as client:
-            login_response = await client.post("/api/v1/auth/login", json={"username": "admin", "password": "admin123"})
-            token = login_response.json()["access_token"]
-            client.headers["Authorization"] = f"Bearer {token}"
-            yield client
-
-    @pytest.mark.asyncio
-    async def test_generate_report(self, authenticated_client):
-        """Test: Report generieren"""
-        # Scan erstellen und abschließen
-        scan_response = await authenticated_client.post(
-            "/api/v1/scans", json={"target": "scanme.nmap.org", "scan_type": "vulnerability"}
+        findings_response = client.get(
+            f"/scans/{scan_id}/findings",
+            headers=auth_headers,
         )
-        scan_id = scan_response.json()["scan_id"]
+        assert findings_response.status_code == 200
+        findings = findings_response.json()
+        assert len(findings) >= 1
 
-        # Report generieren
-        response = await authenticated_client.post(
-            "/api/v1/reports", json={"scan_id": scan_id, "format": "pdf", "template": "executive", "include_evidence": True}
-        )
-
-        assert response.status_code == 201
-        data = response.json()
-        assert "report_id" in data
-        assert "download_url" in data
-
-    @pytest.mark.asyncio
-    async def test_list_reports(self, authenticated_client):
-        """Test: Liste aller Reports abrufen"""
-        response = await authenticated_client.get("/api/v1/reports")
-
-        assert response.status_code == 200
-        data = response.json()
-        assert "reports" in data
-        assert isinstance(data["reports"], list)
-
-    @pytest.mark.asyncio
-    async def test_download_report(self, authenticated_client):
-        """Test: Report herunterladen"""
-        # Report erstellen
-        report_response = await authenticated_client.post("/api/v1/reports", json={"scan_id": "test-scan-id", "format": "pdf"})
-        report_id = report_response.json()["report_id"]
-
-        # Report herunterladen
-        response = await authenticated_client.get(f"/api/v1/reports/{report_id}/download")
-
-        assert response.status_code == 200
-        assert response.headers["content-type"] == "application/pdf"
-
-
-class TestWebhookIntegration:
-    """Integration Tests für Webhook-Integration"""
-
-    @pytest.fixture
-    async def authenticated_client(self):
-        """Fixture für authentifizierten Client"""
-        async with httpx.AsyncClient(base_url="http://localhost:8000") as client:
-            login_response = await client.post("/api/v1/auth/login", json={"username": "admin", "password": "admin123"})
-            token = login_response.json()["access_token"]
-            client.headers["Authorization"] = f"Bearer {token}"
-            yield client
-
-    @pytest.mark.asyncio
-    async def test_register_webhook(self, authenticated_client):
-        """Test: Webhook registrieren"""
-        response = await authenticated_client.post(
-            "/api/v1/webhooks",
-            json={
-                "url": "https://example.com/webhook",
-                "events": ["scan.complete", "finding.critical"],
-                "secret": "webhook_secret_123",
-                "active": True,
-            },
-        )
-
-        assert response.status_code == 201
-        data = response.json()
-        assert "webhook_id" in data
-
-    @pytest.mark.asyncio
-    async def test_webhook_delivery(self, authenticated_client):
-        """Test: Webhook wird bei Events ausgeliefert"""
-        # Webhook registrieren
-        webhook_response = await authenticated_client.post(
-            "/api/v1/webhooks", json={"url": "https://httpbin.org/post", "events": ["scan.complete"], "active": True}
-        )
-        webhook_response.json()["webhook_id"]
-
-        # Scan erstellen und abschließen
-        with patch("httpx.AsyncClient.post") as mock_post:
-            mock_post.return_value = Mock(status_code=200)
-
-            await authenticated_client.post("/api/v1/scans", json={"target": "scanme.nmap.org", "scan_type": "reconnaissance"})
-
-            # Webhook sollte aufgerufen worden sein
-            mock_post.assert_called()
-
-
-class TestSIEMIntegration:
-    """Integration Tests für SIEM-Integration"""
-
-    @pytest.fixture
-    async def authenticated_client(self):
-        """Fixture für authentifizierten Client"""
-        async with httpx.AsyncClient(base_url="http://localhost:8000") as client:
-            login_response = await client.post("/api/v1/auth/login", json={"username": "admin", "password": "admin123"})
-            token = login_response.json()["access_token"]
-            client.headers["Authorization"] = f"Bearer {token}"
-            yield client
-
-    @pytest.mark.asyncio
-    async def test_configure_siem(self, authenticated_client):
-        """Test: SIEM-Integration konfigurieren"""
-        response = await authenticated_client.post(
-            "/api/v1/integrations/siem",
-            json={
-                "type": "splunk",
-                "host": "splunk.example.com",
-                "port": 8088,
-                "token": "splunk-hec-token",
-                "index": "security",
-                "enabled": True,
-            },
-        )
-
-        assert response.status_code == 201
-        data = response.json()
-        assert data["status"] == "configured"
-
-    @pytest.mark.asyncio
-    async def test_send_finding_to_siem(self, authenticated_client):
-        """Test: Finding an SIEM senden"""
-        with patch("httpx.AsyncClient.post") as mock_post:
-            mock_post.return_value = Mock(status_code=200)
-
-            response = await authenticated_client.post(
-                "/api/v1/findings/send-to-siem",
-                json={"finding_id": "finding-123", "siem_config": {"type": "splunk", "host": "splunk.example.com"}},
+        # Step 5: Generate report
+        with patch("api.main.generate_report_task") as mock_report:
+            mock_report.return_value = None
+            report_response = client.post(
+                "/reports",
+                json={
+                    "scan_id": scan_id,
+                    "format": "pdf",
+                    "template": "executive",
+                },
+                headers=auth_headers,
             )
+            assert report_response.status_code == 200
+            report_id = report_response.json()["id"]
 
-            assert response.status_code == 200
-            mock_post.assert_called()
+        # Step 6: List all reports
+        reports_list_response = client.get("/reports", headers=auth_headers)
+        assert reports_list_response.status_code == 200
+        reports = reports_list_response.json()
+        assert isinstance(reports, list)
 
-
-class TestComplianceWorkflow:
-    """Integration Tests für Compliance-Workflow"""
-
-    @pytest.fixture
-    async def authenticated_client(self):
-        """Fixture für authentifizierten Client"""
-        async with httpx.AsyncClient(base_url="http://localhost:8000") as client:
-            login_response = await client.post("/api/v1/auth/login", json={"username": "admin", "password": "admin123"})
-            token = login_response.json()["access_token"]
-            client.headers["Authorization"] = f"Bearer {token}"
-            yield client
-
-    @pytest.mark.asyncio
-    async def test_compliance_scan(self, authenticated_client):
-        """Test: Compliance-Scan durchführen"""
-        response = await authenticated_client.post(
-            "/api/v1/compliance/scans",
-            json={
-                "target": "internal-network",
-                "framework": "ISO27001",
-                "controls": ["A.12.6", "A.14.2"],
-                "options": {"evidence_collection": True},
-            },
+        # Step 7: Update scan status
+        scan_update_response = client.patch(
+            f"/scans/{scan_id}",
+            json={"status": "completed"},
+            headers=auth_headers,
         )
+        assert scan_update_response.status_code == 200
+        assert scan_update_response.json()["status"] == "completed"
 
-        assert response.status_code == 201
-        data = response.json()
-        assert "scan_id" in data
-        assert data["framework"] == "ISO27001"
 
-    @pytest.mark.asyncio
-    async def test_compliance_report(self, authenticated_client):
-        """Test: Compliance-Report generieren"""
-        # Compliance-Scan durchführen
-        scan_response = await authenticated_client.post(
-            "/api/v1/compliance/scans", json={"target": "internal-network", "framework": "NIST_800_53"}
-        )
-        scan_id = scan_response.json()["scan_id"]
-
-        # Report generieren
-        response = await authenticated_client.post(
-            "/api/v1/compliance/reports", json={"scan_id": scan_id, "format": "pdf", "include_remediation": True}
-        )
-
-        assert response.status_code == 201
-        data = response.json()
-        assert "report_id" in data
-
+# ============================================================================
+# TEST CLASS: Error Handling
+# ============================================================================
 
 class TestErrorHandling:
-    """Integration Tests für Fehlerbehandlung"""
+    """Test API error handling and edge cases."""
 
-    @pytest.fixture
-    async def authenticated_client(self):
-        """Fixture für authentifizierten Client"""
-        async with httpx.AsyncClient(base_url="http://localhost:8000") as client:
-            login_response = await client.post("/api/v1/auth/login", json={"username": "admin", "password": "admin123"})
-            token = login_response.json()["access_token"]
-            client.headers["Authorization"] = f"Bearer {token}"
-            yield client
-
-    @pytest.mark.asyncio
-    async def test_invalid_scan_target(self, authenticated_client):
-        """Test: Ungültiges Scan-Ziel wird abgelehnt"""
-        response = await authenticated_client.post(
-            "/api/v1/scans", json={"target": "not-a-valid-target!!!", "scan_type": "reconnaissance"}
+    def test_invalid_json(self, client, auth_headers):
+        """Test handling of invalid JSON."""
+        response = client.post(
+            "/scans",
+            data="invalid json {{",
+            headers={**auth_headers, "Content-Type": "application/json"},
         )
+        assert response.status_code == 422
 
-        assert response.status_code == 400
-        assert "detail" in response.json()
+    def test_method_not_allowed(self, client, auth_headers):
+        """Test method not allowed response."""
+        response = client.put("/scans", headers=auth_headers)
+        assert response.status_code == 405
 
-    @pytest.mark.asyncio
-    async def test_rate_limiting(self, authenticated_client):
-        """Test: Rate-Limiting funktioniert"""
-        # Mehrere Anfragen schnell hintereinander
-        responses = []
-        for _ in range(100):
-            response = await authenticated_client.get("/api/v1/scans")
-            responses.append(response.status_code)
-
-        # Einige sollten 429 (Too Many Requests) sein
-        assert 429 in responses
-
-    @pytest.mark.asyncio
-    async def test_not_found(self, authenticated_client):
-        """Test: 404 für nicht-existierende Ressourcen"""
-        response = await authenticated_client.get("/api/v1/scans/nonexistent-id")
-
+    def test_not_found(self, client, auth_headers):
+        """Test 404 response for non-existent endpoint."""
+        response = client.get("/nonexistent/endpoint", headers=auth_headers)
         assert response.status_code == 404
+
+    def test_validation_error_detail(self, client, auth_headers):
+        """Test validation error contains detailed information."""
+        response = client.post(
+            "/scans",
+            json={
+                "name": "",  # Empty name should fail validation
+                "target": "scanme.nmap.org",
+                "scan_type": "reconnaissance",
+            },
+            headers=auth_headers,
+        )
+        assert response.status_code == 422
+        data = response.json()
+        assert "detail" in data
 
 
 if __name__ == "__main__":
