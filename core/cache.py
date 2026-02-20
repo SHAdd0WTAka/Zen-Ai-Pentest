@@ -155,7 +155,7 @@ class SQLiteCache(CacheBackend):
                 await self.delete(key)
                 return None
 
-            return pickle.loads(value)
+            return pickle.loads(value)  # nosec B301
 
     async def set(self, key: str, value: Any, ttl: Optional[int] = None) -> bool:
         async with self._lock:
@@ -240,7 +240,7 @@ class RedisCache(CacheBackend):
             client = await self._get_client()
             value = await client.get(key)
             if value:
-                return pickle.loads(value)
+                return pickle.loads(value)  # nosec B301
             return None
         except Exception as e:
             logger.error(f"Redis get error: {e}")

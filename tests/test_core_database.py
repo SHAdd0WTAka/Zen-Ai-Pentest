@@ -8,7 +8,6 @@ Target: 80%+ coverage for core/database.py
 
 import pytest
 from unittest.mock import Mock, patch, MagicMock
-from datetime import datetime
 
 # We need to patch before import
 @pytest.fixture(autouse=True)

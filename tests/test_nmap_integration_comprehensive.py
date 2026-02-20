@@ -7,9 +7,8 @@ Target: 80%+ coverage
 
 import asyncio
 import sys
-import xml.etree.ElementTree as ET
 from pathlib import Path
-from unittest.mock import MagicMock, mock_open, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 

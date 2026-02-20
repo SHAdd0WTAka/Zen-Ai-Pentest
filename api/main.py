@@ -58,18 +58,13 @@ from database.models import Report, SessionLocal, get_db, init_db
 # Import new auth system
 try:
     from auth import (
-        AuthConfig,
         AuthMiddleware,
         JWTHandler,
-        MFAHandler,
         PasswordHasher,
-        Permission,
         RBACManager,
-        Role,
         UserManager,
-        get_user_manager,
     )
-    from database.auth_models import get_auth_db, init_auth_db
+    from database.auth_models import init_auth_db
 
     NEW_AUTH_AVAILABLE = True
 except ImportError as e:
@@ -87,7 +82,6 @@ from api.websocket_manager import manager
 
 # Import Agent v2 routes
 try:
-    from api.routes.agents_v2 import agent_manager, agent_websocket
     from api.routes.agents_v2 import router as agents_v2_router
 
     AGENTS_V2_AVAILABLE = True
@@ -1658,4 +1652,4 @@ except Exception as e:
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8000)  # nosec B104

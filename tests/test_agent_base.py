@@ -5,9 +5,7 @@ Tests AgentRole, AgentState, AgentMessage, and BaseAgent
 
 import pytest
 import asyncio
-from unittest.mock import Mock, AsyncMock, patch
-from datetime import datetime
-from enum import Enum
+from unittest.mock import Mock, AsyncMock
 
 from agents.agent_base import (
     AgentRole,
@@ -254,7 +252,7 @@ class TestBaseAgentMessaging:
         """Test sending message without orchestrator (direct queue)"""
         agent = ConcreteTestAgent("TestAgent", AgentRole.RESEARCHER)
 
-        msg_id = await agent.send_message("Direct message")
+        await agent.send_message("Direct message")
 
         # Message should be in the queue
         assert agent.message_queue.qsize() == 1

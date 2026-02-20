@@ -30,7 +30,6 @@ from typing import Any, Callable, Dict, List, Optional, Set
 try:
     from guardrails.domain_validator import validate_domain, validate_url
     from guardrails.ip_validator import validate_target as validate_ip_target
-    from guardrails.rate_limiter import check_tool_execution
     from guardrails.risk_levels import RiskLevel, RiskLevelManager
 
     GUARDRAILS_AVAILABLE = True
@@ -225,9 +224,8 @@ class WorkflowOrchestrator:
             self.risk_manager = None
             self.guardrails_enabled = False
 
-        logger.info(
-            f"✅ WorkflowOrchestrator initialized (step_timeout={step_timeout}s, guardrails={'enabled' if self.guardrails_enabled else 'disabled'})"
-        )
+        guardrails_status = "enabled" if self.guardrails_enabled else "disabled"
+        logger.info(f"✅ WorkflowOrchestrator initialized (step_timeout={step_timeout}s, guardrails={guardrails_status})")
 
     def _validate_target(self, target: str) -> tuple[bool, Optional[str]]:
         """
@@ -288,9 +286,11 @@ class WorkflowOrchestrator:
 
         if not self.risk_manager.can_run_tool(tool_name):
             blocked_tools = self.risk_manager.get_blocked_tools()
+            risk_name = self.risk_manager.get_risk_level().name
+            blocked_list = ", ".join(blocked_tools)
             return (
                 False,
-                f"Tool '{tool_name}' not allowed at risk level {self.risk_manager.get_risk_level().name}. Blocked tools: {', '.join(blocked_tools)}",
+                f"Tool '{tool_name}' not allowed at risk level {risk_name}. Blocked tools: {blocked_list}",
             )
 
         return True, None

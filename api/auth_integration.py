@@ -13,7 +13,6 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 # Import from new auth module
 try:
-    from auth.config import AuthConfig
     from auth.jwt_handler import JWTHandler, TokenExpiredError, TokenInvalidError
     from auth.middleware import AuthMiddleware
     from auth.rbac import Permission, RBACManager, Role

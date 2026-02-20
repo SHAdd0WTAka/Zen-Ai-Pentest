@@ -230,7 +230,11 @@ WICHTIG:
             messages = [
                 SystemMessage(content=system_prompt),
                 HumanMessage(
-                    content=f"Ziel: {state['target']}\nAufgabe: {state['objective']}\nVorherige Ergebnisse: {len(state['findings'])} findings"
+                    content=(
+                        f"Ziel: {state['target']}\n"
+                        f"Aufgabe: {state['objective']}\n"
+                        f"Vorherige Ergebnisse: {len(state['findings'])} findings"
+                    )
                 ),
             ]
 
@@ -399,7 +403,10 @@ Antworte mit einer klaren Empfehlung."""
             messages = [
                 SystemMessage(content=system_prompt),
                 HumanMessage(
-                    content=f"Plan-Fortschritt: {state['current_step_index'] + 1}/{len(state['plan'])}\nFindings: {len(state['findings'])}"
+                    content=(
+                        f"Plan-Fortschritt: {state['current_step_index'] + 1}/{len(state['plan'])}\n"
+                        f"Findings: {len(state['findings'])}"
+                    )
                 ),
             ]
 

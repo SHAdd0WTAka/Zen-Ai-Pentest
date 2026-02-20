@@ -26,7 +26,7 @@ class TestImportAllTools:
 
     def test_import_nuclei(self):
         try:
-            import tools.nuclei_integration as nuclei
+            import tools.nuclei_integration as nuclei  # noqa: F401
 
             assert True
         except ImportError:
@@ -34,7 +34,7 @@ class TestImportAllTools:
 
     def test_import_sqlmap(self):
         try:
-            import tools.sqlmap_integration as sqlmap
+            import tools.sqlmap_integration as sqlmap  # noqa: F401
 
             assert True
         except ImportError:
@@ -42,7 +42,7 @@ class TestImportAllTools:
 
     def test_import_ffuf_enhanced(self):
         try:
-            import tools.ffuf_integration_enhanced as ffuf
+            import tools.ffuf_integration_enhanced as ffuf  # noqa: F401
 
             assert True
         except ImportError:
@@ -50,7 +50,7 @@ class TestImportAllTools:
 
     def test_import_whatweb(self):
         try:
-            import tools.whatweb_integration as whatweb
+            import tools.whatweb_integration as whatweb  # noqa: F401
 
             assert True
         except ImportError:
@@ -58,7 +58,7 @@ class TestImportAllTools:
 
     def test_import_wafw00f(self):
         try:
-            import tools.wafw00f_integration as wafw00f
+            import tools.wafw00f_integration as wafw00f  # noqa: F401
 
             assert True
         except ImportError:
@@ -66,7 +66,7 @@ class TestImportAllTools:
 
     def test_import_subfinder(self):
         try:
-            import tools.subfinder_integration as subfinder
+            import tools.subfinder_integration as subfinder  # noqa: F401
 
             assert True
         except ImportError:
@@ -74,7 +74,7 @@ class TestImportAllTools:
 
     def test_import_httpx(self):
         try:
-            import tools.httpx_integration as httpx
+            import tools.httpx_integration as httpx  # noqa: F401
 
             assert True
         except ImportError:
@@ -82,7 +82,7 @@ class TestImportAllTools:
 
     def test_import_nikto(self):
         try:
-            import tools.nikto_integration as nikto
+            import tools.nikto_integration as nikto  # noqa: F401
 
             assert True
         except ImportError:
@@ -90,7 +90,7 @@ class TestImportAllTools:
 
     def test_import_sherlock(self):
         try:
-            import tools.sherlock_integration as sherlock
+            import tools.sherlock_integration as sherlock  # noqa: F401
 
             assert True
         except ImportError:

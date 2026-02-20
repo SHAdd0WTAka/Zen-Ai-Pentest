@@ -11,8 +11,8 @@ import pytest
 
 # Test complete workflow
 try:
-    from analysis_bot import AnalysisBot
-    from audit import AuditLogger
+    from analysis_bot import AnalysisBot  # noqa: F401
+    from audit import AuditLogger  # noqa: F401
     from dashboard import DashboardConfig, DashboardManager
     from orchestrator import OrchestratorConfig, ZenOrchestrator
     from scheduler import ScheduleConfig, TaskScheduler

@@ -2,14 +2,12 @@
 Comprehensive tests for api/main.py - FastAPI app initialization and core functionality
 """
 
-import json
 import os
 import sys
-from datetime import datetime, timedelta
-from unittest.mock import AsyncMock, MagicMock, Mock, patch
+from datetime import datetime
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from fastapi import HTTPException, WebSocketDisconnect
 
 # Mock modules before importing main - must mock all dependencies
 sys.modules["redis"] = MagicMock()
@@ -69,7 +67,7 @@ class TestLifespan:
         """Test lifespan startup initializes database"""
         from fastapi import FastAPI
         test_app = FastAPI()
-        
+
         with patch("api.main.init_db") as mock_init_db:
             async with lifespan(test_app):
                 pass
@@ -93,54 +91,54 @@ class TestWebSocket:
     def test_simple_agent_connection_connect(self):
         """Test SimpleAgentConnection connect method"""
         import asyncio
-        
+
         async def test_connect():
             manager = SimpleAgentConnection()
             mock_ws = MagicMock()
             mock_ws.accept = AsyncMock()
-            
+
             await manager.connect(mock_ws, "agent_1", "zen_test_key")
             assert "agent_1" in manager.active_connections
             assert manager.agent_info["agent_1"]["api_key"] == "zen_test_key"
-        
+
         asyncio.run(test_connect())
 
     def test_simple_agent_connection_disconnect(self):
         """Test SimpleAgentConnection disconnect method"""
         import asyncio
-        
+
         async def test_disconnect():
             manager = SimpleAgentConnection()
             mock_ws = MagicMock()
             mock_ws.accept = AsyncMock()
-            
+
             await manager.connect(mock_ws, "agent_1", "zen_key")
             manager.disconnect("agent_1")
             assert "agent_1" not in manager.active_connections
-        
+
         asyncio.run(test_disconnect())
 
     def test_simple_agent_connection_send_to_agent(self):
         """Test SimpleAgentConnection send_to_agent method"""
         import asyncio
-        
+
         async def test_send():
             manager = SimpleAgentConnection()
             mock_ws = MagicMock()
             mock_ws.accept = AsyncMock()
             mock_ws.send_json = AsyncMock()
-            
+
             await manager.connect(mock_ws, "agent_1", "zen_key")
             result = await manager.send_to_agent("agent_1", {"type": "test"})
             assert result is True
             mock_ws.send_json.assert_called_once()
-        
+
         asyncio.run(test_send())
 
     def test_simple_agent_connection_broadcast(self):
         """Test SimpleAgentConnection broadcast method"""
         import asyncio
-        
+
         async def test_broadcast():
             manager = SimpleAgentConnection()
             mock_ws1 = MagicMock()
@@ -149,44 +147,44 @@ class TestWebSocket:
             mock_ws2 = MagicMock()
             mock_ws2.accept = AsyncMock()
             mock_ws2.send_json = AsyncMock()
-            
+
             await manager.connect(mock_ws1, "agent_1", "zen_key1")
             await manager.connect(mock_ws2, "agent_2", "zen_key2")
-            
+
             await manager.broadcast({"type": "announcement"})
             mock_ws1.send_json.assert_called_once()
             mock_ws2.send_json.assert_called_once()
-        
+
         asyncio.run(test_broadcast())
 
     def test_simple_agent_connection_get_connected_agents(self):
         """Test SimpleAgentConnection get_connected_agents method"""
         import asyncio
-        
+
         async def test_get_agents():
             manager = SimpleAgentConnection()
             mock_ws = MagicMock()
             mock_ws.accept = AsyncMock()
-            
+
             await manager.connect(mock_ws, "agent_1", "zen_key")
             agents = manager.get_connected_agents()
             assert "agent_1" in agents
-        
+
         asyncio.run(test_get_agents())
 
     def test_simple_agent_connection_is_agent_connected(self):
         """Test SimpleAgentConnection is_agent_connected method"""
         import asyncio
-        
+
         async def test_is_connected():
             manager = SimpleAgentConnection()
             mock_ws = MagicMock()
             mock_ws.accept = AsyncMock()
-            
+
             await manager.connect(mock_ws, "agent_1", "zen_key")
             assert manager.is_agent_connected("agent_1") is True
             assert manager.is_agent_connected("agent_2") is False
-        
+
         asyncio.run(test_is_connected())
 
 
@@ -217,7 +215,7 @@ class TestHelperFunctions:
         # so we can only test with the values that were set at import
         admin_pass = os.environ.get("ADMIN_PASSWORD", "test123")
         admin_user = os.environ.get("ADMIN_USERNAME", "admin")
-        
+
         assert verify_admin_credentials(admin_user, admin_pass) is True
         assert verify_admin_credentials(admin_user, "wrong") is False
         assert verify_admin_credentials("wrong", admin_pass) is False

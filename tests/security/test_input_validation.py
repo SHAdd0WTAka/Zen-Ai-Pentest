@@ -13,8 +13,7 @@ Tests for common input validation vulnerabilities:
 import pytest
 import re
 import html
-from unittest.mock import Mock, patch
-from typing import Any, Dict, List
+from unittest.mock import patch
 
 
 class InputValidator:
@@ -257,7 +256,7 @@ class TestCommandInjectionPrevention:
             subprocess.run(["echo", user_input], shell=False)
 
             call_args = mock_run.call_args
-            assert call_args[1].get('shell') == False
+            assert call_args[1].get('shell') is False
 
 
 # ============== Path Traversal Tests ==============
@@ -349,7 +348,7 @@ class TestSSRFPrevention:
         ]
 
         for ip in private_ips:
-            assert InputValidator.detect_ssrf(f"http://{ip}/") == True
+            assert InputValidator.detect_ssrf(f"http://{ip}/") is True
 
 
 # ============== Integration Tests ==============

@@ -26,7 +26,6 @@ Version: 1.0.0
 
 import asyncio
 import functools
-import hashlib
 import json
 import logging
 import os
@@ -35,7 +34,6 @@ import re
 import shutil
 import ssl
 import subprocess
-import sys
 import time
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -347,9 +345,7 @@ class DatabaseHealthCheck(BaseHealthCheck):
                 results["size_mb"] = cursor.fetchone()[0]
 
                 # Get table list
-                cursor.execute(
-                    "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'"
-                )
+                cursor.execute("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'")
                 results["tables"] = [row[0] for row in cursor.fetchall()]
 
                 conn.close()
@@ -738,15 +734,17 @@ class ResourcesHealthCheck(BaseHealthCheck):
         for partition in psutil.disk_partitions():
             try:
                 usage = psutil.disk_usage(partition.mountpoint)
-                results["disks"].append({
-                    "device": partition.device,
-                    "mountpoint": partition.mountpoint,
-                    "fstype": partition.fstype,
-                    "total_gb": round(usage.total / (1024**3), 2),
-                    "used_gb": round(usage.used / (1024**3), 2),
-                    "free_gb": round(usage.free / (1024**3), 2),
-                    "percent": usage.percent,
-                })
+                results["disks"].append(
+                    {
+                        "device": partition.device,
+                        "mountpoint": partition.mountpoint,
+                        "fstype": partition.fstype,
+                        "total_gb": round(usage.total / (1024**3), 2),
+                        "used_gb": round(usage.used / (1024**3), 2),
+                        "free_gb": round(usage.free / (1024**3), 2),
+                        "percent": usage.percent,
+                    }
+                )
             except PermissionError:
                 continue
 
@@ -922,12 +920,14 @@ class SecurityHealthCheck(BaseHealthCheck):
                         # Get line number
                         line_num = content[: match.start()].count("\n") + 1
 
-                        secrets.append({
-                            "file": str(file_path),
-                            "line": line_num,
-                            "type": secret_type,
-                            "snippet": match.group()[:50] + "..." if len(match.group()) > 50 else match.group(),
-                        })
+                        secrets.append(
+                            {
+                                "file": str(file_path),
+                                "line": line_num,
+                                "type": secret_type,
+                                "snippet": match.group()[:50] + "..." if len(match.group()) > 50 else match.group(),
+                            }
+                        )
 
             except Exception:
                 continue
@@ -1073,9 +1073,7 @@ def run_health_check(
     return report
 
 
-def check_database(
-    database_url: Optional[str] = None, timeout: int = 5
-) -> HealthCheckResult:
+def check_database(database_url: Optional[str] = None, timeout: int = 5) -> HealthCheckResult:
     """Quick database health check"""
     config = HealthCheckConfig(
         check_database=True,

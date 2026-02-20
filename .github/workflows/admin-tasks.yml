@@ -39,7 +39,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "🔓 Deaktiviere Branch Protection..."
+          echo "Deaktiviere Branch Protection..."
           gh api repos/${{ github.repository }}/branches/main/protection \
             --method DELETE \
             -H "Accept: application/vnd.github+json" \
@@ -51,7 +51,7 @@ jobs:
         env:
           DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN_PRIMARY }}
         run: |
-          echo "🎮 Fülle Discord Channels..."
+          echo "Fülle Discord Channels..."
           python scripts/fill_discord_channels.py
           
       - name: Post Bug Bounty Info
@@ -59,8 +59,8 @@ jobs:
         env:
           DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN_PRIMARY }}
         run: |
-          echo "🏆 Poste Bug Bounty Programm..."
-          python << 'EOF'
+          echo "Poste Bug Bounty Programm..."
+          cat > /tmp/post_bounty.py << 'ENDOFSCRIPT'
           import requests
           import os
           
@@ -88,61 +88,56 @@ jobs:
               
               if target_channel:
                   msg_url = f"{BASE_URL}/channels/{target_channel}/messages"
-                  content = """🎉 **NEW: Bug Bounty Program!** 🏆
-
-Wir starten das **Zen-AI-Bounty** Programm!
-
-🎯 **Was erwartet dich?**
-• Punkte für gefundene Bugs (CVSS-basiert)
-• 3-Monats Seasons mit Leaderboard
-• Belohnungen für Top 3 (Badge, Merch, Early Access)
-• Hall of Fame für alle Top 10
-
-📊 **Punkte-System:**
-• 🔴 Critical: 1000 Punkte
-• 🟠 High: 500 Punkte
-• 🟡 Medium: 200 Punkte
-• 🟢 Low: 50 Punkte
-• 💡 Enhancement: 25 Punkte
-
-🎁 **Belohnungen (Season 1: Jan-März):**
-🥇 1. Platz: Security Champion Title + Limited Merch
-🥈 2. Platz: Elite Contributor Badge + Beta Access
-🥉 3. Platz: Rising Star Badge + Discord Nitro
-
-📖 **Mehr Infos:**
-https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/blob/main/docs/BUG_BOUNTY_PROGRAM.md
-
-**Ready to hunt some bugs?** 🐛🔍
-
-#BugBounty #Security #ZenAI"""
+                  content = (
+                      "**NEW: Bug Bounty Program!**\n\n"
+                      "Wir starten das **Zen-AI-Bounty** Programm!\n\n"
+                      "**Was erwartet dich?**\n"
+                      "- Punkte fuer gefundene Bugs (CVSS-basiert)\n"
+                      "- 3-Monats Seasons mit Leaderboard\n"
+                      "- Belohnungen fuer Top 3 (Badge, Merch, Early Access)\n"
+                      "- Hall of Fame fuer alle Top 10\n\n"
+                      "**Punkte-System:**\n"
+                      "- Critical: 1000 Punkte\n"
+                      "- High: 500 Punkte\n"
+                      "- Medium: 200 Punkte\n"
+                      "- Low: 50 Punkte\n"
+                      "- Enhancement: 25 Punkte\n\n"
+                      "**Belohnungen (Season 1: Jan-Maerz):**\n"
+                      "1. Platz: Security Champion Title + Limited Merch\n"
+                      "2. Platz: Elite Contributor Badge + Beta Access\n"
+                      "3. Platz: Rising Star Badge + Discord Nitro\n\n"
+                      "Mehr Infos:\n"
+                      "https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/blob/main/docs/BUG_BOUNTY_PROGRAM.md\n\n"
+                      "Ready to hunt some bugs?"
+                  )
                   
                   data = {"content": content}
                   r2 = requests.post(msg_url, json=data, headers=headers)
                   
                   if r2.status_code == 200:
-                      print("✅ Bug Bounty Programm gepostet!")
+                      print("Bug Bounty Programm gepostet!")
                   else:
-                      print(f"❌ Fehler: {r2.status_code}")
+                      print(f"Fehler: {r2.status_code}")
               else:
-                  print("❌ Kein passender Channel gefunden")
-          EOF
+                  print("Kein passender Channel gefunden")
+          ENDOFSCRIPT
+          python /tmp/post_bounty.py
           
       - name: Custom Script
         if: github.event.inputs.task == 'custom' && github.event.inputs.custom_script != ''
         env:
           DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN_PRIMARY }}
         run: |
-          echo "⚙️ Führe Custom Script aus..."
+          echo "Fuehre Custom Script aus..."
           ${{ github.event.inputs.custom_script }}
           
       # Schritt 3: Branch Protection wieder aktivieren
       - name: Enable Branch Protection
-        if: always()  # Auch bei Fehlern ausführen!
+        if: always()  # Auch bei Fehlern ausfuehren!
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "🔒 Aktiviere Branch Protection wieder..."
+          echo "Aktiviere Branch Protection wieder..."
           gh api repos/${{ github.repository }}/branches/main/protection \
             --method PUT \
             -H "Accept: application/vnd.github+json" \
@@ -153,4 +148,4 @@ https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/blob/main/docs/BUG_BOUNTY_PROGRAM.
             -f enforce_admins=true \
             -f required_pull_request_reviews[required_approving_review_count]=1 \
             -f required_pull_request_reviews[dismiss_stale_reviews]=true
-          echo "✅ Branch Protection wieder aktiviert!"
+          echo "Branch Protection wieder aktiviert!"

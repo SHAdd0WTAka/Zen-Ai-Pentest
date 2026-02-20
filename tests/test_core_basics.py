@@ -115,7 +115,8 @@ class TestBasicFunctionality:
 def test_error_handling():
     """Test basic error handling"""
     try:
-        pass
+        result = 1 / 0  # This should raise ZeroDivisionError
+        _ = result  # Avoid unused variable warning
     except ZeroDivisionError:
         assert True
     else:

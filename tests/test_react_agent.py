@@ -3,11 +3,9 @@ Comprehensive tests for ReAct Agent
 Tests the ReAct agent implementation with mocked LLM and tools
 """
 
-import json
 import pytest
 import sys
-from unittest.mock import Mock, patch, MagicMock, AsyncMock
-from datetime import datetime
+from unittest.mock import Mock, patch, MagicMock
 
 # Mock imports before importing react_agent
 sys.modules['core'] = MagicMock()
@@ -23,7 +21,6 @@ sys.modules['tools.nuclei_integration'] = MagicMock()
 from agents.react_agent import (
     ReActAgent,
     ReActAgentConfig,
-    AgentState,
     get_agent
 )
 

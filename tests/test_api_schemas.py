@@ -2,10 +2,7 @@
 Comprehensive tests for api/schemas.py - Pydantic models validation and serialization
 """
 
-import json
 from datetime import datetime
-from enum import Enum
-from typing import Optional
 
 import pytest
 from pydantic import ValidationError
@@ -13,7 +10,6 @@ from pydantic import ValidationError
 # Import all schemas
 from api.schemas import (
     AssetBase,
-    AssetCreate,
     AssetResponse,
     DashboardResponse,
     DashboardStats,
@@ -28,7 +24,6 @@ from api.schemas import (
     PaginationParams,
     RecentActivity,
     ReportBase,
-    ReportCreate,
     ReportFormat,
     ReportResponse,
     ScheduleExecutionResponse,

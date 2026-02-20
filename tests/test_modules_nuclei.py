@@ -14,7 +14,6 @@ Tests NucleiIntegration functionality including:
 - Template manager
 """
 
-import asyncio
 import json
 import os
 from dataclasses import dataclass

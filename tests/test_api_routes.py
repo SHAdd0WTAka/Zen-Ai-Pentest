@@ -3,11 +3,10 @@ Comprehensive tests for API routes - scans, agents, auth, and other endpoints
 Uses FastAPI TestClient with mocked dependencies
 """
 
-import json
 import os
 import sys
-from datetime import datetime, timedelta
-from unittest.mock import AsyncMock, MagicMock, Mock, patch
+from datetime import datetime
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -67,7 +66,7 @@ class TestSchemas:
         # Too short username
         with pytest.raises(Exception):
             UserLogin(username="ab", password="password123")
-        
+
         # Too short password
         with pytest.raises(Exception):
             UserLogin(username="admin", password="12345")

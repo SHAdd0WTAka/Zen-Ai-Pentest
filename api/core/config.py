@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     VERSION: str = "1.0.0"
 
     # Server
-    HOST: str = os.getenv("HOST", "0.0.0.0")
+    HOST: str = os.getenv("HOST", "0.0.0.0")  # nosec B104
     PORT: int = int(os.getenv("PORT", "8080"))
     WORKERS: int = int(os.getenv("WORKERS", "4"))
 

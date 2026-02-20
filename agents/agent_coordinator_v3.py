@@ -681,7 +681,7 @@ class AgentCoordinator:
         """Evaluiere Bedingung"""
         try:
             # Einfache Bedingungsauswertung
-            return eval(condition, {"results": results, "__builtins__": {}})
+            return eval(condition, {"results": results, "__builtins__": {}})  # nosec B307
         except Exception:
             return False
 

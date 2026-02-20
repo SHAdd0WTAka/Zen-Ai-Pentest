@@ -13,11 +13,9 @@ Target: 80%+ coverage for core/health_check.py
 
 import json
 import os
-import ssl
 import sys
 import time
 from datetime import datetime
-from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 

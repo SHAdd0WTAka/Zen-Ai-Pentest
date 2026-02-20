@@ -30,3 +30,13 @@ try:
     )
 except ImportError:
     pass  # Health check dependencies may not be installed
+
+__all__ = [
+    "HealthCheckConfig",
+    "HealthCheckResult",
+    "HealthCheckRunner",
+    "HealthReport",
+    "HealthStatus",
+    "SeverityLevel",
+    "run_health_check",
+]

@@ -625,7 +625,9 @@ def ws_chat(ws):
                         {
                             "type": "complete",
                             "persona": persona_id,
-                            "content": f"[Simulierte Antwort von {PERSONAS[persona_id]['name']}]\n\nAnfrage: {message[:100]}...",
+                            "content": (
+                                f"[Simulierte Antwort von {PERSONAS[persona_id]['name']}]\n" f"\nAnfrage: {message[:100]}..."
+                            ),
                         }
                     )
                 )
@@ -637,7 +639,12 @@ def ws_chat(ws):
                             "type": "complete",
                             "persona": persona_id,
                             "persona_name": PERSONAS[persona_id]["name"],
-                            "content": f"✅ Anfrage empfangen!\n\nPersona: {PERSONAS[persona_id]['name']}\nNachricht: {message[:200]}...\n\nFür echte Antwort: API Key in config.json hinterlegen und stream=true setzen.",
+                            "content": (
+                                f"✅ Anfrage empfangen!\n\nPersona: {PERSONAS[persona_id]['name']}\n"
+                                f"Nachricht: {message[:200]}...\n\n"
+                                "Für echte Antwort: API Key in config.json "
+                                "hinterlegen und stream=true setzen."
+                            ),
                         }
                     )
                 )

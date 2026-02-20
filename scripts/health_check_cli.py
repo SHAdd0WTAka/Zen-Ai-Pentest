@@ -25,7 +25,6 @@ Version: 1.0.0
 import argparse
 import json
 import logging
-import os
 import sys
 import time
 from pathlib import Path
@@ -119,8 +118,6 @@ class HealthCheckCLI:
         if not verbose and check.status == HealthStatus.OK:
             return
 
-        color = self.STATUS_COLORS.get(check.status, Colors.RESET)
-
         # Print details if available
         if check.details:
             if "error" in check.details:
@@ -175,7 +172,7 @@ class HealthCheckCLI:
         status_color = self.STATUS_COLORS.get(report.overall_status, Colors.RESET)
 
         print(f"\nOverall Status: {self.colorize(report.overall_status.value.upper(), status_color)}")
-        print(f"\nChecks:")
+        print("\nChecks:")
         print(f"  Total:     {summary['total']}")
         print(f"  {self.colorize('OK:', Colors.OK)}        {summary['ok']}")
         print(f"  {self.colorize('Warning:', Colors.WARNING)}  {summary['warning']}")
@@ -198,8 +195,8 @@ class HealthCheckCLI:
         print(f"**Overall Status:** {report.overall_status.value.upper()}\n")
 
         print("## Summary\n")
-        print(f"| Status | Count |")
-        print(f"|--------|-------|")
+        print("| Status | Count |")
+        print("|--------|-------|")
         print(f"| OK | {report.summary['ok']} |")
         print(f"| Warning | {report.summary['warning']} |")
         print(f"| Error | {report.summary['error']} |")
@@ -219,10 +216,10 @@ class HealthCheckCLI:
                 print(f"- **Remediation:** {check.remediation}")
 
             if check.details:
-                print(f"\n**Details:**")
-                print(f"```json")
+                print("\n**Details:**")
+                print("```json")
                 print(json.dumps(check.details, indent=2, default=str))
-                print(f"```")
+                print("```")
 
             print()
 
@@ -264,7 +261,6 @@ class HealthCheckCLI:
                 print("Running health checks...\n")
 
             # Run checks
-            start_time = time.time()
             report = asyncio.run(runner.run_all_checks(checks))
 
             if not quiet and format_type == "text":
