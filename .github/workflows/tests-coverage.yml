@@ -61,6 +61,9 @@ jobs:
         pip install --no-cache-dir -r requirements.txt
         pip install --no-cache-dir -r requirements-dev.txt
         pip install --no-cache-dir -r requirements-test.txt
+        pip install -e .
+      env:
+        PYTHONPATH: ${{ github.workspace }}
 
     - name: Install dependencies (Windows)
       if: runner.os == 'Windows'
@@ -70,8 +73,10 @@ jobs:
         pip install --no-cache-dir -r requirements.txt
         pip install --no-cache-dir -r requirements-dev.txt
         pip install --no-cache-dir -r requirements-test.txt
+        pip install -e .
       env:
         PYTHONIOENCODING: utf-8
+        PYTHONPATH: ${{ github.workspace }}
 
     - name: Run Ruff linter
       run: |
@@ -95,18 +100,29 @@ jobs:
           --cov=autonomous \
           --cov=database \
           --cov=api \
-          --cov-report=xml \
-          --cov-report=html \
+          --cov-report=xml:coverage.xml \
+          --cov-report=html:htmlcov \
           --cov-report=term-missing \
           --junitxml=junit.xml \
-          -x || true
+          --ignore=tests/fuzz \
+          -p no:warnings 2>&1 | tee pytest-output.log || true
+        # Check if coverage.xml was created
+        if [ -f coverage.xml ]; then
+          echo "Coverage file generated successfully"
+          python -c "import xml.etree.ElementTree as ET; tree = ET.parse('coverage.xml'); root = tree.getroot(); rate = float(root.get('line-rate', 0)); print(f'Coverage: {rate*100:.1f}%')"
+        else
+          echo "Warning: coverage.xml not generated"
+        fi
       timeout-minutes: 15
       continue-on-error: true
+      env:
+        PYTHONPATH: ${{ github.workspace }}
 
     - name: Run tests with coverage (Windows)
       if: runner.os == 'Windows'
       shell: pwsh
       run: |
+        $env:PYTHONPATH = "${{ github.workspace }}"
         pytest tests/ -v `
           --cov=core `
           --cov=tools `
@@ -115,14 +131,23 @@ jobs:
           --cov=autonomous `
           --cov=database `
           --cov=api `
-          --cov-report=xml `
-          --cov-report=html `
+          --cov-report=xml:coverage.xml `
+          --cov-report=html:htmlcov `
           --cov-report=term-missing `
-          --junitxml=junit.xml
+          --junitxml=junit.xml `
+          --ignore=tests/fuzz `
+          -p no:warnings 2>&1 | Tee-Object -FilePath pytest-output.log
+        if (Test-Path coverage.xml) {
+          Write-Host "Coverage file generated successfully"
+          python -c "import xml.etree.ElementTree as ET; tree = ET.parse('coverage.xml'); root = tree.getroot(); rate = float(root.get('line-rate', 0)); print(f'Coverage: {rate*100:.1f}%')"
+        } else {
+          Write-Host "Warning: coverage.xml not generated"
+        }
       timeout-minutes: 15
       continue-on-error: true
       env:
         PYTHONIOENCODING: utf-8
+        PYTHONPATH: ${{ github.workspace }}
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4

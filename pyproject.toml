@@ -80,7 +80,7 @@ zen-ai-pentest = "zen_ai_pentest:main"
 zen = "zen_cli:main"
 
 [tool.setuptools]
-packages = ["core", "core.auth", "agents", "backends", "modules", "api", "autonomous", "risk_engine", "web_ui.backend", "ci_cd", "benchmarks"]
+packages = ["core", "core.auth", "agents", "backends", "modules", "api", "autonomous", "risk_engine", "web_ui.backend", "ci_cd", "benchmarks", "tools", "database", "notifications"]
 
 [tool.black]
 line-length = 127
@@ -149,8 +149,8 @@ ignore_missing_imports = true
 exclude = ["venv", "env", ".venv", "logs", "evidence"]
 
 [tool.coverage.run]
-source = ["core", "agents", "backends", "modules", "autonomous", "risk_engine", "web_ui.backend", "benchmarks", "ci_cd"]
-omit = ["*/tests/*", "*/venv/*", "*/env/*", "*/__pycache__/*"]
+source = ["core", "agents", "backends", "modules", "autonomous", "risk_engine", "web_ui.backend", "benchmarks", "ci_cd", "tools", "database", "api", "notifications"]
+omit = ["*/tests/*", "*/venv/*", "*/env/*", "*/__pycache__/*", "*/node_modules/*"]
 
 [tool.coverage.report]
 exclude_lines = [

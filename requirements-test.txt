@@ -22,3 +22,6 @@ pyjwt>=2.8.0
 # Additional test utilities
 factory-boy>=3.3.0
 faker>=20.0.0
+
+# Fuzz testing (optional)
+hypothesis>=6.88.0
