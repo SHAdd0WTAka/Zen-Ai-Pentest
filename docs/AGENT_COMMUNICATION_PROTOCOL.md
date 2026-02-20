@@ -80,9 +80,9 @@ sequenceDiagram
     participant A as AnalysisBot
     participant E as ExploitBot
     participant T as ToolExecutor
-    
+
     Note over O,T: ACP v1.1 Communication Flow
-    
+
     O->>R: delegate (subdomain enum)
     activate R
     R->>R: reason + act (amass enum)
@@ -92,7 +92,7 @@ sequenceDiagram
     deactivate T
     R-->>O: observe (10 subdomains)
     deactivate R
-    
+
     O->>A: delegate_task<br/>"Analyze subdomains for API endpoints"
     activate A
     A->>A: accept / status_update (25%)
@@ -101,7 +101,7 @@ sequenceDiagram
     T-->>A: observe (vulns discovered)
     deactivate T
     A-->>O: reflect + confidence 0.89
-    
+
     A->>E: delegate<br/>"Check RCE on /admin endpoint"
     activate E
     E->>T: act → metasploit
@@ -110,7 +110,7 @@ sequenceDiagram
     deactivate T
     E-->>A: complete
     deactivate E
-    
+
     A-->>O: status_update "High-Risk Finding validated"
     deactivate A
 ```
@@ -275,5 +275,5 @@ Returns list of connected agents in session.
 
 ---
 
-*Last Updated: 13.02.2026*  
+*Last Updated: 13.02.2026*
 *Protocol Version: 1.1*

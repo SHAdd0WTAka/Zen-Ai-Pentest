@@ -10,57 +10,57 @@
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Segoe UI', system-ui, sans-serif;
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             color: #e94560;
             min-height: 100vh;
         }
-        
+
         .container {
             max-width: 1400px;
             margin: 0 auto;
             padding: 20px;
         }
-        
+
         header {
             text-align: center;
             padding: 40px 0;
             border-bottom: 2px solid #e94560;
             margin-bottom: 30px;
         }
-        
+
         h1 {
             font-size: 2.5rem;
             margin-bottom: 10px;
             text-shadow: 0 0 20px rgba(233, 69, 96, 0.5);
         }
-        
+
         .subtitle {
             color: #8892b0;
             font-size: 1.1rem;
         }
-        
+
         .grid {
             display: grid;
             grid-template-columns: 300px 1fr;
             gap: 30px;
         }
-        
+
         .sidebar {
             background: rgba(255, 255, 255, 0.05);
             border-radius: 15px;
             padding: 20px;
             backdrop-filter: blur(10px);
         }
-        
+
         .persona-list {
             display: flex;
             flex-direction: column;
             gap: 10px;
         }
-        
+
         .persona-card {
             background: rgba(233, 69, 96, 0.1);
             border: 1px solid rgba(233, 69, 96, 0.3);
@@ -69,45 +69,45 @@
             cursor: pointer;
             transition: all 0.3s ease;
         }
-        
+
         .persona-card:hover, .persona-card.active {
             background: rgba(233, 69, 96, 0.3);
             border-color: #e94560;
             transform: translateX(5px);
         }
-        
+
         .persona-card.core {
             border-left: 4px solid #00d9ff;
         }
-        
+
         .persona-card.extended {
             border-left: 4px solid #e94560;
         }
-        
+
         .persona-name {
             font-weight: bold;
             font-size: 1rem;
             margin-bottom: 5px;
         }
-        
+
         .persona-desc {
             font-size: 0.85rem;
             color: #8892b0;
         }
-        
+
         .main-content {
             background: rgba(255, 255, 255, 0.05);
             border-radius: 15px;
             padding: 25px;
             backdrop-filter: blur(10px);
         }
-        
+
         .chat-container {
             display: flex;
             flex-direction: column;
             height: 600px;
         }
-        
+
         .chat-header {
             display: flex;
             justify-content: space-between;
@@ -116,19 +116,19 @@
             padding-bottom: 15px;
             border-bottom: 1px solid rgba(233, 69, 96, 0.3);
         }
-        
+
         .current-persona {
             font-size: 1.3rem;
             font-weight: bold;
         }
-        
+
         .api-status {
             display: flex;
             align-items: center;
             gap: 8px;
             font-size: 0.9rem;
         }
-        
+
         .status-dot {
             width: 10px;
             height: 10px;
@@ -136,12 +136,12 @@
             background: #00d9ff;
             animation: pulse 2s infinite;
         }
-        
+
         @keyframes pulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.5; }
         }
-        
+
         .messages {
             flex: 1;
             overflow-y: auto;
@@ -150,48 +150,48 @@
             border-radius: 10px;
             margin-bottom: 20px;
         }
-        
+
         .message {
             margin-bottom: 15px;
             padding: 12px 15px;
             border-radius: 10px;
             max-width: 85%;
         }
-        
+
         .message.user {
             background: rgba(233, 69, 96, 0.2);
             margin-left: auto;
             border: 1px solid rgba(233, 69, 96, 0.3);
         }
-        
+
         .message.assistant {
             background: rgba(0, 217, 255, 0.1);
             border: 1px solid rgba(0, 217, 255, 0.3);
         }
-        
+
         .message-header {
             font-size: 0.8rem;
             color: #8892b0;
             margin-bottom: 5px;
         }
-        
+
         .message-content {
             line-height: 1.6;
             white-space: pre-wrap;
         }
-        
+
         .message-content code {
             background: rgba(0, 0, 0, 0.3);
             padding: 2px 6px;
             border-radius: 4px;
             font-family: 'Fira Code', monospace;
         }
-        
+
         .input-area {
             display: flex;
             gap: 10px;
         }
-        
+
         textarea {
             flex: 1;
             background: rgba(0, 0, 0, 0.3);
@@ -203,12 +203,12 @@
             resize: none;
             min-height: 80px;
         }
-        
+
         textarea:focus {
             outline: none;
             border-color: #e94560;
         }
-        
+
         .btn-send {
             background: linear-gradient(135deg, #e94560 0%, #ff6b6b 100%);
             border: none;
@@ -219,38 +219,38 @@
             cursor: pointer;
             transition: transform 0.2s, box-shadow 0.2s;
         }
-        
+
         .btn-send:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 20px rgba(233, 69, 96, 0.4);
         }
-        
+
         .btn-send:disabled {
             opacity: 0.5;
             cursor: not-allowed;
         }
-        
+
         .settings {
             margin-top: 20px;
             padding-top: 20px;
             border-top: 1px solid rgba(233, 69, 96, 0.3);
         }
-        
+
         .setting-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 15px;
         }
-        
+
         .setting-label {
             font-size: 0.9rem;
         }
-        
+
         input[type="range"] {
             width: 150px;
         }
-        
+
         input[type="password"] {
             background: rgba(0, 0, 0, 0.3);
             border: 1px solid rgba(233, 69, 96, 0.3);
@@ -259,7 +259,7 @@
             color: #fff;
             width: 200px;
         }
-        
+
         .typing-indicator {
             display: none;
             align-items: center;
@@ -269,11 +269,11 @@
             border-radius: 10px;
             margin-bottom: 15px;
         }
-        
+
         .typing-indicator.active {
             display: flex;
         }
-        
+
         .dot {
             width: 8px;
             height: 8px;
@@ -281,15 +281,15 @@
             border-radius: 50%;
             animation: bounce 1.4s infinite ease-in-out both;
         }
-        
+
         .dot:nth-child(1) { animation-delay: -0.32s; }
         .dot:nth-child(2) { animation-delay: -0.16s; }
-        
+
         @keyframes bounce {
             0%, 80%, 100% { transform: scale(0); }
             40% { transform: scale(1); }
         }
-        
+
         .stats {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -298,26 +298,26 @@
             padding-top: 20px;
             border-top: 1px solid rgba(233, 69, 96, 0.3);
         }
-        
+
         .stat-card {
             background: rgba(0, 0, 0, 0.2);
             padding: 15px;
             border-radius: 10px;
             text-align: center;
         }
-        
+
         .stat-value {
             font-size: 1.5rem;
             font-weight: bold;
             color: #00d9ff;
         }
-        
+
         .stat-label {
             font-size: 0.8rem;
             color: #8892b0;
             margin-top: 5px;
         }
-        
+
         /* Screenshot Bereich */
         .tabs {
             display: flex;
@@ -325,7 +325,7 @@
             margin-bottom: 20px;
             border-bottom: 1px solid rgba(233, 69, 96, 0.3);
         }
-        
+
         .tab {
             padding: 10px 20px;
             background: rgba(233, 69, 96, 0.1);
@@ -336,20 +336,20 @@
             color: #8892b0;
             transition: all 0.3s;
         }
-        
+
         .tab:hover, .tab.active {
             background: rgba(233, 69, 96, 0.3);
             color: #e94560;
         }
-        
+
         .tab-content {
             display: none;
         }
-        
+
         .tab-content.active {
             display: block;
         }
-        
+
         .screenshot-area {
             background: rgba(0, 0, 0, 0.2);
             border: 2px dashed rgba(233, 69, 96, 0.3);
@@ -359,26 +359,26 @@
             min-height: 200px;
             transition: all 0.3s;
         }
-        
+
         .screenshot-area.dragover {
             background: rgba(233, 69, 96, 0.1);
             border-color: #e94560;
         }
-        
+
         .screenshot-preview {
             max-width: 100%;
             max-height: 400px;
             border-radius: 10px;
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
         }
-        
+
         .screenshot-gallery {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
             gap: 10px;
             margin-top: 20px;
         }
-        
+
         .screenshot-thumb {
             width: 100%;
             height: 100px;
@@ -387,11 +387,11 @@
             cursor: pointer;
             transition: transform 0.2s;
         }
-        
+
         .screenshot-thumb:hover {
             transform: scale(1.05);
         }
-        
+
         .upload-btn {
             background: rgba(233, 69, 96, 0.2);
             border: 1px solid rgba(233, 69, 96, 0.5);
@@ -401,25 +401,25 @@
             cursor: pointer;
             margin-top: 10px;
         }
-        
+
         .upload-btn:hover {
             background: rgba(233, 69, 96, 0.4);
         }
-        
+
         @media (max-width: 900px) {
             .grid {
                 grid-template-columns: 1fr;
             }
-            
+
             .sidebar {
                 order: 2;
             }
-            
+
             .persona-list {
                 flex-direction: row;
                 flex-wrap: wrap;
             }
-            
+
             .persona-card {
                 flex: 1;
                 min-width: 200px;
@@ -433,14 +433,14 @@
             <h1>🛡️ Zen-Ai Kimi Personas</h1>
             <p class="subtitle">11 spezialisierte KI-Assistenten für Pentesting</p>
         </header>
-        
+
         <div class="grid">
             <aside class="sidebar">
                 <h3 style="margin-bottom: 15px;">🎭 Personas</h3>
                 <div class="persona-list" id="personaList">
                     <!-- Dynamically filled -->
                 </div>
-                
+
                 <div class="settings">
                     <h3 style="margin-bottom: 15px;">⚙️ Einstellungen</h3>
                     <div class="setting-row">
@@ -453,7 +453,7 @@
                         <span id="tempValue">0.7</span>
                     </div>
                 </div>
-                
+
                 <div class="stats">
                     <div class="stat-card">
                         <div class="stat-value" id="statPersonas">11</div>
@@ -469,7 +469,7 @@
                     </div>
                 </div>
             </aside>
-            
+
             <main class="main-content">
                 <!-- Tabs -->
                 <div class="tabs">
@@ -477,7 +477,7 @@
                     <div class="tab" onclick="switchTab('screenshots')">📸 Screenshots</div>
                     <div class="tab" onclick="switchTab('docs')">📚 Docs</div>
                 </div>
-                
+
                 <!-- Chat Tab -->
                 <div id="chat-tab" class="tab-content active">
                     <div class="chat-container">
@@ -488,23 +488,23 @@
                                 <span>API Online</span>
                             </div>
                         </div>
-                        
+
                         <div class="messages" id="messages">
                             <div class="message assistant">
                                 <div class="message-header">System</div>
                                 <div class="message-content">Willkommen! Wähle eine Persona und starte deine Pentest-Anfrage.</div>
                             </div>
                         </div>
-                        
+
                         <div class="typing-indicator" id="typingIndicator">
                             <div class="dot"></div>
                             <div class="dot"></div>
                             <div class="dot"></div>
                         </div>
-                        
+
                         <div class="input-area">
-                            <textarea 
-                                id="userInput" 
+                            <textarea
+                                id="userInput"
                                 placeholder="Deine Anfrage... (z.B. 'Analysiere example.com')"
                                 rows="3"
                             ></textarea>
@@ -514,22 +514,22 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Screenshots Tab -->
                 <div id="screenshots-tab" class="tab-content">
                     <h3 style="margin-bottom: 15px;">📸 Screenshot Analyse</h3>
                     <p style="color: #8892b0; margin-bottom: 20px;">
                         Lade Screenshots hoch oder analysiere Bilder mit der aktuellen Persona.
                     </p>
-                    
+
                     <div class="screenshot-area" id="screenshotArea"
-                         ondrop="dropScreenshot(event)" 
+                         ondrop="dropScreenshot(event)"
                          ondragover="allowDrop(event)"
                          ondragleave="leaveDrop(event)">
                         <div id="screenshotPlaceholder">
                             <div style="font-size: 3rem; margin-bottom: 10px;">📷</div>
                             <p>Drop Screenshots hier oder klicke zum Auswählen</p>
-                            <input type="file" id="screenshotInput" accept="image/*" 
+                            <input type="file" id="screenshotInput" accept="image/*"
                                    style="display: none;" onchange="handleScreenshotSelect(event)">
                             <button class="upload-btn" onclick="document.getElementById('screenshotInput').click()">
                                 Bild auswählen
@@ -537,7 +537,7 @@
                         </div>
                         <img id="screenshotPreview" class="screenshot-preview" style="display: none;">
                     </div>
-                    
+
                     <div style="margin-top: 20px; display: flex; gap: 10px;">
                         <button class="btn-send" onclick="analyzeScreenshot()" id="analyzeBtn" disabled>
                             🔍 Mit Persona analysieren
@@ -546,19 +546,19 @@
                             🗑️ Löschen
                         </button>
                     </div>
-                    
+
                     <div id="screenshotAnalysis" style="margin-top: 20px; display: none;">
                         <div class="message assistant">
                             <div class="message-header">Analyse Ergebnis</div>
                             <div class="message-content" id="analysisContent"></div>
                         </div>
                     </div>
-                    
+
                     <div class="screenshot-gallery" id="screenshotGallery">
                         <!-- Gallery items werden hier hinzugefügt -->
                     </div>
                 </div>
-                
+
                 <!-- Docs Tab -->
                 <div id="docs-tab" class="tab-content">
                     <h3 style="margin-bottom: 15px;">📚 Dokumentation</h3>
@@ -577,7 +577,7 @@
                             <li><strong>☁️ Cloud</strong> - AWS, Azure, K8s</li>
                             <li><strong>🔬 Crypto</strong> - JWT, TLS, Crypto</li>
                         </ul>
-                        
+
                         <h4 style="color: #00d9ff; margin: 20px 0 10px;">API Endpoints</h4>
                         <code style="display: block; background: rgba(0, 0, 0, 0.3); padding: 10px; border-radius: 5px; font-size: 0.85rem;">
 GET  /api/v1/health<br>
@@ -591,13 +591,13 @@ WS   /ws/chat
             </main>
         </div>
     </div>
-    
+
     <script>
         const API_URL = '';
         let currentPersona = 'recon';
         let messageCount = 0;
         let tokenCount = 0;
-        
+
         const personas = {
             recon: { name: '🔍 Recon/OSINT Specialist', category: 'core' },
             exploit: { name: '💣 Exploit Developer', category: 'core' },
@@ -611,7 +611,7 @@ WS   /ws/chat
             cloud: { name: '☁️ Cloud Security', category: 'extended' },
             crypto: { name: '🔬 Cryptography', category: 'extended' }
         };
-        
+
         // Tab Switching
         function switchTab(tabName) {
             // Update tabs
@@ -619,50 +619,50 @@ WS   /ws/chat
                 tab.classList.remove('active');
             });
             event.target.classList.add('active');
-            
+
             // Update content
             document.querySelectorAll('.tab-content').forEach(content => {
                 content.classList.remove('active');
             });
             document.getElementById(tabName + '-tab').classList.add('active');
         }
-        
+
         // Screenshot Handling
         let currentScreenshot = null;
-        
+
         function allowDrop(e) {
             e.preventDefault();
             document.getElementById('screenshotArea').classList.add('dragover');
         }
-        
+
         function leaveDrop(e) {
             e.preventDefault();
             document.getElementById('screenshotArea').classList.remove('dragover');
         }
-        
+
         function dropScreenshot(e) {
             e.preventDefault();
             document.getElementById('screenshotArea').classList.remove('dragover');
-            
+
             const files = e.dataTransfer.files;
             if (files.length > 0) {
                 handleScreenshot(files[0]);
             }
         }
-        
+
         function handleScreenshotSelect(e) {
             const file = e.target.files[0];
             if (file) {
                 handleScreenshot(file);
             }
         }
-        
+
         function handleScreenshot(file) {
             if (!file.type.startsWith('image/')) {
                 alert('Bitte nur Bilder hochladen!');
                 return;
             }
-            
+
             const reader = new FileReader();
             reader.onload = (e) => {
                 currentScreenshot = e.target.result;
@@ -670,13 +670,13 @@ WS   /ws/chat
                 document.getElementById('screenshotPreview').src = currentScreenshot;
                 document.getElementById('screenshotPreview').style.display = 'block';
                 document.getElementById('analyzeBtn').disabled = false;
-                
+
                 // Add to gallery
                 addToGallery(currentScreenshot);
             };
             reader.readAsDataURL(file);
         }
-        
+
         function addToGallery(dataUrl) {
             const gallery = document.getElementById('screenshotGallery');
             const img = document.createElement('img');
@@ -687,7 +687,7 @@ WS   /ws/chat
             };
             gallery.appendChild(img);
         }
-        
+
         function clearScreenshot() {
             currentScreenshot = null;
             document.getElementById('screenshotPlaceholder').style.display = 'block';
@@ -696,21 +696,21 @@ WS   /ws/chat
             document.getElementById('analyzeBtn').disabled = true;
             document.getElementById('screenshotInput').value = '';
         }
-        
+
         async function analyzeScreenshot() {
             if (!currentScreenshot) return;
-            
+
             const btn = document.getElementById('analyzeBtn');
             btn.disabled = true;
             btn.textContent = '🔍 Analysiere...';
-            
+
             // In einer realen Implementierung würde hier das Bild zur API geschickt
             // Für Demo-Zwecke simulieren wir eine Analyse
             await new Promise(r => setTimeout(r, 1500));
-            
+
             const analysisDiv = document.getElementById('screenshotAnalysis');
             const contentDiv = document.getElementById('analysisContent');
-            
+
             contentDiv.innerHTML = `
                 <p><strong>🎯 Erkannte Elemente:</strong></p>
                 <ul style="margin: 10px 0; padding-left: 20px;">
@@ -725,26 +725,26 @@ WS   /ws/chat
                     <li>Technologie-Fingerprinting</li>
                 </ul>
                 <p style="color: #8892b0; margin-top: 10px;">
-                    <em>Hinweis: In der vollständigen Version würde die aktuelle Persona 
+                    <em>Hinweis: In der vollständigen Version würde die aktuelle Persona
                     (${personas[currentPersona].name}) das Bild analysieren.</em>
                 </p>
             `;
-            
+
             analysisDiv.style.display = 'block';
             btn.disabled = false;
             btn.textContent = '🔍 Mit Persona analysieren';
         }
-        
+
         // Load server screenshots
         async function loadServerScreenshots() {
             try {
                 const response = await fetch('/api/v1/screenshots');
                 const data = await response.json();
-                
+
                 if (data.screenshots && data.screenshots.length > 0) {
                     const gallery = document.getElementById('screenshotGallery');
                     gallery.innerHTML = '<p style="color: #8892b0; margin-bottom: 10px;">📸 Server Screenshots:</p>';
-                    
+
                     data.screenshots.forEach(filename => {
                         const img = document.createElement('img');
                         img.src = `/static/screenshots/${filename}`;
@@ -764,18 +764,18 @@ WS   /ws/chat
                 console.log('Keine Server-Screenshots:', err);
             }
         }
-        
+
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             renderPersonas();
             loadPersonasFromAPI();
             loadServerScreenshots();
-            
+
             // Temperature slider
             document.getElementById('temperature').addEventListener('input', (e) => {
                 document.getElementById('tempValue').textContent = (e.target.value / 100).toFixed(1);
             });
-            
+
             // Enter key to send
             document.getElementById('userInput').addEventListener('keydown', (e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
@@ -784,18 +784,18 @@ WS   /ws/chat
                 }
             });
         });
-        
+
         function renderPersonas() {
             const list = document.getElementById('personaList');
             list.innerHTML = Object.entries(personas).map(([id, data]) => `
-                <div class="persona-card ${data.category} ${id === currentPersona ? 'active' : ''}" 
+                <div class="persona-card ${data.category} ${id === currentPersona ? 'active' : ''}"
                      onclick="selectPersona('${id}')">
                     <div class="persona-name">${data.name}</div>
                     <div class="persona-desc">${data.category.toUpperCase()}</div>
                 </div>
             `).join('');
         }
-        
+
         async function loadPersonasFromAPI() {
             try {
                 const response = await fetch(`${API_URL}/api/v1/personas`);
@@ -805,41 +805,41 @@ WS   /ws/chat
                 console.log('API not available, using defaults');
             }
         }
-        
+
         function selectPersona(id) {
             currentPersona = id;
             document.getElementById('currentPersona').textContent = personas[id].name;
             renderPersonas();
-            
+
             // Add system message
             addMessage('system', `Gewechselt zu: ${personas[id].name}`);
         }
-        
+
         function addMessage(role, content) {
             const messages = document.getElementById('messages');
             const msgDiv = document.createElement('div');
             msgDiv.className = `message ${role}`;
-            
+
             const roleLabels = {
                 user: 'Du',
                 assistant: personas[currentPersona].name,
                 system: 'System'
             };
-            
+
             msgDiv.innerHTML = `
                 <div class="message-header">${roleLabels[role]}</div>
                 <div class="message-content">${formatContent(content)}</div>
             `;
-            
+
             messages.appendChild(msgDiv);
             messages.scrollTop = messages.scrollHeight;
-            
+
             if (role !== 'system') {
                 messageCount++;
                 document.getElementById('statMessages').textContent = messageCount;
             }
         }
-        
+
         function formatContent(text) {
             // Simple markdown formatting
             return text
@@ -847,33 +847,33 @@ WS   /ws/chat
                 .replace(/`([^`]+)`/g, '<code style="background:rgba(0,0,0,0.3);padding:2px 5px;border-radius:3px;">$1</code>')
                 .replace(/\n/g, '<br>');
         }
-        
+
         async function sendMessage() {
             const input = document.getElementById('userInput');
             const message = input.value.trim();
-            
+
             if (!message) return;
-            
+
             const btn = document.getElementById('sendBtn');
             const typing = document.getElementById('typingIndicator');
-            
+
             // Add user message
             addMessage('user', message);
             input.value = '';
-            
+
             // Show loading
             btn.disabled = true;
             typing.classList.add('active');
-            
+
             try {
                 const apiKey = document.getElementById('apiKey').value;
                 const temperature = document.getElementById('temperature').value / 100;
-                
+
                 const headers = {
                     'Content-Type': 'application/json'
                 };
                 if (apiKey) headers['X-API-Key'] = apiKey;
-                
+
                 const response = await fetch(`${API_URL}/api/v1/chat/complete`, {
                     method: 'POST',
                     headers,
@@ -884,16 +884,16 @@ WS   /ws/chat
                         max_tokens: 4096
                     })
                 });
-                
+
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}`);
                 }
-                
+
                 const data = await response.json();
-                
+
                 if (data.status === 'success') {
                     addMessage('assistant', data.response);
-                    
+
                     // Update token count
                     if (data.usage) {
                         tokenCount += data.usage.total_tokens || 0;
@@ -902,7 +902,7 @@ WS   /ws/chat
                 } else {
                     addMessage('system', `Fehler: ${data.error}`);
                 }
-                
+
             } catch (err) {
                 addMessage('system', `API Fehler: ${err.message}. Stelle sicher, dass der Server läuft.`);
             } finally {

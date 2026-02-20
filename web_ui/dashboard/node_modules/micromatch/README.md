@@ -971,40 +971,40 @@ You might also be interested in these projects:
 
 ### Contributors
 
-| **Commits** | **Contributor** |  
-| --- | --- |  
-| 523 | [jonschlinkert](https://github.com/jonschlinkert) |  
-| 12  | [es128](https://github.com/es128) |  
-| 9   | [danez](https://github.com/danez) |  
-| 8   | [doowb](https://github.com/doowb) |  
-| 6   | [paulmillr](https://github.com/paulmillr) |  
-| 5   | [mrmlnc](https://github.com/mrmlnc) |  
-| 3   | [DrPizza](https://github.com/DrPizza) |  
-| 2   | [Tvrqvoise](https://github.com/Tvrqvoise) |  
-| 2   | [antonyk](https://github.com/antonyk) |  
-| 2   | [MartinKolarik](https://github.com/MartinKolarik) |  
-| 2   | [Glazy](https://github.com/Glazy) |  
-| 2   | [mceIdo](https://github.com/mceIdo) |  
-| 2   | [TrySound](https://github.com/TrySound) |  
-| 1   | [yvele](https://github.com/yvele) |  
-| 1   | [wtgtybhertgeghgtwtg](https://github.com/wtgtybhertgeghgtwtg) |  
-| 1   | [simlu](https://github.com/simlu) |  
-| 1   | [curbengh](https://github.com/curbengh) |  
-| 1   | [fidian](https://github.com/fidian) |  
-| 1   | [tomByrer](https://github.com/tomByrer) |  
-| 1   | [ZoomerTedJackson](https://github.com/ZoomerTedJackson) |  
-| 1   | [styfle](https://github.com/styfle) |  
-| 1   | [sebdeckers](https://github.com/sebdeckers) |  
-| 1   | [muescha](https://github.com/muescha) |  
-| 1   | [juszczykjakub](https://github.com/juszczykjakub) |  
-| 1   | [joyceerhl](https://github.com/joyceerhl) |  
-| 1   | [donatj](https://github.com/donatj) |  
-| 1   | [frangio](https://github.com/frangio) |  
-| 1   | [UltCombo](https://github.com/UltCombo) |  
-| 1   | [DianeLooney](https://github.com/DianeLooney) |  
-| 1   | [devongovett](https://github.com/devongovett) |  
-| 1   | [Cslove](https://github.com/Cslove) |  
-| 1   | [amilajack](https://github.com/amilajack) |  
+| **Commits** | **Contributor** |
+| --- | --- |
+| 523 | [jonschlinkert](https://github.com/jonschlinkert) |
+| 12  | [es128](https://github.com/es128) |
+| 9   | [danez](https://github.com/danez) |
+| 8   | [doowb](https://github.com/doowb) |
+| 6   | [paulmillr](https://github.com/paulmillr) |
+| 5   | [mrmlnc](https://github.com/mrmlnc) |
+| 3   | [DrPizza](https://github.com/DrPizza) |
+| 2   | [Tvrqvoise](https://github.com/Tvrqvoise) |
+| 2   | [antonyk](https://github.com/antonyk) |
+| 2   | [MartinKolarik](https://github.com/MartinKolarik) |
+| 2   | [Glazy](https://github.com/Glazy) |
+| 2   | [mceIdo](https://github.com/mceIdo) |
+| 2   | [TrySound](https://github.com/TrySound) |
+| 1   | [yvele](https://github.com/yvele) |
+| 1   | [wtgtybhertgeghgtwtg](https://github.com/wtgtybhertgeghgtwtg) |
+| 1   | [simlu](https://github.com/simlu) |
+| 1   | [curbengh](https://github.com/curbengh) |
+| 1   | [fidian](https://github.com/fidian) |
+| 1   | [tomByrer](https://github.com/tomByrer) |
+| 1   | [ZoomerTedJackson](https://github.com/ZoomerTedJackson) |
+| 1   | [styfle](https://github.com/styfle) |
+| 1   | [sebdeckers](https://github.com/sebdeckers) |
+| 1   | [muescha](https://github.com/muescha) |
+| 1   | [juszczykjakub](https://github.com/juszczykjakub) |
+| 1   | [joyceerhl](https://github.com/joyceerhl) |
+| 1   | [donatj](https://github.com/donatj) |
+| 1   | [frangio](https://github.com/frangio) |
+| 1   | [UltCombo](https://github.com/UltCombo) |
+| 1   | [DianeLooney](https://github.com/DianeLooney) |
+| 1   | [devongovett](https://github.com/devongovett) |
+| 1   | [Cslove](https://github.com/Cslove) |
+| 1   | [amilajack](https://github.com/amilajack) |
 
 ### Author
 

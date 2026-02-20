@@ -401,7 +401,7 @@ class TestCommandBuilding:
         scanner.options["host_timeout"] = "30m"
         scanner.options["scan_delay"] = "1s"
         scanner.options["max_rate"] = 1000
-        
+
         cmd = scanner._build_command()
         assert "-g" in cmd and "53" in cmd
         assert "-e" in cmd and "eth0" in cmd
@@ -536,17 +536,17 @@ class TestXMLParsing:
         with patch("shutil.which", return_value="/usr/bin/nmap"):
             scanner = NmapScanner("192.168.1.0/24")
             hosts = scanner.parse_xml_output(SAMPLE_NMAP_XML_MULTIPLE_HOSTS)
-            
+
             assert len(hosts) == 3
-            
+
             # Check first host
             assert hosts[0].ip == "192.168.1.1"
             assert hosts[0].status == "up"
-            
+
             # Check second host
             assert hosts[1].ip == "192.168.1.2"
             assert hosts[1].status == "up"
-            
+
             # Check down host
             assert hosts[2].ip == "192.168.1.3"
             assert hosts[2].status == "down"
@@ -1094,7 +1094,7 @@ class TestErrorHandling:
         """Test scan with minimal timeout."""
         with patch("shutil.which", return_value="/usr/bin/nmap"):
             scanner = NmapScanner("scanme.nmap.org")
-            
+
             mock_result = Mock()
             mock_result.returncode = 0
             mock_result.stdout = SAMPLE_NMAP_XML

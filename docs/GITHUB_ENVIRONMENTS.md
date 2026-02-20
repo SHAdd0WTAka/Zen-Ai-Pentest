@@ -32,7 +32,7 @@ GitHub Environments ermöglichen:
 ```
 ☑️ Required reviewers
    Add up to 6 people to review workflow runs
-   
+
    → Füge dich selbst hinzu (@SHAdd0WTAka)
 ```
 
@@ -40,7 +40,7 @@ GitHub Environments ermöglichen:
 ```
 ☑️ Deployment branches
    Select branches that can deploy to this environment
-   
+
    → Wähle: "Selected branches"
    → Füge hinzu: "main"
 ```
@@ -49,7 +49,7 @@ GitHub Environments ermöglichen:
 ```
 ☑️ Wait timer
    Set a wait time of up to 30 days
-   
+
    → Empfohlen: 0-5 Minuten (für Discord-Updates)
 ```
 

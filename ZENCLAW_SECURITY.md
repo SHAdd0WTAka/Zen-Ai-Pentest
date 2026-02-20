@@ -25,7 +25,7 @@
 ZENCLAW_FORBIDDEN = {
     "never_reveal": [
         "API_KEY",
-        "SECRET_KEY", 
+        "SECRET_KEY",
         "PASSWORD",
         "TOKEN",
         "CREDENTIALS",
@@ -75,18 +75,18 @@ def validate_request(user, action, target):
     # 1. Ist der Benutzer authorisiert?
     if user not in AUTHORIZED_USERS:
         return False, "Unauthorized user"
-    
+
     # 2. Ist die Aktion auf der Whitelist?
     if action not in ALLOWED_ACTIONS:
         return False, "Action not allowed"
-    
+
     # 3. Enthält das Target sensible Daten?
     if contains_secrets(target):
         return False, "Target contains sensitive data"
-    
+
     # 4. Logge für Audit
     log_audit(user, action, target)
-    
+
     return True, "Approved"
 ```
 
@@ -175,7 +175,7 @@ log.info(f"Token: {token}")      # VERBOTEN!
 ### Bei unsicheren Anfragen:
 
 ```
-ZenClaw: "Diese Anfrage enthält möglicherweise sensible Daten. 
+ZenClaw: "Diese Anfrage enthält möglicherweise sensible Daten.
           Ich werde Kimi und SHAdd0WTAka konsultieren."
 ```
 
@@ -231,6 +231,6 @@ ZenClaw: "Diese Anfrage enthält möglicherweise sensible Daten.
 
 *"Security is not a feature, it's a foundation"*
 
-**Version:** 1.0  
-**Last Updated:** 2026-02-16  
+**Version:** 1.0
+**Last Updated:** 2026-02-16
 **Approved by:** SHAdd0WTAka + Kimi AI

@@ -20,27 +20,27 @@
             --warning: #f59e0b;
             --danger: #ef4444;
         }
-        
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: var(--bg);
             color: var(--text);
             line-height: 1.6;
         }
-        
+
         .hero {
             background: linear-gradient(135deg, var(--bg) 0%, var(--bg-light) 100%);
             padding: 4rem 2rem;
             text-align: center;
             border-bottom: 1px solid rgba(255,255,255,0.1);
         }
-        
+
         .hero h1 {
             font-size: 3.5rem;
             margin-bottom: 1rem;
@@ -48,14 +48,14 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-        
+
         .hero p {
             font-size: 1.25rem;
             color: var(--text-muted);
             max-width: 700px;
             margin: 0 auto 2rem;
         }
-        
+
         .phase-badge {
             display: inline-block;
             padding: 0.5rem 1.5rem;
@@ -65,7 +65,7 @@
             font-weight: 600;
             margin-bottom: 2rem;
         }
-        
+
         .badges {
             display: flex;
             gap: 0.75rem;
@@ -73,7 +73,7 @@
             flex-wrap: wrap;
             margin-bottom: 2rem;
         }
-        
+
         .badge {
             padding: 0.4rem 1rem;
             background: var(--bg-light);
@@ -81,7 +81,7 @@
             font-size: 0.875rem;
             border: 1px solid rgba(255,255,255,0.1);
         }
-        
+
         .btn {
             display: inline-block;
             padding: 0.875rem 2rem;
@@ -93,46 +93,46 @@
             transition: all 0.2s;
             margin: 0.5rem;
         }
-        
+
         .btn:hover {
             background: var(--primary-dark);
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
         }
-        
+
         .btn-secondary {
             background: transparent;
             border: 2px solid var(--primary);
         }
-        
+
         .btn-secondary:hover {
             background: var(--primary);
         }
-        
+
         .status-card {
             max-width: 900px;
             margin: 2rem auto 0;
             padding: 1rem;
         }
-        
+
         .status-card img {
             width: 100%;
             border-radius: 1rem;
             box-shadow: 0 10px 40px rgba(0,0,0,0.3);
         }
-        
+
         .stats {
             background: var(--bg-light);
             padding: 4rem 2rem;
             text-align: center;
         }
-        
+
         .stats h2 {
             font-size: 2rem;
             margin-bottom: 2rem;
             color: var(--text);
         }
-        
+
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -140,43 +140,43 @@
             max-width: 1000px;
             margin: 0 auto;
         }
-        
+
         .stat {
             background: var(--bg);
             padding: 1.5rem;
             border-radius: 1rem;
             border: 1px solid rgba(255,255,255,0.1);
         }
-        
+
         .stat h3 {
             font-size: 2.5rem;
             color: var(--accent);
             margin-bottom: 0.5rem;
         }
-        
+
         .stat p {
             color: var(--text-muted);
             font-size: 0.9rem;
         }
-        
+
         .features {
             padding: 4rem 2rem;
             max-width: 1200px;
             margin: 0 auto;
         }
-        
+
         .features h2 {
             text-align: center;
             font-size: 2rem;
             margin-bottom: 3rem;
         }
-        
+
         .feature-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
             gap: 2rem;
         }
-        
+
         .feature {
             background: var(--bg-light);
             padding: 2rem;
@@ -184,39 +184,39 @@
             border: 1px solid rgba(255,255,255,0.1);
             transition: transform 0.2s, border-color 0.2s;
         }
-        
+
         .feature:hover {
             transform: translateY(-4px);
             border-color: var(--primary);
         }
-        
+
         .feature-icon {
             font-size: 2.5rem;
             margin-bottom: 1rem;
         }
-        
+
         .feature h3 {
             font-size: 1.25rem;
             margin-bottom: 0.75rem;
             color: var(--accent);
         }
-        
+
         .feature p {
             color: var(--text-muted);
             line-height: 1.6;
         }
-        
+
         .tools-section {
             background: var(--bg-light);
             padding: 4rem 2rem;
         }
-        
+
         .tools-section h2 {
             text-align: center;
             font-size: 2rem;
             margin-bottom: 3rem;
         }
-        
+
         .tools-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -224,47 +224,47 @@
             max-width: 1200px;
             margin: 0 auto;
         }
-        
+
         .tool-category {
             background: var(--bg);
             padding: 1.5rem;
             border-radius: 0.75rem;
             border: 1px solid rgba(255,255,255,0.1);
         }
-        
+
         .tool-category h4 {
             color: var(--accent);
             margin-bottom: 1rem;
             font-size: 1.1rem;
         }
-        
+
         .tool-category ul {
             list-style: none;
             color: var(--text-muted);
         }
-        
+
         .tool-category li {
             padding: 0.25rem 0;
             font-size: 0.9rem;
         }
-        
+
         .quickstart {
             padding: 4rem 2rem;
             max-width: 800px;
             margin: 0 auto;
         }
-        
+
         .quickstart h2 {
             text-align: center;
             font-size: 2rem;
             margin-bottom: 2rem;
         }
-        
+
         .quickstart h3 {
             color: var(--accent);
             margin: 2rem 0 1rem;
         }
-        
+
         .code-block {
             background: #1a1a2e;
             border: 1px solid rgba(255,255,255,0.1);
@@ -273,14 +273,14 @@
             overflow-x: auto;
             margin: 1rem 0;
         }
-        
+
         .code-block code {
             color: #a5b4fc;
             font-family: 'Consolas', 'Monaco', monospace;
             font-size: 0.875rem;
             line-height: 1.7;
         }
-        
+
         .legal-notice {
             background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.05));
             border: 1px solid var(--danger);
@@ -289,50 +289,50 @@
             max-width: 900px;
             margin: 2rem auto;
         }
-        
+
         .legal-notice h3 {
             color: var(--danger);
             margin-bottom: 1rem;
         }
-        
+
         .legal-notice ul {
             color: var(--text-muted);
             margin-left: 1.5rem;
         }
-        
+
         .legal-notice li {
             margin: 0.5rem 0;
         }
-        
+
         .footer {
             text-align: center;
             padding: 3rem 2rem;
             border-top: 1px solid rgba(255,255,255,0.1);
             color: var(--text-muted);
         }
-        
+
         .footer a {
             color: var(--primary);
             text-decoration: none;
         }
-        
+
         .footer a:hover {
             text-decoration: underline;
         }
-        
+
         @media (max-width: 768px) {
             .hero h1 {
                 font-size: 2.5rem;
             }
-            
+
             .hero p {
                 font-size: 1rem;
             }
-            
+
             .feature-grid {
                 grid-template-columns: 1fr;
             }
-            
+
             .stats-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
@@ -344,7 +344,7 @@
         <h1>🛡️ Zen AI Pentest</h1>
         <div class="phase-badge">🚀 Phase 6: AI Personas | 740+ Commits | 40+ Tools</div>
         <p>Professional AI-powered penetration testing framework with autonomous agents, 40+ integrated security tools, and real tool execution. Built for security professionals, bug bounty hunters, and enterprise teams.</p>
-        
+
         <div class="badges">
             <span class="badge">🤖 11 AI Personas</span>
             <span class="badge">🔧 40+ Tools</span>
@@ -353,15 +353,15 @@
             <span class="badge">🔒 VPN Support</span>
             <span class="badge">📊 Auto-Status</span>
         </div>
-        
+
         <a href="https://github.com/SHAdd0WTAka/zen-ai-pentest" class="btn">⭐ View on GitHub</a>
         <a href="https://github.com/SHAdd0WTAka/zen-ai-pentest/blob/main/ROADMAP_2026.md" class="btn btn-secondary">📍 Roadmap 2026</a>
-        
+
         <div class="status-card">
             <img src="status/repo_status_card.svg" alt="Repository Status - Auto-updating status card showing current phase and statistics">
         </div>
     </section>
-    
+
     <section class="stats">
         <h2>Project Statistics</h2>
         <div class="stats-grid">
@@ -391,7 +391,7 @@
             </div>
         </div>
     </section>
-    
+
     <section class="features">
         <h2>Key Features</h2>
         <div class="feature-grid">
@@ -400,49 +400,49 @@
                 <h3>ReAct Agent Loop</h3>
                 <p>Reason → Act → Observe → Reflect pattern with autonomous decision making, self-correction, and memory management for complex pentest workflows.</p>
             </div>
-            
+
             <div class="feature">
                 <div class="feature-icon">👥</div>
                 <h3>11 AI Personas</h3>
                 <p>Specialized agents: Recon, Exploit, Report, Audit, Social Engineering, Network, Mobile, Red Team, ICS, Cloud, and Crypto experts.</p>
             </div>
-            
+
             <div class="feature">
                 <div class="feature-icon">🛡️</div>
                 <h3>Security Guardrails</h3>
                 <p>IP validation (blocks private networks), domain filtering, 4-level risk system (Safe to Aggressive), and rate limiting for safe operation.</p>
             </div>
-            
+
             <div class="feature">
                 <div class="feature-icon">🤖</div>
                 <h3>Multi-Agent System</h3>
                 <p>Workflow orchestrator manages complex pentest workflows with task distribution, real-time WebSocket updates, and result aggregation.</p>
             </div>
-            
+
             <div class="feature">
                 <div class="feature-icon">🔌</div>
                 <h3>Multi-LLM Support</h3>
                 <p>Native Kimi AI integration plus OpenRouter, OpenAI, Anthropic support with intelligent routing based on task complexity.</p>
             </div>
-            
+
             <div class="feature">
                 <div class="feature-icon">🔒</div>
                 <h3>VPN Integration</h3>
                 <p>ProtonVPN native CLI integration plus generic OpenVPN/WireGuard detection with safety warnings and strict mode options.</p>
             </div>
-            
+
             <div class="feature">
                 <div class="feature-icon">🐳</div>
                 <h3>Docker Ready</h3>
                 <p>One-command deployment with docker-compose, isolated environments, multi-agent scaling, health checks, and production-ready configuration.</p>
             </div>
-            
+
             <div class="feature">
                 <div class="feature-icon">🌐</div>
                 <h3>FastAPI Backend</h3>
                 <p>High-performance REST API with WebSocket support, JWT authentication, role-based access control, and automatic API documentation.</p>
             </div>
-            
+
             <div class="feature">
                 <div class="feature-icon">📊</div>
                 <h3>Risk Engine</h3>
@@ -450,7 +450,7 @@
             </div>
         </div>
     </section>
-    
+
     <section class="tools-section">
         <h2>40+ Integrated Security Tools</h2>
         <div class="tools-grid">
@@ -463,7 +463,7 @@
                     <li>Tshark - Traffic analysis</li>
                 </ul>
             </div>
-            
+
             <div class="tool-category">
                 <h4>🌐 Web</h4>
                 <ul>
@@ -476,7 +476,7 @@
                     <li>Gobuster - Directory brute</li>
                 </ul>
             </div>
-            
+
             <div class="tool-category">
                 <h4>📡 Reconnaissance</h4>
                 <ul>
@@ -487,7 +487,7 @@
                     <li>WAFW00F - WAF detection</li>
                 </ul>
             </div>
-            
+
             <div class="tool-category">
                 <h4>🎯 Active Directory</h4>
                 <ul>
@@ -496,7 +496,7 @@
                     <li>Responder - LLMNR/NBT-NS</li>
                 </ul>
             </div>
-            
+
             <div class="tool-category">
                 <h4>🕵️ OSINT</h4>
                 <ul>
@@ -505,7 +505,7 @@
                     <li>Ignorant - Email checker</li>
                 </ul>
             </div>
-            
+
             <div class="tool-category">
                 <h4>🔐 Secrets</h4>
                 <ul>
@@ -516,10 +516,10 @@
             </div>
         </div>
     </section>
-    
+
     <section class="quickstart" id="quickstart">
         <h2>Quick Start</h2>
-        
+
         <h3>Installation</h3>
         <div class="code-block">
             <code># Clone repository<br>
@@ -531,7 +531,7 @@ pip install -r requirements.txt<br><br>
 cp .env.example .env<br>
 # Edit .env with your API keys</code>
         </div>
-        
+
         <h3>Docker (Recommended)</h3>
         <div class="code-block">
             <code># Start full stack<br>
@@ -541,7 +541,7 @@ docker-compose ps<br><br>
 # Scale agents<br>
 docker-compose up -d --scale agent=3</code>
         </div>
-        
+
         <h3>Python API</h3>
         <div class="code-block">
             <code>from agents.react_agent import ReActAgent, ReActAgentConfig<br><br>
@@ -556,7 +556,7 @@ result = agent.run(<br>
 &nbsp;&nbsp;&nbsp;&nbsp;objective="Security assessment"<br>
 )</code>
         </div>
-        
+
         <h3>REST API</h3>
         <div class="code-block">
             <code># Start API server<br>
@@ -565,7 +565,7 @@ uvicorn api.main:app --reload<br><br>
 # Documentation at http://localhost:8000/docs</code>
         </div>
     </section>
-    
+
     <section class="legal-notice">
         <h3>⚖️ Legal Notice</h3>
         <ul>
@@ -576,7 +576,7 @@ uvicorn api.main:app --reload<br><br>
             <li>Always ensure you have proper authorization before scanning any target</li>
         </ul>
     </section>
-    
+
     <footer class="footer">
         <p>Created by <a href="https://github.com/SHAdd0WTAka">SHAdd0WTAka</a> with assistance from <a href="https://www.moonshot.cn/">Kimi AI</a></p>
         <p><a href="https://github.com/SHAdd0WTAka/zen-ai-pentest">GitHub</a> • <a href="https://github.com/SHAdd0WTAka/zen-ai-pentest/blob/main/ROADMAP_2026.md">Roadmap</a> • <a href="https://github.com/SHAdd0WTAka/zen-ai-pentest/blob/main/AGENTS.md">For AI Agents</a></p>

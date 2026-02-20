@@ -9,7 +9,7 @@ var _collectSiblings = _interopRequireDefault(require("./collectSiblings"));
 
 /**
  * Collects all previous and next sibling elements of a given element.
- * 
+ *
  * @param node the element
  */
 function siblings(node) {

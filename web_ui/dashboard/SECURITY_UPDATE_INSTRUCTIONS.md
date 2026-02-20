@@ -1,7 +1,7 @@
 # Security Update Instructions
 
 ## Overview
-The `package.json` has been updated to fix 4 medium severity CVEs. 
+The `package.json` has been updated to fix 4 medium severity CVEs.
 To complete the security update, you need to regenerate `package-lock.json`.
 
 ## Changes Made to package.json

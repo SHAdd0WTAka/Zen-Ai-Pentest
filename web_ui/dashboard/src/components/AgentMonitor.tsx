@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
-import { 
-  Bot, 
-  Activity, 
+import {
+  Bot,
+  Activity,
   Brain,
   MessageSquare,
   Play,
@@ -81,11 +81,11 @@ const ROLE_ICONS: Record<string, React.ElementType> = {
 }
 
 // Role Icon Display Component
-function RoleIconDisplay({ 
-  role, 
+function RoleIconDisplay({
+  role,
   state,
   className = 'w-6 h-6'
-}: { 
+}: {
   role: string
   state: string
   className?: string
@@ -96,14 +96,14 @@ function RoleIconDisplay({
 }
 
 // Agent Card Component
-function AgentCard({ 
-  agent, 
-  isSelected, 
-  onClick 
-}: { 
+function AgentCard({
+  agent,
+  isSelected,
+  onClick
+}: {
   agent: Agent
   isSelected: boolean
-  onClick: () => void 
+  onClick: () => void
 }) {
   const stateConfig = STATE_COLORS[agent.state] || STATE_COLORS.idle
 
@@ -136,7 +136,7 @@ function AgentCard({
         <div className="mt-3">
           <p className="text-sm text-slate-400 truncate">{agent.current_task}</p>
           <div className="mt-2 h-1.5 bg-slate-700 rounded-full overflow-hidden">
-            <div 
+            <div
               className={cn('h-full rounded-full transition-all duration-500', stateConfig.text.replace('text-', 'bg-'))}
               style={{ width: `${agent.task_progress}%` }}
             />
@@ -159,9 +159,9 @@ function AgentCard({
 }
 
 // Thought Stream Component
-function ThoughtStream({ 
-  thoughts 
-}: { 
+function ThoughtStream({
+  thoughts
+}: {
   thoughts: AgentThought[]
 }) {
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -192,7 +192,7 @@ function ThoughtStream({
         </div>
       ) : (
         thoughts.map((thought) => (
-          <div 
+          <div
             key={thought.id}
             className="flex gap-3 p-3 rounded-lg bg-slate-800/50 border border-slate-700/50 animate-fade-in"
           >
@@ -242,7 +242,7 @@ function ActionLog({ actions }: { actions: AgentAction[] }) {
         </div>
       ) : (
         actions.map((action) => (
-          <div 
+          <div
             key={action.id}
             className={cn(
               'flex items-start gap-3 p-3 rounded-lg border',
@@ -360,7 +360,7 @@ export default function AgentMonitor() {
 
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data)
-      
+
       switch (data.type) {
         case 'connected':
           // Initial agents list
@@ -369,8 +369,8 @@ export default function AgentMonitor() {
           }
           break
         case 'state_change':
-          setAgents((prev: Agent[]) => prev.map((a: Agent) => 
-            a.id === data.agent_id 
+          setAgents((prev: Agent[]) => prev.map((a: Agent) =>
+            a.id === data.agent_id
               ? { ...a, state: data.new_state, last_activity: new Date().toISOString() }
               : a
           ))
@@ -482,7 +482,7 @@ export default function AgentMonitor() {
 
   const handleControlAction = async (action: 'pause' | 'resume' | 'stop') => {
     if (!selectedAgent) return
-    
+
     try {
       // Send control command
       if (wsRef.current?.readyState === WebSocket.OPEN) {
@@ -508,8 +508,8 @@ export default function AgentMonitor() {
         <div className="flex items-center gap-3">
           <div className={cn(
             'flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium border',
-            wsConnected 
-              ? 'bg-green-500/10 text-green-400 border-green-500/30' 
+            wsConnected
+              ? 'bg-green-500/10 text-green-400 border-green-500/30'
               : 'bg-red-500/10 text-red-400 border-red-500/30'
           )}>
             {wsConnected ? <Wifi className="w-4 h-4" /> : <WifiOff className="w-4 h-4" />}
@@ -548,8 +548,8 @@ export default function AgentMonitor() {
                     'w-12 h-12 rounded-xl flex items-center justify-center',
                     STATE_COLORS[selectedAgent.state]?.bg || STATE_COLORS.idle.bg
                   )}>
-                    <RoleIconDisplay 
-                      role={selectedAgent.role} 
+                    <RoleIconDisplay
+                      role={selectedAgent.role}
                       state={selectedAgent.state}
                       className="w-6 h-6"
                     />
@@ -606,7 +606,7 @@ export default function AgentMonitor() {
                   </div>
                   <p className="text-slate-200 mb-2">{selectedAgent.current_task}</p>
                   <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
-                    <div 
+                    <div
                       className="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-500"
                       style={{ width: `${selectedAgent.task_progress}%` }}
                     />

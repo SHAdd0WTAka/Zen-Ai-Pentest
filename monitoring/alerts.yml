@@ -5,8 +5,8 @@ groups:
       - alert: HighErrorRate
         expr: |
           (
-            sum(rate(http_requests_total{status_code=~"5.."}[5m])) 
-            / 
+            sum(rate(http_requests_total{status_code=~"5.."}[5m]))
+            /
             sum(rate(http_requests_total[5m]))
           ) > 0.05
         for: 5m
@@ -19,7 +19,7 @@ groups:
       # High Latency
       - alert: HighLatency
         expr: |
-          histogram_quantile(0.95, 
+          histogram_quantile(0.95,
             sum(rate(http_request_duration_seconds_bucket[5m])) by (le)
           ) > 2
         for: 5m
@@ -78,7 +78,7 @@ groups:
       # Scan Stuck
       - alert: ScansStuck
         expr: |
-          scans_active > 0 and 
+          scans_active > 0 and
           changes(scans_active[30m]) == 0
         for: 30m
         labels:
@@ -91,8 +91,8 @@ groups:
       - alert: DiskSpaceLow
         expr: |
           (
-            node_filesystem_avail_bytes{mountpoint="/"} 
-            / 
+            node_filesystem_avail_bytes{mountpoint="/"}
+            /
             node_filesystem_size_bytes{mountpoint="/"}
           ) < 0.1
         for: 5m
@@ -107,8 +107,8 @@ groups:
         expr: |
           (
             node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes
-          ) 
-          / 
+          )
+          /
           node_memory_MemTotal_bytes > 0.9
         for: 5m
         labels:

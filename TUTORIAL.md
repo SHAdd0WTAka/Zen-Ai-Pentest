@@ -296,15 +296,15 @@ from modules.enhanced_recon import EnhancedReconModule
 async def run_recon():
     # Module initialisieren
     recon = EnhancedReconModule()
-    
+
     # Vollständige Reconnaissance
     result = recon.full_recon("example.com")
-    
+
     # Ergebnisse auswerten
     print(f"Risk Level: {result['summary']['risk_level']}")
     print(f"Technologien: {result['summary']['technologies_detected']}")
     print(f"Directories: {result['summary']['directories_found']}")
-    
+
     # Empfehlungen anzeigen
     for rec in result['summary']['recommendations']:
         print(f"💡 {rec}")
@@ -323,13 +323,13 @@ targets = ["example.com", "test.com", "demo.com"]
 
 async def batch_scan():
     recon = EnhancedReconModule()
-    
+
     results = []
     for target in targets:
         print(f"Scanning {target}...")
         result = await recon.run_full_scan(target)
         results.append(result)
-    
+
     # Zusammenfassung
     print(f"\n{'='*60}")
     print("BATCH SCAN SUMMARY")

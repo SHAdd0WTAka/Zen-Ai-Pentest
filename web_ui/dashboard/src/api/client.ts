@@ -1,6 +1,6 @@
 /**
  * API Client mit Authentication
- * 
+ *
  * Zentrale Axios-Instanz die automatisch JWT Token sendet
  */
 import axios from 'axios'
@@ -53,14 +53,14 @@ export const authApi = {
     localStorage.setItem('access_token', access_token)
     return response.data
   },
-  
+
   logout: () => {
     localStorage.removeItem('access_token')
     localStorage.removeItem('user')
   },
-  
+
   getToken: () => localStorage.getItem('access_token'),
-  
+
   isAuthenticated: () => !!localStorage.getItem('access_token'),
 }
 

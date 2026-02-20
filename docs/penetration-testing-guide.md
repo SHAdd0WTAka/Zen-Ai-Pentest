@@ -87,7 +87,7 @@ Be aware of rate limits:
   - [ ] Account lockout mechanisms
   - [ ] Password reset flow
   - [ ] MFA/2FA if implemented
-  
+
 - [ ] Test session management
   - [ ] Session fixation
   - [ ] Session timeout
@@ -284,6 +284,6 @@ After fixes are deployed:
 
 ---
 
-**Last Updated:** 2026-02-04  
-**Version:** 1.0  
+**Last Updated:** 2026-02-04
+**Version:** 1.0
 **Contact:** security@zen-pentest.local

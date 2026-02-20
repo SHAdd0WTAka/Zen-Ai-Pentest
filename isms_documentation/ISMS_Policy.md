@@ -1,11 +1,11 @@
 # Information Security Management System (ISMS)
 # Zen-AI-Pentest Framework
 
-**Dokumenten-ID:** ISMS-001  
-**Version:** 2.0  
-**Datum:** 2026-02-13  
-**Klassifizierung:** Intern  
-**Eigentümer:** @SHAdd0WTAka  
+**Dokumenten-ID:** ISMS-001
+**Version:** 2.0
+**Datum:** 2026-02-13
+**Klassifizierung:** Intern
+**Eigentümer:** @SHAdd0WTAka
 
 ---
 
@@ -542,7 +542,7 @@ Risiko = Eintrittswahrscheinlichkeit × Auswirkung
 
 Dieses Information Security Management System wurde erstellt und genehmigt:
 
-**Erstellt von:** ISO 27001 Lead Implementer  
-**Genehmigt von:** @SHAdd0WTAka  
-**Datum:** 2026-02-13  
+**Erstellt von:** ISO 27001 Lead Implementer
+**Genehmigt von:** @SHAdd0WTAka
+**Datum:** 2026-02-13
 **Nächste Überprüfung:** 2027-02-13

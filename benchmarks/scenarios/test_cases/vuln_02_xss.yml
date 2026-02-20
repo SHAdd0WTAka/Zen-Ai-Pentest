@@ -7,10 +7,10 @@ name: Cross-Site Scripting (XSS) Detection Test
 description: |
   Comprehensive XSS vulnerability testing including:
   - Reflected XSS
-  - Stored/Persistent XSS  
+  - Stored/Persistent XSS
   - DOM-based XSS
   - Blind XSS
-  
+
   Tests detection across various contexts: HTML, JavaScript,
   URL, CSS, and HTML attributes.
 
@@ -43,17 +43,17 @@ test_contexts:
     - path: "/search"
       parameter: "q"
       vulnerable: true
-      
+
   javascript_context:
     - path: "/track"
       parameter: "callback"
       vulnerable: true
-      
+
   attribute_context:
     - path: "/profile"
       parameter: "img"
       vulnerable: true
-      
+
   url_context:
     - path: "/redirect"
       parameter: "url"
@@ -72,7 +72,7 @@ expected_findings:
       Payload: <script>alert('XSS')</script>
     verification_method: "manual"
     exploit_available: true
-    
+
   - vuln_type: stored_xss
     severity: critical
     location: "/comments - comment field"
@@ -84,7 +84,7 @@ expected_findings:
       Payload: <img src=x onerror=alert('Stored XSS')>
     verification_method: "manual"
     exploit_available: true
-    
+
   - vuln_type: dom_xss
     severity: high
     location: "/#callback= (JavaScript context)"
@@ -96,7 +96,7 @@ expected_findings:
       Payload: #callback=alert('DOM XSS')//
     verification_method: "manual"
     exploit_available: true
-    
+
   - vuln_type: reflected_xss
     severity: medium
     location: "/profile - img parameter (Attribute context)"
@@ -105,10 +105,10 @@ expected_findings:
     description: |
       XSS via HTML attribute injection. Input reflected
       in img src attribute without validation.
-      Payload: " onerror=alert('attr XSS') 
+      Payload: " onerror=alert('attr XSS')
     verification_method: "manual"
     exploit_available: true
-    
+
   - vuln_type: open_redirect
     severity: medium
     location: "/redirect - url parameter"
@@ -132,7 +132,7 @@ parameters:
   polyglots: true
   encoding_tests: true
   waf_evasion: false
-  
+
 # Success Criteria
 min_detection_rate: 0.80
 max_false_positive_rate: 0.20
@@ -178,20 +178,20 @@ payload_library:
     - "<script>alert('XSS')</script>"
     - "<img src=x onerror=alert('XSS')>"
     - "<svg onload=alert('XSS')>"
-    
+
   polyglots:
     - "javascript:alert(1)"  # Fixed polyglot
-    
+
   attribute_context:
     - '" onfocus=alert(1) autofocus "'
     - "' onerror=alert(1) '"
     - "><img src=x onerror=alert('XSS')>"
-    
+
   javascript_context:
     - "';alert('XSS');//"
     - "'-alert(1)-'"
     - "\\x3cscript\\x3ealert('XSS')\\x3c/script\\x3e"
-    
+
   dom_based:
     - "#<img src=x onerror=alert(1)>"
     - "javascript:alert(1)"
@@ -203,7 +203,7 @@ bypass_techniques:
     - html_entities
     - url_encoding
     - unicode_normalization
-  
+
   obfuscation:
     - case_variation
     - whitespace_insertion

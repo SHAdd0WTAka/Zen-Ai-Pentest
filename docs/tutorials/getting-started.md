@@ -23,7 +23,7 @@ from autonomous.react import ReActLoop, AgentConfig
 async def main():
     config = AgentConfig(max_iterations=10)
     agent = ReActLoop(llm_client=client, config=config)
-    
+
     result = await agent.run(
         goal="Find web vulnerabilities",
         target="https://example.com"

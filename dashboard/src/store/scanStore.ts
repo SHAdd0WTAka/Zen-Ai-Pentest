@@ -48,9 +48,9 @@ export const useScanStore = create<ScanState>((set, get) => ({
       })
       if (!response.ok) throw new Error('Failed to create scan')
       const data = await response.json()
-      set((state) => ({ 
+      set((state) => ({
         scans: [data, ...state.scans],
-        isLoading: false 
+        isLoading: false
       }))
     } catch (error) {
       set({ error: (error as Error).message, isLoading: false })

@@ -73,7 +73,7 @@ groups:
       # ============================================
       - alert: ZenAiAPILatencyCritical
         expr: |
-          histogram_quantile(0.99, 
+          histogram_quantile(0.99,
             sum by (le, endpoint) (rate(zen_ai_api_request_duration_seconds_bucket[5m]))
           ) > 5
         for: 3m

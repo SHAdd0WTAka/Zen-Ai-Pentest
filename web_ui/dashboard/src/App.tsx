@@ -1,9 +1,9 @@
 import { Routes, Route, NavLink, Navigate } from 'react-router-dom'
-import { 
-  LayoutDashboard, 
-  Scan, 
-  ShieldAlert, 
-  Bot, 
+import {
+  LayoutDashboard,
+  Scan,
+  ShieldAlert,
+  Bot,
   Menu,
   X,
   LogOut
@@ -75,9 +75,9 @@ function App() {
 
       <div className="flex">
         {/* Sidebar */}
-        <aside 
+        <aside
           className={`
-            fixed lg:static inset-y-0 left-0 z-40 w-64 bg-slate-800 border-r border-slate-700 
+            fixed lg:static inset-y-0 left-0 z-40 w-64 bg-slate-800 border-r border-slate-700
             transform transition-transform duration-300 ease-out
             ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
           `}
@@ -102,8 +102,8 @@ function App() {
                 onClick={() => setSidebarOpen(false)}
                 className={({ isActive }) => `
                   flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all duration-200
-                  ${isActive 
-                    ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30' 
+                  ${isActive
+                    ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30'
                     : 'text-slate-400 hover:bg-slate-700/50 hover:text-slate-100'
                   }
                 `}
@@ -116,14 +116,14 @@ function App() {
 
           {/* Bottom section */}
           <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-slate-700">
-            <button 
+            <button
               onClick={handleLogout}
               className="flex items-center gap-3 px-4 py-3 w-full rounded-lg text-slate-400 hover:bg-slate-700/50 hover:text-slate-100 transition-all"
             >
               <LogOut className="w-5 h-5" />
               Logout
             </button>
-            
+
             {/* Connection status */}
             <div className="mt-4 px-4 flex items-center gap-2 text-xs text-slate-500">
               <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
@@ -134,7 +134,7 @@ function App() {
 
         {/* Overlay for mobile */}
         {sidebarOpen && (
-          <div 
+          <div
             className="fixed inset-0 bg-black/50 z-30 lg:hidden"
             onClick={() => setSidebarOpen(false)}
           />

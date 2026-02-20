@@ -79,10 +79,10 @@ from api.rate_limiter_v2 import check_user_auth_rate_limit
 @app.post("/api/login")
 async def login(request: Request, credentials: LoginData):
     client_ip = request.client.host
-    
+
     # Prüfe Rate Limit (IP + User-ID)
     check_user_auth_rate_limit(client_ip, credentials.username)
-    
+
     # ... Login Logik ...
 ```
 
@@ -117,7 +117,7 @@ from api.rate_limiter_v2 import get_user_from_request
 
 def get_user_from_request(request: Request) -> UserContext:
     auth_header = request.headers.get("authorization", "")
-    
+
     if auth_header.startswith("Bearer "):
         token_data = decode_jwt(auth_header[7:])
         return UserContext(
@@ -125,7 +125,7 @@ def get_user_from_request(request: Request) -> UserContext:
             tier=token_data.get("tier", "user"),
             ip_address=request.client.host
         )
-    
+
     return UserContext(tier="anonymous", ip_address=request.client.host)
 ```
 
@@ -147,17 +147,17 @@ from api.rate_limiter_v2 import (
 @app.post("/api/login")
 async def login(request: Request, credentials: LoginData):
     client_ip = request.client.host
-    
+
     # Prüfe Rate Limit
     check_user_auth_rate_limit(client_ip, credentials.username)
-    
+
     # Versuche Login
     user = authenticate(credentials)
-    
+
     if not user:
         record_auth_failure(client_ip, credentials.username)
         raise HTTPException(401, "Invalid credentials")
-    
+
     record_auth_success(client_ip, credentials.username)
     return {"token": create_jwt(user)}
 ```

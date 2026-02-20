@@ -5,7 +5,7 @@ exports.default = void 0;
 
 /**
  * A `removeEventListener` ponyfill
- * 
+ *
  * @param node the element
  * @param eventName the event name
  * @param handle the handler

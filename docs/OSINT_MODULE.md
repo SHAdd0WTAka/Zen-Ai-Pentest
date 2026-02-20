@@ -103,10 +103,10 @@ from modules.osint import OSINTModule
 async with OSINTModule() as osint:
     # Harvest emails
     emails = await osint.harvest_emails("example.com")
-    
+
     # Domain recon
     info = await osint.recon_domain("example.com")
-    
+
     # Check breach
     profile = await osint.check_breach("user@example.com")
 ```
@@ -135,7 +135,7 @@ for sub in subdomains:
 ```python
 async with OSINTModule() as osint:
     results = await osint.investigate_username("johndoe")
-    
+
     for platform, data in results.items():
         if data["exists"]:
             print(f"Found on {platform}: {data['url']}")
@@ -241,7 +241,7 @@ from modules.vuln_scanner import VulnScannerModule
 
 async with OSINTModule() as osint:
     info = await osint.recon_domain("example.com")
-    
+
     scanner = VulnScannerModule()
     for subdomain in info.subdomains:
         await scanner.scan(subdomain)

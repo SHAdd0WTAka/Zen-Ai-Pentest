@@ -1,9 +1,9 @@
 # Zen AI Pentest - Core & Agents Analysis
 
-**Project:** Zen AI Pentest - Multi-LLM Penetration Testing Intelligence System  
-**Author:** SHAdd0WTAka  
-**Version:** 1.0.0  
-**Analysis Date:** 2026-02-09  
+**Project:** Zen AI Pentest - Multi-LLM Penetration Testing Intelligence System
+**Author:** SHAdd0WTAka
+**Version:** 1.0.0
+**Analysis Date:** 2026-02-09
 
 ---
 

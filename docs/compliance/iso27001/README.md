@@ -8,12 +8,12 @@ This directory contains the ISO 27001:2022 compliance documentation for Zen-AI-P
 
 ## Overview
 
-**Project**: Zen-AI-Pentest  
-**Certification Target**: Self-Certification (Open Source)  
-**Standard**: ISO 27001:2022  
-**Scope**: Open-source penetration testing framework including code, documentation, community, and infrastructure  
-**Owner**: @SHAdd0WTAka  
-**Status**: Active Implementation  
+**Project**: Zen-AI-Pentest
+**Certification Target**: Self-Certification (Open Source)
+**Standard**: ISO 27001:2022
+**Scope**: Open-source penetration testing framework including code, documentation, community, and infrastructure
+**Owner**: @SHAdd0WTAka
+**Status**: Active Implementation
 
 ---
 

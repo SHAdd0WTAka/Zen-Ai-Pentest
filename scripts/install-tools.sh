@@ -64,7 +64,7 @@ check_root() {
 # Install package based on OS
 install_package() {
     local package=$1
-    
+
     case $OS in
         ubuntu|debian)
             sudo apt-get update -qq
@@ -94,12 +94,12 @@ install_package() {
 # Install Nmap
 install_nmap() {
     log_info "Installing Nmap..."
-    
+
     if command -v nmap &> /dev/null; then
         log_success "Nmap already installed: $(nmap -V | head -1)"
         return
     fi
-    
+
     install_package nmap
     log_success "Nmap installed successfully"
 }
@@ -107,44 +107,44 @@ install_nmap() {
 # Install SQLMap
 install_sqlmap() {
     log_info "Installing SQLMap..."
-    
+
     if command -v sqlmap &> /dev/null; then
         log_success "SQLMap already installed: $(sqlmap --version)"
         return
     fi
-    
+
     # Try package manager first
     if [[ "$OS" == "ubuntu" ]] || [[ "$OS" == "debian" ]]; then
         install_package sqlmap
     else
         # Install from GitHub
         log_info "Installing SQLMap from GitHub..."
-        
+
         SQLMAP_DIR="/opt/sqlmap"
         if [ -d "$SQLMAP_DIR" ]; then
             sudo rm -rf "$SQLMAP_DIR"
         fi
-        
+
         sudo git clone --depth 1 https://github.com/sqlmapproject/sqlmap.git "$SQLMAP_DIR"
         sudo ln -sf "$SQLMAP_DIR/sqlmap.py" /usr/local/bin/sqlmap
         sudo chmod +x /usr/local/bin/sqlmap
     fi
-    
+
     log_success "SQLMap installed successfully"
 }
 
 # Install Nuclei
 install_nuclei() {
     log_info "Installing Nuclei..."
-    
+
     if command -v nuclei &> /dev/null; then
         log_success "Nuclei already installed: $(nuclei -version 2>/dev/null | grep Version | awk '{print $3}')"
         return
     fi
-    
+
     # Install using official installer
     log_info "Downloading Nuclei..."
-    
+
     if command -v go &> /dev/null; then
         # Install via go
         go install -v github.com/projectdiscovery/nuclei/v3/cmd/nuclei@latest
@@ -153,9 +153,9 @@ install_nuclei() {
         local arch=$(uname -m)
         local os="linux"
         [[ "$OSTYPE" == "darwin"* ]] && os="macos"
-        
+
         local download_url="https://github.com/projectdiscovery/nuclei/releases/latest/download/nuclei_${os}_${arch}.zip"
-        
+
         cd /tmp
         curl -sL "$download_url" -o nuclei.zip
         unzip -q nuclei.zip
@@ -163,58 +163,58 @@ install_nuclei() {
         rm nuclei.zip
         cd -
     fi
-    
+
     # Download templates
     nuclei -update-templates
-    
+
     log_success "Nuclei installed successfully"
 }
 
 # Install GoBuster
 install_gobuster() {
     log_info "Installing GoBuster..."
-    
+
     if command -v gobuster &> /dev/null; then
         log_success "GoBuster already installed"
         return
     fi
-    
+
     if command -v go &> /dev/null; then
         go install github.com/OJ/gobuster/v3@latest
     else
         install_package gobuster
     fi
-    
+
     log_success "GoBuster installed successfully"
 }
 
 # Install Subfinder
 install_subfinder() {
     log_info "Installing Subfinder..."
-    
+
     if command -v subfinder &> /dev/null; then
         log_success "Subfinder already installed"
         return
     fi
-    
+
     if command -v go &> /dev/null; then
         go install -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest
     else
         log_warning "Go not installed, skipping Subfinder"
     fi
-    
+
     log_success "Subfinder installed successfully"
 }
 
 # Install Amass
 install_amass() {
     log_info "Installing Amass..."
-    
+
     if command -v amass &> /dev/null; then
         log_success "Amass already installed"
         return
     fi
-    
+
     if command -v snap &> /dev/null; then
         sudo snap install amass
     elif command -v go &> /dev/null; then
@@ -222,75 +222,75 @@ install_amass() {
     else
         log_warning "Neither snap nor go available, skipping Amass"
     fi
-    
+
     log_success "Amass installed successfully"
 }
 
 # Install FFUF
 install_ffuf() {
     log_info "Installing FFUF..."
-    
+
     if command -v ffuf &> /dev/null; then
         log_success "FFUF already installed"
         return
     fi
-    
+
     if command -v go &> /dev/null; then
         go install github.com/ffuf/ffuf/v2@latest
     else
         log_warning "Go not installed, skipping FFUF"
     fi
-    
+
     log_success "FFUF installed successfully"
 }
 
 # Install Nikto
 install_nikto() {
     log_info "Installing Nikto..."
-    
+
     if command -v nikto &> /dev/null; then
         log_success "Nikto already installed"
         return
     fi
-    
+
     install_package nikto
-    
+
     log_success "Nikto installed successfully"
 }
 
 # Install WhatWeb
 install_whatweb() {
     log_info "Installing WhatWeb..."
-    
+
     if command -v whatweb &> /dev/null; then
         log_success "WhatWeb already installed"
         return
     fi
-    
+
     if [[ "$OS" == "ubuntu" ]] || [[ "$OS" == "debian" ]]; then
         install_package whatweb
     else
         log_warning "WhatWeb installation not automated for $OS"
     fi
-    
+
     log_success "WhatWeb installed successfully"
 }
 
 # Install WAFW00F
 install_wafw00f() {
     log_info "Installing WAFW00F..."
-    
+
     if command -v wafw00f &> /dev/null; then
         log_success "WAFW00F already installed"
         return
     fi
-    
+
     if command -v pip3 &> /dev/null; then
         pip3 install wafw00f
     else
         log_warning "pip3 not found, skipping WAFW00F"
     fi
-    
+
     log_success "WAFW00F installed successfully"
 }
 
@@ -298,7 +298,7 @@ install_wafw00f() {
 check_go() {
     if ! command -v go &> /dev/null; then
         log_info "Go not found. Installing Go..."
-        
+
         case $OS in
             ubuntu|debian)
                 sudo apt-get update -qq
@@ -315,7 +315,7 @@ check_go() {
                 ;;
         esac
     fi
-    
+
     if command -v go &> /dev/null; then
         log_success "Go installed: $(go version)"
     fi
@@ -324,10 +324,10 @@ check_go() {
 # Install wordlists
 install_wordlists() {
     log_info "Installing wordlists..."
-    
+
     local wordlist_dir="/usr/share/wordlists"
     sudo mkdir -p "$wordlist_dir"
-    
+
     # SecLists
     if [ ! -d "$wordlist_dir/SecLists" ]; then
         log_info "Downloading SecLists..."
@@ -337,7 +337,7 @@ install_wordlists() {
         rm -rf /tmp/SecLists
         log_success "SecLists installed"
     fi
-    
+
     # Dirb wordlists
     if [ ! -d "$wordlist_dir/dirb" ]; then
         install_package dirb
@@ -350,9 +350,9 @@ main() {
     echo "  Zen-AI-Pentest Tool Installer"
     echo "==============================================="
     echo
-    
+
     check_root
-    
+
     # Parse arguments
     INSTALL_ALL=false
     while [[ $# -gt 0 ]]; do
@@ -377,21 +377,21 @@ main() {
                 ;;
         esac
     done
-    
+
     log_info "Starting installation..."
     log_info "This may take a while..."
     echo
-    
+
     # Required tools
     install_nmap
     install_sqlmap
-    
+
     # Optional tools (if --all)
     if [[ "$INSTALL_ALL" == true ]]; then
         log_info "Installing optional tools..."
-        
+
         check_go
-        
+
         install_nuclei
         install_gobuster
         install_subfinder
@@ -404,21 +404,21 @@ main() {
     else
         log_info "Skipping optional tools (use --all to install everything)"
     fi
-    
+
     echo
     echo "==============================================="
     log_success "Installation complete!"
     echo "==============================================="
     echo
-    
+
     # Final check
     echo "Running tool check..."
     echo
-    
+
     if command -v python3 &> /dev/null; then
         python3 -m tools.integrations.tool_checker || true
     fi
-    
+
     echo
     log_info "Required tools installed:"
     echo "  - nmap: $(nmap -V 2>/dev/null | head -1 || echo 'Not found')"

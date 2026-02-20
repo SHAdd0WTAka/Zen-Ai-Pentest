@@ -58,7 +58,7 @@ async def main():
         fp_database_path="fp_database.json",
         enable_llm_voting=True
     )
-    
+
     # Finding erstellen
     finding = Finding(
         id="FIND-001",
@@ -72,10 +72,10 @@ async def main():
             internet_exposed=True
         )
     )
-    
+
     # Validieren
     result = await engine.validate_finding(finding)
-    
+
     print(f"False Positive: {result.is_false_positive}")
     print(f"Confidence: {result.confidence:.2%}")
     print(f"Risk Score: {result.risk_score:.2f}")

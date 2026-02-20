@@ -20,16 +20,16 @@ Kickoff-Meeting Agenda:
      - In-Scope: www.target.com, api.target.com
      - Out-of-Scope: partner.target.com (Drittanbieter)
      - Subdomains: *.target.com (nach Bestätigung)
-  
+
   2. Testing Windows:
      - Primär: 22:00 - 06:00 Uhr (MEZ)
      - Notfall-Kontakt: security@target.com
      - War Room: Slack-Channel #pentest-jan-2026
-  
+
   3. Authentifizierung:
      - Test-Accounts bereitgestellt: 3 User, 1 Admin
      - MFA deaktiviert für Test-Accounts (vereinbart)
-  
+
   4. Legal:
      - Vertrag unterzeichnet
      - Liability Insurance: €5M
@@ -451,7 +451,7 @@ nt authority\system
 
 ```bash
 # Dokumentation NICHT Ausführung:
-# 
+#
 # Mögliche Persistence-Methoden:
 # 1. Golden Ticket (KRBTGT Hash)
 # 2. DSRM Password (Directory Services Restore Mode)
@@ -521,7 +521,7 @@ Collection:
   - SharpDPAPI (Chrome Passwörter)
   - Seatbelt (System-Enumeration)
   - SharpUp (Privilege Escalation Checks)
-  
+
 Data Staging:
   - Verschlüsseln (AES-256)
   - Aufteilen in Chunks

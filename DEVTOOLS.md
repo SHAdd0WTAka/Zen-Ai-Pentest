@@ -41,20 +41,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       # Codecov
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
           files: ./coverage.xml
           fail_ci_if_error: true
-      
+
       # DeepSource
       - name: DeepSource Analysis
         uses: deepsourcelabs/deepsource-action@v1
         with:
           dsn: ${{ secrets.DEEPSOURCE_DSN }}
-      
+
       # SonarCloud
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
@@ -156,7 +156,7 @@ jobs:
       - name: Check API Health
         run: |
           curl -f https://api.zen-ai-pentest.workers.dev/health || exit 1
-      
+
       - name: Notify on Failure
         if: failure()
         uses: slackapi/slack-github-action@v1

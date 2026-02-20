@@ -64,9 +64,9 @@ setup_slack() {
     echo "📱 Slack Setup"
     echo "=========================================="
     echo ""
-    
+
     print_status "Opening Slack API Apps page..."
-    
+
     if command -v xdg-open &> /dev/null; then
         xdg-open "https://api.slack.com/apps" &
     elif command -v open &> /dev/null; then
@@ -74,7 +74,7 @@ setup_slack() {
     elif command -v start &> /dev/null; then
         start "https://api.slack.com/apps" &
     fi
-    
+
     echo ""
     echo "Follow these steps:"
     echo "1. Click 'Create New App' → 'From scratch'"
@@ -85,9 +85,9 @@ setup_slack() {
     echo "6. Select a channel and click 'Allow'"
     echo "7. Copy the webhook URL"
     echo ""
-    
+
     read -p "Paste your Slack webhook URL (or press Enter to skip): " slack_url
-    
+
     if [ -n "$slack_url" ]; then
         print_status "Adding Slack secret to GitHub..."
         gh secret set SLACK_WEBHOOK_URL --body "$slack_url" --repo "$REPO"
@@ -103,7 +103,7 @@ setup_discord() {
     echo "💬 Discord Setup"
     echo "=========================================="
     echo ""
-    
+
     print_status "Please open Discord and follow these steps:"
     echo ""
     echo "1. Right-click your server → 'Server Settings'"
@@ -113,9 +113,9 @@ setup_discord() {
     echo "5. Select channel (e.g., #general)"
     echo "6. Click 'Copy Webhook URL'"
     echo ""
-    
+
     read -p "Paste your Discord webhook URL (or press Enter to skip): " discord_url
-    
+
     if [ -n "$discord_url" ]; then
         print_status "Adding Discord secret to GitHub..."
         gh secret set DISCORD_WEBHOOK_URL --body "$discord_url" --repo "$REPO"
@@ -131,10 +131,10 @@ test_notifications() {
     echo "🧪 Testing Notifications"
     echo "=========================================="
     echo ""
-    
+
     print_status "Triggering test workflow..."
     gh workflow run test-notifications.yml --repo "$REPO"
-    
+
     print_success "Test workflow triggered!"
     print_status "Check your Slack/Discord in a few seconds..."
 }
@@ -145,11 +145,11 @@ show_summary() {
     echo "📊 Setup Summary"
     echo "=========================================="
     echo ""
-    
+
     # Check configured secrets
     echo "Configured Secrets:"
     gh secret list --repo "$REPO" | grep -E "(SLACK|DISCORD)" || echo "No notification secrets configured yet"
-    
+
     echo ""
     echo "What happens now:"
     echo "✅ Health Score alerts (< 50)"
@@ -169,10 +169,10 @@ show_summary() {
 # Main execution
 main() {
     local type="${1:-both}"
-    
+
     check_gh_cli
     authenticate
-    
+
     case "$type" in
         slack)
             setup_slack
@@ -189,7 +189,7 @@ main() {
             exit 1
             ;;
     esac
-    
+
     show_summary
 }
 

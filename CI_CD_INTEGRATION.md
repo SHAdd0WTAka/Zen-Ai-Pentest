@@ -72,10 +72,10 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       security-events: write
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Zen AI Pentest
         uses: ./
         with:
@@ -191,13 +191,13 @@ pipeline {
             image 'zenai/zen-pentest:latest'
         }
     }
-    
+
     environment {
         ZEN_TARGET = 'https://example.com'
         ZEN_SCOPE = 'full'
         ZEN_FAIL_ON = 'high'
     }
-    
+
     stages {
         stage('Security Scan') {
             steps {
@@ -210,7 +210,7 @@ pipeline {
             }
         }
     }
-    
+
     post {
         always {
             archiveArtifacts artifacts: 'results.sarif'
@@ -325,8 +325,8 @@ formatter.write(findings, summary, "report.html")
 from modules.output_formats import export_all_formats
 
 results = export_all_formats(
-    findings, 
-    summary, 
+    findings,
+    summary,
     output_dir="./output",
     prefix="security-scan"
 )

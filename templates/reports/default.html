@@ -6,7 +6,7 @@
     <title>Penetration Test Report - {{ scan.name }}</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { 
+        body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             line-height: 1.6;
             color: #333;
@@ -206,22 +206,22 @@
                     {{ finding.severity }}
                 </span>
             </div>
-            
+
             <div class="finding-section">
                 <h4>Description</h4>
                 <p>{{ finding.description }}</p>
             </div>
-            
+
             <div class="finding-section">
                 <h4>Impact</h4>
                 <p>{{ finding.impact or 'No impact specified' }}</p>
             </div>
-            
+
             <div class="finding-section">
                 <h4>Remediation</h4>
                 <p>{{ finding.remediation }}</p>
             </div>
-            
+
             {% if finding.cvss_score %}
             <div class="finding-section">
                 <h4>CVSS Score</h4>

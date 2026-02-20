@@ -128,7 +128,7 @@ from modules.subdomain_scanner import SubdomainScanner
 async def main():
     scanner = SubdomainScanner()
     results = await scanner.scan("target.com")
-    
+
     for subdomain, result in results.items():
         if result.is_alive:
             print(f"{subdomain}: HTTP {result.status_code}")

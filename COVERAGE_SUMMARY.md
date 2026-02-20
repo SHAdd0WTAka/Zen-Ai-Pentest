@@ -1,7 +1,7 @@
 # Test Coverage Summary
 
-**Datum:** 2026-02-17  
-**Arbeitszeit:** ~4 Stunden  
+**Datum:** 2026-02-17
+**Arbeitszeit:** ~4 Stunden
 **Tests erstellt:** ~1650
 
 ## Ergebnis

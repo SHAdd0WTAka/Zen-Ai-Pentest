@@ -12,7 +12,7 @@ if [ -n "$API_PID" ]; then
     echo "   URL: http://127.0.0.1:5000"
     echo "   Web UI: http://127.0.0.1:5000/"
     echo ""
-    
+
     # API Health Check
     HEALTH=$(curl -s http://127.0.0.1:5000/api/v1/health 2>/dev/null)
     if [ $? -eq 0 ]; then
@@ -20,14 +20,14 @@ if [ -n "$API_PID" ]; then
         echo "   Personas: $(echo $HEALTH | python3 -c "import sys,json; print(json.load(sys.stdin)['personas_available'])")"
         echo "   Version: $(echo $HEALTH | python3 -c "import sys,json; print(json.load(sys.stdin)['version'])")"
     fi
-    
+
     # Admin Stats
     STATS=$(curl -s http://127.0.0.1:5000/admin 2>/dev/null)
     if [ $? -eq 0 ]; then
         echo "   Uptime: $(echo $STATS | python3 -c "import sys,json; print(json.load(sys.stdin)['uptime_formatted'])")"
         echo "   Requests: $(echo $STATS | python3 -c "import sys,json; print(json.load(sys.stdin)['stats']['total_requests'])")"
     fi
-    
+
     echo ""
     echo "Verfügbare Befehle:"
     echo "  curl http://127.0.0.1:5000/api/v1/health"
@@ -36,7 +36,7 @@ if [ -n "$API_PID" ]; then
     echo ""
     echo "Server stoppen:"
     echo "  kill $API_PID"
-    
+
 else
     echo -e "\033[0;31m❌ Server nicht aktiv\033[0m"
     echo ""

@@ -15,7 +15,7 @@
 Scannen mit dem Handy → Direkt zur Seite!
 
 📁 **GitHub Repository** → Code & Issues
-💬 **Discord Server** → Community Chat  
+💬 **Discord Server** → Community Chat
 🤖 **Telegram BotFather** → Bot erstellen
 ☁️ **GitHub Environments** → Secrets verwalten
 ⚡ **GitHub Actions** → Workflows

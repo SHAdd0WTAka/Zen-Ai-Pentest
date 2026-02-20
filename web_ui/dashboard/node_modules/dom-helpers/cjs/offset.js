@@ -15,7 +15,7 @@ var _scrollTop = _interopRequireDefault(require("./scrollTop"));
 
 /**
  * Returns the offset of a given element, including top and left positions, width and height.
- * 
+ *
  * @param node the element
  */
 function offset(node) {

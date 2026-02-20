@@ -10,15 +10,15 @@ export class Auth {
   async verify(token) {
     try {
       const [header, payload, signature] = token.split('.');
-      
+
       // Decode payload
       const decoded = JSON.parse(atob(payload));
-      
+
       // Check expiration
       if (decoded.exp && decoded.exp < Date.now() / 1000) {
         return null;
       }
-      
+
       return decoded;
     } catch (e) {
       return null;
@@ -32,10 +32,10 @@ export class Auth {
       iat: Math.floor(Date.now() / 1000),
       exp: Math.floor(Date.now() / 1000) + expiresIn
     }));
-    
+
     // Simple signature (use proper crypto in production)
     const signature = btoa(await this.sign(`${header}.${body}`));
-    
+
     return `${header}.${body}.${signature}`;
   }
 
@@ -48,13 +48,13 @@ export class Auth {
       false,
       ['sign']
     );
-    
+
     const signature = await crypto.subtle.sign(
       'HMAC',
       key,
       encoder.encode(data)
     );
-    
+
     return signature;
   }
 }

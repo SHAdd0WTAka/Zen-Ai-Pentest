@@ -8,8 +8,8 @@ This document outlines the governance structure for Zen-AI-Pentest.
 
 Zen-AI-Pentest is an open-source project governed by a simple, transparent model that balances community involvement with clear decision-making authority.
 
-**Project Type**: Open Source (MIT License)  
-**Governance Model**: Benevolent Dictator + Advisory Council  
+**Project Type**: Open Source (MIT License)
+**Governance Model**: Benevolent Dictator + Advisory Council
 **Decision Making**: Merit-based with maintainer oversight
 
 ---
@@ -354,5 +354,5 @@ This governance model is inspired by:
 
 ---
 
-*This document is maintained by the project maintainers.*  
+*This document is maintained by the project maintainers.*
 *Last updated: 2026-02-16*

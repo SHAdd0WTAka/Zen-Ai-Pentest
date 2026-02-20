@@ -146,7 +146,7 @@ from agents.react_agent import get_agent
 class PentestOrchestrator:
     def __init__(self):
         self.react_agent = get_agent()
-    
+
     def run_autonomous_scan(self, target, objective):
         return self.react_agent.run(target, objective)
 ```

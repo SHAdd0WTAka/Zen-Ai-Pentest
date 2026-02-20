@@ -41,12 +41,12 @@ echo
 if [[ $REPLY =~ ^[Jj]$ ]]; then
     echo ""
     echo "📦 Füge Dateien hinzu..."
-    
+
     # Tools
     git add tools/kimi_helper.py
     git add tools/update_personas.py
     git add tools/setup_aliases.sh
-    
+
     # API
     git add api/kimi_personas_api.py
     git add api/cli_client.py
@@ -64,19 +64,19 @@ if [[ $REPLY =~ ^[Jj]$ ]]; then
     git add api/Dockerfile
     git add api/requirements-api.txt
     git add api/README.md
-    
+
     # Docs
     git add KIMI_PERSONAS_INTEGRATION.md
     git add KIMI_PERSONAS_SETUP.md
     git add DEMO.md
-    
+
     # Screenshots Verzeichnis
     mkdir -p screenshots
     git add screenshots/
-    
+
     echo -e "${GREEN}✅ Dateien hinzugefügt${NC}"
     echo ""
-    
+
     # Commit
     echo "📝 Erstelle Commit..."
     git commit -m "feat: Add Kimi Personas System with 11 Pentest AI assistants
@@ -84,7 +84,7 @@ if [[ $REPLY =~ ^[Jj]$ ]]; then
 - Add 11 specialized pentest personas:
   * Core: recon, exploit, report, audit
   * Extended: social, network, mobile, redteam, ics, cloud, crypto
-  
+
 - Add CLI tool (kimi_helper.py) with interactive mode
   * One-shot and interactive chat modes
   * 11 persona-specific commands (k-recon, k-exploit, etc.)
@@ -114,14 +114,14 @@ Features:
 - Auto-diagnose and management tools
 
 Closes #42"
-    
+
     echo -e "${GREEN}✅ Commit erstellt${NC}"
     echo ""
-    
+
     # Push
     echo "🚀 Pushe zu GitHub..."
     git push origin $BRANCH
-    
+
     if [ $? -eq 0 ]; then
         echo ""
         echo -e "${GREEN}═══════════════════════════════════════════════════════════════${NC}"

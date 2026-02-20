@@ -17,10 +17,10 @@
   </a>
   <a href="#backers" alt="sponsors on Open Collective">
     <img src="https://opencollective.com/rollup/backers/badge.svg" alt="backers" >
-  </a> 
+  </a>
   <a href="#sponsors" alt="Sponsors on Open Collective">
     <img src="https://opencollective.com/rollup/sponsors/badge.svg" alt="sponsors" >
-  </a> 
+  </a>
   <a href="https://github.com/rollup/rollup/blob/master/LICENSE.md">
     <img src="https://img.shields.io/npm/l/rollup.svg" alt="license">
   </a>

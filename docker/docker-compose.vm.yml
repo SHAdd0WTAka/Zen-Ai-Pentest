@@ -1,5 +1,5 @@
 # Docker Compose für Zen-AI-Pentest mit VirtualBox
-# 
+#
 # Verwendung:
 #   docker-compose -f docker-compose.vm.yml up -d
 #

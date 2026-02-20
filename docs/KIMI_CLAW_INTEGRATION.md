@@ -8,7 +8,7 @@ Kimi Claw acts as the central hub for all repository notifications, replacing mu
 
 Instead of managing:
 - ❌ Discord notification workflows
-- ❌ Telegram bot scripts  
+- ❌ Telegram bot scripts
 - ❌ Slack webhook configurations
 - ❌ Email notification setups
 

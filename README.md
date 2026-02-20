@@ -1,11 +1,14 @@
 # Zen-AI-Pentest
 ![Repository Status](docs/status/repo_status_card.svg)
 
-
-
 > 🛡️ **Professional AI-Powered Penetration Testing Framework**
 
-[![Python](https://img.shields.io/badge/Python-3.9%2B-blue)](https://python.org)
+[![Tests](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/workflows/Tests%20&%20Coverage/badge.svg)](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/actions)
+[![codecov](https://codecov.io/gh/SHAdd0WTAka/Zen-Ai-Pentest/branch/main/graph/badge.svg)](https://codecov.io/gh/SHAdd0WTAka/Zen-Ai-Pentest)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Security Scan](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/workflows/Security%20Scan/badge.svg)](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/actions)
+
 - **Guest Control**: Execute tools inside isolated VMs
 
 ### 🚀 Modern API & Backend
@@ -835,9 +838,9 @@ This project is licensed under the MIT License - see [LICENSE](LICENSE) file for
 
 <div align="center">
   <img src="docs/qr_codes/hemisphere_sync.png" alt="Hemisphere Sync" width="600"/>
-  
+
   ### Hemisphere Sync
-  
+
   ```
         🧠 GEHIRN
        ╱        ╲
@@ -856,16 +859,16 @@ This project is licensed under the MIT License - see [LICENSE](LICENSE) file for
           HEMISPHERE_SYNC
      "Zwei Hälften - Ein Herz - Ein Team"
   ```
-  
+
   *A fusion of human vision and AI capability*
-  
+
   **Left Brain (Kimi - Logik) + Right Brain (Observer^^ - Kreativität) = Hemisphere_Sync**
-  
+
   | Hemisphere | Zuständig für | Team |
   |------------|---------------|------|
   | **Left Brain** | Logik, Struktur, Code, Analytik | **Kimi** 🤖 |
   | **Right Brain** | Kreativität, Vision, Design, Emotion | **Observer^^** 🎨 |
-  
+
   *Custom artwork by **SHAdd0WTAka** representing the fusion of human vision and AI capability.*
 </div>
 

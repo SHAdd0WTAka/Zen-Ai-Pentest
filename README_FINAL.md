@@ -218,7 +218,7 @@ services:
       - "8000:8000"
     environment:
       - DATABASE_URL=postgresql://postgres:password@postgres:5432/zenpentest
-  
+
   postgres:
     image: postgres:15
     environment:

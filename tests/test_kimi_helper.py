@@ -164,30 +164,30 @@ class TestAPIKey:
         """Test getting API key from .env file."""
         # Mock the pathlib.Path class to simulate an existing .env file with API key
         import pathlib
-        
+
         original_path = pathlib.Path
-        
+
         class MockPath:
             def __init__(self, *args):
                 self._path = args[-1] if args else ""
-            
+
             def exists(self):
                 return True
-            
+
             def read_text(self):
                 return 'export KIMI_API_KEY="file-key-456"'
-            
+
             def __truediv__(self, other):
                 return MockPath(other)
-            
+
             @classmethod
             def cwd(cls):
                 return cls()
-            
+
             @property
             def parent(self):
                 return MockPath()
-        
+
         # Patch Path in the kimi_helper module
         with patch("tools.kimi_helper.Path", MockPath):
             key = get_api_key()
@@ -224,14 +224,14 @@ class TestAPIQuery:
         mock_response = MagicMock()
         mock_response.json.return_value = {"choices": [{"message": {"content": "Test response"}}]}
         mock_response.raise_for_status.return_value = None
-        
+
         # Reset and configure the requests mock
         sys.modules["requests"].reset_mock()
         sys.modules["requests"].post.return_value = mock_response
-        
+
         with patch("tools.kimi_helper.get_api_key", return_value="test-key"):
             result = query_kimi_api("test prompt", "system prompt")
-            
+
         assert result == "Test response"
         sys.modules["requests"].post.assert_called_once()
 
@@ -258,11 +258,11 @@ class TestAPIQuery:
         mock_response = MagicMock()
         mock_response.json.return_value = {"choices": [{"message": {"content": "OpenRouter response"}}]}
         mock_response.raise_for_status.return_value = None
-        
+
         # Reset and configure the requests mock
         sys.modules["requests"].reset_mock()
         sys.modules["requests"].post.return_value = mock_response
-        
+
         with patch("tools.kimi_helper.get_api_key", return_value="sk-or-test123"):
             result = query_kimi_api("test prompt", "system prompt")
 
@@ -278,7 +278,7 @@ class TestAPIQuery:
         # Reset mock and set side effect
         sys.modules["requests"].reset_mock()
         sys.modules["requests"].post.side_effect = Exception("Network error")
-        
+
         with patch("tools.kimi_helper.get_api_key", return_value="test-key"):
             result = query_kimi_api("test prompt", "system prompt")
 
@@ -290,11 +290,11 @@ class TestAPIQuery:
         mock_response = MagicMock()
         mock_response.json.return_value = {"choices": [{"message": {"content": "Response"}}]}
         mock_response.raise_for_status.return_value = None
-        
+
         # Reset and configure the requests mock
         sys.modules["requests"].reset_mock()
         sys.modules["requests"].post.return_value = mock_response
-        
+
         with patch("tools.kimi_helper.get_api_key", return_value="test-key"):
             result = query_kimi_api("test prompt", "system prompt", model="custom-model", temperature=0.5)
 
@@ -532,10 +532,10 @@ class TestOpenRouterSupport:
         mock_response = MagicMock()
         mock_response.json.return_value = {"choices": [{"message": {"content": "Response"}}]}
         mock_response.raise_for_status.return_value = None
-        
+
         # Configure the requests mock
         sys.modules["requests"].post.return_value = mock_response
-        
+
         with patch("tools.kimi_helper.get_api_key", return_value="sk-or-test123"):
             query_kimi_api("test prompt", "system prompt")
 
@@ -557,12 +557,12 @@ class TestInteractiveMode:
     def test_interactive_mode_exit(self, mock_query, mock_console):
         """Test interactive mode exit command."""
         from tools.kimi_helper import interactive_mode
-        
+
         # Simulate user entering /exit
         mock_console.input.side_effect = ["/exit"]
-        
+
         interactive_mode(use_cli=False)
-        
+
         # Should exit without error
         mock_console.print.assert_any_call("[dim]Auf Wiedersehen![/dim]")
 
@@ -571,14 +571,14 @@ class TestInteractiveMode:
     def test_interactive_mode_switch_persona(self, mock_query, mock_console):
         """Test switching personas in interactive mode."""
         from tools.kimi_helper import interactive_mode
-        
+
         # Simulate user switching to exploit persona then exiting
         mock_console.input.side_effect = ["/exploit", "/exit"]
-        
+
         interactive_mode(use_cli=False)
-        
+
         # Should have printed the switch message
-        switch_call = [call for call in mock_console.print.call_args_list 
+        switch_call = [call for call in mock_console.print.call_args_list
                       if "Gewechselt zu" in str(call)]
         assert len(switch_call) > 0
 
@@ -587,11 +587,11 @@ class TestInteractiveMode:
     def test_interactive_mode_clear(self, mock_query, mock_console):
         """Test clear command in interactive mode."""
         from tools.kimi_helper import interactive_mode
-        
+
         mock_console.input.side_effect = ["/clear", "/exit"]
-        
+
         interactive_mode(use_cli=False)
-        
+
         # Should have called clear
         mock_console.clear.assert_called_once()
 
@@ -600,12 +600,12 @@ class TestInteractiveMode:
     def test_interactive_mode_query(self, mock_query, mock_console):
         """Test query in interactive mode."""
         from tools.kimi_helper import interactive_mode
-        
+
         mock_query.return_value = "Test response"
         mock_console.input.side_effect = ["test query", "/exit"]
-        
+
         interactive_mode(use_cli=False)
-        
+
         # Should have called query_kimi_api
         mock_query.assert_called_once()
 
@@ -633,7 +633,7 @@ class TestAPIRequestBuilding:
 
         call_args = mock_post.call_args
         data = call_args[1]["json"]
-        
+
         # Check request structure
         assert data["model"] == "test-model"
         assert data["temperature"] == 0.8
@@ -659,7 +659,7 @@ class TestAPIRequestBuilding:
 
         call_args = mock_post.call_args
         headers = call_args[1]["headers"]
-        
+
         assert "Authorization" in headers
         assert headers["Authorization"] == "Bearer test-key"
         assert headers["Content-Type"] == "application/json"

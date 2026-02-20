@@ -77,5 +77,5 @@ This assessment followed the Penetration Testing Execution Standard (PTES):
 
 ---
 
-*Confidential - {{ client_name }}*  
+*Confidential - {{ client_name }}*
 *Report Version: {{ report_version }}*

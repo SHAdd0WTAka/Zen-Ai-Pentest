@@ -2,7 +2,7 @@ import getWindow from './isWindow';
 import offset from './offset';
 /**
  * Returns the width of a given element.
- * 
+ *
  * @param node the element
  * @param client whether to use `clientWidth` if possible
  */

@@ -1,6 +1,6 @@
 # 🗓️ Aktuelle TODO-Liste - Zen-AI Pentest
 
-**Stand:** 2026-02-07  
+**Stand:** 2026-02-07
 **Übersicht:** Was noch zu tun ist
 
 ---

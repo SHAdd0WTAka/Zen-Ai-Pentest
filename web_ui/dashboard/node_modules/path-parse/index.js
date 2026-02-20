@@ -55,7 +55,7 @@ posix.parse = function(pathString) {
   if (!allParts || allParts.length !== 5) {
     throw new TypeError("Invalid path '" + pathString + "'");
   }
-  
+
   return {
     root: allParts[1],
     dir: allParts[0].slice(0, -1),

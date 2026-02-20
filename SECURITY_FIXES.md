@@ -4,7 +4,7 @@
 
 ### 1. jsonpath (HIGH Severity - CVE-2026-1615) ✅
 - **Status:** ✅ Behoben
-- **Aktion:** 
+- **Aktion:**
   - `jsonpath` deinstalliert
   - `jsonpath-plus` installiert (sichere Alternative)
   - Overrides in package.json aktualisiert

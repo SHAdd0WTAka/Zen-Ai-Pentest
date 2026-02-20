@@ -162,7 +162,7 @@ You might also be interested in these projects:
 
 ### Contributors
 
-| **Commits** | **Contributor** | 
+| **Commits** | **Contributor** |
 | --- | --- |
 | 49 | [jonschlinkert](https://github.com/jonschlinkert) |
 | 5 | [charlike-old](https://github.com/charlike-old) |

@@ -9,7 +9,7 @@
 1. Fix Command Injection in `autonomous/tool_executor.py`
    - `subprocess_shell` → `subprocess_exec` mit Argument-Liste
    - Input-Sanitierung hinzufügen
-   
+
 2. Fix Variable Bug in `agents/react_agent_vm.py`
    - Zeile mit `config.vm_username` finden und fixen
    - Sollte `self.vm_config.vm_username` sein

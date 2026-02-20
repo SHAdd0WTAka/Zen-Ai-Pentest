@@ -5,7 +5,7 @@ exports.default = isInput;
 var regExpInputs = /^(?:input|select|textarea|button)$/i;
 /**
  * Checks if a given element is an input (input, select, textarea or button).
- * 
+ *
  * @param node the element to check
  */
 

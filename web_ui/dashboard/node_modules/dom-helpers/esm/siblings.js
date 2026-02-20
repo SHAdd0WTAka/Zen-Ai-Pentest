@@ -1,7 +1,7 @@
 import collectSiblings from './collectSiblings';
 /**
  * Collects all previous and next sibling elements of a given element.
- * 
+ *
  * @param node the element
  */
 

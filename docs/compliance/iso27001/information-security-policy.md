@@ -2,10 +2,10 @@
 
 ## Zen-AI-Pentest ISO 27001 Policy Document
 
-**Document ID**: POL-001  
-**Version**: 1.0  
-**Effective Date**: 2026-02-11  
-**Owner**: @SHAdd0WTAka  
+**Document ID**: POL-001
+**Version**: 1.0
+**Effective Date**: 2026-02-11
+**Owner**: @SHAdd0WTAka
 **Classification**: Public
 
 ---
@@ -250,9 +250,9 @@ Security concerns should be reported to:
 
 This policy is approved by:
 
-**Approved By**: @SHAdd0WTAka  
-**Role**: Project Owner  
-**Date**: 2026-02-11  
+**Approved By**: @SHAdd0WTAka
+**Role**: Project Owner
+**Date**: 2026-02-11
 
 ---
 

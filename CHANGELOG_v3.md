@@ -776,5 +776,5 @@ For questions about specific versions:
 
 ---
 
-*Zen-AI-Pentest Framework Changelog*  
+*Zen-AI-Pentest Framework Changelog*
 *© 2026 Zen-AI-Pentest Contributors*

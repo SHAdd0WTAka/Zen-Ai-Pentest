@@ -72,7 +72,7 @@ This mimics the Node.js behavior. More specifically, the command and its argumen
 
 ### Shebangs support
 
-While `cross-spawn` handles shebangs on Windows, its support is limited. More specifically, it just supports `#!/usr/bin/env <program>` where `<program>` must not contain any arguments.   
+While `cross-spawn` handles shebangs on Windows, its support is limited. More specifically, it just supports `#!/usr/bin/env <program>` where `<program>` must not contain any arguments.
 If you would like to have the shebang support improved, feel free to contribute via a pull-request.
 
 Remember to always test your code on Windows!
@@ -80,7 +80,7 @@ Remember to always test your code on Windows!
 
 ## Tests
 
-`$ npm test`   
+`$ npm test`
 `$ npm test -- --watch` during development
 
 

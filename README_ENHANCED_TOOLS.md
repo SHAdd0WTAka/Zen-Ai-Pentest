@@ -232,26 +232,26 @@ from tools.httpx_integration import probe_sync
 
 async def comprehensive_scan(domain):
     """Comprehensive reconnaissance workflow"""
-    
+
     # Phase 1: Subdomain Enumeration
     print("[*] Enumerating subdomains...")
     subdomains = enumerate_sync(domain, recursive=True)
     targets = subdomains.subdomains[:50]  # Top 50
-    
+
     # Phase 2: HTTP Probing
     print("[*] Probing live hosts...")
     live_hosts = probe_sync(targets)
-    
+
     # Phase 3: Deep Recon on each live host
     print("[*] Running deep recon...")
     recon = EnhancedReconModule()
-    
+
     results = []
     for host in live_hosts.hosts:
         if host.status_code == 200:
             result = recon.full_recon(host.url)
             results.append(result)
-    
+
     return results
 
 # Run scan

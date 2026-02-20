@@ -10,11 +10,11 @@ Comprehensive health monitoring system that checks:
 
 Usage:
     from core.health_check import HealthCheckRunner, HealthCheckConfig
-    
+
     config = HealthCheckConfig()
     runner = HealthCheckRunner(config)
     report = runner.run_all_checks()
-    
+
     # Or run specific checks
     db_status = runner.check_database()
     tool_status = runner.check_tools()

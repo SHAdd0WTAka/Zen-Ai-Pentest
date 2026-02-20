@@ -139,7 +139,7 @@ SHAdd0WTAka (Observer^^) - Final Authority
 openclaw coverage check
 # Report: "Coverage at X%, need Y% more for 100%"
 
-# OpenSSF check  
+# OpenSSF check
 openclaw openssf check
 # Report: "Score at X%, working on [specific criteria]"
 

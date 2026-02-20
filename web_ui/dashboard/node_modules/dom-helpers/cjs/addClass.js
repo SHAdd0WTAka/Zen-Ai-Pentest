@@ -9,7 +9,7 @@ var _hasClass = _interopRequireDefault(require("./hasClass"));
 
 /**
  * Adds a CSS class to a given element.
- * 
+ *
  * @param element the element
  * @param className the CSS class name
  */

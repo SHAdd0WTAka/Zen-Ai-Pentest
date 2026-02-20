@@ -14,17 +14,17 @@ Multi-factor risk scoring combining CVSS, EPSS, and business context.
 ```python
 def calculate_risk(finding: Finding) -> RiskScore:
     cvss_score = finding.cvss.base_score / 10  # Normalize to 0-1
-    
+
     epss_score = get_epss(finding.cve_id)  # 0-1 probability
-    
+
     business_impact = calculate_business_impact(
         internet_exposed=finding.target.internet_facing,
         data_classification=finding.target.data_sensitivity,
         compliance_scope=finding.target.compliance_requirements
     )
-    
+
     exploit_validation = validate_exploit(finding)  # 0 or 1
-    
+
     # Weighted combination
     risk = (
         cvss_score * 0.25 +
@@ -32,7 +32,7 @@ def calculate_risk(finding: Finding) -> RiskScore:
         business_impact * 0.35 +
         exploit_validation * 0.15
     )
-    
+
     return RiskScore(
         value=risk,
         severity=risk_to_severity(risk),

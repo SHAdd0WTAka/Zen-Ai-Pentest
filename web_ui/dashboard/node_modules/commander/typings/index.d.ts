@@ -31,21 +31,21 @@ declare namespace commander {
     args: string[];
 
     /**
-     * Set the program version to `str`. 
+     * Set the program version to `str`.
      *
      * This method auto-registers the "-V, --version" flag
      * which will print the version number when passed.
-     * 
+     *
      * You can optionally supply the  flags and description to override the defaults.
      */
     version(str: string, flags?: string, description?: string): Command;
 
     /**
      * Define a command, implemented using an action handler.
-     * 
+     *
      * @remarks
      * The command description is supplied using `.description`, not as a parameter to `.command`.
-     * 
+     *
      * @example
      * ```ts
      *  program
@@ -55,7 +55,7 @@ declare namespace commander {
      *      console.log('clone command called');
      *    });
      * ```
-     * 
+     *
      * @param nameAndArgs - command name and arguments, args are  `<required>` or `[optional]` and last may also be `variadic...`
      * @param opts - configuration options
      * @returns new command
@@ -63,17 +63,17 @@ declare namespace commander {
     command(nameAndArgs: string, opts?: CommandOptions): Command;
     /**
      * Define a command, implemented in a separate executable file.
-     * 
+     *
      * @remarks
      * The command description is supplied as the second parameter to `.command`.
-     * 
+     *
      * @example
      * ```ts
      *  program
      *    .command('start <service>', 'start named service')
      *    .command('stop [service]', 'stop named serice, or all if no name supplied');
      * ```
-     * 
+     *
      * @param nameAndArgs - command name and arguments, args are  `<required>` or `[optional]` and last may also be `variadic...`
      * @param description - description of executable command
      * @param opts - configuration options
@@ -183,7 +183,7 @@ declare namespace commander {
     /**
      * Whether to pass command to action handler,
      * or just the options (specify false).
-     * 
+     *
      * @return Command for chaining
      */
     passCommandToAction(value?: boolean): Command;
@@ -205,7 +205,7 @@ declare namespace commander {
 
     /**
      * Parse `argv`, setting options and invoking commands when defined.
-     * 
+     *
      * Use parseAsync instead of parse if any of your action handlers are async. Returns a Promise.
      *
      * @returns Promise
@@ -224,7 +224,7 @@ declare namespace commander {
 
     /**
      * Set the description.
-     * 
+     *
      * @returns Command for chaining
      */
     description(str: string, argsDescription?: {[argName: string]: string}): Command;
@@ -235,7 +235,7 @@ declare namespace commander {
 
     /**
      * Set an alias for the command.
-     * 
+     *
      * @returns Command for chaining
      */
     alias(alias: string): Command;
@@ -246,7 +246,7 @@ declare namespace commander {
 
     /**
      * Set the command usage.
-     * 
+     *
      * @returns Command for chaining
      */
     usage(str: string): Command;
@@ -257,7 +257,7 @@ declare namespace commander {
 
     /**
      * Set the name of the command.
-     * 
+     *
      * @returns Command for chaining
      */
     name(str: string): Command;
@@ -280,7 +280,7 @@ declare namespace commander {
      */
     helpOption(flags?: string, description?: string): Command;
 
-    /** 
+    /**
      * Output help information and exit.
      */
     help(cb?: (str: string) => string): never;

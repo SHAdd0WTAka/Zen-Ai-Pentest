@@ -53,7 +53,7 @@ spec:
                   type: string
                   description: 'Target URL or IP address to scan'
                   example: 'https://example.com'
-                
+
                 # Scan Configuration
                 scanMode:
                   type: string
@@ -65,7 +65,7 @@ spec:
                     - api
                   default: full
                   description: 'Scan mode to execute'
-                
+
                 intensity:
                   type: string
                   enum:
@@ -74,7 +74,7 @@ spec:
                     - high
                   default: medium
                   description: 'Scan intensity level'
-                
+
                 # Modules to enable
                 modules:
                   type: array
@@ -92,7 +92,7 @@ spec:
                     - web_scan
                     - ssl_scan
                   description: 'List of scan modules to enable'
-                
+
                 # Authentication
                 auth:
                   type: object
@@ -108,7 +108,7 @@ spec:
                     secretRef:
                       type: string
                       description: 'Name of the secret containing auth credentials'
-                
+
                 # Output Configuration
                 output:
                   type: object
@@ -134,7 +134,7 @@ spec:
                       default: 30
                       minimum: 1
                       maximum: 365
-                
+
                 # CI/CD Integration
                 ciConfig:
                   type: object
@@ -156,7 +156,7 @@ spec:
                     githubToken:
                       type: string
                       description: 'Secret name containing GitHub token'
-                
+
                 # Resource Limits
                 resources:
                   type: object
@@ -179,7 +179,7 @@ spec:
                         memory:
                           type: string
                           default: 512Mi
-                
+
                 # Timeout
                 timeout:
                   type: integer
@@ -187,18 +187,18 @@ spec:
                   minimum: 60
                   maximum: 28800
                   description: 'Scan timeout in seconds'
-                
+
                 # Schedule (optional - for recurring scans)
                 schedule:
                   type: string
                   description: 'Cron expression for scheduled scans'
                   example: '0 2 * * 0'
-                
+
                 suspend:
                   type: boolean
                   default: false
                   description: 'Suspend scheduled scans'
-            
+
             status:
               type: object
               properties:
@@ -252,7 +252,7 @@ spec:
                         type: string
                       message:
                         type: string
-      
+
       additionalPrinterColumns:
         - name: Target
           type: string

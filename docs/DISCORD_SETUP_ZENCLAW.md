@@ -141,6 +141,6 @@ Bei Problemen:
 
 ---
 
-**Erstellt:** 2026-02-16  
-**Version:** 1.0  
+**Erstellt:** 2026-02-16
+**Version:** 1.0
 **Autor:** Kimi AI (Lead Architect)

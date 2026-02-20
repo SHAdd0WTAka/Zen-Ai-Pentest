@@ -37,13 +37,13 @@ export const useAuthStore = create<AuthState>()(
           }
 
           const data = await response.json()
-          
+
           set({
             user: data.user,
             token: data.access_token,
             isAuthenticated: true,
           })
-          
+
           return true
         } catch (error) {
           console.error('Login error:', error)

@@ -12,7 +12,7 @@ description: |
   - OS fingerprinting
   - Firewall/IDS evasion
   - Scan speed optimization
-  
+
   Tests both accuracy and stealth capabilities.
 
 category: network_security
@@ -46,78 +46,78 @@ services:
       service: ftp
       version: "vsftpd 3.0.3"
       banner: "220 (vsFTPd 3.0.3)"
-      
+
     - port: 22
       service: ssh
       version: "OpenSSH 8.2p1"
       banner: "SSH-2.0-OpenSSH_8.2p1"
-      
+
     - port: 23
       service: telnet
       version: "Linux telnetd"
       banner: ""
-      
+
     - port: 25
       service: smtp
       version: "Postfix 3.4.13"
       banner: "220 mail.example.com ESMTP Postfix"
-      
+
     - port: 53
       service: dns
       version: "BIND 9.16.1"
-      
+
     - port: 80
       service: http
       version: "Apache httpd 2.4.41"
       banner: "Server: Apache/2.4.41 (Ubuntu)"
-      
+
     - port: 110
       service: pop3
       version: "Dovecot"
-      
+
     - port: 139
       service: netbios-ssn
       version: "Samba smbd 4.11.6"
-      
+
     - port: 143
       service: imap
       version: "Dovecot"
-      
+
     - port: 443
       service: https
       version: "Apache httpd 2.4.41"
       ssl: true
-      
+
     - port: 445
       service: microsoft-ds
       version: "Samba smbd 4.11.6"
-      
+
     - port: 3306
       service: mysql
       version: "MySQL 8.0.28"
       banner: "5.7.38"
-      
+
     - port: 3389
       service: ms-wbt-server
       version: "xrdp"
-      
+
     - port: 5432
       service: postgresql
       version: "PostgreSQL 12.9"
       banner: "PostgreSQL 12.9"
-      
+
     - port: 6379
       service: redis
       version: "Redis 6.0.16"
-      
+
     - port: 8080
       service: http-proxy
       version: "nginx 1.18.0"
-      
+
     - port: 27017
       service: mongodb
       version: "MongoDB 5.0.6"
-      
+
     - port: 9200
       service: elasticsearch
       version: "Elasticsearch 7.17.0"
@@ -125,20 +125,20 @@ services:
   udp:
     - port: 53
       service: dns
-      
+
     - port: 67
       service: dhcp
-      
+
     - port: 123
       service: ntp
-      
+
     - port: 161
       service: snmp
       version: "SNMPv1"
-      
+
     - port: 500
       service: isakmp
-      
+
     - port: 1900
       service: upnp
 
@@ -152,7 +152,7 @@ expected_findings:
     description: "Telnet service exposed - plaintext authentication"
     verification_method: "port_scan"
     exploit_available: true
-    
+
   - vuln_type: outdated_service
     severity: high
     location: "port 3306/tcp - MySQL"
@@ -161,7 +161,7 @@ expected_findings:
     description: "MySQL version 5.7.38 has known vulnerabilities"
     verification_method: "version_detection"
     exploit_available: true
-    
+
   - vuln_type: exposed_database
     severity: critical
     location: "port 27017/tcp - MongoDB"
@@ -170,7 +170,7 @@ expected_findings:
     description: "MongoDB exposed without authentication"
     verification_method: "port_scan"
     exploit_available: true
-    
+
   - vuln_type: exposed_redis
     severity: critical
     location: "port 6379/tcp - Redis"
@@ -179,7 +179,7 @@ expected_findings:
     description: "Redis exposed without authentication"
     verification_method: "port_scan"
     exploit_available: true
-    
+
   - vuln_type: exposed_elasticsearch
     severity: high
     location: "port 9200/tcp"
@@ -188,7 +188,7 @@ expected_findings:
     description: "Elasticsearch cluster exposed to network"
     verification_method: "port_scan"
     exploit_available: true
-    
+
   - vuln_type: information_disclosure
     severity: medium
     location: "port 161/udp - SNMP"
@@ -206,7 +206,7 @@ parameters:
     - tcp_window
     - tcp_maimon
     - udp
-    
+
   scan_speeds:
     - paranoid
     - sneaky
@@ -214,13 +214,13 @@ parameters:
     - normal
     - aggressive
     - insane
-    
+
   detection_techniques:
     - version_detection
     - os_fingerprinting
     - service_probe
     - script_scan
-    
+
   evasion_techniques:
     - fragment_packets
     - decoy_scan
@@ -276,11 +276,11 @@ scan_benchmarks:
   full_tcp_scan:
     ports: 65535
     target_time_seconds: 300
-    
+
   top_1000_tcp:
     ports: 1000
     target_time_seconds: 60
-    
+
   top_100_udp:
     ports: 100
     target_time_seconds: 120

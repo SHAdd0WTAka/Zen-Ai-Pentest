@@ -1,8 +1,8 @@
 # Privacy Policy
 
-**Effective Date**: 2026-02-16  
-**Last Updated**: 2026-02-16  
-**Project**: Zen-AI-Pentest  
+**Effective Date**: 2026-02-16
+**Last Updated**: 2026-02-16
+**Project**: Zen-AI-Pentest
 **Contact**: security@zen-ai-pentest.dev
 
 ---
@@ -166,5 +166,5 @@ For privacy-related questions:
 
 ---
 
-*This privacy policy is maintained by ZenClaw Guardian.*  
+*This privacy policy is maintained by ZenClaw Guardian.*
 *For the latest version, see the main branch of the repository.*

@@ -93,22 +93,22 @@ from pydantic import BaseSettings
 class ProductionConfig(BaseSettings):
     DEBUG = False
     LOG_LEVEL = "warning"
-    
+
     # Database
     DATABASE_URL = "postgresql://..."
-    
+
     # Security
     SECRET_KEY = "change-me-in-production"
     JWT_EXPIRATION = 1800  # 30 minutes
-    
+
     # Workers
     MAX_WORKERS = 10
     TASK_TIMEOUT = 7200  # 2 hours
-    
+
     # Cache
     CACHE_TTL = 600
     CACHE_MAX_SIZE = 100000
-    
+
     class Config:
         env_file = ".env"
 ```
@@ -407,12 +407,12 @@ curl http://localhost:8000/health
 server {
     listen 443 ssl http2;
     server_name api.zenpentest.example.com;
-    
+
     ssl_certificate /etc/nginx/ssl/cert.pem;
     ssl_certificate_key /etc/nginx/ssl/key.pem;
     ssl_protocols TLSv1.2 TLSv1.3;
     ssl_ciphers HIGH:!aNULL:!MD5;
-    
+
     location / {
         proxy_pass http://zen-api:8000;
         proxy_set_header Host $host;

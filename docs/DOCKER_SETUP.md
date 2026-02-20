@@ -389,7 +389,7 @@ services:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
       - "9090:9090"
-  
+
   grafana:
     image: grafana/grafana:latest
     ports:
@@ -483,7 +483,7 @@ FROM gcr.io/distroless/python3-debian12
 networks:
   backend:
     internal: true  # No external access
-  
+
   frontend:
     driver: bridge
     ipam:

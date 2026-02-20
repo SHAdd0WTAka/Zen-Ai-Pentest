@@ -5,7 +5,7 @@ exports.default = hasClass;
 
 /**
  * Checks if a given element has a CSS class.
- * 
+ *
  * @param element the element
  * @param className the CSS class name
  */

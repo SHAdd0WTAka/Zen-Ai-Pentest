@@ -1,9 +1,9 @@
 # Security Audit Report
 
-**Project**: Zen-AI-Pentest  
-**Version**: 2.3.9  
-**Last Audit**: 2026-02-16  
-**Auditor**: ZenClaw Guardian (Automated + Manual Review)  
+**Project**: Zen-AI-Pentest
+**Version**: 2.3.9
+**Last Audit**: 2026-02-16
+**Auditor**: ZenClaw Guardian (Automated + Manual Review)
 **Next Audit**: 2026-03-16
 
 ---

@@ -157,21 +157,21 @@ Report File:        pentest_report_wf_abc123_20240218_143022.md
 ```bash
 python demo_e2e.py --risk-level 0
 ```
-**Allows:** whois, dns, subdomain  
+**Allows:** whois, dns, subdomain
 **Blocks:** nmap, nuclei, exploit
 
 ### NORMAL (Level 1) - DEFAULT
 ```bash
 python demo_e2e.py --risk-level 1
 ```
-**Allows:** + nmap, nuclei, web_enum  
+**Allows:** + nmap, nuclei, web_enum
 **Blocks:** sqlmap, exploit
 
 ### ELEVATED (Level 2)
 ```bash
 python demo_e2e.py --risk-level 2
 ```
-**Allows:** + sqlmap, exploit  
+**Allows:** + sqlmap, exploit
 **Blocks:** pivot, lateral
 
 ### AGGRESSIVE (Level 3)
@@ -191,9 +191,9 @@ The demo generates a Markdown report like this:
 
 ## Executive Summary
 
-**Target:** scanme.nmap.org  
-**Workflow Type:** network_recon  
-**Date:** 2024-02-18 14:30:22  
+**Target:** scanme.nmap.org
+**Workflow Type:** network_recon
+**Date:** 2024-02-18 14:30:22
 **Status:** completed
 
 ## Test Scope
@@ -223,14 +223,14 @@ The demo generates a Markdown report like this:
 
 ### 1. WHOIS: scanme.nmap.org
 
-**Severity:** 🔵 INFO  
-**Type:** whois_info  
+**Severity:** 🔵 INFO
+**Type:** whois_info
 **Details:** Registrar: Example Registrar LLC
 
 ### 2. Open ports on scanme.nmap.org
 
-**Severity:** 🟠 MEDIUM  
-**Type:** open_ports  
+**Severity:** 🟠 MEDIUM
+**Type:** open_ports
 **Details:** Ports: 22 (ssh), 80 (http)
 
 ---
@@ -298,7 +298,7 @@ After running the demo:
    pip install protonvpn-cli
    protonvpn-cli login
    protonvpn-cli connect
-   
+
    # Run demo (no more VPN warning!)
    python demo_e2e.py
    ```

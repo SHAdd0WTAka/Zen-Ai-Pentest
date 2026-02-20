@@ -102,10 +102,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Run Quick Benchmark
         run: python -m benchmarks.run_benchmarks ci --type quick
-        
+
       - name: Upload Results
         uses: actions/upload-artifact@v4
         with:
@@ -139,18 +139,18 @@ from benchmarks import BenchmarkEngine, BenchmarkConfig
 
 async def run_benchmark():
     engine = BenchmarkEngine()
-    
+
     config = BenchmarkConfig(
         benchmark_name="my-test",
         scenarios=["dvwa", "juice-shop"],
         max_concurrent=2
     )
-    
+
     report = await engine.run_benchmark(config)
-    
+
     print(f"Success Rate: {report.success_rate:.1f}%")
     print(f"Duration: {report.duration_seconds:.1f}s")
-    
+
     # Aggregate Metriken
     if report.aggregate_metrics:
         print(f"Avg F1-Score: {report.aggregate_metrics['avg_f1_score']:.3f}")

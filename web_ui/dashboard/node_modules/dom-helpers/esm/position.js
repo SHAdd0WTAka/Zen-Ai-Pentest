@@ -10,7 +10,7 @@ var nodeName = function nodeName(node) {
 };
 /**
  * Returns the relative position of a given element.
- * 
+ *
  * @param node the element
  * @param offsetParent the offset parent
  */

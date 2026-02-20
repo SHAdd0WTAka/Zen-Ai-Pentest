@@ -80,13 +80,13 @@ Tools are rate limited at execution time:
 async def process_task(self, task: Dict, user_id: Optional[str] = None):
     # Check rate limit
     rate_limit_result = await check_tool_execution(tool, target, user_id)
-    
+
     if not rate_limit_result["allowed"]:
         return TaskResult(
             status="blocked",
             error=f"Rate limited: {rate_limit_result['reason']}"
         )
-    
+
     # Execute tool...
 ```
 
@@ -124,7 +124,7 @@ orchestrator.guardrails_enabled = False
 ### Target Validation Failed
 
 ```
-ValueError: Target validation failed: IP validation failed: 
+ValueError: Target validation failed: IP validation failed:
 IP 192.168.1.1 is in blocked network range(s): 192.168.0.0/16
 ```
 
@@ -139,7 +139,7 @@ TaskResult:
 ### Tool Blocked by Risk Level
 
 ```
-⚠️  Guardrails blocked tool 'sqlmap': Tool 'sqlmap' not allowed at 
+⚠️  Guardrails blocked tool 'sqlmap': Tool 'sqlmap' not allowed at
 risk level NORMAL. Blocked tools: sqlmap, exploit, pivot, lateral
 ```
 
@@ -176,7 +176,7 @@ async def main():
         step_timeout=300,
         risk_level=RiskLevel.SAFE
     )
-    
+
     # This will succeed
     workflow_id = await orch.start_workflow(
         workflow_type="network_recon",
@@ -184,7 +184,7 @@ async def main():
         agents=["agent-1"]
     )
     print(f"Workflow started: {workflow_id}")
-    
+
     # This will fail
     try:
         await orch.start_workflow(

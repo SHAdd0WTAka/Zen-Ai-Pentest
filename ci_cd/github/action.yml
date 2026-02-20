@@ -51,7 +51,7 @@ runs:
       shell: bash
       run: |
         pip install zen-ai-pentest==${{ inputs.zen-version }} || pip install zen-ai-pentest
-        
+
     - name: Run Zen Scan
       shell: bash
       run: |
@@ -61,28 +61,28 @@ runs:
           --safety-level "${{ inputs.safety-level }}" \
           --output "zen-results.${{ inputs.output-format }}" \
           ${{ inputs.goal && format('--goal "{0}"', inputs.goal) || '' }}
-          
+
     - name: Upload Results
       uses: actions/upload-artifact@v4
       with:
         name: zen-scan-results
         path: zen-results.*
-        
+
     - name: Upload to GitHub Security Tab
       if: inputs.output-format == 'sarif'
       uses: github/codeql-action/upload-sarif@v3
       with:
         sarif_file: zen-results.sarif
-        
+
     - name: Check Fail Condition
       shell: bash
       run: |
         CRITICAL=$(jq '.critical_findings // 0' zen-results.json)
         HIGH=$(jq '.high_findings // 0' zen-results.json)
         MEDIUM=$(jq '.medium_findings // 0' zen-results.json)
-        
+
         echo "Findings: Critical=$CRITICAL, High=$HIGH, Medium=$MEDIUM"
-        
+
         case "${{ inputs.fail-on }}" in
           critical)
             [ "$CRITICAL" -gt 0 ] && exit 1 || exit 0

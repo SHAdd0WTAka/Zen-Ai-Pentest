@@ -89,14 +89,14 @@ Neu im Server? Hier ist der perfekte Ort um dich vorzustellen!
 **Template (kannst du kopieren und anpassen):**
 
 ```
-👤 **Name/Handle:** 
-🌍 **Location:** 
+👤 **Name/Handle:**
+🌍 **Location:**
 💼 **Role:** (Security Researcher, Developer, Student, ...)
 🛠️ **Experience:** (Junior, Mid, Senior)
 🎯 **Interests:** (Pentesting, Bug Bounty, AI, ...)
 🔧 **Tools I use:** (Nmap, Burp, Custom scripts, ...)
-📖 **Currently learning:** 
-💡 **Why Zen-AI-Pentest?:** 
+📖 **Currently learning:**
+💡 **Why Zen-AI-Pentest?:**
 ```
 
 Wir freuen uns dich kennenzulernen! 🎉
@@ -154,9 +154,9 @@ Fehler-Log hier
 ```
 
 **Umgebung:**
-- OS: 
-- Python: 
-- Version: 
+- OS:
+- Python:
+- Version:
 ```
 
 ## 📚 Ressourcen

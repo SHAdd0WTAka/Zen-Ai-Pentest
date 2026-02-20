@@ -217,17 +217,17 @@ newgrp vboxusers
 2. **VM Erstellen**:
    ```bash
    VBoxManage createvm --name "kali-pentest" --ostype "Debian_64" --register
-   
+
    # Speicher
    VBoxManage modifyvm "kali-pentest" --memory 8192 --cpus 4
-   
+
    # Festplatte (50 GB)
    VBoxManage createhd --filename "~/VirtualBox VMs/kali-pentest/disk.vdi" --size 51200
-   
+
    # Storage Controller
    VBoxManage storagectl "kali-pentest" --name "SATA" --add sata
    VBoxManage storageattach "kali-pentest" --storagectl "SATA" --port 0 --device 0 --type hdd --medium "~/VirtualBox VMs/kali-pentest/disk.vdi"
-   
+
    # ISO mounten
    VBoxManage storageattach "kali-pentest" --storagectl "SATA" --port 1 --device 0 --type dvddrive --medium ~/Downloads/kali-linux-2024.x-installer-amd64.iso
    ```
@@ -269,11 +269,11 @@ VBoxManage snapshot "kali-pentest" take "clean_state" --description "Fresh Kali 
 2. **VM Erstellen**:
    ```bash
    VBoxManage createvm --name "win10-pentest" --ostype "Windows10_64" --register
-   
+
    # Hardware
    VBoxManage modifyvm "win10-pentest" --memory 4096 --cpus 2
    VBoxManage modifyvm "win10-pentest" --vram 128
-   
+
    # Storage
    VBoxManage createhd --filename "~/VirtualBox VMs/win10-pentest/disk.vdi" --size 51200
    VBoxManage storagectl "win10-pentest" --name "SATA" --add sata
@@ -448,8 +448,8 @@ sandbox.create_session("pentest_001", target_vm="kali-pentest")
 
 # Tools ausführen
 exit_code, stdout, stderr = sandbox.execute_tool(
-    "pentest_001", 
-    "nmap", 
+    "pentest_001",
+    "nmap",
     "-sV 192.168.56.101"
 )
 print(stdout)

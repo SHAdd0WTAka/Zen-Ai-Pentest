@@ -122,7 +122,7 @@ async with ShieldedOrchestrator() as orchestrator:
         source_tool="nmap",
         intent="analyze"
     )
-    
+
     # Nur bereinigte Daten gehen an GPT-4
     print(result["analysis"])
     print(result["sanitization"]["tokens_saved"])

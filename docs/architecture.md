@@ -234,14 +234,14 @@ services:
     build: .
     ports:
       - "8000:8000"
-  
+
   worker:
     build: .
     command: celery worker
-  
+
   redis:
     image: redis:alpine
-  
+
   postgres:
     image: postgres:15
 ```
@@ -322,7 +322,7 @@ The architecture supports plugins via:
 class PentestPlugin:
     def register(self, orchestrator):
         orchestrator.register_tool(self)
-    
+
     async def execute(self, target, options):
         # Plugin logic
         pass

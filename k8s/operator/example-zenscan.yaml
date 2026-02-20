@@ -305,20 +305,20 @@ data:
           - web_scan
           - ssl_scan
           - ai_analysis
-      
+
       - name: relaxed
         failOn: critical
         modules:
           - web_scan
           - ssl_scan
-      
+
       - name: api-focus
         failOn: high
         modules:
           - api_scan
           - web_scan
           - ai_analysis
-      
+
       - name: compliance-pci
         failOn: high
         modules:

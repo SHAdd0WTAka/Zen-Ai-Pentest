@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
-import { 
-  Search, 
-  ShieldAlert, 
+import {
+  Search,
+  ShieldAlert,
   Download,
   FileText,
   AlertTriangle,
@@ -49,37 +49,37 @@ interface FindingStats {
 }
 
 const SEVERITY_CONFIG = {
-  critical: { 
-    color: 'text-red-400', 
-    bg: 'bg-red-500/20', 
+  critical: {
+    color: 'text-red-400',
+    bg: 'bg-red-500/20',
     border: 'border-red-500/30',
     icon: AlertTriangle,
     label: 'Critical'
   },
-  high: { 
-    color: 'text-orange-400', 
-    bg: 'bg-orange-500/20', 
+  high: {
+    color: 'text-orange-400',
+    bg: 'bg-orange-500/20',
     border: 'border-orange-500/30',
     icon: ShieldAlert,
     label: 'High'
   },
-  medium: { 
-    color: 'text-yellow-400', 
-    bg: 'bg-yellow-500/20', 
+  medium: {
+    color: 'text-yellow-400',
+    bg: 'bg-yellow-500/20',
     border: 'border-yellow-500/30',
     icon: AlertTriangle,
     label: 'Medium'
   },
-  low: { 
-    color: 'text-green-400', 
-    bg: 'bg-green-500/20', 
+  low: {
+    color: 'text-green-400',
+    bg: 'bg-green-500/20',
     border: 'border-green-500/30',
     icon: CheckCircle2,
     label: 'Low'
   },
-  info: { 
-    color: 'text-blue-400', 
-    bg: 'bg-blue-500/20', 
+  info: {
+    color: 'text-blue-400',
+    bg: 'bg-blue-500/20',
     border: 'border-blue-500/30',
     icon: FileText,
     label: 'Info'
@@ -87,14 +87,14 @@ const SEVERITY_CONFIG = {
 }
 
 // Finding Detail Modal
-function FindingDetailModal({ 
-  finding, 
-  isOpen, 
-  onClose 
-}: { 
+function FindingDetailModal({
+  finding,
+  isOpen,
+  onClose
+}: {
   finding: Finding | null
   isOpen: boolean
-  onClose: () => void 
+  onClose: () => void
 }) {
   const [verified, setVerified] = useState(finding?.verified || 0)
 
@@ -131,7 +131,7 @@ function FindingDetailModal({
               ×
             </button>
           </div>
-          
+
           {finding.cvss_score && (
             <div className="mt-4 flex items-center gap-2">
               <div className="bg-slate-900/50 px-3 py-1 rounded-lg">
@@ -201,10 +201,10 @@ function FindingDetailModal({
           {/* Verification */}
           <div className="flex items-center justify-between pt-4 border-t border-slate-700">
             <div className="text-sm text-slate-400">
-              Verification Status: 
+              Verification Status:
               <span className={cn(
                 'ml-2 font-medium',
-                verified === 1 ? 'text-green-400' : 
+                verified === 1 ? 'text-green-400' :
                 verified === 2 ? 'text-red-400' : 'text-yellow-400'
               )}>
                 {verified === 1 ? 'Verified' : verified === 2 ? 'False Positive' : 'Unverified'}
@@ -215,8 +215,8 @@ function FindingDetailModal({
                 onClick={() => handleVerify(1)}
                 className={cn(
                   'px-4 py-2 rounded-lg text-sm font-medium transition-colors',
-                  verified === 1 
-                    ? 'bg-green-600 text-white' 
+                  verified === 1
+                    ? 'bg-green-600 text-white'
                     : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
                 )}
               >
@@ -227,8 +227,8 @@ function FindingDetailModal({
                 onClick={() => handleVerify(2)}
                 className={cn(
                   'px-4 py-2 rounded-lg text-sm font-medium transition-colors',
-                  verified === 2 
-                    ? 'bg-red-600 text-white' 
+                  verified === 2
+                    ? 'bg-red-600 text-white'
                     : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
                 )}
               >
@@ -263,10 +263,10 @@ export default function FindingsList() {
       setLoading(true)
       const params = new URLSearchParams()
       if (severityFilter !== 'all') params.append('severity', severityFilter)
-      
+
       // In a real implementation, this would fetch from the API
       // const res = await axios.get(`/api/findings?${params}`)
-      
+
       // Mock data for demonstration
       const mockFindings: Finding[] = [
         {
@@ -324,9 +324,9 @@ export default function FindingsList() {
           scan: { name: 'Web App Scan #2', target: 'example.com' }
         },
       ]
-      
+
       setFindings(mockFindings)
-      
+
       // Calculate stats
       const stats: FindingStats = {
         total: mockFindings.length,
@@ -335,14 +335,14 @@ export default function FindingsList() {
         verified_count: mockFindings.filter(f => f.verified === 1).length,
         false_positive_count: mockFindings.filter(f => f.verified === 2).length
       }
-      
+
       mockFindings.forEach(f => {
         stats.by_severity[f.severity] = (stats.by_severity[f.severity] || 0) + 1
         if (f.tool) {
           stats.by_tool[f.tool] = (stats.by_tool[f.tool] || 0) + 1
         }
       })
-      
+
       setStats(stats)
     } catch (error) {
       console.error('Failed to fetch findings:', error)
@@ -352,18 +352,18 @@ export default function FindingsList() {
   }
 
   const filteredFindings = findings.filter((finding) => {
-    const matchesSearch = 
+    const matchesSearch =
       finding.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       finding.target?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       finding.description?.toLowerCase().includes(searchQuery.toLowerCase())
-    
+
     const matchesSeverity = severityFilter === 'all' || finding.severity === severityFilter
-    
-    const matchesVerified = verifiedFilter === 'all' || 
+
+    const matchesVerified = verifiedFilter === 'all' ||
       (verifiedFilter === 'verified' && finding.verified === 1) ||
       (verifiedFilter === 'unverified' && finding.verified === 0) ||
       (verifiedFilter === 'false-positive' && finding.verified === 2)
-    
+
     return matchesSearch && matchesSeverity && matchesVerified
   })
 
@@ -468,7 +468,7 @@ export default function FindingsList() {
             {filteredFindings.map((finding) => {
               const severity = SEVERITY_CONFIG[finding.severity]
               const SeverityIcon = severity.icon
-              
+
               return (
                 <div
                   key={finding.id}

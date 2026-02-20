@@ -238,7 +238,7 @@ elif quality == QualityLevel.HIGH:
 # DuckDuckGo - Simple, direct prompts
 DDG_PROMPT = "Answer concisely: {query}"
 
-# OpenRouter - Structured prompts  
+# OpenRouter - Structured prompts
 OR_PROMPT = """
 System: You are a security expert
 User: {query}
@@ -338,7 +338,7 @@ async def parallel_consensus(prompt):
 async def progressive_analysis(target):
     # Phase 1: Quick recon (LOW quality)
     overview = await process(target, QualityLevel.LOW)
-    
+
     # Phase 2: Deep analysis (HIGH quality)
     if has_interesting_findings(overview):
         detailed = await process(target, QualityLevel.HIGH)
@@ -431,5 +431,5 @@ Include:
 
 **Note**: This prompt engineering approach is based on the universal principles discussed in the original system prompt research, adapted specifically for penetration testing workflows.
 
-**Author**: SHAdd0WTAka  
+**Author**: SHAdd0WTAka
 **Version**: 1.0.0

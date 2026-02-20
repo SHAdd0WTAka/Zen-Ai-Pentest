@@ -38,7 +38,7 @@ scrape_configs:
   # ============================================
   # Zen-Ai Core Services
   # ============================================
-  
+
   # API Gateway / Main Application
   - job_name: 'zen-ai-api'
     static_configs:
@@ -97,7 +97,7 @@ scrape_configs:
   # Node Exporter (System Metrics)
   - job_name: 'node-exporter'
     static_configs:
-      - targets: 
+      - targets:
         - 'node-exporter:9100'
     scrape_interval: 15s
     labels:

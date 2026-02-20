@@ -142,7 +142,7 @@ class TestGetCveDb:
         with patch('core.database.CVEDatabase', return_value=mock_cve_db):
             from core.database import get_cve_db
             result = get_cve_db()
-            
+
             assert isinstance(result, list)
             assert len(result) == 3
 
@@ -151,7 +151,7 @@ class TestGetCveDb:
         with patch('core.database.CVEDatabase', return_value=mock_cve_db):
             from core.database import get_cve_db
             result = get_cve_db()
-            
+
             # Check first entry has expected keys
             first_entry = result[0]
             assert "cve_id" in first_entry
@@ -161,11 +161,11 @@ class TestGetCveDb:
         """Test with empty database"""
         empty_db = MockCVEDatabase()
         empty_db.cve_data = {}
-        
+
         with patch('core.database.CVEDatabase', return_value=empty_db):
             from core.database import get_cve_db
             result = get_cve_db()
-            
+
             assert result == []
 
     def test_get_cve_db_with_non_dict_values(self):
@@ -175,11 +175,11 @@ class TestGetCveDb:
             "CVE-2023-1234": "string_value",  # Non-dict value
             "CVE-2024-5678": {"name": "Test"}  # Dict value
         }
-        
+
         with patch('core.database.CVEDatabase', return_value=db_with_string):
             from core.database import get_cve_db
             result = get_cve_db()
-            
+
             assert len(result) == 2
             # Check entries are present
             cve_ids = [r["cve_id"] for r in result]
@@ -197,7 +197,7 @@ class TestGetRansomwareDb:
         with patch('core.database.CVEDatabase', return_value=mock_cve_db):
             from core.database import get_ransomware_db
             result = get_ransomware_db()
-            
+
             assert isinstance(result, list)
             assert len(result) == 2
 
@@ -206,7 +206,7 @@ class TestGetRansomwareDb:
         with patch('core.database.CVEDatabase', return_value=mock_cve_db):
             from core.database import get_ransomware_db
             result = get_ransomware_db()
-            
+
             # Find RansomwareX entry
             rx_entry = next(r for r in result if r.get("name") == "Ransomware X")
             assert "type" in rx_entry
@@ -216,11 +216,11 @@ class TestGetRansomwareDb:
         """Test with empty database"""
         empty_db = MockCVEDatabase()
         empty_db.ransomware_data = {}
-        
+
         with patch('core.database.CVEDatabase', return_value=empty_db):
             from core.database import get_ransomware_db
             result = get_ransomware_db()
-            
+
             assert result == []
 
 
@@ -234,7 +234,7 @@ class TestSearchCve:
         with patch('core.database.CVEDatabase', return_value=mock_cve_db):
             from core.database import search_cve
             result = search_cve("2023-1234")
-            
+
             assert len(result) >= 1
             assert any("CVE-2023-1234" in str(r.get("cve_id", "")) for r in result)
 
@@ -243,7 +243,7 @@ class TestSearchCve:
         with patch('core.database.CVEDatabase', return_value=mock_cve_db):
             from core.database import search_cve
             result = search_cve("test description")
-            
+
             # Should find CVEs with "test" or "description" in them
             assert len(result) >= 0  # May or may not find matches
 
@@ -252,7 +252,7 @@ class TestSearchCve:
         with patch('core.database.CVEDatabase', return_value=mock_cve_db):
             from core.database import search_cve
             result = search_cve("Test CVE")
-            
+
             # Should find CVEs with matching names
             assert len(result) >= 0
 
@@ -262,7 +262,7 @@ class TestSearchCve:
             from core.database import search_cve
             result_upper = search_cve("TEST")
             result_lower = search_cve("test")
-            
+
             # Both should return same results
             assert len(result_upper) == len(result_lower)
 
@@ -271,18 +271,18 @@ class TestSearchCve:
         with patch('core.database.CVEDatabase', return_value=mock_cve_db):
             from core.database import search_cve
             result = search_cve("nonexistentxyz123")
-            
+
             assert result == []
 
     def test_search_empty_database(self):
         """Test search with empty database"""
         empty_db = MockCVEDatabase()
         empty_db.cve_data = {}
-        
+
         with patch('core.database.CVEDatabase', return_value=empty_db):
             from core.database import search_cve
             result = search_cve("test")
-            
+
             assert result == []
 
 
@@ -296,7 +296,7 @@ class TestGetCveByYear:
         with patch('core.database.CVEDatabase', return_value=mock_cve_db):
             from core.database import get_cve_by_year
             result = get_cve_by_year(2023)
-            
+
             # Should find CVEs from 2023
             assert len(result) >= 0
             for cve in result:
@@ -307,18 +307,18 @@ class TestGetCveByYear:
         with patch('core.database.CVEDatabase', return_value=mock_cve_db):
             from core.database import get_cve_by_year
             result = get_cve_by_year(1999)
-            
+
             assert result == []
 
     def test_get_cves_by_year_empty_database(self):
         """Test with empty database"""
         empty_db = MockCVEDatabase()
         empty_db.cve_data = {}
-        
+
         with patch('core.database.CVEDatabase', return_value=empty_db):
             from core.database import get_cve_by_year
             result = get_cve_by_year(2023)
-            
+
             assert result == []
 
 
@@ -332,7 +332,7 @@ class TestGetCveById:
         with patch('core.database.CVEDatabase', return_value=mock_cve_db):
             from core.database import get_cve_by_id
             result = get_cve_by_id("CVE-2023-1234")
-            
+
             assert result is not None
             assert result["cve_id"] == "CVE-2023-1234"
             assert result.get("name") == "Test CVE 2023"
@@ -342,7 +342,7 @@ class TestGetCveById:
         with patch('core.database.CVEDatabase', return_value=mock_cve_db):
             from core.database import get_cve_by_id
             result = get_cve_by_id("CVE-9999-9999")
-            
+
             assert result is None
 
     def test_get_cve_case_insensitive(self, mock_cve_db):
@@ -351,7 +351,7 @@ class TestGetCveById:
             from core.database import get_cve_by_id
             result_lower = get_cve_by_id("cve-2023-1234")
             result_upper = get_cve_by_id("CVE-2023-1234")
-            
+
             # Both should return the same CVE data (case insensitive lookup)
             assert result_lower is not None
             assert result_upper is not None
@@ -362,7 +362,7 @@ class TestGetCveById:
         with patch('core.database.CVEDatabase', return_value=mock_cve_db):
             from core.database import get_cve_by_id
             result = get_cve_by_id("CVE-2023-1234")
-            
+
             assert isinstance(result, dict)
 
 
@@ -376,7 +376,7 @@ class TestGetRansomwareByName:
         with patch('core.database.CVEDatabase', return_value=mock_cve_db):
             from core.database import get_ransomware_by_name
             result = get_ransomware_by_name("RansomwareX")
-            
+
             assert result is not None
             assert result["name"] == "Ransomware X"
 
@@ -385,7 +385,7 @@ class TestGetRansomwareByName:
         with patch('core.database.CVEDatabase', return_value=mock_cve_db):
             from core.database import get_ransomware_by_name
             result = get_ransomware_by_name("NonExistent")
-            
+
             assert result is None
 
     def test_get_ransomware_returns_dict(self, mock_cve_db):
@@ -393,7 +393,7 @@ class TestGetRansomwareByName:
         with patch('core.database.CVEDatabase', return_value=mock_cve_db):
             from core.database import get_ransomware_by_name
             result = get_ransomware_by_name("RansomwareX")
-            
+
             assert isinstance(result, dict)
 
 
@@ -407,10 +407,10 @@ class TestGetDb:
         with patch('core.database.CVEDatabase') as mock_db_class:
             mock_instance = Mock()
             mock_db_class.return_value = mock_instance
-            
+
             from core.database import _get_db
             result = _get_db()
-            
+
             assert result is mock_instance
             mock_db_class.assert_called_once()
 
@@ -419,11 +419,11 @@ class TestGetDb:
         with patch('core.database.CVEDatabase') as mock_db_class:
             mock_instance = Mock()
             mock_db_class.return_value = mock_instance
-            
+
             from core.database import _get_db
             result1 = _get_db()
             result2 = _get_db()
-            
+
             assert result1 is result2
             mock_db_class.assert_called_once()  # Only created once
 
@@ -437,13 +437,13 @@ class TestDatabaseIntegration:
         """Test that CVE data is consistent across functions"""
         with patch('core.database.CVEDatabase', return_value=mock_cve_db):
             from core.database import get_cve_by_id, search_cve
-            
+
             # Get CVE via get_cve_by_id
             cve_by_id = get_cve_by_id("CVE-2023-1234")
-            
+
             # Search for same CVE
             search_results = search_cve("CVE-2023-1234")
-            
+
             # Both should return data about the same CVE
             assert cve_by_id["cve_id"] == "CVE-2023-1234"
 
@@ -451,13 +451,13 @@ class TestDatabaseIntegration:
         """Test relationship between ransomware and CVEs"""
         with patch('core.database.CVEDatabase', return_value=mock_cve_db):
             from core.database import get_ransomware_by_name, get_cve_by_id
-            
+
             # Get ransomware
             ransomware = get_ransomware_by_name("RansomwareX")
-            
+
             # Get CVE used by ransomware
             cve = get_cve_by_id("CVE-2023-1234")
-            
+
             # Verify relationship exists
             assert ransomware is not None
             assert cve is not None
@@ -472,7 +472,7 @@ class TestDatabaseErrorHandling:
         """Test handling of exceptions in get_cve_db"""
         error_db = Mock()
         error_db.cve_data = None  # This might cause issues
-        
+
         with patch('core.database.CVEDatabase', return_value=error_db):
             from core.database import get_cve_db
             # Should not raise, but might return unexpected results
@@ -490,7 +490,7 @@ class TestDatabaseErrorHandling:
         db_with_none.cve_data = {
             "CVE-2023-1234": {"name": "Test", "description": None},
         }
-        
+
         with patch('core.database.CVEDatabase', return_value=db_with_none):
             from core.database import search_cve
             # Should handle None values gracefully
@@ -507,7 +507,7 @@ class TestAllExports:
     def test_all_exports_defined(self):
         """Test that __all__ includes all expected exports"""
         import core.database as db_module
-        
+
         expected_exports = [
             "get_cve_db",
             "get_ransomware_db",
@@ -519,6 +519,6 @@ class TestAllExports:
             "CVEEntry",
             "RansomwareEntry",
         ]
-        
+
         for export in expected_exports:
             assert export in db_module.__all__

@@ -17,17 +17,17 @@ $ npm install --save normalize-path
 ```js
 const normalize = require('normalize-path');
 
-console.log(normalize('\\foo\\bar\\baz\\')); 
+console.log(normalize('\\foo\\bar\\baz\\'));
 //=> '/foo/bar/baz'
 ```
 
 **win32 namespaces**
 
 ```js
-console.log(normalize('\\\\?\\UNC\\Server01\\user\\docs\\Letter.txt')); 
+console.log(normalize('\\\\?\\UNC\\Server01\\user\\docs\\Letter.txt'));
 //=> '//?/UNC/Server01/user/docs/Letter.txt'
 
-console.log(normalize('\\\\.\\CdRomX')); 
+console.log(normalize('\\\\.\\CdRomX'));
 //=> '//./CdRomX'
 ```
 
@@ -36,7 +36,7 @@ console.log(normalize('\\\\.\\CdRomX'));
 Condenses multiple consecutive forward slashes (except for leading slashes in win32 namespaces) to a single slash.
 
 ```js
-console.log(normalize('.//foo//bar///////baz/')); 
+console.log(normalize('.//foo//bar///////baz/'));
 //=> './foo/bar/baz'
 ```
 
@@ -104,7 +104,7 @@ Other useful path-related libraries:
 
 ### Contributors
 
-| **Commits** | **Contributor** | 
+| **Commits** | **Contributor** |
 | --- | --- |
 | 35 | [jonschlinkert](https://github.com/jonschlinkert) |
 | 1 | [phated](https://github.com/phated) |

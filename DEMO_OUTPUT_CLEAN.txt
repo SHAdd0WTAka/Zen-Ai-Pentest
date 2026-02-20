@@ -3,7 +3,7 @@
            Zen AI Pentest - Database Demo
                   CVE | Ransomware | SQLi
 ===============================================================
-    
+
 
 ============================================================
   CVE & RANSOMWARE DATABASE DEMO

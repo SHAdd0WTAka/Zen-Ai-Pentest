@@ -178,7 +178,7 @@ Einfaches Status-Dashboard lokal hosten:
     const ws = new WebSocket('ws://localhost:8765');
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      document.getElementById('status').innerHTML += 
+      document.getElementById('status').innerHTML +=
         `<p>${new Date().toLocaleTimeString()}: ${data.status}</p>`;
     };
   </script>

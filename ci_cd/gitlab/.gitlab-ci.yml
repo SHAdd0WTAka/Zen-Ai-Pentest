@@ -47,7 +47,7 @@ zen-docker-scan:
   services:
     - docker:dind
   script:
-    - docker run --rm 
+    - docker run --rm
       -v $(pwd):/results
       ghcr.io/shadd0wtaka/zen-ai-pentest:latest
       scan --target "${ZEN_TARGET}" --output /results/zen-results.json

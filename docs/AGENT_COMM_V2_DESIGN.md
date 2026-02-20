@@ -63,7 +63,7 @@ class SecureAgentMessage:
     payload: bytes           # Encrypted content
     signature: bytes         # Ed25519 signature
     message_type: str        # task/result/event/heartbeat
-    
+
 class MessageEncryption:
     # X25519 key exchange + AES-256-GCM
     def encrypt(payload: bytes, recipient_pubkey: bytes) -> EncryptedMessage

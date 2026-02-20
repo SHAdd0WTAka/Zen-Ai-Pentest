@@ -2,10 +2,10 @@
 
 ## Übersicht
 
-**Framework:** Zen-Ai-Pentest  
-**Version:** 3.0.0  
-**Dokument:** FINALE ARCHITEKTUR-DOKUMENTATION  
-**Datum:** Februar 2026  
+**Framework:** Zen-Ai-Pentest
+**Version:** 3.0.0
+**Dokument:** FINALE ARCHITEKTUR-DOKUMENTATION
+**Datum:** Februar 2026
 **Status:** Produktionsreif
 
 ---
@@ -326,12 +326,12 @@ class Permission(str, Enum):
     PENTEST_READ = "pentest:read"
     PENTEST_CREATE = "pentest:create"
     PENTEST_EXECUTE = "pentest:execute"
-    
+
     # Scan Operations
     SCAN_READ = "scan:read"
     SCAN_EXECUTE = "scan:execute"
     SCAN_STOP = "scan:stop"
-    
+
     # Vulnerability Management
     VULN_READ = "vuln:read"
     VULN_VERIFY = "vuln:verify"
@@ -417,7 +417,7 @@ Erweiterbares Plugin-System für Scanner, Exploits und Reports.
 class ExampleScanner(ScannerPlugin):
     NAME = "example_scanner"
     VERSION = "1.0.0"
-    
+
     async def scan(self, target: Target, options: Dict = None) -> ScanResult:
         # Scan-Logik hier
         pass
@@ -542,24 +542,24 @@ services:
     environment:
       - DATABASE_URL=postgresql://...
       - REDIS_URL=redis://redis:6379
-  
+
   orchestrator:
     build: ./orchestrator
     environment:
       - MODE=cluster
-  
+
   agent-pool:
     build: ./agents
     replicas: 5
-  
+
   postgres:
     image: postgres:15
     volumes:
       - postgres_data:/var/lib/postgresql/data
-  
+
   redis:
     image: redis:7
-  
+
   minio:
     image: minio/minio
     command: server /data
@@ -657,7 +657,7 @@ from plugin_api import ScannerPlugin, scanner, Target, ScanResult
 class CustomScanner(ScannerPlugin):
     NAME = "custom_scanner"
     VERSION = "1.0.0"
-    
+
     async def scan(self, target: Target, options: dict = None) -> ScanResult:
         # Implementierung
         pass

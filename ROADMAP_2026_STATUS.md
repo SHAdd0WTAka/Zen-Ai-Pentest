@@ -307,6 +307,6 @@ zen-ai-pentest/
 
 ---
 
-**Status**: Beta Release Ready  
-**Version**: 2.0.0  
+**Status**: Beta Release Ready
+**Version**: 2.0.0
 **Date**: 2026-01-31

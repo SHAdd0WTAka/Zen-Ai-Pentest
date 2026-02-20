@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { 
-  Plus, 
-  Search, 
-  Filter, 
-  StopCircle, 
+import {
+  Plus,
+  Search,
+  Filter,
+  StopCircle,
   RotateCw,
   Target,
   FileText,
@@ -68,11 +68,11 @@ const STATUS_COLORS: Record<string, string> = {
 }
 
 // Create Scan Modal
-function CreateScanModal({ 
-  isOpen, 
-  onClose, 
-  onCreate 
-}: { 
+function CreateScanModal({
+  isOpen,
+  onClose,
+  onCreate
+}: {
   isOpen: boolean
   onClose: () => void
   onCreate: (scan: NewScanForm) => Promise<void>
@@ -109,7 +109,7 @@ function CreateScanModal({
           <h2 className="text-xl font-semibold text-slate-100">Create New Scan</h2>
           <p className="text-slate-400 text-sm mt-1">Configure your penetration test</p>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-2">Scan Name</label>
@@ -214,14 +214,14 @@ function CreateScanModal({
 }
 
 // Scan Logs Panel
-function ScanLogsPanel({ 
-  scanId, 
-  isOpen, 
-  onClose 
-}: { 
+function ScanLogsPanel({
+  scanId,
+  isOpen,
+  onClose
+}: {
   scanId: number | null
   isOpen: boolean
-  onClose: () => void 
+  onClose: () => void
 }) {
   const [logs, setLogs] = useState<ScanLog[]>([])
   const logsEndRef = useRef<HTMLDivElement | null>(null)
@@ -236,7 +236,7 @@ function ScanLogsPanel({
 
     // Connect WebSocket for real-time logs
     const websocket = new WebSocket(`ws://${window.location.host}/api/v1/scans/${scanId}/ws`)
-    
+
     websocket.onopen = () => {
       websocket.send(JSON.stringify({ action: 'subscribe', events: ['logs'] }))
     }
@@ -283,7 +283,7 @@ function ScanLogsPanel({
             ×
           </button>
         </div>
-        
+
         <div className="flex-1 overflow-auto p-4 font-mono text-sm space-y-1">
           {logs.length === 0 ? (
             <p className="text-slate-500 text-center py-8">No logs yet...</p>
@@ -365,7 +365,7 @@ export default function ScanManager() {
   }
 
   const filteredScans = scans.filter((scan) => {
-    const matchesSearch = 
+    const matchesSearch =
       scan.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       scan.target.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesStatus = statusFilter === 'all' || scan.status === statusFilter

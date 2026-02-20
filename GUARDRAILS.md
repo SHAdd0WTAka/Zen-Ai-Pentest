@@ -166,12 +166,12 @@ from guardrails import check_tool_execution
 async def run_scan():
     # Check rate limit
     result = await check_tool_execution("nmap", "scanme.nmap.org", user_id="user123")
-    
+
     if not result["allowed"]:
         print(f"Rate limited: {result['reason']}")
         print(f"Wait {result['wait_seconds']} seconds")
         return
-    
+
     # Execute tool...
 ```
 
@@ -195,21 +195,21 @@ async def safe_execute(tool_name: str, target: str, user_id: str):
     ip_result = validate_target(target)
     if not ip_result.is_valid:
         return {"error": ip_result.reason}
-    
+
     # 2. Validate Domain
     domain_result = validate_domain(target)
     if not domain_result.is_valid:
         return {"error": domain_result.reason}
-    
+
     # 3. Check Risk Level
     if not can_run_tool(tool_name):
         return {"error": f"Tool {tool_name} not allowed at current risk level"}
-    
+
     # 4. Check Rate Limit
     rate_result = await check_tool_execution(tool_name, target, user_id)
     if not rate_result["allowed"]:
         return {"error": rate_result["reason"]}
-    
+
     # Safe to execute
     return {"allowed": True}
 ```

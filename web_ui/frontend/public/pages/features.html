@@ -5,12 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Funktionen | Zen-AI-Pentest</title>
     <meta name="description" content="Entdecken Sie die leistungsstarken Funktionen von Zen-AI-Pentest - Autonome AI-Agenten, Risk Engine, Exploit Validation und mehr.">
-    
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-    
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -34,17 +34,17 @@
             }
         }
     </script>
-    
+
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    
+
     <!-- GSAP -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
-    
+
     <!-- Shared Styles -->
     <link rel="stylesheet" href="../shared/styles.css">
-    
+
     <style>
         /* Custom Styles */
         body {
@@ -52,7 +52,7 @@
             color: #e0e0e0;
             font-family: 'Inter', sans-serif;
         }
-        
+
         /* Gradient Text */
         .gradient-text {
             background: linear-gradient(135deg, #00f0ff 0%, #00c8ff 100%);
@@ -60,47 +60,47 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
-        
+
         /* Glow Effects */
         .glow-cyan {
             box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
         }
-        
+
         .glow-cyan-hover:hover {
             box-shadow: 0 0 30px rgba(0, 240, 255, 0.5);
         }
-        
+
         /* Card Styles */
         .feature-card {
             background: linear-gradient(145deg, #12121a 0%, #1a1a25 100%);
             border: 1px solid #2a2a3a;
             transition: all 0.3s ease;
         }
-        
+
         .feature-card:hover {
             border-color: #00f0ff;
             box-shadow: 0 0 30px rgba(0, 240, 255, 0.3);
             transform: translateY(-5px);
         }
-        
+
         /* Persona Badge */
         .persona-badge {
             background: rgba(0, 240, 255, 0.1);
             border: 1px solid rgba(0, 240, 255, 0.3);
             transition: all 0.3s ease;
         }
-        
+
         .persona-badge:hover {
             background: rgba(0, 240, 255, 0.2);
             border-color: #00f0ff;
             transform: scale(1.05);
         }
-        
+
         /* Navigation Link Hover */
         .nav-link {
             position: relative;
         }
-        
+
         .nav-link::after {
             content: '';
             position: absolute;
@@ -111,11 +111,11 @@
             background: #00f0ff;
             transition: width 0.3s ease;
         }
-        
+
         .nav-link:hover::after {
             width: 100%;
         }
-        
+
         /* Button Styles */
         .btn-primary {
             background: linear-gradient(135deg, #00f0ff 0%, #00c8ff 100%);
@@ -123,43 +123,43 @@
             font-weight: 600;
             transition: all 0.3s ease;
         }
-        
+
         .btn-primary:hover {
             box-shadow: 0 0 30px rgba(0, 240, 255, 0.5);
             transform: translateY(-2px);
         }
-        
+
         .btn-secondary {
             border: 1px solid #00f0ff;
             color: #00f0ff;
             transition: all 0.3s ease;
         }
-        
+
         .btn-secondary:hover {
             background: rgba(0, 240, 255, 0.1);
             box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
         }
-        
+
         /* Grid Background Pattern */
         .grid-pattern {
-            background-image: 
+            background-image:
                 linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
             background-size: 50px 50px;
         }
-        
+
         /* Safety Feature Item */
         .safety-item {
             border-left: 3px solid #00f0ff;
             background: linear-gradient(90deg, rgba(0, 240, 255, 0.05) 0%, transparent 100%);
         }
-        
+
         /* CTA Section */
         .cta-section {
             background: linear-gradient(135deg, rgba(0, 240, 255, 0.1) 0%, rgba(0, 200, 255, 0.05) 100%);
             border: 1px solid rgba(0, 240, 255, 0.2);
         }
-        
+
         /* Scroll Animation Initial States */
         .animate-on-scroll {
             opacity: 0;
@@ -179,7 +179,7 @@
                         <span class="text-zen-cyan">Zen</span><span class="text-white">-AI</span>
                     </span>
                 </a>
-                
+
                 <!-- Desktop Navigation -->
                 <div class="hidden md:flex items-center space-x-8">
                     <a href="../index.html" class="nav-link text-zen-text hover:text-zen-cyan transition-colors">Startseite</a>
@@ -188,21 +188,21 @@
                     <a href="architecture.html" class="nav-link text-zen-text hover:text-zen-cyan transition-colors">Architektur</a>
                     <a href="docs.html" class="nav-link text-zen-text hover:text-zen-cyan transition-colors">Dokumentation</a>
                 </div>
-                
+
                 <!-- CTA Button -->
                 <div class="hidden md:block">
                     <a href="docs.html" class="btn-primary px-5 py-2 rounded-lg text-sm">
                         Jetzt Starten
                     </a>
                 </div>
-                
+
                 <!-- Mobile Menu Button -->
                 <button id="mobile-menu-btn" class="md:hidden text-zen-text hover:text-zen-cyan">
                     <i data-lucide="menu" class="w-6 h-6"></i>
                 </button>
             </div>
         </div>
-        
+
         <!-- Mobile Menu -->
         <div id="mobile-menu" class="hidden md:hidden bg-zen-panel border-t border-zen-border">
             <div class="px-4 py-4 space-y-3">
@@ -231,8 +231,8 @@
                         <span class="text-white">Funktionen</span>
                     </h1>
                     <p class="text-lg md:text-xl text-zen-text-muted leading-relaxed">
-                        Entdecken Sie die umfassenden Capabilities von Zen-AI-Pentest. 
-                        Von autonomen AI-Agenten bis zur Exploit-Validierung – 
+                        Entdecken Sie die umfassenden Capabilities von Zen-AI-Pentest.
+                        Von autonomen AI-Agenten bis zur Exploit-Validierung –
                         alles was Sie für modernes Penetration Testing benötigen.
                     </p>
                 </div>
@@ -428,72 +428,72 @@
                         11 <span class="gradient-text">Spezialisierte</span> AI-Personas
                     </h2>
                     <p class="text-zen-text-muted max-w-2xl mx-auto">
-                        Jedes Persona ist ein Experte in seinem Fachgebiet und arbeitet koordiniert 
+                        Jedes Persona ist ein Experte in seinem Fachgebiet und arbeitet koordiniert
                         für umfassende Sicherheitsanalysen.
                     </p>
                 </div>
-                
+
                 <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 animate-on-scroll">
                     <!-- Recon -->
                     <div class="persona-badge rounded-xl p-4 text-center">
                         <i data-lucide="search" class="w-6 h-6 text-zen-cyan mx-auto mb-2"></i>
                         <span class="text-sm font-medium text-white">Recon</span>
                     </div>
-                    
+
                     <!-- Exploit -->
                     <div class="persona-badge rounded-xl p-4 text-center">
                         <i data-lucide="bug" class="w-6 h-6 text-zen-cyan mx-auto mb-2"></i>
                         <span class="text-sm font-medium text-white">Exploit</span>
                     </div>
-                    
+
                     <!-- Report -->
                     <div class="persona-badge rounded-xl p-4 text-center">
                         <i data-lucide="file-text" class="w-6 h-6 text-zen-cyan mx-auto mb-2"></i>
                         <span class="text-sm font-medium text-white">Report</span>
                     </div>
-                    
+
                     <!-- Audit -->
                     <div class="persona-badge rounded-xl p-4 text-center">
                         <i data-lucide="clipboard-check" class="w-6 h-6 text-zen-cyan mx-auto mb-2"></i>
                         <span class="text-sm font-medium text-white">Audit</span>
                     </div>
-                    
+
                     <!-- Social -->
                     <div class="persona-badge rounded-xl p-4 text-center">
                         <i data-lucide="message-circle" class="w-6 h-6 text-zen-cyan mx-auto mb-2"></i>
                         <span class="text-sm font-medium text-white">Social</span>
                     </div>
-                    
+
                     <!-- Network -->
                     <div class="persona-badge rounded-xl p-4 text-center">
                         <i data-lucide="network" class="w-6 h-6 text-zen-cyan mx-auto mb-2"></i>
                         <span class="text-sm font-medium text-white">Network</span>
                     </div>
-                    
+
                     <!-- Mobile -->
                     <div class="persona-badge rounded-xl p-4 text-center">
                         <i data-lucide="smartphone" class="w-6 h-6 text-zen-cyan mx-auto mb-2"></i>
                         <span class="text-sm font-medium text-white">Mobile</span>
                     </div>
-                    
+
                     <!-- Red Team -->
                     <div class="persona-badge rounded-xl p-4 text-center">
                         <i data-lucide="target" class="w-6 h-6 text-zen-cyan mx-auto mb-2"></i>
                         <span class="text-sm font-medium text-white">Red Team</span>
                     </div>
-                    
+
                     <!-- ICS -->
                     <div class="persona-badge rounded-xl p-4 text-center">
                         <i data-lucide="cpu" class="w-6 h-6 text-zen-cyan mx-auto mb-2"></i>
                         <span class="text-sm font-medium text-white">ICS</span>
                     </div>
-                    
+
                     <!-- Cloud -->
                     <div class="persona-badge rounded-xl p-4 text-center">
                         <i data-lucide="cloud" class="w-6 h-6 text-zen-cyan mx-auto mb-2"></i>
                         <span class="text-sm font-medium text-white">Cloud</span>
                     </div>
-                    
+
                     <!-- Crypto -->
                     <div class="persona-badge rounded-xl p-4 text-center">
                         <i data-lucide="key" class="w-6 h-6 text-zen-cyan mx-auto mb-2"></i>
@@ -512,10 +512,10 @@
                             Safety & <span class="gradient-text">Compliance</span>
                         </h2>
                         <p class="text-zen-text-muted mb-8">
-                            Umfassende Sicherheitskontrollen und Compliance-Features für 
+                            Umfassende Sicherheitskontrollen und Compliance-Features für
                             verantwortungsvolles Penetration Testing.
                         </p>
-                        
+
                         <div class="space-y-4">
                             <!-- IP Validation -->
                             <div class="safety-item rounded-r-xl p-4 animate-on-scroll">
@@ -529,7 +529,7 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <!-- Domain Filtering -->
                             <div class="safety-item rounded-r-xl p-4 animate-on-scroll">
                                 <div class="flex items-start">
@@ -542,7 +542,7 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <!-- Risk Levels -->
                             <div class="safety-item rounded-r-xl p-4 animate-on-scroll">
                                 <div class="flex items-start">
@@ -555,7 +555,7 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <!-- Rate Limiting -->
                             <div class="safety-item rounded-r-xl p-4 animate-on-scroll">
                                 <div class="flex items-start">
@@ -570,12 +570,12 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Risk Levels Visualization -->
                     <div class="animate-on-scroll">
                         <div class="bg-zen-panel rounded-2xl p-6 lg:p-8 border border-zen-border">
                             <h3 class="text-lg font-semibold text-white mb-6">Risk Level Matrix</h3>
-                            
+
                             <div class="space-y-4">
                                 <div class="flex items-center">
                                     <span class="w-24 text-sm text-zen-text-muted">SAFE</span>
@@ -584,7 +584,7 @@
                                     </div>
                                     <span class="w-16 text-right text-sm text-green-400">Passiv</span>
                                 </div>
-                                
+
                                 <div class="flex items-center">
                                     <span class="w-24 text-sm text-zen-text-muted">NORMAL</span>
                                     <div class="flex-1 h-3 bg-zen-dark rounded-full overflow-hidden">
@@ -592,7 +592,7 @@
                                     </div>
                                     <span class="w-16 text-right text-sm text-yellow-400">Standard</span>
                                 </div>
-                                
+
                                 <div class="flex items-center">
                                     <span class="w-24 text-sm text-zen-text-muted">AGGRESSIVE</span>
                                     <div class="flex-1 h-3 bg-zen-dark rounded-full overflow-hidden">
@@ -600,7 +600,7 @@
                                     </div>
                                     <span class="w-16 text-right text-sm text-orange-400">Intensiv</span>
                                 </div>
-                                
+
                                 <div class="flex items-center">
                                     <span class="w-24 text-sm text-zen-text-muted">NUCLEAR</span>
                                     <div class="flex-1 h-3 bg-zen-dark rounded-full overflow-hidden">
@@ -609,7 +609,7 @@
                                     <span class="w-16 text-right text-sm text-red-400">Maximum</span>
                                 </div>
                             </div>
-                            
+
                             <div class="mt-6 pt-6 border-t border-zen-border">
                                 <div class="flex items-center justify-between text-sm">
                                     <span class="text-zen-text-muted">Standard-Einstellung</span>
@@ -630,7 +630,7 @@
                         Bereit für <span class="gradient-text">KI-gestütztes</span> Pentesting?
                     </h2>
                     <p class="text-zen-text-muted max-w-2xl mx-auto mb-8">
-                        Starten Sie jetzt Ihre erste Demo und erleben Sie die Zukunft 
+                        Starten Sie jetzt Ihre erste Demo und erleben Sie die Zukunft
                         des automatisierten Penetration Testing.
                     </p>
                     <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -675,7 +675,7 @@
                         </a>
                     </div>
                 </div>
-                
+
                 <!-- Product -->
                 <div>
                     <h4 class="text-white font-semibold mb-4">Produkt</h4>
@@ -686,7 +686,7 @@
                         <li><a href="docs.html" class="text-zen-text-muted hover:text-zen-cyan text-sm transition-colors">Dokumentation</a></li>
                     </ul>
                 </div>
-                
+
                 <!-- Resources -->
                 <div>
                     <h4 class="text-white font-semibold mb-4">Ressourcen</h4>
@@ -697,7 +697,7 @@
                         <li><a href="#" class="text-zen-text-muted hover:text-zen-cyan text-sm transition-colors">Changelog</a></li>
                     </ul>
                 </div>
-                
+
                 <!-- Legal -->
                 <div>
                     <h4 class="text-white font-semibold mb-4">Rechtliches</h4>
@@ -709,7 +709,7 @@
                     </ul>
                 </div>
             </div>
-            
+
             <div class="border-t border-zen-border pt-8 flex flex-col md:flex-row items-center justify-between">
                 <p class="text-zen-text-muted text-sm">
                     &copy; 2025 Zen-AI-Pentest. Alle Rechte vorbehalten.
@@ -726,23 +726,23 @@
         // Initialize Lucide Icons
         document.addEventListener('DOMContentLoaded', function() {
             lucide.createIcons();
-            
+
             // Mobile Menu Toggle
             const mobileMenuBtn = document.getElementById('mobile-menu-btn');
             const mobileMenu = document.getElementById('mobile-menu');
-            
+
             if (mobileMenuBtn && mobileMenu) {
                 mobileMenuBtn.addEventListener('click', function() {
                     mobileMenu.classList.toggle('hidden');
                 });
             }
-            
+
             // GSAP Scroll Animations
             gsap.registerPlugin(ScrollTrigger);
-            
+
             // Animate elements on scroll with stagger
             const animateElements = document.querySelectorAll('.animate-on-scroll');
-            
+
             animateElements.forEach((element, index) => {
                 gsap.to(element, {
                     opacity: 1,
@@ -757,10 +757,10 @@
                     delay: (index % 3) * 0.1
                 });
             });
-            
+
             // Feature cards stagger animation
             const featureCards = document.querySelectorAll('.feature-card');
-            gsap.fromTo(featureCards, 
+            gsap.fromTo(featureCards,
                 { opacity: 0, y: 40 },
                 {
                     opacity: 1,
@@ -774,7 +774,7 @@
                     }
                 }
             );
-            
+
             // Persona badges stagger animation
             const personaBadges = document.querySelectorAll('.persona-badge');
             gsap.fromTo(personaBadges,
@@ -791,7 +791,7 @@
                     }
                 }
             );
-            
+
             // Safety items stagger animation
             const safetyItems = document.querySelectorAll('.safety-item');
             gsap.fromTo(safetyItems,
@@ -808,7 +808,7 @@
                     }
                 }
             );
-            
+
             // CTA section animation
             const ctaSection = document.querySelector('.cta-section');
             if (ctaSection) {

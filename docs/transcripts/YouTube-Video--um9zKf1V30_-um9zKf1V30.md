@@ -1,12 +1,12 @@
 # YouTube-Video--um9zKf1V30
 
-**Video:** [YouTube-Video--um9zKf1V30](https://youtube.com/watch?v=-um9zKf1V30)  
-**Kanal:** Unbekannt  
-**Veroeffentlicht:** Unbekannt  
-**Aufrufe:** Unbekannt  
-**Laenge:** 0:00 min  
-**Woerter:** 4,824  
-**Lesezeit:** ca. 24 min  
+**Video:** [YouTube-Video--um9zKf1V30](https://youtube.com/watch?v=-um9zKf1V30)
+**Kanal:** Unbekannt
+**Veroeffentlicht:** Unbekannt
+**Aufrufe:** Unbekannt
+**Laenge:** 0:00 min
+**Woerter:** 4,824
+**Lesezeit:** ca. 24 min
 **Transkript erstellt:** 2026-02-13 10:13:54
 
 ---

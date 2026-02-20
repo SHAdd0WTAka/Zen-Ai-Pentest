@@ -3,10 +3,10 @@ global:
   smtp_from: 'alerts@zen-pentest.local'
   smtp_auth_username: ''
   smtp_auth_password: ''
-  
+
   # Slack API URL (override per receiver)
   slack_api_url: '${SLACK_WEBHOOK_URL}'
-  
+
   # Discord webhook (override per receiver)
   # Using generic webhook
 
@@ -17,22 +17,22 @@ templates:
 route:
   # The labels by which incoming alerts are grouped together.
   group_by: ['alertname', 'severity']
-  
+
   # When a new group of alerts is created by an incoming alert, wait at
   # least 'group_wait' to send the initial notification.
   group_wait: 10s
-  
+
   # When the first notification was sent, wait 'group_interval' to send a batch
   # of new alerts that started firing for that group.
   group_interval: 5m
-  
+
   # If an alert has successfully been sent, wait 'repeat_interval' to
   # resend them.
   repeat_interval: 4h
-  
+
   # A default receiver
   receiver: 'default'
-  
+
   # All the above attributes are inherited by all child routes and can
   # overwritten on each.
   routes:
@@ -41,18 +41,18 @@ route:
         severity: critical
       receiver: 'critical-alerts'
       continue: true
-    
+
     # Warning alerts -> Slack/Discord
     - match:
         severity: warning
       receiver: 'warning-alerts'
       continue: true
-    
+
     # Info alerts -> Slack only
     - match:
         severity: info
       receiver: 'info-alerts'
-    
+
     # Security alerts -> Security team
     - match_re:
         alertname: 'AuthFailureSpike|CriticalFinding'

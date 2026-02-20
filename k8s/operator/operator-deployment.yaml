@@ -48,7 +48,7 @@ rules:
       - update
       - patch
       - delete
-  
+
   # Job management
   - apiGroups:
       - batch
@@ -63,7 +63,7 @@ rules:
       - update
       - patch
       - delete
-  
+
   # Pod management
   - apiGroups:
       - ""
@@ -74,7 +74,7 @@ rules:
       - get
       - list
       - watch
-  
+
   # ConfigMap and Secret management
   - apiGroups:
       - ""
@@ -89,7 +89,7 @@ rules:
       - create
       - update
       - patch
-  
+
   # Event creation
   - apiGroups:
       - ""
@@ -132,7 +132,7 @@ data:
       version: "2.0.0"
       workers: 3
       resyncPeriod: 300
-      
+
     scan:
       defaultImage: "zenai/zen-pentest:latest"
       defaultTimeout: 3600
@@ -143,11 +143,11 @@ data:
         requests:
           cpu: "250m"
           memory: "512Mi"
-      
+
     storage:
       defaultStorageClass: "standard"
       defaultSize: "10Gi"
-      
+
     metrics:
       enabled: true
       port: 8080
@@ -182,12 +182,12 @@ spec:
         runAsNonRoot: true
         runAsUser: 1000
         fsGroup: 1000
-      
+
       containers:
         - name: operator
           image: zenai/zen-pentest-operator:2.0.0
           imagePullPolicy: IfNotPresent
-          
+
           ports:
             - name: metrics
               containerPort: 8080
@@ -195,7 +195,7 @@ spec:
             - name: health
               containerPort: 8081
               protocol: TCP
-          
+
           env:
             - name: OPERATOR_NAME
               value: "zen-operator"
@@ -209,7 +209,7 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
-          
+
           resources:
             limits:
               cpu: 500m
@@ -217,31 +217,31 @@ spec:
             requests:
               cpu: 100m
               memory: 64Mi
-          
+
           livenessProbe:
             httpGet:
               path: /healthz
               port: health
             initialDelaySeconds: 15
             periodSeconds: 20
-          
+
           readinessProbe:
             httpGet:
               path: /readyz
               port: health
             initialDelaySeconds: 5
             periodSeconds: 10
-          
+
           volumeMounts:
             - name: config
               mountPath: /etc/zen-operator
               readOnly: true
-      
+
       volumes:
         - name: config
           configMap:
             name: zen-operator-config
-      
+
       affinity:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:

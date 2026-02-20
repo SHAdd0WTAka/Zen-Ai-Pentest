@@ -11,7 +11,7 @@ coverage:
   precision: 1
   round: down
   range: "10...100"
-  
+
   status:
     project:
       default:
@@ -20,7 +20,7 @@ coverage:
         base: auto
         if_ci_failed: success
         informational: true
-        
+
     patch:
       default:
         target: 50%
@@ -36,16 +36,16 @@ ignore:
   - "web_ui/**/*"
   - "gui/**/*"
   - "dashboard/**/*"
-  
+
   # Test files themselves
   - "tests/**/*"
   - "test_*.py"
-  
+
   # Documentation and config
   - "docs/**/*"
   - "examples/**/*"
   - "benchmarks/**/*"
-  
+
   # Build and deployment
   - "build/**/*"
   - "dist/**/*"

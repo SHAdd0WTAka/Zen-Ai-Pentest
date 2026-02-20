@@ -39,7 +39,7 @@ default:
 variables:
   # Required: Target to scan
   ZEN_TARGET: ""
-  
+
   # Optional: Scan configuration
   ZEN_SCOPE: "full"           # full, recon, vuln, stealth
   ZEN_INTENSITY: "medium"     # low, medium, high
@@ -47,10 +47,10 @@ variables:
   ZEN_TIMEOUT: "3600"         # seconds
   ZEN_MODULES: "port_scan,web_scan,ssl_scan,ai_analysis"
   ZEN_OUTPUT_FORMAT: "sarif"  # sarif, json, html, junit, all
-  
+
   # Optional: API Keys (set in GitLab CI/CD Variables)
   # OPENAI_API_KEY: ""
-  
+
   # Optional: Artifact settings
   ZEN_ARTIFACT_RETENTION: "30"
 
@@ -70,27 +70,27 @@ variables:
 .zen_pentest_scan:
   stage: test
   <<: *zen_cache
-  
+
   before_script:
     # Install dependencies
     - apt-get update && apt-get install -y gcc nmap 2>/dev/null || true
     - pip install --cache-dir .pip_cache/ zen-ai-pentest
     - mkdir -p zen-pentest-output
-    
+
     # Validate required variables
     - |
       if [ -z "$ZEN_TARGET" ]; then
         echo "ERROR: ZEN_TARGET variable is not set!"
         exit 1
       fi
-  
+
   script:
     # Generate unique scan ID
     - SCAN_ID="zen-${CI_PIPELINE_ID}-${CI_JOB_ID}"
     - echo "Starting Zen AI Pentest Scan..."
     - echo "Target: $ZEN_TARGET"
     - echo "Scan ID: $SCAN_ID"
-    
+
     # Build output filenames
     - |
       if [ "$ZEN_OUTPUT_FORMAT" = "all" ]; then
@@ -105,7 +105,7 @@ variables:
       else
         OUTPUT_FILE="zen-pentest-output/zen-scan-${SCAN_ID}.${ZEN_OUTPUT_FORMAT}"
       fi
-    
+
     # Run the scan
     - |
       CMD="python -m zen_ai_pentest scan \"$ZEN_TARGET\""
@@ -115,7 +115,7 @@ variables:
       CMD="$CMD --timeout $ZEN_TIMEOUT"
       CMD="$CMD --scan-id $SCAN_ID"
       CMD="$CMD --output-dir zen-pentest-output"
-      
+
       if [ "$ZEN_OUTPUT_FORMAT" = "all" ]; then
         CMD="$CMD --format sarif --sarif-output $SARIF_FILE"
         CMD="$CMD --format json --json-output $JSON_FILE"
@@ -124,10 +124,10 @@ variables:
       else
         CMD="$CMD --format $ZEN_OUTPUT_FORMAT --output $OUTPUT_FILE"
       fi
-      
+
       echo "Executing: $CMD"
       eval $CMD
-    
+
     # Parse results and generate summary
     - |
       if [ -f "zen-pentest-output/results.json" ]; then
@@ -137,7 +137,7 @@ variables:
         MEDIUM=$(jq '[.findings[] | select(.severity=="medium")] | length' zen-pentest-output/results.json 2>/dev/null || echo "0")
         LOW=$(jq '[.findings[] | select(.severity=="low")] | length' zen-pentest-output/results.json 2>/dev/null || echo "0")
         RISK_SCORE=$(jq '.risk_score // 0' zen-pentest-output/results.json 2>/dev/null || echo "0")
-        
+
         echo "============================================"
         echo "📊 ZEN AI PENTEST SCAN RESULTS"
         echo "============================================"
@@ -151,14 +151,14 @@ variables:
         echo "  Low: $LOW"
         echo "Risk Score: $RISK_SCORE/100"
         echo "============================================"
-        
+
         # Export for use in other jobs
         echo "ZEN_FINDINGS=$FINDINGS" >> zen.env
         echo "ZEN_CRITICAL=$CRITICAL" >> zen.env
         echo "ZEN_HIGH=$HIGH" >> zen.env
         echo "ZEN_RISK_SCORE=$RISK_SCORE" >> zen.env
       fi
-    
+
     # Check fail condition
     - |
       case $ZEN_FAIL_ON in
@@ -181,9 +181,9 @@ variables:
           fi
           ;;
       esac
-    
+
     - echo "Security scan passed all thresholds!"
-  
+
   artifacts:
     when: always
     expire_in: ${ZEN_ARTIFACT_RETENTION} days
@@ -195,10 +195,10 @@ variables:
       # JUnit report for test results
       junit: zen-pentest-output/*.xml
     dotenv: zen.env
-  
+
   # Security scanning stage
   stage: test
-  
+
   # Only run on protected branches
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH

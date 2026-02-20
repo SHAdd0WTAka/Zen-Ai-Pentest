@@ -20,12 +20,12 @@ describe('Layout Component', () => {
         </Layout>
       </BrowserRouter>
     )
-    
+
     expect(screen.getByText('Zen-AI')).toBeInTheDocument()
     expect(screen.getByText('Dashboard')).toBeInTheDocument()
     expect(screen.getByText('Scans')).toBeInTheDocument()
   })
-  
+
   it('renders user info in header', () => {
     render(
       <BrowserRouter>
@@ -34,7 +34,7 @@ describe('Layout Component', () => {
         </Layout>
       </BrowserRouter>
     )
-    
+
     expect(screen.getByText('testuser')).toBeInTheDocument()
   })
 })

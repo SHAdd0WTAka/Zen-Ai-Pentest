@@ -404,10 +404,10 @@ while True:
         f"{API_URL}/scans/{scan_id}",
         headers={"Authorization": f"Bearer {token}"}
     ).json()
-    
+
     if scan["status"] in ["completed", "failed"]:
         break
-    
+
     time.sleep(5)
 
 # Get findings
@@ -445,12 +445,12 @@ const createScan = async () => {
 // WebSocket connection
 const connectWebSocket = (scanId) => {
   const ws = new WebSocket(`ws://localhost:8000/ws/scans/${scanId}`);
-  
+
   ws.onmessage = (event) => {
     const data = JSON.parse(event.data);
     console.log('Update:', data);
   };
-  
+
   return ws;
 };
 ```

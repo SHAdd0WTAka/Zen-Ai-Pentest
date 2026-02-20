@@ -30,7 +30,7 @@ if (!fs.existsSync(CONFIG.reportsDir)) {
 async function runCollection(environment = 'local', options = {}) {
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
   const reportPrefix = `report-${environment}-${timestamp}`;
-  
+
   const newmanOptions = {
     collection: CONFIG.collection,
     environment: CONFIG.environments[environment],

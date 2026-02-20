@@ -12,7 +12,7 @@ description: |
   - Expiration/validation issues
   - Key injection attacks
   - JWKS injection
-  
+
   Tests both validation and exploitation capabilities.
 
 category: authentication
@@ -46,12 +46,12 @@ jwt_endpoints:
     path: "/api/auth/login"
     method: "POST"
     returns_jwt: true
-    
+
   protected_resource:
     path: "/api/user/profile"
     method: "GET"
     requires_auth: true
-    
+
   admin_resource:
     path: "/api/admin/users"
     method: "GET"
@@ -70,7 +70,7 @@ expected_findings:
       from RS256 to HS256. Enables token forgery.
     verification_method: "jwt_tool"
     exploit_available: true
-    
+
   - vuln_type: jwt_weak_secret
     severity: critical
     location: "JWT signing (HS256)"
@@ -81,7 +81,7 @@ expected_findings:
       'secret123' which can be cracked.
     verification_method: "jwt_tool"
     exploit_available: true
-    
+
   - vuln_type: jwt_missing_signature
     severity: high
     location: "JWT validation"
@@ -92,7 +92,7 @@ expected_findings:
       validation when alg is 'none'.
     verification_method: "manual"
     exploit_available: true
-    
+
   - vuln_type: jwt_expiration_bypass
     severity: medium
     location: "JWT expiration validation"
@@ -103,7 +103,7 @@ expected_findings:
       can be modified without invalidating signature.
     verification_method: "manual"
     exploit_available: true
-    
+
   - vuln_type: information_disclosure
     severity: low
     location: "JWT payload"
@@ -120,16 +120,16 @@ sample_tokens:
     header: '{"alg":"HS256","typ":"JWT"}'
     payload: '{"sub":"1234567890","name":"John Doe","admin":false}'
     secret: "secret123"
-    
+
   algorithm_none:
     header: '{"alg":"none","typ":"JWT"}'
     payload: '{"sub":"1234567890","name":"John Doe","admin":true}'
-    
+
   rs256_to_hs256:
     header: '{"alg":"HS256","typ":"JWT"}'
     payload: '{"sub":"1234567890","name":"John Doe","admin":true}'
     # Signed with RSA public key as HMAC secret
-    
+
   expired:
     header: '{"alg":"HS256","typ":"JWT"}'
     payload: '{"sub":"1234567890","exp":1609459200}'
@@ -146,18 +146,18 @@ parameters:
     - RS512
     - ES256
     - none
-    
+
   attack_types:
     - algorithm_confusion
     - secret_cracking
     - key_injection
     - token_manipulation
     - expiration_bypass
-    
+
   wordlist_for_secrets:
     - secrets.txt
     - jwt.secrets.list
-    
+
 # Success Criteria
 min_detection_rate: 0.70
 max_false_positive_rate: 0.10
@@ -204,10 +204,10 @@ success_indicators:
 reference_tools:
   - name: jwt_tool
     command: "jwt_tool.py <token> -t"
-  
+
   - name: jwt-cracker
     command: "jwt-cracker <token> <wordlist>"
-  
+
   - name: hashcat
     command: "hashcat -m 16500 jwt.txt wordlist.txt"
 

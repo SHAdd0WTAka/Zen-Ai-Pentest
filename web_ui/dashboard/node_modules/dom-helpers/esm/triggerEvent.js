@@ -1,6 +1,6 @@
 /**
  * Triggers an event on a given element.
- * 
+ *
  * @param node the element
  * @param eventName the event name to trigger
  * @param bubbles whether the event should bubble up

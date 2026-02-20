@@ -1,7 +1,7 @@
 # Session Backup - 13. Februar 2026
 
-**Session ID:** 2026-02-13-FINAL  
-**Kimi Instance:** PowerShell/Windows  
+**Session ID:** 2026-02-13-FINAL
+**Kimi Instance:** PowerShell/Windows
 **Status:** ✅ AKTIV - Backup erstellt
 
 ---
@@ -119,5 +119,5 @@ python scripts/fill_discord_channels.py
 
 ---
 
-*Backup erstellt: 13.02.2026*  
+*Backup erstellt: 13.02.2026*
 *Von: Kimi (PowerShell/Windows)*

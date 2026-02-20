@@ -1,9 +1,9 @@
 # Penetration Testing Report - Executive Summary
 
-**Client:** {{ client_name }}  
-**Project:** {{ project_name }}  
-**Date:** {{ assessment_date }}  
-**Report Version:** {{ report_version }}  
+**Client:** {{ client_name }}
+**Project:** {{ project_name }}
+**Date:** {{ assessment_date }}
+**Report Version:** {{ report_version }}
 
 ---
 

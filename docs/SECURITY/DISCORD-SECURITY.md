@@ -17,7 +17,7 @@ Unsere Discord-Integration implementiert mehrere Schutzschichten gegen Credentia
 - TruffleHog: Deep-Scan mit Verifikation
 - detect-private-key: Erkennt private Keys
 ```
-**Wann**: Vor jedem Commit  
+**Wann**: Vor jedem Commit
 **Ziel**: Secrets gar nicht erst ins Repository lassen
 
 ### 2. CI/CD Secret Masking
@@ -27,7 +27,7 @@ Unsere Discord-Integration implementiert mehrere Schutzschichten gegen Credentia
 - Ersetzt durch: **********
 - Ueberprueft Commit-Messages, PR-Titel, Issue-Titel
 ```
-**Wann**: Vor Discord-Notification  
+**Wann**: Vor Discord-Notification
 **Ziel**: Keine Secrets in Discord-Chat
 
 ### 3. GitHub Secret Protection
@@ -144,7 +144,7 @@ DISCORD_WEBHOOK_URL=your-webhook-url
 # .github/workflows/example.yml
 env:
   API_KEY: ${{ secrets.OPENAI_API_KEY }}  # ✅ Sicher
-  
+
 # ❌ NIE so:
 env:
   API_KEY: "sk-abc123..."  # GEHT INS LOG!
@@ -203,6 +203,6 @@ Bei Sicherheitsvorfällen:
 
 ---
 
-**Letzte Aktualisierung**: 2026-02-11  
-**Version**: 1.0  
+**Letzte Aktualisierung**: 2026-02-11
+**Version**: 1.0
 **Owner**: @SHAdd0WTAka

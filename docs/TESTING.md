@@ -81,10 +81,10 @@ def test_feature():
     """Test description."""
     # Arrange
     input_data = "test"
-    
+
     # Act
     result = function_under_test(input_data)
-    
+
     # Assert
     assert result == expected_output
 ```

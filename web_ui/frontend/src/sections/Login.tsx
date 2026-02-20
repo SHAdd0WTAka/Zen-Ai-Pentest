@@ -41,9 +41,9 @@ export function Login() {
     <div className="min-h-screen flex items-center justify-center bg-slate-950 relative overflow-hidden">
       {/* Background gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 via-purple-500/10 to-pink-500/10" />
-      
+
       {/* Grid pattern */}
-      <div 
+      <div
         className="absolute inset-0 opacity-[0.02]"
         style={{
           backgroundImage: `linear-gradient(rgba(255,255,255,.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px)`,

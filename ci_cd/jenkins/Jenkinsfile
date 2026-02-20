@@ -3,14 +3,14 @@
 
 pipeline {
     agent any
-    
+
     environment {
         ZEN_TARGET = 'http://target-application'
         ZEN_SCAN_TYPE = 'standard'
         ZEN_SAFETY_LEVEL = 'non_destructive'
         ZEN_FAIL_ON = 'high'
     }
-    
+
     stages {
         stage('Setup') {
             steps {
@@ -22,7 +22,7 @@ pipeline {
                 '''
             }
         }
-        
+
         stage('Security Scan') {
             steps {
                 sh '''
@@ -35,23 +35,23 @@ pipeline {
                 '''
             }
         }
-        
+
         stage('Parse Results') {
             steps {
                 script {
                     def results = readJSON file: 'zen-results.json'
-                    
+
                     env.CRITICAL_COUNT = results.critical_findings ?: 0
                     env.HIGH_COUNT = results.high_findings ?: 0
                     env.MEDIUM_COUNT = results.medium_findings ?: 0
                     env.LOW_COUNT = results.low_findings ?: 0
                     env.TOTAL_COUNT = results.total_findings ?: 0
-                    
+
                     echo "Findings: Critical=${env.CRITICAL_COUNT}, High=${env.HIGH_COUNT}, Medium=${env.MEDIUM_COUNT}, Low=${env.LOW_COUNT}"
                 }
             }
         }
-        
+
         stage('Archive Results') {
             steps {
                 archiveArtifacts artifacts: 'zen-results.*', allowEmptyArchive: true
@@ -66,14 +66,14 @@ pipeline {
             }
         }
     }
-    
+
     post {
         always {
             script {
                 // Check fail condition
                 def failOn = env.ZEN_FAIL_ON
                 def shouldFail = false
-                
+
                 switch(failOn) {
                     case 'critical':
                         shouldFail = env.CRITICAL_COUNT.toInteger() > 0
@@ -85,14 +85,14 @@ pipeline {
                         shouldFail = env.CRITICAL_COUNT.toInteger() > 0 || env.HIGH_COUNT.toInteger() > 0 || env.MEDIUM_COUNT.toInteger() > 0
                         break
                 }
-                
+
                 if (shouldFail) {
                     currentBuild.result = 'FAILURE'
                     error("Security scan found ${failOn} or higher severity issues!")
                 }
             }
         }
-        
+
         failure {
             emailext (
                 subject: "Security Scan Failed: \${env.JOB_NAME} - \${env.BUILD_NUMBER}",

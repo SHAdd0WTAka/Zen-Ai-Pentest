@@ -86,7 +86,7 @@ All tests run in isolated Docker environments to ensure:
 ### Scoring Formula
 
 ```
-Overall Score = 
+Overall Score =
     0.30 * Detection Rate +
     0.20 * Precision +
     0.15 * Recall +
@@ -477,13 +477,13 @@ autopentest = AutoPentestComparator()
 for test_case in test_suite.test_cases:
     pentestgpt_result = pentestgpt.execute_test(test_case)
     autopentest_result = autopentest.execute_test(test_case)
-    
+
     # Compare and analyze
     comparison = ComparisonMetrics(
         test_case_id=test_case.id,
         competitor_results=[pentestgpt_result, autopentest_result]
     )
-    
+
     print(f"Winner for {test_case.id}: {comparison.determine_winner()}")
 ```
 

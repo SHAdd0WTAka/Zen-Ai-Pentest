@@ -9,7 +9,7 @@ var _collectSiblings = _interopRequireDefault(require("./collectSiblings"));
 
 /**
  * Collects all next sibling elements of an element until a given selector is matched.
- * 
+ *
  * @param node the referene node
  * @param selector the selector to match
  */

@@ -1,7 +1,7 @@
 import ownerDocument from './ownerDocument';
 /**
  * Returns the owner window of a given element.
- * 
+ *
  * @param node the element
  */
 

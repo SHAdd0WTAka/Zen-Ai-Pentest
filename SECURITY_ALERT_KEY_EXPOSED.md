@@ -2,8 +2,8 @@
 
 ## Incident Report
 
-**Datum:** 2026-02-07  
-**Schweregrad:** 🟡 MITTEL (Key wurde revoked)  
+**Datum:** 2026-02-07
+**Schweregrad:** 🟡 MITTEL (Key wurde revoked)
 **Status:** TEILWEISE GELÖST
 
 ## Betroffener Key
@@ -12,7 +12,7 @@
 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
 ```
 
-**Provider:** OpenRouter (https://openrouter.ai/)  
+**Provider:** OpenRouter (https://openrouter.ai/)
 **Status:** 🔴 REVOKED / UNGÜLTIG
 
 ## Zusammenfassung

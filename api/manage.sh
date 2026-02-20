@@ -28,14 +28,14 @@ start_server() {
         status
         return 1
     fi
-    
+
     echo "🚀 Starte Server..."
     cd "$ZEN_DIR/api"
     nohup python3 "$API_SCRIPT" --no-auth > "$LOG_FILE" 2>&1 &
     echo $! > "$PID_FILE"
-    
+
     sleep 2
-    
+
     if pgrep -f "kimi_personas_api.py" > /dev/null; then
         echo "✅ Server gestartet!"
         echo "   URL: http://127.0.0.1:5000"
@@ -54,16 +54,16 @@ stop_server() {
         echo "⚠️  Server nicht aktiv"
         return 1
     fi
-    
+
     echo "🛑 Stoppe Server (PID: $PID)..."
     kill $PID 2>/dev/null
     sleep 1
-    
+
     if pgrep -f "kimi_personas_api.py" > /dev/null; then
         echo "⚠️  Erzwinge Beendigung..."
         kill -9 $PID 2>/dev/null
     fi
-    
+
     rm -f "$PID_FILE"
     echo "✅ Server gestoppt"
 }
@@ -91,7 +91,7 @@ show_logs() {
 test_api() {
     echo "🧪 Teste API Verbindung..."
     echo ""
-    
+
     # Health
     echo -n "Health Check... "
     if curl -s http://127.0.0.1:5000/api/v1/health >/dev/null 2>&1; then
@@ -100,7 +100,7 @@ test_api() {
         echo "❌ FEHLER"
         return 1
     fi
-    
+
     # Personas
     echo -n "Personas Liste... "
     COUNT=$(curl -s http://127.0.0.1:5000/api/v1/personas 2>/dev/null | python3 -c "import sys,json; print(json.load(sys.stdin)['count'])")
@@ -109,7 +109,7 @@ test_api() {
     else
         echo "❌ FEHLER (nur $COUNT Personas)"
     fi
-    
+
     # Admin
     echo -n "Admin Dashboard... "
     if curl -s http://127.0.0.1:5000/admin >/dev/null 2>&1; then
@@ -117,7 +117,7 @@ test_api() {
     else
         echo "❌ FEHLER"
     fi
-    
+
     echo ""
     echo "Alle Tests abgeschlossen!"
 }

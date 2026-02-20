@@ -37,12 +37,12 @@ class MyPlugin(BasePlugin):
     DESCRIPTION = "My custom plugin"
     AUTHOR = "Your Name"
     PLUGIN_TYPE = PluginType.TOOL
-    
+
     async def initialize(self) -> bool:
         """Called when plugin is loaded"""
         self.logger.info(f"{self.NAME} initialized")
         return True
-    
+
     async def execute(self, target: str, **kwargs) -> dict:
         """Main functionality"""
         return {
@@ -50,7 +50,7 @@ class MyPlugin(BasePlugin):
             "status": "success",
             "data": "Your results here"
         }
-    
+
     async def shutdown(self):
         """Cleanup"""
         pass
@@ -185,13 +185,13 @@ Plugins can add their own API endpoints:
 # In your plugin
 async def get_routes(self):
     from fastapi import APIRouter
-    
+
     router = APIRouter()
-    
+
     @router.get("/my-plugin/status")
     async def status():
         return {"status": "ok"}
-    
+
     return router
 ```
 
@@ -206,7 +206,7 @@ from modules.vuln_scanner import VulnScannerModule
 class CustomScanner(BasePlugin):
     NAME = "custom_scanner"
     PLUGIN_TYPE = PluginType.SCANNER
-    
+
     async def execute(self, target: str, **kwargs):
         scanner = VulnScannerModule()
         findings = await scanner.scan(target)
@@ -221,7 +221,7 @@ from core.plugin_manager import BasePlugin, PluginType
 class SlackNotifier(BasePlugin):
     NAME = "slack_notifier"
     PLUGIN_TYPE = PluginType.NOTIFIER
-    
+
     async def on_scan_complete(self, scan_id: str, findings: int):
         webhook = self.get_config("webhook_url")
         # Send Slack notification
@@ -236,7 +236,7 @@ from core.plugin_manager import BasePlugin, PluginType
 class PDFReport(BasePlugin):
     NAME = "pdf_report"
     PLUGIN_TYPE = PluginType.REPORT
-    
+
     async def execute(self, findings: list, **kwargs):
         # Generate PDF report
         pdf_path = f"reports/report_{datetime.now().timestamp()}.pdf"

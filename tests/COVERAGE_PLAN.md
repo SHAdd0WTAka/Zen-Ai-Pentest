@@ -1,7 +1,7 @@
 # Test Coverage Plan: 3% → 50%
 
-**Ziel**: 50% Test Coverage erreichen  
-**Zeitrahmen**: 2-3 Wochen  
+**Ziel**: 50% Test Coverage erreichen
+**Zeitrahmen**: 2-3 Wochen
 **Strategie**: Unit-Tests zuerst (schnell, isoliert), dann Integration
 
 ---
@@ -111,22 +111,22 @@ pytestmark = pytest.mark.unit
 
 class TestModuleName:
     """Tests for module X"""
-    
+
     def test_function_normal_case(self):
         """Test normal operation"""
         # Arrange
         input_data = "test"
-        
+
         # Act
         result = function_under_test(input_data)
-        
+
         # Assert
         assert result == expected_output
-    
+
     def test_function_edge_case(self):
         """Test edge cases"""
         pass
-    
+
     def test_function_error_handling(self):
         """Test error handling"""
         pass
@@ -146,10 +146,10 @@ class TestModuleName:
 
 ## Erfolgskriterien
 
-✅ Phase 2.2 complete: Core Module haben >80% Coverage  
-✅ Phase 2.3 complete: Tool Registry >70% Coverage  
-✅ Phase 2.4 complete: Agent Tests >60% Coverage  
-✅ Phase 2.5 complete: API Schemas >80% Coverage  
+✅ Phase 2.2 complete: Core Module haben >80% Coverage
+✅ Phase 2.3 complete: Tool Registry >70% Coverage
+✅ Phase 2.4 complete: Agent Tests >60% Coverage
+✅ Phase 2.5 complete: API Schemas >80% Coverage
 ✅ **Gesamt: 50% Coverage erreicht**
 
 ---

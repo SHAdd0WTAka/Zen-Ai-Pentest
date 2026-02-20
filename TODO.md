@@ -1,7 +1,7 @@
 # Zen AI Pentest - Projekt Status & TODO
 
-> **Repository:** https://github.com/SHAdd0WTAka/Zen-Ai-Pentest  
-> **Version:** 2.3.9  
+> **Repository:** https://github.com/SHAdd0WTAka/Zen-Ai-Pentest
+> **Version:** 2.3.9
 > **Letzte Aktualisierung:** 2026-02-06
 
 ---
@@ -53,7 +53,7 @@
 ### 🔴 KRITISCH (Sofort erledigen)
 
 #### 1. GitHub Token Sicherheit
-**Problem:** Token wurde in Chat exposed  
+**Problem:** Token wurde in Chat exposed
 **Aktion:**
 - [ ] Token `ghp_***REDACTED***` widerrufen
 - [ ] Neues Token mit `repo` Scope erstellen
@@ -233,7 +233,7 @@ npm run dev
 
 ---
 
-**Zusammenfassung:**  
-✅ **Großer Teil erledigt:** Repo-Struktur, PyPI, 50 Workflows, 18 Module  
-🔴 **Wichtig offen:** Token-Sicherheit, Tool-Auto-Integration (10/13 fehlen), Web UI  
+**Zusammenfassung:**
+✅ **Großer Teil erledigt:** Repo-Struktur, PyPI, 50 Workflows, 18 Module
+🔴 **Wichtig offen:** Token-Sicherheit, Tool-Auto-Integration (10/13 fehlen), Web UI
 🚀 **Bereit für:** Testing und Produktiv-Einsatz (nach Token-Rotation)

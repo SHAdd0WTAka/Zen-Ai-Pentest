@@ -21,7 +21,7 @@ else
     echo "4. Klicke: Generate token"
     echo "5. Kopiere den Token (wird nur einmal angezeigt!)"
     echo ""
-    
+
     # Token interaktiv abfragen
     echo "Token eingeben (wird nicht angezeigt):"
     read -s TOKEN

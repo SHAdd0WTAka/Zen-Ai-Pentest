@@ -204,14 +204,14 @@ $ npm install -g verbose/verb#dev verb-generate-readme && verb
 
 ### Contributors
 
-| **Commits** | **Contributor** |  
-| --- | --- |  
-| 116 | [jonschlinkert](https://github.com/jonschlinkert) |  
-| 4   | [paulmillr](https://github.com/paulmillr) |  
-| 2   | [realityking](https://github.com/realityking) |  
-| 2   | [bluelovers](https://github.com/bluelovers) |  
-| 1   | [edorivai](https://github.com/edorivai) |  
-| 1   | [wtgtybhertgeghgtwtg](https://github.com/wtgtybhertgeghgtwtg) |  
+| **Commits** | **Contributor** |
+| --- | --- |
+| 116 | [jonschlinkert](https://github.com/jonschlinkert) |
+| 4   | [paulmillr](https://github.com/paulmillr) |
+| 2   | [realityking](https://github.com/realityking) |
+| 2   | [bluelovers](https://github.com/bluelovers) |
+| 1   | [edorivai](https://github.com/edorivai) |
+| 1   | [wtgtybhertgeghgtwtg](https://github.com/wtgtybhertgeghgtwtg) |
 
 ### Author
 

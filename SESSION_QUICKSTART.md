@@ -104,6 +104,6 @@ Stuck? Check these in order:
 
 ---
 
-**Last Updated**: 2026-02-11 21:30 CET  
-**Session**: zen-pentest-2026-02-11  
+**Last Updated**: 2026-02-11 21:30 CET
+**Session**: zen-pentest-2026-02-11
 **Owner**: @SHAdd0WTAka

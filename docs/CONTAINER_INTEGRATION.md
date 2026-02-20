@@ -128,10 +128,10 @@ async with ToolOrchestrator("http://localhost:8080") as orch:
     # Run Nmap scan
     result = await orch.scan_with_nmap("target.com")
     scan_id = result['scan_id']
-    
+
     # Wait for completion
     status = await orch.wait_for_scan(scan_id)
-    
+
     # Get results
     results = await orch.get_scan_results(scan_id)
 ```
@@ -160,8 +160,8 @@ nuclei_task = orch.scan_with_nuclei("https://target.com")
 amass_task = orch.enumerate_subdomains("target.com")
 
 results = await asyncio.gather(
-    nmap_task, 
-    nuclei_task, 
+    nmap_task,
+    nuclei_task,
     amass_task,
     return_exceptions=True
 )
@@ -283,11 +283,11 @@ async def network_recon(target):
         # Port scan
         nmap = await orch.scan_with_nmap(target, "comprehensive")
         await orch.wait_for_scan(nmap['scan_id'])
-        
+
         # Subdomain enumeration
         amass = await orch.enumerate_subdomains(target)
         await orch.wait_for_scan(amass['scan_id'])
-        
+
         return await orch.get_scan_results(nmap['scan_id'])
 ```
 
@@ -298,13 +298,13 @@ async def web_app_test(url):
     async with ToolOrchestrator() as orch:
         # Directory enumeration
         gobuster = await orch.scan_with_gobuster(url)
-        
+
         # Vulnerability scan
         nuclei = await orch.scan_with_nuclei(url, severity="high,critical")
-        
+
         # SQL injection
         sqlmap = await orch.scan_with_sqlmap(url, level=2, risk=1)
-        
+
         # Wait for all
         await asyncio.gather(
             orch.wait_for_scan(gobuster['scan_id']),

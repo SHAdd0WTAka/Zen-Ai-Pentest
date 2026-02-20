@@ -1,12 +1,12 @@
 # ISO 27001:2022 Master Compliance Report
 # Zen-AI-Pentest Framework
 
-**Dokumenten-ID:** ISO27001-MASTER-001  
-**Version:** 3.0  
-**Datum:** 2026-02-14  
-**Klassifizierung:** Vertraulich  
-**Autor:** ISO 27001 Lead Implementer  
-**Gültigkeitsbereich:** Zen-AI-Pentest Framework v2.3.9  
+**Dokumenten-ID:** ISO27001-MASTER-001
+**Version:** 3.0
+**Datum:** 2026-02-14
+**Klassifizierung:** Vertraulich
+**Autor:** ISO 27001 Lead Implementer
+**Gültigkeitsbereich:** Zen-AI-Pentest Framework v2.3.9
 
 ---
 
@@ -1666,9 +1666,9 @@ Das Zen-AI-Pentest Framework ist bereit für ISO 27001:2022 Zertifizierung mit:
 
 Dieser ISO 27001:2022 Master Compliance Report wurde erstellt und genehmigt:
 
-**Erstellt von:** ISO 27001 Lead Implementer  
-**Genehmigt von:** @SHAdd0WTAka  
-**Datum:** 2026-02-14  
+**Erstellt von:** ISO 27001 Lead Implementer
+**Genehmigt von:** @SHAdd0WTAka
+**Datum:** 2026-02-14
 **Nächste Überprüfung:** 2027-02-14
 
 ---

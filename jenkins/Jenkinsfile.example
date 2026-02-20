@@ -31,7 +31,7 @@ pipeline {
             args '--user root -v /var/run/docker.sock:/var/run/docker.sock'
         }
     }
-    
+
     options {
         buildDiscarder(logRotator(numToKeepStr: '10'))
         timeout(time: 2, unit: 'HOURS')
@@ -39,7 +39,7 @@ pipeline {
         timestamps()
         ansiColor('xterm')
     }
-    
+
     environment {
         // Scan Configuration
         ZEN_TARGET = "${env.ZEN_TARGET ?: 'https://example.com'}"
@@ -49,12 +49,12 @@ pipeline {
         ZEN_TIMEOUT = "${env.ZEN_TIMEOUT ?: '3600'}"
         ZEN_MODULES = "${env.ZEN_MODULES ?: 'port_scan,web_scan,ssl_scan,ai_analysis'}"
         ZEN_OUTPUT_FORMAT = "${env.ZEN_OUTPUT_FORMAT ?: 'all'}"
-        
+
         // Workspace
         ZEN_OUTPUT_DIR = 'zen-pentest-output'
         SCAN_ID = "zen-${env.BUILD_NUMBER}-${currentBuild.startTimeInMillis}"
     }
-    
+
     stages {
         // =====================================================================
         // Stage 1: Setup Environment
@@ -63,7 +63,7 @@ pipeline {
             steps {
                 script {
                     echo "🔧 Setting up Zen AI Pentest environment..."
-                    
+
                     // Install system dependencies
                     sh '''
                         apt-get update && apt-get install -y \
@@ -72,19 +72,19 @@ pipeline {
                             jq \
                             2>/dev/null || echo "Some packages may already be installed"
                     '''
-                    
+
                     // Install Zen AI Pentest
                     sh '''
                         pip install --upgrade pip
                         pip install zen-ai-pentest
-                        
+
                         # Verify installation
                         zen-cli --version || python -m zen_ai_pentest --version
                     '''
-                    
+
                     // Create output directory
                     sh "mkdir -p ${env.ZEN_OUTPUT_DIR}"
-                    
+
                     // Display configuration
                     echo """
                     ============================================
@@ -101,7 +101,7 @@ pipeline {
                 }
             }
         }
-        
+
         // =====================================================================
         // Stage 2: Run Security Scan
         // =====================================================================
@@ -109,7 +109,7 @@ pipeline {
             steps {
                 script {
                     echo "🔒 Starting Zen AI Pentest Security Scan..."
-                    
+
                     // Build scan command
                     def scanCmd = """#!/bin/bash
                         python -m zen_ai_pentest scan "${env.ZEN_TARGET}" \
@@ -120,7 +120,7 @@ pipeline {
                             --scan-id ${env.SCAN_ID} \
                             --output-dir ${env.ZEN_OUTPUT_DIR}
                     """
-                    
+
                     // Add output format options
                     if (env.ZEN_OUTPUT_FORMAT == 'all') {
                         scanCmd += """ \
@@ -132,23 +132,23 @@ pipeline {
                     } else {
                         scanCmd += " --format ${env.ZEN_OUTPUT_FORMAT} --output ${env.ZEN_OUTPUT_DIR}/scan-results.${env.ZEN_OUTPUT_FORMAT}"
                     }
-                    
+
                     // Run scan and capture output
                     def scanStatus = sh(
                         script: scanCmd,
                         returnStatus: true
                     )
-                    
+
                     // Store scan status for later
                     env.SCAN_EXIT_CODE = scanStatus.toString()
-                    
+
                     if (scanStatus != 0) {
                         echo "⚠️ Scan completed with exit code: ${scanStatus}"
                     }
                 }
             }
         }
-        
+
         // =====================================================================
         // Stage 3: Parse Results
         // =====================================================================
@@ -156,61 +156,61 @@ pipeline {
             steps {
                 script {
                     echo "📊 Parsing scan results..."
-                    
+
                     def resultsFile = "${env.ZEN_OUTPUT_DIR}/results.json"
-                    
+
                     if (fileExists(resultsFile)) {
                         // Extract metrics using jq
                         env.FINDINGS_COUNT = sh(
                             script: "jq '.findings | length' ${resultsFile} || echo '0'",
                             returnStdout: true
                         ).trim()
-                        
+
                         env.CRITICAL_COUNT = sh(
                             script: "jq '[.findings[] | select(.severity==\"critical\")] | length' ${resultsFile} || echo '0'",
                             returnStdout: true
                         ).trim()
-                        
+
                         env.HIGH_COUNT = sh(
                             script: "jq '[.findings[] | select(.severity==\"high\")] | length' ${resultsFile} || echo '0'",
                             returnStdout: true
                         ).trim()
-                        
+
                         env.MEDIUM_COUNT = sh(
                             script: "jq '[.findings[] | select(.severity==\"medium\")] | length' ${resultsFile} || echo '0'",
                             returnStdout: true
                         ).trim()
-                        
+
                         env.LOW_COUNT = sh(
                             script: "jq '[.findings[] | select(.severity==\"low\")] | length' ${resultsFile} || echo '0'",
                             returnStdout: true
                         ).trim()
-                        
+
                         env.RISK_SCORE = sh(
                             script: "jq '.risk_score // 0' ${resultsFile} || echo '0'",
                             returnStdout: true
                         ).trim()
-                        
+
                         // Display results
                         echo """
                         ============================================
                         📊 SCAN RESULTS SUMMARY
                         ============================================
                         Total Findings: ${env.FINDINGS_COUNT}
-                        
+
                         Severity Breakdown:
                           🔴 Critical: ${env.CRITICAL_COUNT}
                           🟠 High:     ${env.HIGH_COUNT}
                           🟡 Medium:   ${env.MEDIUM_COUNT}
                           🟢 Low:      ${env.LOW_COUNT}
-                        
+
                         Risk Score: ${env.RISK_SCORE}/100
                         ============================================
                         """
-                        
+
                         // Set build description
                         currentBuild.description = """
-                        Findings: ${env.FINDINGS_COUNT} 
+                        Findings: ${env.FINDINGS_COUNT}
                         (C:${env.CRITICAL_COUNT} H:${env.HIGH_COUNT} M:${env.MEDIUM_COUNT} L:${env.LOW_COUNT})
                         Risk: ${env.RISK_SCORE}/100
                         """
@@ -224,7 +224,7 @@ pipeline {
                 }
             }
         }
-        
+
         // =====================================================================
         // Stage 4: Quality Gate
         // =====================================================================
@@ -232,10 +232,10 @@ pipeline {
             steps {
                 script {
                     echo "🚦 Evaluating quality gate..."
-                    
+
                     def shouldFail = false
                     def failReason = ""
-                    
+
                     switch(env.ZEN_FAIL_ON) {
                         case 'critical':
                             if (env.CRITICAL_COUNT.toInteger() > 0) {
@@ -265,7 +265,7 @@ pipeline {
                             echo "Quality gate disabled (fail-on: none)"
                             break
                     }
-                    
+
                     if (shouldFail) {
                         echo "❌ QUALITY GATE FAILED: ${failReason}"
                         currentBuild.result = 'UNSTABLE'
@@ -277,7 +277,7 @@ pipeline {
             }
         }
     }
-    
+
     // =========================================================================
     // Post-Build Actions
     // =========================================================================
@@ -285,20 +285,20 @@ pipeline {
         always {
             script {
                 echo "📦 Archiving artifacts..."
-                
+
                 // Archive all output files
                 archiveArtifacts(
                     artifacts: "${env.ZEN_OUTPUT_DIR}/**",
                     allowEmptyArchive: true,
                     fingerprint: true
                 )
-                
+
                 // Publish JUnit test results if available
                 def junitFile = "${env.ZEN_OUTPUT_DIR}/scan-results.xml"
                 if (fileExists(junitFile)) {
                     junit testResults: junitFile, allowEmptyResults: true
                 }
-                
+
                 // Publish HTML report if available
                 def htmlFile = "${env.ZEN_OUTPUT_DIR}/scan-results.html"
                 if (fileExists(htmlFile)) {
@@ -313,22 +313,22 @@ pipeline {
                 }
             }
         }
-        
+
         success {
             script {
                 echo "✅ Security scan completed successfully!"
-                
+
                 // Slack notification on success (optional)
                 if (env.SLACK_WEBHOOK_URL) {
                     slackSend(
                         color: 'good',
                         message: """
                         ✅ *Zen AI Pentest - Scan Complete*
-                        
+
                         Target: ${env.ZEN_TARGET}
                         Findings: ${env.FINDINGS_COUNT} (C:${env.CRITICAL_COUNT} H:${env.HIGH_COUNT})
                         Risk Score: ${env.RISK_SCORE}/100
-                        
+
                         Build: <${env.BUILD_URL}|#${env.BUILD_NUMBER}>
                         Report: <${env.BUILD_URL}Zen_20Security_20Report/|View Report>
                         """
@@ -336,26 +336,26 @@ pipeline {
                 }
             }
         }
-        
+
         unstable {
             script {
                 echo "⚠️ Build marked as UNSTABLE due to security findings!"
-                
+
                 // Slack notification on findings
                 if (env.SLACK_WEBHOOK_URL) {
                     slackSend(
                         color: 'warning',
                         message: """
                         ⚠️ *Zen AI Pentest - Findings Detected!*
-                        
+
                         Target: ${env.ZEN_TARGET}
                         Findings: ${env.FINDINGS_COUNT}
                         🔴 Critical: ${env.CRITICAL_COUNT}
                         🟠 High: ${env.HIGH_COUNT}
                         🟡 Medium: ${env.MEDIUM_COUNT}
-                        
+
                         Risk Score: ${env.RISK_SCORE}/100
-                        
+
                         Build: <${env.BUILD_URL}|#${env.BUILD_NUMBER}>
                         Report: <${env.BUILD_URL}Zen_20Security_20Report/|View Report>
                         """
@@ -363,29 +363,29 @@ pipeline {
                 }
             }
         }
-        
+
         failure {
             script {
                 echo "❌ Security scan failed!"
-                
+
                 // Slack notification on failure
                 if (env.SLACK_WEBHOOK_URL) {
                     slackSend(
                         color: 'danger',
                         message: """
                         ❌ *Zen AI Pentest - Scan Failed*
-                        
+
                         Target: ${env.ZEN_TARGET}
                         Build: <${env.BUILD_URL}|#${env.BUILD_NUMBER}>
                         Console: <${env.BUILD_URL}console|View Logs>
-                        
+
                         Please check the build logs for details.
                         """
                     )
                 }
             }
         }
-        
+
         cleanup {
             script {
                 echo "🧹 Cleaning up workspace..."
@@ -406,7 +406,7 @@ pipeline {
 // Jenkinsfile.parallel - For parallel scanning of multiple targets
 pipeline {
     agent none
-    
+
     stages {
         stage('Parallel Scans') {
             parallel {

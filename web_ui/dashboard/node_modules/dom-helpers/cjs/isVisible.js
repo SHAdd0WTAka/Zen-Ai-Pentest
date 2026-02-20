@@ -5,7 +5,7 @@ exports.default = isVisible;
 
 /**
  * Checks if a given element is currently visible.
- * 
+ *
  * @param node the element to check
  */
 function isVisible(node) {

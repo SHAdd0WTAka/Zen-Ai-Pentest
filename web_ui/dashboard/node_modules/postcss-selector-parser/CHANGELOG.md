@@ -255,7 +255,7 @@ className.setPropertyAndEscape('value', 'xxxx', 'yyyy');
 className.value; // => "xxxx"
 className.toString(); // => ".yyyy"
 
-// Pass a value directly through to the css output without escaping it. 
+// Pass a value directly through to the css output without escaping it.
 className.setPropertyWithoutEscape('value', '$REPLACE_ME$');
 className.value; // => "$REPLACE_ME$"
 className.toString(); // => ".$REPLACE_ME$"
@@ -282,7 +282,7 @@ attr.value = "new-value";
 // no quote mark is needed so it is removed
 attr.getQuotedValue(); // => "new-value";
 
-// deprecated assignment, 
+// deprecated assignment,
 attr.value = "\"a 'single quoted' value\"";
 // > (node:27859) DeprecationWarning: Assigning an attribute a value containing characters that might need to be escaped is deprecated. Call attribute.setValue() instead.
 attr.getQuotedValue(); // => '"a \'single quoted\' value"';
@@ -293,7 +293,7 @@ attr.quoteMark; // => '"'
 attr.setValue('foo', {smart: true});
 // foo doesn't require any escapes or quotes.
 attr.toString(); // => '[id=foo]'
-attr.quoteMark; // => null 
+attr.quoteMark; // => null
 
 // An explicit quote mark can be specified
 attr.setValue('foo', {quoteMark: '"'});
@@ -328,7 +328,7 @@ attr.setPropertyAndEscape('value', 'xxxx', 'the password is 42');
 attr.value; // => "xxxx"
 attr.toString(); // => "[id=the password is 42]"
 
-// Pass a value directly through to the css output without escaping it. 
+// Pass a value directly through to the css output without escaping it.
 attr.setPropertyWithoutEscape('value', '$REPLACEMENT$');
 attr.value; // => "$REPLACEMENT$"
 attr.toString(); // => "[id=$REPLACEMENT$]"

@@ -1,7 +1,7 @@
 # 📈 Coverage Roadmap - Von 13% zu 80%
 
-> **Aktueller Stand:** 13% (226 Tests, 12 Failed)  
-> **Ziel:** 80% Coverage  
+> **Aktueller Stand:** 13% (226 Tests, 12 Failed)
+> **Ziel:** 80% Coverage
 > **Zeithorizont:** 4-6 Wochen (stufenweise)
 
 ---
@@ -168,5 +168,5 @@ tests/
 
 ---
 
-**Erstellt:** $(date)  
+**Erstellt:** $(date)
 **Nächstes Review:** Nach Milestone 1

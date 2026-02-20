@@ -73,7 +73,7 @@ All PRs are automatically validated for:
 1. **Title Format** - Conventional Commits
    ```
    <type>(<scope>): <description>
-   
+
    Examples:
    - feat: add new agent system
    - fix: resolve CVE loading issue

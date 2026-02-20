@@ -9,7 +9,7 @@ var _collectElements = _interopRequireDefault(require("./collectElements"));
 
 /**
  * Collects all parent elements of a given element.
- * 
+ *
  * @param node the element
  */
 function parents(node) {

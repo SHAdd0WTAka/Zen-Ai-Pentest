@@ -16,7 +16,7 @@ Zone Resources:
 
 Permissions:
   - Cloudflare Pages: Edit
-  - Workers Scripts: Edit  
+  - Workers Scripts: Edit
   - Workers Routes: Edit
   - Workers KV Storage: Edit
   - Account: Read

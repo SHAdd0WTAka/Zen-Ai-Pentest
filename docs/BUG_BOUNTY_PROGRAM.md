@@ -64,7 +64,7 @@ Season 4: Oktober - Dezember
 ### 🥇 1. Platz
 - **Titel:** "Zen-AI Security Champion [Season X]"
 - **Rolle:** @Security Champion (Discord)
-- **Reward:** 
+- **Reward:**
   - Exklusiver Badge im Repo
   - Feature in Release Notes
   - 1-on-1 Session mit Core Team
@@ -284,10 +284,10 @@ Das Leaderboard wird automatisch aktualisiert:
 
 > *"Jeder Bug ist eine Chance, das Projekt besser zu machen!"*
 
-**Aktuelle Season:** Season 1 (Jan - Mär 2026)  
+**Aktuelle Season:** Season 1 (Jan - Mär 2026)
 **Leaderboard:** [Siehe Discord #leaderboard](https://discord.gg/zJZUJwK9AC)
 
 ---
 
-*Last Updated: 13.02.2026*  
+*Last Updated: 13.02.2026*
 *Programm-Version: 1.0*

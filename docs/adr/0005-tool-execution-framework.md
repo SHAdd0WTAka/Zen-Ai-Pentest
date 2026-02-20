@@ -17,10 +17,10 @@ class Tool(ABC):
     @property
     @abstractmethod
     def name(self) -> str: ...
-    
+
     @abstractmethod
     async def execute(self, target: str, options: dict) -> ToolResult: ...
-    
+
     @property
     def safety_level(self) -> SafetyLevel:
         return SafetyLevel.READ_ONLY

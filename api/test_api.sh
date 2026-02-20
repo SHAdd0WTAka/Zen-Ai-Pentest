@@ -19,9 +19,9 @@ test_endpoint() {
     local endpoint=$2
     local data=$3
     local desc=$4
-    
+
     echo -n "Testing $desc... "
-    
+
     if [ -n "$data" ]; then
         if [ -n "$API_KEY" ]; then
             response=$(curl -s -o /dev/null -w "%{http_code}" \
@@ -40,7 +40,7 @@ test_endpoint() {
     else
         response=$(curl -s -o /dev/null -w "%{http_code}" "$API_URL$endpoint")
     fi
-    
+
     if [ "$response" -ge 200 ] && [ "$response" -lt 300 ]; then
         echo -e "${GREEN}✓ HTTP $response${NC}"
     else

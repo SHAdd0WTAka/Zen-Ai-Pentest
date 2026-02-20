@@ -65,7 +65,7 @@ export class FSWatcher extends EventEmitter implements fs.FSWatcher {
   on(event: string, listener: (...args: any[]) => void): this;
 
   ref(): this;
-  
+
   unref(): this;
 }
 

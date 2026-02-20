@@ -15,25 +15,25 @@ metadata:
     kubernetes.io/ingress.class: nginx
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
     nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-    
+
     # Rate limiting
     nginx.ingress.kubernetes.io/limit-rps: "10"
     nginx.ingress.kubernetes.io/limit-connections: "5"
-    
+
     # Buffer settings
     nginx.ingress.kubernetes.io/proxy-body-size: "100m"
     nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
-    
+
     # CORS
     nginx.ingress.kubernetes.io/enable-cors: "true"
     nginx.ingress.kubernetes.io/cors-allow-origin: "https://zen-pentest.example.com"
     nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
     nginx.ingress.kubernetes.io/cors-allow-headers: "DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization"
-    
+
     # cert-manager for TLS
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
-    
+
     # Security headers
     nginx.ingress.kubernetes.io/configuration-snippet: |
       add_header X-Frame-Options "SAMEORIGIN" always;

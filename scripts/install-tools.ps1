@@ -45,68 +45,68 @@ function Install-Chocolatey {
 
 function Install-Nmap {
     Write-Host "Installing Nmap..." -ForegroundColor Yellow
-    
+
     if (Test-Command nmap) {
         Write-Host "Nmap already installed: $(nmap -V 2>&1 | Select-Object -First 1)" -ForegroundColor Green
         return
     }
-    
+
     choco install nmap -y
     Write-Host "Nmap installed successfully" -ForegroundColor Green
 }
 
 function Install-SQLMap {
     Write-Host "Installing SQLMap..." -ForegroundColor Yellow
-    
+
     if (Test-Command sqlmap) {
         Write-Host "SQLMap already installed" -ForegroundColor Green
         return
     }
-    
+
     $sqlmapPath = "C:\Tools\sqlmap"
     New-Item -ItemType Directory -Force -Path $sqlmapPath | Out-Null
-    
+
     git clone --depth 1 https://github.com/sqlmapproject/sqlmap.git $sqlmapPath
-    
+
     # Add to PATH
     [Environment]::SetEnvironmentVariable("Path", $env:Path + ";$sqlmapPath", "Machine")
     $env:Path += ";$sqlmapPath"
-    
+
     Write-Host "SQLMap installed successfully" -ForegroundColor Green
 }
 
 function Install-Nuclei {
     Write-Host "Installing Nuclei..." -ForegroundColor Yellow
-    
+
     if (Test-Command nuclei) {
         Write-Host "Nuclei already installed" -ForegroundColor Green
         return
     }
-    
+
     # Download latest release
     $url = "https://github.com/projectdiscovery/nuclei/releases/latest/download/nuclei_windows_amd64.zip"
     $output = "$env:TEMP\nuclei.zip"
-    
+
     Invoke-WebRequest -Uri $url -OutFile $output
     Expand-Archive -Path $output -DestinationPath "C:\Tools\nuclei" -Force
-    
+
     # Add to PATH
     [Environment]::SetEnvironmentVariable("Path", $env:Path + ";C:\Tools\nuclei", "Machine")
-    
+
     # Update templates
     & "C:\Tools\nuclei\nuclei.exe" -update-templates
-    
+
     Write-Host "Nuclei installed successfully" -ForegroundColor Green
 }
 
 function Install-GoBuster {
     Write-Host "Installing GoBuster..." -ForegroundColor Yellow
-    
+
     if (Test-Command gobuster) {
         Write-Host "GoBuster already installed" -ForegroundColor Green
         return
     }
-    
+
     choco install gobuster -y
     Write-Host "GoBuster installed successfully" -ForegroundColor Green
 }
@@ -129,7 +129,7 @@ Install-SQLMap
 
 if ($All) {
     Write-Host "Installing optional tools..." -ForegroundColor Yellow
-    
+
     Install-Go
     Install-Nuclei
     Install-GoBuster

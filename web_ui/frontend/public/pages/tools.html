@@ -5,22 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tools | CyberShield - 40+ Integrierte Security-Tools</title>
     <meta name="description" content="Professionelle Penetration-Testing-Tools, nahtlos integriert - Netzwerk, Web, Exploitation, Brute Force, Reconnaissance und mehr.">
-    
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
+
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    
+
     <!-- GSAP -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
-    
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-    
+
     <script>
         tailwind.config = {
             theme: {
@@ -50,61 +50,61 @@
             }
         }
     </script>
-    
+
     <style>
         body {
             background-color: #0a0a0f;
             color: #ffffff;
         }
-        
+
         .gradient-text {
             background: linear-gradient(135deg, #00f0ff 0%, #7000ff 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
-        
+
         .card-glow {
             transition: all 0.3s ease;
         }
-        
+
         .card-glow:hover {
             box-shadow: 0 0 30px rgba(0, 240, 255, 0.25);
             border-color: rgba(0, 240, 255, 0.5);
             transform: translateY(-4px);
         }
-        
+
         .filter-btn {
             transition: all 0.3s ease;
         }
-        
+
         .filter-btn.active {
             background: linear-gradient(135deg, #00f0ff 0%, #7000ff 100%);
             color: #0a0a0f;
             font-weight: 600;
         }
-        
+
         .filter-btn:not(.active):hover {
             background: rgba(0, 240, 255, 0.1);
             border-color: rgba(0, 240, 255, 0.5);
         }
-        
+
         .tool-card {
             opacity: 0;
             transform: translateY(30px);
         }
-        
+
         .grid-bg {
-            background-image: 
+            background-image:
                 linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
             background-size: 50px 50px;
         }
-        
+
         .nav-link {
             position: relative;
         }
-        
+
         .nav-link::after {
             content: '';
             position: absolute;
@@ -115,11 +115,11 @@
             background: linear-gradient(90deg, #00f0ff, #7000ff);
             transition: width 0.3s ease;
         }
-        
+
         .nav-link:hover::after {
             width: 100%;
         }
-        
+
         .category-badge {
             font-size: 0.65rem;
             letter-spacing: 0.05em;
@@ -139,7 +139,7 @@
                         <span class="text-white">Cyber</span><span class="text-cyber-accent">Shield</span>
                     </span>
                 </a>
-                
+
                 <!-- Desktop Navigation -->
                 <div class="hidden md:flex items-center space-x-8">
                     <a href="../index.html" class="nav-link text-gray-300 hover:text-white transition-colors">Home</a>
@@ -148,21 +148,21 @@
                     <a href="architecture.html">Architektur</a>
                     <a href="docs.html" class="nav-link text-gray-300 hover:text-white transition-colors">Docs</a>
                 </div>
-                
+
                 <!-- CTA Button -->
                 <div class="hidden md:block">
                     <a href="pricing.html" class="px-5 py-2 bg-gradient-to-r from-cyber-accent to-cyber-accent2 text-cyber-darker font-semibold rounded-lg hover:shadow-glow transition-all duration-300">
                         Jetzt Starten
                     </a>
                 </div>
-                
+
                 <!-- Mobile Menu Button -->
                 <button id="mobile-menu-btn" class="md:hidden text-white p-2">
                     <i data-lucide="menu" class="w-6 h-6"></i>
                 </button>
             </div>
         </div>
-        
+
         <!-- Mobile Menu -->
         <div id="mobile-menu" class="hidden md:hidden bg-cyber-darker border-t border-white/5">
             <div class="px-4 py-4 space-y-3">
@@ -183,21 +183,21 @@
         <section class="relative py-20 lg:py-28 overflow-hidden">
             <div class="absolute inset-0 grid-bg opacity-50"></div>
             <div class="absolute inset-0 bg-gradient-to-b from-cyber-accent/5 via-transparent to-transparent"></div>
-            
+
             <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
                 <div class="inline-flex items-center space-x-2 px-4 py-2 bg-cyber-accent/10 border border-cyber-accent/30 rounded-full mb-6">
                     <i data-lucide="terminal" class="w-4 h-4 text-cyber-accent"></i>
                     <span class="text-sm text-cyber-accent font-mono">Penetration Testing Suite</span>
                 </div>
-                
+
                 <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
                     <span class="gradient-text">40+ Integrierte Security-Tools</span>
                 </h1>
-                
+
                 <p class="text-xl text-gray-400 max-w-2xl mx-auto mb-8">
                     Professionelle Penetration-Testing-Tools, nahtlos integriert in eine leistungsstarke Plattform für umfassende Sicherheitsanalysen.
                 </p>
-                
+
                 <div class="flex flex-wrap justify-center gap-4 text-sm text-gray-500">
                     <div class="flex items-center space-x-2">
                         <i data-lucide="check-circle" class="w-4 h-4 text-cyber-success"></i>
@@ -275,7 +275,7 @@
         <section class="py-16 lg:py-24">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div id="tools-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    
+
                     <!-- Network Tools -->
                     <div class="tool-card card-glow bg-cyber-card border border-white/10 rounded-xl p-6" data-category="network">
                         <div class="flex items-start justify-between mb-4">
@@ -287,7 +287,7 @@
                         <h3 class="text-lg font-semibold text-white mb-2">Nmap</h3>
                         <p class="text-sm text-gray-400">Netzwerk-Scanner für Port-Scanning und Service-Erkennung</p>
                     </div>
-                    
+
                     <div class="tool-card card-glow bg-cyber-card border border-white/10 rounded-xl p-6" data-category="network">
                         <div class="flex items-start justify-between mb-4">
                             <div class="w-12 h-12 bg-cyber-accent/10 rounded-lg flex items-center justify-center">
@@ -298,7 +298,7 @@
                         <h3 class="text-lg font-semibold text-white mb-2">Masscan</h3>
                         <p class="text-sm text-gray-400">Ultraschneller TCP-Port-Scanner für große Netzwerke</p>
                     </div>
-                    
+
                     <div class="tool-card card-glow bg-cyber-card border border-white/10 rounded-xl p-6" data-category="network">
                         <div class="flex items-start justify-between mb-4">
                             <div class="w-12 h-12 bg-cyber-accent/10 rounded-lg flex items-center justify-center">
@@ -309,7 +309,7 @@
                         <h3 class="text-lg font-semibold text-white mb-2">Scapy</h3>
                         <p class="text-sm text-gray-400">Leistungsfähiges Python-Tool für Paket-Manipulation</p>
                     </div>
-                    
+
                     <div class="tool-card card-glow bg-cyber-card border border-white/10 rounded-xl p-6" data-category="network">
                         <div class="flex items-start justify-between mb-4">
                             <div class="w-12 h-12 bg-cyber-accent/10 rounded-lg flex items-center justify-center">
@@ -320,7 +320,7 @@
                         <h3 class="text-lg font-semibold text-white mb-2">Tshark</h3>
                         <p class="text-sm text-gray-400">CLI-basierter Netzwerk-Protokoll-Analyzer</p>
                     </div>
-                    
+
                     <!-- Web Tools -->
                     <div class="tool-card card-glow bg-cyber-card border border-white/10 rounded-xl p-6" data-category="web">
                         <div class="flex items-start justify-between mb-4">
@@ -332,7 +332,7 @@
                         <h3 class="text-lg font-semibold text-white mb-2">Burp Suite</h3>
                         <p class="text-sm text-gray-400">Umfassende Plattform für Web-Security-Testing</p>
                     </div>
-                    
+
                     <div class="tool-card card-glow bg-cyber-card border border-white/10 rounded-xl p-6" data-category="web">
                         <div class="flex items-start justify-between mb-4">
                             <div class="w-12 h-12 bg-cyber-accent2/10 rounded-lg flex items-center justify-center">
@@ -343,7 +343,7 @@
                         <h3 class="text-lg font-semibold text-white mb-2">SQLMap</h3>
                         <p class="text-sm text-gray-400">Automatisiertes SQL-Injection-Testing-Tool</p>
                     </div>
-                    
+
                     <div class="tool-card card-glow bg-cyber-card border border-white/10 rounded-xl p-6" data-category="web">
                         <div class="flex items-start justify-between mb-4">
                             <div class="w-12 h-12 bg-cyber-accent2/10 rounded-lg flex items-center justify-center">
@@ -354,7 +354,7 @@
                         <h3 class="text-lg font-semibold text-white mb-2">Gobuster</h3>
                         <p class="text-sm text-gray-400">Directory/File- und DNS-Subdomain-Enumerator</p>
                     </div>
-                    
+
                     <div class="tool-card card-glow bg-cyber-card border border-white/10 rounded-xl p-6" data-category="web">
                         <div class="flex items-start justify-between mb-4">
                             <div class="w-12 h-12 bg-cyber-accent2/10 rounded-lg flex items-center justify-center">
@@ -365,7 +365,7 @@
                         <h3 class="text-lg font-semibold text-white mb-2">OWASP ZAP</h3>
                         <p class="text-sm text-gray-400">Open-Source Web-Application-Security-Scanner</p>
                     </div>
-                    
+
                     <div class="tool-card card-glow bg-cyber-card border border-white/10 rounded-xl p-6" data-category="web">
                         <div class="flex items-start justify-between mb-4">
                             <div class="w-12 h-12 bg-cyber-accent2/10 rounded-lg flex items-center justify-center">
@@ -376,7 +376,7 @@
                         <h3 class="text-lg font-semibold text-white mb-2">FFuF</h3>
                         <p class="text-sm text-gray-400">Schneller Web-Fuzzer für Content-Discovery</p>
                     </div>
-                    
+
                     <div class="tool-card card-glow bg-cyber-card border border-white/10 rounded-xl p-6" data-category="web">
                         <div class="flex items-start justify-between mb-4">
                             <div class="w-12 h-12 bg-cyber-accent2/10 rounded-lg flex items-center justify-center">
@@ -387,7 +387,7 @@
                         <h3 class="text-lg font-semibold text-white mb-2">Nikto</h3>
                         <p class="text-sm text-gray-400">Web-Server-Scanner für Schwachstellen</p>
                     </div>
-                    
+
                     <div class="tool-card card-glow bg-cyber-card border border-white/10 rounded-xl p-6" data-category="web">
                         <div class="flex items-start justify-between mb-4">
                             <div class="w-12 h-12 bg-cyber-accent2/10 rounded-lg flex items-center justify-center">
@@ -398,7 +398,7 @@
                         <h3 class="text-lg font-semibold text-white mb-2">HTTPX</h3>
                         <p class="text-sm text-gray-400">Schneller und vielseitiger HTTP-Toolkit</p>
                     </div>
-                    
+
                     <!-- Exploitation Tools -->
                     <div class="tool-card card-glow bg-cyber-card border border-white/10 rounded-xl p-6" data-category="exploitation">
                         <div class="flex items-start justify-between mb-4">
@@ -410,7 +410,7 @@
                         <h3 class="text-lg font-semibold text-white mb-2">Metasploit Framework</h3>
                         <p class="text-sm text-gray-400">Umfassendes Penetration-Testing-Framework</p>
                     </div>
-                    
+
                     <!-- Brute Force Tools -->
                     <div class="tool-card card-glow bg-cyber-card border border-white/10 rounded-xl p-6" data-category="bruteforce">
                         <div class="flex items-start justify-between mb-4">
@@ -422,7 +422,7 @@
                         <h3 class="text-lg font-semibold text-white mb-2">Hydra</h3>
                         <p class="text-sm text-gray-400">Schneller Netzwerk-Login-Cracker</p>
                     </div>
-                    
+
                     <div class="tool-card card-glow bg-cyber-card border border-white/10 rounded-xl p-6" data-category="bruteforce">
                         <div class="flex items-start justify-between mb-4">
                             <div class="w-12 h-12 bg-cyber-warning/10 rounded-lg flex items-center justify-center">
@@ -433,7 +433,7 @@
                         <h3 class="text-lg font-semibold text-white mb-2">Hashcat</h3>
                         <p class="text-sm text-gray-400">Weltweit schnellster Passwort-Recovery-Tool</p>
                     </div>
-                    
+
                     <!-- Reconnaissance Tools -->
                     <div class="tool-card card-glow bg-cyber-card border border-white/10 rounded-xl p-6" data-category="reconnaissance">
                         <div class="flex items-start justify-between mb-4">
@@ -445,7 +445,7 @@
                         <h3 class="text-lg font-semibold text-white mb-2">Amass</h3>
                         <p class="text-sm text-gray-400">Umfassendes Netzwerk-Mapping für Attack Surface</p>
                     </div>
-                    
+
                     <div class="tool-card card-glow bg-cyber-card border border-white/10 rounded-xl p-6" data-category="reconnaissance">
                         <div class="flex items-start justify-between mb-4">
                             <div class="w-12 h-12 bg-cyber-success/10 rounded-lg flex items-center justify-center">
@@ -456,7 +456,7 @@
                         <h3 class="text-lg font-semibold text-white mb-2">Nuclei</h3>
                         <p class="text-sm text-gray-400">Schneller Template-basierter Vulnerability-Scanner</p>
                     </div>
-                    
+
                     <div class="tool-card card-glow bg-cyber-card border border-white/10 rounded-xl p-6" data-category="reconnaissance">
                         <div class="flex items-start justify-between mb-4">
                             <div class="w-12 h-12 bg-cyber-success/10 rounded-lg flex items-center justify-center">
@@ -467,7 +467,7 @@
                         <h3 class="text-lg font-semibold text-white mb-2">TheHarvester</h3>
                         <p class="text-sm text-gray-400">E-Mail-Account- und Subdomain-Enumerator</p>
                     </div>
-                    
+
                     <div class="tool-card card-glow bg-cyber-card border border-white/10 rounded-xl p-6" data-category="reconnaissance">
                         <div class="flex items-start justify-between mb-4">
                             <div class="w-12 h-12 bg-cyber-success/10 rounded-lg flex items-center justify-center">
@@ -478,7 +478,7 @@
                         <h3 class="text-lg font-semibold text-white mb-2">Subfinder</h3>
                         <p class="text-sm text-gray-400">Subdomain-Discovery-Tool mit passiver Quellen</p>
                     </div>
-                    
+
                     <div class="tool-card card-glow bg-cyber-card border border-white/10 rounded-xl p-6" data-category="reconnaissance">
                         <div class="flex items-start justify-between mb-4">
                             <div class="w-12 h-12 bg-cyber-success/10 rounded-lg flex items-center justify-center">
@@ -489,7 +489,7 @@
                         <h3 class="text-lg font-semibold text-white mb-2">WhatWeb</h3>
                         <p class="text-sm text-gray-400">Web-Technologie-Fingerprinter</p>
                     </div>
-                    
+
                     <div class="tool-card card-glow bg-cyber-card border border-white/10 rounded-xl p-6" data-category="reconnaissance">
                         <div class="flex items-start justify-between mb-4">
                             <div class="w-12 h-12 bg-cyber-success/10 rounded-lg flex items-center justify-center">
@@ -500,7 +500,7 @@
                         <h3 class="text-lg font-semibold text-white mb-2">WAFW00F</h3>
                         <p class="text-sm text-gray-400">Web Application Firewall Fingerprinting Tool</p>
                     </div>
-                    
+
                     <!-- Active Directory Tools -->
                     <div class="tool-card card-glow bg-cyber-card border border-white/10 rounded-xl p-6" data-category="activedirectory">
                         <div class="flex items-start justify-between mb-4">
@@ -512,7 +512,7 @@
                         <h3 class="text-lg font-semibold text-white mb-2">BloodHound</h3>
                         <p class="text-sm text-gray-400">Active Directory-Analyse und Angriffspfad-Mapping</p>
                     </div>
-                    
+
                     <div class="tool-card card-glow bg-cyber-card border border-white/10 rounded-xl p-6" data-category="activedirectory">
                         <div class="flex items-start justify-between mb-4">
                             <div class="w-12 h-12 bg-purple-500/10 rounded-lg flex items-center justify-center">
@@ -523,7 +523,7 @@
                         <h3 class="text-lg font-semibold text-white mb-2">CrackMapExec</h3>
                         <p class="text-sm text-gray-400">Schweizer Taschenmesser für Pentesting-Netzwerke</p>
                     </div>
-                    
+
                     <div class="tool-card card-glow bg-cyber-card border border-white/10 rounded-xl p-6" data-category="activedirectory">
                         <div class="flex items-start justify-between mb-4">
                             <div class="w-12 h-12 bg-purple-500/10 rounded-lg flex items-center justify-center">
@@ -534,7 +534,7 @@
                         <h3 class="text-lg font-semibold text-white mb-2">Responder</h3>
                         <p class="text-sm text-gray-400">LLMNR, NBT-NS und MDNS-Poisoner</p>
                     </div>
-                    
+
                     <!-- Wireless Tools -->
                     <div class="tool-card card-glow bg-cyber-card border border-white/10 rounded-xl p-6" data-category="wireless">
                         <div class="flex items-start justify-between mb-4">
@@ -546,7 +546,7 @@
                         <h3 class="text-lg font-semibold text-white mb-2">Aircrack-ng Suite</h3>
                         <p class="text-sm text-gray-400">Komplettes Toolkit für WLAN-Sicherheits-Auditing</p>
                     </div>
-                    
+
                 </div>
             </div>
         </section>
@@ -579,7 +579,7 @@
         <section class="py-20 lg:py-28 relative overflow-hidden">
             <div class="absolute inset-0 bg-gradient-to-r from-cyber-accent/10 to-cyber-accent2/10"></div>
             <div class="absolute inset-0 grid-bg opacity-30"></div>
-            
+
             <div class="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
                 <h2 class="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
                     Bereit für den <span class="gradient-text">nächsten Schritt</span>?
@@ -587,7 +587,7 @@
                 <p class="text-lg text-gray-400 mb-10 max-w-2xl mx-auto">
                     Starten Sie noch heute mit CyberShield und nutzen Sie die volle Power von 40+ professionellen Security-Tools für Ihre Penetration Tests.
                 </p>
-                
+
                 <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
                     <a href="pricing.html" class="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-cyber-accent to-cyber-accent2 text-cyber-darker font-bold rounded-xl hover:shadow-glow-lg transition-all duration-300 flex items-center justify-center space-x-2">
                         <span>Jetzt Kostenlos Testen</span>
@@ -632,7 +632,7 @@
                         </a>
                     </div>
                 </div>
-                
+
                 <!-- Product -->
                 <div>
                     <h4 class="text-white font-semibold mb-4">Produkt</h4>
@@ -643,7 +643,7 @@
                         <li><a href="#" class="text-gray-400 hover:text-cyber-accent transition-colors text-sm">Changelog</a></li>
                     </ul>
                 </div>
-                
+
                 <!-- Resources -->
                 <div>
                     <h4 class="text-white font-semibold mb-4">Ressourcen</h4>
@@ -654,7 +654,7 @@
                         <li><a href="#" class="text-gray-400 hover:text-cyber-accent transition-colors text-sm">Community</a></li>
                     </ul>
                 </div>
-                
+
                 <!-- Legal -->
                 <div>
                     <h4 class="text-white font-semibold mb-4">Rechtliches</h4>
@@ -666,7 +666,7 @@
                     </ul>
                 </div>
             </div>
-            
+
             <div class="border-t border-white/5 mt-12 pt-8 flex flex-col md:flex-row items-center justify-between">
                 <p class="text-gray-500 text-sm">
                     &copy; 2024 CyberShield. Alle Rechte vorbehalten.
@@ -681,22 +681,22 @@
     <script>
         // Initialize Lucide Icons
         lucide.createIcons();
-        
+
         // Register GSAP ScrollTrigger
         gsap.registerPlugin(ScrollTrigger);
-        
+
         // Mobile Menu Toggle
         const mobileMenuBtn = document.getElementById('mobile-menu-btn');
         const mobileMenu = document.getElementById('mobile-menu');
-        
+
         mobileMenuBtn.addEventListener('click', () => {
             mobileMenu.classList.toggle('hidden');
         });
-        
+
         // Filter Functionality
         const filterBtns = document.querySelectorAll('.filter-btn');
         const toolCards = document.querySelectorAll('.tool-card');
-        
+
         filterBtns.forEach(btn => {
             btn.addEventListener('click', () => {
                 // Update active state
@@ -706,13 +706,13 @@
                 });
                 btn.classList.add('active');
                 btn.classList.remove('text-gray-300');
-                
+
                 const filter = btn.getAttribute('data-filter');
-                
+
                 // Filter cards with animation
                 toolCards.forEach(card => {
                     const category = card.getAttribute('data-category');
-                    
+
                     if (filter === 'all' || category === filter) {
                         gsap.to(card, {
                             opacity: 1,
@@ -731,7 +731,7 @@
                 });
             });
         });
-        
+
         // Scroll-triggered stagger animation for tool cards
         gsap.to('.tool-card', {
             opacity: 1,
@@ -748,7 +748,7 @@
                 once: true
             }
         });
-        
+
         // Header animation
         gsap.from('h1', {
             opacity: 0,
@@ -757,7 +757,7 @@
             ease: 'power2.out',
             delay: 0.2
         });
-        
+
         gsap.from('h1 + p', {
             opacity: 0,
             y: 20,
@@ -765,7 +765,7 @@
             ease: 'power2.out',
             delay: 0.4
         });
-        
+
         // Stats counter animation
         const statsSection = document.querySelector('section:nth-of-type(4)');
         gsap.from(statsSection.querySelectorAll('.text-center'), {
@@ -780,7 +780,7 @@
                 once: true
             }
         });
-        
+
         // CTA Section animation
         gsap.from('section:nth-of-type(5) h2, section:nth-of-type(5) p, section:nth-of-type(5) .flex', {
             opacity: 0,

@@ -10,7 +10,7 @@ description: |
   - Service enumeration
   - Technology fingerprinting
   - Basic OSINT gathering
-  
+
   Target is a deliberately vulnerable web application with
   multiple services running on standard ports.
 
@@ -46,28 +46,28 @@ expected_findings:
     confidence: 0.95
     description: "Server version disclosed in HTTP headers"
     verification_method: "header_analysis"
-    
+
   - vuln_type: exposed_service
     severity: info
     location: "port 22/tcp"
     confidence: 0.99
     description: "SSH service detected on port 22"
     verification_method: "port_scan"
-    
+
   - vuln_type: exposed_service
     severity: info
     location: "port 80/tcp"
     confidence: 0.99
     description: "HTTP service detected on port 80"
     verification_method: "port_scan"
-    
+
   - vuln_type: technology_fingerprint
     severity: info
     location: "HTTP service"
     confidence: 0.85
     description: "Apache/2.4.41 detected"
     verification_method: "banner_grabbing"
-    
+
   - vuln_type: exposed_service
     severity: medium
     location: "port 3306/tcp"
@@ -82,7 +82,7 @@ parameters:
   service_detection: true
   os_detection: true
   script_scan: "default"
-  
+
 # Success Criteria
 min_detection_rate: 0.80
 max_false_positive_rate: 0.10
@@ -96,7 +96,7 @@ resource_requirements:
   memory_mb: 512
   cpu_cores: 1
   network_access: true
-  
+
 # Known False Positives
 known_false_positives:
   - "Some services may report version differently based on configuration"
@@ -112,7 +112,7 @@ docker_compose: |
         - "80:80"
       networks:
         - pentest-net
-    
+
     ssh-server:
       image: linuxserver/openssh-server:latest
       environment:
@@ -123,7 +123,7 @@ docker_compose: |
         - "22:2222"
       networks:
         - pentest-net
-    
+
     mysql:
       image: mysql:5.7
       environment:

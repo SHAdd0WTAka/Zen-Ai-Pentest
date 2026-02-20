@@ -140,7 +140,7 @@ jobs:
     needs: setup
     runs-on: ubuntu-latest
     timeout-minutes: 60
-    
+
     steps:
       # -----------------------------------------------------------------------
       # Checkout
@@ -179,13 +179,13 @@ jobs:
         run: |
           echo "🔧 Installing Zen-AI-Pentest Framework..."
           pip install --upgrade pip
-          
+
           # Install from PyPI (recommended for CI)
           pip install zen-ai-pentest==${{ env.ZEN_PENTEST_VERSION }}
-          
+
           # Or install from source (for development)
           # pip install -e .
-          
+
           # Verify installation
           zen-pentest --version
 
@@ -201,12 +201,12 @@ jobs:
             timeout: 300
             verbose: true
             log_level: INFO
-          
+
           ai:
             provider: openai
             model: gpt-4
             api_key: "${{ secrets.OPENAI_API_KEY }}"
-          
+
           reporting:
             formats:
               - json
@@ -214,12 +214,12 @@ jobs:
               - sarif
             output_dir: ./reports
             include_screenshots: true
-          
+
           notifications:
             slack:
               webhook_url: "${{ secrets.SLACK_WEBHOOK_URL }}"
               enabled: ${{ github.event.inputs.notify_slack || 'true' }}
-            
+
           compliance:
             - owasp_top_10
             - pci_dss
@@ -240,9 +240,9 @@ jobs:
           echo "Mode: ${{ needs.setup.outputs.scan_mode }}"
           echo "Intensity: ${{ needs.setup.outputs.intensity }}"
           echo "======================================="
-          
+
           mkdir -p reports
-          
+
           # Execute scan with error handling
           zen-pentest scan \
             --target "${{ needs.setup.outputs.target }}" \
@@ -253,10 +253,10 @@ jobs:
             --scan-id "${{ needs.setup.outputs.scan_id }}" \
             --ci-mode \
             2>&1 | tee reports/scan-log.txt
-          
+
           SCAN_EXIT_CODE=${PIPESTATUS[0]}
           echo "scan_exit_code=$SCAN_EXIT_CODE" >> $GITHUB_OUTPUT
-          
+
           if [ $SCAN_EXIT_CODE -eq 0 ]; then
             echo "✅ Scan completed successfully"
           elif [ $SCAN_EXIT_CODE -eq 1 ]; then
@@ -278,13 +278,13 @@ jobs:
             MEDIUM=$(jq '.summary.medium // 0' reports/scan-results.json)
             LOW=$(jq '.summary.low // 0' reports/scan-results.json)
             INFO=$(jq '.summary.info // 0' reports/scan-results.json)
-            
+
             echo "critical=$CRITICAL" >> $GITHUB_OUTPUT
             echo "high=$HIGH" >> $GITHUB_OUTPUT
             echo "medium=$MEDIUM" >> $GITHUB_OUTPUT
             echo "low=$LOW" >> $GITHUB_OUTPUT
             echo "info=$INFO" >> $GITHUB_OUTPUT
-            
+
             # Calculate total risk score
             RISK_SCORE=$((CRITICAL * 10 + HIGH * 5 + MEDIUM * 2 + LOW * 1))
             echo "risk_score=$RISK_SCORE" >> $GITHUB_OUTPUT
@@ -336,7 +336,7 @@ jobs:
           echo "| **Mode** | ${{ needs.setup.outputs.scan_mode }} |" >> $GITHUB_STEP_SUMMARY
           echo "| **Intensity** | ${{ needs.setup.outputs.intensity }} |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          
+
           echo "## 📊 Vulnerability Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Severity | Count |" >> $GITHUB_STEP_SUMMARY
@@ -347,7 +347,7 @@ jobs:
           echo "| 🟢 Low | ${{ steps.parse-results.outputs.low }} |" >> $GITHUB_STEP_SUMMARY
           echo "| ⚪ Info | ${{ steps.parse-results.outputs.info }} |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          
+
           if [ "${{ steps.parse-results.outputs.risk_score }}" -gt 50 ]; then
             echo "## ⚠️ Risk Assessment: HIGH" >> $GITHUB_STEP_SUMMARY
           elif [ "${{ steps.parse-results.outputs.risk_score }}" -gt 20 ]; then
@@ -355,7 +355,7 @@ jobs:
           else
             echo "## ✅ Risk Assessment: LOW" >> $GITHUB_STEP_SUMMARY
           fi
-          
+
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "[📥 Download Full Reports](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
 
@@ -367,11 +367,11 @@ jobs:
     needs: [setup, security-scan]
     runs-on: ubuntu-latest
     if: |
-      always() && 
+      always() &&
       (needs.security-scan.result == 'success' || needs.security-scan.result == 'failure') &&
       github.event.inputs.create_issues != 'false' &&
       (needs.security-scan.outputs.critical > 0 || needs.security-scan.outputs.high > 0)
-    
+
     steps:
       - name: Download Reports
         uses: actions/download-artifact@v4
@@ -385,47 +385,47 @@ jobs:
           script: |
             const fs = require('fs');
             const findings = JSON.parse(fs.readFileSync('reports/scan-results.json', 'utf8'));
-            
+
             const severityLabels = {
               critical: 'zen-pentest:critical',
               high: 'zen-pentest:high',
               medium: 'zen-pentest:medium',
               low: 'zen-pentest:low'
             };
-            
+
             const severityOrder = ['critical', 'high'];
-            
+
             for (const severity of severityOrder) {
               const items = findings.vulnerabilities?.filter(v => v.severity === severity) || [];
-              
+
               for (const vuln of items.slice(0, 5)) { // Limit to 5 issues per severity
                 const title = `[${severity.toUpperCase()}] ${vuln.name} - ${vuln.target}`;
-                
+
                 const body = `## 🔒 Security Finding Detected
-            
+
             **Scan ID:** ${{ needs.setup.outputs.scan_id }}
             **Severity:** ${severity.toUpperCase()}
             **Target:** ${vuln.target}
             **Detected:** ${new Date().toISOString()}
-            
+
             ### Description
             ${vuln.description}
-            
+
             ### Impact
             ${vuln.impact}
-            
+
             ### Remediation
             ${vuln.remediation}
-            
+
             ### Evidence
             \`\`\`
             ${JSON.stringify(vuln.evidence, null, 2)}
             \`\`\`
-            
+
             ---
             *This issue was automatically created by Zen-AI-Pentest CI/CD*
             `;
-                
+
                 try {
                   await github.rest.issues.create({
                     owner: context.repo.owner,
@@ -450,7 +450,7 @@ jobs:
     needs: [setup, security-scan]
     runs-on: ubuntu-latest
     if: always() && github.event.inputs.notify_slack != 'false'
-    
+
     steps:
       # -----------------------------------------------------------------------
       # Slack Notification
@@ -526,18 +526,18 @@ jobs:
           webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
           content: |
             🔒 **Zen-AI-Pentest Scan Completed**
-            
+
             **Scan ID:** ${{ needs.setup.outputs.scan_id }}
             **Target:** ${{ needs.setup.outputs.target }}
             **Status:** ${{ needs.security-scan.result }}
             **Risk Score:** ${{ needs.security-scan.outputs.risk_score }}
-            
+
             **Vulnerabilities Found:**
             🔴 Critical: ${{ needs.security-scan.outputs.critical }}
             🟠 High: ${{ needs.security-scan.outputs.high }}
             🟡 Medium: ${{ needs.security-scan.outputs.medium }}
             🟢 Low: ${{ needs.security-scan.outputs.low }}
-            
+
             [View Full Report](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
   # ===========================================================================
@@ -548,43 +548,43 @@ jobs:
     needs: [setup, security-scan]
     runs-on: ubuntu-latest
     if: always()
-    
+
     steps:
       - name: Check Compliance Thresholds
         run: |
           echo "Checking compliance thresholds..."
-          
+
           CRITICAL=${{ needs.security-scan.outputs.critical }}
           HIGH=${{ needs.security-scan.outputs.high }}
           RISK_SCORE=${{ needs.security-scan.outputs.risk_score }}
-          
+
           # Configurable thresholds
           MAX_CRITICAL=${{ vars.ZEN_PENTEST_MAX_CRITICAL || '0' }}
           MAX_HIGH=${{ vars.ZEN_PENTEST_MAX_HIGH || '5' }}
           MAX_RISK_SCORE=${{ vars.ZEN_PENTEST_MAX_RISK_SCORE || '50' }}
-          
+
           FAILED=0
-          
+
           if [ "$CRITICAL" -gt "$MAX_CRITICAL" ]; then
             echo "❌ FAILED: Critical vulnerabilities ($CRITICAL) exceed threshold ($MAX_CRITICAL)"
             FAILED=1
           fi
-          
+
           if [ "$HIGH" -gt "$MAX_HIGH" ]; then
             echo "❌ FAILED: High vulnerabilities ($HIGH) exceed threshold ($MAX_HIGH)"
             FAILED=1
           fi
-          
+
           if [ "$RISK_SCORE" -gt "$MAX_RISK_SCORE" ]; then
             echo "❌ FAILED: Risk score ($RISK_SCORE) exceeds threshold ($MAX_RISK_SCORE)"
             FAILED=1
           fi
-          
+
           if [ $FAILED -eq 1 ]; then
             echo "Compliance check failed! Blocking deployment."
             exit 1
           fi
-          
+
           echo "✅ All compliance thresholds passed"
 
 # -----------------------------------------------------------------------------

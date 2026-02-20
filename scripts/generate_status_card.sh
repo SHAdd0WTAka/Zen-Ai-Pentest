@@ -99,45 +99,45 @@ cat > docs/status/repo_status_card.svg << 'EOF'
       <stop offset="100%" style="stop-color:#252535"/>
     </linearGradient>
   </defs>
-  
+
   <!-- Background -->
   <rect width="800" height="600" fill="url(#bgGradient)" rx="10" ry="10"/>
   <rect x="10" y="10" width="780" height="580" fill="none" stroke="#3c3c50" stroke-width="2" rx="8" ry="8"/>
-  
+
   <!-- Header -->
   <rect x="10" y="10" width="780" height="70" fill="#2d2d3c" stroke="#3c3c50" stroke-width="1" rx="8"/>
   <text x="400" y="45" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#64c8ff" text-anchor="middle">Zen-AI-Pentest Repository Status</text>
   <text x="400" y="68" font-family="Arial, sans-serif" font-size="12" fill="#b4b4b4" text-anchor="middle">Last Updated: TIMESTAMP_PLACEHOLDER</text>
-  
+
   <!-- Evolution Phase -->
   <text x="30" y="115" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="PHASE_COLOR_PLACEHOLDER">EVOLUTION_PHASE_PLACEHOLDER</text>
   <line x1="30" y1="130" x2="770" y2="130" stroke="#3c3c50" stroke-width="1"/>
-  
+
   <!-- Statistics Section -->
   <text x="30" y="165" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#64c8ff">📊 Repository Statistics</text>
-  
+
   <!-- Stats Grid -->
   <text x="50" y="200" font-family="Arial, sans-serif" font-size="14" fill="#b4b4b4">📝 Total Commits:</text>
   <text x="200" y="200" font-family="Arial, sans-serif" font-size="14" fill="#f0f0f0" font-weight="bold">COMMITS_PLACEHOLDER</text>
-  
+
   <text x="420" y="200" font-family="Arial, sans-serif" font-size="14" fill="#b4b4b4">👥 Contributors:</text>
   <text x="570" y="200" font-family="Arial, sans-serif" font-size="14" fill="#f0f0f0" font-weight="bold">CONTRIBUTORS_PLACEHOLDER</text>
-  
+
   <text x="50" y="230" font-family="Arial, sans-serif" font-size="14" fill="#b4b4b4">📁 Total Files:</text>
   <text x="200" y="230" font-family="Arial, sans-serif" font-size="14" fill="#f0f0f0" font-weight="bold">FILES_PLACEHOLDER</text>
-  
+
   <text x="420" y="230" font-family="Arial, sans-serif" font-size="14" fill="#b4b4b4">🔧 Integrated Tools:</text>
   <text x="570" y="230" font-family="Arial, sans-serif" font-size="14" fill="#f0f0f0" font-weight="bold">TOOLS_PLACEHOLDER</text>
-  
+
   <text x="50" y="260" font-family="Arial, sans-serif" font-size="14" fill="#b4b4b4">⏱️ Repository Age:</text>
   <text x="200" y="260" font-family="Arial, sans-serif" font-size="14" fill="#f0f0f0" font-weight="bold">AGE_PLACEHOLDER</text>
-  
+
   <text x="420" y="260" font-family="Arial, sans-serif" font-size="14" fill="#b4b4b4">🌿 Branch:</text>
   <text x="570" y="260" font-family="Arial, sans-serif" font-size="14" fill="#f0f0f0" font-weight="bold">BRANCH_PLACEHOLDER</text>
-  
+
   <text x="50" y="290" font-family="Arial, sans-serif" font-size="14" fill="#b4b4b4">📅 Last Commit:</text>
   <text x="200" y="290" font-family="Arial, sans-serif" font-size="14" fill="#f0f0f0" font-weight="bold">LAST_COMMIT_PLACEHOLDER</text>
-  
+
   <!-- Recent Activity -->
   <line x1="30" y1="315" x2="770" y2="315" stroke="#3c3c50" stroke-width="1"/>
   <text x="30" y="345" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#64c8ff">📈 Recent Activity</text>
@@ -145,7 +145,7 @@ cat > docs/status/repo_status_card.svg << 'EOF'
   <text x="230" y="375" font-family="Arial, sans-serif" font-size="14" fill="#f0f0f0" font-weight="bold">RECENT_COMMITS_PLACEHOLDER</text>
   <text x="50" y="400" font-family="Arial, sans-serif" font-size="14" fill="#b4b4b4">Status:</text>
   <text x="120" y="400" font-family="Arial, sans-serif" font-size="14" fill="ACTIVITY_COLOR_PLACEHOLDER" font-weight="bold">ACTIVITY_STATUS_PLACEHOLDER</text>
-  
+
   <!-- Legal Notice -->
   <line x1="30" y1="430" x2="770" y2="430" stroke="#3c3c50" stroke-width="1"/>
   <text x="30" y="460" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#ff6464">⚖️ Legal Notice for AI Agents</text>
@@ -153,7 +153,7 @@ cat > docs/status/repo_status_card.svg << 'EOF'
   <text x="50" y="505" font-family="Arial, sans-serif" font-size="12" fill="#b4b4b4">• Unauthorized scanning is ILLEGAL and can result in criminal prosecution</text>
   <text x="50" y="525" font-family="Arial, sans-serif" font-size="12" fill="#b4b4b4">• The USER is solely responsible for their actions, NOT the AI</text>
   <text x="50" y="545" font-family="Arial, sans-serif" font-size="12" fill="#b4b4b4">• This tool is for authorized security testing and educational purposes only</text>
-  
+
   <!-- Footer -->
   <text x="400" y="580" font-family="Arial, sans-serif" font-size="11" fill="#808080" text-anchor="middle">🤖 Auto-generated | Updates on every push | Enable GitHub Actions for auto-updates</text>
 </svg>

@@ -1,6 +1,6 @@
 # Zen-AI-Pentest Repository TODO Plan
 
-> Generated: 2026-01-31  
+> Generated: 2026-01-31
 > Health Score: 22/100 (NEEDS ATTENTION [D])
 
 ---
@@ -11,14 +11,14 @@
 - [ ] **2 Critical Vulnerabilities** - Dependabot Alerts
   - Location: https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/security/dependabot
   - Action: Review & Apply patches
-  
+
 - [ ] **9 High Severity Vulnerabilities**
   - Priorität: npm & pip dependencies
   - Action: `npm audit fix` & `pip-audit`
 
 ### 2. Failing Workflows fixen
 - [ ] **Deploy Zen-AI-Pentest** - Run #26 failed
-- [ ] **notifications.yml** - Run #9 failed  
+- [ ] **notifications.yml** - Run #9 failed
 - [ ] **release.yml** - Run #10 failed
 - [ ] **auto-merge-dependabot.yml** - Run #34 failed
 - [ ] **pages.yml** - Run #34 failed
@@ -130,5 +130,5 @@
 
 ---
 
-*Letzte Aktualisierung: 2026-01-31*  
+*Letzte Aktualisierung: 2026-01-31*
 *Nächste Review: 2026-02-07*

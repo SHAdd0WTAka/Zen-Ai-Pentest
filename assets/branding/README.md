@@ -3,7 +3,7 @@
 ## Official Logo
 ![Kimi AI Partner](kimi-ai-partner.png)
 
-**AI Development Partner**  
+**AI Development Partner**
 Architecture & Design
 
 ## Creator

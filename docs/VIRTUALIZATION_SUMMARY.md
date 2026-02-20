@@ -185,7 +185,7 @@ vbox.list_snapshots("vm")
 vbox.configure_network("vm", mode="host_only")
 
 # Guest Control (Befehle in VM)
-vbox.execute_in_vm("vm", "nmap -sV target.com", 
+vbox.execute_in_vm("vm", "nmap -sV target.com",
                    username="kali", password="kali")
 ```
 

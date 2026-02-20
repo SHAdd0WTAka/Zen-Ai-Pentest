@@ -161,7 +161,7 @@ logs = user_manager.get_user_audit_logs(db, user_id, limit=100)
 
 ```
 Database Layer Tests: 17 passed
-Auth Module Tests:    30 passed  
+Auth Module Tests:    30 passed
 Integration Tests:    12 passed
 Legacy Tests:          7 passed
 ─────────────────────────────────

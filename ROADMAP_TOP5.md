@@ -1,6 +1,6 @@
 # TOP 5 Roadmap - Zen-AI Pentest
 
-**Zeitraum:** 2026-02-07 bis 2026-02-14 (7 Tage)  
+**Zeitraum:** 2026-02-07 bis 2026-02-14 (7 Tage)
 **Ziel:** Production-Ready v2.5.0
 
 ---
@@ -80,11 +80,11 @@ from fastapi import WebSocket
 class ConnectionManager:
     def __init__(self):
         self.connections = []
-    
+
     async def connect(self, ws: WebSocket):
         await ws.accept()
         self.connections.append(ws)
-    
+
     async def broadcast(self, message: dict):
         for conn in self.connections:
             await conn.send_json(message)
@@ -95,13 +95,13 @@ class ConnectionManager:
 // useWebSocket.js
 export function useWebSocket() {
   const [connected, setConnected] = useState(false);
-  
+
   useEffect(() => {
     const ws = new WebSocket('ws://localhost:8000/ws');
     ws.onopen = () => setConnected(true);
     return () => ws.close();
   }, []);
-  
+
   return { connected };
 }
 ```

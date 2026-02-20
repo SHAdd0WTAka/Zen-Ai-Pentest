@@ -511,10 +511,10 @@ psql $DATABASE_URL -c "VACUUM ANALYZE;"
 
 # Check table sizes
 psql $DATABASE_URL -c "
-SELECT schemaname, tablename, 
-pg_size_pretty(pg_total_relation_size(schemaname||'.'||tablename)) 
-FROM pg_tables 
-ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC 
+SELECT schemaname, tablename,
+pg_size_pretty(pg_total_relation_size(schemaname||'.'||tablename))
+FROM pg_tables
+ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC
 LIMIT 10;
 "
 

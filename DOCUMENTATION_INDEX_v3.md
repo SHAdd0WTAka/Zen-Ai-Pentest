@@ -1,6 +1,6 @@
 # Zen-AI-Pentest Documentation Index
 
-**Version:** 3.0.0  
+**Version:** 3.0.0
 **Last Updated:** February 14, 2026
 
 ---

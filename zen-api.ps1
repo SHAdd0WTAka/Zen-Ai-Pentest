@@ -43,16 +43,16 @@ Beispiele:
 function Get-ContainerStatus {
     Write-Host "`nContainer Status:" -ForegroundColor Green
     Write-Host "==================" -ForegroundColor Green
-    
+
     $containers = @("zen-pentest-api", "zen-pentest-db", "zen-pentest-redis", "zen-pentest-nginx", "zen-pentest-agent")
-    
+
     foreach ($container in $containers) {
         $status = wsl docker inspect -f '{{.State.Status}}' $container 2>$null
         $health = wsl docker inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' $container 2>$null
-        
+
         if ($status) {
             $color = if ($status -eq "running") { "Green" } else { "Red" }
-            $healthColor = if ($health -eq "healthy") { "Green" } 
+            $healthColor = if ($health -eq "healthy") { "Green" }
                           elseif ($health -eq "none") { "Gray" }
                           else { "Yellow" }
             $healthStr = if ($health -and $health -ne "none") { " (Health: $health)" } else { "" }
@@ -73,7 +73,7 @@ function Get-ContainerStatus {
 
 function Show-Logs {
     param([string]$ServiceName)
-    
+
     $containerMap = @{
         "api" = "zen-pentest-api"
         "db" = "zen-pentest-db"
@@ -81,28 +81,28 @@ function Show-Logs {
         "nginx" = "zen-pentest-nginx"
         "agent" = "zen-pentest-agent"
     }
-    
+
     $containerName = $containerMap[$ServiceName]
     if (-not $containerName) {
         Write-Error "Unbekannter Service: $ServiceName. Verfuegbar: api, db, redis, nginx, agent"
         return
     }
-    
+
     Write-Host "Logs fuer $containerName (letzte 50 Zeilen, Ctrl+C zum Beenden)..." -ForegroundColor Yellow
     wsl docker logs --tail=50 -f $containerName
 }
 
 function Invoke-ApiRequest {
     param([string]$Path)
-    
+
     # Versuche ueber Nginx (Port 8080) - funktioniert mit Invoke-WebRequest
     $url = "http://localhost:8080/api/$Path"
     Write-Host "Rufe API auf: $url" -ForegroundColor Cyan
-    
+
     try {
         $response = Invoke-WebRequest -Uri $url -UseBasicParsing -TimeoutSec 10
         Write-Host "HTTP $($response.StatusCode)" -ForegroundColor Green
-        
+
         try {
             # Versuche JSON zu formatieren
             $json = $response.Content | ConvertFrom-Json -ErrorAction SilentlyContinue
@@ -113,7 +113,7 @@ function Invoke-ApiRequest {
     } catch {
         Write-Error "Fehler beim Aufruf: $_"
         Write-Host "`nVersuche alternativen Zugriff ueber WSL..." -ForegroundColor Yellow
-        
+
         # Fallback zu WSL
         $result = wsl curl -s "http://localhost:8000/$Path" 2>&1
         if ($result) {
@@ -126,10 +126,10 @@ function Invoke-ApiRequest {
 
 function Open-Docs {
     param([switch]$InBrowser)
-    
+
     # Pruefe ob Nginx laeuft
     $nginxStatus = wsl docker inspect -f '{{.State.Status}}' zen-pentest-nginx 2>$null
-    
+
     if ($nginxStatus -eq "running") {
         Write-Host "Zen-AI-Pentest ist verfuegbar unter:" -ForegroundColor Green
         Write-Host ""
@@ -138,7 +138,7 @@ function Open-Docs {
         Write-Host "  API (direct):   http://localhost:8080/api/" -ForegroundColor Gray
         Write-Host "  Health Check:   http://localhost:8080/health" -ForegroundColor Gray
         Write-Host ""
-        
+
         if ($InBrowser) {
             Start-Process "http://localhost:8080/"
         }

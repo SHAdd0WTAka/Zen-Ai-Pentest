@@ -26,7 +26,7 @@ try {
 
 /**
  * An `addEventListener` ponyfill, supports the `once` option
- * 
+ *
  * @param node the element
  * @param eventName the event name
  * @param handle the handler

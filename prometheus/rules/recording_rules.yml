@@ -20,15 +20,15 @@ groups:
         expr: |
           sum by (service, endpoint) (
             rate(zen_ai_api_requests_total{status=~"5..|4.."}[5m])
-          ) 
-          / 
+          )
+          /
           sum by (service, endpoint) (
             rate(zen_ai_api_requests_total[5m])
           )
 
       - record: zen_ai:api_latency_p99_5m
         expr: |
-          histogram_quantile(0.99, 
+          histogram_quantile(0.99,
             sum by (service, endpoint, le) (
               rate(zen_ai_api_request_duration_seconds_bucket[5m])
             )
@@ -36,7 +36,7 @@ groups:
 
       - record: zen_ai:api_latency_p95_5m
         expr: |
-          histogram_quantile(0.95, 
+          histogram_quantile(0.95,
             sum by (service, endpoint, le) (
               rate(zen_ai_api_request_duration_seconds_bucket[5m])
             )

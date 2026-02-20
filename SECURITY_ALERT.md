@@ -81,5 +81,5 @@ echo "Key gesetzt: ${KIMI_API_KEY:0:10}..."
 5. **Bei Verdacht: Sofort widerrufen und neuen erstellen**
 
 ---
-*Letzte Aktualisierung: 2026-02-07*  
+*Letzte Aktualisierung: 2026-02-07*
 *Status: Alle Keys bereinigt ✅*

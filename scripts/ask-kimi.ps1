@@ -2,7 +2,7 @@
 param(
     [Parameter(Position=0)]
     [string]$Mode = "recon",
-    
+
     [Parameter(Position=1, ValueFromRemainingArguments=$true)]
     [string[]]$PromptArgs
 )

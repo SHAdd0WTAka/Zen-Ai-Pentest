@@ -60,7 +60,7 @@ from benchmarks.scan_performance import ScanPerformanceBenchmark
 async def run_scan_benchmarks():
     benchmark = ScanPerformanceBenchmark()
     results = await benchmark.run_all()
-    
+
     for result in results:
         print(f"{result.name}: {result.throughput.ops_per_minute:.2f} targets/min")
 ```
@@ -83,7 +83,7 @@ from benchmarks.agent_performance import AgentPerformanceBenchmark
 async def run_agent_benchmarks():
     benchmark = AgentPerformanceBenchmark()
     results = await benchmark.run_all()
-    
+
     for result in results:
         print(f"{result.name}: {result.timing.avg_ms:.2f}ms avg")
 ```
@@ -106,7 +106,7 @@ from benchmarks.api_performance import APIPerformanceBenchmark
 async def run_api_benchmarks():
     benchmark = APIPerformanceBenchmark()
     results = await benchmark.run_all()
-    
+
     for result in results:
         print(f"{result.name}: {result.timing.avg_ms:.2f}ms avg, "
               f"{result.custom_metrics.get('requests_per_second', 0):.2f} RPS")

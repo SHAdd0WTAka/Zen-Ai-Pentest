@@ -5,7 +5,7 @@ exports.default = remove;
 
 /**
  * Removes a given node from the DOM.
- * 
+ *
  * @param node the node to remove
  */
 function remove(node) {

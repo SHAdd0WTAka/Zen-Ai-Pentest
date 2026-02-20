@@ -12,7 +12,7 @@ description: |
   - Encryption settings
   - Versioning and logging
   - CORS configuration
-  
+
   Tests both detection and exploitation of misconfigurations.
 
 category: cloud_security
@@ -43,24 +43,24 @@ target_buckets:
     region: "us-east-1"
     expected_findings:
       - public_read
-      
+
   - name: "company-backup-storage"
     region: "us-east-1"
     expected_findings:
       - public_list
       - no_encryption
-      
+
   - name: "company-internal-docs"
     region: "us-west-2"
     expected_findings:
       - public_write
       - misconfigured_cors
-      
+
   - name: "company-logs"
     region: "eu-west-1"
     expected_findings:
       - public_read_acp
-      
+
   - name: "company-app-data"
     region: "us-east-1"
     expected_findings:
@@ -79,7 +79,7 @@ expected_findings:
       Anyone can download files without authentication.
     verification_method: "aws_cli"
     exploit_available: true
-    
+
   - vuln_type: s3_public_list
     severity: medium
     location: "s3://company-backup-storage/"
@@ -90,7 +90,7 @@ expected_findings:
       Bucket contents can be enumerated without authentication.
     verification_method: "aws_cli"
     exploit_available: true
-    
+
   - vuln_type: s3_public_write
     severity: critical
     location: "s3://company-internal-docs/"
@@ -102,7 +102,7 @@ expected_findings:
       Potential for malware distribution and data destruction.
     verification_method: "aws_cli"
     exploit_available: true
-    
+
   - vuln_type: s3_no_encryption
     severity: high
     location: "s3://company-backup-storage/"
@@ -113,7 +113,7 @@ expected_findings:
       Data at rest is not protected.
     verification_method: "aws_cli"
     exploit_available: false
-    
+
   - vuln_type: s3_versioning_disabled
     severity: medium
     location: "s3://company-app-data/"
@@ -124,7 +124,7 @@ expected_findings:
       Deleted or modified objects cannot be recovered.
     verification_method: "aws_cli"
     exploit_available: false
-    
+
   - vuln_type: s3_logging_disabled
     severity: medium
     location: "s3://company-app-data/"
@@ -135,7 +135,7 @@ expected_findings:
       Cannot audit access to bucket objects.
     verification_method: "aws_cli"
     exploit_available: false
-    
+
   - vuln_type: s3_misconfigured_cors
     severity: low
     location: "s3://company-internal-docs/"
@@ -146,7 +146,7 @@ expected_findings:
       May enable cross-origin attacks.
     verification_method: "aws_cli"
     exploit_available: false
-    
+
   - vuln_type: s3_bucket_takeover
     severity: high
     location: "DNS CNAME records"
@@ -171,14 +171,14 @@ parameters:
     - lifecycle_policy
     - replication_configuration
     - website_configuration
-    
+
   enumeration_techniques:
     - permutations
     - dns_bruteforce
     - google_dorks
     - certificate_transparency
     - github_search
-    
+
   regions_to_check:
     - us-east-1
     - us-west-1
@@ -215,17 +215,17 @@ permission_matrix:
     description: "Anyone can read objects"
     severity: medium
     check: "s3:GetObject allowed for *"
-    
+
   public_write:
     description: "Anyone can write objects"
     severity: critical
     check: "s3:PutObject allowed for *"
-    
+
   public_list:
     description: "Anyone can list bucket"
     severity: medium
     check: "s3:ListBucket allowed for *"
-    
+
   public_read_acp:
     description: "Anyone can read ACL"
     severity: low
@@ -237,16 +237,16 @@ reference_commands:
     - "aws s3api get-public-access-block --bucket <bucket-name>"
     - "aws s3api get-bucket-acl --bucket <bucket-name>"
     - "aws s3api get-bucket-policy --bucket <bucket-name>"
-    
+
   check_encryption:
     - "aws s3api get-bucket-encryption --bucket <bucket-name>"
-    
+
   check_versioning:
     - "aws s3api get-bucket-versioning --bucket <bucket-name>"
-    
+
   check_logging:
     - "aws s3api get-bucket-logging --bucket <bucket-name>"
-    
+
   check_cors:
     - "aws s3api get-bucket-cors --bucket <bucket-name>"
 
@@ -256,11 +256,11 @@ remediation:
     - "Enable Block Public Access settings"
     - "Review and remove public bucket policies"
     - "Remove public grants from ACLs"
-    
+
   encryption:
     - "Enable default encryption with AES-256 or KMS"
     - "Enforce encryption in transit"
-    
+
   logging:
     - "Enable S3 access logging"
     - "Configure log delivery to separate bucket"

@@ -272,7 +272,7 @@ log('still goes to stdout, but via console.info now');
 ```
 
 ## Extend
-You can simply extend debugger 
+You can simply extend debugger
 ```js
 const log = require('debug')('auth');
 
@@ -302,18 +302,18 @@ console.log(3, debug.enabled('test'));
 
 ```
 
-print :   
+print :
 ```
 1 false
 2 true
 3 false
 ```
 
-Usage :  
-`enable(namespaces)`  
+Usage :
+`enable(namespaces)`
 `namespaces` can include modes separated by a colon and wildcards.
-   
-Note that calling `enable()` completely overrides previously set DEBUG variable : 
+
+Note that calling `enable()` completely overrides previously set DEBUG variable :
 
 ```
 $ DEBUG=foo node -e 'var dbg = require("debug"); dbg.enable("bar"); console.log(dbg.enabled("foo"))'
@@ -356,7 +356,7 @@ enabled or disabled.
 
 ## Usage in child processes
 
-Due to the way `debug` detects if the output is a TTY or not, colors are not shown in child processes when `stderr` is piped. A solution is to pass the `DEBUG_COLORS=1` environment variable to the child process.  
+Due to the way `debug` detects if the output is a TTY or not, colors are not shown in child processes when `stderr` is piped. A solution is to pass the `DEBUG_COLORS=1` environment variable to the child process.
 For example:
 
 ```javascript

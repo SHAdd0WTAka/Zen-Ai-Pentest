@@ -1,6 +1,6 @@
 /**
  * Zen-AI-Pentest Cloudflare Worker
- * 
+ *
  * Features:
  * - Static site hosting (React SPA)
  * - API proxy to backend
@@ -18,7 +18,7 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const router = new Router();
-    
+
     // CORS headers
     const corsHeaders = {
       'Access-Control-Allow-Origin': '*',
@@ -54,7 +54,7 @@ export default {
 async function handleAPI(request, env, corsHeaders) {
   const url = new URL(request.url);
   const cache = new Cache(env.CACHE);
-  
+
   // Check cache for GET requests
   if (request.method === 'GET') {
     const cached = await cache.get(url.pathname);
@@ -68,15 +68,15 @@ async function handleAPI(request, env, corsHeaders) {
   // Proxy to backend API
   // In production, this would connect to your FastAPI backend
   // For now, return mock responses
-  
+
   if (url.pathname === '/api/auth/login') {
     return handleLogin(request, corsHeaders);
   }
-  
+
   if (url.pathname === '/api/scans') {
     return handleScans(request, env, corsHeaders);
   }
-  
+
   if (url.pathname === '/api/status') {
     return new Response(JSON.stringify({
       status: 'active',
@@ -103,14 +103,14 @@ async function handleLogin(request, corsHeaders) {
   }
 
   const body = await request.json();
-  
+
   // Simple auth (replace with proper JWT in production)
   if (body.username === 'admin' && body.password === 'admin') {
     const token = btoa(JSON.stringify({
       user: body.username,
       exp: Date.now() + 3600000 // 1 hour
     }));
-    
+
     return new Response(JSON.stringify({
       access_token: token,
       token_type: 'bearer'
@@ -127,7 +127,7 @@ async function handleLogin(request, corsHeaders) {
 
 async function handleScans(request, env, corsHeaders) {
   const auth = request.headers.get('Authorization');
-  
+
   if (!auth) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), {
       status: 401,
@@ -148,7 +148,7 @@ async function handleScans(request, env, corsHeaders) {
 
   if (request.method === 'POST') {
     const body = await request.json();
-    
+
     // Store scan in KV for tracking
     const scanId = crypto.randomUUID();
     await env.CACHE.put(`scan:${scanId}`, JSON.stringify({
@@ -179,7 +179,7 @@ export class WebSocketHub {
 
   async fetch(request) {
     const upgradeHeader = request.headers.get('Upgrade');
-    
+
     if (upgradeHeader !== 'websocket') {
       return new Response('Expected websocket', { status: 400 });
     }
@@ -200,7 +200,7 @@ export class WebSocketHub {
 
     ws.addEventListener('message', async (msg) => {
       const data = JSON.parse(msg.data);
-      
+
       // Broadcast to all connected clients
       this.sessions.forEach((client) => {
         if (client.readyState === WebSocket.READY_STATE_OPEN) {

@@ -1,9 +1,9 @@
 # Competitive Benchmark Comparison Report
 
-**Report ID:** {{report_id}}  
-**Generated:** {{generation_date}}  
-**Zen-AI-Pentest Version:** {{zen_version}}  
-**Benchmark Suite:** {{benchmark_suite_name}}  
+**Report ID:** {{report_id}}
+**Generated:** {{generation_date}}
+**Zen-AI-Pentest Version:** {{zen_version}}
+**Benchmark Suite:** {{benchmark_suite_name}}
 
 ---
 

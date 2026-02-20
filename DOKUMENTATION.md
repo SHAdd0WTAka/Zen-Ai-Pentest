@@ -1,7 +1,7 @@
 # Zen AI Pentest - Setup Dokumentation
 
-> **Datum:** 2026-02-18  
-> **Autor:** Kimi AI (im Devcontainer)  
+> **Datum:** 2026-02-18
+> **Autor:** Kimi AI (im Devcontainer)
 > **Status:** ✅ Alle Services laufen
 
 ---
@@ -16,7 +16,7 @@ Diese Dokumentation beschreibt alle Schritte, die zur Wiederherstellung der Zen 
 
 ### 1. Devcontainer Einrichtung
 
-**Problem:** Devcontainer konnte nicht gestartet werden  
+**Problem:** Devcontainer konnte nicht gestartet werden
 **Ursachen:**
 - Debian 'trixie' wird nicht von Docker-in-Docker unterstützt
 - `.env` Datei enthält `export` Syntax (nicht Docker-kompatibel)
@@ -59,8 +59,8 @@ devcontainer up --workspace-folder .
 
 ### 2. API Reparatur (PostgreSQL)
 
-**Problem:** API zeigte "unhealthy"  
-**Ursache:** PostgreSQL-Container war gestoppt  
+**Problem:** API zeigte "unhealthy"
+**Ursache:** PostgreSQL-Container war gestoppt
 **Fehler:** `could not translate host name "postgres" to address`
 
 **Lösung:**
@@ -81,7 +81,7 @@ docker restart zen-api
 
 ### 3. Frontend Reparatur
 
-**Problem:** Port 3000 war nicht erreichbar  
+**Problem:** Port 3000 war nicht erreichbar
 **Ursache:** Frontend-Container hatte keine Port-Mappings und beendete sich sofort
 
 **Lösung - Einfaches HTML-Frontend:**
@@ -113,7 +113,7 @@ docker run -d \
 
 ### 4. Windows Firewall (PowerShell)
 
-**Problem:** Windows blockierte Port 3000  
+**Problem:** Windows blockierte Port 3000
 **Lösung:**
 
 ```powershell
@@ -163,7 +163,7 @@ devcontainer exec --workspace-folder . sudo apt-get install -y chromium
 
 **Ursache:** Browser CORS-Policy blockiert Anfragen von localhost:3000 an localhost:8000
 
-**Workaround:** 
+**Workaround:**
 - API direkt im Browser testen: http://localhost:8000/health
 - Oder Terminal: `curl http://localhost:8000/health`
 
@@ -229,11 +229,11 @@ curl http://localhost:3000 | head
 
 ## Zusammenfassung
 
-✅ **Devcontainer:** Läuft mit Debian Bookworm  
-✅ **API:** Healthy, PostgreSQL verbunden  
-✅ **Frontend:** Ersatz-HTML läuft auf Port 3000  
-✅ **Firewall:** Port 3000 freigegeben  
-✅ **Chromium:** Im Devcontainer installiert  
+✅ **Devcontainer:** Läuft mit Debian Bookworm
+✅ **API:** Healthy, PostgreSQL verbunden
+✅ **Frontend:** Ersatz-HTML läuft auf Port 3000
+✅ **Firewall:** Port 3000 freigegeben
+✅ **Chromium:** Im Devcontainer installiert
 
 ---
 
@@ -246,7 +246,7 @@ curl http://localhost:3000 | head
 
 ---
 
-*Dokumentation erstellt am: 2026-02-18*  
+*Dokumentation erstellt am: 2026-02-18*
 *Letzte Aktualisierung: 2026-02-18 23:25 Uhr*
 
 ---

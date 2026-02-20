@@ -81,13 +81,52 @@ All PRs must:
 
 ### Testing
 
+All contributions must include appropriate tests. We require:
+- **Minimum 80% code coverage** for new features
+- **100% coverage** for critical security components
+- All tests must pass before PR can be merged
+
 See [docs/TESTING.md](docs/TESTING.md) for detailed testing information.
 
-Quick test commands:
+#### Running Tests
+
 ```bash
-pytest tests/unit/ -v          # Unit tests only
-pytest tests/ -v --cov=.       # With coverage
-pytest -m "not slow"           # Exclude slow tests
+# Run all tests
+pytest tests/ -v
+
+# Run with coverage report
+pytest tests/ -v --cov=. --cov-report=html
+
+# Unit tests only
+pytest tests/unit/ -v
+
+# Exclude slow tests
+pytest -m "not slow"
+
+# Specific test file
+pytest tests/test_react_agent.py -v
+
+# Integration tests
+pytest tests/integration/ -v
+```
+
+#### Coverage Requirements
+
+| Component | Minimum Coverage |
+|-----------|------------------|
+| Core modules | 85% |
+| API endpoints | 80% |
+| Tool integrations | 75% |
+| Security/guardrails | 100% |
+
+View coverage reports:
+```bash
+# HTML report
+pytest --cov=. --cov-report=html
+open htmlcov/index.html
+
+# Terminal report
+pytest --cov=. --cov-report=term-missing
 ```
 
 ## 🛡️ Security

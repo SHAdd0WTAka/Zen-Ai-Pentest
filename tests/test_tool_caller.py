@@ -678,23 +678,23 @@ class TestErrorHandling:
     @pytest.mark.asyncio
     async def test_parallel_call_with_exception_handling(self, tool_caller):
         """Test parallel call exception handling."""
-        
+
         def failing_invoke(*args, **kwargs):
             raise RuntimeError("Simulated tool failure")
-        
+
         mock_tool = MagicMock()
         mock_tool.invoke = failing_invoke
-        
+
         registered = MagicMock()
         registered.enabled = True
         registered.tool = mock_tool
         registered.metadata.safety_level.value = "normal"
-        
+
         tool_caller.registry.get.return_value = registered
-        
+
         calls = [("failing_tool", {"arg": "value"})]
         results = await tool_caller.call_tools_parallel(calls)
-        
+
         assert results["failing_tool"].success is False
         assert "Simulated tool failure" in results["failing_tool"].error
 

@@ -1,21 +1,21 @@
 import { useEffect, useState } from 'react'
-import { 
-  Activity, 
-  Target, 
-  AlertTriangle, 
-  CheckCircle, 
+import {
+  Activity,
+  Target,
+  AlertTriangle,
+  CheckCircle,
   Clock,
   TrendingUp,
   Zap,
   Shield
 } from 'lucide-react'
-import { 
-  AreaChart, 
-  Area, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
   ResponsiveContainer,
   PieChart,
   Pie,
@@ -94,14 +94,14 @@ function SeverityBadge({ severity }: { severity: string }) {
 }
 
 // Stat card component
-function StatCard({ 
-  title, 
-  value, 
-  subtitle, 
-  icon: Icon, 
+function StatCard({
+  title,
+  value,
+  subtitle,
+  icon: Icon,
   trend,
   color = 'blue'
-}: { 
+}: {
   title: string
   value: number
   subtitle: string
@@ -181,7 +181,7 @@ export default function Dashboard() {
   // WebSocket connection for real-time updates
   useEffect(() => {
     const ws = new WebSocket(`ws://${window.location.host}/api/v1/dashboard/ws`)
-    
+
     ws.onopen = () => {
       setWsConnected(true)
       ws.send(JSON.stringify({ action: 'subscribe', events: ['scans', 'findings'] }))
@@ -223,8 +223,8 @@ export default function Dashboard() {
         <div className="flex items-center gap-3">
           <div className={cn(
             'flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium border',
-            wsConnected 
-              ? 'bg-green-500/10 text-green-400 border-green-500/30' 
+            wsConnected
+              ? 'bg-green-500/10 text-green-400 border-green-500/30'
               : 'bg-red-500/10 text-red-400 border-red-500/30'
           )}>
             <div className={cn('w-2 h-2 rounded-full', wsConnected ? 'bg-green-500 animate-pulse' : 'bg-red-500')} />
@@ -291,37 +291,37 @@ export default function Dashboard() {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                <XAxis 
-                  dataKey="date" 
+                <XAxis
+                  dataKey="date"
                   stroke="#64748b"
                   tickFormatter={(date) => format(new Date(date), 'MMM d')}
                   tick={{ fontSize: 12 }}
                 />
                 <YAxis stroke="#64748b" tick={{ fontSize: 12 }} />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: '#1e293b', 
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: '#1e293b',
                     border: '1px solid #334155',
                     borderRadius: '8px'
                   }}
                   labelFormatter={(date) => format(new Date(date), 'MMM d, yyyy')}
                 />
-                <Area 
-                  type="monotone" 
-                  dataKey="scans" 
-                  stroke="#3b82f6" 
+                <Area
+                  type="monotone"
+                  dataKey="scans"
+                  stroke="#3b82f6"
                   strokeWidth={2}
-                  fillOpacity={1} 
-                  fill="url(#colorScans)" 
+                  fillOpacity={1}
+                  fill="url(#colorScans)"
                   name="Scans"
                 />
-                <Area 
-                  type="monotone" 
-                  dataKey="findings" 
-                  stroke="#8b5cf6" 
+                <Area
+                  type="monotone"
+                  dataKey="findings"
+                  stroke="#8b5cf6"
                   strokeWidth={2}
-                  fillOpacity={1} 
-                  fill="url(#colorFindings)" 
+                  fillOpacity={1}
+                  fill="url(#colorFindings)"
                   name="Findings"
                 />
               </AreaChart>
@@ -348,9 +348,9 @@ export default function Dashboard() {
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: '#1e293b', 
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: '#1e293b',
                     border: '1px solid #334155',
                     borderRadius: '8px'
                   }}
@@ -361,8 +361,8 @@ export default function Dashboard() {
           <div className="mt-4 grid grid-cols-2 gap-2">
             {stats.severity_distribution.map((item) => (
               <div key={item.name} className="flex items-center gap-2">
-                <div 
-                  className="w-3 h-3 rounded-full" 
+                <div
+                  className="w-3 h-3 rounded-full"
                   style={{ backgroundColor: item.color }}
                 />
                 <span className="text-slate-400 text-sm">{item.name}: {item.value}</span>
@@ -383,7 +383,7 @@ export default function Dashboard() {
             </div>
             <Zap className="w-5 h-5 text-yellow-500" />
           </div>
-          
+
           <div className="space-y-4">
             {activeScans.length === 0 ? (
               <p className="text-slate-500 text-center py-8">No active scans</p>
@@ -408,7 +408,7 @@ export default function Dashboard() {
                       <span>{scan.progress}%</span>
                     </div>
                     <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
-                      <div 
+                      <div
                         className="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-500"
                         style={{ width: `${scan.progress}%` }}
                       />
@@ -439,14 +439,14 @@ export default function Dashboard() {
             </div>
             <AlertTriangle className="w-5 h-5 text-red-500" />
           </div>
-          
+
           <div className="space-y-3 max-h-80 overflow-auto">
             {recentFindings.length === 0 ? (
               <p className="text-slate-500 text-center py-8">No findings yet</p>
             ) : (
               recentFindings.map((finding) => (
-                <div 
-                  key={finding.id} 
+                <div
+                  key={finding.id}
                   className="flex items-start gap-3 p-3 bg-slate-700/30 rounded-lg hover:bg-slate-700/50 transition-colors"
                 >
                   <div className={cn(

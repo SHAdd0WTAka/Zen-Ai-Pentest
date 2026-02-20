@@ -87,7 +87,7 @@ https://discord.com/api/webhooks/.../...
 - **Name:** `SLACK_WEBHOOK_URL`
 - **Value:** `https://hooks.slack.com/services/...`
 
-#### Discord Secret  
+#### Discord Secret
 - **Name:** `DISCORD_WEBHOOK_URL`
 - **Value:** `https://discord.com/api/webhooks/.../...`
 
@@ -139,7 +139,7 @@ curl -X POST -H 'Content-type: application/json' \
 
 ### Slack
 - ✅ Repository Health Score Alerts
-- ✅ Workflow Failure Notifications  
+- ✅ Workflow Failure Notifications
 - ✅ Security Vulnerability Alerts
 - ✅ Release Notifications
 

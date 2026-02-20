@@ -25,11 +25,11 @@ if [ $? -eq 0 ]; then
     echo "API Status:"
     echo "$HEALTH" | python3 -m json.tool
     echo ""
-    
+
     echo "Verfügbare Personas:"
     curl -s http://127.0.0.1:5000/api/v1/personas 2>/dev/null | \
         python3 -c "import sys,json; d=json.load(sys.stdin); [print(f'  • {k}: {v[\"name\"]}') for k,v in d['personas'].items()]"
-    
+
     echo ""
     echo "Web UI: http://127.0.0.1:5000"
     echo ""
@@ -37,7 +37,7 @@ if [ $? -eq 0 ]; then
     echo "  curl http://127.0.0.1:5000/api/v1/health"
     echo "  curl http://127.0.0.1:5000/api/v1/personas"
     echo "  curl http://127.0.0.1:5000/admin"
-    
+
 else
     echo "❌ Verbindung fehlgeschlagen!"
     echo ""

@@ -12,7 +12,7 @@ groups:
       # ============================================
       - alert: ZenAiAPIElevatedLatency
         expr: |
-          histogram_quantile(0.95, 
+          histogram_quantile(0.95,
             sum by (le, endpoint) (rate(zen_ai_api_request_duration_seconds_bucket[5m]))
           ) > 1
         for: 5m
@@ -89,8 +89,8 @@ groups:
       - alert: ZenAiQueueGrowing
         expr: |
           (
-            zen_ai_queue_messages_current 
-            - 
+            zen_ai_queue_messages_current
+            -
             zen_ai_queue_messages_current offset 5m
           ) > 100
         for: 5m
@@ -162,7 +162,7 @@ groups:
       # ============================================
       - alert: ZenAiDBSlowQueries
         expr: |
-          rate(pg_stat_statements_total_time_sum[5m]) / 
+          rate(pg_stat_statements_total_time_sum[5m]) /
           rate(pg_stat_statements_calls_sum[5m]) > 100
         for: 5m
         labels:

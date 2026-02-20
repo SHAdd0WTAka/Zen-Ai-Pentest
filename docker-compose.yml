@@ -51,18 +51,18 @@ services:
     environment:
       # Database
       DATABASE_URL: postgresql://zen_user:${DB_PASSWORD:-changeme}@db:5432/zen_pentest
-      
+
       # Security
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-your-secret-key-change-in-production}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin}
-      
+
       # Redis
       REDIS_URL: redis://redis:6379/0
-      
+
       # Application
       APP_ENV: production
       LOG_LEVEL: INFO
-      
+
       # Optional: VPN (ProtonVPN)
       # VPN_ENABLED: "true"
       # VPN_PROVIDER: protonvpn

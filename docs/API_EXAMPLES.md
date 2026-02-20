@@ -83,7 +83,7 @@ async function login(username, password) {
     },
     body: `username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`
   });
-  
+
   const data = await response.json();
   return data.access_token;
 }
@@ -687,7 +687,7 @@ async function downloadReport(token, reportId) {
       'Authorization': `Bearer ${token}`
     }
   });
-  
+
   const blob = await response.blob();
   const url = window.URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -940,7 +940,7 @@ class AgentWebSocket {
     this.ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
       console.log('Agent update:', data);
-      
+
       if (data.type === 'agent_status') {
         console.log(`Agent ${data.agent_id} is now ${data.status}`);
       } else if (data.type === 'task_complete') {
@@ -964,13 +964,13 @@ import json
 async def scan_websocket(scan_id, token):
     uri = f"ws://localhost:8000/ws/scans/{scan_id}"
     headers = {"Authorization": f"Bearer {token}"}
-    
+
     async with websockets.connect(uri, extra_headers=headers) as websocket:
         while True:
             try:
                 message = await websocket.recv()
                 data = json.loads(message)
-                
+
                 if data["type"] == "status":
                     print(f"Status: {data['status']}")
                 elif data["type"] == "progress":
@@ -978,7 +978,7 @@ async def scan_websocket(scan_id, token):
                 elif data["type"] == "complete":
                     print("Scan completed!")
                     break
-                    
+
             except websockets.exceptions.ConnectionClosed:
                 print("Connection closed")
                 break
@@ -1004,7 +1004,7 @@ class ZenPentestClient:
         self.base_url = base_url
         self.token = None
         self.headers = {}
-    
+
     def login(self, username, password):
         """Authenticate and get token"""
         response = requests.post(
@@ -1017,7 +1017,7 @@ class ZenPentestClient:
             "Content-Type": "application/json"
         }
         return self.token
-    
+
     def create_scan(self, target, name, scan_type="full"):
         """Create a new scan"""
         response = requests.post(
@@ -1031,7 +1031,7 @@ class ZenPentestClient:
             }
         )
         return response.json()
-    
+
     def wait_for_scan(self, scan_id, timeout=3600):
         """Poll scan status until complete"""
         start = time.time()
@@ -1041,15 +1041,15 @@ class ZenPentestClient:
                 headers=self.headers
             )
             scan = response.json()
-            
+
             if scan["status"] in ["completed", "failed", "cancelled"]:
                 return scan
-            
+
             print(f"Status: {scan['status']}, Progress: {scan.get('progress', 0)}%")
             time.sleep(5)
-        
+
         raise TimeoutError("Scan did not complete within timeout")
-    
+
     def get_findings(self, scan_id):
         """Get findings for a scan"""
         response = requests.get(
@@ -1058,7 +1058,7 @@ class ZenPentestClient:
             params={"scan_id": scan_id}
         )
         return response.json()
-    
+
     def generate_report(self, scan_id, format="pdf"):
         """Generate and download report"""
         # Create report
@@ -1072,7 +1072,7 @@ class ZenPentestClient:
             }
         )
         report = response.json()
-        
+
         # Wait for report generation
         while True:
             response = requests.get(
@@ -1083,19 +1083,19 @@ class ZenPentestClient:
             if r["status"] == "completed":
                 break
             time.sleep(2)
-        
+
         # Download report
         response = requests.get(
             f"{self.base_url}/api/v1/reports/{report['id']}/download",
             headers=self.headers,
             stream=True
         )
-        
+
         filename = f"report_{scan_id}.{format}"
         with open(filename, "wb") as f:
             for chunk in response.iter_content(chunk_size=8192):
                 f.write(chunk)
-        
+
         return filename
 
 # Usage

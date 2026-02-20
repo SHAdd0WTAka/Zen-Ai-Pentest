@@ -275,11 +275,11 @@ You might also be interested in these projects:
 
 ### Contributors
 
-| **Commits** | **Contributor** |  
-| --- | --- |  
-| 63 | [jonschlinkert](https://github.com/jonschlinkert) |  
-| 3  | [doowb](https://github.com/doowb) |  
-| 2  | [realityking](https://github.com/realityking) |  
+| **Commits** | **Contributor** |
+| --- | --- |
+| 63 | [jonschlinkert](https://github.com/jonschlinkert) |
+| 3  | [doowb](https://github.com/doowb) |
+| 2  | [realityking](https://github.com/realityking) |
 
 ### Author
 

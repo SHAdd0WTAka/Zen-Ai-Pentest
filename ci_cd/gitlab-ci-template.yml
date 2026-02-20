@@ -14,27 +14,27 @@ variables:
   ZEN_PENTEST_VERSION: "2.0.0"
   ZEN_PENTEST_IMAGE: "zenai/zen-pentest:${ZEN_PENTEST_VERSION}"
   ZEN_PENTEST_CACHE_DIR: "$CI_PROJECT_DIR/.cache/zen-pentest"
-  
+
   # Scan Configuration
   ZEN_SCAN_TARGET: "${CI_ENVIRONMENT_URL:-https://staging.example.com}"
   ZEN_SCAN_MODE: "full"
   ZEN_SCAN_INTENSITY: "medium"
   ZEN_SCAN_TIMEOUT: "3600"
-  
+
   # Reporting
   ZEN_REPORT_FORMATS: "json,html,sarif"
   ZEN_REPORT_DIR: "$CI_PROJECT_DIR/reports"
   ZEN_ARTIFACT_RETENTION: "30 days"
-  
+
   # Security Thresholds
   ZEN_MAX_CRITICAL: "0"
   ZEN_MAX_HIGH: "5"
   ZEN_MAX_RISK_SCORE: "50"
-  
+
   # GitLab Integration
   ZEN_CREATE_ISSUES: "true"
   ZEN_CREATE_MR_DISCUSSIONS: "true"
-  
+
   # Docker Configuration
   DOCKER_DRIVER: overlay2
   DOCKER_TLS_CERTDIR: ""
@@ -109,12 +109,12 @@ stages:
         verbose: true
         log_level: INFO
         cache_dir: $ZEN_PENTEST_CACHE_DIR
-      
+
       ai:
         provider: openai
         model: gpt-4
         api_key: "${OPENAI_API_KEY}"
-      
+
       reporting:
         formats:
           - json
@@ -122,12 +122,12 @@ stages:
           - sarif
         output_dir: $ZEN_REPORT_DIR
         include_screenshots: true
-      
+
       compliance:
         - owasp_top_10
         - pci_dss
         - iso27001
-      
+
       gitlab:
         project_id: "${CI_PROJECT_ID}"
         merge_request_iid: "${CI_MERGE_REQUEST_IID}"
@@ -154,10 +154,10 @@ build:zen-pentest-image:
   script:
     - echo "🐳 Building Zen-AI-Pentest Docker Image"
     - |
-      docker build 
-        --build-arg VERSION=$ZEN_PENTEST_VERSION 
-        --tag $ZEN_PENTEST_IMAGE 
-        --tag zenai/zen-pentest:latest 
+      docker build
+        --build-arg VERSION=$ZEN_PENTEST_VERSION
+        --tag $ZEN_PENTEST_IMAGE
+        --tag zenai/zen-pentest:latest
         -f docker/Dockerfile .
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
@@ -272,7 +272,7 @@ security:full-scan:
     - |
       SCAN_ID="scan-$(date +%Y%m%d-%H%M%S)-${CI_COMMIT_SHORT_SHA}"
       echo "SCAN_ID=$SCAN_ID" >> scan.env
-      
+
       zen-pentest scan \
         --target "$ZEN_SCAN_TARGET" \
         --mode full \
@@ -281,18 +281,18 @@ security:full-scan:
         --format "$ZEN_REPORT_FORMATS" \
         --scan-id "$SCAN_ID" \
         --ci-mode 2>&1 | tee "$ZEN_REPORT_DIR/full/scan-log.txt"
-    
+
     # Parse results for thresholds
     - |
       if [ -f "$ZEN_REPORT_DIR/full/scan-results.json" ]; then
         CRITICAL=$(jq '.summary.critical // 0' "$ZEN_REPORT_DIR/full/scan-results.json")
         HIGH=$(jq '.summary.high // 0' "$ZEN_REPORT_DIR/full/scan-results.json")
         RISK_SCORE=$(jq '.summary.risk_score // 0' "$ZEN_REPORT_DIR/full/scan-results.json")
-        
+
         echo "CRITICAL=$CRITICAL" >> scan.env
         echo "HIGH=$HIGH" >> scan.env
         echo "RISK_SCORE=$RISK_SCORE" >> scan.env
-        
+
         # Check thresholds
         FAILED=0
         if [ "$CRITICAL" -gt "$ZEN_MAX_CRITICAL" ]; then
@@ -307,7 +307,7 @@ security:full-scan:
           echo "❌ Risk score threshold exceeded: $RISK_SCORE > $ZEN_MAX_RISK_SCORE"
           FAILED=1
         fi
-        
+
         if [ $FAILED -eq 1 ]; then
           exit 1
         fi
@@ -412,7 +412,7 @@ report:create-issues:
             "### Remediation\n\(.remediation)\n\n" +
             "---\n_Automatically created by Zen-AI-Pentest_"
           ')
-          
+
           curl -s -X POST "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/issues" \
             --header "PRIVATE-TOKEN: ${GITLAB_API_TOKEN}" \
             --header "Content-Type: application/json" \
@@ -443,16 +443,16 @@ report:mr-discussions:
       if [ -n "$CI_MERGE_REQUEST_IID" ] && [ -f "$ZEN_REPORT_DIR/vuln/scan-results.json" ]; then
         CRITICAL=$(jq '.summary.critical // 0' "$ZEN_REPORT_DIR/vuln/scan-results.json")
         HIGH=$(jq '.summary.high // 0' "$ZEN_REPORT_DIR/vuln/scan-results.json")
-        
+
         BODY="## 🔒 Zen-AI-Pentest Security Scan Results
-        
+
         | Severity | Count |
         |----------|-------|
         | 🔴 Critical | $CRITICAL |
         | 🟠 High | $HIGH |
-        
+
         Please review the findings before merging."
-        
+
         curl -s -X POST "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests/${CI_MERGE_REQUEST_IID}/discussions" \
           --header "PRIVATE-TOKEN: ${GITLAB_API_TOKEN}" \
           --header "Content-Type: application/json" \
@@ -486,14 +486,14 @@ notify:slack:
         HIGH=$(jq '.summary.high // 0' "$ZEN_REPORT_DIR/full/scan-results.json")
         MEDIUM=$(jq '.summary.medium // 0' "$ZEN_REPORT_DIR/full/scan-results.json")
         LOW=$(jq '.summary.low // 0' "$ZEN_REPORT_DIR/full/scan-results.json")
-        
+
         COLOR="good"
         if [ "$CRITICAL" -gt 0 ]; then
           COLOR="danger"
         elif [ "$HIGH" -gt 0 ]; then
           COLOR="warning"
         fi
-        
+
         curl -s -X POST "$SLACK_WEBHOOK_URL" \
           -H 'Content-type: application/json' \
           --data "{
@@ -532,7 +532,7 @@ notify:email:
     - |
       if [ -n "$SECURITY_TEAM_EMAIL" ]; then
         CRITICAL=$(jq '.summary.critical // 0' "$ZEN_REPORT_DIR/full/scan-results.json")
-        
+
         if [ "$CRITICAL" -gt 0 ]; then
           echo "Critical vulnerabilities detected. Sending alert email..." | \
             mailx -s "[SECURITY ALERT] Critical Vulnerabilities in $CI_PROJECT_NAME" \

@@ -1,6 +1,6 @@
 # 🗺️ Zen-AI Pentest - Master Plan
 
-**Stand:** 2026-02-07  
+**Stand:** 2026-02-07
 **Ziel:** Produktionsreifes AI-Powered Pentesting Framework
 
 ---

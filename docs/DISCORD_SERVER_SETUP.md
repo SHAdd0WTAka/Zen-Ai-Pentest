@@ -164,7 +164,7 @@ bot = commands.Bot(command_prefix='!', intents=intents)
 async def setup_security(ctx):
     """Konfiguriert Server-Sicherheit automatisch"""
     guild = ctx.guild
-    
+
     # 1. @everyone Rolle einschränken
     everyone = guild.default_role
     await everyone.edit(
@@ -176,7 +176,7 @@ async def setup_security(ctx):
             speak=False,
         )
     )
-    
+
     # 2. Member Rolle erstellen/updaten
     member_role = discord.utils.get(guild.roles, name="Member")
     if not member_role:
@@ -196,7 +196,7 @@ async def setup_security(ctx):
                 use_voice_activation=True,
             )
         )
-    
+
     # 3. Allen aktuellen Mitgliedern die Member-Rolle geben
     for member in guild.members:
         if not member.bot and member_role not in member.roles:
@@ -204,7 +204,7 @@ async def setup_security(ctx):
                 await member.add_roles(member_role)
             except:
                 pass
-    
+
     await ctx.send("✅ Server-Sicherheit konfiguriert!\n\n"
                    "• @everyone kann nichts mehr sehen\n"
                    "• Member haben nur Basis-Rechte\n"

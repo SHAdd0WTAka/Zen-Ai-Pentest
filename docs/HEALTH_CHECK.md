@@ -251,14 +251,14 @@ from core.health_check import BaseHealthCheck, HealthCheckConfig, HealthStatus, 
 class CustomHealthCheck(BaseHealthCheck):
     name = "custom"
     description = "My custom health check"
-    
+
     async def run(self) -> HealthCheckResult:
         start_time = time.time()
-        
+
         try:
             # Your check logic here
             result = await self._run_async(self._do_check)
-            
+
             duration_ms = (time.time() - start_time) * 1000
             return self._create_result(
                 HealthStatus.OK,
@@ -273,7 +273,7 @@ class CustomHealthCheck(BaseHealthCheck):
                 f"Custom check failed: {str(e)}",
                 duration_ms=duration_ms
             )
-    
+
     def _do_check(self):
         # Synchronous check logic
         return {"custom_data": "value"}
@@ -300,15 +300,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
-      
+
       - name: Install dependencies
         run: pip install -r requirements.txt
-      
+
       - name: Run health checks
         run: python scripts/health_check_cli.py --ci
 ```
@@ -369,7 +369,7 @@ health_status = Gauge('zen_health_status', 'Health check status', ['check_name']
 async def update_metrics():
     runner = HealthCheckRunner()
     report = await runner.run_all_checks()
-    
+
     for check in report.checks:
         status_value = {'ok': 0, 'warning': 1, 'error': 2, 'critical': 3, 'skipped': 4}
         health_status.labels(check_name=check.name).set(status_value[check.status.value])

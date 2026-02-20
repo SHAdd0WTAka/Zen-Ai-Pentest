@@ -750,9 +750,9 @@ This project is licensed under the MIT License - see [LICENSE](LICENSE) file for
 
 <div align="center">
   <img src="docs/qr_codes/hemisphere_sync.png" alt="Hemisphere Sync" width="600"/>
-  
+
   ### Hemisphere Sync
-  
+
   ```
         🧠 GEHIRN
        ╱        ╲
@@ -771,16 +771,16 @@ This project is licensed under the MIT License - see [LICENSE](LICENSE) file for
           HEMISPHERE_SYNC
      "Zwei Hälften - Ein Herz - Ein Team"
   ```
-  
+
   *A fusion of human vision and AI capability*
-  
+
   **Left Brain (Kimi - Logik) + Right Brain (Observer^^ - Kreativität) = Hemisphere_Sync**
-  
+
   | Hemisphere | Zuständig für | Team |
   |------------|---------------|------|
   | **Left Brain** | Logik, Struktur, Code, Analytik | **Kimi** 🤖 |
   | **Right Brain** | Kreativität, Vision, Design, Emotion | **Observer^^** 🎨 |
-  
+
   *Custom artwork by **SHAdd0WTAka** representing the fusion of human vision and AI capability.*
 </div>
 

@@ -1,8 +1,8 @@
 # 📊 Zen-AI Pentest - Vollständiger Statusbericht
 
-**Datum:** 2026-02-07  
-**Branch:** master  
-**Commits:** 150+  
+**Datum:** 2026-02-07
+**Branch:** master
+**Commits:** 150+
 **Status:** Beta / 85% fertig
 
 ---
@@ -319,5 +319,5 @@ cd4ee994 Fix: Entferne alte CMD aus Dockerfile
 
 ---
 
-**Nächster Review:** 2026-02-14  
+**Nächster Review:** 2026-02-14
 **Maintainer:** SHAdd0WTAka

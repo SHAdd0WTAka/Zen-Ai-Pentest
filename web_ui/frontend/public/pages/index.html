@@ -5,22 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Zen-AI-Pentest | KI-gestütztes Penetration-Testing-Framework</title>
     <meta name="description" content="Autonome Sicherheitsanalyse mit 40+ integrierten Tools, Multi-Agent-System und intelligenter Risikobewertung">
-    
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-    
+
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    
+
     <!-- GSAP -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
-    
+
     <script>
         tailwind.config = {
             theme: {
@@ -60,14 +60,14 @@
             }
         }
     </script>
-    
+
     <style>
         body {
             background-color: #0a0a0f;
             color: #ffffff;
             overflow-x: hidden;
         }
-        
+
         .gradient-text {
             background: linear-gradient(135deg, #00d4ff 0%, #7c3aed 50%, #00d4ff 100%);
             background-size: 200% auto;
@@ -76,50 +76,50 @@
             background-clip: text;
             animation: gradient 4s ease infinite;
         }
-        
+
         .hero-gradient {
-            background: linear-gradient(135deg, 
-                rgba(0, 212, 255, 0.1) 0%, 
-                rgba(124, 58, 237, 0.1) 50%, 
+            background: linear-gradient(135deg,
+                rgba(0, 212, 255, 0.1) 0%,
+                rgba(124, 58, 237, 0.1) 50%,
                 rgba(0, 212, 255, 0.1) 100%);
             background-size: 400% 400%;
             animation: gradient 8s ease infinite;
         }
-        
+
         .glow-accent {
             box-shadow: 0 0 20px rgba(0, 212, 255, 0.3),
                         0 0 40px rgba(0, 212, 255, 0.2),
                         0 0 60px rgba(0, 212, 255, 0.1);
         }
-        
+
         .glow-card {
             transition: all 0.3s ease;
         }
-        
+
         .glow-card:hover {
             box-shadow: 0 0 30px rgba(0, 212, 255, 0.2),
                         0 0 60px rgba(124, 58, 237, 0.1);
             transform: translateY(-5px);
         }
-        
+
         .code-block {
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             border: 1px solid rgba(0, 212, 255, 0.2);
         }
-        
+
         .nav-blur {
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
         }
-        
+
         .stat-number {
             font-variant-numeric: tabular-nums;
         }
-        
+
         .feature-icon {
             background: linear-gradient(135deg, rgba(0, 212, 255, 0.2) 0%, rgba(124, 58, 237, 0.2) 100%);
         }
-        
+
         /* Animated background mesh */
         .mesh-bg {
             position: absolute;
@@ -127,26 +127,26 @@
             overflow: hidden;
             z-index: 0;
         }
-        
+
         .mesh-bg::before {
             content: '';
             position: absolute;
             inset: -50%;
-            background: 
+            background:
                 radial-gradient(circle at 20% 80%, rgba(0, 212, 255, 0.15) 0%, transparent 50%),
                 radial-gradient(circle at 80% 20%, rgba(124, 58, 237, 0.15) 0%, transparent 50%),
                 radial-gradient(circle at 40% 40%, rgba(0, 212, 255, 0.1) 0%, transparent 40%);
             animation: rotate 30s linear infinite;
         }
-        
+
         @keyframes rotate {
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
         }
-        
+
         .hero-overlay {
-            background: linear-gradient(to bottom, 
-                rgba(10, 10, 15, 0.3) 0%, 
+            background: linear-gradient(to bottom,
+                rgba(10, 10, 15, 0.3) 0%,
                 rgba(10, 10, 15, 0.7) 70%,
                 rgba(10, 10, 15, 1) 100%);
         }
@@ -164,7 +164,7 @@
                     </div>
                     <span class="text-xl font-bold gradient-text">Zen-AI-Pentest</span>
                 </a>
-                
+
                 <!-- Desktop Navigation -->
                 <div class="hidden md:flex items-center space-x-8">
                     <a href="features.html" class="text-gray-300 hover:text-zen-accent transition-colors">Features</a>
@@ -172,21 +172,21 @@
                     <a href="demo.html" class="text-gray-300 hover:text-zen-accent transition-colors">Demo</a>
                     <a href="community.html" class="text-gray-300 hover:text-zen-accent transition-colors">Community</a>
                 </div>
-                
+
                 <!-- CTA Button -->
                 <div class="hidden md:block">
                     <a href="docs.html" class="px-5 py-2.5 rounded-lg bg-gradient-to-r from-zen-accent to-zen-accent2 text-white font-medium hover:opacity-90 transition-opacity glow-accent">
                         Jetzt Starten
                     </a>
                 </div>
-                
+
                 <!-- Mobile Menu Button -->
                 <button id="mobile-menu-btn" class="md:hidden p-2 rounded-lg hover:bg-white/10 transition-colors">
                     <i data-lucide="menu" class="w-6 h-6"></i>
                 </button>
             </div>
         </div>
-        
+
         <!-- Mobile Menu -->
         <div id="mobile-menu" class="hidden md:hidden nav-blur bg-zen-dark/95 border-t border-white/10">
             <div class="px-4 py-4 space-y-3">
@@ -209,10 +209,10 @@
                 <img src="../images/hero-bg.jpg" alt="" class="w-full h-full object-cover opacity-40">
                 <div class="absolute inset-0 hero-overlay"></div>
             </div>
-            
+
             <!-- Animated Mesh Background -->
             <div class="mesh-bg"></div>
-            
+
             <!-- Hero Content -->
             <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-32 text-center">
                 <!-- Badge -->
@@ -220,22 +220,22 @@
                     <span class="w-2 h-2 rounded-full bg-zen-success animate-pulse"></span>
                     <span class="text-sm text-gray-300">v2.3.9 Jetzt Verfügbar</span>
                 </div>
-                
+
                 <!-- Main Headline -->
                 <h1 id="hero-title" class="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold mb-6 opacity-0">
                     <span class="gradient-text">Zen-AI-Pentest</span>
                 </h1>
-                
+
                 <!-- Tagline -->
                 <p id="hero-tagline" class="text-xl sm:text-2xl md:text-3xl text-gray-300 mb-4 font-light opacity-0">
                     KI-gestütztes Penetration-Testing-Framework der nächsten Generation
                 </p>
-                
+
                 <!-- Subtitle -->
                 <p id="hero-subtitle" class="max-w-3xl mx-auto text-base sm:text-lg text-gray-400 mb-12 opacity-0">
                     Autonome Sicherheitsanalyse mit 40+ integrierten Tools, Multi-Agent-System und intelligenter Risikobewertung
                 </p>
-                
+
                 <!-- CTA Buttons -->
                 <div id="hero-cta" class="flex flex-col sm:flex-row items-center justify-center gap-4 opacity-0">
                     <a href="docs.html" class="group px-8 py-4 rounded-xl bg-gradient-to-r from-zen-accent to-zen-accent2 text-white font-semibold text-lg hover:opacity-90 transition-all glow-accent flex items-center space-x-2">
@@ -248,7 +248,7 @@
                     </a>
                 </div>
             </div>
-            
+
             <!-- Scroll Indicator -->
             <div class="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 animate-bounce">
                 <i data-lucide="chevron-down" class="w-8 h-8 text-zen-accent"></i>
@@ -269,7 +269,7 @@
                         <div class="stat-number text-3xl md:text-4xl font-bold text-white mb-1" data-target="205">0</div>
                         <div class="text-sm text-gray-400">Stars</div>
                     </div>
-                    
+
                     <!-- Stat 2: Forks -->
                     <div class="stat-card glow-card bg-zen-card rounded-2xl p-6 border border-white/10 text-center">
                         <div class="flex items-center justify-center mb-3">
@@ -280,7 +280,7 @@
                         <div class="stat-number text-3xl md:text-4xl font-bold text-white mb-1" data-target="29">0</div>
                         <div class="text-sm text-gray-400">Forks</div>
                     </div>
-                    
+
                     <!-- Stat 3: Commits -->
                     <div class="stat-card glow-card bg-zen-card rounded-2xl p-6 border border-white/10 text-center">
                         <div class="flex items-center justify-center mb-3">
@@ -291,7 +291,7 @@
                         <div class="stat-number text-3xl md:text-4xl font-bold text-white mb-1" data-target="776">0</div>
                         <div class="text-sm text-gray-400">Commits</div>
                     </div>
-                    
+
                     <!-- Stat 4: Version -->
                     <div class="stat-card glow-card bg-zen-card rounded-2xl p-6 border border-white/10 text-center">
                         <div class="flex items-center justify-center mb-3">
@@ -318,7 +318,7 @@
                         Entdecken Sie die innovativen Funktionen, die Zen-AI-Pentest zur nächsten Generation der Sicherheitsanalyse machen
                     </p>
                 </div>
-                
+
                 <!-- Feature Cards Grid -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <!-- Feature 1: Autonomous AI Agent -->
@@ -341,7 +341,7 @@
                             </li>
                         </ul>
                     </div>
-                    
+
                     <!-- Feature 2: 40+ Security Tools -->
                     <div class="feature-card glow-card bg-zen-card rounded-2xl p-6 border border-white/10">
                         <div class="w-14 h-14 rounded-xl feature-icon flex items-center justify-center mb-5">
@@ -362,7 +362,7 @@
                             </li>
                         </ul>
                     </div>
-                    
+
                     <!-- Feature 3: Multi-Agent System -->
                     <div class="feature-card glow-card bg-zen-card rounded-2xl p-6 border border-white/10">
                         <div class="w-14 h-14 rounded-xl feature-icon flex items-center justify-center mb-5">
@@ -383,7 +383,7 @@
                             </li>
                         </ul>
                     </div>
-                    
+
                     <!-- Feature 4: Risk Engine -->
                     <div class="feature-card glow-card bg-zen-card rounded-2xl p-6 border border-white/10">
                         <div class="w-14 h-14 rounded-xl feature-icon flex items-center justify-center mb-5">
@@ -405,7 +405,7 @@
                         </ul>
                     </div>
                 </div>
-                
+
                 <!-- View All Features Link -->
                 <div class="text-center mt-12">
                     <a href="features.html" class="inline-flex items-center space-x-2 text-zen-accent hover:text-white transition-colors">
@@ -420,7 +420,7 @@
         <section class="py-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
             <!-- Background Gradient -->
             <div class="absolute inset-0 hero-gradient opacity-30"></div>
-            
+
             <div class="max-w-4xl mx-auto relative z-10">
                 <div class="bg-zen-card rounded-3xl p-8 md:p-12 border border-white/10 text-center">
                     <h2 class="text-3xl sm:text-4xl font-bold mb-4">
@@ -429,7 +429,7 @@
                     <p class="text-gray-400 text-lg mb-8 max-w-2xl mx-auto">
                         Installieren Sie Zen-AI-Pentest in wenigen Sekunden mit Docker und starten Sie Ihre erste Sicherheitsanalyse
                     </p>
-                    
+
                     <!-- Docker Command -->
                     <div class="code-block rounded-xl p-4 md:p-6 mb-8 text-left overflow-x-auto">
                         <div class="flex items-center justify-between mb-3">
@@ -446,7 +446,7 @@
                             docker run -it --rm zen-ai-pentest/zen-ai-pentest:latest
                         </code>
                     </div>
-                    
+
                     <!-- Action Buttons -->
                     <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
                         <a href="docs.html" class="px-8 py-3 rounded-xl bg-gradient-to-r from-zen-accent to-zen-accent2 text-white font-semibold hover:opacity-90 transition-opacity glow-accent">
@@ -478,7 +478,7 @@
                         KI-gestütztes Penetration-Testing-Framework für die nächste Generation der Cybersicherheit.
                     </p>
                 </div>
-                
+
                 <!-- Quick Links -->
                 <div>
                     <h4 class="text-white font-semibold mb-4">Produkt</h4>
@@ -489,7 +489,7 @@
                         <li><a href="pricing.html" class="text-gray-400 hover:text-zen-accent transition-colors text-sm">Preise</a></li>
                     </ul>
                 </div>
-                
+
                 <!-- Resources -->
                 <div>
                     <h4 class="text-white font-semibold mb-4">Ressourcen</h4>
@@ -500,7 +500,7 @@
                         <li><a href="changelog.html" class="text-gray-400 hover:text-zen-accent transition-colors text-sm">Changelog</a></li>
                     </ul>
                 </div>
-                
+
                 <!-- Connect -->
                 <div>
                     <h4 class="text-white font-semibold mb-4">Connect</h4>
@@ -520,7 +520,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Bottom Bar -->
             <div class="border-t border-white/10 pt-8 flex flex-col md:flex-row items-center justify-between">
                 <p class="text-gray-500 text-sm">
@@ -540,33 +540,33 @@
         // Initialize Lucide Icons
         document.addEventListener('DOMContentLoaded', function() {
             lucide.createIcons();
-            
+
             // Register GSAP ScrollTrigger
             gsap.registerPlugin(ScrollTrigger);
-            
+
             // Hero Animations
             const heroTimeline = gsap.timeline({ defaults: { ease: 'power3.out' } });
-            
+
             heroTimeline
                 .to('#hero-badge', { opacity: 1, y: 0, duration: 0.6, delay: 0.2 })
                 .to('#hero-title', { opacity: 1, y: 0, duration: 0.8 }, '-=0.3')
                 .to('#hero-tagline', { opacity: 1, y: 0, duration: 0.6 }, '-=0.5')
                 .to('#hero-subtitle', { opacity: 1, y: 0, duration: 0.6 }, '-=0.4')
                 .to('#hero-cta', { opacity: 1, y: 0, duration: 0.6 }, '-=0.3');
-            
+
             // Set initial states for hero elements
             gsap.set('#hero-badge', { opacity: 0, y: 20 });
             gsap.set('#hero-title', { opacity: 0, y: 30 });
             gsap.set('#hero-tagline', { opacity: 0, y: 20 });
             gsap.set('#hero-subtitle', { opacity: 0, y: 20 });
             gsap.set('#hero-cta', { opacity: 0, y: 20 });
-            
+
             // Stats Counter Animation
             const statNumbers = document.querySelectorAll('.stat-number[data-target]');
-            
+
             statNumbers.forEach(stat => {
                 const target = parseInt(stat.getAttribute('data-target'));
-                
+
                 ScrollTrigger.create({
                     trigger: stat,
                     start: 'top 80%',
@@ -584,10 +584,10 @@
                     once: true
                 });
             });
-            
+
             // Feature Cards Animation
             const featureCards = document.querySelectorAll('.feature-card');
-            
+
             featureCards.forEach((card, index) => {
                 gsap.from(card, {
                     scrollTrigger: {
@@ -601,10 +601,10 @@
                     ease: 'power3.out'
                 });
             });
-            
+
             // Stat Cards Animation
             const statCards = document.querySelectorAll('.stat-card');
-            
+
             statCards.forEach((card, index) => {
                 gsap.from(card, {
                     scrollTrigger: {
@@ -619,10 +619,10 @@
                     ease: 'back.out(1.7)'
                 });
             });
-            
+
             // Navigation Scroll Effect
             const navbar = document.getElementById('navbar');
-            
+
             window.addEventListener('scroll', () => {
                 if (window.scrollY > 50) {
                     navbar.classList.add('nav-blur', 'bg-zen-dark/80', 'border-b', 'border-white/10');
@@ -630,26 +630,26 @@
                     navbar.classList.remove('nav-blur', 'bg-zen-dark/80', 'border-b', 'border-white/10');
                 }
             }, { passive: true });
-            
+
             // Mobile Menu Toggle
             const mobileMenuBtn = document.getElementById('mobile-menu-btn');
             const mobileMenu = document.getElementById('mobile-menu');
-            
+
             mobileMenuBtn.addEventListener('click', () => {
                 mobileMenu.classList.toggle('hidden');
             });
-            
+
             // Copy Button Functionality
             const copyBtn = document.getElementById('copy-btn');
             const dockerCommand = 'docker run -it --rm zen-ai-pentest/zen-ai-pentest:latest';
-            
+
             copyBtn.addEventListener('click', () => {
                 navigator.clipboard.writeText(dockerCommand).then(() => {
                     const originalHTML = copyBtn.innerHTML;
                     copyBtn.innerHTML = '<i data-lucide="check" class="w-4 h-4"></i><span>Kopiert!</span>';
                     copyBtn.classList.add('text-zen-success');
                     lucide.createIcons();
-                    
+
                     setTimeout(() => {
                         copyBtn.innerHTML = originalHTML;
                         copyBtn.classList.remove('text-zen-success');

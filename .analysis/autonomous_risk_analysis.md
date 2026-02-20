@@ -279,7 +279,7 @@ class BayesianFilter:
     - word_probs_fp: Dict[str, float]  # False positive word probabilities
     - word_probs_tp: Dict[str, float]  # True positive word probabilities
     - fp_count, tp_count: int          # Training counts
-    
+
     def train(text: str, is_false_positive: bool)
     def predict(text: str) -> Tuple[bool, float]
 ```
@@ -479,7 +479,7 @@ def generate_retry_prompt(original, issues, confidence_breakdown):
 class KIAnalyzer:
     def __init__(self, model: str = "kimi"):
         self.model = model
-    
+
     async def analyze(prompt: str, context: str = "", max_tokens: int = 2000) -> str:
         # Uses kimi-cli subprocess
         # Fallback analysis if CLI unavailable
@@ -557,7 +557,7 @@ class LLMVotingEngine:
    ```python
    # Current (vulnerable to injection):
    await asyncio.create_subprocess_shell(command)
-   
+
    # Recommended:
    await asyncio.create_subprocess_exec(cmd, *args)
    ```

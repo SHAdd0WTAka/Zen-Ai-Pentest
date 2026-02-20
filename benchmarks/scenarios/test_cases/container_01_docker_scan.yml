@@ -12,7 +12,7 @@ description: |
   - Secrets and credential detection
   - Privilege escalation vectors
   - Network exposure analysis
-  
+
   Tests both static image analysis and runtime security.
 
 category: container_security
@@ -43,11 +43,11 @@ target_images:
   - name: "vulnerable-app:latest"
     dockerfile: true
     runtime: true
-    
+
   - name: "old-nginx:1.14"
     dockerfile: false
     runtime: true
-    
+
   - name: "dev-mysql:5.7"
     dockerfile: true
     runtime: true
@@ -58,25 +58,25 @@ dockerfile_issues:
     line: 1
     severity: medium
     description: "Using 'latest' tag for base image"
-    
+
   - issue: "no_user"
     severity: high
     description: "No USER instruction - running as root"
-    
+
   - issue: "secrets_in_env"
     line: 8
     severity: critical
     description: "Hardcoded credentials in ENV"
-    
+
   - issue: "no_healthcheck"
     severity: low
     description: "No HEALTHCHECK instruction"
-    
+
   - issue: "sensitive_mounts"
     line: 12
     severity: high
     description: "Sensitive host paths mounted"
-    
+
   - issue: "privileged_ports"
     severity: medium
     description: "Using privileged ports (80, 443)"
@@ -93,7 +93,7 @@ expected_findings:
       Privilege escalation risk if container is compromised.
     verification_method: "dockerfile_scan"
     exploit_available: true
-    
+
   - vuln_type: hardcoded_credentials
     severity: critical
     location: "Dockerfile ENV"
@@ -104,7 +104,7 @@ expected_findings:
       ENV DB_PASSWORD=SuperSecret123!
     verification_method: "secret_scan"
     exploit_available: true
-    
+
   - vuln_type: outdated_base_image
     severity: high
     location: "FROM instruction"
@@ -115,7 +115,7 @@ expected_findings:
       45 CVEs found including critical ones.
     verification_method: "image_scan"
     exploit_available: true
-    
+
   - vuln_type: vulnerable_package
     severity: critical
     location: "container filesystem"
@@ -126,7 +126,7 @@ expected_findings:
       Remote code execution vulnerability.
     verification_method: "vuln_scan"
     exploit_available: true
-    
+
   - vuln_type: privileged_container
     severity: critical
     location: "docker run command"
@@ -137,7 +137,7 @@ expected_findings:
       Full host access possible.
     verification_method: "runtime_scan"
     exploit_available: true
-    
+
   - vuln_type: sensitive_host_mount
     severity: high
     location: "volume mounts"
@@ -149,7 +149,7 @@ expected_findings:
       - Docker socket mounted
     verification_method: "runtime_scan"
     exploit_available: true
-    
+
   - vuln_type: exposed_docker_socket
     severity: critical
     location: "volume mounts"
@@ -160,7 +160,7 @@ expected_findings:
       Container escape trivial via docker API.
     verification_method: "runtime_scan"
     exploit_available: true
-    
+
   - vuln_type: kernel_capability_added
     severity: high
     location: "runtime configuration"
@@ -172,7 +172,7 @@ expected_findings:
       - CAP_SYS_PTRACE
     verification_method: "runtime_scan"
     exploit_available: true
-    
+
   - vuln_type: no_resource_limits
     severity: medium
     location: "runtime configuration"
@@ -183,7 +183,7 @@ expected_findings:
       DoS risk via resource exhaustion.
     verification_method: "runtime_scan"
     exploit_available: false
-    
+
   - vuln_type: writable_rootfs
     severity: medium
     location: "runtime configuration"
@@ -194,7 +194,7 @@ expected_findings:
       Attackers can modify system files.
     verification_method: "runtime_scan"
     exploit_available: false
-    
+
   - vuln_type: secrets_in_image
     severity: high
     location: "image layers"
@@ -214,20 +214,20 @@ parameters:
     - image_scan
     - runtime_scan
     - secret_scan
-    
+
   scanners:
     - trivy
     - clair
     - snyk
     - anchore
-    
+
   checks:
     - cve_vulnerabilities
     - misconfigurations
     - secrets
     - malware
     - license_compliance
-    
+
   cis_benchmarks:
     - docker_host
     - docker_image
@@ -287,20 +287,20 @@ cis_checks:
   host_configuration:
     - "1.1.1 Ensure the container host has been hardened"
     - "1.2.1 Ensure a separate partition for containers"
-    
+
   docker_daemon_configuration:
     - "2.1 Ensure network traffic is restricted"
     - "2.2 Ensure logging level is set to 'info'"
-    
+
   docker_daemon_configuration_files:
     - "3.1 Ensure docker.service file permissions"
     - "3.2 Ensure docker.socket file permissions"
-    
+
   container_images:
     - "4.1 Ensure a user is created for the container"
     - "4.2 Ensure containers use trusted base images"
     - "4.3 Ensure unnecessary packages are not installed"
-    
+
   container_runtime:
     - "5.1 Ensure AppArmor is enabled"
     - "5.2 Ensure SELinux is enabled"

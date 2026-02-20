@@ -50,7 +50,7 @@ This guide will help you configure branch protection for the `master`/`main` bra
    #### ☑️ Require status checks to pass before merging
    ```
    ✓ Require branches to be up to date before merging
-   
+
    Required checks:
    - test (ubuntu-latest, 3.11)
    - test (ubuntu-latest, 3.12)
@@ -217,5 +217,5 @@ If you need assistance configuring branch protection:
 
 ---
 
-**Last Updated**: 2026-01-31  
+**Last Updated**: 2026-01-31
 **Next Review**: 2026-04-30

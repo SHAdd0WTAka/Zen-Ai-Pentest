@@ -111,17 +111,17 @@ else
     echo "Response:"
     echo "$RESPONSE" | head -20
     echo ""
-    
+
     if echo "$RESPONSE" | grep -q "Not Found"; then
         echo -e "${YELLOW}⚠️  Branch '$BRANCH' might not exist${NC}"
         echo "Available branches:"
         curl -s -H "Authorization: token $TOKEN" \
             "https://api.github.com/repos/$OWNER/$REPO/branches" | grep -o '"name": "[^"]*"' | head -10
     fi
-    
+
     if echo "$RESPONSE" | grep -q "Upgrade to GitHub Pro"; then
         echo -e "${YELLOW}⚠️  Note: Some features require GitHub Pro/Team/Enterprise${NC}"
     fi
-    
+
     exit 1
 fi

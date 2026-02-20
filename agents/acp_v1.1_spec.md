@@ -1,8 +1,8 @@
 # Agent Communication Protocol (ACP) v1.1 Spezifikation
 
-**Version:** 1.1.0  
-**Datum:** 2026-02-11  
-**Autor:** Zen-Ai-Pentest Team  
+**Version:** 1.1.0
+**Datum:** 2026-02-11
+**Autor:** Zen-Ai-Pentest Team
 **Status:** Final
 
 ---
@@ -336,7 +336,7 @@ logs/{agent_id}
 
 - `*` - Ein einzelnes Topic-Level
   - `agent/*/status` matcht `agent/001/status`, `agent/002/status`
-  
+
 - `#` - Mehrere Topic-Level (nur am Ende)
   - `agent/#` matcht `agent/001`, `agent/001/status`, `agent/001/tasks/123`
 

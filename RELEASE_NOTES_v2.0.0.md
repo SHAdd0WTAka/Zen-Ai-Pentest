@@ -12,8 +12,8 @@
 pip install zen-ai-pentest==2.0.0
 ```
 
-**Package**: `zen_ai_pentest-2.0.0-py3-none-any.whl`  
-**Size**: ~155 KB  
+**Package**: `zen_ai_pentest-2.0.0-py3-none-any.whl`
+**Size**: ~155 KB
 **Python**: 3.9+
 
 ---

@@ -42,12 +42,12 @@ Ziel: CFO eines Mittelständlers
 Recherche:
   - LinkedIn: Post über neue DSGVO-Richtlinien
   - Twitter: Beschwert sich über Steuerberater
-  
+
 Angriff:
   Subject: "Wichtig: Neue DSGVO-Richtlinien"
   From: dsgvo-update@bundesfinanzdienst.de
   Attachment: "DSGVO_Checkliste_2024.pdf.exe"
-  
+
 Erfolg: 40% Öffnungsrate bei 50 Mitarbeitern
 ```
 
@@ -200,7 +200,7 @@ def create_canary():
     token = uuid.uuid4()
     username = f"svc_backup_{token[:8]}"
     password = f"Backup2024_{token[-8:]}"
-    
+
     # In Config-Files verteilen
     # Bei Verwendung -> ALARM!
     return {"username": username, "password": password}

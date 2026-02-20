@@ -12,7 +12,7 @@ description: |
   - Business logic flaws
   - Information disclosure
   - Mass assignment vulnerabilities
-  
+
   Tests OWASP API Security Top 10 compliance.
 
 category: api_security
@@ -52,70 +52,70 @@ api_spec:
     - path: "/auth/login"
       method: POST
       auth_required: false
-      
+
     - path: "/auth/register"
       method: POST
       auth_required: false
-      
+
     - path: "/auth/refresh"
       method: POST
       auth_required: true
-      
+
     # Users
     - path: "/users"
       method: GET
       auth_required: true
       admin_only: true
-      
+
     - path: "/users"
       method: POST
       auth_required: true
       admin_only: true
-      
+
     - path: "/users/{id}"
       method: GET
       auth_required: true
       owner_only: true
-      
+
     - path: "/users/{id}"
       method: PUT
       auth_required: true
       owner_only: true
-      
+
     - path: "/users/{id}"
       method: DELETE
       auth_required: true
       admin_only: true
-      
+
     # Products
     - path: "/products"
       method: GET
       auth_required: false
-      
+
     - path: "/products"
       method: POST
       auth_required: true
       roles: ["admin", "seller"]
-      
+
     - path: "/products/{id}"
       method: GET
       auth_required: false
-      
+
     - path: "/products/{id}"
       method: PUT
       auth_required: true
       owner_only: true
-      
+
     # Orders
     - path: "/orders"
       method: GET
       auth_required: true
       owner_only: true
-      
+
     - path: "/orders"
       method: POST
       auth_required: true
-      
+
     - path: "/orders/{id}"
       method: GET
       auth_required: true
@@ -133,7 +133,7 @@ expected_findings:
       by manipulating the ID parameter.
     verification_method: "api_test"
     exploit_available: true
-    
+
   - vuln_type: broken_authentication
     severity: critical
     location: "/api/v1/auth/login"
@@ -144,7 +144,7 @@ expected_findings:
       No rate limiting on login endpoint.
     verification_method: "api_test"
     exploit_available: true
-    
+
   - vuln_type: mass_assignment
     severity: high
     location: "/api/v1/users (POST/PUT)"
@@ -155,7 +155,7 @@ expected_findings:
       in user creation/update requests without validation.
     verification_method: "api_test"
     exploit_available: true
-    
+
   - vuln_type: security_misconfiguration
     severity: medium
     location: "API responses"
@@ -166,7 +166,7 @@ expected_findings:
       server versions, and internal paths.
     verification_method: "api_test"
     exploit_available: false
-    
+
   - vuln_type: excessive_data_exposure
     severity: medium
     location: "/api/v1/users/{id}"
@@ -177,7 +177,7 @@ expected_findings:
       that are not needed by the client.
     verification_method: "api_test"
     exploit_available: false
-    
+
   - vuln_type: lack_of_rate_limiting
     severity: medium
     location: "Multiple endpoints"
@@ -188,7 +188,7 @@ expected_findings:
       and DoS attacks.
     verification_method: "api_test"
     exploit_available: true
-    
+
   - vuln_type: sql_injection
     severity: critical
     location: "/api/v1/products"
@@ -206,7 +206,7 @@ parameters:
     - bearer_token
     - api_key
     - oauth2
-    
+
   test_types:
     - authorization_bypass
     - privilege_escalation
@@ -215,19 +215,19 @@ parameters:
     - data_exposure
     - http_methods
     - content_type
-    
+
   injection_tests:
     - sql_injection
     - nosql_injection
     - command_injection
     - xpath_injection
-    
+
   fuzzing:
     enabled: true
     parameters: true
     headers: true
     payloads_per_param: 100
-    
+
 # Success Criteria
 min_detection_rate: 0.70
 max_false_positive_rate: 0.15
@@ -273,7 +273,7 @@ test_credentials:
   regular_user:
     username: "user@example.com"
     password: "password123"
-    
+
   admin_user:
     username: "admin@example.com"
     password: "admin123"
@@ -285,13 +285,13 @@ scenarios:
       - authenticate as user1
       - request /api/v1/users/2
       - verify access denied (should fail - vulnerability)
-      
+
   - name: "Mass Assignment"
     steps:
       - authenticate as regular user
       - POST /api/v1/users with role=admin
       - verify user created with admin role
-      
+
   - name: "Rate Limiting"
     steps:
       - send 100 requests to /auth/login

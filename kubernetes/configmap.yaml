@@ -14,48 +14,48 @@ data:
   ENVIRONMENT: "production"
   LOG_LEVEL: "INFO"
   DEBUG: "false"
-  
+
   # CORS Settings
   CORS_ORIGINS: "https://zen-pentest.example.com"
-  
+
   # API Settings
   API_HOST: "0.0.0.0"
   API_PORT: "8000"
   API_WORKERS: "4"
-  
+
   # Database Settings (without credentials)
   DB_HOST: "postgres"
   DB_PORT: "5432"
   DB_NAME: "zen_pentest"
-  
+
   # Redis Settings (without credentials)
   REDIS_HOST: "redis"
   REDIS_PORT: "6379"
-  
+
   # Worker Settings
   CELERY_WORKER_CONCURRENCY: "4"
   CELERY_TASK_SOFT_TIME_LIMIT: "3300"
   CELERY_TASK_TIME_LIMIT: "3600"
-  
+
   # Scanning Settings
   SCAN_TIMEOUT: "3600"
   MAX_CONCURRENT_SCANS: "5"
   RATE_LIMIT_REQUESTS_PER_MINUTE: "60"
-  
+
   # Feature Flags
   ENABLE_AI_ANALYSIS: "true"
   ENABLE_COMPLIANCE_REPORTS: "true"
   ENABLE_SIEM_INTEGRATION: "false"
   ENABLE_NOTIFICATIONS: "true"
-  
+
   # Security Settings
   REQUIRE_SCAN_APPROVAL: "true"
   MAX_SCAN_TARGETS_PER_REQUEST: "10"
   ALLOWED_SCAN_TYPES: "web,network,api,cloud"
-  
+
   # Compliance Standards
   COMPLIANCE_STANDARDS: "OWASP_TOP_10,PCI_DSS,ISO27001,NIST_800_53"
-  
+
   # Retention Settings
   SCAN_RETENTION_DAYS: "365"
   REPORT_RETENTION_DAYS: "730"

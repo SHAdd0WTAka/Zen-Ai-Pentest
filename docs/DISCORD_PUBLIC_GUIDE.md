@@ -1,7 +1,7 @@
 # Discord Server - Öffentlich machen
 
-> **STATUS**: ✅ Server ist jetzt öffentlich zugänglich  
-> **Einladungslink**: https://discord.gg/zJZUJwK9AC  
+> **STATUS**: ✅ Server ist jetzt öffentlich zugänglich
+> **Einladungslink**: https://discord.gg/zJZUJwK9AC
 > **Letzte Aktualisierung**: 2026-02-11
 
 ---
@@ -183,5 +183,5 @@ git push origin main
 
 ---
 
-**Letzte Aktualisierung**: 2026-02-11  
+**Letzte Aktualisierung**: 2026-02-11
 **Server ID**: 1470531751595086017

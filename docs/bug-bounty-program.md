@@ -282,7 +282,7 @@ The following are NOT eligible for bounty:
 
 ---
 
-**Program Status:** Active  
-**Last Modified:** 2026-02-04  
-**Version:** 1.0  
+**Program Status:** Active
+**Last Modified:** 2026-02-04
+**Version:** 1.0
 **Questions?** bugbounty@zen-pentest.local

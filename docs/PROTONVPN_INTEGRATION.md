@@ -90,10 +90,10 @@ status = await vpn.connect(
 # Rotate IP every N minutes during scan
 for country in ["CH", "NL", "SE"]:
     status = await vpn.connect(country=country)
-    
+
     # Run pentest activities
     await run_nmap_scan(target)
-    
+
     # Rotate before detection
     await vpn.disconnect()
 ```
@@ -103,7 +103,7 @@ for country in ["CH", "NL", "SE"]:
 ```python
 async def secure_pentest(target: str):
     vpn = ProtonVPNManager()
-    
+
     # Phase 1: Connect with maximum security
     await vpn.connect(
         country="CH",
@@ -111,20 +111,20 @@ async def secure_pentest(target: str):
         protocol=VPNProtocol.WIREGUARD,
         kill_switch=True
     )
-    
+
     # Phase 2: Verify no leaks
     leak_test = vpn.check_ip_leak()
     if leak_test['dns_leak'] or leak_test['webrtc_leak']:
         raise Exception("VPN leak detected!")
-    
+
     # Phase 3: Run pentest tools
     await reconnaissance(target)
     await scanning(target)
-    
+
     # Phase 4: Rotate if needed
     if await check_rate_limit():
         await vpn.rotate_ip()
-    
+
     # Phase 5: Cleanup
     await vpn.disconnect()
 ```
@@ -206,16 +206,16 @@ class VPNSecurityLevel:
 
 async def anonymous_osint(target_domain: str):
     vpn = ProtonVPNManager()
-    
+
     # Connect to neutral country
     await vpn.connect(country="IS")  # Iceland
-    
+
     # Run OSINT tools
     await theharvester(target_domain)
     await shodan_search(target_domain)
-    
+
     # All requests come from Iceland IP
-    
+
     await vpn.disconnect()
 ```
 
@@ -226,20 +226,20 @@ async def anonymous_osint(target_domain: str):
 
 async def secure_c2():
     vpn = ProtonVPNManager()
-    
+
     # P2P-optimized for stable connection
     await vpn.connect(
         country="NL",
         protocol=VPNProtocol.WIREGUARD,
         p2p=True
     )
-    
+
     # Start C2 server
     # All C2 traffic encrypted and anonymized
-    
+
     while True:
         await handle_beacon()
-        
+
         # Rotate every hour
         if time_to_rotate():
             await vpn.rotate_ip()
@@ -250,19 +250,19 @@ async def secure_c2():
 ```python
 async def red_team_operation():
     vpn = ProtonVPNManager()
-    
+
     # Phase 1: Initial access
     await vpn.connect(country="CH", security_level=VPNSecurityLevel.SECURE_CORE)
     await send_phishing_emails()
-    
+
     # Phase 2: Post-exploitation
     await vpn.rotate_ip(country="SE")
     await establish_persistence()
-    
+
     # Phase 3: Data exfiltration
     await vpn.connect(country="NL", p2p=True)
     await exfiltrate_data()
-    
+
     await vpn.disconnect()
 ```
 

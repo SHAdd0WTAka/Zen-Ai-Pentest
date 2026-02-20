@@ -41,8 +41,8 @@ $workingDir = Get-Location
 $content = @"
 # Kimi Session State Backup
 
-> **Auto-generated**: $timestamp CET  
-> **Session ID**: zen-pentest-$(Get-Date -Format "yyyy-MM-dd")  
+> **Auto-generated**: $timestamp CET
+> **Session ID**: zen-pentest-$(Get-Date -Format "yyyy-MM-dd")
 > **Branch**: $branch
 
 ---
@@ -77,7 +77,7 @@ $recentCommits
   - ImportError in test_react_agent.py
   - FastAPI parameter assertion error
 
-### Priority 2: IN PROGRESS  
+### Priority 2: IN PROGRESS
 - [x] **ISO 27001 Documentation** - COMPLETED
   - [x] Information Security Policy
   - [x] Statement of Applicability

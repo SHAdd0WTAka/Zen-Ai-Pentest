@@ -5,12 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dokumentation | Zen-AI-Pentest</title>
     <meta name="description" content="Schnellstart und Installationsanleitung für Zen-AI-Pentest. Docker, manuelle Installation und Dev Container Setup.">
-    
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-    
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -34,17 +34,17 @@
             }
         }
     </script>
-    
+
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    
+
     <!-- GSAP -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
-    
+
     <!-- Shared Styles -->
     <link rel="stylesheet" href="../shared/styles.css">
-    
+
     <style>
         /* Custom Styles */
         body {
@@ -52,7 +52,7 @@
             color: #e0e0e0;
             font-family: 'Inter', sans-serif;
         }
-        
+
         /* Gradient Text */
         .gradient-text {
             background: linear-gradient(135deg, #00f0ff 0%, #00c8ff 100%);
@@ -60,31 +60,31 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
-        
+
         /* Glow Effects */
         .glow-cyan {
             box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
         }
-        
+
         .glow-cyan-hover:hover {
             box-shadow: 0 0 30px rgba(0, 240, 255, 0.5);
         }
-        
+
         /* Navigation Link Hover */
         .nav-link {
             position: relative;
             color: #888888;
             transition: color 0.3s ease;
         }
-        
+
         .nav-link:hover {
             color: #ffffff;
         }
-        
+
         .nav-link.active {
             color: #00f0ff;
         }
-        
+
         /* Code Block Styles */
         .code-block {
             background: #0d0d12;
@@ -94,7 +94,7 @@
             position: relative;
             overflow: hidden;
         }
-        
+
         .code-block pre {
             margin: 0;
             padding: 1.25rem;
@@ -102,13 +102,13 @@
             white-space: pre-wrap;
             word-break: break-word;
         }
-        
+
         .code-block code {
             color: #e0e0e0;
             font-size: 0.875rem;
             line-height: 1.6;
         }
-        
+
         .copy-btn {
             position: absolute;
             top: 0.75rem;
@@ -121,117 +121,117 @@
             transition: all 0.3s ease;
             cursor: pointer;
         }
-        
+
         .copy-btn:hover {
             background: rgba(0, 240, 255, 0.1);
             border-color: #00f0ff;
             color: #00f0ff;
         }
-        
+
         .copy-btn.copied {
             background: rgba(16, 185, 129, 0.15);
             border-color: #10b981;
             color: #10b981;
         }
-        
+
         /* Step Card */
         .step-card {
             background: linear-gradient(145deg, #12121a 0%, #1a1a25 100%);
             border: 1px solid #2a2a3a;
             transition: all 0.3s ease;
         }
-        
+
         .step-card:hover {
             border-color: #00f0ff;
             transform: translateY(-4px);
         }
-        
+
         .step-number {
             background: linear-gradient(135deg, #00f0ff 0%, #00c8ff 100%);
             color: #0a0a0f;
             font-weight: 700;
         }
-        
+
         /* Installation Method Card */
         .install-card {
             background: linear-gradient(145deg, #12121a 0%, #1a1a25 100%);
             border: 1px solid #2a2a3a;
             transition: all 0.3s ease;
         }
-        
+
         .install-card:hover {
             border-color: #00f0ff;
             box-shadow: 0 0 30px rgba(0, 240, 255, 0.2);
             transform: translateY(-4px);
         }
-        
+
         .install-card.recommended {
             border-color: #00f0ff;
             box-shadow: 0 0 20px rgba(0, 240, 255, 0.15);
         }
-        
+
         .recommended-badge {
             background: linear-gradient(135deg, #00f0ff 0%, #00c8ff 100%);
             color: #0a0a0f;
         }
-        
+
         /* Requirement Item */
         .requirement-item {
             background: rgba(18, 18, 26, 0.5);
             border: 1px solid #2a2a3a;
             transition: all 0.3s ease;
         }
-        
+
         .requirement-item:hover {
             border-color: #00f0ff;
             background: rgba(0, 240, 255, 0.05);
         }
-        
+
         /* Env Var Card */
         .env-card {
             background: linear-gradient(145deg, #12121a 0%, #1a1a25 100%);
             border: 1px solid #2a2a3a;
             transition: all 0.3s ease;
         }
-        
+
         .env-card:hover {
             border-color: #00f0ff;
         }
-        
+
         /* Doc Link Card */
         .doc-link-card {
             background: linear-gradient(145deg, #12121a 0%, #1a1a25 100%);
             border: 1px solid #2a2a3a;
             transition: all 0.3s ease;
         }
-        
+
         .doc-link-card:hover {
             border-color: #00f0ff;
             transform: translateY(-4px);
         }
-        
+
         /* Community Card */
         .community-card {
             background: linear-gradient(145deg, #12121a 0%, #1a1a25 100%);
             border: 1px solid #2a2a3a;
             transition: all 0.3s ease;
         }
-        
+
         .community-card:hover {
             border-color: #00f0ff;
             transform: translateY(-4px);
         }
-        
+
         .community-card.discord:hover {
             border-color: #5865F2;
             box-shadow: 0 0 30px rgba(88, 101, 242, 0.2);
         }
-        
+
         .community-card.github:hover {
             border-color: #ffffff;
             box-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
         }
-        
+
         /* Tab Styles */
         .tab-btn {
             background: transparent;
@@ -239,26 +239,26 @@
             color: #888888;
             transition: all 0.3s ease;
         }
-        
+
         .tab-btn:hover {
             border-color: #00f0ff;
             color: #ffffff;
         }
-        
+
         .tab-btn.active {
             background: rgba(0, 240, 255, 0.1);
             border-color: #00f0ff;
             color: #00f0ff;
         }
-        
+
         /* Background Grid */
         .bg-grid {
-            background-image: 
+            background-image:
                 linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
             background-size: 50px 50px;
         }
-        
+
         /* Toast Notification */
         .toast {
             position: fixed;
@@ -279,18 +279,18 @@
             transition: all 0.3s ease;
             z-index: 1000;
         }
-        
+
         .toast.show {
             transform: translateY(0);
             opacity: 1;
         }
-        
+
         /* Scroll Reveal */
         .reveal {
             opacity: 0;
             transform: translateY(30px);
         }
-        
+
         .reveal.active {
             opacity: 1;
             transform: translateY(0);
@@ -303,7 +303,7 @@
     <nav id="main-nav" class="fixed top-0 left-0 right-0 z-[300] transition-all duration-300 bg-[#0a0a0f]/80 backdrop-blur-xl border-b border-white/5">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16 lg:h-20">
-                
+
                 <!-- Logo -->
                 <a href="/" class="flex items-center gap-2 group">
                     <div class="relative w-10 h-10 flex items-center justify-center rounded-xl bg-gradient-to-br from-[#00f0ff] to-[#00c8ff] group-hover:shadow-lg group-hover:shadow-[#00f0ff]/30 transition-all duration-300">
@@ -313,7 +313,7 @@
                         Zen<span class="text-[#00f0ff]">-AI-</span>Pentest
                     </span>
                 </a>
-                
+
                 <!-- Desktop Navigation -->
                 <div class="hidden lg:flex items-center gap-8">
                     <a href="/" class="nav-link">Startseite</a>
@@ -322,23 +322,23 @@
                     <a href="/architecture.html" class="nav-link">Architektur</a>
                     <a href="/docs.html" class="nav-link active">Dokumentation</a>
                 </div>
-                
+
                 <!-- CTA Button & Mobile Menu Toggle -->
                 <div class="flex items-center gap-4">
                     <!-- GitHub CTA -->
-                    <a 
-                        href="https://github.com/zen-ai-pentest" 
-                        target="_blank" 
+                    <a
+                        href="https://github.com/zen-ai-pentest"
+                        target="_blank"
                         rel="noopener noreferrer"
                         class="hidden sm:inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 hover:border-white/20 transition-all duration-300"
                     >
                         <i data-lucide="github" class="w-4 h-4"></i>
                         <span>GitHub</span>
                     </a>
-                    
+
                     <!-- Mobile Menu Button -->
-                    <button 
-                        id="mobile-menu-btn" 
+                    <button
+                        id="mobile-menu-btn"
                         class="lg:hidden p-2 text-gray-400 hover:text-white transition-colors"
                         aria-label="Menü öffnen"
                         aria-expanded="false"
@@ -349,10 +349,10 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Mobile Menu -->
-        <div 
-            id="mobile-menu" 
+        <div
+            id="mobile-menu"
             class="lg:hidden hidden absolute top-full left-0 right-0 bg-[#0a0a0f]/95 backdrop-blur-xl border-b border-white/10"
         >
             <div class="container mx-auto px-4 py-6">
@@ -377,12 +377,12 @@
                         <i data-lucide="book-open" class="w-5 h-5 text-[#00f0ff]"></i>
                         <span>Dokumentation</span>
                     </a>
-                    
+
                     <div class="border-t border-white/10 my-2"></div>
-                    
-                    <a 
-                        href="https://github.com/zen-ai-pentest" 
-                        target="_blank" 
+
+                    <a
+                        href="https://github.com/zen-ai-pentest"
+                        target="_blank"
                         rel="noopener noreferrer"
                         class="flex items-center justify-center gap-2 px-4 py-3 text-[#0a0a0f] bg-gradient-to-r from-[#00f0ff] to-[#00c8ff] rounded-lg hover:shadow-lg hover:shadow-[#00f0ff]/30 transition-all"
                     >
@@ -393,7 +393,7 @@
             </div>
         </div>
     </nav>
-    
+
     <!-- Spacer for fixed navigation -->
     <div class="h-16 lg:h-20"></div>
 
@@ -402,24 +402,24 @@
         <section class="relative py-16 lg:py-24 overflow-hidden">
             <!-- Background Glow -->
             <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-[#00f0ff]/10 rounded-full blur-[120px] pointer-events-none"></div>
-            
+
             <div class="container mx-auto px-4 sm:px-6 lg:px-8 relative">
                 <div class="text-center max-w-3xl mx-auto reveal">
                     <!-- Icon -->
                     <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-[#00f0ff]/20 to-[#00c8ff]/10 border border-[#00f0ff]/30 mb-6">
                         <i data-lucide="book-open" class="w-8 h-8 text-[#00f0ff]"></i>
                     </div>
-                    
+
                     <!-- Title -->
                     <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6">
                         <span class="gradient-text">Dokumentation</span>
                     </h1>
-                    
+
                     <!-- Subtitle -->
                     <p class="text-xl text-gray-400 leading-relaxed">
                         Schnellstart und Installationsanleitung
                     </p>
-                    
+
                     <!-- Decorative Line -->
                     <div class="flex items-center justify-center gap-4 mt-8">
                         <div class="h-px w-16 bg-gradient-to-r from-transparent to-[#00f0ff]/50"></div>
@@ -536,21 +536,21 @@
                             <div class="absolute -top-3 left-1/2 -translate-x-1/2">
                                 <span class="recommended-badge px-3 py-1 text-xs font-semibold rounded-full">Empfohlen</span>
                             </div>
-                            
+
                             <div class="text-center pt-4">
                                 <div class="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-[#00f0ff]/10 border border-[#00f0ff]/30 mb-4">
                                     <i data-lucide="container" class="w-7 h-7 text-[#00f0ff]"></i>
                                 </div>
                                 <h3 class="text-xl font-semibold text-white mb-2">Docker</h3>
                                 <p class="text-gray-400 text-sm mb-6">Die einfachste Methode mit Docker Compose</p>
-                                
+
                                 <div class="code-block text-left mb-4">
                                     <button class="copy-btn" onclick="copyToClipboard(this, 'docker-compose up -d')">
                                         <i data-lucide="copy" class="w-4 h-4"></i>
                                     </button>
                                     <pre><code>docker-compose up -d</code></pre>
                                 </div>
-                                
+
                                 <ul class="text-left text-sm text-gray-400 space-y-2">
                                     <li class="flex items-center gap-2">
                                         <i data-lucide="check" class="w-4 h-4 text-[#00f0ff]"></i>
@@ -576,14 +576,14 @@
                                 </div>
                                 <h3 class="text-xl font-semibold text-white mb-2">Manuell</h3>
                                 <p class="text-gray-400 text-sm mb-6">Installation mit pip und virtueller Umgebung</p>
-                                
+
                                 <div class="code-block text-left mb-4">
                                     <button class="copy-btn" onclick="copyToClipboard(this, 'pip install -r requirements.txt')">
                                         <i data-lucide="copy" class="w-4 h-4"></i>
                                     </button>
                                     <pre><code>pip install -r requirements.txt</code></pre>
                                 </div>
-                                
+
                                 <ul class="text-left text-sm text-gray-400 space-y-2">
                                     <li class="flex items-center gap-2">
                                         <i data-lucide="check" class="w-4 h-4 text-violet-400"></i>
@@ -609,14 +609,14 @@
                                 </div>
                                 <h3 class="text-xl font-semibold text-white mb-2">Dev Container</h3>
                                 <p class="text-gray-400 text-sm mb-6">VS Code mit Dev Containers Extension</p>
-                                
+
                                 <div class="code-block text-left mb-4">
                                     <button class="copy-btn" onclick="copyToClipboard(this, 'code . && F1 > Reopen in Container')">
                                         <i data-lucide="copy" class="w-4 h-4"></i>
                                     </button>
                                     <pre><code>code . && F1 > Reopen in Container</code></pre>
                                 </div>
-                                
+
                                 <ul class="text-left text-sm text-gray-400 space-y-2">
                                     <li class="flex items-center gap-2">
                                         <i data-lucide="check" class="w-4 h-4 text-emerald-400"></i>
@@ -704,7 +704,7 @@
                             <div>
                                 <h4 class="text-white font-semibold mb-2">Empfohlene Spezifikationen</h4>
                                 <p class="text-gray-400 text-sm leading-relaxed">
-                                    Für optimale Performance empfehlen wir 8GB RAM und SSD-Speicher. 
+                                    Für optimale Performance empfehlen wir 8GB RAM und SSD-Speicher.
                                     Die Anforderungen können je nach Scan-Umfang und gleichzeitigen Prozessen variieren.
                                 </p>
                             </div>
@@ -851,9 +851,9 @@
                     <!-- Documentation Links Grid -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <!-- GitHub Repository -->
-                        <a 
-                            href="https://github.com/SHAdd0WTAka/Zen-Ai-Pentest" 
-                            target="_blank" 
+                        <a
+                            href="https://github.com/SHAdd0WTAka/Zen-Ai-Pentest"
+                            target="_blank"
                             rel="noopener noreferrer"
                             class="doc-link-card rounded-xl p-5 flex items-center gap-4 group reveal"
                         >
@@ -868,8 +868,8 @@
                         </a>
 
                         <!-- API Documentation -->
-                        <a 
-                            href="/api.html" 
+                        <a
+                            href="/api.html"
                             class="doc-link-card rounded-xl p-5 flex items-center gap-4 group reveal"
                             style="transition-delay: 0.1s;"
                         >
@@ -884,9 +884,9 @@
                         </a>
 
                         <!-- Contributing Guide -->
-                        <a 
-                            href="https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/blob/main/CONTRIBUTING.md" 
-                            target="_blank" 
+                        <a
+                            href="https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/blob/main/CONTRIBUTING.md"
+                            target="_blank"
                             rel="noopener noreferrer"
                             class="doc-link-card rounded-xl p-5 flex items-center gap-4 group reveal"
                             style="transition-delay: 0.2s;"
@@ -902,9 +902,9 @@
                         </a>
 
                         <!-- Security Policy -->
-                        <a 
-                            href="https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/blob/main/SECURITY.md" 
-                            target="_blank" 
+                        <a
+                            href="https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/blob/main/SECURITY.md"
+                            target="_blank"
                             rel="noopener noreferrer"
                             class="doc-link-card rounded-xl p-5 flex items-center gap-4 group reveal"
                             style="transition-delay: 0.3s;"
@@ -944,9 +944,9 @@
                     <!-- Community Cards -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <!-- Discord -->
-                        <a 
-                            href="https://discord.gg/zen-ai-pentest" 
-                            target="_blank" 
+                        <a
+                            href="https://discord.gg/zen-ai-pentest"
+                            target="_blank"
                             rel="noopener noreferrer"
                             class="community-card discord rounded-2xl p-6 text-center group reveal"
                         >
@@ -962,9 +962,9 @@
                         </a>
 
                         <!-- GitHub Issues -->
-                        <a 
-                            href="https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/issues" 
-                            target="_blank" 
+                        <a
+                            href="https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/issues"
+                            target="_blank"
                             rel="noopener noreferrer"
                             class="community-card github rounded-2xl p-6 text-center group reveal"
                             style="transition-delay: 0.1s;"
@@ -981,9 +981,9 @@
                         </a>
 
                         <!-- GitHub Discussions -->
-                        <a 
-                            href="https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/discussions" 
-                            target="_blank" 
+                        <a
+                            href="https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/discussions"
+                            target="_blank"
                             rel="noopener noreferrer"
                             class="community-card github rounded-2xl p-6 text-center group reveal"
                             style="transition-delay: 0.2s;"
@@ -1008,12 +1008,12 @@
     <footer class="relative bg-[#050508] border-t border-white/5">
         <!-- Background Gradient -->
         <div class="absolute inset-0 bg-gradient-to-t from-[#00f0ff]/5 to-transparent pointer-events-none"></div>
-        
+
         <div class="container mx-auto px-4 sm:px-6 lg:px-8 relative">
             <!-- Main Footer Content -->
             <div class="py-16 lg:py-20">
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 lg:gap-8">
-                    
+
                     <!-- Brand Column -->
                     <div class="lg:col-span-2">
                         <a href="/" class="flex items-center gap-3 mb-6">
@@ -1025,31 +1025,31 @@
                             </span>
                         </a>
                         <p class="text-gray-400 text-sm leading-relaxed max-w-sm mb-6">
-                            KI-gestütztes Penetration Testing Framework für automatisierte Sicherheitsanalysen. 
+                            KI-gestütztes Penetration Testing Framework für automatisierte Sicherheitsanalysen.
                             Entdecken Sie Schwachstellen schneller und effizienter.
                         </p>
                         <div class="flex items-center gap-4">
-                            <a 
-                                href="https://github.com/zen-ai-pentest" 
-                                target="_blank" 
+                            <a
+                                href="https://github.com/zen-ai-pentest"
+                                target="_blank"
                                 rel="noopener noreferrer"
                                 class="w-10 h-10 flex items-center justify-center rounded-lg bg-white/5 text-gray-400 hover:text-white hover:bg-white/10 transition-all"
                                 aria-label="GitHub"
                             >
                                 <i data-lucide="github" class="w-5 h-5"></i>
                             </a>
-                            <a 
-                                href="https://twitter.com/zenaipentest" 
-                                target="_blank" 
+                            <a
+                                href="https://twitter.com/zenaipentest"
+                                target="_blank"
                                 rel="noopener noreferrer"
                                 class="w-10 h-10 flex items-center justify-center rounded-lg bg-white/5 text-gray-400 hover:text-white hover:bg-white/10 transition-all"
                                 aria-label="Twitter"
                             >
                                 <i data-lucide="twitter" class="w-5 h-5"></i>
                             </a>
-                            <a 
-                                href="https://discord.gg/zen-ai-pentest" 
-                                target="_blank" 
+                            <a
+                                href="https://discord.gg/zen-ai-pentest"
+                                target="_blank"
                                 rel="noopener noreferrer"
                                 class="w-10 h-10 flex items-center justify-center rounded-lg bg-white/5 text-gray-400 hover:text-white hover:bg-white/10 transition-all"
                                 aria-label="Discord"
@@ -1058,7 +1058,7 @@
                             </a>
                         </div>
                     </div>
-                    
+
                     <!-- Produkt Column -->
                     <div>
                         <h3 class="text-white font-semibold mb-5">Produkt</h3>
@@ -1090,7 +1090,7 @@
                             </li>
                         </ul>
                     </div>
-                    
+
                     <!-- Ressourcen Column -->
                     <div>
                         <h3 class="text-white font-semibold mb-5">Ressourcen</h3>
@@ -1122,7 +1122,7 @@
                             </li>
                         </ul>
                     </div>
-                    
+
                     <!-- Rechtlich Column -->
                     <div>
                         <h3 class="text-white font-semibold mb-5">Rechtlich</h3>
@@ -1156,7 +1156,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Bottom Bar -->
             <div class="py-6 border-t border-white/5">
                 <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -1258,13 +1258,13 @@
 
         window.addEventListener('scroll', () => {
             const currentScroll = window.pageYOffset;
-            
+
             if (currentScroll > 100) {
                 nav.classList.add('bg-[#0a0a0f]/95', 'backdrop-blur-xl');
             } else {
                 nav.classList.remove('bg-[#0a0a0f]/95', 'backdrop-blur-xl');
             }
-            
+
             lastScroll = currentScroll;
         });
 

@@ -5,7 +5,7 @@ exports.default = childElements;
 
 /**
  * Collects all child elements of an element.
- * 
+ *
  * @param node the element
  */
 function childElements(node) {

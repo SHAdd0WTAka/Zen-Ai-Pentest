@@ -78,7 +78,7 @@ Nachher:
 
 1. **Bot braucht Rechte:**
    - Server verwalten
-   - Rollen verwalten  
+   - Rollen verwalten
    - Kanäle verwalten
 
 2. **Rollen-Hierarchie:**

@@ -105,15 +105,15 @@ Options are set on the didYouMean function object. You may change them at any ti
 
   By default, the method will return the winning string value (if any). If your list contains objects rather
   than strings, you may set returnWinningObject to true.
-  
+
   ```
   didYouMean.returnWinningObject = true;
   ```
-  
+
   This option has no effect on lists of strings.
 
 ### returnFirstMatch
-  
+
   By default, the method will search all values and return the closest match. If you're simply looking for a "good-
   enough" match, you can set your thresholds appropriately and set returnFirstMatch to true to substantially speed
   things up.

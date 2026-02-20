@@ -177,16 +177,16 @@ from autonomous.agent_loop import BaseTool, ToolResult
 class NewTool(BaseTool):
     name = "new_tool"
     description = "Description of the tool"
-    
+
     async def execute(self, parameters: Dict[str, Any]) -> ToolResult:
         # 1. Validate parameters
         target = parameters.get("target")
         if not self._is_valid_target(target):
             return ToolResult(success=False, error="Invalid target")
-        
+
         # 2. Build command
         cmd = ["tool_name", "-flag", target]
-        
+
         # 3. Execute with timeout
         try:
             process = await asyncio.create_subprocess_exec(
@@ -195,15 +195,15 @@ class NewTool(BaseTool):
                 stderr=asyncio.subprocess.PIPE
             )
             stdout, stderr = await asyncio.wait_for(
-                process.communicate(), 
+                process.communicate(),
                 timeout=self.timeout
             )
         except asyncio.TimeoutError:
             return ToolResult(success=False, error="Timeout")
-        
+
         # 4. Parse output
         data = self._parse_output(stdout.decode())
-        
+
         return ToolResult(success=True, data=data)
 ```
 
@@ -313,7 +313,7 @@ DOCKER_HOST=unix:///var/run/docker.sock
 **Current State: 100% Complete**
 
 - ✅ Phase A: Nuclei Integration
-- ✅ Phase B: SQLMap Integration  
+- ✅ Phase B: SQLMap Integration
 - ✅ Phase C: Multi-Agent System
 - ✅ Phase D: Docker Sandbox
 - ✅ Phase E: Documentation
@@ -403,7 +403,7 @@ When making changes:
 When assisting with this framework, you MUST include warnings like:
 
 ```
-⚠️ LEGAL WARNING: Only scan systems you own or have EXPLICIT WRITTEN 
+⚠️ LEGAL WARNING: Only scan systems you own or have EXPLICIT WRITTEN
 permission to test. Unauthorized scanning is ILLEGAL and can result in:
 - Criminal prosecution
 - Civil liability

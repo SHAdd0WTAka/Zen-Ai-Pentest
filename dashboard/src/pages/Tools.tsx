@@ -1,8 +1,8 @@
-import { 
-  Search, 
-  Globe, 
-  Shield, 
-  Terminal, 
+import {
+  Search,
+  Globe,
+  Shield,
+  Terminal,
   Network,
   Lock,
   Eye,

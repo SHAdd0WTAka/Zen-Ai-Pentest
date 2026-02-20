@@ -154,7 +154,7 @@ curl -X POST http://localhost:8000/api/v1/siem/connect \
 # 1. Mock-SIEM Test
 python test_mock_siem.py
 
-# 2. Standalone Test  
+# 2. Standalone Test
 python standalone_scan.py --target example.com
 
 # 3. API Health Check

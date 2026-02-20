@@ -11,64 +11,64 @@
   --color-primary-light: #818cf8;
   --color-primary-dark: #4f46e5;
   --color-primary-rgb: 99, 102, 241;
-  
+
   /* Secondary Colors */
   --color-secondary: #8b5cf6;
   --color-secondary-light: #a78bfa;
   --color-secondary-dark: #7c3aed;
   --color-secondary-rgb: 139, 92, 246;
-  
+
   /* Accent Colors */
   --color-accent: #06b6d4;
   --color-accent-light: #22d3ee;
   --color-accent-dark: #0891b2;
   --color-accent-rgb: 6, 182, 212;
-  
+
   /* Semantic Colors */
   --color-success: #10b981;
   --color-success-light: #34d399;
   --color-success-rgb: 16, 185, 129;
-  
+
   --color-warning: #f59e0b;
   --color-warning-light: #fbbf24;
   --color-warning-rgb: 245, 158, 11;
-  
+
   --color-danger: #ef4444;
   --color-danger-light: #f87171;
   --color-danger-rgb: 239, 68, 68;
-  
+
   /* Neutral Colors */
   --color-dark: #0a0a0f;
   --color-darker: #050508;
   --color-dark-light: #13131f;
   --color-dark-lighter: #1e1e2e;
-  
+
   --color-card: #13131f;
   --color-card-hover: #1a1a28;
-  
+
   --color-border: #2a2a3e;
   --color-border-light: #3a3a4e;
-  
+
   --color-text: #f8fafc;
   --color-text-muted: #94a3b8;
   --color-text-dim: #64748b;
-  
+
   /* Gradients */
   --gradient-primary: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
   --gradient-accent: linear-gradient(135deg, var(--color-accent) 0%, var(--color-primary) 100%);
   --gradient-dark: linear-gradient(180deg, var(--color-dark) 0%, var(--color-darker) 100%);
   --gradient-card: linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%);
-  
+
   /* Glow Effects */
   --glow-primary: 0 0 20px rgba(var(--color-primary-rgb), 0.4);
   --glow-accent: 0 0 20px rgba(var(--color-accent-rgb), 0.4);
   --glow-success: 0 0 20px rgba(var(--color-success-rgb), 0.4);
   --glow-danger: 0 0 20px rgba(var(--color-danger-rgb), 0.4);
-  
+
   /* Typography */
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
-  
+
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
   --text-base: 1rem;
@@ -79,14 +79,14 @@
   --text-4xl: 2.25rem;
   --text-5xl: 3rem;
   --text-6xl: 3.75rem;
-  
+
   --font-light: 300;
   --font-normal: 400;
   --font-medium: 500;
   --font-semibold: 600;
   --font-bold: 700;
   --font-extrabold: 800;
-  
+
   /* Spacing */
   --space-1: 0.25rem;
   --space-2: 0.5rem;
@@ -100,7 +100,7 @@
   --space-16: 4rem;
   --space-20: 5rem;
   --space-24: 6rem;
-  
+
   /* Border Radius */
   --radius-sm: 0.375rem;
   --radius-md: 0.5rem;
@@ -108,19 +108,19 @@
   --radius-xl: 1rem;
   --radius-2xl: 1.5rem;
   --radius-full: 9999px;
-  
+
   /* Shadows */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
   --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.6);
-  
+
   /* Transitions */
   --transition-fast: 150ms ease;
   --transition-base: 250ms ease;
   --transition-slow: 350ms ease;
   --transition-bounce: 500ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
-  
+
   /* Z-Index Scale */
   --z-dropdown: 100;
   --z-sticky: 200;
@@ -775,7 +775,7 @@ input, textarea, select {
    Background Effects
    ------------------------------------------ */
 .bg-grid {
-  background-image: 
+  background-image:
     linear-gradient(rgba(99, 102, 241, 0.03) 1px, transparent 1px),
     linear-gradient(90deg, rgba(99, 102, 241, 0.03) 1px, transparent 1px);
   background-size: 50px 50px;
@@ -852,7 +852,7 @@ input, textarea, select {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-  
+
   html {
     scroll-behavior: auto;
   }

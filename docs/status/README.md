@@ -65,8 +65,8 @@ When you fork this repository:
 
 The status card includes a **mandatory legal notice** for AI agents:
 
-> ⚠️ Only scan systems you OWN or have EXPLICIT WRITTEN permission to test  
-> ⚠️ Unauthorized scanning is ILLEGAL and can result in criminal prosecution  
+> ⚠️ Only scan systems you OWN or have EXPLICIT WRITTEN permission to test
+> ⚠️ Unauthorized scanning is ILLEGAL and can result in criminal prosecution
 > ⚠️ The USER is solely responsible for their actions, NOT the AI
 
 This serves as an additional guardrail to remind AI assistants and users about the legal implications of using security testing tools.

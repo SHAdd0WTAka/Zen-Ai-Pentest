@@ -25,7 +25,7 @@ services:
         - PYTHON_VERSION=${PYTHON_VERSION:-3.11}
     image: zenai/zen-pentest:${ZEN_PENTEST_VERSION:-2.0.0}
     container_name: zen-pentest-ci
-    
+
     # Environment Configuration
     environment:
       # Core Settings
@@ -33,36 +33,36 @@ services:
       - ZEN_THREADS=${ZEN_THREADS:-10}
       - ZEN_TIMEOUT=${ZEN_TIMEOUT:-300}
       - ZEN_CI_MODE=true
-      
+
       # AI Configuration
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4}
-      
+
       # Scan Configuration
       - ZEN_SCAN_TARGET=${ZEN_SCAN_TARGET:-https://example.com}
       - ZEN_SCAN_MODE=${ZEN_SCAN_MODE:-full}
       - ZEN_SCAN_INTENSITY=${ZEN_SCAN_INTENSITY:-medium}
       - ZEN_SCAN_ID=${ZEN_SCAN_ID:-ci-scan}
-      
+
       # Database Connection
       - DATABASE_URL=postgresql://zen:${POSTGRES_PASSWORD:-zenpass}@postgres:5432/zen_pentest
       - REDIS_URL=redis://redis:6379/0
-      
+
       # Reporting
       - ZEN_REPORT_FORMATS=${ZEN_REPORT_FORMATS:-json,html,sarif}
       - ZEN_REPORT_DIR=/app/reports
-      
+
       # Notifications
       - SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL}
       - EMAIL_SMTP_HOST=${EMAIL_SMTP_HOST}
       - EMAIL_SMTP_PORT=${EMAIL_SMTP_PORT:-587}
       - EMAIL_USER=${EMAIL_USER}
       - EMAIL_PASS=${EMAIL_PASS}
-      
+
       # Security
       - PYTHONDONTWRITEBYTECODE=1
       - PYTHONUNBUFFERED=1
-    
+
     # Volume Mounts
     volumes:
       # Report output directory
@@ -77,11 +77,11 @@ services:
       - ../custom_plugins:/app/custom_plugins:ro
       # Evidence storage
       - zen-evidence:/app/evidence
-    
+
     # Network Configuration
     networks:
       - zen-network
-    
+
     # Resource Limits
     deploy:
       resources:
@@ -91,7 +91,7 @@ services:
         reservations:
           cpus: '0.5'
           memory: 1G
-    
+
     # Health Check
     healthcheck:
       test: ["CMD", "zen-pentest", "health-check"]
@@ -99,35 +99,35 @@ services:
       timeout: 10s
       retries: 3
       start_period: 10s
-    
+
     # Restart Policy
     restart: "no"
-    
+
     # Dependencies
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
-    
+
     # Security Options
     security_opt:
       - no-new-privileges:true
-    
+
     # Read-only root filesystem
     read_only: true
-    
+
     # Temporary filesystem for writable directories
     tmpfs:
       - /tmp:noexec,nosuid,size=500m
-    
+
     # Capabilities
     cap_drop:
       - ALL
     cap_add:
       - NET_RAW  # Required for network scanning
       - NET_BIND_SERVICE
-    
+
     # User (non-root)
     user: "1000:1000"
 

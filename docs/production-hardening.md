@@ -121,15 +121,15 @@ server {
 
     ssl_certificate /etc/ssl/certs/pentest.crt;
     ssl_certificate_key /etc/ssl/private/pentest.key;
-    
+
     # Strong SSL configuration
     ssl_protocols TLSv1.2 TLSv1.3;
     ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256;
     ssl_prefer_server_ciphers off;
-    
+
     # HSTS
     add_header Strict-Transport-Security "max-age=63072000" always;
-    
+
     location / {
         proxy_pass http://127.0.0.1:8000;
         proxy_set_header Host $host;
@@ -438,7 +438,7 @@ services:
     image: prom/prometheus
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
-  
+
   grafana:
     image: grafana/grafana
     ports:
@@ -505,6 +505,6 @@ services:
 
 ---
 
-**Last Updated**: 2026-02-04  
-**Version**: 1.0  
+**Last Updated**: 2026-02-04
+**Version**: 1.0
 **Classification**: Internal Use

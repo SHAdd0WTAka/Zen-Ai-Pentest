@@ -362,10 +362,10 @@ while True:
     status = requests.get(
         f'http://localhost:8000/api/v1/orchestrator/tasks/{task_id}'
     ).json()
-    
+
     if status['state'] in ['completed', 'failed']:
         break
-    
+
     print(f"Progress: {status.get('progress', 0)}%")
     time.sleep(5)
 

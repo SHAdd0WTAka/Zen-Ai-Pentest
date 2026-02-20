@@ -12,7 +12,7 @@ description: |
   - Form enumeration
   - API endpoint discovery
   - Parameter extraction
-  
+
   Evaluates coverage vs. depth trade-offs.
 
 category: web_security
@@ -46,42 +46,42 @@ site_structure:
       - "/"
       - "/login"
       - "/about"
-      
+
     level_1:
       - "/dashboard"
       - "/profile"
       - "/products"
       - "/api/docs"
-      
+
     level_2:
       - "/profile/settings"
       - "/profile/security"
       - "/products/category/{id}"
       - "/products/search"
-      
+
     level_3:
       - "/products/category/{id}/item/{item_id}"
       - "/profile/settings/notifications"
       - "/admin/users"
-      
+
     level_4:
       - "/admin/users/{id}/permissions"
       - "/admin/users/{id}/activity"
       - "/api/internal/metrics"
-      
+
     level_5_plus:
       - "/api/internal/metrics/detailed"
       - "/admin/system/config/advanced"
 
   total_pages: 150
   total_endpoints: 200
-  
+
   dynamic_elements:
     - infinite_scroll
     - ajax_pagination
     - modal_forms
     - single_page_app_navigation
-    
+
   hidden_endpoints:
     - "/.git/config"
     - "/admin-backup/"
@@ -98,7 +98,7 @@ expected_findings:
     description: ".git directory exposed, source code can be extracted"
     verification_method: "access_test"
     exploit_available: true
-    
+
   - vuln_type: information_disclosure
     severity: medium
     location: "http://localhost:4000/.env"
@@ -107,7 +107,7 @@ expected_findings:
     description: "Environment file exposed containing sensitive configuration"
     verification_method: "access_test"
     exploit_available: true
-    
+
   - vuln_type: hidden_admin_panel
     severity: medium
     location: "http://localhost:4000/admin-backup/"
@@ -116,7 +116,7 @@ expected_findings:
     description: "Backup admin panel accessible without authentication"
     verification_method: "access_test"
     exploit_available: true
-    
+
   - vuln_type: exposed_api_endpoint
     severity: low
     location: "http://localhost:4000/api/internal/"
@@ -134,19 +134,19 @@ parameters:
     - 5
     - 10
     - unlimited
-    
+
   crawl_strategies:
     - breadth_first
     - depth_first
     - intelligent
-    
+
   features_to_test:
     - javascript_rendering
     - ajax_handling
     - form_submission
     - authentication_handling
     - scope_control
-    
+
   coverage_metrics:
     - pages_discovered
     - endpoints_found
@@ -165,15 +165,15 @@ coverage_expectations:
   depth_2:
     pages: 25
     coverage_percent: 17
-    
+
   depth_3:
     pages: 60
     coverage_percent: 40
-    
+
   depth_5:
     pages: 120
     coverage_percent: 80
-    
+
   unlimited:
     pages: 150
     coverage_percent: 100
@@ -222,22 +222,22 @@ coverage_checklist:
     - "/"
     - "/about"
     - "/contact"
-    
+
   authenticated_pages:
     - "/dashboard"
     - "/profile"
     - "/profile/settings"
-    
+
   dynamic_pages:
     - "/products"
     - "/products/category/*"
     - "/products/search"
-    
+
   api_endpoints:
     - "/api/v1/*"
     - "/api/v2/*"
     - "/api/internal/*"
-    
+
   hidden_resources:
     - "/.git/*"
     - "/.env"
@@ -250,10 +250,10 @@ performance_benchmarks:
   pages_per_second:
     minimum: 5
     target: 20
-    
+
   memory_per_100_pages_mb:
     maximum: 512
-    
+
   accuracy:
     false_positive_rate_max: 0.10
     duplicate_detection_rate_min: 0.95

@@ -5,7 +5,7 @@ exports.default = clear;
 
 /**
  * Removes all child nodes from a given node.
- * 
+ *
  * @param node the node to clear
  */
 function clear(node) {
