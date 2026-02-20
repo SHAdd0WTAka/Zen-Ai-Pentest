@@ -29,6 +29,7 @@ jobs:
   quick-test:
     name: Quick Test Run
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     
     steps:
     - name: Checkout code
@@ -69,6 +70,7 @@ jobs:
   coverage-simple:
     name: Simple Coverage
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     needs: quick-test
     
     steps:
@@ -121,6 +123,7 @@ jobs:
   lint-check:
     name: Lint Check
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     
     steps:
     - name: Checkout code

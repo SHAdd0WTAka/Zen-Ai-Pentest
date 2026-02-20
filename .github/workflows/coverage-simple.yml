@@ -11,9 +11,17 @@ on:
   #   branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
     - name: Skipped
       run: echo "This workflow is disabled - use ci.yml instead"

@@ -24,6 +24,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
   analyze-and-fix:
     name: Analyze and Auto-Fix
@@ -140,6 +143,7 @@ jobs:
   fix-common-issues:
     name: Fix Common Issues
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     needs: analyze-and-fix
     if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
     permissions:
@@ -185,6 +189,7 @@ jobs:
   security-patches:
     name: Apply Security Patches
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     needs: analyze-and-fix
     if: github.event_name == 'schedule' || github.event.inputs.fix_mode == 'aggressive'
     permissions:
@@ -240,6 +245,7 @@ jobs:
   notify:
     name: Send Notifications
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     needs: [analyze-and-fix, fix-common-issues, security-patches]
     if: always()
     

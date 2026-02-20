@@ -189,6 +189,7 @@ jobs:
   pr-comment:
     name: Comment PR with Benchmark Results
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     needs: run-benchmarks
     if: github.event_name == 'pull_request' && needs.run-benchmarks.outputs.results_path != ''
     
@@ -293,6 +294,7 @@ jobs:
   update-benchmark-issue:
     name: Update Benchmark Tracking Issue
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     needs: run-benchmarks
     if: github.event_name == 'schedule'
     
@@ -368,6 +370,7 @@ jobs:
   regression-check:
     name: Check for Performance Regressions
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     needs: run-benchmarks
     if: github.event_name == 'pull_request'
     
