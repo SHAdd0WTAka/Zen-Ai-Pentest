@@ -13,6 +13,15 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+from database.crud import create_finding as crud_create_finding
+from database.crud import create_report as crud_create_report
+from database.crud import create_scan as crud_create_scan
+from database.crud import get_findings as crud_get_findings
+from database.crud import get_reports as crud_get_reports
+from database.crud import get_scan as crud_get_scan
+from database.crud import get_scans as crud_get_scans
+from database.crud import update_scan_status as crud_update_scan_status
+
 # Import models
 from database.models import (
     Asset,
@@ -29,27 +38,16 @@ from database.models import (
     ToolConfig,
     User,
     VulnerabilityDB,
-    create_scan as models_create_scan,
-    create_finding as models_create_finding,
-    create_report as models_create_report,
-    create_audit_log as models_create_audit_log,
-    get_scan as models_get_scan,
-    get_scans as models_get_scans,
-    get_findings as models_get_findings,
-    get_reports as models_get_reports,
-    update_scan_status as models_update_scan_status,
 )
-from database.crud import (
-    create_scan as crud_create_scan,
-    get_scan as crud_get_scan,
-    get_scans as crud_get_scans,
-    update_scan_status as crud_update_scan_status,
-    create_finding as crud_create_finding,
-    get_findings as crud_get_findings,
-    create_report as crud_create_report,
-    get_reports as crud_get_reports,
-)
-
+from database.models import create_audit_log as models_create_audit_log
+from database.models import create_finding as models_create_finding
+from database.models import create_report as models_create_report
+from database.models import create_scan as models_create_scan
+from database.models import get_findings as models_get_findings
+from database.models import get_reports as models_get_reports
+from database.models import get_scan as models_get_scan
+from database.models import get_scans as models_get_scans
+from database.models import update_scan_status as models_update_scan_status
 
 # ============================================================================
 # Fixtures
@@ -64,9 +62,9 @@ def db_session():
     Base.metadata.create_all(bind=engine)
     TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
     session = TestingSessionLocal()
-    
+
     yield session
-    
+
     session.close()
     Base.metadata.drop_all(bind=engine)
 
@@ -103,10 +101,10 @@ class TestUserModel:
         """Test username uniqueness constraint"""
         user1 = User(username="uniqueuser", email="user1@test.com", hashed_password="pass1")
         user2 = User(username="uniqueuser", email="user2@test.com", hashed_password="pass2")
-        
+
         db_session.add(user1)
         db_session.commit()
-        
+
         db_session.add(user2)
         with pytest.raises(Exception):  # IntegrityError
             db_session.commit()
@@ -115,10 +113,10 @@ class TestUserModel:
         """Test email uniqueness constraint"""
         user1 = User(username="user1", email="same@test.com", hashed_password="pass1")
         user2 = User(username="user2", email="same@test.com", hashed_password="pass2")
-        
+
         db_session.add(user1)
         db_session.commit()
-        
+
         db_session.add(user2)
         with pytest.raises(Exception):  # IntegrityError
             db_session.commit()
@@ -1217,7 +1215,18 @@ class MockNameTarget:
 class MockFindingData:
     """Mock finding data object"""
 
-    def __init__(self, scan_id, title, description=None, severity=None, cvss_score=None, cve_id=None, evidence=None, remediation=None, tool=None):
+    def __init__(
+        self,
+        scan_id,
+        title,
+        description=None,
+        severity=None,
+        cvss_score=None,
+        cve_id=None,
+        evidence=None,
+        remediation=None,
+        tool=None,
+    ):
         self.scan_id = scan_id
         self.title = title
         self.description = description

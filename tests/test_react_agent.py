@@ -3,26 +3,23 @@ Comprehensive tests for ReAct Agent
 Tests the ReAct agent implementation with mocked LLM and tools
 """
 
-import pytest
 import sys
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import MagicMock, Mock, patch
+
+import pytest
 
 # Mock imports before importing react_agent
-sys.modules['core'] = MagicMock()
-sys.modules['core.llm_backend'] = MagicMock()
-sys.modules['database'] = MagicMock()
-sys.modules['database.cve_database'] = MagicMock()
-sys.modules['tools'] = MagicMock()
-sys.modules['tools.ffuf_integration'] = MagicMock()
-sys.modules['tools.nmap_integration'] = MagicMock()
-sys.modules['tools.nuclei_integration'] = MagicMock()
+sys.modules["core"] = MagicMock()
+sys.modules["core.llm_backend"] = MagicMock()
+sys.modules["database"] = MagicMock()
+sys.modules["database.cve_database"] = MagicMock()
+sys.modules["tools"] = MagicMock()
+sys.modules["tools.ffuf_integration"] = MagicMock()
+sys.modules["tools.nmap_integration"] = MagicMock()
+sys.modules["tools.nuclei_integration"] = MagicMock()
 
 # Now import after mocking
-from agents.react_agent import (
-    ReActAgent,
-    ReActAgentConfig,
-    get_agent
-)
+from agents.react_agent import ReActAgent, ReActAgentConfig, get_agent
 
 
 class TestReActAgentConfig:
@@ -44,7 +41,7 @@ class TestReActAgentConfig:
             enable_sandbox=False,
             auto_approve_dangerous=True,
             use_human_in_the_loop=False,
-            llm_model="gpt-3.5-turbo"
+            llm_model="gpt-3.5-turbo",
         )
         assert config.max_iterations == 20
         assert config.enable_sandbox is False
@@ -65,8 +62,8 @@ class TestReActAgentConfig:
 class TestReActAgentInitialization:
     """Test ReActAgent initialization"""
 
-    @patch('agents.react_agent.LLMBackend')
-    @patch('agents.react_agent.CVEDatabase')
+    @patch("agents.react_agent.LLMBackend")
+    @patch("agents.react_agent.CVEDatabase")
     def test_init_with_defaults(self, mock_cve_db, mock_llm_backend):
         """Test initialization with default config"""
         mock_llm = Mock()
@@ -79,8 +76,8 @@ class TestReActAgentInitialization:
         mock_llm_backend.assert_called_once_with(model="gpt-4o")
         mock_cve_db.assert_called_once()
 
-    @patch('agents.react_agent.LLMBackend')
-    @patch('agents.react_agent.CVEDatabase')
+    @patch("agents.react_agent.LLMBackend")
+    @patch("agents.react_agent.CVEDatabase")
     def test_init_with_custom_config(self, mock_cve_db, mock_llm_backend):
         """Test initialization with custom config"""
         mock_llm = Mock()
@@ -93,8 +90,8 @@ class TestReActAgentInitialization:
         assert agent.config.llm_model == "custom-model"
         mock_llm_backend.assert_called_once_with(model="custom-model")
 
-    @patch('agents.react_agent.LLMBackend')
-    @patch('agents.react_agent.CVEDatabase')
+    @patch("agents.react_agent.LLMBackend")
+    @patch("agents.react_agent.CVEDatabase")
     def test_tools_initialized(self, mock_cve_db, mock_llm_backend):
         """Test that tools are properly initialized"""
         mock_llm = Mock()
@@ -110,8 +107,8 @@ class TestReActAgentInitialization:
         assert "lookup_cve" in tool_names
         assert "validate_exploit" in tool_names
 
-    @patch('agents.react_agent.LLMBackend')
-    @patch('agents.react_agent.CVEDatabase')
+    @patch("agents.react_agent.LLMBackend")
+    @patch("agents.react_agent.CVEDatabase")
     def test_tools_by_name_mapping(self, mock_cve_db, mock_llm_backend):
         """Test tools_by_name dictionary"""
         mock_llm = Mock()
@@ -125,8 +122,8 @@ class TestReActAgentInitialization:
         assert "lookup_cve" in agent.tools_by_name
         assert "validate_exploit" in agent.tools_by_name
 
-    @patch('agents.react_agent.LLMBackend')
-    @patch('agents.react_agent.CVEDatabase')
+    @patch("agents.react_agent.LLMBackend")
+    @patch("agents.react_agent.CVEDatabase")
     def test_graph_compiled(self, mock_cve_db, mock_llm_backend):
         """Test that LangGraph workflow is compiled"""
         mock_llm = Mock()
@@ -140,9 +137,9 @@ class TestReActAgentInitialization:
 class TestReActAgentTools:
     """Test ReActAgent tool implementations"""
 
-    @patch('agents.react_agent.LLMBackend')
-    @patch('agents.react_agent.CVEDatabase')
-    @patch('agents.react_agent.NmapTool')
+    @patch("agents.react_agent.LLMBackend")
+    @patch("agents.react_agent.CVEDatabase")
+    @patch("agents.react_agent.NmapTool")
     def test_scan_ports_tool(self, mock_nmap_class, mock_cve_db, mock_llm_backend):
         """Test scan_ports tool"""
         mock_llm = Mock()
@@ -160,9 +157,9 @@ class TestReActAgentTools:
         mock_nmap.scan.assert_called_once_with("example.com", "top-100")
         assert "ports" in result
 
-    @patch('agents.react_agent.LLMBackend')
-    @patch('agents.react_agent.CVEDatabase')
-    @patch('agents.react_agent.NucleiTool')
+    @patch("agents.react_agent.LLMBackend")
+    @patch("agents.react_agent.CVEDatabase")
+    @patch("agents.react_agent.NucleiTool")
     def test_scan_vulnerabilities_tool(self, mock_nuclei_class, mock_cve_db, mock_llm_backend):
         """Test scan_vulnerabilities tool"""
         mock_llm = Mock()
@@ -180,9 +177,9 @@ class TestReActAgentTools:
         mock_nuclei.scan.assert_called_once_with("example.com", severity="critical")
         assert "vulnerabilities" in result
 
-    @patch('agents.react_agent.LLMBackend')
-    @patch('agents.react_agent.CVEDatabase')
-    @patch('agents.react_agent.FfufTool')
+    @patch("agents.react_agent.LLMBackend")
+    @patch("agents.react_agent.CVEDatabase")
+    @patch("agents.react_agent.FfufTool")
     def test_enumerate_directories_tool(self, mock_ffuf_class, mock_cve_db, mock_llm_backend):
         """Test enumerate_directories tool"""
         mock_llm = Mock()
@@ -200,8 +197,8 @@ class TestReActAgentTools:
         mock_ffuf.directory_bruteforce.assert_called_once_with("example.com", "common.txt")
         assert "directories" in result
 
-    @patch('agents.react_agent.LLMBackend')
-    @patch('agents.react_agent.CVEDatabase')
+    @patch("agents.react_agent.LLMBackend")
+    @patch("agents.react_agent.CVEDatabase")
     def test_lookup_cve_tool_found(self, mock_cve_db_class, mock_llm_backend):
         """Test lookup_cve tool when CVE is found"""
         mock_llm = Mock()
@@ -227,8 +224,8 @@ class TestReActAgentTools:
         assert "CVE-2021-44228" in result
         assert "10.0" in result
 
-    @patch('agents.react_agent.LLMBackend')
-    @patch('agents.react_agent.CVEDatabase')
+    @patch("agents.react_agent.LLMBackend")
+    @patch("agents.react_agent.CVEDatabase")
     def test_lookup_cve_tool_not_found(self, mock_cve_db_class, mock_llm_backend):
         """Test lookup_cve tool when CVE is not found"""
         mock_llm = Mock()
@@ -245,8 +242,8 @@ class TestReActAgentTools:
 
         assert "nicht gefunden" in result or "not found" in result
 
-    @patch('agents.react_agent.LLMBackend')
-    @patch('agents.react_agent.CVEDatabase')
+    @patch("agents.react_agent.LLMBackend")
+    @patch("agents.react_agent.CVEDatabase")
     def test_validate_exploit_tool(self, mock_cve_db, mock_llm_backend):
         """Test validate_exploit tool"""
         mock_llm = Mock()
@@ -264,8 +261,8 @@ class TestReActAgentTools:
 class TestReActAgentSafety:
     """Test ReActAgent safety controls"""
 
-    @patch('agents.react_agent.LLMBackend')
-    @patch('agents.react_agent.CVEDatabase')
+    @patch("agents.react_agent.LLMBackend")
+    @patch("agents.react_agent.CVEDatabase")
     def test_is_dangerous_tool_true(self, mock_cve_db, mock_llm_backend):
         """Test detection of dangerous tools"""
         mock_llm = Mock()
@@ -278,8 +275,8 @@ class TestReActAgentSafety:
         assert agent._is_dangerous_tool("sqlmap_exploit") is True
         assert agent._is_dangerous_tool("VALIDATE_EXPLOIT") is True  # Case insensitive
 
-    @patch('agents.react_agent.LLMBackend')
-    @patch('agents.react_agent.CVEDatabase')
+    @patch("agents.react_agent.LLMBackend")
+    @patch("agents.react_agent.CVEDatabase")
     def test_is_dangerous_tool_false(self, mock_cve_db, mock_llm_backend):
         """Test that non-dangerous tools return False"""
         mock_llm = Mock()
@@ -296,8 +293,8 @@ class TestReActAgentSafety:
 class TestReActAgentGraph:
     """Test LangGraph workflow"""
 
-    @patch('agents.react_agent.LLMBackend')
-    @patch('agents.react_agent.CVEDatabase')
+    @patch("agents.react_agent.LLMBackend")
+    @patch("agents.react_agent.CVEDatabase")
     def test_build_graph_nodes(self, mock_cve_db, mock_llm_backend):
         """Test that graph has required nodes"""
         mock_llm = Mock()
@@ -308,8 +305,8 @@ class TestReActAgentGraph:
         # Graph should be compiled and have nodes
         assert agent.graph is not None
 
-    @patch('agents.react_agent.LLMBackend')
-    @patch('agents.react_agent.CVEDatabase')
+    @patch("agents.react_agent.LLMBackend")
+    @patch("agents.react_agent.CVEDatabase")
     def test_agent_node_iteration_limit(self, mock_cve_db, mock_llm_backend):
         """Test agent node respects iteration limit"""
         mock_llm = Mock()
@@ -325,8 +322,8 @@ class TestReActAgentGraph:
 class TestReActAgentRun:
     """Test ReActAgent run method"""
 
-    @patch('agents.react_agent.LLMBackend')
-    @patch('agents.react_agent.CVEDatabase')
+    @patch("agents.react_agent.LLMBackend")
+    @patch("agents.react_agent.CVEDatabase")
     def test_run_basic(self, mock_cve_db, mock_llm_backend):
         """Test basic run execution"""
         mock_llm = Mock()
@@ -353,8 +350,8 @@ class TestReActAgentRun:
         assert len(result["findings"]) == 1
         agent.graph.invoke.assert_called_once()
 
-    @patch('agents.react_agent.LLMBackend')
-    @patch('agents.react_agent.CVEDatabase')
+    @patch("agents.react_agent.LLMBackend")
+    @patch("agents.react_agent.CVEDatabase")
     def test_run_with_default_objective(self, mock_cve_db, mock_llm_backend):
         """Test run with default objective"""
         mock_llm = Mock()
@@ -376,8 +373,8 @@ class TestReActAgentRun:
 
         assert result["target"] == "scanme.nmap.org"
 
-    @patch('agents.react_agent.LLMBackend')
-    @patch('agents.react_agent.CVEDatabase')
+    @patch("agents.react_agent.LLMBackend")
+    @patch("agents.react_agent.CVEDatabase")
     def test_run_empty_findings(self, mock_cve_db, mock_llm_backend):
         """Test run with empty findings"""
         mock_llm = Mock()
@@ -404,8 +401,8 @@ class TestReActAgentRun:
 class TestReActAgentReport:
     """Test ReActAgent report generation"""
 
-    @patch('agents.react_agent.LLMBackend')
-    @patch('agents.react_agent.CVEDatabase')
+    @patch("agents.react_agent.LLMBackend")
+    @patch("agents.react_agent.CVEDatabase")
     def test_generate_report_with_findings(self, mock_cve_db, mock_llm_backend):
         """Test report generation with findings"""
         mock_llm = Mock()
@@ -431,8 +428,8 @@ class TestReActAgentReport:
         assert "scan_ports" in report
         assert "Scan complete" in report
 
-    @patch('agents.react_agent.LLMBackend')
-    @patch('agents.react_agent.CVEDatabase')
+    @patch("agents.react_agent.LLMBackend")
+    @patch("agents.react_agent.CVEDatabase")
     def test_generate_report_no_findings(self, mock_cve_db, mock_llm_backend):
         """Test report generation without findings"""
         mock_llm = Mock()
@@ -453,8 +450,8 @@ class TestReActAgentReport:
         assert "ZEN-AI-PENTEST REPORT" in report
         assert "No findings detected" in report
 
-    @patch('agents.react_agent.LLMBackend')
-    @patch('agents.react_agent.CVEDatabase')
+    @patch("agents.react_agent.LLMBackend")
+    @patch("agents.react_agent.CVEDatabase")
     def test_generate_report_long_result_truncated(self, mock_cve_db, mock_llm_backend):
         """Test that long results are truncated in report"""
         mock_llm = Mock()
@@ -482,8 +479,8 @@ class TestReActAgentReport:
 class TestGetAgent:
     """Test get_agent singleton function"""
 
-    @patch('agents.react_agent.LLMBackend')
-    @patch('agents.react_agent.CVEDatabase')
+    @patch("agents.react_agent.LLMBackend")
+    @patch("agents.react_agent.CVEDatabase")
     def test_get_agent_singleton(self, mock_cve_db, mock_llm_backend):
         """Test that get_agent returns singleton instance"""
         mock_llm = Mock()
@@ -491,6 +488,7 @@ class TestGetAgent:
 
         # Clear singleton
         import agents.react_agent as react_agent
+
         react_agent._default_agent = None
 
         agent1 = get_agent()
@@ -498,8 +496,8 @@ class TestGetAgent:
 
         assert agent1 is agent2
 
-    @patch('agents.react_agent.LLMBackend')
-    @patch('agents.react_agent.CVEDatabase')
+    @patch("agents.react_agent.LLMBackend")
+    @patch("agents.react_agent.CVEDatabase")
     def test_get_agent_with_config_creates_new(self, mock_cve_db, mock_llm_backend):
         """Test that passing config creates new instance"""
         mock_llm = Mock()
@@ -507,6 +505,7 @@ class TestGetAgent:
 
         # Clear singleton
         import agents.react_agent as react_agent
+
         react_agent._default_agent = None
 
         agent1 = get_agent()
@@ -520,8 +519,8 @@ class TestGetAgent:
 class TestReActAgentEdgeCases:
     """Test edge cases and error handling"""
 
-    @patch('agents.react_agent.LLMBackend')
-    @patch('agents.react_agent.CVEDatabase')
+    @patch("agents.react_agent.LLMBackend")
+    @patch("agents.react_agent.CVEDatabase")
     def test_run_error_status(self, mock_cve_db, mock_llm_backend):
         """Test handling of error status"""
         mock_llm = Mock()
@@ -543,8 +542,8 @@ class TestReActAgentEdgeCases:
 
         assert result["status"] == "error"
 
-    @patch('agents.react_agent.LLMBackend')
-    @patch('agents.react_agent.CVEDatabase')
+    @patch("agents.react_agent.LLMBackend")
+    @patch("agents.react_agent.CVEDatabase")
     def test_tool_execution_error_handling(self, mock_cve_db, mock_llm_backend):
         """Test error handling during tool execution"""
         mock_llm = Mock()
@@ -559,8 +558,8 @@ class TestReActAgentEdgeCases:
         # Verify tools are set up
         assert len(agent.tools) > 0
 
-    @patch('agents.react_agent.LLMBackend')
-    @patch('agents.react_agent.CVEDatabase')
+    @patch("agents.react_agent.LLMBackend")
+    @patch("agents.react_agent.CVEDatabase")
     def test_config_zero_iterations(self, mock_cve_db, mock_llm_backend):
         """Test config with zero iterations"""
         mock_llm = Mock()

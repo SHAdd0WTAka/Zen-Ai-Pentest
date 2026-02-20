@@ -32,15 +32,18 @@ from typing import List, Tuple
 
 # Colors for terminal output
 try:
-    from colorama import init, Fore, Style
+    from colorama import Fore, Style, init
+
     init()
     HAS_COLORAMA = True
 except ImportError:
     HAS_COLORAMA = False
+
     # Fallback color definitions
     class _DummyColor:
         def __getattr__(self, name):
             return ""
+
     Fore = Style = _DummyColor()
 
 
@@ -89,16 +92,10 @@ def run_command(cmd: List[str], timeout: int = 300, env: dict = None) -> Tuple[i
         full_env.update(env)
 
     # Ensure UTF-8 encoding
-    full_env['PYTHONIOENCODING'] = 'utf-8'
+    full_env["PYTHONIOENCODING"] = "utf-8"
 
     try:
-        result = subprocess.run(
-            cmd,
-            capture_output=True,
-            text=True,
-            timeout=timeout,
-            env=full_env
-        )
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout, env=full_env)
         return result.returncode, result.stdout, result.stderr
     except subprocess.TimeoutExpired:
         return -1, "", f"Command timed out after {timeout} seconds"
@@ -122,21 +119,21 @@ def check_dependencies() -> bool:
     """Check if required dependencies are installed"""
     print_step("Checking dependencies...")
 
-    required = ['pytest', 'fastapi', 'pydantic', 'requests']
-    optional = ['pytest-cov', 'ruff', 'black', 'mypy']
+    required = ["pytest", "fastapi", "pydantic", "requests"]
+    optional = ["pytest-cov", "ruff", "black", "mypy"]
 
     missing_required = []
     missing_optional = []
 
     for pkg in required:
         try:
-            __import__(pkg.replace('-', '_'))
+            __import__(pkg.replace("-", "_"))
         except ImportError:
             missing_required.append(pkg)
 
     for pkg in optional:
         try:
-            __import__(pkg.replace('-', '_'))
+            __import__(pkg.replace("-", "_"))
         except ImportError:
             missing_optional.append(pkg)
 
@@ -159,20 +156,20 @@ def check_file_structure() -> bool:
     print_step("Checking file structure...")
 
     critical_files = [
-        'requirements.txt',
-        'requirements-dev.txt',
-        'requirements-test.txt',
-        'pytest.ini',
-        'setup.py',
-        '.github/workflows/tests-coverage.yml',
+        "requirements.txt",
+        "requirements-dev.txt",
+        "requirements-test.txt",
+        "pytest.ini",
+        "setup.py",
+        ".github/workflows/tests-coverage.yml",
     ]
 
     critical_dirs = [
-        'core',
-        'api',
-        'modules',
-        'tests',
-        'tools',
+        "core",
+        "api",
+        "modules",
+        "tests",
+        "tools",
     ]
 
     all_ok = True
@@ -199,8 +196,8 @@ def run_quick_tests() -> bool:
     print_step("Running quick tests...")
 
     test_files = [
-        'tests/test_core_basics.py',
-        'tests/test_all_imports.py',
+        "tests/test_core_basics.py",
+        "tests/test_all_imports.py",
     ]
 
     all_passed = True
@@ -208,10 +205,7 @@ def run_quick_tests() -> bool:
     for test_file in test_files:
         if os.path.exists(test_file):
             print(f"  Running {test_file}...")
-            code, stdout, stderr = run_command(
-                ['python', '-m', 'pytest', test_file, '-v', '--tb=short', '-x'],
-                timeout=60
-            )
+            code, stdout, stderr = run_command(["python", "-m", "pytest", test_file, "-v", "--tb=short", "-x"], timeout=60)
             if code == 0:
                 print_success(f"{test_file} passed")
             else:
@@ -231,13 +225,16 @@ def run_coverage_tests() -> bool:
 
     code, stdout, stderr = run_command(
         [
-            'python', '-m', 'pytest', 'tests/',
-            '--cov=core',
-            '--cov-report=term-missing',
-            '-v',
-            '--tb=short',
+            "python",
+            "-m",
+            "pytest",
+            "tests/",
+            "--cov=core",
+            "--cov-report=term-missing",
+            "-v",
+            "--tb=short",
         ],
-        timeout=300
+        timeout=300,
     )
 
     if code == 0:
@@ -256,7 +253,7 @@ def run_lint_checks() -> bool:
 
     # Ruff check
     print("  Running ruff...")
-    code, stdout, stderr = run_command(['ruff', 'check', '.', '--output-format=text'])
+    code, stdout, stderr = run_command(["ruff", "check", ".", "--output-format=text"])
     if code == 0:
         print_success("Ruff check passed")
     else:
@@ -265,7 +262,7 @@ def run_lint_checks() -> bool:
 
     # Black check
     print("  Running black...")
-    code, stdout, stderr = run_command(['black', '--check', '--diff', '--line-length', '127', '.'])
+    code, stdout, stderr = run_command(["black", "--check", "--diff", "--line-length", "127", "."])
     if code == 0:
         print_success("Black check passed")
     else:
@@ -279,10 +276,7 @@ def run_security_scan() -> bool:
     """Run security scan with bandit"""
     print_step("Running security scan...")
 
-    code, stdout, stderr = run_command(
-        ['bandit', '-r', 'core/', 'modules/', 'tools/', '-f', 'screen', '-ll'],
-        timeout=60
-    )
+    code, stdout, stderr = run_command(["bandit", "-r", "core/", "modules/", "tools/", "-f", "screen", "-ll"], timeout=60)
 
     if code == 0:
         print_success("No security issues found")
@@ -296,18 +290,19 @@ def check_workflow_syntax() -> bool:
     """Check GitHub Actions workflow syntax"""
     print_step("Checking workflow syntax...")
 
-    workflow_dir = Path('.github/workflows')
+    workflow_dir = Path(".github/workflows")
     if not workflow_dir.exists():
         print_error("Workflow directory not found")
         return False
 
     all_ok = True
 
-    for workflow_file in workflow_dir.glob('*.yml'):
+    for workflow_file in workflow_dir.glob("*.yml"):
         print(f"  Checking {workflow_file}...")
         try:
             import yaml
-            with open(workflow_file, 'r', encoding='utf-8') as f:
+
+            with open(workflow_file, "r", encoding="utf-8") as f:
                 yaml.safe_load(f)
             print_success(f"{workflow_file} syntax OK")
         except ImportError:
@@ -340,22 +335,22 @@ def create_test_summary(results: dict):
 
 def main():
     parser = argparse.ArgumentParser(
-        description='Test GitHub Actions workflow locally',
+        description="Test GitHub Actions workflow locally",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
   python scripts/test_workflow_locally.py           # Quick tests only
   python scripts/test_workflow_locally.py --all     # Run everything
   python scripts/test_workflow_locally.py --lint    # Lint checks only
-        """
+        """,
     )
 
-    parser.add_argument('--quick', action='store_true', help='Run quick tests (default)')
-    parser.add_argument('--full', action='store_true', help='Run full test suite')
-    parser.add_argument('--coverage', action='store_true', help='Run with coverage')
-    parser.add_argument('--lint', action='store_true', help='Run linting checks')
-    parser.add_argument('--security', action='store_true', help='Run security scan')
-    parser.add_argument('--all', action='store_true', help='Run all checks')
+    parser.add_argument("--quick", action="store_true", help="Run quick tests (default)")
+    parser.add_argument("--full", action="store_true", help="Run full test suite")
+    parser.add_argument("--coverage", action="store_true", help="Run with coverage")
+    parser.add_argument("--lint", action="store_true", help="Run linting checks")
+    parser.add_argument("--security", action="store_true", help="Run security scan")
+    parser.add_argument("--all", action="store_true", help="Run all checks")
 
     args = parser.parse_args()
 
@@ -364,9 +359,9 @@ Examples:
         args.quick = True
 
     # Set up environment
-    os.environ['PYTHONIOENCODING'] = 'utf-8'
-    os.environ['TESTING'] = 'true'
-    os.environ['JWT_SECRET_KEY'] = 'test-local-workflow'
+    os.environ["PYTHONIOENCODING"] = "utf-8"
+    os.environ["TESTING"] = "true"
+    os.environ["JWT_SECRET_KEY"] = "test-local-workflow"
 
     print_header("GitHub Actions Local Test")
     print(f"Python: {sys.version}")
@@ -376,23 +371,23 @@ Examples:
     results = {}
 
     # Always run these
-    results['Python Version'] = check_python_version()
-    results['File Structure'] = check_file_structure()
-    results['Dependencies'] = check_dependencies()
-    results['Workflow Syntax'] = check_workflow_syntax()
+    results["Python Version"] = check_python_version()
+    results["File Structure"] = check_file_structure()
+    results["Dependencies"] = check_dependencies()
+    results["Workflow Syntax"] = check_workflow_syntax()
 
     # Optional checks
     if args.quick or args.all:
-        results['Quick Tests'] = run_quick_tests()
+        results["Quick Tests"] = run_quick_tests()
 
     if args.coverage or args.full or args.all:
-        results['Coverage Tests'] = run_coverage_tests()
+        results["Coverage Tests"] = run_coverage_tests()
 
     if args.lint or args.full or args.all:
-        results['Lint Checks'] = run_lint_checks()
+        results["Lint Checks"] = run_lint_checks()
 
     if args.security or args.full or args.all:
-        results['Security Scan'] = run_security_scan()
+        results["Security Scan"] = run_security_scan()
 
     # Summary
     success = create_test_summary(results)
@@ -405,5 +400,5 @@ Examples:
         return 1
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())

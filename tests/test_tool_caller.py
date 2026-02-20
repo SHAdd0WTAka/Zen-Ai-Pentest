@@ -15,8 +15,8 @@ import pytest
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from tools.tool_caller import (
-    ToolCallResult,
     ToolCaller,
+    ToolCallResult,
     call_tool,
     call_tools_batch,
     get_tool_caller,
@@ -670,7 +670,7 @@ class TestErrorHandling:
     async def test_call_tool_with_none_registry(self):
         """Test calling tool with None in registry get."""
         caller = ToolCaller()
-        with patch.object(caller.registry, 'get', return_value=None):
+        with patch.object(caller.registry, "get", return_value=None):
             result = await caller.call_tool("nonexistent_tool", {})
             assert result.success is False
             assert "not found" in result.error.lower() or "nicht in Registry" in result.error

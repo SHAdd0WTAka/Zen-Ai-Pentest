@@ -188,13 +188,19 @@ async def security_setup(interaction: discord.Interaction):
 
         embed.add_field(
             name="Member (Normale Mitglieder)",
-            value="```✅ Kanäle sehen\n✅ Nachrichten senden\n✅ Voice-Chat\n❌ Keine Server-Einstellungen\n❌ Kein Kick/Ban```",
+            value=(
+                "```✅ Kanäle sehen\n✅ Nachrichten senden\n✅ Voice-Chat\n"
+                "❌ Keine Server-Einstellungen\n❌ Kein Kick/Ban```"
+            ),
             inline=False,
         )
 
         embed.add_field(
             name="Moderator",
-            value="```✅ Alles wie Member\n✅ Nachrichten löschen\n✅ Timeout vergeben\n✅ Mitglieder kicken\n❌ Keine Server-Einstellungen```",
+            value=(
+                "```✅ Alles wie Member\n✅ Nachrichten löschen\n✅ Timeout vergeben\n"
+                "✅ Mitglieder kicken\n❌ Keine Server-Einstellungen```"
+            ),
             inline=False,
         )
 

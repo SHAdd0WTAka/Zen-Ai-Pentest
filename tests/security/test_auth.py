@@ -9,13 +9,14 @@ Tests for authentication security:
 - API key validation
 """
 
-import pytest
 import hashlib
 import hmac
-import secrets
 import re
+import secrets
 from datetime import datetime, timedelta, timezone
-from typing import Dict, Optional, List, Set
+from typing import Dict, List, Optional, Set
+
+import pytest
 
 
 def get_utc_now():
@@ -32,18 +33,13 @@ class JWTHandler:
         self.blacklist: Set[str] = set()
 
     def generate_token(
-        self,
-        user_id: str,
-        expires_delta: Optional[timedelta] = None,
-        additional_claims: Optional[Dict] = None
+        self, user_id: str, expires_delta: Optional[timedelta] = None, additional_claims: Optional[Dict] = None
     ) -> str:
         """Generate a JWT token."""
         import base64
         import json
 
-        header = base64.urlsafe_b64encode(
-            json.dumps({"alg": self.algorithm, "typ": "JWT"}).encode()
-        ).rstrip(b'=').decode()
+        header = base64.urlsafe_b64encode(json.dumps({"alg": self.algorithm, "typ": "JWT"}).encode()).rstrip(b"=").decode()
 
         now = get_utc_now()
         exp = now + (expires_delta or timedelta(minutes=15))
@@ -58,16 +54,10 @@ class JWTHandler:
         if additional_claims:
             payload.update(additional_claims)
 
-        payload_b64 = base64.urlsafe_b64encode(
-            json.dumps(payload).encode()
-        ).rstrip(b'=').decode()
+        payload_b64 = base64.urlsafe_b64encode(json.dumps(payload).encode()).rstrip(b"=").decode()
 
-        signature = hmac.new(
-            self.secret.encode(),
-            f"{header}.{payload_b64}".encode(),
-            hashlib.sha256
-        ).digest()
-        sig_b64 = base64.urlsafe_b64encode(signature).rstrip(b'=').decode()
+        signature = hmac.new(self.secret.encode(), f"{header}.{payload_b64}".encode(), hashlib.sha256).digest()
+        sig_b64 = base64.urlsafe_b64encode(signature).rstrip(b"=").decode()
 
         return f"{header}.{payload_b64}.{sig_b64}"
 
@@ -77,24 +67,20 @@ class JWTHandler:
         import json
 
         try:
-            parts = token.split('.')
+            parts = token.split(".")
             if len(parts) != 3:
                 raise ValueError("Invalid token format")
 
             # Verify signature
             message = f"{parts[0]}.{parts[1]}".encode()
-            expected_sig = hmac.new(
-                self.secret.encode(),
-                message,
-                hashlib.sha256
-            ).digest()
+            expected_sig = hmac.new(self.secret.encode(), message, hashlib.sha256).digest()
 
             # Decode actual signature from base64url
             actual_sig_b64 = parts[2]
             # Add padding if needed
             padding_needed = 4 - len(actual_sig_b64) % 4
             if padding_needed != 4:
-                actual_sig_b64 += '=' * padding_needed
+                actual_sig_b64 += "=" * padding_needed
             actual_sig = base64.urlsafe_b64decode(actual_sig_b64)
 
             if not hmac.compare_digest(expected_sig, actual_sig):
@@ -103,7 +89,7 @@ class JWTHandler:
             # Decode payload
             payload_b64 = parts[1]
             while len(payload_b64) % 4:
-                payload_b64 += '='
+                payload_b64 += "="
             payload = json.loads(base64.urlsafe_b64decode(payload_b64))
 
             # Check expiration
@@ -134,23 +120,18 @@ class PasswordHasher:
     def hash_password(cls, password: str) -> str:
         """Hash password with salt using PBKDF2."""
         salt = secrets.token_hex(cls.SALT_LENGTH)
-        pwdhash = hashlib.pbkdf2_hmac(
-            'sha256',
-            password.encode('utf-8'),
-            salt.encode('ascii'),
-            cls.ITERATIONS
-        )
+        pwdhash = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt.encode("ascii"), cls.ITERATIONS)
         return f"pbkdf2:sha256:{cls.ITERATIONS}${salt}${pwdhash.hex()}"
 
     @classmethod
     def verify_password(cls, password: str, hashed: str) -> bool:
         """Verify password against hash."""
         try:
-            parts = hashed.split('$')
+            parts = hashed.split("$")
             if len(parts) != 3:
                 return False
 
-            algo_info = parts[0].split(':')
+            algo_info = parts[0].split(":")
             if len(algo_info) != 3:
                 return False
 
@@ -158,12 +139,7 @@ class PasswordHasher:
             salt = parts[1]
             stored_hash = parts[2]
 
-            computed_hash = hashlib.pbkdf2_hmac(
-                'sha256',
-                password.encode('utf-8'),
-                salt.encode('ascii'),
-                iterations
-            ).hex()
+            computed_hash = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt.encode("ascii"), iterations).hex()
 
             return hmac.compare_digest(stored_hash, computed_hash)
         except Exception:
@@ -175,9 +151,9 @@ class PasswordHasher:
         result = {
             "strong": False,
             "length": len(password),
-            "has_upper": bool(re.search(r'[A-Z]', password)),
-            "has_lower": bool(re.search(r'[a-z]', password)),
-            "has_digit": bool(re.search(r'\d', password)),
+            "has_upper": bool(re.search(r"[A-Z]", password)),
+            "has_lower": bool(re.search(r"[a-z]", password)),
+            "has_digit": bool(re.search(r"\d", password)),
             "has_special": bool(re.search(r'[!@#$%^&*(),.?":{}|<>]', password)),
             "score": 0,
         }
@@ -203,7 +179,7 @@ class PasswordHasher:
 class APIKeyValidator:
     """API key validation utility."""
 
-    KEY_PATTERN = re.compile(r'^[A-Za-z0-9_-]{32,128}$')
+    KEY_PATTERN = re.compile(r"^[A-Za-z0-9_-]{32,128}$")
 
     def __init__(self):
         self.valid_keys: Dict[str, Dict] = {}
@@ -252,9 +228,13 @@ class RBACManager:
     ROLES = {
         "admin": {"*"},  # All permissions
         "operator": {
-            "scan:read", "scan:write", "scan:execute",
-            "report:read", "report:write",
-            "target:read", "target:write",
+            "scan:read",
+            "scan:write",
+            "scan:execute",
+            "report:read",
+            "report:write",
+            "target:read",
+            "target:write",
         },
         "viewer": {
             "scan:read",
@@ -264,7 +244,8 @@ class RBACManager:
         "auditor": {
             "scan:read",
             "report:read",
-            "audit:read", "audit:write",
+            "audit:read",
+            "audit:write",
         },
     }
 
@@ -289,6 +270,7 @@ class RBACManager:
 
 # ============== JWT Tests ==============
 
+
 class TestJWTValidation:
     """Test cases for JWT token validation."""
 
@@ -300,7 +282,7 @@ class TestJWTValidation:
         """Test JWT token generation."""
         token = jwt_handler.generate_token("user123")
         assert token is not None
-        assert len(token.split('.')) == 3
+        assert len(token.split(".")) == 3
 
     def test_token_verification(self, jwt_handler):
         """Test JWT token verification."""
@@ -324,12 +306,10 @@ class TestJWTValidation:
         import json
 
         token = jwt_handler.generate_token("user123")
-        parts = token.split('.')
+        parts = token.split(".")
 
         # Tamper with payload
-        tampered_payload = base64.urlsafe_b64encode(
-            json.dumps({"sub": "attacker"}).encode()
-        ).rstrip(b'=').decode()
+        tampered_payload = base64.urlsafe_b64encode(json.dumps({"sub": "attacker"}).encode()).rstrip(b"=").decode()
 
         tampered_token = f"{parts[0]}.{tampered_payload}.{parts[2]}"
 
@@ -373,6 +353,7 @@ class TestJWTValidation:
 
 # ============== Password Hashing Tests ==============
 
+
 class TestPasswordHashing:
     """Test cases for password hashing."""
 
@@ -404,13 +385,16 @@ class TestPasswordHashing:
         assert PasswordHasher.verify_password(password, hash1)
         assert PasswordHasher.verify_password(password, hash2)
 
-    @pytest.mark.parametrize("password,expected_strong", [
-        ("short", False),
-        ("password", False),  # Common word, no variety
-        ("Password1!", True),  # Meets all criteria
-        ("MyV3ryStr0ng!P@ss", True),  # Strong
-        ("12345678", False),  # Only digits
-    ])
+    @pytest.mark.parametrize(
+        "password,expected_strong",
+        [
+            ("short", False),
+            ("password", False),  # Common word, no variety
+            ("Password1!", True),  # Meets all criteria
+            ("MyV3ryStr0ng!P@ss", True),  # Strong
+            ("12345678", False),  # Only digits
+        ],
+    )
     def test_password_strength(self, password: str, expected_strong: bool):
         """Test password strength checker."""
         result = PasswordHasher.check_password_strength(password)
@@ -440,6 +424,7 @@ class TestPasswordHashing:
 
 
 # ============== RBAC Tests ==============
+
 
 class TestRBACPermissions:
     """Test cases for RBAC permission system."""
@@ -502,6 +487,7 @@ class TestRBACPermissions:
 
 
 # ============== API Key Tests ==============
+
 
 class TestAPIKeyValidation:
     """Test cases for API key validation."""
@@ -580,6 +566,7 @@ class TestAPIKeyValidation:
 
 # ============== Integration Tests ==============
 
+
 class TestAuthIntegration:
     """Integration tests for authentication system."""
 
@@ -615,14 +602,8 @@ class TestAuthIntegration:
         jwt_handler = JWTHandler(secret="app_secret")
 
         # Generate tokens
-        access_token = jwt_handler.generate_token(
-            "user123",
-            expires_delta=timedelta(minutes=15)
-        )
-        refresh_token = jwt_handler.generate_token(
-            "user123",
-            expires_delta=timedelta(days=7)
-        )
+        access_token = jwt_handler.generate_token("user123", expires_delta=timedelta(minutes=15))
+        refresh_token = jwt_handler.generate_token("user123", expires_delta=timedelta(days=7))
 
         # Both tokens work initially
         assert jwt_handler.verify_token(access_token)["sub"] == "user123"

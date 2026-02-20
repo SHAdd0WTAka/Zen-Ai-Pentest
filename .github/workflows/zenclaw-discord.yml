@@ -2,7 +2,7 @@ name: ZenClaw Discord Integration
 
 on:
   push:
-    branches: [main]
+    branches: [main, master]
   issues:
     types: [opened, closed, reopened]
   workflow_run:
@@ -23,107 +23,149 @@ on:
         - logs
         - alerts
 
-env:
-  DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
   notify-discord:
     runs-on: ubuntu-latest
-    if: ${{ secrets.DISCORD_WEBHOOK_URL != '' }}
-    steps:
-    - name: Prepare Notification
-      id: prep
-      run: |
-        EVENT="${{ github.event_name }}"
-        COLOR="3447003"  # Default blue
-        TITLE="ZenClaw Alert"
-        DESCRIPTION=""
-        
-        case "$EVENT" in
-          push)
-            COLOR="3066993"  # Green
-            TITLE="🚀 Push to main"
-            DESCRIPTION="Commit: ${{ github.event.head_commit.message }}"
-            ;;
-          issues)
-            if [ "${{ github.event.action }}" == "opened" ]; then
-              COLOR="15158332"  # Red
-              TITLE="🐛 New Issue"
-            else
-              COLOR="3066993"  # Green
-              TITLE="✅ Issue Resolved"
-            fi
-            DESCRIPTION="${{ github.event.issue.title }}"
-            ;;
-          workflow_run)
-            if [ "${{ github.event.workflow_run.conclusion }}" == "success" ]; then
-              COLOR="3066993"  # Green
-              TITLE="✅ Workflow Success"
-            else
-              COLOR="15158332"  # Red
-              TITLE="❌ Workflow Failed"
-            fi
-            DESCRIPTION="${{ github.event.workflow_run.name }}"
-            ;;
-          workflow_dispatch)
-            COLOR="3447003"  # Blue
-            TITLE="🧪 Test Message"
-            DESCRIPTION="${{ github.event.inputs.message }}"
-            ;;
-        esac
-        
-        # Escape for JSON
-        DESCRIPTION=$(echo "$DESCRIPTION" | sed 's/"/\\"/g' | head -c 1000)
-        
-        echo "color=$COLOR" >> $GITHUB_OUTPUT
-        echo "title=$TITLE" >> $GITHUB_OUTPUT
-        echo "description=$DESCRIPTION" >> $GITHUB_OUTPUT
-        echo "event=$EVENT" >> $GITHUB_OUTPUT
+    timeout-minutes: 5
+    if: always()
     
-    - name: Send to Discord
-      run: |
-        JSON_PAYLOAD=$(cat <<EOF
-        {
-          "embeds": [{
-            "title": "${{ steps.prep.outputs.title }}",
-            "description": "${{ steps.prep.outputs.description }}",
-            "color": ${{ steps.prep.outputs.color }},
-            "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
-            "footer": {
-              "text": "ZenClaw Guardian | ${{ steps.prep.outputs.event }}"
-            },
-            "fields": [
-              {
+    steps:
+      - name: Check Discord Webhook Secret
+        id: check-secret
+        run: |
+          if [ -n "${{ secrets.DISCORD_WEBHOOK_URL }}" ]; then
+            echo "has_secret=true" >> $GITHUB_OUTPUT
+            echo "✅ Discord webhook secret is configured"
+          else
+            echo "has_secret=false" >> $GITHUB_OUTPUT
+            echo "⚠️ DISCORD_WEBHOOK_URL secret is not configured"
+            echo "   To enable notifications, add DISCORD_WEBHOOK_URL to GitHub Secrets"
+          fi
+
+      - name: Prepare Notification
+        id: prep
+        if: steps.check-secret.outputs.has_secret == 'true'
+        run: |
+          EVENT="${{ github.event_name }}"
+          COLOR="3447003"  # Default blue
+          TITLE="ZenClaw Alert"
+          DESCRIPTION=""
+          
+          case "$EVENT" in
+            push)
+              COLOR="3066993"  # Green
+              TITLE="🚀 Push to main"
+              DESCRIPTION="${{ github.event.head_commit.message }}"
+              ;;
+            issues)
+              if [ "${{ github.event.action }}" == "opened" ]; then
+                COLOR="15158332"  # Red
+                TITLE="🐛 New Issue"
+              else
+                COLOR="3066993"  # Green
+                TITLE="✅ Issue Resolved"
+              fi
+              DESCRIPTION="${{ github.event.issue.title }}"
+              ;;
+            workflow_run)
+              if [ "${{ github.event.workflow_run.conclusion }}" == "success" ]; then
+                COLOR="3066993"  # Green
+                TITLE="✅ Workflow Success"
+              else
+                COLOR="15158332"  # Red
+                TITLE="❌ Workflow Failed"
+              fi
+              DESCRIPTION="${{ github.event.workflow_run.name }}"
+              ;;
+            workflow_dispatch)
+              COLOR="3447003"  # Blue
+              TITLE="🧪 Test Message"
+              DESCRIPTION="${{ github.event.inputs.message }}"
+              ;;
+          esac
+          
+          # Escape for JSON
+          DESCRIPTION=$(echo "$DESCRIPTION" | sed 's/"/\\"/g' | head -c 1000)
+          
+          echo "color=$COLOR" >> $GITHUB_OUTPUT
+          echo "title=$TITLE" >> $GITHUB_OUTPUT
+          echo "description=$DESCRIPTION" >> $GITHUB_OUTPUT
+          echo "event=$EVENT" >> $GITHUB_OUTPUT
+
+      - name: Send to Discord
+        if: steps.check-secret.outputs.has_secret == 'true'
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          # Build JSON payload using Python for proper escaping
+          JSON_PAYLOAD=$(python3 << PYEOF
+import json
+import datetime
+
+payload = {
+    "embeds": [{
+        "title": "${{ steps.prep.outputs.title }}",
+        "description": "${{ steps.prep.outputs.description }}",
+        "color": ${{ steps.prep.outputs.color }},
+        "timestamp": datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "footer": {
+            "text": "ZenClaw Guardian | ${{ steps.prep.outputs.event }}"
+        },
+        "fields": [
+            {
                 "name": "Repository",
                 "value": "${{ github.repository }}",
-                "inline": true
-              },
-              {
+                "inline": True
+            },
+            {
                 "name": "Actor",
                 "value": "${{ github.actor }}",
-                "inline": true
-              }
-            ]
-          }]
-        }
-        EOF
-        )
-        
-        curl -X POST "$DISCORD_WEBHOOK" \
-          -H "Content-Type: application/json" \
-          -d "$JSON_PAYLOAD" \
-          --silent --show-error \
-          || echo "Discord notification failed (this is expected if webhook not configured)"
-      continue-on-error: true
-    
-    - name: Summary
-      run: |
-        echo "## ZenClaw Discord Notification" >> $GITHUB_STEP_SUMMARY
-        echo "Event: ${{ steps.prep.outputs.event }}" >> $GITHUB_STEP_SUMMARY
-        echo "Title: ${{ steps.prep.outputs.title }}" >> $GITHUB_STEP_SUMMARY
-        if [ "${{ secrets.DISCORD_WEBHOOK_URL }}" != "" ]; then
-          echo "Status: Webhook configured ✅" >> $GITHUB_STEP_SUMMARY
-        else
-          echo "Status: Webhook NOT configured ⚠️" >> $GITHUB_STEP_SUMMARY
-          echo "Add DISCORD_WEBHOOK_URL to GitHub Secrets" >> $GITHUB_STEP_SUMMARY
-        fi
+                "inline": True
+            }
+        ]
+    }]
+}
+
+print(json.dumps(payload))
+PYEOF
+          )
+          
+          # Send with error handling
+          HTTP_CODE=$(curl -s -o /tmp/response.txt -w "%{http_code}" -X POST "$DISCORD_WEBHOOK" \
+            -H "Content-Type: application/json" \
+            -d "$JSON_PAYLOAD" 2>/dev/null || echo "000")
+          
+          if [ "$HTTP_CODE" == "204" ]; then
+            echo "✅ Discord notification sent successfully"
+          elif [ "$HTTP_CODE" == "404" ]; then
+            echo "❌ Discord webhook not found (404)"
+            exit 1
+          elif [ "$HTTP_CODE" == "429" ]; then
+            echo "⚠️ Discord rate limited (429)"
+            exit 1
+          else
+            echo "⚠️ Unexpected response: $HTTP_CODE"
+            cat /tmp/response.txt 2>/dev/null || true
+            exit 1
+          fi
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "## ZenClaw Discord Notification" >> $GITHUB_STEP_SUMMARY
+          echo "Event: ${{ steps.prep.outputs.event || github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "Title: ${{ steps.prep.outputs.title || 'N/A' }}" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.check-secret.outputs.has_secret }}" == "true" ]; then
+            echo "Status: Webhook configured ✅" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "Status: Webhook NOT configured ⚠️" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Add DISCORD_WEBHOOK_URL to GitHub Secrets to enable notifications" >> $GITHUB_STEP_SUMMARY
+          fi

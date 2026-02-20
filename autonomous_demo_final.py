@@ -38,7 +38,11 @@ findings = [
         "severity": "high",
         "cvss": 7.8,
         "type": "remote_code_execution",
-        "description": "Scp in OpenSSH 8.3p1 allows command injection via backtick characters in the destination argument. An attacker can execute arbitrary commands on the remote server.",
+        "description": (
+            "Scp in OpenSSH 8.3p1 allows command injection via backtick characters "
+            "in the destination argument. An attacker can execute arbitrary commands "
+            "on the remote server."
+        ),
         "recommendation": "Upgrade OpenSSH to version 8.4p1 or later. Apply vendor patches immediately.",
         "port": 22,
         "service": "ssh",
@@ -49,8 +53,11 @@ findings = [
         "severity": "medium",
         "cvss": 5.3,
         "type": "information_disclosure",
-        "description": "Apache version 2.4.7 exposes server tokens in HTTP headers, revealing exact version number and operating system to potential attackers.",
-        "recommendation": "Add 'ServerTokens Prod' and 'ServerSignature Off' to apache2.conf and restart Apache.",
+        "description": (
+            "Apache version 2.4.7 exposes server tokens in HTTP headers, "
+            "revealing exact version number and operating system to potential attackers."
+        ),
+        "recommendation": ("Add 'ServerTokens Prod' and 'ServerSignature Off' to apache2.conf " "and restart Apache."),
         "port": 80,
         "service": "http",
     },
@@ -60,8 +67,12 @@ findings = [
         "severity": "medium",
         "cvss": 6.5,
         "type": "weak_encryption",
-        "description": "Server accepts connections using TLS 1.0 and 1.1 which have known vulnerabilities (POODLE, BEAST attacks).",
-        "recommendation": "Disable TLS 1.0/1.1 in server configuration, enable only TLS 1.2 and 1.3 with strong cipher suites.",
+        "description": (
+            "Server accepts connections using TLS 1.0 and 1.1 which have " "known vulnerabilities (POODLE, BEAST attacks)."
+        ),
+        "recommendation": (
+            "Disable TLS 1.0/1.1 in server configuration, enable only TLS 1.2 " "and 1.3 with strong cipher suites."
+        ),
         "port": 443,
         "service": "https",
     },
@@ -71,8 +82,10 @@ findings = [
         "severity": "medium",
         "cvss": 5.0,
         "type": "web_security",
-        "description": "HTTP response missing Content-Security-Policy header, increasing risk of XSS attacks and data injection.",
-        "recommendation": "Implement strict CSP header: Content-Security-Policy: default-src 'self'; script-src 'self'",
+        "description": (
+            "HTTP response missing Content-Security-Policy header, " "increasing risk of XSS attacks and data injection."
+        ),
+        "recommendation": ("Implement strict CSP header: Content-Security-Policy: " "default-src 'self'; script-src 'self'"),
         "port": 80,
         "service": "http",
     },
@@ -82,7 +95,9 @@ findings = [
         "severity": "low",
         "cvss": 3.7,
         "type": "information_disclosure",
-        "description": "Nping echo service running on port 9929 can be used for network reconnaissance and amplification attacks.",
+        "description": (
+            "Nping echo service running on port 9929 can be used for " "network reconnaissance and amplification attacks."
+        ),
         "recommendation": "Restrict access to port 9929 using firewall rules or disable the service if not required.",
         "port": 9929,
         "service": "nping-echo",

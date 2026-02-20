@@ -91,9 +91,7 @@ class TestKimiAuthBackend:
 
         mock_response = AsyncMock()
         mock_response.status = 200
-        mock_response.json.return_value = {
-            "choices": [{"message": {"content": "This is the AI response"}}]
-        }
+        mock_response.json.return_value = {"choices": [{"message": {"content": "This is the AI response"}}]}
         mock_response.raise_for_status = Mock()
 
         backend.session.post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
@@ -152,7 +150,7 @@ class TestKimiAuthBackend:
         stream_data = [
             b'data: {"choices": [{"delta": {"content": "Hello"}}]}\n',
             b'data: {"choices": [{"delta": {"content": " World"}}]}\n',
-            b'data: [DONE]\n',
+            b"data: [DONE]\n",
         ]
 
         async def mock_iter():
@@ -284,9 +282,7 @@ class TestOpenRouterBackend:
 
         mock_response = AsyncMock()
         mock_response.status = 200
-        mock_response.json.return_value = {
-            "choices": [{"message": {"content": "OpenRouter response"}}]
-        }
+        mock_response.json.return_value = {"choices": [{"message": {"content": "OpenRouter response"}}]}
 
         backend.session.post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
         backend.session.post.return_value.__aexit__ = AsyncMock(return_value=False)

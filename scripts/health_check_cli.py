@@ -134,7 +134,10 @@ class HealthCheckCLI:
             # Resource check details
             if "memory" in check.details:
                 mem = check.details["memory"]
-                print(f"    Memory: {mem.get('used_gb', 0):.1f}GB / {mem.get('total_gb', 0):.1f}GB ({mem.get('percent', 0):.0f}%)")
+                used = mem.get("used_gb", 0)
+                total = mem.get("total_gb", 0)
+                pct = mem.get("percent", 0)
+                print(f"    Memory: {used:.1f}GB / {total:.1f}GB ({pct:.0f}%)")
 
             if "cpu" in check.details:
                 cpu = check.details["cpu"]
@@ -142,14 +145,19 @@ class HealthCheckCLI:
 
             if "disks" in check.details:
                 for disk in check.details["disks"]:
-                    print(f"    Disk {disk.get('mountpoint', 'unknown')}: {disk.get('percent', 0):.0f}% used")
+                    mount = disk.get("mountpoint", "unknown")
+                    pct = disk.get("percent", 0)
+                    print(f"    Disk {mount}: {pct:.0f}% used")
 
             # Security check details
             if check.name == "security":
                 if check.details.get("secrets_found"):
                     print(f"    {self.colorize('⚠ Secrets found:', Colors.WARNING)}")
                     for secret in check.details["secrets_found"][:5]:  # Show first 5
-                        print(f"      - {secret.get('file', 'unknown')}:{secret.get('line', 0)} ({secret.get('type', 'unknown')})")
+                        file = secret.get("file", "unknown")
+                        line = secret.get("line", 0)
+                        secret_type = secret.get("type", "unknown")
+                        print(f"      - {file}:{line} ({secret_type})")
 
                 if check.details.get("env_vars"):
                     missing = [k for k, v in check.details["env_vars"].items() if not v]
@@ -227,7 +235,9 @@ class HealthCheckCLI:
         """Print report as CSV"""
         print("name,status,message,duration_ms,severity,timestamp")
         for check in report.checks:
-            print(f"{check.name},{check.status.value},\"{check.message}\",{check.duration_ms},{check.severity.name},{check.timestamp.isoformat()}")
+            print(
+                f'{check.name},{check.status.value},"{check.message}",{check.duration_ms},{check.severity.name},{check.timestamp.isoformat()}'
+            )
 
     def run(
         self,

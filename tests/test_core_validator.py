@@ -5,23 +5,24 @@ Tests input validation, sanitization methods, and edge cases.
 Target: 80%+ coverage for core/secure_input_validator.py
 """
 
-import pytest
-from unittest.mock import patch
 import ipaddress
+from unittest.mock import patch
+
+import pytest
 
 from core.secure_input_validator import (
-    ValidationError,
     InputType,
-    ValidationRule,
     SecureInputValidator,
-    validate_url,
-    validate_ip,
+    ValidationError,
+    ValidationRule,
     validate_command,
+    validate_ip,
     validate_sql,
+    validate_url,
 )
 
-
 # ==================== ValidationError Tests ====================
+
 
 class TestValidationError:
     """Test ValidationError exception"""
@@ -46,6 +47,7 @@ class TestValidationError:
 
 # ==================== InputType Tests ====================
 
+
 class TestInputType:
     """Test InputType enum"""
 
@@ -64,6 +66,7 @@ class TestInputType:
 
 
 # ==================== ValidationRule Tests ====================
+
 
 class TestValidationRule:
     """Test ValidationRule dataclass"""
@@ -86,7 +89,7 @@ class TestValidationRule:
             pattern=r"^[a-z]+$",
             allowed_chars="abcdefghijklmnopqrstuvwxyz",
             sanitize=False,
-            blocklist=["bad", "worse"]
+            blocklist=["bad", "worse"],
         )
         assert rule.min_length == 5
         assert rule.max_length == 100
@@ -97,6 +100,7 @@ class TestValidationRule:
 
 # ==================== SecureInputValidator Initialization Tests ====================
 
+
 class TestSecureInputValidatorInit:
     """Test SecureInputValidator initialization"""
 
@@ -105,11 +109,7 @@ class TestSecureInputValidatorInit:
         validator = SecureInputValidator()
         assert validator.strict_mode is True
         assert validator.audit_logging is True
-        assert validator.validation_stats == {
-            'total_validated': 0,
-            'rejected': 0,
-            'sanitized': 0
-        }
+        assert validator.validation_stats == {"total_validated": 0, "rejected": 0, "sanitized": 0}
 
     def test_custom_initialization(self):
         """Test custom initialization"""
@@ -119,6 +119,7 @@ class TestSecureInputValidatorInit:
 
 
 # ==================== URL Validation Tests ====================
+
 
 class TestUrlValidation:
     """Test URL validation methods"""
@@ -223,6 +224,7 @@ class TestUrlValidation:
 
 # ==================== IP Validation Tests ====================
 
+
 class TestIpValidation:
     """Test IP validation methods"""
 
@@ -295,6 +297,7 @@ class TestIpValidation:
 
 # ==================== Domain Validation Tests ====================
 
+
 class TestDomainValidation:
     """Test domain validation methods"""
 
@@ -361,6 +364,7 @@ class TestDomainValidation:
 
 
 # ==================== Command Validation Tests ====================
+
 
 class TestCommandValidation:
     """Test command validation methods"""
@@ -441,6 +445,7 @@ class TestCommandValidation:
 
 # ==================== SQL Validation Tests ====================
 
+
 class TestSqlValidation:
     """Test SQL validation methods"""
 
@@ -503,6 +508,7 @@ class TestSqlValidation:
 
 # ==================== HTML Validation Tests ====================
 
+
 class TestHtmlValidation:
     """Test HTML validation methods"""
 
@@ -558,6 +564,7 @@ class TestHtmlValidation:
 
 # ==================== Path Validation Tests ====================
 
+
 class TestPathValidation:
     """Test path validation methods"""
 
@@ -611,6 +618,7 @@ class TestPathValidation:
 
 
 # ==================== Private IP Detection Tests ====================
+
 
 class TestPrivateIpDetection:
     """Test private IP detection helper methods"""
@@ -671,6 +679,7 @@ class TestPrivateIpDetection:
 
 # ==================== Statistics Tests ====================
 
+
 class TestStatistics:
     """Test validation statistics"""
 
@@ -678,17 +687,17 @@ class TestStatistics:
         """Test initial statistics"""
         validator = SecureInputValidator()
         stats = validator.get_stats()
-        assert stats['total_validated'] == 0
-        assert stats['rejected'] == 0
-        assert stats['sanitized'] == 0
+        assert stats["total_validated"] == 0
+        assert stats["rejected"] == 0
+        assert stats["sanitized"] == 0
 
     def test_stats_after_successful_validation(self):
         """Test statistics after successful validation"""
         validator = SecureInputValidator()
         validator.validate_domain("example.com")
         stats = validator.get_stats()
-        assert stats['total_validated'] == 1
-        assert stats['rejected'] == 0
+        assert stats["total_validated"] == 1
+        assert stats["rejected"] == 0
 
     def test_stats_after_rejection(self):
         """Test statistics after validation rejection"""
@@ -698,7 +707,7 @@ class TestStatistics:
         except ValidationError:
             pass
         stats = validator.get_stats()
-        assert stats['rejected'] == 1
+        assert stats["rejected"] == 1
 
     def test_stats_after_html_sanitization(self):
         """Test statistics after HTML sanitization"""
@@ -709,23 +718,24 @@ class TestStatistics:
             pass
         stats = validator.get_stats()
         # sanitized count increases when HTML is sanitized
-        assert 'sanitized' in stats
+        assert "sanitized" in stats
 
     def test_stats_returns_copy(self):
         """Test that get_stats returns a copy, not reference"""
         validator = SecureInputValidator()
         stats = validator.get_stats()
-        stats['total_validated'] = 999
+        stats["total_validated"] = 999
         new_stats = validator.get_stats()
-        assert new_stats['total_validated'] == 0
+        assert new_stats["total_validated"] == 0
 
 
 # ==================== Audit Logging Tests ====================
 
+
 class TestAuditLogging:
     """Test audit logging functionality"""
 
-    @patch('core.secure_input_validator.logger')
+    @patch("core.secure_input_validator.logger")
     def test_rejection_logged(self, mock_logger):
         """Test that rejections are logged"""
         validator = SecureInputValidator(audit_logging=True)
@@ -735,7 +745,7 @@ class TestAuditLogging:
             pass
         mock_logger.warning.assert_called()
 
-    @patch('core.secure_input_validator.logger')
+    @patch("core.secure_input_validator.logger")
     def test_rejection_not_logged_when_disabled(self, mock_logger):
         """Test that rejections are not logged when disabled"""
         validator = SecureInputValidator(audit_logging=False)
@@ -747,6 +757,7 @@ class TestAuditLogging:
 
 
 # ==================== Convenience Function Tests ====================
+
 
 class TestConvenienceFunctions:
     """Test convenience functions"""
@@ -783,6 +794,7 @@ class TestConvenienceFunctions:
 
 
 # ==================== Edge Case Tests ====================
+
 
 class TestEdgeCases:
     """Test edge cases and boundary conditions"""

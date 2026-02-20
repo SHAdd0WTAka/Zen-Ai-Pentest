@@ -20,10 +20,28 @@ from tools.trufflehog_integration import (
 )
 
 # Sample TruffleHog JSON output for testing
-SAMPLE_TRUFFLEHOG_OUTPUT = """{"SourceMetadata":{"Data":{"Git":{"commit":"abc123","file":"config.py","email":"test@example.com","repository":"https://github.com/test/repo","timestamp":"2023-01-01T00:00:00Z","line":10}}},"SourceID":0,"SourceType":15,"SourceName":"trufflehog - git","DetectorType":17,"DetectorName":"AWS","DecoderName":"PLAIN","Verified":true,"Raw":"AKIAIOSFODNN7EXAMPLE","Redacted":"AKIAIOSFODNN7EXAMPLE","ExtraData":null,"StructuredData":null}
-{"SourceMetadata":{"Data":{"Git":{"commit":"def456","file":".env","email":"dev@example.com","repository":"https://github.com/test/repo","timestamp":"2023-01-02T00:00:00Z","line":5}}},"SourceID":1,"SourceType":15,"SourceName":"trufflehog - git","DetectorType":1,"DetectorName":"GitHub","DecoderName":"PLAIN","Verified":false,"Raw":"ghp_xxxxxxxxxxxxxxxxxxxx","Redacted":"ghp_xxxxxxxx...","ExtraData":null,"StructuredData":null}"""
+SAMPLE_TRUFFLEHOG_OUTPUT = """\
+{"SourceMetadata":{"Data":{"Git":{"commit":"abc123","file":"config.py",\
+"email":"test@example.com","repository":"https://github.com/test/repo",\
+"timestamp":"2023-01-01T00:00:00Z","line":10}}},"SourceID":0,"SourceType":15,\
+"SourceName":"trufflehog - git","DetectorType":17,"DetectorName":"AWS",\
+"DecoderName":"PLAIN","Verified":true,"Raw":"AKIAIOSFODNN7EXAMPLE",\
+"Redacted":"AKIAIOSFODNN7EXAMPLE","ExtraData":null,"StructuredData":null}
+{"SourceMetadata":{"Data":{"Git":{"commit":"def456","file":".env",\
+"email":"dev@example.com","repository":"https://github.com/test/repo",\
+"timestamp":"2023-01-02T00:00:00Z","line":5}}},"SourceID":1,"SourceType":15,\
+"SourceName":"trufflehog - git","DetectorType":1,"DetectorName":"GitHub",\
+"DecoderName":"PLAIN","Verified":false,"Raw":"ghp_xxxxxxxxxxxxxxxxxxxx",\
+"Redacted":"ghp_xxxxxxxx...","ExtraData":null,"StructuredData":null}
+"""
 
-SAMPLE_FILESYSTEM_OUTPUT = """{"SourceMetadata":{"Data":{"Filesystem":{"file":"/path/to/secrets.txt","line":1}}},"SourceID":0,"SourceType":0,"SourceName":"trufflehog - filesystem","DetectorType":17,"DetectorName":"AWS","DecoderName":"PLAIN","Verified":false,"Raw":"AKIAIOSFODNN7EXAMPLE","Redacted":"AKIAIOSFODNN7EXAMPLE","ExtraData":null,"StructuredData":null}"""
+SAMPLE_FILESYSTEM_OUTPUT = """\
+{"SourceMetadata":{"Data":{"Filesystem":{"file":"/path/to/secrets.txt",\
+"line":1}}},"SourceID":0,"SourceType":0,"SourceName":"trufflehog - filesystem",\
+"DetectorType":17,"DetectorName":"AWS","DecoderName":"PLAIN","Verified":false,\
+"Raw":"AKIAIOSFODNN7EXAMPLE","Redacted":"AKIAIOSFODNN7EXAMPLE",\
+"ExtraData":null,"StructuredData":null}
+"""
 
 
 class TestTruffleHogScannerInit:

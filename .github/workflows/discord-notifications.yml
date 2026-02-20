@@ -2,21 +2,43 @@ name: Discord Notifications
 
 on:
   workflow_run:
-    workflows: ["Coverage", "Test", "Security Scan", "Build"]
+    workflows: ["CI/CD Pipeline", "Tests", "Security Scan", "Build", "Coverage"]
     types:
       - completed
   push:
-    branches: [main]
+    branches: [main, master]
   pull_request:
-    types: [opened, closed, merged]
+    types: [opened, closed, reopened, synchronize]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
   notify:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     if: always()
+    
     steps:
+      - name: Check Discord Webhook Secret
+        id: check-secret
+        run: |
+          if [ -n "${{ secrets.DISCORD_WEBHOOK_URL }}" ]; then
+            echo "has_secret=true" >> $GITHUB_OUTPUT
+            echo "✅ Discord webhook secret is configured"
+          else
+            echo "has_secret=false" >> $GITHUB_OUTPUT
+            echo "⚠️ DISCORD_WEBHOOK_URL secret is not configured"
+          fi
+
       - name: Send Discord Notification
-        uses: sarisia/actions-status-discord@v1
+        if: steps.check-secret.outputs.has_secret == 'true'
+        uses: sarisia/actions-status-discord@v1.12.0
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK_URL }}
           title: "🚀 Zen AI Pentest CI/CD"
@@ -24,7 +46,21 @@ jobs:
             **Workflow:** ${{ github.event.workflow_run.name || 'Push to main' }}
             **Status:** ${{ github.event.workflow_run.conclusion || 'Running' }}
             **Branch:** ${{ github.ref_name }}
-            **Commit:** ${{ github.event.workflow_run.head_commit.message || github.event.head_commit.message }}
           color: ${{ github.event.workflow_run.conclusion == 'success' && '0x00ff00' || github.event.workflow_run.conclusion == 'failure' && '0xff0000' || '0xffff00' }}
           username: "Captain Kimi CI/CD"
           avatar_url: "https://github.com/SHAdd0WTAka.png"
+        continue-on-error: true
+
+      - name: Workflow Summary
+        if: always()
+        run: |
+          echo "## Discord Notifications" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.check-secret.outputs.has_secret }}" == "true" ]; then
+            echo "✅ Discord webhook is configured" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ Discord webhook is NOT configured" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "To enable notifications:" >> $GITHUB_STEP_SUMMARY
+            echo '1. Create a Discord webhook in your server' >> $GITHUB_STEP_SUMMARY
+            echo '2. Add `DISCORD_WEBHOOK_URL` to GitHub Secrets' >> $GITHUB_STEP_SUMMARY
+          fi

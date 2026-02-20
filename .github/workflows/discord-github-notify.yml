@@ -13,18 +13,38 @@ on:
   release:
     types: [published]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
 jobs:
   notify:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     if: always()
     
     steps:
+      - name: Check Discord Webhook Secret
+        id: check-secret
+        run: |
+          if [ -n "${{ secrets.DISCORD_WEBHOOK_URL }}" ]; then
+            echo "has_secret=true" >> $GITHUB_OUTPUT
+            echo "✅ Discord webhook secret is configured"
+          else
+            echo "has_secret=false" >> $GITHUB_OUTPUT
+            echo "⚠️ DISCORD_WEBHOOK_URL secret is not configured"
+            echo "   To enable notifications, add DISCORD_WEBHOOK_URL to GitHub Secrets"
+          fi
+
       - name: Mask Secrets in Content
         id: mask-secrets
+        if: steps.check-secret.outputs.has_secret == 'true'
         run: |
           # Sensitive patterns to mask
           MASK_PATTERNS=(
-            # API Keys and Tokens
             'sk-[a-zA-Z0-9]{20,}'
             'gh[pousr]_[A-Za-z0-9_]{36,}'
             'gho_[a-zA-Z0-9]{36}'
@@ -34,20 +54,9 @@ jobs:
             'github_pat_[a-zA-Z0-9]{22}_[a-zA-Z0-9]{59}'
             'glpat-[a-zA-Z0-9\-]{20}'
             'grd-[a-zA-Z0-9]{64}'
-            
-            # Discord
-            '[A-Za-z0-9_-]{24}\.[A-Za-z0-9_-]{6}\.[A-Za-z0-9_-]{27}'
-            '[0-9]{17,20}-[A-Za-z0-9_-]{32,}'
-            
-            # Telegram
-            '[0-9]{8,10}:[a-zA-Z0-9_-]{35}'
-            
-            # AWS
             'AKIA[0-9A-Z]{16}'
             'ASIA[0-9A-Z]{16}'
             '[A-Za-z0-9/+=]{40}'
-            
-            # Generic Secrets
             'password[[:space:]]*[:=][[:space:]]*[^[:space:]]+'
             'passwd[[:space:]]*[:=][[:space:]]*[^[:space:]]+'
             'secret[[:space:]]*[:=][[:space:]]*[^[:space:]]+'
@@ -56,47 +65,47 @@ jobs:
             'private[_-]?key[[:space:]]*[:=][[:space:]]*[^[:space:]]+'
             'bearer[[:space:]]+[a-zA-Z0-9_\-\.=]+'
             'basic[[:space:]]+[a-zA-Z0-9_\-\.=]+'
-            
-            # Private Keys
             '-----BEGIN (RSA |DSA |EC |OPENSSH )?PRIVATE KEY-----'
             '-----BEGIN (RSA |DSA |EC |OPENSSH )?ENCRYPTED PRIVATE KEY-----'
-            
-            # Database URLs with passwords
             'mongodb(\+srv)?://[^:]+:[^@]+@'
             'postgres(ql)?://[^:]+:[^@]+@'
             'mysql://[^:]+:[^@]+@'
             'redis://:[^@]+@'
-            
-            # JWT
             'eyJ[a-zA-Z0-9_-]*\.eyJ[a-zA-Z0-9_-]*\.[a-zA-Z0-9_-]*'
-            
-            # Generic high-entropy strings (potential secrets)
-            '[a-zA-Z0-9]{32,64}'
           )
           
-          # Function to mask sensitive content
           mask_content() {
             local content="$1"
             for pattern in "${MASK_PATTERNS[@]}"; do
-              content=$(echo "$content" | sed -E "s/$pattern/\*\*\*\*\*\*\*\*\*\*/gI")
+              content=$(echo "$content" | sed -E "s/$pattern/\*\*\*\*\*\*\*\*\*\*/gI" 2>/dev/null || echo "$content")
             done
             echo "$content"
           }
           
           # Export function for later use
-          echo "mask_content() {" >> $GITHUB_ENV
-          echo "  local content=\"\$1\"" >> $GITHUB_ENV
-          for pattern in "${MASK_PATTERNS[@]}"; do
-            echo "  content=\"\$(echo \"\$content\" | sed -E 's/$pattern/\*\*\*\*\*\*\*\*\*\*/gI')\"" >> $GITHUB_ENV
-          done
-          echo "  echo \"\$content\"" >> $GITHUB_ENV
-          echo "}" >> $GITHUB_ENV
+          {
+            echo "mask_content() {"
+            echo '  local content="$1"'
+            for pattern in "${MASK_PATTERNS[@]}"; do
+              echo "  content=\"\$(echo \"\$content\" | sed -E 's/$pattern/\*\*\*\*\*\*\*\*\*\*/gI' 2>/dev/null || echo \"\$content\")\""
+            done
+            echo '  echo "$content"'
+            echo "}"
+          } >> $GITHUB_ENV
 
       - name: Prepare Safe Content
         id: prepare
+        if: steps.check-secret.outputs.has_secret == 'true'
         run: |
           # Source the mask function
           eval "$(cat $GITHUB_ENV)"
+          
+          # Helper to safely get event data
+          get_event_data() {
+            local field="$1"
+            local default="$2"
+            echo "${!field:-$default}"
+          }
           
           # Get commit message and mask it
           COMMIT_MSG="${{ github.event.head_commit.message }}"
@@ -126,54 +135,48 @@ jobs:
             SAFE_ISSUE_TITLE="${SAFE_ISSUE_TITLE:0:$MAX_LENGTH}..."
           fi
           
-          # Output masked content
-          echo "commit_msg<<EOF" >> $GITHUB_OUTPUT
-          echo "$SAFE_COMMIT_MSG" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          # Output masked content using environment files
+          {
+            echo "commit_msg<<EOF"
+            echo "$SAFE_COMMIT_MSG"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
           
-          echo "pr_title<<EOF" >> $GITHUB_OUTPUT
-          echo "$SAFE_PR_TITLE" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          {
+            echo "pr_title<<EOF"
+            echo "$SAFE_PR_TITLE"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
           
-          echo "issue_title<<EOF" >> $GITHUB_OUTPUT
-          echo "$SAFE_ISSUE_TITLE" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          {
+            echo "issue_title<<EOF"
+            echo "$SAFE_ISSUE_TITLE"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
           
-          echo "release_name<<EOF" >> $GITHUB_OUTPUT
-          echo "$SAFE_RELEASE_NAME" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          {
+            echo "release_name<<EOF"
+            echo "$SAFE_RELEASE_NAME"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
 
       - name: Scan for Secrets
         id: secret-scan
-        if: github.event_name == 'push' || github.event_name == 'pull_request'
+        if: steps.check-secret.outputs.has_secret == 'true' && (github.event_name == 'push' || github.event_name == 'pull_request')
         run: |
-          # Simple secret detection in commit messages
           COMMIT_MSG="${{ steps.prepare.outputs.commit_msg }}"
-          
-          # Check for suspicious patterns
           SUSPICIOUS=0
           
           # Check for masked content (indicates potential secret was found)
-          if echo "$COMMIT_MSG" | grep -q '\*\*\*\*\*\*\*\*\*\*'; then
+          if echo "$COMMIT_MSG" | grep -q '\*\*\*\*\*\*\*\*\*\*' 2>/dev/null; then
             SUSPICIOUS=1
             echo "⚠️ WARNING: Potential secrets detected in commit message and masked"
-          fi
-          
-          # Check for high-entropy strings
-          if echo "${{ github.event.head_commit.message }}" | grep -P '[A-Za-z0-9+/]{40,}' > /dev/null 2>&1; then
-            SUSPICIOUS=1
-            echo "⚠️ WARNING: High-entropy string detected (possible secret)"
-          fi
-          
-          if [ $SUSPICIOUS -eq 1 ]; then
-            echo "🔒 Security Alert: Potential credentials detected in commit. Content has been masked."
-            echo "Please review the commit message and remove any sensitive data."
           fi
           
           echo "suspicious=$SUSPICIOUS" >> $GITHUB_OUTPUT
 
       - name: Send Discord Notification
-        continue-on-error: true
+        if: steps.check-secret.outputs.has_secret == 'true'
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
           SAFE_COMMIT_MSG: ${{ steps.prepare.outputs.commit_msg }}
@@ -182,106 +185,173 @@ jobs:
           SAFE_RELEASE_NAME: ${{ steps.prepare.outputs.release_name }}
           SUSPICIOUS: ${{ steps.secret-scan.outputs.suspicious }}
         run: |
-          # Determine color based on event
+          # Determine color, title, and description based on event
           COLOR="3447003"  # Blue default
           SECURITY_WARNING=""
+          DESCRIPTION=""
+          URL=""
           
-          if [ "${{ github.event_name }}" == "push" ]; then
-            COLOR="3066993"  # Green
-            TITLE="🚀 Code Pushed"
-            
-            # Add security warning if secrets were detected
-            if [ "$SUSPICIOUS" == "1" ]; then
-              SECURITY_WARNING="\n\n🔒 **Security Notice:** Potential sensitive data detected and masked in this commit."
-            fi
-            
-            # Only show first line of commit, masked
-            COMMIT_PREVIEW=$(echo "$SAFE_COMMIT_MSG" | head -n 1)
-            DESCRIPTION="**Branch:** \`${{ github.ref_name }}\`\n**Author:** ${{ github.actor }}\n**Commit:** \`${COMMIT_PREVIEW}\`${SECURITY_WARNING}"
-            URL="${{ github.event.head_commit.url }}"
-          
-          elif [ "${{ github.event_name }}" == "pull_request" ]; then
-            if [ "${{ github.event.action }}" == "opened" ]; then
+          case "${{ github.event_name }}" in
+            push)
               COLOR="3066993"  # Green
-              TITLE="🔀 Pull Request Opened"
-            elif [ "${{ github.event.action }}" == "closed" ] && [ "${{ github.event.pull_request.merged }}" == "true" ]; then
-              COLOR="15158332"  # Orange
-              TITLE="✅ Pull Request Merged"
-            else
-              COLOR="15158332"  # Orange
-              TITLE="📝 Pull Request ${{ github.event.action }}"
-            fi
-            DESCRIPTION="**#${{ github.event.pull_request.number }}:** $SAFE_PR_TITLE\n**Author:** ${{ github.actor }}\n**Branch:** \`${{ github.head_ref }}\` → \`${{ github.base_ref }}\`"
-            URL="${{ github.event.pull_request.html_url }}"
-          
-          elif [ "${{ github.event_name }}" == "issues" ]; then
-            if [ "${{ github.event.action }}" == "opened" ]; then
-              COLOR="15158332"  # Orange
-              TITLE="📋 Issue Opened"
-            elif [ "${{ github.event.action }}" == "closed" ]; then
-              COLOR="3066993"  # Green
-              TITLE="✅ Issue Closed"
-            else
+              TITLE="🚀 Code Pushed"
+              
+              if [ "$SUSPICIOUS" == "1" ]; then
+                SECURITY_WARNING="\\n\\n🔒 **Security Notice:** Potential sensitive data detected and masked in this commit."
+              fi
+              
+              COMMIT_PREVIEW=$(echo "$SAFE_COMMIT_MSG" | head -n 1)
+              DESCRIPTION="**Branch:** \`${{ github.ref_name }}\`\\n**Author:** ${{ github.actor }}\\n**Commit:** \`${COMMIT_PREVIEW}\`${SECURITY_WARNING}"
+              URL="${{ github.event.head_commit.url }}"
+              ;;
+              
+            pull_request)
+              case "${{ github.event.action }}" in
+                opened)
+                  COLOR="3066993"  # Green
+                  TITLE="🔀 Pull Request Opened"
+                  ;;
+                closed)
+                  if [ "${{ github.event.pull_request.merged }}" == "true" ]; then
+                    COLOR="15158332"  # Orange
+                    TITLE="✅ Pull Request Merged"
+                  else
+                    COLOR="15158332"  # Orange
+                    TITLE="📝 Pull Request Closed"
+                  fi
+                  ;;
+                *)
+                  COLOR="15158332"  # Orange
+                  TITLE="📝 Pull Request ${{ github.event.action }}"
+                  ;;
+              esac
+              DESCRIPTION="**#${{ github.event.pull_request.number }}:** $SAFE_PR_TITLE\\n**Author:** ${{ github.actor }}\\n**Branch:** \`${{ github.head_ref }}\` → \`${{ github.base_ref }}\`"
+              URL="${{ github.event.pull_request.html_url }}"
+              ;;
+              
+            issues)
+              case "${{ github.event.action }}" in
+                opened)
+                  COLOR="15158332"  # Orange
+                  TITLE="📋 Issue Opened"
+                  ;;
+                closed)
+                  COLOR="3066993"  # Green
+                  TITLE="✅ Issue Closed"
+                  ;;
+                *)
+                  COLOR="3447003"  # Blue
+                  TITLE="📝 Issue ${{ github.event.action }}"
+                  ;;
+              esac
+              DESCRIPTION="**#${{ github.event.issue.number }}:** $SAFE_ISSUE_TITLE\\n**Author:** ${{ github.actor }}"
+              URL="${{ github.event.issue.html_url }}"
+              ;;
+              
+            workflow_run)
+              CONCLUSION="${{ github.event.workflow_run.conclusion }}"
+              case "$CONCLUSION" in
+                success)
+                  COLOR="3066993"  # Green
+                  TITLE="✅ Workflow Success"
+                  ;;
+                failure)
+                  COLOR="15158332"  # Red
+                  TITLE="❌ Workflow Failed"
+                  ;;
+                *)
+                  COLOR="3447003"  # Blue
+                  TITLE="⚠️ Workflow $CONCLUSION"
+                  ;;
+              esac
+              DESCRIPTION="**Workflow:** ${{ github.event.workflow_run.name }}\\n**Branch:** \`${{ github.event.workflow_run.head_branch }}\`\\n**Run ID:** ${{ github.event.workflow_run.id }}"
+              URL="${{ github.event.workflow_run.html_url }}"
+              ;;
+              
+            release)
+              COLOR="10181046"  # Purple
+              TITLE="🎉 New Release Published"
+              DESCRIPTION="**Version:** ${{ github.event.release.tag_name }}\\n**Name:** $SAFE_RELEASE_NAME"
+              URL="${{ github.event.release.html_url }}"
+              ;;
+              
+            *)
               COLOR="3447003"  # Blue
-              TITLE="📝 Issue ${{ github.event.action }}"
-            fi
-            DESCRIPTION="**#${{ github.event.issue.number }}:** $SAFE_ISSUE_TITLE\n**Author:** ${{ github.actor }}"
-            URL="${{ github.event.issue.html_url }}"
+              TITLE="🔔 GitHub Event"
+              DESCRIPTION="Event: ${{ github.event_name }}"
+              URL="${{ github.server_url }}/${{ github.repository }}"
+              ;;
+          esac
           
-          elif [ "${{ github.event_name }}" == "workflow_run" ]; then
-            CONCLUSION="${{ github.event.workflow_run.conclusion }}"
-            if [ "$CONCLUSION" == "success" ]; then
-              COLOR="3066993"  # Green
-              TITLE="✅ Workflow Success"
-            elif [ "$CONCLUSION" == "failure" ]; then
-              COLOR="15158332"  # Red
-              TITLE="❌ Workflow Failed"
-            else
-              COLOR="3447003"  # Blue
-              TITLE="⚠️ Workflow $CONCLUSION"
-            fi
-            DESCRIPTION="**Workflow:** ${{ github.event.workflow_run.name }}\n**Branch:** \`${{ github.event.workflow_run.head_branch }}\`\n**Run ID:** ${{ github.event.workflow_run.id }}"
-            URL="${{ github.event.workflow_run.html_url }}"
-          
-          elif [ "${{ github.event_name }}" == "release" ]; then
-            COLOR="10181046"  # Purple
-            TITLE="🎉 New Release Published"
-            DESCRIPTION="**Version:** ${{ github.event.release.tag_name }}\n**Name:** $SAFE_RELEASE_NAME"
-            URL="${{ github.event.release.html_url }}"
-          fi
-          
-          # Sanitize for JSON
-          sanitize_json() {
-            echo "$1" | sed 's/\\/\\\\/g' | sed 's/"/\\"/g' | sed 's/\n/\\n/g' | tr -d '\r'
-          }
-          
-          SAFE_DESCRIPTION=$(sanitize_json "$DESCRIPTION")
-          SAFE_TITLE=$(sanitize_json "$TITLE")
-          
-          # Build Discord embed
-          JSON_PAYLOAD=$(cat <<EOF
-          {
-            "embeds": [{
-              "title": "$SAFE_TITLE",
-              "description": "$SAFE_DESCRIPTION",
-              "url": "$URL",
-              "color": $COLOR,
-              "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
-              "footer": {
-                "text": "${{ github.repository }}"
-              },
-              "author": {
-                "name": "${{ github.actor }}",
-                "icon_url": "https://github.com/${{ github.actor }}.png"
-              }
-            }]
-          }
-          EOF
+          # Build Discord embed JSON using Python for proper escaping
+          JSON_PAYLOAD=$(python3 << PYEOF
+import json
+import sys
+
+payload = {
+    "embeds": [{
+        "title": """$TITLE""",
+        "description": """$DESCRIPTION""",
+        "url": """$URL""",
+        "color": $COLOR,
+        "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+        "footer": {
+            "text": "${{ github.repository }}"
+        },
+        "author": {
+            "name": "${{ github.actor }}",
+            "icon_url": "https://github.com/${{ github.actor }}.png"
+        }
+    }]
+}
+
+print(json.dumps(payload))
+PYEOF
           )
           
-          # Send to Discord
-          curl -s -X POST "$DISCORD_WEBHOOK" \
+          # Send to Discord with error handling
+          HTTP_CODE=$(curl -s -o /tmp/discord_response.txt -w "%{http_code}" -X POST "$DISCORD_WEBHOOK" \
             -H "Content-Type: application/json" \
-            -d "$JSON_PAYLOAD"
+            -d "$JSON_PAYLOAD" 2>/tmp/discord_error.txt)
           
-          echo "✅ Discord notification sent with secret masking enabled"
+          if [ "$HTTP_CODE" == "204" ]; then
+            echo "✅ Discord notification sent successfully"
+          elif [ "$HTTP_CODE" == "404" ]; then
+            echo "❌ Discord webhook not found (404). Check your DISCORD_WEBHOOK_URL secret."
+            exit 1
+          elif [ "$HTTP_CODE" == "429" ]; then
+            echo "⚠️ Discord rate limit hit (429). Try again later."
+            exit 1
+          elif [ "$HTTP_CODE" == "400" ]; then
+            echo "❌ Bad request (400). JSON payload may be malformed."
+            echo "Response: $(cat /tmp/discord_response.txt 2>/dev/null || echo 'N/A')"
+            exit 1
+          else
+            echo "⚠️ Unexpected response code: $HTTP_CODE"
+            echo "Response: $(cat /tmp/discord_response.txt 2>/dev/null || echo 'N/A')"
+            echo "Error: $(cat /tmp/discord_error.txt 2>/dev/null || echo 'N/A')"
+            exit 1
+          fi
+
+      - name: Workflow Summary
+        if: always()
+        run: |
+          echo "## Discord GitHub Notifications" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ steps.check-secret.outputs.has_secret }}" == "true" ]; then
+            echo "✅ Discord webhook is configured" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ Discord webhook is NOT configured" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "To enable notifications:" >> $GITHUB_STEP_SUMMARY
+            echo '1. Go to Discord → Server Settings → Integrations → Webhooks' >> $GITHUB_STEP_SUMMARY
+            echo '2. Create a new webhook and copy the URL' >> $GITHUB_STEP_SUMMARY
+            echo '3. Go to GitHub → Settings → Secrets → New repository secret' >> $GITHUB_STEP_SUMMARY
+            echo '4. Name: `DISCORD_WEBHOOK_URL`' >> $GITHUB_STEP_SUMMARY
+            echo '5. Value: Your Discord webhook URL' >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Event:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Repository:** ${{ github.repository }}" >> $GITHUB_STEP_SUMMARY

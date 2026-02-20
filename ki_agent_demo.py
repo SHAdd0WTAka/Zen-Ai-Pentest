@@ -162,9 +162,8 @@ def print_report(report: dict):
 
     print(f"\n{Colors.CYAN}Session:{Colors.ENDC} {report['session_id']}")
     print(f"{Colors.CYAN}Target:{Colors.ENDC} {report['target']}")
-    print(
-        f"{Colors.CYAN}Duration:{Colors.ENDC} {(datetime.now() - datetime.fromisoformat(report['completed_at'])).total_seconds():.1f}s"
-    )
+    duration = datetime.now() - datetime.fromisoformat(report["completed_at"])
+    print(f"{Colors.CYAN}Duration:{Colors.ENDC} {duration.total_seconds():.1f}s")
 
     print(f"\n{Colors.BOLD}Statistics:{Colors.ENDC}")
     print(f"  Total Steps: {report['total_steps']}")
@@ -187,9 +186,9 @@ async def demo_with_visualization(target: str, human_in_loop: bool = False):
 
     print(f"{Colors.CYAN}Configuration:{Colors.ENDC}")
     print(f"  Target: {Colors.BOLD}{target}{Colors.ENDC}")
-    print(
-        f"  Human-in-the-Loop: {Colors.GREEN if human_in_loop else Colors.DIM}{'Enabled' if human_in_loop else 'Disabled'}{Colors.ENDC}"
-    )
+    status_color = Colors.GREEN if human_in_loop else Colors.DIM
+    status_text = "Enabled" if human_in_loop else "Disabled"
+    print(f"  Human-in-the-Loop: {status_color}{status_text}{Colors.ENDC}")
     print("  KI Backend: kimi-cli (with fallback)")
 
     # Erstelle Agent

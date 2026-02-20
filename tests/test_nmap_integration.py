@@ -825,12 +825,20 @@ class TestHelperFunctions:
     def test_create_nmap_result_dict_multiple_hosts(self):
         """Test result dictionary with multiple hosts."""
         hosts = [
-            NmapHost(ip="192.168.1.1", status="up", ports=[
-                NmapPort(port=80, protocol="tcp", state="open", service="http"),
-            ]),
-            NmapHost(ip="192.168.1.2", status="up", ports=[
-                NmapPort(port=22, protocol="tcp", state="open", service="ssh"),
-            ]),
+            NmapHost(
+                ip="192.168.1.1",
+                status="up",
+                ports=[
+                    NmapPort(port=80, protocol="tcp", state="open", service="http"),
+                ],
+            ),
+            NmapHost(
+                ip="192.168.1.2",
+                status="up",
+                ports=[
+                    NmapPort(port=22, protocol="tcp", state="open", service="ssh"),
+                ],
+            ),
             NmapHost(ip="192.168.1.3", status="down"),
         ]
 

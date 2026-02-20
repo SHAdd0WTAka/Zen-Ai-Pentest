@@ -66,6 +66,7 @@ class TestLifespan:
     async def test_lifespan_startup(self):
         """Test lifespan startup initializes database"""
         from fastapi import FastAPI
+
         test_app = FastAPI()
 
         with patch("api.main.init_db") as mock_init_db:
@@ -80,8 +81,8 @@ class TestWebSocket:
     def test_websocket_manager_initialization(self):
         """Test WebSocket manager is initialized"""
         assert ws_manager is not None
-        assert hasattr(ws_manager, 'scan_connections')
-        assert hasattr(ws_manager, 'global_connections')
+        assert hasattr(ws_manager, "scan_connections")
+        assert hasattr(ws_manager, "global_connections")
 
     def test_agent_connection_manager(self):
         """Test agent connection manager"""

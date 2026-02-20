@@ -22,13 +22,73 @@ on:
           - update-content
           - test-connection
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
 jobs:
   manage-discord:
     runs-on: ubuntu-latest
     # Environment with protection rules (requires manual approval)
     environment: production
+    timeout-minutes: 10
     
     steps:
+      - name: Check Bot Token Secret
+        id: check-secret
+        run: |
+          TOKEN_NAME="DISCORD_BOT_TOKEN_${{ github.event.inputs.bot | upper }}"
+          echo "Checking for secret: $TOKEN_NAME"
+          
+          # Note: GitHub Actions doesn't allow dynamic secret names, 
+          # so we check each one individually
+          case "${{ github.event.inputs.bot }}" in
+            primary)
+              if [ -n "${{ secrets.DISCORD_BOT_TOKEN_PRIMARY }}" ]; then
+                echo "has_secret=true" >> $GITHUB_OUTPUT
+                echo "token=${{ secrets.DISCORD_BOT_TOKEN_PRIMARY }}" >> $GITHUB_OUTPUT
+              else
+                echo "has_secret=false" >> $GITHUB_OUTPUT
+              fi
+              ;;
+            secondary)
+              if [ -n "${{ secrets.DISCORD_BOT_TOKEN_SECONDARY }}" ]; then
+                echo "has_secret=true" >> $GITHUB_OUTPUT
+                echo "token=${{ secrets.DISCORD_BOT_TOKEN_SECONDARY }}" >> $GITHUB_OUTPUT
+              else
+                echo "has_secret=false" >> $GITHUB_OUTPUT
+              fi
+              ;;
+            utility)
+              if [ -n "${{ secrets.DISCORD_BOT_TOKEN_UTILITY }}" ]; then
+                echo "has_secret=true" >> $GITHUB_OUTPUT
+                echo "token=${{ secrets.DISCORD_BOT_TOKEN_UTILITY }}" >> $GITHUB_OUTPUT
+              else
+                echo "has_secret=false" >> $GITHUB_OUTPUT
+              fi
+              ;;
+            *)
+              echo "has_secret=false" >> $GITHUB_OUTPUT
+              ;;
+          esac
+          
+          if [ "${{ steps.check-secret.outputs.has_secret }}" == "true" ]; then
+            echo "✅ Bot token is configured"
+          else
+            echo "❌ Bot token is NOT configured"
+            echo "Required secret: DISCORD_BOT_TOKEN_${{ github.event.inputs.bot | upper }}"
+          fi
+
+      - name: Fail if Secret Missing
+        if: steps.check-secret.outputs.has_secret != 'true'
+        run: |
+          echo "❌ Required secret is not configured: DISCORD_BOT_TOKEN_${{ github.event.inputs.bot | upper }}"
+          echo "Please add this secret to your GitHub repository settings."
+          exit 1
+
       - name: Checkout repository
         uses: actions/checkout@v4
       
@@ -43,19 +103,24 @@ jobs:
       - name: Set Bot Token
         id: set-token
         run: |
-          if [ "${{ github.event.inputs.bot }}" == "primary" ]; then
-            echo "token=${{ secrets.DISCORD_BOT_TOKEN_PRIMARY }}" >> $GITHUB_OUTPUT
-            echo "[INFO] Using PRIMARY bot (Captain_Kimi)"
-          elif [ "${{ github.event.inputs.bot }}" == "secondary" ]; then
-            echo "token=${{ secrets.DISCORD_BOT_TOKEN_SECONDARY }}" >> $GITHUB_OUTPUT
-            echo "[INFO] Using SECONDARY bot (OAuth20_Bots_Rollout)"
-          elif [ "${{ github.event.inputs.bot }}" == "utility" ]; then
-            echo "token=${{ secrets.DISCORD_BOT_TOKEN_UTILITY }}" >> $GITHUB_OUTPUT
-            echo "[INFO] Using UTILITY bot (Shadowbroker)"
-          else
-            echo "[ERROR] Unknown bot selection"
-            exit 1
-          fi
+          case "${{ github.event.inputs.bot }}" in
+            primary)
+              echo "token=${{ secrets.DISCORD_BOT_TOKEN_PRIMARY }}" >> $GITHUB_OUTPUT
+              echo "[INFO] Using PRIMARY bot (Captain_Kimi)"
+              ;;
+            secondary)
+              echo "token=${{ secrets.DISCORD_BOT_TOKEN_SECONDARY }}" >> $GITHUB_OUTPUT
+              echo "[INFO] Using SECONDARY bot (OAuth20_Bots_Rollout)"
+              ;;
+            utility)
+              echo "token=${{ secrets.DISCORD_BOT_TOKEN_UTILITY }}" >> $GITHUB_OUTPUT
+              echo "[INFO] Using UTILITY bot (Shadowbroker)"
+              ;;
+            *)
+              echo "[ERROR] Unknown bot selection"
+              exit 1
+              ;;
+          esac
       
       - name: Test Connection
         if: github.event.inputs.action == 'test-connection'
@@ -63,15 +128,31 @@ jobs:
           DISCORD_BOT_TOKEN: ${{ steps.set-token.outputs.token }}
         run: |
           echo "[INFO] Testing bot connection..."
-          curl -s -X GET "https://discord.com/api/v10/users/@me" \
-            -H "Authorization: Bot $DISCORD_BOT_TOKEN" | jq '.username'
-          echo "[OK] Connection successful"
+          RESPONSE=$(curl -s -X GET "https://discord.com/api/v10/users/@me" \
+            -H "Authorization: Bot $DISCORD_BOT_TOKEN" \
+            -H "Content-Type: application/json")
+          
+          USERNAME=$(echo "$RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin).get('username','N/A'))")
+          
+          if [ "$USERNAME" != "N/A" ] && [ -n "$USERNAME" ]; then
+            echo "[OK] Connection successful. Bot: $USERNAME"
+          else
+            echo "[ERROR] Connection failed"
+            echo "Response: $RESPONSE"
+            exit 1
+          fi
       
       - name: Fill Discord Channels
         if: github.event.inputs.action == 'fill-channels'
         env:
           DISCORD_BOT_TOKEN: ${{ steps.set-token.outputs.token }}
-        run: python scripts/discord_fill_channels.py
+        run: |
+          if [ -f "scripts/discord_fill_channels.py" ]; then
+            python scripts/discord_fill_channels.py
+          else
+            echo "[WARNING] scripts/discord_fill_channels.py not found"
+            echo "[INFO] Skipping fill-channels action"
+          fi
       
       - name: Update Session State
         if: success() && github.event.inputs.action == 'fill-channels'
@@ -79,3 +160,11 @@ jobs:
           echo "[INFO] Discord channels updated successfully"
           echo "[INFO] Timestamp: $(date)"
           echo "[INFO] Bot used: ${{ github.event.inputs.bot }}"
+
+      - name: Workflow Summary
+        if: always()
+        run: |
+          echo "## Discord - Fill Channels" >> $GITHUB_STEP_SUMMARY
+          echo "Bot: ${{ github.event.inputs.bot }}" >> $GITHUB_STEP_SUMMARY
+          echo "Action: ${{ github.event.inputs.action }}" >> $GITHUB_STEP_SUMMARY
+          echo "Status: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY

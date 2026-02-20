@@ -29,7 +29,6 @@ from tools.kimi_helper import (
     query_kimi_cli,
 )
 
-
 # ============================================================================
 # Test Personas
 # ============================================================================
@@ -121,6 +120,7 @@ class TestCLIChecks:
     def test_check_kimi_cli_called_process_error(self, mock_run):
         """Test CLI detection with CalledProcessError"""
         import subprocess
+
         mock_run.side_effect = subprocess.CalledProcessError(1, "kimi")
         assert check_kimi_cli() is False
 
@@ -337,6 +337,7 @@ class TestCLIQuery:
     def test_query_kimi_cli_timeout(self, mock_run, mock_logged_in, mock_check):
         """Test CLI query timeout"""
         import subprocess
+
         mock_check.return_value = True
         mock_logged_in.return_value = True
         mock_run.side_effect = subprocess.TimeoutExpired("kimi", 120)
@@ -427,7 +428,9 @@ class TestMainFunction:
 
         main()
 
-    @patch("tools.kimi_helper.sys.argv", ["kimi_helper.py", "-p", "exploit", "create exploit", "-t", "0.5", "-m", "custom-model"])
+    @patch(
+        "tools.kimi_helper.sys.argv", ["kimi_helper.py", "-p", "exploit", "create exploit", "-t", "0.5", "-m", "custom-model"]
+    )
     @patch("tools.kimi_helper.query_kimi_api")
     def test_main_with_options(self, mock_query):
         """Test main with temperature and model options"""

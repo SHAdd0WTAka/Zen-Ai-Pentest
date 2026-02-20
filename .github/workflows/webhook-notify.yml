@@ -18,15 +18,47 @@ jobs:
   notify:
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    if: always()
+    
     steps:
+      - name: Check Webhook Secret
+        id: check-secret
+        run: |
+          if [ -n "${{ secrets.WEBHOOK_URL }}" ]; then
+            echo "has_secret=true" >> $GITHUB_OUTPUT
+            echo "✅ Webhook URL is configured"
+          else
+            echo "has_secret=false" >> $GITHUB_OUTPUT
+            echo "⚠️ WEBHOOK_URL secret is not configured"
+          fi
+
       - name: Send webhook notification
+        if: steps.check-secret.outputs.has_secret == 'true'
         env:
           WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
         run: |
-          if [ -n "$WEBHOOK_URL" ]; then
-            curl -X POST -H "Content-Type: application/json" \
-              -d '{"event":"${{ github.event_name }}","ref":"${{ github.ref }}","repo":"${{ github.repository }}"}' \
-              "$WEBHOOK_URL" || echo "Webhook failed"
+          HTTP_CODE=$(curl -s -o /tmp/response.txt -w "%{http_code}" -X POST \
+            -H "Content-Type: application/json" \
+            -d '{"event":"${{ github.event_name }}","ref":"${{ github.ref }}","repo":"${{ github.repository }}"}' \
+            "$WEBHOOK_URL" 2>/dev/null || echo "000")
+          
+          if [ "$HTTP_CODE" == "200" ] || [ "$HTTP_CODE" == "201" ] || [ "$HTTP_CODE" == "202" ] || [ "$HTTP_CODE" == "204" ]; then
+            echo "✅ Webhook notification sent successfully"
           else
-            echo "Webhook not configured"
+            echo "⚠️ Webhook returned HTTP $HTTP_CODE"
+            cat /tmp/response.txt 2>/dev/null || true
+            exit 1
+          fi
+        continue-on-error: true
+
+      - name: Workflow Summary
+        if: always()
+        run: |
+          echo "## Webhook Notify" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.check-secret.outputs.has_secret }}" == "true" ]; then
+            echo "✅ Webhook is configured" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ Webhook is NOT configured" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "To enable notifications, add WEBHOOK_URL to GitHub Secrets" >> $GITHUB_STEP_SUMMARY
           fi

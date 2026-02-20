@@ -67,7 +67,10 @@ class ComplianceReporter:
             control_id="A.9.1.2",
             standard=ComplianceStandard.ISO27001,
             description="Access to networks and network services",
-            requirement="Users shall only be provided with access to the network and network services that they have been specifically authorized to use.",
+            requirement=(
+                "Users shall only be provided with access to the network and "
+                "network services that they have been specifically authorized to use."
+            ),
             evidence_required=["authentication_logs", "authorization_logs"],
             verification_method="review_logs",
         ),
@@ -83,7 +86,10 @@ class ComplianceReporter:
             control_id="A.9.4.1",
             standard=ComplianceStandard.ISO27001,
             description="Restriction of access to information",
-            requirement="Access to information and application system functions shall be restricted in accordance with the access control policy.",
+            requirement=(
+                "Access to information and application system functions shall be "
+                "restricted in accordance with the access control policy."
+            ),
             evidence_required=["access_logs", "authorization_failures"],
             verification_method="review_logs",
         ),
@@ -91,7 +97,10 @@ class ComplianceReporter:
             control_id="A.9.4.2",
             standard=ComplianceStandard.ISO27001,
             description="Secure log-on procedures",
-            requirement="Where required by the access control policy, access to systems and applications shall be controlled by a secure log-on procedure.",
+            requirement=(
+                "Where required by the access control policy, access to systems "
+                "and applications shall be controlled by a secure log-on procedure."
+            ),
             evidence_required=["authentication_logs", "failed_login_attempts"],
             verification_method="review_logs",
         ),
@@ -99,7 +108,10 @@ class ComplianceReporter:
             control_id="A.12.4.1",
             standard=ComplianceStandard.ISO27001,
             description="Event logging",
-            requirement="Event logs recording user activities, exceptions, and information security events shall be produced and kept.",
+            requirement=(
+                "Event logs recording user activities, exceptions, and "
+                "information security events shall be produced and kept."
+            ),
             evidence_required=["audit_logs", "log_integrity_verification"],
             verification_method="review_logs",
         ),
@@ -123,7 +135,11 @@ class ComplianceReporter:
             control_id="A.12.6.1",
             standard=ComplianceStandard.ISO27001,
             description="Management of technical vulnerabilities",
-            requirement="Information about technical vulnerabilities of information systems being used shall be obtained, the organization's exposure to such vulnerabilities evaluated, and appropriate measures taken.",
+            requirement=(
+                "Information about technical vulnerabilities of information systems "
+                "being used shall be obtained, the organization's exposure to such "
+                "vulnerabilities evaluated, and appropriate measures taken."
+            ),
             evidence_required=["vulnerability_scans", "remediation_logs"],
             verification_method="review_evidence",
         ),
@@ -131,7 +147,11 @@ class ComplianceReporter:
             control_id="A.16.1.1",
             standard=ComplianceStandard.ISO27001,
             description="Responsibilities and procedures",
-            requirement="Management responsibilities and procedures shall be established to ensure a quick, effective, and orderly response to information security incidents.",
+            requirement=(
+                "Management responsibilities and procedures shall be established "
+                "to ensure a quick, effective, and orderly response to information "
+                "security incidents."
+            ),
             evidence_required=["incident_logs", "response_procedures"],
             verification_method="review_evidence",
         ),
@@ -139,7 +159,10 @@ class ComplianceReporter:
             control_id="A.16.1.4",
             standard=ComplianceStandard.ISO27001,
             description="Assessment of and decision on information security events",
-            requirement="Information security events shall be assessed and decisions made on how they should be classified and handled.",
+            requirement=(
+                "Information security events shall be assessed and decisions made "
+                "on how they should be classified and handled."
+            ),
             evidence_required=["security_event_logs", "incident_classification"],
             verification_method="review_logs",
         ),
@@ -523,7 +546,10 @@ class ComplianceReporter:
 """
         for finding in report["findings"]:
             status_icon = "✅" if finding["status"] == "pass" else "❌" if finding["status"] == "fail" else "⚠️"
-            md += f"| {finding['control_id']} | {status_icon} {finding['status']} | {finding['evidence_count']} | {len(finding['findings'])} |\n"
+            md += (
+                f"| {finding['control_id']} | {status_icon} {finding['status']} | "
+                f"{finding['evidence_count']} | {len(finding['findings'])} |\n"
+            )
 
         md += "\n## Detailed Findings\n\n"
         for finding in report["findings"]:

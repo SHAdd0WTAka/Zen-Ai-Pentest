@@ -259,7 +259,8 @@ class HealthAnalyzer:
         }
 
         print(
-            f"   ✓ PRs: {len(open_prs)} open, {len(stale_prs)} stale, {len(conflict_prs)} conflicts, score: {self.metrics.prs_score:.1f}"
+            f"   ✓ PRs: {len(open_prs)} open, {len(stale_prs)} stale, "
+            f"{len(conflict_prs)} conflicts, score: {self.metrics.prs_score:.1f}"
         )
 
     def _analyze_branches(self) -> None:
@@ -324,7 +325,8 @@ class HealthAnalyzer:
         }
 
         print(
-            f"   ✓ Branches: {total_branches} total, {protected_count} protected, {orphaned_count} orphaned, score: {self.metrics.branches_score:.1f}"
+            f"   ✓ Branches: {total_branches} total, {protected_count} protected, "
+            f"{orphaned_count} orphaned, score: {self.metrics.branches_score:.1f}"
         )
 
     def _analyze_actions(self) -> None:
@@ -424,7 +426,10 @@ class HealthAnalyzer:
         self.metrics.critical_issues += security_details.get("critical_vulnerabilities", 0)
 
         print(
-            f"   ✓ Security: Dependabot={security_details['dependabot_enabled']}, CodeQL={security_details['codeql_enabled']}, Vulns={security_details['vulnerabilities']}, score: {self.metrics.security_score:.1f}"
+            f"   ✓ Security: Dependabot={security_details['dependabot_enabled']}, "
+            f"CodeQL={security_details['codeql_enabled']}, "
+            f"Vulns={security_details['vulnerabilities']}, "
+            f"score: {self.metrics.security_score:.1f}"
         )
 
     def _analyze_sync(self) -> None:
@@ -482,7 +487,8 @@ class HealthAnalyzer:
             self.metrics.sync_details = {"is_fork": True, "message": "No parent repository info"}
 
         print(
-            f"   ✓ Sync: Fork, behind by {self.metrics.sync_details.get('behind_by', 'unknown')}, score: {self.metrics.sync_score:.1f}"
+            f"   ✓ Sync: Fork, behind by {self.metrics.sync_details.get('behind_by', 'unknown')}, "
+            f"score: {self.metrics.sync_score:.1f}"
         )
 
     def _calculate_overall_score(self) -> None:
@@ -528,9 +534,8 @@ class HealthAnalyzer:
 
         # Actions recommendations
         if self.metrics.actions_details.get("success_rate", 100) < 80:
-            recommendations.append(
-                f"⚙️ Investigate workflow failures (current success rate: {self.metrics.actions_details.get('success_rate', 0)}%)"
-            )
+            success_rate = self.metrics.actions_details.get("success_rate", 0)
+            recommendations.append(f"⚙️ Investigate workflow failures (current success rate: {success_rate}%)")
 
         # Security recommendations
         if not self.metrics.security_details.get("dependabot_enabled"):

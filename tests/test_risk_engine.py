@@ -243,9 +243,7 @@ class TestEPSSClient:
     def test_get_score_success(self, mock_get):
         """Successfully fetch EPSS score"""
         mock_response = Mock()
-        mock_response.json.return_value = {
-            "data": [{"cve": "CVE-2021-44228", "epss": 0.95}]
-        }
+        mock_response.json.return_value = {"data": [{"cve": "CVE-2021-44228", "epss": 0.95}]}
         mock_response.raise_for_status = Mock()
         mock_get.return_value = mock_response
 
@@ -290,7 +288,7 @@ class TestEPSSClient:
     def test_get_score_no_cve(self):
         """Return 0 for missing CVE ID in finding"""
         client = EPSSClient()
-        
+
         # When CVE ID is not provided, _get_epss should return 0.0
         finding = {"description": "Test without CVE"}
         scorer = RiskScorer(enable_epss=True, enable_business_context=False)
@@ -342,9 +340,7 @@ class TestEPSSClient:
     def test_get_percentile(self, mock_get):
         """Fetch EPSS percentile"""
         mock_response = Mock()
-        mock_response.json.return_value = {
-            "data": [{"cve": "CVE-2021-44228", "epss": 0.95, "percentile": 0.99}]
-        }
+        mock_response.json.return_value = {"data": [{"cve": "CVE-2021-44228", "epss": 0.95, "percentile": 0.99}]}
         mock_response.raise_for_status = Mock()
         mock_get.return_value = mock_response
 

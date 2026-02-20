@@ -1,13 +1,39 @@
 name: Discord - Make Server Public
 
 on:
-  workflow_dispatch:  # Manuell auslösbar
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
   make-public:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     
     steps:
+      - name: Check Bot Token Secret
+        id: check-secret
+        run: |
+          if [ -n "${{ secrets.DISCORD_BOT_TOKEN }}" ]; then
+            echo "has_secret=true" >> $GITHUB_OUTPUT
+            echo "✅ Discord bot token is configured"
+          else
+            echo "has_secret=false" >> $GITHUB_OUTPUT
+            echo "❌ DISCORD_BOT_TOKEN secret is not configured"
+          fi
+
+      - name: Fail if Secret Missing
+        if: steps.check-secret.outputs.has_secret != 'true'
+        run: |
+          echo "❌ Required secret is not configured: DISCORD_BOT_TOKEN"
+          echo "Please add this secret to your GitHub repository settings."
+          exit 1
+
       - name: Configure Discord Server
         env:
           DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
@@ -16,15 +42,39 @@ jobs:
           echo "[INFO] Configuring Discord Server..."
           echo "[INFO] Guild ID: $GUILD_ID"
           
+          # Test authentication first
+          echo "[INFO] Testing bot authentication..."
+          AUTH_RESP=$(curl -s -X GET "https://discord.com/api/v10/users/@me" \
+            -H "Authorization: Bot $DISCORD_BOT_TOKEN" \
+            -H "Content-Type: application/json")
+          
+          if echo "$AUTH_RESP" | grep -q '"id"'; then
+            BOT_NAME=$(echo "$AUTH_RESP" | python3 -c "import sys,json; print(json.load(sys.stdin).get('username','Unknown'))")
+            echo "[OK] Authenticated as: $BOT_NAME"
+          else
+            echo "[ERROR] Authentication failed"
+            echo "Response: $AUTH_RESP"
+            exit 1
+          fi
+          
           # 1. Get current guild info
           echo "[INFO] Fetching current guild info..."
-          curl -s -X GET "https://discord.com/api/v10/guilds/$GUILD_ID" \
+          GUILD_INFO=$(curl -s -X GET "https://discord.com/api/v10/guilds/$GUILD_ID" \
             -H "Authorization: Bot $DISCORD_BOT_TOKEN" \
-            -H "Content-Type: application/json" | jq .
+            -H "Content-Type: application/json")
+          
+          if echo "$GUILD_INFO" | grep -q '"id"'; then
+            GUILD_NAME=$(echo "$GUILD_INFO" | python3 -c "import sys,json; print(json.load(sys.stdin).get('name','Unknown'))")
+            echo "[OK] Found guild: $GUILD_NAME"
+          else
+            echo "[ERROR] Failed to fetch guild info"
+            echo "Response: $GUILD_INFO"
+            exit 1
+          fi
           
           # 2. Enable Community features
           echo "[INFO] Enabling Community features..."
-          curl -s -X PATCH "https://discord.com/api/v10/guilds/$GUILD_ID" \
+          COMMUNITY_RESP=$(curl -s -X PATCH "https://discord.com/api/v10/guilds/$GUILD_ID" \
             -H "Authorization: Bot $DISCORD_BOT_TOKEN" \
             -H "Content-Type: application/json" \
             -d '{
@@ -32,9 +82,14 @@ jobs:
               "default_message_notifications": 0,
               "verification_level": 1,
               "explicit_content_filter": 2
-            }' | jq .
+            }')
           
-          echo "[OK] Community features enabled"
+          if echo "$COMMUNITY_RESP" | grep -q '"COMMUNITY"'; then
+            echo "[OK] Community features enabled"
+          else
+            echo "[WARNING] Community features may already be enabled or bot lacks permissions"
+            echo "Response: $COMMUNITY_RESP"
+          fi
           
           # 3. Get text channels to create invite
           echo "[INFO] Fetching channels..."
@@ -43,7 +98,7 @@ jobs:
             -H "Content-Type: application/json")
           
           # Find first text channel (type 0)
-          TEXT_CHANNEL=$(echo "$CHANNELS" | jq -r '.[] | select(.type == 0) | .id' | head -1)
+          TEXT_CHANNEL=$(echo "$CHANNELS" | python3 -c "import sys,json; [print(c['id']) for c in json.load(sys.stdin) if c.get('type') == 0][:1]" | head -1)
           
           if [ -n "$TEXT_CHANNEL" ]; then
             echo "[INFO] Found text channel: $TEXT_CHANNEL"
@@ -59,31 +114,36 @@ jobs:
                 "temporary": false
               }')
             
-            INVITE_CODE=$(echo "$INVITE" | jq -r '.code')
-            echo "[OK] Invite created: https://discord.gg/$INVITE_CODE"
+            INVITE_CODE=$(echo "$INVITE" | python3 -c "import sys,json; print(json.load(sys.stdin).get('code',''))")
+            
+            if [ -n "$INVITE_CODE" ]; then
+              echo "[OK] Invite created: https://discord.gg/$INVITE_CODE"
+              echo "INVITE_CODE=$INVITE_CODE" >> $GITHUB_ENV
+            else
+              echo "[ERROR] Failed to create invite"
+              echo "Response: $INVITE"
+            fi
           else
             echo "[ERROR] No text channel found"
           fi
-          
-          # 5. Check vanity URL
-          echo "[INFO] Checking vanity URL..."
-          VANITY=$(curl -s -X GET "https://discord.com/api/v10/guilds/$GUILD_ID/vanity-url" \
-            -H "Authorization: Bot $DISCORD_BOT_TOKEN" \
-            -H "Content-Type: application/json")
-          
-          echo "[INFO] Vanity URL response:"
-          echo "$VANITY" | jq .
           
           echo ""
           echo "=========================================="
           echo "[OK] Discord Server Configuration Complete"
           echo "=========================================="
           echo ""
-          echo "Next steps (MANUAL in Discord UI):"
-          echo "1. Open Discord → Server Settings → Community"
-          echo "2. Enable 'Server Discovery'"
-          echo "3. Set category to 'Developer' or 'Technology'"
-          echo "4. Add tags: cybersecurity, pentesting, AI, python"
-          echo "5. Save"
+          if [ -n "$INVITE_CODE" ]; then
+            echo "Invite Link: https://discord.gg/$INVITE_CODE"
+          fi
           echo ""
-          echo "Invite Link: https://discord.gg/$INVITE_CODE"
+          echo "Note: Server Discovery requires manual configuration in Discord UI."
+
+      - name: Workflow Summary
+        if: always()
+        run: |
+          echo "## Discord - Make Server Public" >> $GITHUB_STEP_SUMMARY
+          echo "Status: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+          if [ -n "${{ env.INVITE_CODE }}" ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**Invite Link:** https://discord.gg/${{ env.INVITE_CODE }}" >> $GITHUB_STEP_SUMMARY
+          fi

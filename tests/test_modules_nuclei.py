@@ -28,6 +28,7 @@ from modules.nuclei_integration import NucleiFinding, NucleiIntegration, NucleiT
 @dataclass
 class MockResponse:
     """Mock LLM response"""
+
     content: str
 
 
@@ -172,9 +173,17 @@ class TestGetTemplateCategories:
             categories = nuclei_integration.get_template_categories()
 
         expected_keys = [
-            "cves", "vulnerabilities", "misconfiguration", "exposures",
-            "technologies", "token-spray", "default-logins", "dns",
-            "fuzzing", "helpers", "headless",
+            "cves",
+            "vulnerabilities",
+            "misconfiguration",
+            "exposures",
+            "technologies",
+            "token-spray",
+            "default-logins",
+            "dns",
+            "fuzzing",
+            "helpers",
+            "headless",
         ]
         assert all(key in categories for key in expected_keys)
         assert all(isinstance(categories[key], list) for key in expected_keys)
@@ -206,12 +215,14 @@ class TestScanTarget:
     @pytest.mark.asyncio
     async def test_scan_target_success(self, nuclei_integration):
         """Test successful scan"""
-        json_output = json.dumps({
-            "info": {"id": "test-template", "name": "Test Finding", "severity": "high"},
-            "host": "https://example.com",
-            "matched-at": "https://example.com/path",
-            "extracted-results": ["result1"],
-        })
+        json_output = json.dumps(
+            {
+                "info": {"id": "test-template", "name": "Test Finding", "severity": "high"},
+                "host": "https://example.com",
+                "matched-at": "https://example.com/path",
+                "extracted-results": ["result1"],
+            }
+        )
 
         mock_process = AsyncMock()
         mock_process.stdout = MagicMock()
@@ -327,9 +338,7 @@ class TestScanWithAIAnalysis:
             timestamp=datetime.now().isoformat(),
         )
 
-        mock_orchestrator.process.return_value = MockResponse(
-            content="Risk assessment: Critical SQL injection found"
-        )
+        mock_orchestrator.process.return_value = MockResponse(content="Risk assessment: Critical SQL injection found")
 
         with patch.object(nuclei_integration, "scan_target", return_value=[mock_finding]):
             result = await nuclei_integration.scan_with_ai_analysis("example.com")

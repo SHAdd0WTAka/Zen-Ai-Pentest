@@ -106,7 +106,9 @@ class AgentMessage(BaseModel):
     session_id: str
     type: str = Field(
         ...,
-        description="Message type: reason, act, observe, reflect, delegate, delegate_task, error, complete, status_update, cancel",
+        description=(
+            "Message type: reason, act, observe, reflect, delegate, " "delegate_task, error, complete, status_update, cancel"
+        ),
     )
     priority: int = Field(default=PriorityLevel.NORMAL, ge=0, le=4)
     content: MessageContent

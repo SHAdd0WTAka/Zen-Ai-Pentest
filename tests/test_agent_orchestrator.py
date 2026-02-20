@@ -3,12 +3,13 @@ Comprehensive tests for Agent Orchestrator
 Tests AgentOrchestrator class with mocked dependencies
 """
 
-import pytest
 import asyncio
-from unittest.mock import Mock, AsyncMock, patch
+from unittest.mock import AsyncMock, Mock, patch
 
+import pytest
+
+from agents.agent_base import AgentMessage, AgentRole, BaseAgent
 from agents.agent_orchestrator import AgentOrchestrator
-from agents.agent_base import AgentRole, AgentMessage, BaseAgent
 
 
 # Concrete implementation for testing
@@ -283,10 +284,7 @@ class TestAgentOrchestratorResearchCoordination:
         researcher = MockAgent("Researcher", AgentRole.RESEARCHER)
         orchestrator.register_agent(researcher)
 
-        thread_id = await orchestrator.start_research_coordination(
-            "Test Topic",
-            {"target": "example.com"}
-        )
+        thread_id = await orchestrator.start_research_coordination("Test Topic", {"target": "example.com"})
 
         assert thread_id.startswith("research_")
         assert thread_id in orchestrator.research_coordination
@@ -341,10 +339,7 @@ class TestAgentOrchestratorCoordination:
         orchestrator.register_agent(researcher)
         orchestrator.register_agent(analyst)
 
-        results = await orchestrator.coordinate_agents(
-            "reconnaissance",
-            {"target": "example.com"}
-        )
+        results = await orchestrator.coordinate_agents("reconnaissance", {"target": "example.com"})
 
         assert results["task_type"] == "reconnaissance"
         assert "started" in results
@@ -363,10 +358,7 @@ class TestAgentOrchestratorCoordination:
         orchestrator.register_agent(analyst)
         orchestrator.register_agent(exploit)
 
-        results = await orchestrator.coordinate_agents(
-            "vulnerability_analysis",
-            {"findings": ["CVE-2021-44228"]}
-        )
+        results = await orchestrator.coordinate_agents("vulnerability_analysis", {"findings": ["CVE-2021-44228"]})
 
         assert results["task_type"] == "vulnerability_analysis"
         assert analyst.execute_task_called is True
@@ -382,10 +374,7 @@ class TestAgentOrchestratorCoordination:
         orchestrator.register_agent(exploit)
         orchestrator.register_agent(analyst)
 
-        results = await orchestrator.coordinate_agents(
-            "exploit_development",
-            {"vulnerability": "CVE-2021-44228"}
-        )
+        results = await orchestrator.coordinate_agents("exploit_development", {"vulnerability": "CVE-2021-44228"})
 
         assert results["task_type"] == "exploit_development"
         assert exploit.execute_task_called is True
@@ -402,10 +391,7 @@ class TestAgentOrchestratorCoordination:
         orchestrator.register_agent(analyst)
         orchestrator.register_agent(exploit)
 
-        results = await orchestrator.coordinate_agents(
-            "full_assessment",
-            {"target": "example.com"}
-        )
+        results = await orchestrator.coordinate_agents("full_assessment", {"target": "example.com"})
 
         assert results["task_type"] == "full_assessment"
         assert len(results["agent_responses"]) == 3
@@ -436,7 +422,7 @@ class TestAgentOrchestratorCoordination:
         orchestrator.register_agent(slow_agent)
 
         # Patch the timeout to be shorter for testing
-        with patch.object(asyncio, 'wait_for', side_effect=asyncio.TimeoutError):
+        with patch.object(asyncio, "wait_for", side_effect=asyncio.TimeoutError):
             await orchestrator.coordinate_agents("reconnaissance", {})
 
         # Note: This test demonstrates timeout handling pattern
@@ -455,11 +441,7 @@ class TestAgentOrchestratorConversation:
         orchestrator.register_agent(agent1)
         orchestrator.register_agent(agent2)
 
-        conversation = await orchestrator.facilitate_conversation(
-            "Security Topic",
-            [agent1.id, agent2.id],
-            rounds=2
-        )
+        conversation = await orchestrator.facilitate_conversation("Security Topic", [agent1.id, agent2.id], rounds=2)
 
         assert isinstance(conversation, list)
         # Each agent should receive 2 messages (2 rounds)
@@ -484,11 +466,7 @@ class TestAgentOrchestratorConversation:
         orchestrator = AgentOrchestrator()
 
         # Should not raise
-        conversation = await orchestrator.facilitate_conversation(
-            "Topic",
-            ["nonexistent-id"],
-            rounds=1
-        )
+        conversation = await orchestrator.facilitate_conversation("Topic", ["nonexistent-id"], rounds=1)
 
         assert isinstance(conversation, list)
 
@@ -596,15 +574,10 @@ class TestAgentOrchestratorPostScanWorkflow:
         """Test executing post-scan workflow"""
         orchestrator = AgentOrchestrator()
 
-        scan_results = {
-            "target": "example.com",
-            "findings": [
-                {"id": "CVE-2021-44228", "severity": "critical"}
-            ]
-        }
+        scan_results = {"target": "example.com", "findings": [{"id": "CVE-2021-44228", "severity": "critical"}]}
 
         # Mock PostScanAgent in the correct module
-        with patch('agents.post_scan_agent.PostScanAgent') as MockPostScan:
+        with patch("agents.post_scan_agent.PostScanAgent") as MockPostScan:
             mock_instance = AsyncMock()
             mock_instance.run = AsyncMock(return_value={"verified": True})
             MockPostScan.return_value = mock_instance
@@ -622,7 +595,7 @@ class TestAgentOrchestratorPostScanWorkflow:
         scan_results = {"target": "example.com", "findings": []}
 
         # Mock PostScanAgent in the correct module
-        with patch('agents.post_scan_agent.PostScanAgent') as MockPostScan:
+        with patch("agents.post_scan_agent.PostScanAgent") as MockPostScan:
             mock_instance = AsyncMock()
             mock_instance.run = AsyncMock(return_value={"verified": True})
             MockPostScan.return_value = mock_instance
@@ -698,11 +671,7 @@ class TestAgentOrchestratorEdgeCases:
         agent1 = MockAgent("A1", AgentRole.RESEARCHER)
         orchestrator.register_agent(agent1)
 
-        conversation = await orchestrator.facilitate_conversation(
-            "Topic",
-            [agent1.id, "invalid-id"],
-            rounds=1
-        )
+        conversation = await orchestrator.facilitate_conversation("Topic", [agent1.id, "invalid-id"], rounds=1)
 
         # Should only send to valid agent
         assert agent1.message_queue.qsize() == 1

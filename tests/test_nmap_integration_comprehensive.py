@@ -28,7 +28,6 @@ from tools.nmap_integration import (
     register_nmap_tools,
 )
 
-
 # ============================================================================
 # Fixtures
 # ============================================================================
@@ -698,25 +697,25 @@ class TestLangChainTools:
         """Test that nmap_scan tool is defined"""
         # nmap_scan is a LangChain StructuredTool, not a regular function
         assert nmap_scan is not None
-        assert hasattr(nmap_scan, 'name')
-        assert nmap_scan.name == 'nmap_scan'
+        assert hasattr(nmap_scan, "name")
+        assert nmap_scan.name == "nmap_scan"
 
     def test_nmap_quick_scan_tool_exists(self):
         """Test that nmap_quick_scan tool is defined"""
         assert nmap_quick_scan is not None
-        assert hasattr(nmap_quick_scan, 'name')
-        assert nmap_quick_scan.name == 'nmap_quick_scan'
+        assert hasattr(nmap_quick_scan, "name")
+        assert nmap_quick_scan.name == "nmap_quick_scan"
 
     def test_nmap_vuln_scan_tool_exists(self):
         """Test that nmap_vuln_scan tool is defined"""
         assert nmap_vuln_scan is not None
-        assert hasattr(nmap_vuln_scan, 'name')
-        assert nmap_vuln_scan.name == 'nmap_vuln_scan'
+        assert hasattr(nmap_vuln_scan, "name")
+        assert nmap_vuln_scan.name == "nmap_vuln_scan"
 
     def test_nmap_scan_tool_description(self):
         """Test that nmap_scan has description"""
-        assert hasattr(nmap_scan, 'description')
-        assert 'nmap' in nmap_scan.description.lower()
+        assert hasattr(nmap_scan, "description")
+        assert "nmap" in nmap_scan.description.lower()
 
     @patch("tools.nmap_integration.NmapScanner")
     @patch("tools.nmap_integration.asyncio.run")

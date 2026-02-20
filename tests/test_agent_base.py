@@ -3,14 +3,15 @@ Comprehensive tests for Base Agent Classes
 Tests AgentRole, AgentState, AgentMessage, and BaseAgent
 """
 
-import pytest
 import asyncio
-from unittest.mock import Mock, AsyncMock
+from unittest.mock import AsyncMock, Mock
+
+import pytest
 
 from agents.agent_base import (
+    AgentMessage,
     AgentRole,
     AgentState,
-    AgentMessage,
     BaseAgent,
 )
 

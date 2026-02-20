@@ -43,7 +43,6 @@ from core.health_check import (
     run_health_check,
 )
 
-
 # ==================== Fixtures ====================
 
 
@@ -568,8 +567,8 @@ class TestSecurityHealthCheck:
 
     def test_scan_for_secrets(self, default_config):
         """Test secret scanning"""
-        import tempfile
         import os
+        import tempfile
 
         # Create a test directory and file with a potential secret
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -590,8 +589,8 @@ class TestSecurityHealthCheck:
 
     def test_scan_for_secrets_excluded(self, default_config):
         """Test secret scanning with exclusions"""
-        import tempfile
         import os
+        import tempfile
 
         with tempfile.TemporaryDirectory() as tmp_dir:
             test_dir = os.path.join(tmp_dir, "test_code")
@@ -885,9 +884,7 @@ class TestPerformance:
         """Test JSON generation for large reports"""
         # Add many checks to simulate large report
         for i in range(100):
-            mock_health_report.checks.append(
-                HealthCheckResult(f"check_{i}", HealthStatus.OK, f"Check {i} passed")
-            )
+            mock_health_report.checks.append(HealthCheckResult(f"check_{i}", HealthStatus.OK, f"Check {i} passed"))
 
         start = time.time()
         json_str = mock_health_report.to_json()
