@@ -256,13 +256,13 @@ async def security_headers_middleware(request: Request, call_next):
 @app.middleware("http")
 async def request_logging_middleware(request: Request, call_next):
     """Log all requests"""
-    from datetime import datetime
+    from datetime import datetime, timezone
 
-    start_time = datetime.utcnow()
+    start_time = datetime.now(timezone.utc)
 
     response = await call_next(request)
 
-    end_time = datetime.utcnow()
+    end_time = datetime.now(timezone.utc)
     duration = (end_time - start_time).total_seconds()
 
     # Log request (in production, use proper logging)

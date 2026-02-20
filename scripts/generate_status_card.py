@@ -43,7 +43,7 @@ def get_repo_stats():
     try:
         loc_result = run_git_command("git ls-files | xargs wc -l 2>/dev/null | tail -1 | awk '{print $1}'")
         stats["lines_of_code"] = loc_result
-    except:
+    except Exception:
         stats["lines_of_code"] = "N/A"
 
     # Branch name
@@ -60,7 +60,7 @@ def get_repo_stats():
             stats["repo_age_display"] = (
                 f"{age_days} days" if age_days < 365 else f"{age_days // 365}y {(age_days % 365) // 30}m"
             )
-        except:
+        except Exception:
             stats["repo_age_days"] = "N/A"
             stats["repo_age_display"] = "N/A"
     else:
@@ -105,7 +105,7 @@ def get_evolution_phase(stats):
             return "🧠 Phase 6: AI Personas"
         else:
             return "🚀 Phase 7: Mature (v2.3.9)"
-    except:
+    except Exception:
         return "Unknown Phase"
 
 
@@ -141,7 +141,7 @@ def generate_status_card():
         font_header = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 18)
         font_text = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 14)
         font_small = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 12)
-    except:
+    except Exception:
         font_title = ImageFont.load_default()
         font_header = ImageFont.load_default()
         font_text = ImageFont.load_default()
@@ -231,7 +231,7 @@ def generate_status_card():
             status_color = secondary_text
 
         draw.text((50, y_pos), f"Status: {activity_status}", fill=status_color, font=font_text)
-    except:
+    except Exception:
         pass
 
     y_pos += 40

@@ -453,9 +453,9 @@ class MetadataExtractor:
                 sensitive.append(f"Software: {metadata.software}")
 
         # Prüfe auf Netzwerk-Pfade
-        for field in [metadata.raw.get("Template", ""), metadata.raw.get("Company", "")]:
-            if isinstance(field, str) and "\\\\" in field:
-                sensitive.append(f"Netzwerk-Pfad: {field}")
+        for field_value in [metadata.raw.get("Template", ""), metadata.raw.get("Company", "")]:
+            if isinstance(field_value, str) and "\\\\" in field_value:
+                sensitive.append(f"Netzwerk-Pfad: {field_value}")
 
         # Prüfe auf E-Mail-Adressen
         email_pattern = r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b"

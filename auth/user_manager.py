@@ -12,7 +12,7 @@ Features:
 """
 
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional
 
 from sqlalchemy import desc
@@ -72,7 +72,7 @@ class UserManager:
             return None
 
         # Check if account is locked
-        if user.locked_until and datetime.utcnow() < user.locked_until:
+        if user.locked_until and datetime.now(timezone.utc) < user.locked_until:
             self._log_audit(
                 db, user.id, "login", "auth", ip_address, user_agent, result="failure", failure_reason="account_locked"
             )
@@ -92,7 +92,7 @@ class UserManager:
 
             # Lock account after 5 failed attempts
             if user.failed_login_attempts >= 5:
-                user.locked_until = datetime.utcnow() + timedelta(minutes=30)
+                user.locked_until = datetime.now(timezone.utc) + timedelta(minutes=30)
 
             db.commit()
 
@@ -112,7 +112,7 @@ class UserManager:
         # Successful login
         user.failed_login_attempts = 0
         user.locked_until = None
-        user.last_login_at = datetime.utcnow()
+        user.last_login_at = datetime.now(timezone.utc)
         user.last_login_ip = ip_address
         db.commit()
 
@@ -147,7 +147,7 @@ class UserManager:
             hashed_password=hashed,
             role=role,
             created_by=created_by,
-            password_changed_at=datetime.utcnow(),
+            password_changed_at=datetime.now(timezone.utc),
         )
 
         db.add(user)
@@ -186,7 +186,7 @@ class UserManager:
 
         # Update password
         user.hashed_password = self.pwd.hash(new_password)
-        user.password_changed_at = datetime.utcnow()
+        user.password_changed_at = datetime.now(timezone.utc)
 
         # Add to history
         if user.password_history is None:
@@ -244,7 +244,7 @@ class UserManager:
         refresh_payload = self.jwt.decode_token(refresh_token)
 
         # Calculate expiry
-        refresh_expiry = datetime.utcnow() + timedelta(days=7)
+        refresh_expiry = datetime.now(timezone.utc) + timedelta(days=7)
 
         # Store session in database
         session = UserSession(
@@ -346,7 +346,7 @@ class UserManager:
         session.is_active = False
         session.revoked = True
         session.revoked_reason = reason
-        session.revoked_at = datetime.utcnow()
+        session.revoked_at = datetime.now(timezone.utc)
         db.commit()
 
         return True
@@ -374,7 +374,7 @@ class UserManager:
             session.is_active = False
             session.revoked = True
             session.revoked_reason = reason
-            session.revoked_at = datetime.utcnow()
+            session.revoked_at = datetime.now(timezone.utc)
             count += 1
 
         db.commit()
@@ -411,7 +411,7 @@ class UserManager:
         Returns:
             Number of tokens removed
         """
-        expired = db.query(TokenBlacklist).filter(TokenBlacklist.expires_at < datetime.utcnow()).all()
+        expired = db.query(TokenBlacklist).filter(TokenBlacklist.expires_at < datetime.now(timezone.utc)).all()
 
         count = len(expired)
         for entry in expired:

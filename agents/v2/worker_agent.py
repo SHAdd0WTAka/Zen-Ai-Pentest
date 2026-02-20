@@ -241,7 +241,7 @@ class WorkerAgent:
             try:
                 await self.websocket.send(json.dumps({"type": "disconnect"}))
                 await self.websocket.close()
-            except:
+            except Exception:
                 pass
 
         # Wait for tasks to complete

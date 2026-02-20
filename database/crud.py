@@ -2,7 +2,7 @@
 CRUD Operations for Zen-AI-Pentest Database
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session
 
@@ -61,9 +61,9 @@ def update_scan_status(db: Session, scan_id: int, status: str, result: dict = No
     if db_scan:
         db_scan.status = status
         if status == "running":
-            db_scan.started_at = datetime.utcnow()
+            db_scan.started_at = datetime.now(timezone.utc)
         elif status in ["completed", "failed"]:
-            db_scan.completed_at = datetime.utcnow()
+            db_scan.completed_at = datetime.now(timezone.utc)
         if result:
             db_scan.result_summary = str(result)[:1000]  # Limit length
         db.commit()

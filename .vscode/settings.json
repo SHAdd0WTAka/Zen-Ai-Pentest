@@ -4,7 +4,7 @@
     "python.analysis.typeCheckingMode": "basic",
     "python.analysis.autoImportCompletions": true,
     "python.analysis.completeFunctionParens": true,
-    
+
     // Testing
     "python.testing.pytestEnabled": true,
     "python.testing.pytestArgs": [
@@ -20,7 +20,7 @@
     ],
     "python.testing.unittestEnabled": false,
     "python.testing.autoTestDiscoverOnSaveEnabled": true,
-    
+
     // Formatting - Black
     "editor.formatOnSave": true,
     "editor.formatOnPaste": true,
@@ -33,10 +33,10 @@
             "source.organizeImports": "explicit"
         }
     },
-    
+
     // Import Sorting - isort
     "isort.args": ["--profile", "black"],
-    
+
     // Linting - Ruff (ersetzt flake8, pylint)
     "ruff.enable": true,
     "ruff.lint.run": "onSave",
@@ -44,7 +44,7 @@
     "ruff.lint.ignore": ["E501", "E741"],
     "ruff.format.enabled": false,
     "ruff.organizeImports": true,
-    
+
     // Type Checking - mypy
     "mypy-type-checker.enabled": true,
     "mypy-type-checker.args": [
@@ -52,7 +52,7 @@
         "--show-error-codes",
         "--warn-unused-ignores"
     ],
-    
+
     // Coverage Gutters
     "coverage-gutters.showLineCoverage": true,
     "coverage-gutters.showRulerCoverage": true,
@@ -62,13 +62,13 @@
     "coverage-gutters.partialHighlightDark": "rgba(255, 255, 0, 0.2)",
     "coverage-gutters.noHighlightDark": "rgba(255, 0, 0, 0.2)",
     "coverage-gutters.highlightdark": "rgba(0, 255, 0, 0.2)",
-    
+
     // Security - Bandit (via Ruff oder separat)
     "python.analysis.diagnosticSeverityOverrides": {
         "reportUnusedImport": "warning",
         "reportUnusedVariable": "warning"
     },
-    
+
     // File Exclusions
     "files.exclude": {
         "**/__pycache__": true,
@@ -82,7 +82,7 @@
         "**/build": true,
         "**/.egg-info": true
     },
-    
+
     // Search Exclusions
     "search.exclude": {
         "**/node_modules": true,
@@ -91,16 +91,16 @@
         "**/htmlcov": true,
         "**/coverage.xml": true
     },
-    
+
     // Error Lens (bessere Fehleranzeige)
     "errorLens.enabled": true,
     "errorLens.messageBackgroundMode": "message",
     "errorLens.gutterIconsEnabled": true,
-    
+
     // GitLens
     "gitlens.codeLens.enabled": true,
     "gitlens.hovers.enabled": true,
-    
+
     // Editor
     "editor.rulers": [127],
     "editor.wordWrap": "wordWrapColumn",
@@ -109,7 +109,7 @@
     "editor.guides.bracketPairs": true,
     "editor.stickyScroll.enabled": true,
     "editor.minimap.enabled": true,
-    
+
     // Todo Tree
     "todo-tree.general.tags": [
         "TODO",
@@ -133,7 +133,7 @@
             "foreground": "#ff8800"
         }
     },
-    
+
     // Better Comments
     "better-comments.tags": [
         {
@@ -191,10 +191,10 @@
             "italic": false
         }
     ],
-    
+
     // Terminal
     "terminal.integrated.defaultProfile.windows": "PowerShell",
-    
+
     // Spell Check
     "cSpell.words": [
         "zenai",
@@ -211,5 +211,6 @@
         "bandit",
         "snyk",
         "codeql"
-    ]
+    ],
+    "snyk.advanced.autoSelectOrganization": true
 }

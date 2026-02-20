@@ -682,7 +682,7 @@ class AgentCoordinator:
         try:
             # Einfache Bedingungsauswertung
             return eval(condition, {"results": results, "__builtins__": {}})
-        except:
+        except Exception:
             return False
 
     # === Event Bus ===

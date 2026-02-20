@@ -6,7 +6,7 @@ PostgreSQL Datenbank-Schema für Zen-AI-Pentest.
 
 import enum
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import JSON, Column, DateTime, Float, ForeignKey, Integer, String, Text, create_engine
 from sqlalchemy.ext.declarative import declarative_base
@@ -314,9 +314,9 @@ def update_scan_status(db, scan_id: int, status: str, result: dict = None):
         if result:
             scan.result_summary = str(result)
         if status == "running":
-            scan.started_at = datetime.utcnow()
+            scan.started_at = datetime.now(timezone.utc)
         if status in ["completed", "failed"]:
-            scan.completed_at = datetime.utcnow()
+            scan.completed_at = datetime.now(timezone.utc)
         db.commit()
         db.refresh(scan)
     return scan

@@ -284,12 +284,12 @@ class WhoisLookup:
                     break
 
             # Parse andere Felder
-            for field, prefixes in field_mapping.items():
+            for field_name, prefixes in field_mapping.items():
                 for prefix in prefixes:
                     if line.startswith(prefix):
                         value = line.split(":", 1)[1].strip()
                         if value and value not in ["", "REDACTED", "NOT DISCLOSED"]:
-                            setattr(record, field, value)
+                            setattr(record, field_name, value)
                         break
 
         record.name_servers = sorted(list(name_servers))

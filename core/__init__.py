@@ -16,3 +16,17 @@ except ImportError:
 __version__ = "1.0.0"
 __author__ = "SHAdd0WTAka"
 __description__ = "Multi-LLM Penetration Testing Intelligence System"
+
+# Export Health Check System
+try:
+    from .health_check import (
+        HealthCheckConfig,
+        HealthCheckResult,
+        HealthCheckRunner,
+        HealthReport,
+        HealthStatus,
+        SeverityLevel,
+        run_health_check,
+    )
+except ImportError:
+    pass  # Health check dependencies may not be installed

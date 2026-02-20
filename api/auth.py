@@ -9,7 +9,7 @@ SECURITY NOTES:
 
 import os
 import secrets
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, Optional
 
 from fastapi import Depends, HTTPException, status
@@ -64,7 +64,7 @@ def get_password_hash(password: str) -> str:
 def create_access_token(data: Dict, expires_delta: Optional[timedelta] = None) -> str:
     """Erstellt JWT Token"""
     to_encode = data.copy()
-    expire = datetime.utcnow() + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
+    expire = datetime.now(timezone.utc) + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
@@ -98,7 +98,7 @@ async def verify_token(credentials: HTTPAuthorizationCredentials = Depends(secur
 
     # Check expiration
     exp = payload.get("exp")
-    if exp and datetime.utcnow().timestamp() > exp:
+    if exp and datetime.now(timezone.utc).timestamp() > exp:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Token has expired",
@@ -156,7 +156,7 @@ def verify_api_key(api_key: str) -> Optional[Dict]:
 def create_api_key(user_id: int, name: str) -> str:
     """Erstellt neuen API Key"""
     key = secrets.token_urlsafe(32)
-    API_KEYS[key] = {"user_id": user_id, "name": name, "created_at": datetime.utcnow().isoformat()}
+    API_KEYS[key] = {"user_id": user_id, "name": name, "created_at": datetime.now(timezone.utc).isoformat()}
     return key
 
 

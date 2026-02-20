@@ -186,6 +186,8 @@ def query_kimi_api(prompt, system_prompt, model="kimi-k2.5", temperature=0.7):
         if model == "kimi-k2.5":
             model = "openrouter/free"
     else:
+        # Standard Kimi API
+        url = "https://api.moonshot.cn/v1/chat/completions"
         headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
 
     data = {

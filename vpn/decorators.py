@@ -6,6 +6,7 @@ Decorators for VPN-aware functions.
 Provides warnings and optional enforcement.
 """
 
+import asyncio
 import functools
 import logging
 from typing import Callable, Optional

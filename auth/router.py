@@ -15,7 +15,7 @@ FastAPI router with all authentication endpoints:
 Compliance: OWASP ASVS 2026 V2.1, V2.2, V2.3
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
@@ -179,7 +179,7 @@ class UserStore:
             "email": email,
             "password_hash": password_hash,
             "roles": [Role.USER.value],
-            "created_at": datetime.utcnow(),
+            "created_at": datetime.now(timezone.utc),
             "last_login": None,
             "failed_login_attempts": 0,
             "locked_until": None,
@@ -203,7 +203,7 @@ class UserStore:
         """Update last login time"""
         user = self._users.get(username)
         if user:
-            user["last_login"] = datetime.utcnow()
+            user["last_login"] = datetime.now(timezone.utc)
             user["failed_login_attempts"] = 0
 
     def increment_failed_login(self, username: str) -> None:
@@ -476,7 +476,7 @@ async def logout(request: Request, data: LogoutRequest, auth: AuthContext = Depe
         try:
             payload = jwt_handler.verify_refresh_token(data.refresh_token)
             jwt_handler.blacklist_token(payload.jti, "logout")
-        except:
+        except Exception:
             pass
 
     # Terminate session

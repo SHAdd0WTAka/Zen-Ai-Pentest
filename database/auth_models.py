@@ -13,7 +13,7 @@ Models:
 """
 
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum as PyEnum
 
 from sqlalchemy import JSON, Boolean, Column, DateTime, Enum, ForeignKey, Index, Integer, String, Text, create_engine
@@ -168,11 +168,11 @@ class UserSession(Base):
 
     def is_expired(self):
         """Check if session is expired"""
-        return datetime.utcnow() > self.expires_at
+        return datetime.now(timezone.utc) > self.expires_at
 
     def touch(self):
         """Update last activity timestamp"""
-        self.last_activity_at = datetime.utcnow()
+        self.last_activity_at = datetime.now(timezone.utc)
 
 
 class APIKey(Base):
@@ -224,12 +224,12 @@ class APIKey(Base):
         """Check if API key is expired"""
         if self.expires_at is None:
             return False
-        return datetime.utcnow() > self.expires_at
+        return datetime.now(timezone.utc) > self.expires_at
 
     def record_usage(self):
         """Record API key usage"""
         self.use_count += 1
-        self.last_used_at = datetime.utcnow()
+        self.last_used_at = datetime.now(timezone.utc)
 
 
 class MFADevice(Base):
@@ -434,7 +434,7 @@ def revoke_session(db, session_id: str, reason: str = "logout"):
         session.is_active = False
         session.revoked = True
         session.revoked_reason = reason
-        session.revoked_at = datetime.utcnow()
+        session.revoked_at = datetime.now(timezone.utc)
         db.commit()
     return session
 
@@ -447,7 +447,7 @@ def revoke_all_user_sessions(db, user_id: int, reason: str = "security"):
         session.is_active = False
         session.revoked = True
         session.revoked_reason = reason
-        session.revoked_at = datetime.utcnow()
+        session.revoked_at = datetime.now(timezone.utc)
 
     db.commit()
     return len(sessions)
