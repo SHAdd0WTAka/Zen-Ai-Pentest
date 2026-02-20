@@ -8,8 +8,14 @@
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Security Scan](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/workflows/Security%20Scan%20(Improved)/badge.svg)](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/actions)
+[![Cloudflare Pages](https://img.shields.io/badge/Cloudflare%20Pages-Live-green)](https://zen-ai-pentest.pages.dev/)
 
 - **Guest Control**: Execute tools inside isolated VMs
+
+### 🌐 Live Demo
+- **Frontend**: [https://zen-ai-pentest.pages.dev](https://zen-ai-pentest.pages.dev/) - React Dashboard
+- **API**: [https://zen-ai-pentest.workers.dev](https://zen-ai-pentest.workers.dev/) - Cloudflare Workers API
+- **Login**: `admin` / `admin` ( für Demo-Zwecke)
 
 ### 🚀 Modern API & Backend
 - **FastAPI**: High-performance REST API
