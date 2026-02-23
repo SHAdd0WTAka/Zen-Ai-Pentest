@@ -49,7 +49,8 @@ rules:
       - patch
       - delete
 
-  # Job management
+  # Job management - REMOVED delete to prevent abuse
+  # SECURITY FIX: Removed 'delete' verb - operator should not delete jobs arbitrarily
   - apiGroups:
       - batch
     resources:
@@ -62,7 +63,6 @@ rules:
       - create
       - update
       - patch
-      - delete
 
   # Pod management
   - apiGroups:
@@ -75,13 +75,11 @@ rules:
       - list
       - watch
 
-  # ConfigMap and Secret management
+  # ConfigMap management (read-only + create for temp configs)
   - apiGroups:
       - ""
     resources:
       - configmaps
-      - secrets
-      - persistentvolumeclaims
     verbs:
       - get
       - list
@@ -89,6 +87,29 @@ rules:
       - create
       - update
       - patch
+
+  # Secret management - READ-ONLY for operator config only
+  # SECURITY FIX: Removed create/update/patch to prevent privilege escalation
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+    verbs:
+      - get
+      - list
+    resourceNames: ["zen-operator-config"]  # Restrict to specific secret
+
+  # PVC management for scan storage
+  - apiGroups:
+      - ""
+    resources:
+      - persistentvolumeclaims
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - delete  # Needed for cleanup after scans
 
   # Event creation
   - apiGroups:
