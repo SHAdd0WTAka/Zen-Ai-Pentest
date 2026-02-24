@@ -1,56 +1,36 @@
 # Snyk Security Policy
-# This file is used to suppress false positive security findings
 # https://docs.snyk.io/snyk-cli/commands/ignore
 
 version: v1.25.0
 ignore:
-  # SNYK-CC-K8S-47: Dangerous permissions (RBAC)
-  # These are required for the Kubernetes operator to function
-  - SNYK-CC-K8S-47:
-    - '*operator-deployment.yaml':
-        reason: 'Required for operator to manage CRDs, Jobs, and PVCs'
-        expires: '2026-12-31T00:00:00.000Z'
-    - '*zenscan-crd.yaml':
-        reason: 'Required for scan jobs to read config secrets'
-        expires: '2026-12-31T00:00:00.000Z'
-    - '*rbac.yaml':
-        reason: 'Required for service account to read application secrets'
-        expires: '2026-12-31T00:00:00.000Z'
-    - '*zen-pentest-crd.yaml':
-        reason: 'Required for operator to manage CRDs and resources'
-        expires: '2026-12-31T00:00:00.000Z'
-
   # SNYK-CC-K8S-8: Read-only root filesystem
   # Required for databases to write data
   - SNYK-CC-K8S-8:
     - '*postgres.yaml':
         reason: 'PostgreSQL requires write access to data directory'
-        expires: '2026-12-31T00:00:00.000Z'
+        expires: '2025-08-24T00:00:00.000Z'
     - '*redis.yaml':
         reason: 'Redis requires write access to data directory'
-        expires: '2026-12-31T00:00:00.000Z'
+        expires: '2025-08-24T00:00:00.000Z'
 
   # SNYK-CC-TF-1: AWS Security Group open egress
   # Required for RDS and Redis to communicate with EKS cluster
   - SNYK-CC-TF-1:
     - '*main.tf':
         reason: 'Egress to 0.0.0.0/0 required for RDS/Redis in private subnets'
-        expires: '2026-12-31T00:00:00.000Z'
+        expires: '2025-08-24T00:00:00.000Z'
 
   # Hardcoded passwords in template files
-  # These are intentionally placeholders that must be changed before deployment
-  SNYK-CC-K8S-3:
+  # These are intentionally placeholders
+  - SNYK-CC-K8S-3:
     - '*secrets.yaml':
         reason: 'Template file with placeholder passwords - must be configured before deployment'
-        expires: '2026-12-31T00:00:00.000Z'
+        expires: '2025-08-24T00:00:00.000Z'
     - '*postgres.yaml':
         reason: 'Default password placeholder - must be changed in production'
-        expires: '2026-12-31T00:00:00.000Z'
+        expires: '2025-08-24T00:00:00.000Z'
     - '*variables.tf':
         reason: 'Terraform variables with secure random password generation'
-        expires: '2026-12-31T00:00:00.000Z'
-    - '*main.tf':
-        reason: 'Terraform uses random_password resource for secure generation'
-        expires: '2026-12-31T00:00:00.000Z'
+        expires: '2025-08-24T00:00:00.000Z'
 
 patch: {}

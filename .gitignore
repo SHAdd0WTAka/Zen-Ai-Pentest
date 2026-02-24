@@ -132,3 +132,13 @@ vscode.deb
 *.deb
 *.rpm
 *.AppImage
+
+# Backup files
+*.backup
+*.backup.*
+data/backup_*/
+requirements.txt.backup*
+
+# Context/metadata
+managed_context/
+test_suite_analysis/
