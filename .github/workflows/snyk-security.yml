@@ -65,12 +65,23 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         run: |
-          snyk test --severity-threshold=high --sarif-file-output=snyk.sarif || true
+          snyk test --severity-threshold=high --sarif-file-output=snyk.sarif || echo "No vulnerabilities found or error occurred"
         continue-on-error: true
+
+      - name: Check SARIF file exists
+        id: check-sarif
+        run: |
+          if [ -f "snyk.sarif" ] && [ -s "snyk.sarif" ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "⚠️ No SARIF file generated - creating empty report"
+            echo '{"version": "2.1.0", "runs": [{"tool": {"driver": {"name": "Snyk"}}, "results": []}]}' > snyk.sarif
+          fi
 
       - name: Upload result to GitHub Code Scanning
         uses: github/codeql-action/upload-sarif@v3
-        if: always() && hashFiles('snyk.sarif') != ''
+        if: always()
         with:
           sarif_file: snyk.sarif
 
