@@ -1,216 +1,100 @@
 {
-    // Python Settings
-    "python.defaultInterpreterPath": "${workspaceFolder}/venv/Scripts/python.exe",
-    "python.analysis.typeCheckingMode": "basic",
-    "python.analysis.autoImportCompletions": true,
-    "python.analysis.completeFunctionParens": true,
+  // Python Interpreter - EXPLIZIT auf venv gesetzt
+  "python.defaultInterpreterPath": "/home/atakan/zen-ai-pentest/.venv/bin/python",
+  "python.pythonPath": "/home/atakan/zen-ai-pentest/.venv/bin/python",
+  "python.terminal.activateEnvironment": true,
 
-    // Testing
-    "python.testing.pytestEnabled": true,
-    "python.testing.pytestArgs": [
-        "tests",
-        "--cov=core",
-        "--cov=tools",
-        "--cov=modules",
-        "--cov=database",
-        "--cov=agents",
-        "--cov=autonomous",
-        "--cov-report=xml",
-        "--cov-report=html"
-    ],
-    "python.testing.unittestEnabled": false,
-    "python.testing.autoTestDiscoverOnSaveEnabled": true,
+  // Python Analysis
+  "python.analysis.typeCheckingMode": "basic",
+  "python.analysis.autoImportCompletions": true,
+  "python.analysis.extraPaths": [
+    "${workspaceFolder}/api",
+    "${workspaceFolder}/core",
+    "${workspaceFolder}/workers"
+  ],
 
-    // Formatting - Black
-    "editor.formatOnSave": true,
-    "editor.formatOnPaste": true,
-    "python.formatting.provider": "black",
-    "black-formatter.args": ["--line-length", "127"],
-    "[python]": {
-        "editor.defaultFormatter": "ms-python.black-formatter",
-        "editor.formatOnSave": true,
-        "editor.codeActionsOnSave": {
-            "source.organizeImports": "explicit"
-        }
-    },
+  // Linting - Ruff statt flake8 (schneller)
+  "python.linting.enabled": true,
+  "python.linting.pylintEnabled": false,
+  "python.linting.flake8Enabled": false,
+  "python.linting.mypyEnabled": true,
+  "python.linting.lintOnSave": true,
 
-    // Import Sorting - isort
-    "isort.args": ["--profile", "black"],
+  // Ruff Configuration
+  "ruff.enable": true,
+  "ruff.lint.run": "onSave",
+  "ruff.organizeImports": true,
+  "ruff.fixAll": true,
 
-    // Linting - Ruff (ersetzt flake8, pylint)
-    "ruff.enable": true,
-    "ruff.lint.run": "onSave",
-    "ruff.lint.select": ["E", "F", "I", "N", "W", "UP", "B", "C4", "SIM"],
-    "ruff.lint.ignore": ["E501", "E741"],
-    "ruff.format.enabled": false,
-    "ruff.organizeImports": true,
+  // Formatting
+  "python.formatting.provider": "black",
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "explicit"
+  },
 
-    // Type Checking - mypy
-    "mypy-type-checker.enabled": true,
-    "mypy-type-checker.args": [
-        "--ignore-missing-imports",
-        "--show-error-codes",
-        "--warn-unused-ignores"
-    ],
+  // Testing
+  "python.testing.pytestEnabled": true,
+  "python.testing.unittestEnabled": false,
+  "python.testing.nosetestsEnabled": false,
 
-    // Coverage Gutters
-    "coverage-gutters.showLineCoverage": true,
-    "coverage-gutters.showRulerCoverage": true,
-    "coverage-gutters.coverageBaseDir": "",
-    "coverage-gutters.coverageReportFileName": "coverage.xml",
-    "coverage-gutters.showGutterCoverage": true,
-    "coverage-gutters.partialHighlightDark": "rgba(255, 255, 0, 0.2)",
-    "coverage-gutters.noHighlightDark": "rgba(255, 0, 0, 0.2)",
-    "coverage-gutters.highlightdark": "rgba(0, 255, 0, 0.2)",
+  // Editor
+  "editor.rulers": [88, 120],
+  "editor.tabSize": 4,
+  "editor.insertSpaces": true,
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
 
-    // Security - Bandit (via Ruff oder separat)
-    "python.analysis.diagnosticSeverityOverrides": {
-        "reportUnusedImport": "warning",
-        "reportUnusedVariable": "warning"
-    },
+  // Files to exclude
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/*.pyc": true,
+    "**/.pytest_cache": true,
+    "**/.mypy_cache": true,
+    "**/.venv": false,
+    "**/venv": true,
+    "**/node_modules": true,
+    "**/.git": true
+  },
 
-    // File Exclusions
-    "files.exclude": {
-        "**/__pycache__": true,
-        "**/.pytest_cache": true,
-        "**/*.pyc": true,
-        "**/.ruff_cache": true,
-        "**/.mypy_cache": true,
-        "**/node_modules": true,
-        "**/htmlcov": true,
-        "**/dist": true,
-        "**/build": true,
-        "**/.egg-info": true
-    },
+  // Search exclusions
+  "search.exclude": {
+    "**/__pycache__": true,
+    "**/*.pyc": true,
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/build": true,
+    "**/.venv": true
+  },
 
-    // Search Exclusions
-    "search.exclude": {
-        "**/node_modules": true,
-        "**/__pycache__": true,
-        "**/venv": true,
-        "**/htmlcov": true,
-        "**/coverage.xml": true
-    },
+  // TypeScript/React (for frontend)
+  "typescript.tsdk": "./web_ui/frontend/node_modules/typescript/lib",
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
 
-    // Error Lens (bessere Fehleranzeige)
-    "errorLens.enabled": true,
-    "errorLens.messageBackgroundMode": "message",
-    "errorLens.gutterIconsEnabled": true,
+  // SonarQube
+  "sonarlint.connectedMode.project": {
+    "connectionId": "zen-ai-pentest",
+    "projectKey": "zen-ai-pentest"
+  },
 
-    // GitLens
-    "gitlens.codeLens.enabled": true,
-    "gitlens.hovers.enabled": true,
+  // Snyk (deaktiviert - Server Fehler)
+  "snyk.enabled": false,
+  "snyk.features.codeQuality": false,
+  "snyk.features.codeSecurity": false,
 
-    // Editor
-    "editor.rulers": [127],
-    "editor.wordWrap": "wordWrapColumn",
-    "editor.wordWrapColumn": 127,
-    "editor.bracketPairColorization.enabled": true,
-    "editor.guides.bracketPairs": true,
-    "editor.stickyScroll.enabled": true,
-    "editor.minimap.enabled": true,
+  // Terminal
+  "terminal.integrated.defaultProfile.linux": "bash",
+  "terminal.integrated.env.linux": {
+    "PYTHONPATH": "${workspaceFolder}"
+  },
 
-    // Todo Tree
-    "todo-tree.general.tags": [
-        "TODO",
-        "FIXME",
-        "HACK",
-        "XXX",
-        "BUG",
-        "SECURITY"
-    ],
-    "todo-tree.highlights.defaultHighlight": {
-        "gutterIcon": true
-    },
-    "todo-tree.highlights.customHighlight": {
-        "SECURITY": {
-            "icon": "shield",
-            "foreground": "#ff0000",
-            "background": "#ffeeee"
-        },
-        "BUG": {
-            "icon": "bug",
-            "foreground": "#ff8800"
-        }
-    },
-
-    // Better Comments
-    "better-comments.tags": [
-        {
-            "tag": "!",
-            "color": "#FF2D00",
-            "strikethrough": false,
-            "underline": false,
-            "backgroundColor": "transparent",
-            "bold": false,
-            "italic": false
-        },
-        {
-            "tag": "?",
-            "color": "#3498DB",
-            "strikethrough": false,
-            "underline": false,
-            "backgroundColor": "transparent",
-            "bold": false,
-            "italic": false
-        },
-        {
-            "tag": "//",
-            "color": "#474747",
-            "strikethrough": true,
-            "underline": false,
-            "backgroundColor": "transparent",
-            "bold": false,
-            "italic": false
-        },
-        {
-            "tag": "todo",
-            "color": "#FF8C00",
-            "strikethrough": false,
-            "underline": false,
-            "backgroundColor": "transparent",
-            "bold": false,
-            "italic": false
-        },
-        {
-            "tag": "*",
-            "color": "#98C379",
-            "strikethrough": false,
-            "underline": false,
-            "backgroundColor": "transparent",
-            "bold": false,
-            "italic": false
-        },
-        {
-            "tag": "SECURITY",
-            "color": "#FF0000",
-            "strikethrough": false,
-            "underline": true,
-            "backgroundColor": "#FFF0F0",
-            "bold": true,
-            "italic": false
-        }
-    ],
-
-    // Terminal
-    "terminal.integrated.defaultProfile.windows": "PowerShell",
-
-    // Spell Check
-    "cSpell.words": [
-        "zenai",
-        "pentest",
-        "kimi",
-        "sqlmap",
-        "nuclei",
-        "nmap",
-        "fastapi",
-        "pydantic",
-        "sqlalchemy",
-        "pytest",
-        "asyncio",
-        "bandit",
-        "snyk",
-        "codeql"
-    ],
-    "snyk.advanced.autoSelectOrganization": true
+  // Docker
+"docker.defaultRegistry": "",
+"snyk.advanced.organization": "b224463f-485b-4bda-8c2a-3defeec90bbc",
+"snyk.advanced.autoSelectOrganization": true
 }

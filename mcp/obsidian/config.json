@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "obsidian-secrets": {
+      "command": "python3",
+      "args": ["/home/atakan/zen-ai-pentest/mcp/obsidian/server.py"],
+      "env": {
+        "OBSIDIAN_VAULT_PATH": "~/Documents/Obsidian Vault/Secrets"
+      },
+      "disabled": false
+    }
+  }
+}

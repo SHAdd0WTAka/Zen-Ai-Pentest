@@ -101,6 +101,7 @@ All tools run with **safety controls**:
 - [API Reference](#-api-reference)
 - [Project Structure](#-project-structure)
 - [Configuration](#-configuration)
+- [Secret Management](#-secret-management)
 - [Testing](#-testing)
 - [Docker Deployment](#-docker-deployment)
 - [Safety First](#-safety-first)
@@ -604,6 +605,73 @@ AZURE_SUBSCRIPTION_ID=...
 ```
 
 See `.env.example` for all options.
+
+---
+
+## 🔐 Secret Management
+
+Zen-AI-Pentest uses **Obsidian MCP Server** for secure credential management. All secrets are stored locally in an encrypted Obsidian vault - never in the repository.
+
+### 🚀 Quick Setup
+
+```bash
+# 1. Setup Obsidian Secrets Vault
+bash mcp/obsidian/setup.sh
+
+# 2. Edit your secrets
+code ~/Documents/Obsidian\ Vault/Secrets/secrets.yaml
+
+# 3. Reload VS Codium
+Ctrl+Shift+P → Developer: Reload Window
+```
+
+### 🎯 Benefits
+
+| Feature | Benefit |
+|---------|---------|
+| **Obsidian Encryption** | Secrets remain secure even if laptop is stolen |
+| **No Secrets in Git** | No panic when pushing to GitHub |
+| **Local MCP Server** | No transmission to external servers |
+| **Separation of Concerns** | Clean architecture - code vs credentials |
+
+### 📁 Supported Secrets
+
+- **AI Providers**: Kimi, OpenAI, Anthropic, Gemini, OpenRouter
+- **Cloud**: AWS, Azure, GCP credentials  
+- **Database**: PostgreSQL, Redis passwords
+- **Security**: JWT secrets, encryption keys
+- **Notifications**: Slack, Discord, Email SMTP
+- **VPN**: ProtonVPN, OpenVPN, WireGuard
+
+### 🔌 MCP Integration
+
+Access secrets directly in chat:
+
+```json
+{
+  "mcpServers": {
+    "obsidian-secrets": {
+      "command": "python3",
+      "args": ["mcp/obsidian/server.py"]
+    }
+  }
+}
+```
+
+📖 **Full Documentation**: [mcp/obsidian/README.md](mcp/obsidian/README.md)
+
+---
+
+⚠️ **Important**: Ensure your `.gitignore` includes:
+```gitignore
+.env
+.env.load.sh
+*.key
+*.pem
+secrets.yaml
+secrets.json
+.obsidian/  # If Obsidian config is also sensitive
+```
 
 ---
 

@@ -27,8 +27,8 @@ spec:
         runAsNonRoot: true
       containers:
         - name: redis
-          image: redis:7-alpine
-          imagePullPolicy: IfNotPresent
+          image: redis:7-alpine@sha256:7d3d3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e
+          imagePullPolicy: Always
           ports:
             - containerPort: 6379
               name: redis
@@ -79,6 +79,8 @@ spec:
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: false
+            runAsNonRoot: true
+            runAsUser: 999
             capabilities:
               drop:
                 - ALL

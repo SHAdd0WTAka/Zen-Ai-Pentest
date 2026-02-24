@@ -90,6 +90,7 @@ rules:
 
   # Secret management - READ-ONLY for operator config only
   # SECURITY FIX: Removed create/update/patch to prevent privilege escalation
+  # SNYK-CC-K8S-47: Limited to specific secret resourceNames to minimize blast radius
   - apiGroups:
       - ""
     resources:
@@ -97,7 +98,7 @@ rules:
     verbs:
       - get
       - list
-    resourceNames: ["zen-operator-config"]  # Restrict to specific secret
+    resourceNames: ["zen-operator-config"]
 
   # PVC management for scan storage
   - apiGroups:
@@ -207,7 +208,15 @@ spec:
       containers:
         - name: operator
           image: zenai/zen-pentest-operator:2.0.0
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop:
+                - ALL
 
           ports:
             - name: metrics

@@ -119,8 +119,16 @@ module "eks" {
   cluster_name    = "${var.project_name}-${var.environment}"
   cluster_version = "1.28"
 
-  cluster_endpoint_public_access  = true
+  # SECURITY: Public access enabled for development, restrict in production
+  # SNYK: Public endpoint is intentional for dev/staging environments
+  cluster_endpoint_public_access  = var.environment != "production"
   cluster_endpoint_private_access = true
+  
+  # Enable audit logging
+  cluster_enabled_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
+  
+  # Public endpoint access restrictions
+  cluster_endpoint_public_access_cidrs = var.allowed_public_cidrs
 
   vpc_id     = module.vpc.vpc_id
   subnet_ids = module.vpc.private_subnets

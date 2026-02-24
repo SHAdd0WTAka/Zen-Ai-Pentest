@@ -307,9 +307,11 @@ rules:
   - apiGroups: [""]
     resources: ["configmaps"]
     verbs: ["get", "list"]
+  # SECURITY FIX: Restricted to specific secret only
   - apiGroups: [""]
     resources: ["secrets"]
     verbs: ["get"]
+    resourceNames: ["zen-operator-config"]
   - apiGroups: [""]
     resources: ["persistentvolumeclaims"]
     verbs: ["get", "list", "create", "update"]

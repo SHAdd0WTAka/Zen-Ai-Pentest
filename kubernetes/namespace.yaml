@@ -11,6 +11,11 @@ metadata:
     app.kubernetes.io/component: namespace
     app.kubernetes.io/part-of: zen-pentest-platform
     environment: production
+    # SECURITY: Enforce restricted pod security standard
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/enforce-version: latest
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
   annotations:
     description: "Namespace for Zen-AI-Pentest Platform"
 ---

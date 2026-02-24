@@ -20,14 +20,15 @@ metadata:
     app.kubernetes.io/name: zen-pentest
     app.kubernetes.io/component: rbac
 rules:
-  # Read access to configmaps and secrets
+  # SECURITY FIX: Read-only access to specific resources
   - apiGroups: [""]
     resources: ["configmaps"]
     verbs: ["get", "list", "watch"]
+  # SECURITY FIX: Restricted to specific secrets only
   - apiGroups: [""]
     resources: ["secrets"]
     verbs: ["get"]
-    resourceNames: ["zen-pentest-secrets"]
+    resourceNames: ["zen-pentest-secrets", "zen-pentest-config"]
   # Read access to pods (for service discovery)
   - apiGroups: [""]
     resources: ["pods"]

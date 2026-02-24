@@ -123,3 +123,12 @@ web_ui/frontend_backup_/
 
 # Exception for frontend lib
 !web_ui/frontend/src/lib/
+# Large binaries (exceed GitHub 100MB limit)
+vscode.deb
+*.exe
+*.msi
+*.dmg
+*.pkg
+*.deb
+*.rpm
+*.AppImage

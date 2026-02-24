@@ -29,6 +29,17 @@ variable "vpc_cidr" {
   default     = "10.0.0.0/16"
 }
 
+variable "allowed_public_cidrs" {
+  description = "Allowed CIDR blocks for public EKS endpoint access"
+  type        = list(string)
+  default     = ["0.0.0.0/0"]  # Restrict in production!
+  
+  validation {
+    condition     = length(var.allowed_public_cidrs) > 0
+    error_message = "At least one CIDR block must be specified."
+  }
+}
+
 variable "db_instance_class" {
   description = "RDS instance class"
   type        = string
