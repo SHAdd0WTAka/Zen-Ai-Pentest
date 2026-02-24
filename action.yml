@@ -102,7 +102,7 @@ runs:
   using: 'composite'
   steps:
     - name: Setup Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: '3.11'
 
@@ -268,7 +268,7 @@ runs:
 
     - name: Upload Artifacts
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: ${{ inputs.artifact-name }}
         path: |

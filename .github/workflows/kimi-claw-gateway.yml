@@ -43,7 +43,7 @@ jobs:
             echo "⚠️ Telegram secrets not configured"
           fi
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       
       - name: Prepare notification
         id: prep
