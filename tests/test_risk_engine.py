@@ -291,7 +291,7 @@ class TestEPSSClient:
 
     def test_get_score_no_cve(self):
         """Return 0 for missing CVE ID in finding"""
-        client = EPSSClient()
+        EPSSClient()
 
         # When CVE ID is not provided, _get_epss should return 0.0
         finding = {"description": "Test without CVE"}

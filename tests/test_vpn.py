@@ -613,7 +613,7 @@ class TestIntegration:
             # Check connection history - _log_connection is called after successful connect
             # In mock mode, the connection happens but _log_connection may not be called
             # depending on implementation details, so we check status instead
-            history = vpn_manager.get_connection_history()
+            vpn_manager.get_connection_history()
             # Connection history may or may not be populated depending on implementation
             # The important thing is that status shows connected
 

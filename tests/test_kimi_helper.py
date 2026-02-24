@@ -174,9 +174,7 @@ class TestAPIKey:
     def test_get_api_key_from_file(self):
         """Test getting API key from .env file."""
         # Mock the pathlib.Path class to simulate an existing .env file with API key
-        import pathlib
 
-        original_path = pathlib.Path
 
         class MockPath:
             def __init__(self, *args):
@@ -317,7 +315,7 @@ class TestAPIQuery:
         sys.modules["requests"].post.return_value = mock_response
 
         with patch("tools.kimi_helper.get_api_key", return_value="test-key"):
-            result = query_kimi_api(
+            query_kimi_api(
                 "test prompt",
                 "system prompt",
                 model="custom-model",
@@ -385,7 +383,7 @@ class TestCLIQuery:
         mock_logged_in.return_value = True
         mock_run.return_value = MagicMock(stdout="Response with persona")
 
-        result = query_kimi_cli("test prompt", "recon")
+        query_kimi_cli("test prompt", "recon")
 
         # Check that system prompt was prepended
         call_args = mock_run.call_args

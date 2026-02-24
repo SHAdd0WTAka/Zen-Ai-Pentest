@@ -481,9 +481,9 @@ class TestExportResults:
             ),
         ]
 
-        with patch("builtins.open", mock_open()) as mock_file:
+        with patch("builtins.open", mock_open()):
             with patch("os.makedirs"):
-                with patch("json.dump") as mock_json_dump:
+                with patch("json.dump"):
                     result = nuclei_integration.export_results(findings)
 
         assert "logs/nuclei_scan_" in result
@@ -494,7 +494,7 @@ class TestExportResults:
         findings = []
 
         with patch("builtins.open", mock_open()) as mock_file:
-            with patch("json.dump") as mock_json_dump:
+            with patch("json.dump"):
                 result = nuclei_integration.export_results(
                     findings, "custom.json"
                 )
@@ -540,7 +540,7 @@ class TestNucleiTemplateManager:
     def test_init_creates_directory(self):
         """Test that initialization creates templates directory"""
         with patch("os.makedirs") as mock_makedirs:
-            manager = NucleiTemplateManager("/custom/templates")
+            NucleiTemplateManager("/custom/templates")
             mock_makedirs.assert_called_once_with(
                 "/custom/templates", exist_ok=True
             )

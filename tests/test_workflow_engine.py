@@ -1177,7 +1177,7 @@ class TestWorkflowEngineIntegration:
         task1 = FunctionTask(name="task1", func=simple_task, task_id="t1")
         workflow.add_task(task1)
 
-        state = await engine.execute_workflow(workflow)
+        await engine.execute_workflow(workflow)
 
         assert "started" in events
         assert "completed" in events

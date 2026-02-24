@@ -287,7 +287,7 @@ class TestAPIQuery:
         mock_response.raise_for_status.return_value = None
         mock_post.return_value = mock_response
 
-        result = query_kimi_api(
+        query_kimi_api(
             "test prompt",
             "system prompt",
             model="custom-model",
@@ -355,7 +355,7 @@ class TestCLIQuery:
         mock_logged_in.return_value = True
         mock_run.return_value = MagicMock(stdout="Response with persona")
 
-        result = query_kimi_cli("test prompt", "recon")
+        query_kimi_cli("test prompt", "recon")
 
         # Check that system prompt was prepended
         call_args = mock_run.call_args

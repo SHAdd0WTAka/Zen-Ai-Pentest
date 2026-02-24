@@ -858,7 +858,7 @@ class TestCacheIntegration:
             assert result2 == result1
 
             # Different key - hits backend
-            result3 = await get_data("key2")
+            await get_data("key2")
             assert backend_calls == 2
 
             await cache.close()

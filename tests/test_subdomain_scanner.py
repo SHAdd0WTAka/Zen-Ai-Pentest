@@ -725,7 +725,7 @@ class TestSubdomainScannerScan:
             mock_orch = MagicMock()
             scanner.orchestrator = mock_orch
 
-            results = await scanner.scan(
+            await scanner.scan(
                 "example.com",
                 techniques=["dns", "wordlist", "crt", "osint"],
                 check_http=False,

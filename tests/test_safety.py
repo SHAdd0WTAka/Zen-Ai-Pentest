@@ -733,7 +733,7 @@ class TestOutputGuardrails:
         # Note: patterns like "maybe" with \b need word chars around them
         output = "This is maybe vulnerable and perhaps dangerous."
 
-        result = guardrails.check(output)
+        guardrails.check(output)
 
         # Test the count method directly with a clear word match
         count = guardrails._count_patterns(
@@ -747,7 +747,7 @@ class TestOutputGuardrails:
         guardrails = OutputGuardrails()
         output = "I remember this. In my experience, it's typical."
 
-        result = guardrails.check(output)
+        guardrails.check(output)
 
         # Test the count method directly
         count = guardrails._count_patterns(

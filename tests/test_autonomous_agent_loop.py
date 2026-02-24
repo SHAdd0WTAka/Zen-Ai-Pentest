@@ -390,7 +390,7 @@ class TestPlanning:
         """Test that plan is stored in memory."""
         agent.memory = AgentMemory(goal="Test", target="example.com")
 
-        plan = await agent.plan()
+        await agent.plan()
 
         assert len(agent.memory.short_term) > 0
         assert any(

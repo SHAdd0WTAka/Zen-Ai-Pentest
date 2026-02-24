@@ -73,7 +73,7 @@ def run_security_scan(
         )
 
         # Simulate scan phases
-        orchestrator = HybridOrchestrator()
+        HybridOrchestrator()
 
         self.update_state(
             state="PROGRESS",

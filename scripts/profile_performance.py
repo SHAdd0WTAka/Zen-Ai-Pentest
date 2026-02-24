@@ -108,14 +108,13 @@ def profile_function(
     if callable(obj):
         try:
             if hasattr(obj, "__self__"):  # bound method
-                result = obj()
+                obj()
             else:
-                result = obj()
+                obj()
         except Exception as e:
             print(f"Error calling {target}: {e}")
-            result = None
     else:
-        result = obj
+        pass
 
     elapsed = (time.perf_counter() - start) * 1000
 

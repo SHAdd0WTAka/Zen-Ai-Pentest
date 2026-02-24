@@ -493,7 +493,7 @@ class TestDatabaseIntegration:
             cve_by_id = get_cve_by_id("CVE-2023-1234")
 
             # Search for same CVE
-            search_results = search_cve("CVE-2023-1234")
+            search_cve("CVE-2023-1234")
 
             # Both should return data about the same CVE
             assert cve_by_id["cve_id"] == "CVE-2023-1234"

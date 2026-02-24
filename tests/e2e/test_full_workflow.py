@@ -283,7 +283,7 @@ class TestCompletePentestWorkflow:
             )
             assert report_response.status_code == 200
             report_result = report_response.json()
-            report_id = report_result["id"]
+            report_result["id"]
             assert report_result["status"] == "pending"
 
         # Step 8: List all reports

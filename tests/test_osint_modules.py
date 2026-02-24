@@ -656,7 +656,7 @@ class TestDNSEnumerator:
             mock_zone = Mock()
 
             with patch("dns.zone.from_xfr", return_value=mock_zone):
-                result = await dns_enum._try_zone_transfer("example.com")
+                await dns_enum._try_zone_transfer("example.com")
 
                 # Should return True if zone transfer succeeds
                 # Note: Actual result depends on mocking

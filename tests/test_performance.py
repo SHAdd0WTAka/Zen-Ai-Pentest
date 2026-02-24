@@ -618,7 +618,7 @@ class TestConnectionPool:
 
         await pool.cleanup()
 
-        stats = pool.get_stats()
+        pool.get_stats()
         # Old connections should be cleaned up and replaced
 
         await pool.stop()

@@ -53,7 +53,7 @@ class TestChatGPTBackendInitialization:
     @pytest.mark.asyncio
     async def test_async_exit(self, backend_with_token):
         """Test async exit closes session"""
-        async with backend_with_token as b:
+        async with backend_with_token:
             pass
 
 

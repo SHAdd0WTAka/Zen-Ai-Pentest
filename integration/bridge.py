@@ -609,7 +609,6 @@ def get_parser(tool: str):
 
 def parse_nmap_xml(file_path: Path) -> Dict[str, Any]:
     """Parse Nmap XML output"""
-    import xml.etree.ElementTree as ET
 
     tree = defusedxml.etree.ElementTree.parse(file_path)
     root = tree.getroot()

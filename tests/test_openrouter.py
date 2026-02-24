@@ -62,7 +62,7 @@ class TestOpenRouterInitialization:
     @pytest.mark.asyncio
     async def test_async_exit(self, backend_with_key):
         """Test async exit closes session"""
-        async with backend_with_key as b:
+        async with backend_with_key:
             pass
 
 

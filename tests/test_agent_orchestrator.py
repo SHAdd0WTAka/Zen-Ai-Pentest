@@ -714,7 +714,7 @@ class TestAgentOrchestratorEdgeCases:
         agent1 = MockAgent("A1", AgentRole.RESEARCHER)
         orchestrator.register_agent(agent1)
 
-        conversation = await orchestrator.facilitate_conversation(
+        await orchestrator.facilitate_conversation(
             "Topic", [agent1.id, "invalid-id"], rounds=1
         )
 

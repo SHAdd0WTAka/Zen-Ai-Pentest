@@ -1202,7 +1202,7 @@ class TestAutonomousIntegration:
     def test_exploit_validator_scope_integration(self):
         """Test exploit validator with scope config"""
         scope = ScopeConfig(allowed_hosts=["example.com"])
-        validator = ExploitValidator(
+        ExploitValidator(
             scope_config=scope, safety_level=SafetyLevel.CONTROLLED
         )
 

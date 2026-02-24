@@ -824,7 +824,7 @@ class TestFullAPIWorkflow:
                 headers=auth_headers,
             )
             assert report_response.status_code == 200
-            report_id = report_response.json()["id"]
+            report_response.json()["id"]
 
         # Step 6: List all reports
         reports_list_response = client.get("/reports", headers=auth_headers)

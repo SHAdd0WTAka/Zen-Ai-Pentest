@@ -52,7 +52,7 @@ class TestDuckDuckGoInitialization:
     @pytest.mark.asyncio
     async def test_async_exit(self, backend):
         """Test async exit closes session"""
-        async with backend as b:
+        async with backend:
             pass
 
 
@@ -379,7 +379,6 @@ class TestDuckDuckGoChat:
         """Test chat with empty stream"""
         backend.vqd_token = "test-token"
 
-        stream_data = []
 
         async def empty_gen():
             return

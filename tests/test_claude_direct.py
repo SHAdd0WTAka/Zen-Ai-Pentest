@@ -51,7 +51,7 @@ class TestClaudeBackendInitialization:
     @pytest.mark.asyncio
     async def test_async_exit(self, backend_with_key):
         """Test async exit closes session"""
-        async with backend_with_key as b:
+        async with backend_with_key:
             pass
 
 
@@ -701,7 +701,6 @@ class TestClaudeEmptyResponse:
         """Test handling of empty stream"""
         mock_get_org_id.return_value = "org-123"
 
-        stream_data = []
 
         async def empty_gen():
             return

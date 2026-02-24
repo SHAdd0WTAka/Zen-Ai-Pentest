@@ -354,7 +354,7 @@ class TestTaskScheduler:
         id2 = await scheduler.schedule(
             name="Job 2", task_type="report", task_data={}, interval=60
         )
-        id3 = await scheduler.schedule(
+        await scheduler.schedule(
             name="Job 3", task_type="scan", task_data={}, cron="0 0 * * *"
         )
 

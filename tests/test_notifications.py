@@ -451,7 +451,7 @@ class TestSlackNotifier:
         mock_response.status_code = 200
         mock_post.return_value = mock_response
 
-        result = slack_notifier.send_scan_completed(
+        slack_notifier.send_scan_completed(
             scan_id=12345,
             target="example.com",
             findings_count=5,
@@ -469,7 +469,7 @@ class TestSlackNotifier:
         mock_response.status_code = 200
         mock_post.return_value = mock_response
 
-        result = slack_notifier.send_scan_completed(
+        slack_notifier.send_scan_completed(
             scan_id=12345,
             target="example.com",
             findings_count=0,

@@ -600,7 +600,6 @@ class TestRelationships:
         self, db_session: Session, sample_scan: Scan, sample_finding: Finding
     ):
         """Test cascade delete of findings when scan is deleted."""
-        scan_id = sample_scan.id
         finding_id = sample_finding.id
 
         # Delete the scan
