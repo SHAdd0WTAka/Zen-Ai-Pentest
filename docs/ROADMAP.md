@@ -66,6 +66,34 @@ Q1 2026          Q2 2026          Q3 2026          Q4 2026
 
 **Inspiriert von:** Kimi.com Agent Swarm Pattern
 
+---
+
+### 🆕 Infrastructure Security Assessment (NEW)
+
+**Status:** Documented risk - detailed analysis pending
+
+#### Identified Risk: Double-Deployment Attack Surface
+
+```
+GitHub Repository
+       │
+       ├──► GitHub Pages (shadd0wtaka.github.io)
+       │         Static HTML + live SVG
+       │
+       └──► Cloudflare Pages (separate Domain)
+                 Eigene CDN-Nodes
+                 Eigene Cache-Layer
+                 Eigener Build-Hook
+```
+
+**Risk Analysis:**
+- ✅ Two deployments = Double attack surface for Supply-Chain attacks
+- ✅ Two build pipelines requiring secrets
+- ✅ Same source repository = compromise of one affects both
+- ✅ Cache poisoning possible across two CDN layers
+
+**Note:** This is a documented proof-of-concept risk. Full threat modeling and mitigation strategies will be developed when project moves to production-ready status with proper Red Team approval.
+
 #### Konzept
 Hierarchisches Multi-Agent System mit dynamischer Ressourcen-Allokation:
 
