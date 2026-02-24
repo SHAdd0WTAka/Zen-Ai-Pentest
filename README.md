@@ -620,8 +620,16 @@ notifications:
 - 🚫 Never committed to Git
 - 🤖 AI-assisted via MCP server
 - 🔄 Hot-reload without restart
+- 🔒 **100% Local Processing** - Secrets never leave your machine
 
-📖 **Full Vault Docs**: [mcp/obsidian/README.md](mcp/obsidian/README.md)
+🔑 **Security Guarantees:**
+> Your secrets are **never sent to external servers**. All operations happen exclusively on your local system.
+> 
+> We **cannot access your secrets** - the private key resides only on your system.
+> 
+> **Open Source**: You can audit the code at any time.
+
+📖 **Full Vault Docs**: [mcp/obsidian/README.md](mcp/obsidian/README.md) | [Detailed Architecture](docs/SECRETS_ARCHITECTURE.md)
 
 ---
 
