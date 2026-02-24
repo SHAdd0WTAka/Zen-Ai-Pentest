@@ -57,7 +57,9 @@ Persona: {persona_desc}
     if context:
         initial_message = f"[Als {persona}] {context}"
     else:
-        initial_message = f"Ich bin bereit als {persona_desc}. Was möchtest du tun?"
+        initial_message = (
+            f"Ich bin bereit als {persona_desc}. Was möchtest du tun?"
+        )
 
     # kimi starten (interaktiv) mit initialer Nachricht
     try:
@@ -81,11 +83,19 @@ Beispiele:
     )
     parser.add_argument("context", nargs="?", help="Initialer Prompt/Context")
     parser.add_argument(
-        "-p", "--persona", choices=list(PERSONAS.keys()), default="recon", help="Pentest Persona (default: recon)"
+        "-p",
+        "--persona",
+        choices=list(PERSONAS.keys()),
+        default="recon",
+        help="Pentest Persona (default: recon)",
     )
-    parser.add_argument("--login", action="store_true", help="Login durchführen")
+    parser.add_argument(
+        "--login", action="store_true", help="Login durchführen"
+    )
     parser.add_argument("--check", action="store_true", help="Status prüfen")
-    parser.add_argument("--list-personas", action="store_true", help="Zeige alle Personas")
+    parser.add_argument(
+        "--list-personas", action="store_true", help="Zeige alle Personas"
+    )
 
     args = parser.parse_args()
 

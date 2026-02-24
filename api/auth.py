@@ -23,7 +23,10 @@ from passlib.context import CryptContext
 
 # JWT Configuration
 SECRET_KEY = os.getenv("JWT_SECRET_KEY")
-if not SECRET_KEY or SECRET_KEY == "your-super-secret-jwt-key-change-this-in-production":
+if (
+    not SECRET_KEY
+    or SECRET_KEY == "your-super-secret-jwt-key-change-this-in-production"
+):
     # Generate a random key for development (not for production!)
     import warnings
 
@@ -35,7 +38,9 @@ if not SECRET_KEY or SECRET_KEY == "your-super-secret-jwt-key-change-this-in-pro
     SECRET_KEY = secrets.token_hex(32)
 
 ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
-ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
+ACCESS_TOKEN_EXPIRE_MINUTES = int(
+    os.getenv("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", "30")
+)
 
 # Password hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -61,10 +66,14 @@ def get_password_hash(password: str) -> str:
 # =============================================================================
 
 
-def create_access_token(data: Dict, expires_delta: Optional[timedelta] = None) -> str:
+def create_access_token(
+    data: Dict, expires_delta: Optional[timedelta] = None
+) -> str:
     """Erstellt JWT Token"""
     to_encode = data.copy()
-    expire = datetime.now(timezone.utc) + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
+    expire = datetime.now(timezone.utc) + (
+        expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    )
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
@@ -84,7 +93,9 @@ def decode_token(token: str) -> Optional[Dict]:
 # =============================================================================
 
 
-async def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)) -> Dict:
+async def verify_token(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+) -> Dict:
     """FastAPI Dependency für Token-Verifizierung"""
     token = credentials.credentials
     payload = decode_token(token)
@@ -120,22 +131,32 @@ def check_permissions(user: Dict, required_role: str) -> bool:
     return user_level >= required_level
 
 
-async def require_admin(credentials: HTTPAuthorizationCredentials = Depends(security)) -> Dict:
+async def require_admin(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+) -> Dict:
     """Erfordert Admin-Rolle"""
     user = await verify_token(credentials)
 
     if not check_permissions(user, "admin"):
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin privileges required")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin privileges required",
+        )
 
     return user
 
 
-async def require_operator(credentials: HTTPAuthorizationCredentials = Depends(security)) -> Dict:
+async def require_operator(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+) -> Dict:
     """Erfordert Operator oder höhere Rolle"""
     user = await verify_token(credentials)
 
     if not check_permissions(user, "operator"):
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Operator privileges required")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Operator privileges required",
+        )
 
     return user
 
@@ -156,7 +177,11 @@ def verify_api_key(api_key: str) -> Optional[Dict]:
 def create_api_key(user_id: int, name: str) -> str:
     """Erstellt neuen API Key"""
     key = secrets.token_urlsafe(32)
-    API_KEYS[key] = {"user_id": user_id, "name": name, "created_at": datetime.now(timezone.utc).isoformat()}
+    API_KEYS[key] = {
+        "user_id": user_id,
+        "name": name,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
     return key
 
 

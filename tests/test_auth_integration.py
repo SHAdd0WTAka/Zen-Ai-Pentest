@@ -32,7 +32,12 @@ init_auth_db()
 from auth.password_hasher import PasswordHasher
 
 # Create test user in auth database
-from database.auth_models import SessionLocal, UserRole, create_user, get_user_by_username
+from database.auth_models import (
+    SessionLocal,
+    UserRole,
+    create_user,
+    get_user_by_username,
+)
 
 db = SessionLocal()
 try:
@@ -40,7 +45,11 @@ try:
     if not admin:
         pwd = PasswordHasher()
         create_user(
-            db, username="admin", email="admin@zen-pentest.local", hashed_password=pwd.hash("admin123"), role=UserRole.ADMIN
+            db,
+            username="admin",
+            email="admin@zen-pentest.local",
+            hashed_password=pwd.hash("admin123"),
+            role=UserRole.ADMIN,
         )
         print("Test admin user created")
 finally:
@@ -85,7 +94,9 @@ def client(initialized_db):
 @pytest.fixture
 def auth_headers(client):
     """Get authentication headers with valid token"""
-    response = client.post("/auth/login", json={"username": "admin", "password": "admin123"})
+    response = client.post(
+        "/auth/login", json={"username": "admin", "password": "admin123"}
+    )
     if response.status_code != 200:
         pytest.skip(f"Login failed: {response.text}")
 
@@ -104,7 +115,9 @@ class TestAuthIntegration:
 
     def test_login_success(self, client):
         """Test successful login with database-backed auth"""
-        response = client.post("/auth/login", json={"username": "admin", "password": "admin123"})
+        response = client.post(
+            "/auth/login", json={"username": "admin", "password": "admin123"}
+        )
         assert response.status_code == 200
         data = response.json()
         assert "access_token" in data
@@ -116,7 +129,10 @@ class TestAuthIntegration:
 
     def test_login_invalid_credentials(self, client):
         """Test login with invalid credentials"""
-        response = client.post("/auth/login", json={"username": "admin", "password": "wrongpassword123"})
+        response = client.post(
+            "/auth/login",
+            json={"username": "admin", "password": "wrongpassword123"},
+        )
         assert response.status_code == 401
 
     def test_me_endpoint_with_token(self, client, auth_headers):
@@ -145,12 +161,17 @@ class TestAuthIntegration:
         except Exception as e:
             # If we get an exception, it might be DB error after auth succeeded
             error_str = str(e).lower()
-            assert "unauthorized" not in error_str and "authentication" not in error_str, f"Should not be auth error: {e}"
+            assert (
+                "unauthorized" not in error_str
+                and "authentication" not in error_str
+            ), f"Should not be auth error: {e}"
 
     def test_refresh_token_endpoint(self, client):
         """Test token refresh endpoint"""
         # First login to get refresh token
-        response = client.post("/auth/login", json={"username": "admin", "password": "admin123"})
+        response = client.post(
+            "/auth/login", json={"username": "admin", "password": "admin123"}
+        )
         assert response.status_code == 200
         data = response.json()
         refresh_token = data.get("refresh_token")
@@ -159,7 +180,10 @@ class TestAuthIntegration:
             pytest.skip("No refresh token in response")
 
         # Refresh the token
-        response = client.post("/auth/refresh", headers={"Authorization": f"Bearer {refresh_token}"})
+        response = client.post(
+            "/auth/refresh",
+            headers={"Authorization": f"Bearer {refresh_token}"},
+        )
 
         if NEW_AUTH_AVAILABLE and _user_manager:
             assert response.status_code == 200
@@ -191,7 +215,9 @@ class TestJWTTokens:
             pytest.skip("New auth system not available")
 
         # Create token
-        token = _jwt_handler.create_access_token(user_id="test_user", roles=["admin"], permissions=["read", "write"])
+        token = _jwt_handler.create_access_token(
+            user_id="test_user", roles=["admin"], permissions=["read", "write"]
+        )
         assert token is not None
         assert isinstance(token, str)
 
@@ -228,7 +254,11 @@ class TestJWTTokens:
             "mfa_verified": False,
         }
 
-        expired_token = jwt.encode(payload_data, _jwt_handler.config.secret_key, algorithm=_jwt_handler.config.algorithm)
+        expired_token = jwt.encode(
+            payload_data,
+            _jwt_handler.config.secret_key,
+            algorithm=_jwt_handler.config.algorithm,
+        )
 
         # Should raise TokenExpiredError
         with pytest.raises(TokenExpiredError):
@@ -251,7 +281,13 @@ class TestCORSAndMiddleware:
 
     def test_cors_headers_present(self, client):
         """Test that CORS headers are present"""
-        response = client.options("/", headers={"Origin": "http://localhost:3000", "Access-Control-Request-Method": "GET"})
+        response = client.options(
+            "/",
+            headers={
+                "Origin": "http://localhost:3000",
+                "Access-Control-Request-Method": "GET",
+            },
+        )
         assert "access-control-allow-origin" in response.headers
 
 

@@ -31,8 +31,13 @@ async def basic_example():
         orchestrator.add_backend(ddg)
 
         print("\n[1] Testing LLM Backend...")
-        test_response = await orchestrator.process("What is penetration testing? Answer in one sentence.", QualityLevel.LOW)
-        print(f"Response from {test_response.source}: {test_response.content[:100]}...")
+        test_response = await orchestrator.process(
+            "What is penetration testing? Answer in one sentence.",
+            QualityLevel.LOW,
+        )
+        print(
+            f"Response from {test_response.source}: {test_response.content[:100]}..."
+        )
         print(f"Latency: {test_response.latency:.2f}s")
 
         # Initialize modules

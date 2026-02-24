@@ -7,7 +7,14 @@ Generate professional penetration testing reports in various formats.
 from datetime import datetime
 from typing import List, Optional
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
+from fastapi import (
+    APIRouter,
+    BackgroundTasks,
+    Depends,
+    HTTPException,
+    Query,
+    status,
+)
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
@@ -25,7 +32,9 @@ class ReportCreate(BaseModel):
     scan_id: str
     name: Optional[str] = None
     format: ReportFormat = Field(default=ReportFormat.PDF)
-    template: str = Field(default="executive", description="executive, technical, or full")
+    template: str = Field(
+        default="executive", description="executive, technical, or full"
+    )
     include_evidence: bool = Field(default=True)
     include_remediation: bool = Field(default=True)
 
@@ -45,7 +54,9 @@ class ReportResponse(BaseModel):
     download_url: Optional[str]
 
 
-@router.post("/", response_model=ReportResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/", response_model=ReportResponse, status_code=status.HTTP_201_CREATED
+)
 async def create_report(
     report_data: ReportCreate,
     background_tasks: BackgroundTasks,
@@ -57,13 +68,16 @@ async def create_report(
     Report generation happens asynchronously. Check status using the report ID.
     """
     # Verify scan exists
-    scan = await Scan.find_one(id=report_data.scan_id, created_by=current_user.id)
+    scan = await Scan.find_one(
+        id=report_data.scan_id, created_by=current_user.id
+    )
     if not scan:
         raise HTTPException(status_code=404, detail="Scan not found")
 
     # Create report record
     report = Report(
-        name=report_data.name or f"Report-{scan.name}-{datetime.now().strftime('%Y%m%d')}",
+        name=report_data.name
+        or f"Report-{scan.name}-{datetime.now().strftime('%Y%m%d')}",
         scan_id=report_data.scan_id,
         format=report_data.format,
         template=report_data.template,
@@ -97,12 +111,16 @@ async def list_reports(
     if format:
         filters["format"] = format
 
-    reports = await Report.find_many(**filters).limit(limit).skip(offset).to_list()
+    reports = (
+        await Report.find_many(**filters).limit(limit).skip(offset).to_list()
+    )
     return [r.to_response() for r in reports]
 
 
 @router.get("/{report_id}", response_model=ReportResponse)
-async def get_report(report_id: str, current_user: User = Depends(get_current_user)):
+async def get_report(
+    report_id: str, current_user: User = Depends(get_current_user)
+):
     """Get report details"""
     report = await Report.find_one(id=report_id, created_by=current_user.id)
     if not report:
@@ -111,7 +129,9 @@ async def get_report(report_id: str, current_user: User = Depends(get_current_us
 
 
 @router.get("/{report_id}/download")
-async def download_report(report_id: str, current_user: User = Depends(get_current_user)):
+async def download_report(
+    report_id: str, current_user: User = Depends(get_current_user)
+):
     """
     Download generated report file.
 
@@ -139,11 +159,17 @@ async def download_report(report_id: str, current_user: User = Depends(get_curre
     ext = report.format.value.lower()
     media_type = media_types.get(ext, "application/octet-stream")
 
-    return FileResponse(path=report.file_path, media_type=media_type, filename=f"{report.name}.{ext}")
+    return FileResponse(
+        path=report.file_path,
+        media_type=media_type,
+        filename=f"{report.name}.{ext}",
+    )
 
 
 @router.delete("/{report_id}")
-async def delete_report(report_id: str, current_user: User = Depends(get_current_user)):
+async def delete_report(
+    report_id: str, current_user: User = Depends(get_current_user)
+):
     """Delete a report"""
     report = await Report.find_one(id=report_id, created_by=current_user.id)
     if not report:

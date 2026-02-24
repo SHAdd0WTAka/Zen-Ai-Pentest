@@ -15,7 +15,13 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Annotated, Any, Dict, List, Literal, Optional, TypedDict
 
-from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage, ToolMessage
+from langchain_core.messages import (
+    AIMessage,
+    BaseMessage,
+    HumanMessage,
+    SystemMessage,
+    ToolMessage,
+)
 from langchain_core.tools import tool
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, START, StateGraph, add_messages
@@ -50,7 +56,14 @@ class AgentStateEnhanced(TypedDict):
     objective: str
     iteration: int
     max_iterations: int
-    status: Literal["planning", "executing", "observing", "reflecting", "completed", "error"]
+    status: Literal[
+        "planning",
+        "executing",
+        "observing",
+        "reflecting",
+        "completed",
+        "error",
+    ]
 
     # Neue Felder für Plan-and-Execute
     plan: List[PlanStep]
@@ -109,7 +122,9 @@ class ReActAgentEnhanced:
         # Memory für langfristiges Lernen
         self.session_memory: Dict[str, Any] = {}
 
-        logger.info(f"Enhanced ReActAgent initialisiert mit {len(self.tools)} Tools aus Registry")
+        logger.info(
+            f"Enhanced ReActAgent initialisiert mit {len(self.tools)} Tools aus Registry"
+        )
 
     def _initialize_tools(self):
         """Initialisiert Pentest-Tools in der Registry"""
@@ -129,7 +144,9 @@ class ReActAgentEnhanced:
         )
 
         @tool
-        def scan_vulnerabilities(target: str, templates: str = "critical,high") -> str:
+        def scan_vulnerabilities(
+            target: str, templates: str = "critical,high"
+        ) -> str:
             """Scannt nach CVEs mit Nuclei"""
             nuclei = NucleiTool()
             result = nuclei.scan(target, severity=templates)
@@ -143,7 +160,9 @@ class ReActAgentEnhanced:
         )
 
         @tool
-        def enumerate_directories(target: str, wordlist: str = "common.txt") -> str:
+        def enumerate_directories(
+            target: str, wordlist: str = "common.txt"
+        ) -> str:
             """Enumerate directories mit ffuf"""
             ffuf = FfufTool()
             result = ffuf.directory_bruteforce(target, wordlist)
@@ -264,34 +283,49 @@ WICHTIG:
                 "plan": plan,
                 "current_step_index": 0,
                 "status": "executing" if plan else "completed",
-                "messages": state["messages"] + [AIMessage(content=f"Plan erstellt: {len(plan)} Schritte")],
+                "messages": state["messages"]
+                + [AIMessage(content=f"Plan erstellt: {len(plan)} Schritte")],
             }
 
         # === PHASE 2: EXECUTE ===
         def execute_node(state: AgentStateEnhanced) -> AgentStateEnhanced:
             """Execute Node: Führt aktuellen Plan-Schritt aus"""
-            logger.info(f"[EXECUTE] Schritt {state['current_step_index'] + 1}/{len(state['plan'])}")
+            logger.info(
+                f"[EXECUTE] Schritt {state['current_step_index'] + 1}/{len(state['plan'])}"
+            )
 
             # Aktuellen Schritt holen
-            if not state["plan"] or state["current_step_index"] >= len(state["plan"]):
+            if not state["plan"] or state["current_step_index"] >= len(
+                state["plan"]
+            ):
                 return {**state, "status": "completed"}
 
             current_step = state["plan"][state["current_step_index"]]
 
             # Wenn kein Tool nötig, überspringen
             if not current_step.get("tool"):
-                return {**state, "current_step_index": state["current_step_index"] + 1, "status": "observing"}
+                return {
+                    **state,
+                    "current_step_index": state["current_step_index"] + 1,
+                    "status": "observing",
+                }
 
             tool_name = current_step["tool"]
 
             # Safety Check
-            if self._is_dangerous_tool(tool_name) and self.config.use_human_in_the_loop:
+            if (
+                self._is_dangerous_tool(tool_name)
+                and self.config.use_human_in_the_loop
+            ):
                 if not self.config.auto_approve_dangerous:
                     result = f"[PENDING APPROVAL] Tool {tool_name} erfordert manuelle Freigabe"
                     return {
                         **state,
                         "status": "reflecting",
-                        "messages": state["messages"] + [ToolMessage(content=result, tool_call_id="pending")],
+                        "messages": state["messages"]
+                        + [
+                            ToolMessage(content=result, tool_call_id="pending")
+                        ],
                     }
 
             # Tool ausführen
@@ -303,8 +337,12 @@ WICHTIG:
                     result = tool_func.invoke(args)
 
                     # Schritt aktualisieren
-                    state["plan"][state["current_step_index"]]["result"] = result
-                    state["plan"][state["current_step_index"]]["completed"] = True
+                    state["plan"][state["current_step_index"]][
+                        "result"
+                    ] = result
+                    state["plan"][state["current_step_index"]][
+                        "completed"
+                    ] = True
 
                     # Finding speichern
                     finding = {
@@ -319,7 +357,12 @@ WICHTIG:
                         "findings": state["findings"] + [finding],
                         "status": "observing",
                         "messages": state["messages"]
-                        + [ToolMessage(content=result[:500], tool_call_id=f"step_{state['current_step_index']}")],
+                        + [
+                            ToolMessage(
+                                content=result[:500],
+                                tool_call_id=f"step_{state['current_step_index']}",
+                            )
+                        ],
                     }
                 else:
                     error = f"Tool {tool_name} nicht gefunden"
@@ -333,7 +376,12 @@ WICHTIG:
             except Exception as e:
                 error = f"Fehler bei {tool_name}: {str(e)}"
                 logger.error(error)
-                return {**state, "status": "reflecting", "last_error": error, "error_count": state.get("error_count", 0) + 1}
+                return {
+                    **state,
+                    "status": "reflecting",
+                    "last_error": error,
+                    "error_count": state.get("error_count", 0) + 1,
+                }
 
         # === PHASE 3: OBSERVE ===
         def observe_node(state: AgentStateEnhanced) -> AgentStateEnhanced:
@@ -355,7 +403,9 @@ Antworte in 2-3 Sätzen."""
 
             messages = [
                 SystemMessage(content=system_prompt),
-                HumanMessage(content=f"Schritt: {current_step['action']}\nErgebnis: {result[:1000]}"),
+                HumanMessage(
+                    content=f"Schritt: {current_step['action']}\nErgebnis: {result[:1000]}"
+                ),
             ]
 
             response = self.llm.invoke(messages)
@@ -363,7 +413,8 @@ Antworte in 2-3 Sätzen."""
             return {
                 **state,
                 "status": "reflecting",
-                "messages": state["messages"] + [AIMessage(content=f"Observation: {response.content}")],
+                "messages": state["messages"]
+                + [AIMessage(content=f"Observation: {response.content}")],
             }
 
         # === PHASE 4: REFLECT ===
@@ -379,7 +430,8 @@ Antworte in 2-3 Sätzen."""
                 return {
                     **state,
                     "status": "error",
-                    "messages": state["messages"] + [AIMessage(content="Zu viele Fehler - breche ab.")],
+                    "messages": state["messages"]
+                    + [AIMessage(content="Zu viele Fehler - breche ab.")],
                 }
 
             # Prüfe Iterations-Limit
@@ -387,7 +439,8 @@ Antworte in 2-3 Sätzen."""
                 return {
                     **state,
                     "status": "completed",
-                    "messages": state["messages"] + [AIMessage(content="Maximale Iterationen erreicht.")],
+                    "messages": state["messages"]
+                    + [AIMessage(content="Maximale Iterationen erreicht.")],
                 }
 
             # Reflection mit LLM
@@ -424,12 +477,15 @@ Antworte mit einer klaren Empfehlung."""
                 {
                     **state,
                     "reflections": state.get("reflections", []) + [reflection],
-                    "messages": state["messages"] + [AIMessage(content=f"Reflection: {response.content}")],
+                    "messages": state["messages"]
+                    + [AIMessage(content=f"Reflection: {response.content}")],
                 }
             )
 
         # Hilfsfunktion für State Transition
-        def _advance_or_complete(state: AgentStateEnhanced) -> AgentStateEnhanced:
+        def _advance_or_complete(
+            state: AgentStateEnhanced,
+        ) -> AgentStateEnhanced:
             """Entscheidet ob weiter oder fertig"""
             next_index = state["current_step_index"] + 1
 
@@ -437,12 +493,21 @@ Antworte mit einer klaren Empfehlung."""
                 # Plan ist komplett - neue Iteration oder fertig?
                 if state["iteration"] < state["max_iterations"] - 1:
                     # Neue Iteration mit neuem Plan
-                    return {**state, "iteration": state["iteration"] + 1, "current_step_index": 0, "status": "planning"}
+                    return {
+                        **state,
+                        "iteration": state["iteration"] + 1,
+                        "current_step_index": 0,
+                        "status": "planning",
+                    }
                 else:
                     return {**state, "status": "completed"}
             else:
                 # Nächster Schritt
-                return {**state, "current_step_index": next_index, "status": "executing"}
+                return {
+                    **state,
+                    "current_step_index": next_index,
+                    "status": "executing",
+                }
 
         # === GRAPH BAUEN ===
         workflow = StateGraph(AgentStateEnhanced)
@@ -464,7 +529,12 @@ Antworte mit einer klaren Empfehlung."""
         workflow.add_conditional_edges(
             "reflect",
             lambda state: state["status"],
-            {"planning": "plan", "executing": "execute", "completed": END, "error": END},
+            {
+                "planning": "plan",
+                "executing": "execute",
+                "completed": END,
+                "error": END,
+            },
         )
 
         checkpointer = MemorySaver()
@@ -488,7 +558,11 @@ Antworte mit einer klaren Empfehlung."""
             logger.warning("Konnte Plan nicht als JSON parsen, nutze Fallback")
             return {
                 "plan": [
-                    {"action": "Port Scan", "tool": "scan_ports", "expected_outcome": "Offene Ports finden"},
+                    {
+                        "action": "Port Scan",
+                        "tool": "scan_ports",
+                        "expected_outcome": "Offene Ports finden",
+                    },
                     {
                         "action": "Vulnerability Scan",
                         "tool": "scan_vulnerabilities",
@@ -525,10 +599,16 @@ Antworte mit einer klaren Empfehlung."""
 
         result = self.graph.invoke(
             initial_state,
-            config={"configurable": {"thread_id": f"pentest_{target}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"}},
+            config={
+                "configurable": {
+                    "thread_id": f"pentest_{target}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+                }
+            },
         )
 
-        logger.info(f"Agent beendet nach {result['iteration']} Iterationen, {len(result['findings'])} findings")
+        logger.info(
+            f"Agent beendet nach {result['iteration']} Iterationen, {len(result['findings'])} findings"
+        )
 
         return {
             "findings": result["findings"],
@@ -558,7 +638,9 @@ Antworte mit einer klaren Empfehlung."""
             report.append("-" * 70)
             for step in result["plan"]:
                 status = "✓" if step.get("completed") else "○"
-                report.append(f"{status} Step {step['step_number']}: {step['action']}")
+                report.append(
+                    f"{status} Step {step['step_number']}: {step['action']}"
+                )
                 if step.get("result"):
                     report.append(f"    Result: {step['result'][:100]}...")
 
@@ -589,7 +671,9 @@ Antworte mit einer klaren Empfehlung."""
 _default_enhanced_agent = None
 
 
-def get_enhanced_agent(config: ReActAgentConfigEnhanced = None) -> ReActAgentEnhanced:
+def get_enhanced_agent(
+    config: ReActAgentConfigEnhanced = None,
+) -> ReActAgentEnhanced:
     """Gibt die default Enhanced Agent-Instanz zurück"""
     global _default_enhanced_agent
     if _default_enhanced_agent is None or config is not None:
@@ -600,9 +684,13 @@ def get_enhanced_agent(config: ReActAgentConfigEnhanced = None) -> ReActAgentEnh
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
 
-    config = ReActAgentConfigEnhanced(max_iterations=3, enable_planning=True, enable_reflection=True)
+    config = ReActAgentConfigEnhanced(
+        max_iterations=3, enable_planning=True, enable_reflection=True
+    )
 
     agent = ReActAgentEnhanced(config)
-    result = agent.run("scanme.nmap.org", objective="Port scan and vulnerability assessment")
+    result = agent.run(
+        "scanme.nmap.org", objective="Port scan and vulnerability assessment"
+    )
 
     print(agent.generate_report(result))

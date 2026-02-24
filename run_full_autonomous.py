@@ -13,7 +13,10 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from dataclasses import dataclass
 
-from utils.async_fixes import apply_windows_async_fixes, silence_asyncio_warnings
+from utils.async_fixes import (
+    apply_windows_async_fixes,
+    silence_asyncio_warnings,
+)
 from zen_ai_pentest import ZenAIPentest
 
 apply_windows_async_fixes()
@@ -101,7 +104,13 @@ async def main():
     print("\n[2] GEFUNDENE SCHWACHSTELLEN:")
     print("-" * 70)
 
-    severity_counts = {"critical": 0, "high": 0, "medium": 0, "low": 0, "info": 0}
+    severity_counts = {
+        "critical": 0,
+        "high": 0,
+        "medium": 0,
+        "low": 0,
+        "info": 0,
+    }
     colors = {
         "critical": "\033[91m",  # Red
         "high": "\033[93m",  # Yellow
@@ -154,7 +163,9 @@ async def main():
     # Ensure logs directory
     os.makedirs("logs", exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    json_file = f"logs/autonomous_report_{target.replace('.', '_')}_{timestamp}.json"
+    json_file = (
+        f"logs/autonomous_report_{target.replace('.', '_')}_{timestamp}.json"
+    )
 
     with open(json_file, "w") as f:
         json.dump(json_data, f, indent=2)

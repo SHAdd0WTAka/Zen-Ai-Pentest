@@ -86,7 +86,9 @@ class SessionManager:
     def __init__(self, config: Optional[SessionConfig] = None):
         self.config = config or get_config().session
         self._sessions: Dict[str, Session] = {}  # session_id -> Session
-        self._user_sessions: Dict[str, Set[str]] = {}  # user_id -> set of session_ids
+        self._user_sessions: Dict[str, Set[str]] = (
+            {}
+        )  # user_id -> set of session_ids
 
     def create_session(
         self,
@@ -128,8 +130,10 @@ class SessionManager:
             user_id=user_id,
             created_at=now,
             last_activity_at=now,
-            expires_at=now + timedelta(minutes=self.config.session_timeout_minutes),
-            absolute_expires_at=now + timedelta(hours=self.config.absolute_timeout_hours),
+            expires_at=now
+            + timedelta(minutes=self.config.session_timeout_minutes),
+            absolute_expires_at=now
+            + timedelta(hours=self.config.absolute_timeout_hours),
             status=SessionStatus.ACTIVE,
             ip_address=ip_address,
             user_agent=user_agent,
@@ -202,11 +206,15 @@ class SessionManager:
 
         now = datetime.now(timezone.utc)
         session.last_activity_at = now
-        session.expires_at = now + timedelta(minutes=self.config.session_timeout_minutes)
+        session.expires_at = now + timedelta(
+            minutes=self.config.session_timeout_minutes
+        )
 
         return True
 
-    def terminate_session(self, session_id: str, reason: str = "logout") -> bool:
+    def terminate_session(
+        self, session_id: str, reason: str = "logout"
+    ) -> bool:
         """
         Terminate a session
 
@@ -222,13 +230,18 @@ class SessionManager:
             return False
 
         session.status = SessionStatus.TERMINATED
-        session.metadata["terminated_at"] = datetime.now(timezone.utc).isoformat()
+        session.metadata["terminated_at"] = datetime.now(
+            timezone.utc
+        ).isoformat()
         session.metadata["termination_reason"] = reason
 
         return True
 
     def terminate_all_user_sessions(
-        self, user_id: str, exclude_session_id: Optional[str] = None, reason: str = "security"
+        self,
+        user_id: str,
+        exclude_session_id: Optional[str] = None,
+        reason: str = "security",
     ) -> int:
         """
         Terminate all sessions for a user
@@ -291,7 +304,11 @@ class SessionManager:
         Returns:
             List of active sessions
         """
-        return [s for s in self.get_user_sessions(user_id) if s.status == SessionStatus.ACTIVE]
+        return [
+            s
+            for s in self.get_user_sessions(user_id)
+            if s.status == SessionStatus.ACTIVE
+        ]
 
     def _remove_oldest_session(self, user_id: str) -> bool:
         """
@@ -325,7 +342,10 @@ class SessionManager:
 
         for session in list(self._sessions.values()):
             if session.status == SessionStatus.ACTIVE:
-                if now > session.absolute_expires_at or now > session.expires_at:
+                if (
+                    now > session.absolute_expires_at
+                    or now > session.expires_at
+                ):
                     session.status = SessionStatus.EXPIRED
                     count += 1
 

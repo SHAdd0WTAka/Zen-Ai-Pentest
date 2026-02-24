@@ -17,7 +17,9 @@ def test_health():
 
 
 def test_login():
-    response = client.post("/auth/login", json={"username": "admin", "password": "admin"})
+    response = client.post(
+        "/auth/login", json={"username": "admin", "password": "admin"}
+    )
     print(f"Login: {response.status_code}")
     if response.status_code == 200:
         data = response.json()
@@ -40,7 +42,9 @@ def test_scans_with_auth(token):
     print(f"Scans (with auth): {response.status_code}")
     if response.status_code == 200:
         data = response.json()
-        count = len(data) if isinstance(data, list) else data.get("total", "N/A")
+        count = (
+            len(data) if isinstance(data, list) else data.get("total", "N/A")
+        )
         print(f"  Count: {count}")
     return response.status_code
 

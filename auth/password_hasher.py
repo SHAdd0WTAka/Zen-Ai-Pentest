@@ -49,7 +49,9 @@ class PasswordHasher:
 
     def __init__(self):
         """Initialize password hasher with bcrypt context"""
-        self._context = CryptContext(schemes=["bcrypt"], deprecated="auto", bcrypt__rounds=12)  # Work factor
+        self._context = CryptContext(
+            schemes=["bcrypt"], deprecated="auto", bcrypt__rounds=12
+        )  # Work factor
 
     def hash(self, password: str) -> str:
         """
@@ -125,7 +127,10 @@ class PasswordHasher:
             return False, "Password must contain at least one digit"
 
         if not re.search(r'[!@#$%^&*(),.?":{}|<>]', password):
-            return False, "Password must contain at least one special character"
+            return (
+                False,
+                "Password must contain at least one special character",
+            )
 
         return True, None
 

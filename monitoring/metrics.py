@@ -13,7 +13,14 @@ import time
 from functools import wraps
 from typing import Callable, Optional
 
-from prometheus_client import CollectorRegistry, Counter, Gauge, Histogram, Info, generate_latest
+from prometheus_client import (
+    CollectorRegistry,
+    Counter,
+    Gauge,
+    Histogram,
+    Info,
+    generate_latest,
+)
 
 # Custom registry
 METRICS_REGISTRY = CollectorRegistry()
@@ -27,13 +34,29 @@ HTTP_REQUEST_DURATION = Histogram(
     "http_request_duration_seconds",
     "HTTP request latency in seconds",
     ["method", "endpoint", "status_code"],
-    buckets=[0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0],
+    buckets=[
+        0.001,
+        0.005,
+        0.01,
+        0.025,
+        0.05,
+        0.1,
+        0.25,
+        0.5,
+        1.0,
+        2.5,
+        5.0,
+        10.0,
+    ],
     registry=METRICS_REGISTRY,
 )
 
 # Request counter
 HTTP_REQUESTS_TOTAL = Counter(
-    "http_requests_total", "Total HTTP requests", ["method", "endpoint", "status_code"], registry=METRICS_REGISTRY
+    "http_requests_total",
+    "Total HTTP requests",
+    ["method", "endpoint", "status_code"],
+    registry=METRICS_REGISTRY,
 )
 
 # Requests in progress
@@ -46,7 +69,10 @@ HTTP_REQUESTS_IN_PROGRESS = Gauge(
 
 # Errors counter
 HTTP_ERRORS_TOTAL = Counter(
-    "http_errors_total", "Total HTTP errors", ["method", "endpoint", "status_code", "error_type"], registry=METRICS_REGISTRY
+    "http_errors_total",
+    "Total HTTP errors",
+    ["method", "endpoint", "status_code", "error_type"],
+    registry=METRICS_REGISTRY,
 )
 
 # Response size
@@ -63,13 +89,25 @@ HTTP_RESPONSE_SIZE = Histogram(
 # =============================================================================
 
 # Scans metrics
-SCANS_CREATED = Counter("scans_created_total", "Total number of scans created", ["scan_type"], registry=METRICS_REGISTRY)
-
-SCANS_COMPLETED = Counter(
-    "scans_completed_total", "Total number of scans completed", ["scan_type", "status"], registry=METRICS_REGISTRY
+SCANS_CREATED = Counter(
+    "scans_created_total",
+    "Total number of scans created",
+    ["scan_type"],
+    registry=METRICS_REGISTRY,
 )
 
-SCANS_ACTIVE = Gauge("scans_active", "Number of currently active scans", registry=METRICS_REGISTRY)
+SCANS_COMPLETED = Counter(
+    "scans_completed_total",
+    "Total number of scans completed",
+    ["scan_type", "status"],
+    registry=METRICS_REGISTRY,
+)
+
+SCANS_ACTIVE = Gauge(
+    "scans_active",
+    "Number of currently active scans",
+    registry=METRICS_REGISTRY,
+)
 
 SCAN_DURATION = Histogram(
     "scan_duration_seconds",
@@ -81,28 +119,55 @@ SCAN_DURATION = Histogram(
 
 # Findings metrics
 FINDINGS_DISCOVERED = Counter(
-    "findings_discovered_total", "Total number of findings discovered", ["severity"], registry=METRICS_REGISTRY
+    "findings_discovered_total",
+    "Total number of findings discovered",
+    ["severity"],
+    registry=METRICS_REGISTRY,
 )
 
 FINDINGS_BY_TYPE = Counter(
-    "findings_by_type_total", "Total findings by vulnerability type", ["vulnerability_type"], registry=METRICS_REGISTRY
+    "findings_by_type_total",
+    "Total findings by vulnerability type",
+    ["vulnerability_type"],
+    registry=METRICS_REGISTRY,
 )
 
 # Report metrics
 REPORTS_GENERATED = Counter(
-    "reports_generated_total", "Total number of reports generated", ["format"], registry=METRICS_REGISTRY
+    "reports_generated_total",
+    "Total number of reports generated",
+    ["format"],
+    registry=METRICS_REGISTRY,
 )
 
 # Authentication metrics
-AUTH_ATTEMPTS = Counter("auth_attempts_total", "Total authentication attempts", ["result"], registry=METRICS_REGISTRY)
+AUTH_ATTEMPTS = Counter(
+    "auth_attempts_total",
+    "Total authentication attempts",
+    ["result"],
+    registry=METRICS_REGISTRY,
+)
 
-ACTIVE_SESSIONS = Gauge("active_sessions", "Number of active user sessions", registry=METRICS_REGISTRY)
+ACTIVE_SESSIONS = Gauge(
+    "active_sessions",
+    "Number of active user sessions",
+    registry=METRICS_REGISTRY,
+)
 
 # Rate limiting metrics
-RATE_LIMIT_HITS = Counter("rate_limit_hits_total", "Total rate limit hits", ["tier", "endpoint"], registry=METRICS_REGISTRY)
+RATE_LIMIT_HITS = Counter(
+    "rate_limit_hits_total",
+    "Total rate limit hits",
+    ["tier", "endpoint"],
+    registry=METRICS_REGISTRY,
+)
 
 # Database metrics
-DB_CONNECTIONS_ACTIVE = Gauge("db_connections_active", "Number of active database connections", registry=METRICS_REGISTRY)
+DB_CONNECTIONS_ACTIVE = Gauge(
+    "db_connections_active",
+    "Number of active database connections",
+    registry=METRICS_REGISTRY,
+)
 
 DB_QUERY_DURATION = Histogram(
     "db_query_duration_seconds",
@@ -113,7 +178,9 @@ DB_QUERY_DURATION = Histogram(
 )
 
 # Application info
-APP_INFO = Info("app_info", "Application information", registry=METRICS_REGISTRY)
+APP_INFO = Info(
+    "app_info", "Application information", registry=METRICS_REGISTRY
+)
 
 # =============================================================================
 # Metrics Middleware
@@ -130,7 +197,12 @@ class MetricsMiddleware:
 
     def __init__(self, app, exclude_paths: Optional[list] = None):
         self.app = app
-        self.exclude_paths = exclude_paths or ["/metrics", "/health", "/docs", "/openapi.json"]
+        self.exclude_paths = exclude_paths or [
+            "/metrics",
+            "/health",
+            "/docs",
+            "/openapi.json",
+        ]
 
     async def __call__(self, scope, receive, send):
         if scope["type"] != "http":
@@ -147,7 +219,9 @@ class MetricsMiddleware:
         method = scope.get("method", "GET")
 
         # Track in-progress
-        HTTP_REQUESTS_IN_PROGRESS.labels(method=method, endpoint=request_path).inc()
+        HTTP_REQUESTS_IN_PROGRESS.labels(
+            method=method, endpoint=request_path
+        ).inc()
 
         start_time = time.time()
 
@@ -171,20 +245,35 @@ class MetricsMiddleware:
         except Exception as e:
             status_code = 500
             HTTP_ERRORS_TOTAL.labels(
-                method=method, endpoint=request_path, status_code="500", error_type=type(e).__name__
+                method=method,
+                endpoint=request_path,
+                status_code="500",
+                error_type=type(e).__name__,
             ).inc()
             raise
         finally:
             duration = time.time() - start_time
 
             # Record metrics
-            HTTP_REQUEST_DURATION.labels(method=method, endpoint=request_path, status_code=str(status_code)).observe(duration)
+            HTTP_REQUEST_DURATION.labels(
+                method=method,
+                endpoint=request_path,
+                status_code=str(status_code),
+            ).observe(duration)
 
-            HTTP_REQUESTS_TOTAL.labels(method=method, endpoint=request_path, status_code=str(status_code)).inc()
+            HTTP_REQUESTS_TOTAL.labels(
+                method=method,
+                endpoint=request_path,
+                status_code=str(status_code),
+            ).inc()
 
-            HTTP_RESPONSE_SIZE.labels(method=method, endpoint=request_path).observe(response_size)
+            HTTP_RESPONSE_SIZE.labels(
+                method=method, endpoint=request_path
+            ).observe(response_size)
 
-            HTTP_REQUESTS_IN_PROGRESS.labels(method=method, endpoint=request_path).dec()
+            HTTP_REQUESTS_IN_PROGRESS.labels(
+                method=method, endpoint=request_path
+            ).dec()
 
 
 # =============================================================================
@@ -255,7 +344,9 @@ def record_scan_created(scan_type: str):
     SCANS_ACTIVE.inc()
 
 
-def record_scan_completed(scan_type: str, status: str, duration_seconds: float):
+def record_scan_completed(
+    scan_type: str, status: str, duration_seconds: float
+):
     """Record that a scan completed"""
     SCANS_COMPLETED.labels(scan_type=scan_type, status=status).inc()
     SCANS_ACTIVE.dec()

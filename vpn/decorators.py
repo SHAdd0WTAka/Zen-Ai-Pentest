@@ -70,7 +70,10 @@ def recommend_vpn(message: Optional[str] = None, show_status: bool = True):
     return decorator
 
 
-def require_vpn(message: str = "VPN connection required", allowed_networks: Optional[list] = None):
+def require_vpn(
+    message: str = "VPN connection required",
+    allowed_networks: Optional[list] = None,
+):
     """
     Decorator that requires VPN connection.
 
@@ -98,7 +101,11 @@ def require_vpn(message: str = "VPN connection required", allowed_networks: Opti
             # Check VPN status
             vpn = VPNManager()
             if not vpn.is_connected():
-                raise PermissionError(f"{message}\n" f"Target: {target}\n" f"Please connect to a VPN before scanning.")
+                raise PermissionError(
+                    f"{message}\n"
+                    f"Target: {target}\n"
+                    f"Please connect to a VPN before scanning."
+                )
 
             return await func(*args, **kwargs)
 
@@ -113,7 +120,11 @@ def require_vpn(message: str = "VPN connection required", allowed_networks: Opti
             # Check VPN status
             vpn = VPNManager()
             if not vpn.is_connected():
-                raise PermissionError(f"{message}\n" f"Target: {target}\n" f"Please connect to a VPN before scanning.")
+                raise PermissionError(
+                    f"{message}\n"
+                    f"Target: {target}\n"
+                    f"Please connect to a VPN before scanning."
+                )
 
             return func(*args, **kwargs)
 
@@ -139,7 +150,9 @@ def with_vpn_check(func: Callable) -> Callable:
         status = vpn.get_status()
 
         if status.status == VPNStatus.CONNECTED:
-            logger.debug(f"🔒 VPN active ({status.provider}) - executing {func.__name__}")
+            logger.debug(
+                f"🔒 VPN active ({status.provider}) - executing {func.__name__}"
+            )
         else:
             logger.debug(f"🔓 No VPN - executing {func.__name__}")
 
@@ -151,7 +164,9 @@ def with_vpn_check(func: Callable) -> Callable:
         status = vpn.get_status()
 
         if status.status == VPNStatus.CONNECTED:
-            logger.debug(f"🔒 VPN active ({status.provider}) - executing {func.__name__}")
+            logger.debug(
+                f"🔒 VPN active ({status.provider}) - executing {func.__name__}"
+            )
         else:
             logger.debug(f"🔓 No VPN - executing {func.__name__}")
 

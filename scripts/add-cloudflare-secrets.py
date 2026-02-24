@@ -24,11 +24,21 @@ def get_repo_info():
     import subprocess
 
     try:
-        result = subprocess.run(["git", "remote", "get-url", "origin"], capture_output=True, text=True, check=True)
+        result = subprocess.run(
+            ["git", "remote", "get-url", "origin"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
         url = result.stdout.strip()
         # Parse github.com/owner/repo.git
         if "github.com" in url:
-            parts = url.replace("https://github.com/", "").replace("git@github.com:", "").replace(".git", "").split("/")
+            parts = (
+                url.replace("https://github.com/", "")
+                .replace("git@github.com:", "")
+                .replace(".git", "")
+                .split("/")
+            )
             if len(parts) >= 2:
                 return parts[0], parts[1]
     except Exception as e:
@@ -61,9 +71,13 @@ def create_secret(owner, repo, secret_name, secret_value, token):
         # For this script, we'll use the PUT endpoint with encrypted_value
         # However, doing libsodium encryption in pure Python is complex
 
-        print(f"  ℹ️  Secret '{secret_name}' erfordert libsodium Verschlüsselung")
+        print(
+            f"  ℹ️  Secret '{secret_name}' erfordert libsodium Verschlüsselung"
+        )
         print("  🔧 Manuelle Anleitung:")
-        print(f"     1. Gehe zu: https://github.com/{owner}/{repo}/settings/secrets/actions")
+        print(
+            f"     1. Gehe zu: https://github.com/{owner}/{repo}/settings/secrets/actions"
+        )
         print("     2. Klicke 'New repository secret'")
         print(f"     3. Name: {secret_name}")
         print(f"     4. Value: {secret_value[:10]}... (ausgeblendet)")
@@ -75,10 +89,16 @@ def create_secret(owner, repo, secret_name, secret_value, token):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Cloudflare Secrets zu GitHub hinzufügen")
+    parser = argparse.ArgumentParser(
+        description="Cloudflare Secrets zu GitHub hinzufügen"
+    )
     parser.add_argument("--token", help="Cloudflare API Token", required=False)
-    parser.add_argument("--account-id", help="Cloudflare Account ID", required=False)
-    parser.add_argument("--kv-id", help="Cloudflare KV Namespace ID", required=False)
+    parser.add_argument(
+        "--account-id", help="Cloudflare Account ID", required=False
+    )
+    parser.add_argument(
+        "--kv-id", help="Cloudflare KV Namespace ID", required=False
+    )
     args = parser.parse_args()
 
     print("☁️  Cloudflare Secrets Setup für GitHub Actions")
@@ -109,7 +129,11 @@ def main():
     # Get Cloudflare credentials
     cf_token = args.token or input("\n🔑 Cloudflare API Token: ").strip()
     cf_account = args.account_id or input("🔑 Cloudflare Account ID: ").strip()
-    cf_kv = args.kv_id or input("🔑 Cloudflare KV Namespace ID (optional): ").strip() or None
+    cf_kv = (
+        args.kv_id
+        or input("🔑 Cloudflare KV Namespace ID (optional): ").strip()
+        or None
+    )
 
     if not cf_token or not cf_account:
         print("\n❌ Cloudflare Token und Account ID sind erforderlich!")
@@ -120,7 +144,9 @@ def main():
     # We can't actually create secrets via API without libsodium encryption
     # So we'll show the manual instructions
     print("\n📋 Manuelle Schritte:")
-    print(f"\n1. Öffne: https://github.com/{owner}/{repo}/settings/secrets/actions")
+    print(
+        f"\n1. Öffne: https://github.com/{owner}/{repo}/settings/secrets/actions"
+    )
     print("\n2. Füge diese Secrets hinzu:\n")
 
     secrets = [
@@ -133,7 +159,9 @@ def main():
 
     for name, value in secrets:
         print(f"   Name: {name}")
-        print(f"   Value: {value[:10]}{'*' * (len(value) - 10) if len(value) > 10 else ''}")
+        print(
+            f"   Value: {value[:10]}{'*' * (len(value) - 10) if len(value) > 10 else ''}"
+        )
         print()
 
     print("3. Klicke jeweils 'Add secret'")

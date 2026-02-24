@@ -10,7 +10,10 @@ import sys
 # Add to path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from utils.async_fixes import apply_windows_async_fixes, silence_asyncio_warnings
+from utils.async_fixes import (
+    apply_windows_async_fixes,
+    silence_asyncio_warnings,
+)
 from zen_ai_pentest import ZenAIPentest
 
 apply_windows_async_fixes()

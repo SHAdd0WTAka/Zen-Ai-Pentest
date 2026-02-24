@@ -16,7 +16,19 @@ import os
 from datetime import datetime, timezone
 from enum import Enum as PyEnum
 
-from sqlalchemy import JSON, Boolean, Column, DateTime, Enum, ForeignKey, Index, Integer, String, Text, create_engine
+from sqlalchemy import (
+    JSON,
+    Boolean,
+    Column,
+    DateTime,
+    Enum,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    Text,
+    create_engine,
+)
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 
@@ -69,11 +81,15 @@ class User(Base):
     # Password
     hashed_password = Column(String(255), nullable=False)
     password_changed_at = Column(DateTime, default=datetime.utcnow)
-    password_history = Column(JSON, default=list)  # Store last N password hashes
+    password_history = Column(
+        JSON, default=list
+    )  # Store last N password hashes
 
     # Role & Permissions
     role = Column(Enum(UserRole), default=UserRole.USER, nullable=False)
-    custom_permissions = Column(JSON, default=list)  # Additional permissions beyond role
+    custom_permissions = Column(
+        JSON, default=list
+    )  # Additional permissions beyond role
 
     # Account Status
     is_active = Column(Boolean, default=True)
@@ -88,14 +104,24 @@ class User(Base):
 
     # Audit
     created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at = Column(
+        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
     created_by = Column(Integer, ForeignKey("auth_users.id"), nullable=True)
 
     # Relationships
-    sessions = relationship("UserSession", back_populates="user", cascade="all, delete-orphan")
-    api_keys = relationship("APIKey", back_populates="user", cascade="all, delete-orphan")
-    mfa_devices = relationship("MFADevice", back_populates="user", cascade="all, delete-orphan")
-    audit_logs = relationship("UserAuditLog", back_populates="user", cascade="all, delete-orphan")
+    sessions = relationship(
+        "UserSession", back_populates="user", cascade="all, delete-orphan"
+    )
+    api_keys = relationship(
+        "APIKey", back_populates="user", cascade="all, delete-orphan"
+    )
+    mfa_devices = relationship(
+        "MFADevice", back_populates="user", cascade="all, delete-orphan"
+    )
+    audit_logs = relationship(
+        "UserAuditLog", back_populates="user", cascade="all, delete-orphan"
+    )
 
     def __repr__(self):
         return f"<User(id={self.id}, username='{self.username}', role='{self.role.value}')>"
@@ -110,8 +136,12 @@ class User(Base):
             "is_active": self.is_active,
             "is_verified": self.is_verified,
             "is_mfa_enabled": self.is_mfa_enabled,
-            "last_login_at": self.last_login_at.isoformat() if self.last_login_at else None,
-            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "last_login_at": (
+                self.last_login_at.isoformat() if self.last_login_at else None
+            ),
+            "created_at": (
+                self.created_at.isoformat() if self.created_at else None
+            ),
         }
         if include_sensitive:
             data["custom_permissions"] = self.custom_permissions
@@ -133,11 +163,15 @@ class UserSession(Base):
     __tablename__ = "user_sessions"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("auth_users.id"), nullable=False, index=True)
+    user_id = Column(
+        Integer, ForeignKey("auth_users.id"), nullable=False, index=True
+    )
 
     # Session identifiers
     session_id = Column(String(255), unique=True, index=True, nullable=False)
-    refresh_token_jti = Column(String(255), unique=True, index=True, nullable=False)
+    refresh_token_jti = Column(
+        String(255), unique=True, index=True, nullable=False
+    )
 
     # Session metadata
     ip_address = Column(String(50), nullable=True)
@@ -185,12 +219,18 @@ class APIKey(Base):
     __tablename__ = "api_keys"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("auth_users.id"), nullable=False, index=True)
+    user_id = Column(
+        Integer, ForeignKey("auth_users.id"), nullable=False, index=True
+    )
 
     # Key data
-    key_id = Column(String(100), unique=True, index=True, nullable=False)  # Public identifier
+    key_id = Column(
+        String(100), unique=True, index=True, nullable=False
+    )  # Public identifier
     key_hash = Column(String(255), nullable=False)  # Hashed key
-    key_prefix = Column(String(20), nullable=False)  # First 8 chars for identification
+    key_prefix = Column(
+        String(20), nullable=False
+    )  # First 8 chars for identification
 
     # Metadata
     name = Column(String(255), nullable=False)  # Human-readable name
@@ -242,7 +282,9 @@ class MFADevice(Base):
     __tablename__ = "mfa_devices"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("auth_users.id"), nullable=False, index=True)
+    user_id = Column(
+        Integer, ForeignKey("auth_users.id"), nullable=False, index=True
+    )
 
     # Device info
     device_type = Column(Enum(MFAType), nullable=False)
@@ -284,14 +326,20 @@ class TokenBlacklist(Base):
     token_type = Column(Enum(TokenType), nullable=False)
 
     # User reference (optional, for audit)
-    user_id = Column(Integer, ForeignKey("auth_users.id"), nullable=True, index=True)
+    user_id = Column(
+        Integer, ForeignKey("auth_users.id"), nullable=True, index=True
+    )
 
     # Reason
-    reason = Column(String(100), default="logout")  # logout, compromise, expiry
+    reason = Column(
+        String(100), default="logout"
+    )  # logout, compromise, expiry
 
     # Timestamps
     revoked_at = Column(DateTime, default=datetime.utcnow)
-    expires_at = Column(DateTime, nullable=False)  # When token naturally expires
+    expires_at = Column(
+        DateTime, nullable=False
+    )  # When token naturally expires
 
     __table_args__ = (Index("idx_blacklist_expires", "expires_at"),)
 
@@ -309,11 +357,17 @@ class UserAuditLog(Base):
     __tablename__ = "user_audit_logs"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("auth_users.id"), nullable=True, index=True)
+    user_id = Column(
+        Integer, ForeignKey("auth_users.id"), nullable=True, index=True
+    )
 
     # Action details
-    action = Column(String(100), nullable=False, index=True)  # login, logout, password_change, etc.
-    action_category = Column(String(50), nullable=True)  # auth, security, account
+    action = Column(
+        String(100), nullable=False, index=True
+    )  # login, logout, password_change, etc.
+    action_category = Column(
+        String(50), nullable=True
+    )  # auth, security, account
 
     # Context
     ip_address = Column(String(50), nullable=True)
@@ -348,7 +402,9 @@ class UserAuditLog(Base):
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./zen_pentest.db")
 
 if DATABASE_URL.startswith("sqlite"):
-    engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+    engine = create_engine(
+        DATABASE_URL, connect_args={"check_same_thread": False}
+    )
 else:
     engine = create_engine(DATABASE_URL)
 
@@ -374,9 +430,20 @@ def get_auth_db():
 # ============================================================================
 
 
-def create_user(db, username: str, email: str, hashed_password: str, role: UserRole = UserRole.USER):
+def create_user(
+    db,
+    username: str,
+    email: str,
+    hashed_password: str,
+    role: UserRole = UserRole.USER,
+):
     """Create new user"""
-    user = User(username=username, email=email, hashed_password=hashed_password, role=role)
+    user = User(
+        username=username,
+        email=email,
+        hashed_password=hashed_password,
+        role=role,
+    )
     db.add(user)
     db.commit()
     db.refresh(user)
@@ -424,12 +491,23 @@ def create_session(
 
 def get_session_by_refresh_jti(db, refresh_token_jti: str):
     """Get session by refresh token JTI"""
-    return db.query(UserSession).filter(UserSession.refresh_token_jti == refresh_token_jti, UserSession.is_active).first()
+    return (
+        db.query(UserSession)
+        .filter(
+            UserSession.refresh_token_jti == refresh_token_jti,
+            UserSession.is_active,
+        )
+        .first()
+    )
 
 
 def revoke_session(db, session_id: str, reason: str = "logout"):
     """Revoke a session"""
-    session = db.query(UserSession).filter(UserSession.session_id == session_id).first()
+    session = (
+        db.query(UserSession)
+        .filter(UserSession.session_id == session_id)
+        .first()
+    )
     if session:
         session.is_active = False
         session.revoked = True
@@ -441,7 +519,11 @@ def revoke_session(db, session_id: str, reason: str = "logout"):
 
 def revoke_all_user_sessions(db, user_id: int, reason: str = "security"):
     """Revoke all sessions for a user"""
-    sessions = db.query(UserSession).filter(UserSession.user_id == user_id, UserSession.is_active).all()
+    sessions = (
+        db.query(UserSession)
+        .filter(UserSession.user_id == user_id, UserSession.is_active)
+        .all()
+    )
 
     for session in sessions:
         session.is_active = False
@@ -453,9 +535,22 @@ def revoke_all_user_sessions(db, user_id: int, reason: str = "security"):
     return len(sessions)
 
 
-def blacklist_token(db, jti: str, token_type: TokenType, expires_at: datetime, user_id: int = None, reason: str = "logout"):
+def blacklist_token(
+    db,
+    jti: str,
+    token_type: TokenType,
+    expires_at: datetime,
+    user_id: int = None,
+    reason: str = "logout",
+):
     """Add token to blacklist"""
-    entry = TokenBlacklist(jti=jti, token_type=token_type, user_id=user_id, reason=reason, expires_at=expires_at)
+    entry = TokenBlacklist(
+        jti=jti,
+        token_type=token_type,
+        user_id=user_id,
+        reason=reason,
+        expires_at=expires_at,
+    )
     db.add(entry)
     db.commit()
     return entry
@@ -463,7 +558,10 @@ def blacklist_token(db, jti: str, token_type: TokenType, expires_at: datetime, u
 
 def is_token_blacklisted(db, jti: str):
     """Check if token is blacklisted"""
-    return db.query(TokenBlacklist).filter(TokenBlacklist.jti == jti).first() is not None
+    return (
+        db.query(TokenBlacklist).filter(TokenBlacklist.jti == jti).first()
+        is not None
+    )
 
 
 def create_audit_log(

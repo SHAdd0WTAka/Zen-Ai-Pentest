@@ -19,7 +19,15 @@ sys.modules["rich.panel"] = MagicMock()
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from tools.kimi_helper import PERSONAS, check_kimi_cli, check_kimi_logged_in, get_api_key, main, query_kimi_api, query_kimi_cli
+from tools.kimi_helper import (
+    PERSONAS,
+    check_kimi_cli,
+    check_kimi_logged_in,
+    get_api_key,
+    main,
+    query_kimi_api,
+    query_kimi_cli,
+)
 
 # ============================================================================
 # Test Personas
@@ -31,7 +39,14 @@ class TestPersonas:
 
     def test_all_personas_exist(self):
         """Test that all 6 personas are defined"""
-        expected_personas = ["recon", "exploit", "report", "audit", "network", "redteam"]
+        expected_personas = [
+            "recon",
+            "exploit",
+            "report",
+            "audit",
+            "network",
+            "redteam",
+        ]
         for persona in expected_personas:
             assert persona in PERSONAS
 
@@ -41,7 +56,9 @@ class TestPersonas:
 
         for key, persona in PERSONAS.items():
             for field in required_fields:
-                assert field in persona, f"Persona '{key}' missing field '{field}'"
+                assert (
+                    field in persona
+                ), f"Persona '{key}' missing field '{field}'"
 
     def test_recon_persona_content(self):
         """Test recon persona has appropriate content"""
@@ -100,7 +117,9 @@ class TestCLIChecks:
         """Test CLI detection when installed"""
         mock_run.return_value = MagicMock(returncode=0)
         assert check_kimi_cli() is True
-        mock_run.assert_called_once_with(["kimi", "--version"], capture_output=True, check=True)
+        mock_run.assert_called_once_with(
+            ["kimi", "--version"], capture_output=True, check=True
+        )
 
     @patch("tools.kimi_helper.subprocess.run")
     def test_check_kimi_cli_not_installed(self, mock_run):
@@ -153,7 +172,10 @@ class TestAPIKey:
     def test_get_api_key_from_file(self, mock_exists):
         """Test getting API key from .env file"""
         mock_exists.return_value = True
-        with patch("builtins.open", mock_open(read_data='export KIMI_API_KEY="file-key-456"')):
+        with patch(
+            "builtins.open",
+            mock_open(read_data='export KIMI_API_KEY="file-key-456"'),
+        ):
             key = get_api_key()
         assert key == "file-key-456"
 
@@ -189,7 +211,9 @@ class TestAPIQuery:
         mock_get_key.return_value = "test-key"
 
         mock_response = MagicMock()
-        mock_response.json.return_value = {"choices": [{"message": {"content": "Test response"}}]}
+        mock_response.json.return_value = {
+            "choices": [{"message": {"content": "Test response"}}]
+        }
         mock_response.raise_for_status.return_value = None
         mock_post.return_value = mock_response
 
@@ -210,7 +234,9 @@ class TestAPIQuery:
     def test_query_kimi_api_no_requests(self):
         """Test API query when requests not available"""
         with patch("tools.kimi_helper.REQUESTS_AVAILABLE", False):
-            with patch("tools.kimi_helper.get_api_key", return_value="test-key"):
+            with patch(
+                "tools.kimi_helper.get_api_key", return_value="test-key"
+            ):
                 result = query_kimi_api("test prompt", "system prompt")
 
         assert result is None
@@ -222,7 +248,9 @@ class TestAPIQuery:
         mock_get_key.return_value = "sk-or-test123"
 
         mock_response = MagicMock()
-        mock_response.json.return_value = {"choices": [{"message": {"content": "OpenRouter response"}}]}
+        mock_response.json.return_value = {
+            "choices": [{"message": {"content": "OpenRouter response"}}]
+        }
         mock_response.raise_for_status.return_value = None
         mock_post.return_value = mock_response
 
@@ -253,11 +281,18 @@ class TestAPIQuery:
         mock_get_key.return_value = "test-key"
 
         mock_response = MagicMock()
-        mock_response.json.return_value = {"choices": [{"message": {"content": "Response"}}]}
+        mock_response.json.return_value = {
+            "choices": [{"message": {"content": "Response"}}]
+        }
         mock_response.raise_for_status.return_value = None
         mock_post.return_value = mock_response
 
-        result = query_kimi_api("test prompt", "system prompt", model="custom-model", temperature=0.5)
+        result = query_kimi_api(
+            "test prompt",
+            "system prompt",
+            model="custom-model",
+            temperature=0.5,
+        )
 
         call_args = mock_post.call_args
         data = call_args[1]["json"]
@@ -296,7 +331,9 @@ class TestCLIQuery:
     @patch("tools.kimi_helper.check_kimi_cli")
     @patch("tools.kimi_helper.check_kimi_logged_in")
     @patch("tools.kimi_helper.subprocess.run")
-    def test_query_kimi_cli_success(self, mock_run, mock_logged_in, mock_check):
+    def test_query_kimi_cli_success(
+        self, mock_run, mock_logged_in, mock_check
+    ):
         """Test successful CLI query"""
         mock_check.return_value = True
         mock_logged_in.return_value = True
@@ -310,7 +347,9 @@ class TestCLIQuery:
     @patch("tools.kimi_helper.check_kimi_cli")
     @patch("tools.kimi_helper.check_kimi_logged_in")
     @patch("tools.kimi_helper.subprocess.run")
-    def test_query_kimi_cli_with_persona(self, mock_run, mock_logged_in, mock_check):
+    def test_query_kimi_cli_with_persona(
+        self, mock_run, mock_logged_in, mock_check
+    ):
         """Test CLI query with persona system prompt"""
         mock_check.return_value = True
         mock_logged_in.return_value = True
@@ -326,7 +365,9 @@ class TestCLIQuery:
     @patch("tools.kimi_helper.check_kimi_cli")
     @patch("tools.kimi_helper.check_kimi_logged_in")
     @patch("tools.kimi_helper.subprocess.run")
-    def test_query_kimi_cli_timeout(self, mock_run, mock_logged_in, mock_check):
+    def test_query_kimi_cli_timeout(
+        self, mock_run, mock_logged_in, mock_check
+    ):
         """Test CLI query timeout"""
         import subprocess
 
@@ -353,7 +394,10 @@ class TestMainFunction:
         # Should not raise exception
         main()
 
-    @patch("tools.kimi_helper.sys.argv", ["kimi_helper.py", "-p", "recon", "scan target"])
+    @patch(
+        "tools.kimi_helper.sys.argv",
+        ["kimi_helper.py", "-p", "recon", "scan target"],
+    )
     @patch("tools.kimi_helper.query_kimi_api")
     def test_main_api_mode(self, mock_query):
         """Test main in API mode"""
@@ -363,7 +407,10 @@ class TestMainFunction:
 
         mock_query.assert_called_once()
 
-    @patch("tools.kimi_helper.sys.argv", ["kimi_helper.py", "--cli", "-p", "recon", "scan target"])
+    @patch(
+        "tools.kimi_helper.sys.argv",
+        ["kimi_helper.py", "--cli", "-p", "recon", "scan target"],
+    )
     @patch("tools.kimi_helper.query_kimi_cli")
     def test_main_cli_mode(self, mock_query):
         """Test main in CLI mode"""
@@ -377,7 +424,9 @@ class TestMainFunction:
     @patch("tools.kimi_helper.check_kimi_cli")
     @patch("tools.kimi_helper.check_kimi_logged_in")
     @patch("tools.kimi_helper.get_api_key")
-    def test_main_check_cli_installed(self, mock_get_key, mock_logged_in, mock_check):
+    def test_main_check_cli_installed(
+        self, mock_get_key, mock_logged_in, mock_check
+    ):
         """Test main check command - CLI installed and logged in"""
         mock_check.return_value = True
         mock_logged_in.return_value = True
@@ -421,7 +470,17 @@ class TestMainFunction:
         main()
 
     @patch(
-        "tools.kimi_helper.sys.argv", ["kimi_helper.py", "-p", "exploit", "create exploit", "-t", "0.5", "-m", "custom-model"]
+        "tools.kimi_helper.sys.argv",
+        [
+            "kimi_helper.py",
+            "-p",
+            "exploit",
+            "create exploit",
+            "-t",
+            "0.5",
+            "-m",
+            "custom-model",
+        ],
     )
     @patch("tools.kimi_helper.query_kimi_api")
     def test_main_with_options(self, mock_query):
@@ -445,8 +504,14 @@ class TestErrorHandling:
 
     def test_keyboard_interrupt_main(self):
         """Test handling KeyboardInterrupt in main"""
-        with patch("tools.kimi_helper.sys.argv", ["kimi_helper.py", "-p", "recon", "test"]):
-            with patch("tools.kimi_helper.query_kimi_api", side_effect=KeyboardInterrupt):
+        with patch(
+            "tools.kimi_helper.sys.argv",
+            ["kimi_helper.py", "-p", "recon", "test"],
+        ):
+            with patch(
+                "tools.kimi_helper.query_kimi_api",
+                side_effect=KeyboardInterrupt,
+            ):
                 try:
                     main()
                 except SystemExit as e:

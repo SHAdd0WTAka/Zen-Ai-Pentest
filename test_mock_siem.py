@@ -45,7 +45,9 @@ test_events = [
 for event in test_events:
     r = requests.post(f"{BASE}/siem/events", json=event)
     result = r.json()
-    print(f"    {event['severity'].upper()}: {event['event_type']} - {result['message']}")
+    print(
+        f"    {event['severity'].upper()}: {event['event_type']} - {result['message']}"
+    )
 
 # 3. Events abrufen
 r = requests.get(f"{BASE}/siem/events")

@@ -95,16 +95,22 @@ class MetadataExtractor:
             import aiohttp
 
             async with aiohttp.ClientSession() as session:
-                async with session.get(url, timeout=self.timeout, ssl=False) as response:
+                async with session.get(
+                    url, timeout=self.timeout, ssl=False
+                ) as response:
                     if response.status == 200:
                         content_type = response.headers.get("Content-Type", "")
                         content = await response.read()
 
                         # Bestimme Dateityp
-                        file_type = self._detect_file_type(url, content_type, content)
+                        file_type = self._detect_file_type(
+                            url, content_type, content
+                        )
 
                         # Extrahiere Metadaten
-                        return await self._extract_metadata(content, file_type, url)
+                        return await self._extract_metadata(
+                            content, file_type, url
+                        )
 
         except ImportError:
             logger.debug("aiohttp nicht verfügbar")
@@ -193,17 +199,25 @@ class MetadataExtractor:
 
         except ImportError:
             # Fallback zu Regex
-            title_match = re.search(r"<title[^>]*>(.*?)</title>", html, re.IGNORECASE | re.DOTALL)
+            title_match = re.search(
+                r"<title[^>]*>(.*?)</title>", html, re.IGNORECASE | re.DOTALL
+            )
             if title_match:
                 metadata.title = title_match.group(1).strip()
 
-            author_match = re.search(r'<meta[^>]*name=["\']?author["\']?[^>]*content=["\']?([^"\']+)', html, re.IGNORECASE)
+            author_match = re.search(
+                r'<meta[^>]*name=["\']?author["\']?[^>]*content=["\']?([^"\']+)',
+                html,
+                re.IGNORECASE,
+            )
             if author_match:
                 metadata.author = author_match.group(1)
 
         return metadata
 
-    def _detect_file_type(self, source: str, content_type: Optional[str], content: bytes) -> str:
+    def _detect_file_type(
+        self, source: str, content_type: Optional[str], content: bytes
+    ) -> str:
         """Erkennt den Dateityp"""
         source_lower = source.lower()
 
@@ -241,7 +255,9 @@ class MetadataExtractor:
 
         return "unknown"
 
-    async def _extract_metadata(self, content: bytes, file_type: str, source: str) -> Optional[Metadata]:
+    async def _extract_metadata(
+        self, content: bytes, file_type: str, source: str
+    ) -> Optional[Metadata]:
         """Extrahiert Metadaten basierend auf Dateityp"""
         if file_type == "pdf":
             return await self._extract_pdf_metadata(content, source)
@@ -252,11 +268,15 @@ class MetadataExtractor:
         elif file_type == "archive":
             return await self._extract_archive_metadata(content, source)
         elif file_type == "web":
-            return await self.extract_from_html(content.decode("utf-8", errors="ignore"), source)
+            return await self.extract_from_html(
+                content.decode("utf-8", errors="ignore"), source
+            )
 
         return None
 
-    async def _extract_pdf_metadata(self, content: bytes, source: str) -> Optional[Metadata]:
+    async def _extract_pdf_metadata(
+        self, content: bytes, source: str
+    ) -> Optional[Metadata]:
         """Extrahiert PDF-Metadaten"""
         metadata = Metadata(source=source, file_type="pdf")
 
@@ -316,7 +336,9 @@ class MetadataExtractor:
 
         return None
 
-    async def _extract_office_metadata(self, content: bytes, source: str) -> Optional[Metadata]:
+    async def _extract_office_metadata(
+        self, content: bytes, source: str
+    ) -> Optional[Metadata]:
         """Extrahiert Office-Dokument-Metadaten"""
         metadata = Metadata(source=source, file_type="office")
 
@@ -333,10 +355,16 @@ class MetadataExtractor:
 
                 metadata.title = props.title
                 metadata.author = props.author
-                metadata.created = props.created.isoformat() if props.created else None
-                metadata.modified = props.modified.isoformat() if props.modified else None
+                metadata.created = (
+                    props.created.isoformat() if props.created else None
+                )
+                metadata.modified = (
+                    props.modified.isoformat() if props.modified else None
+                )
                 metadata.comments = props.comments
-                metadata.keywords = props.keywords.split(",") if props.keywords else []
+                metadata.keywords = (
+                    props.keywords.split(",") if props.keywords else []
+                )
 
                 if self.extract_raw:
                     metadata.raw = {
@@ -357,7 +385,9 @@ class MetadataExtractor:
 
         return None
 
-    async def _extract_image_metadata(self, content: bytes, source: str) -> Optional[Metadata]:
+    async def _extract_image_metadata(
+        self, content: bytes, source: str
+    ) -> Optional[Metadata]:
         """Extrahiert Bild-Metadaten (EXIF)"""
         metadata = Metadata(source=source, file_type="image")
 
@@ -379,7 +409,9 @@ class MetadataExtractor:
                     if tag == "Make":
                         metadata.software = str(value)
                     elif tag == "Model":
-                        metadata.software = f"{metadata.software or ''} {value}".strip()
+                        metadata.software = (
+                            f"{metadata.software or ''} {value}".strip()
+                        )
                     elif tag == "DateTime":
                         metadata.created = str(value)
                     elif tag == "DateTimeOriginal":
@@ -392,7 +424,9 @@ class MetadataExtractor:
                         metadata.title = str(value)
 
                 if self.extract_raw:
-                    metadata.raw = {TAGS.get(k, k): str(v) for k, v in exifdata.items()}
+                    metadata.raw = {
+                        TAGS.get(k, k): str(v) for k, v in exifdata.items()
+                    }
 
             # Bildgröße
             metadata.raw["width"] = img.width
@@ -409,7 +443,9 @@ class MetadataExtractor:
 
         return None
 
-    async def _extract_archive_metadata(self, content: bytes, source: str) -> Optional[Metadata]:
+    async def _extract_archive_metadata(
+        self, content: bytes, source: str
+    ) -> Optional[Metadata]:
         """Extrahiert Archiv-Metadaten"""
         metadata = Metadata(source=source, file_type="archive")
 
@@ -418,7 +454,11 @@ class MetadataExtractor:
             import zipfile
 
             with zipfile.ZipFile(io.BytesIO(content), "r") as zf:
-                metadata.comments = zf.comment.decode("utf-8", errors="ignore") if zf.comment else None
+                metadata.comments = (
+                    zf.comment.decode("utf-8", errors="ignore")
+                    if zf.comment
+                    else None
+                )
 
                 file_list = []
                 for info in zf.infolist():
@@ -427,7 +467,11 @@ class MetadataExtractor:
                             "name": info.filename,
                             "size": info.file_size,
                             "compressed": info.compress_size,
-                            "date": datetime(*info.date_time).isoformat() if info.date_time else None,
+                            "date": (
+                                datetime(*info.date_time).isoformat()
+                                if info.date_time
+                                else None
+                            ),
                         }
                     )
 
@@ -449,11 +493,17 @@ class MetadataExtractor:
 
         # Prüfe auf Benutzernamen in Software-Feldern
         if metadata.software:
-            if "username" in metadata.software.lower() or "user" in metadata.software.lower():
+            if (
+                "username" in metadata.software.lower()
+                or "user" in metadata.software.lower()
+            ):
                 sensitive.append(f"Software: {metadata.software}")
 
         # Prüfe auf Netzwerk-Pfade
-        for field_value in [metadata.raw.get("Template", ""), metadata.raw.get("Company", "")]:
+        for field_value in [
+            metadata.raw.get("Template", ""),
+            metadata.raw.get("Company", ""),
+        ]:
             if isinstance(field_value, str) and "\\\\" in field_value:
                 sensitive.append(f"Netzwerk-Pfad: {field_value}")
 

@@ -65,7 +65,12 @@ class TestInputValidation:
 class TestAPISchemaValidation:
     """Test API schema validation."""
 
-    @given(st.dictionaries(st.text(min_size=1, max_size=50), st.one_of(st.text(), st.integers(), st.booleans())))
+    @given(
+        st.dictionaries(
+            st.text(min_size=1, max_size=50),
+            st.one_of(st.text(), st.integers(), st.booleans()),
+        )
+    )
     @settings(max_examples=50, deadline=1000)
     def test_json_payload_handling(self, payload):
         """Test JSON payload handling."""
@@ -101,7 +106,11 @@ def run_fuzz_tests():
 
     import subprocess
 
-    result = subprocess.run([sys.executable, "-m", "pytest", __file__, "-v"], capture_output=True, text=True)
+    result = subprocess.run(
+        [sys.executable, "-m", "pytest", __file__, "-v"],
+        capture_output=True,
+        text=True,
+    )
     print(result.stdout)
     if result.stderr:
         print(result.stderr, file=sys.stderr)

@@ -211,7 +211,9 @@ class TestFFUFIntegration:
         """Test FFUF command building"""
         from tools.ffuf_integration_enhanced import FFUFScanner
 
-        scanner = FFUFScanner(target="http://example.com", wordlist="/tmp/wordlist.txt")
+        scanner = FFUFScanner(
+            target="http://example.com", wordlist="/tmp/wordlist.txt"
+        )
         cmd = scanner._build_command()
 
         assert isinstance(cmd, list)
@@ -331,7 +333,10 @@ class TestAsyncToolOperations:
         caller.registry.register("tool2", mock_tool)
 
         # Run concurrently
-        results = await asyncio.gather(caller.call_async("tool1", {"id": 1}), caller.call_async("tool2", {"id": 2}))
+        results = await asyncio.gather(
+            caller.call_async("tool1", {"id": 1}),
+            caller.call_async("tool2", {"id": 2}),
+        )
 
         assert results[0]["result"] == 1
         assert results[1]["result"] == 2
@@ -351,7 +356,9 @@ class TestAsyncToolOperations:
 
         # Should handle timeout gracefully
         try:
-            await asyncio.wait_for(caller.call_async("slow_tool", {}), timeout=0.1)
+            await asyncio.wait_for(
+                caller.call_async("slow_tool", {}), timeout=0.1
+            )
         except asyncio.TimeoutError:
             # Expected
             pass

@@ -13,7 +13,9 @@ import sys
 from pathlib import Path
 from typing import Optional
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 logger = logging.getLogger(__name__)
 
 
@@ -38,7 +40,9 @@ class VMSetup:
 
         for path in paths:
             try:
-                result = subprocess.run([path, "--version"], capture_output=True, timeout=5)
+                result = subprocess.run(
+                    [path, "--version"], capture_output=True, timeout=5
+                )
                 if result.returncode == 0:
                     return path
             except Exception:
@@ -58,7 +62,9 @@ class VMSetup:
         logger.debug(f"Befehl: {' '.join(cmd)}")
 
         try:
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
+            result = subprocess.run(
+                cmd, capture_output=True, text=True, timeout=timeout
+            )
             return result.returncode, result.stdout, result.stderr
         except subprocess.TimeoutExpired:
             return -1, "", "Timeout"
@@ -70,7 +76,12 @@ class VMSetup:
         try:
             if self.system == "windows":
                 result = subprocess.run(
-                    ["powershell", "Get-ComputerInfo", "-Property", "HyperVRequirementVirtualizationFirmwareEnabled"],
+                    [
+                        "powershell",
+                        "Get-ComputerInfo",
+                        "-Property",
+                        "HyperVRequirementVirtualizationFirmwareEnabled",
+                    ],
                     capture_output=True,
                     text=True,
                 )
@@ -79,7 +90,11 @@ class VMSetup:
                     return True
             else:
                 # Linux/macOS
-                result = subprocess.run(["egrep", "-c", "(vmx|svm)", "/proc/cpuinfo"], capture_output=True, text=True)
+                result = subprocess.run(
+                    ["egrep", "-c", "(vmx|svm)", "/proc/cpuinfo"],
+                    capture_output=True,
+                    text=True,
+                )
                 if int(result.stdout.strip()) > 0:
                     logger.info("✓ Virtualisierung aktiviert")
                     return True
@@ -107,7 +122,10 @@ class VMSetup:
         logger.info(f"URL: {url}")
 
         try:
-            with urllib.request.urlopen(url) as response, open(download_path, "wb") as out_file:
+            with (
+                urllib.request.urlopen(url) as response,
+                open(download_path, "wb") as out_file,
+            ):
                 shutil.copyfileobj(response, out_file)
             logger.info(f"✓ Download abgeschlossen: {download_path}")
             return download_path
@@ -132,14 +150,19 @@ class VMSetup:
 
         try:
             result = subprocess.run(
-                [seven_zip, "x", str(archive_path), f"-o{output_dir}", "-y"], capture_output=True, text=True, timeout=300
+                [seven_zip, "x", str(archive_path), f"-o{output_dir}", "-y"],
+                capture_output=True,
+                text=True,
+                timeout=300,
             )
             return result.returncode == 0
         except Exception as e:
             logger.error(f"Entpacken fehlgeschlagen: {e}")
             return False
 
-    def import_kali_vm(self, ova_path: Path, vm_name: str = "kali-pentest") -> bool:
+    def import_kali_vm(
+        self, ova_path: Path, vm_name: str = "kali-pentest"
+    ) -> bool:
         """Importiert Kali VM"""
         logger.info(f"Importiere Kali VM als '{vm_name}'...")
 
@@ -154,7 +177,19 @@ class VMSetup:
 
         # Import
         returncode, stdout, stderr = self._run(
-            ["import", str(ova_path), "--vsys", "0", "--vmname", vm_name, "--cpus", "4", "--memory", "8192"], timeout=300
+            [
+                "import",
+                str(ova_path),
+                "--vsys",
+                "0",
+                "--vmname",
+                vm_name,
+                "--cpus",
+                "4",
+                "--memory",
+                "8192",
+            ],
+            timeout=300,
         )
 
         if returncode == 0:
@@ -177,17 +212,38 @@ class VMSetup:
 
         # Shared Folder (für Zen-Integration)
         zen_path = Path(__file__).parent.parent.absolute()
-        self._run(["sharedfolder", "add", vm_name, "--name", "zen-ai-pentest", "--hostpath", str(zen_path), "--automount"])
+        self._run(
+            [
+                "sharedfolder",
+                "add",
+                vm_name,
+                "--name",
+                "zen-ai-pentest",
+                "--hostpath",
+                str(zen_path),
+                "--automount",
+            ]
+        )
 
         logger.info("✓ Konfiguration abgeschlossen")
         return True
 
-    def create_snapshot(self, vm_name: str, snapshot_name: str = "clean_state") -> bool:
+    def create_snapshot(
+        self, vm_name: str, snapshot_name: str = "clean_state"
+    ) -> bool:
         """Erstellt Snapshot"""
         logger.info(f"Erstelle Snapshot '{snapshot_name}'...")
 
         returncode, _, stderr = self._run(
-            ["snapshot", vm_name, "take", snapshot_name, "--description", "Clean state for pentesting"], timeout=120
+            [
+                "snapshot",
+                vm_name,
+                "take",
+                snapshot_name,
+                "--description",
+                "Clean state for pentesting",
+            ],
+            timeout=120,
         )
 
         if returncode == 0:
@@ -259,13 +315,32 @@ class VMSetup:
         # Basis-VM erstellen (ohne ISO)
         vm_path = self.vm_base_path / vm_name
 
-        self._run(["createvm", "--name", vm_name, "--ostype", "Windows10_64", "--register"])
+        self._run(
+            [
+                "createvm",
+                "--name",
+                vm_name,
+                "--ostype",
+                "Windows10_64",
+                "--register",
+            ]
+        )
         self._run(["modifyvm", vm_name, "--memory", "4096", "--cpus", "2"])
         self._run(["modifyvm", vm_name, "--vram", "128"])
 
         # HDD erstellen
         hdd_path = vm_path / "disk.vdi"
-        self._run(["createhd", "--filename", str(hdd_path), "--size", "51200", "--variant", "Standard"])
+        self._run(
+            [
+                "createhd",
+                "--filename",
+                str(hdd_path),
+                "--size",
+                "51200",
+                "--variant",
+                "Standard",
+            ]
+        )
 
         # Storage
         self._run(["storagectl", vm_name, "--name", "SATA", "--add", "sata"])
@@ -314,10 +389,19 @@ class VMSetup:
         """Exportiert VM-Konfiguration"""
         config = {
             "default_vm": "kali-pentest",
-            "vms": {"kali-pentest": {"os_type": "kali", "username": "kali", "password": "kali", "snapshot": "clean_state"}},
+            "vms": {
+                "kali-pentest": {
+                    "os_type": "kali",
+                    "username": "kali",
+                    "password": "kali",
+                    "snapshot": "clean_state",
+                }
+            },
         }
 
-        config_path = Path(__file__).parent.parent / "config" / "vm_config.json"
+        config_path = (
+            Path(__file__).parent.parent / "config" / "vm_config.json"
+        )
         config_path.parent.mkdir(exist_ok=True)
 
         with open(config_path, "w") as f:
@@ -339,11 +423,19 @@ Beispiele:
         """,
     )
 
-    parser.add_argument("--kali", action="store_true", help="Kali Linux VM setup")
-    parser.add_argument("--windows", action="store_true", help="Windows VM erstellen")
+    parser.add_argument(
+        "--kali", action="store_true", help="Kali Linux VM setup"
+    )
+    parser.add_argument(
+        "--windows", action="store_true", help="Windows VM erstellen"
+    )
     parser.add_argument("--list", action="store_true", help="VMs auflisten")
-    parser.add_argument("--export-config", action="store_true", help="Konfig exportieren")
-    parser.add_argument("--full", action="store_true", help="Komplettes Setup (Kali + Config)")
+    parser.add_argument(
+        "--export-config", action="store_true", help="Konfig exportieren"
+    )
+    parser.add_argument(
+        "--full", action="store_true", help="Komplettes Setup (Kali + Config)"
+    )
 
     args = parser.parse_args()
 

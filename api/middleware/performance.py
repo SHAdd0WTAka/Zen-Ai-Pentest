@@ -50,7 +50,9 @@ class PerformanceMonitoringMiddleware(BaseHTTPMiddleware):
         self._total_requests = 0
         self._slow_requests = 0
 
-    async def dispatch(self, request: Request, call_next: Callable) -> Response:
+    async def dispatch(
+        self, request: Request, call_next: Callable
+    ) -> Response:
         start_time = time.perf_counter()
         self._total_requests += 1
 
@@ -92,7 +94,11 @@ class PerformanceMonitoringMiddleware(BaseHTTPMiddleware):
         stats = {
             "total_requests": self._total_requests,
             "slow_requests": self._slow_requests,
-            "slow_request_percentage": ((self._slow_requests / self._total_requests * 100) if self._total_requests > 0 else 0),
+            "slow_request_percentage": (
+                (self._slow_requests / self._total_requests * 100)
+                if self._total_requests > 0
+                else 0
+            ),
             "endpoints": {},
         }
 
@@ -103,7 +109,11 @@ class PerformanceMonitoringMiddleware(BaseHTTPMiddleware):
                     "avg_ms": sum(times) / len(times),
                     "min_ms": min(times),
                     "max_ms": max(times),
-                    "p95_ms": sorted(times)[int(len(times) * 0.95)] if len(times) > 20 else max(times),
+                    "p95_ms": (
+                        sorted(times)[int(len(times) * 0.95)]
+                        if len(times) > 20
+                        else max(times)
+                    ),
                 }
 
         return stats
@@ -120,9 +130,13 @@ class ConnectionPoolMiddleware(BaseHTTPMiddleware):
         self._active_connections = 0
         self._peak_connections = 0
 
-    async def dispatch(self, request: Request, call_next: Callable) -> Response:
+    async def dispatch(
+        self, request: Request, call_next: Callable
+    ) -> Response:
         self._active_connections += 1
-        self._peak_connections = max(self._peak_connections, self._active_connections)
+        self._peak_connections = max(
+            self._peak_connections, self._active_connections
+        )
 
         try:
             response = await call_next(request)
@@ -130,7 +144,9 @@ class ConnectionPoolMiddleware(BaseHTTPMiddleware):
             self._active_connections -= 1
 
         # Add connection pool info
-        response.headers["X-Active-Connections"] = str(self._active_connections)
+        response.headers["X-Active-Connections"] = str(
+            self._active_connections
+        )
         return response
 
     def get_stats(self) -> Dict:
@@ -138,7 +154,9 @@ class ConnectionPoolMiddleware(BaseHTTPMiddleware):
             "active_connections": self._active_connections,
             "peak_connections": self._peak_connections,
             "max_connections": self.max_connections,
-            "utilization": (self._active_connections / self.max_connections * 100),
+            "utilization": (
+                self._active_connections / self.max_connections * 100
+            ),
         }
 
 

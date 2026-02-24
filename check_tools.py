@@ -13,13 +13,17 @@ print()
 ready_status = "YES" if report["ready"] else "NO"
 print(f"System Ready: {ready_status}")
 print()
-print(f"Required Tools: {report['required']['available']}/{report['required']['total']}")
+print(
+    f"Required Tools: {report['required']['available']}/{report['required']['total']}"
+)
 if report["required"]["missing"]:
     print("Missing Required:")
     for tool in report["required"]["missing"]:
         print(f"  - {tool}")
 print()
-print(f"Optional Tools: {report['optional']['available']}/{report['optional']['total']}")
+print(
+    f"Optional Tools: {report['optional']['available']}/{report['optional']['total']}"
+)
 
 if not report["ready"]:
     print()

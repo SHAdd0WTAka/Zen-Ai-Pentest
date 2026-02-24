@@ -3,12 +3,20 @@
 
 import os
 import sys
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from github_app_auth import get_installation_token, get_headers, REPO_OWNER, REPO_NAME
-import requests
-import zipfile
 import io
+import zipfile
+
+import requests
+from github_app_auth import (
+    REPO_NAME,
+    REPO_OWNER,
+    get_headers,
+    get_installation_token,
+)
+
 
 def get_latest_coverage_run():
     """Get latest Test Coverage run"""
@@ -22,11 +30,12 @@ def get_latest_coverage_run():
     response = requests.get(url, headers=headers, params=params)
 
     if response.status_code == 200:
-        runs = response.json().get('workflow_runs', [])
+        runs = response.json().get("workflow_runs", [])
         for run in runs:
-            if run.get('name') == 'Test Coverage':
+            if run.get("name") == "Test Coverage":
                 return run
     return None
+
 
 def get_job_logs(run_id):
     """Get job logs"""
@@ -39,7 +48,7 @@ def get_job_logs(run_id):
     response = requests.get(url, headers=headers)
 
     if response.status_code == 200:
-        jobs = response.json().get('jobs', [])
+        jobs = response.json().get("jobs", [])
 
         for job in jobs:
             print(f"\nJob: {job.get('name')}")
@@ -47,16 +56,16 @@ def get_job_logs(run_id):
             print(f"Conclusion: {job.get('conclusion')}")
             print("\nSteps:")
 
-            for step in job.get('steps', []):
-                status = step.get('status', 'unknown')
-                conclusion = step.get('conclusion', 'N/A')
+            for step in job.get("steps", []):
+                status = step.get("status", "unknown")
+                conclusion = step.get("conclusion", "N/A")
 
                 # Status indicator
-                if conclusion == 'success':
+                if conclusion == "success":
                     icon = "[OK]"
-                elif conclusion == 'failure':
+                elif conclusion == "failure":
                     icon = "[FAIL]"
-                elif status == 'in_progress':
+                elif status == "in_progress":
                     icon = "[RUNNING]"
                 else:
                     icon = "[PENDING]"
@@ -64,14 +73,15 @@ def get_job_logs(run_id):
                 print(f"  {icon} {step.get('name')}")
 
                 # Show failed step details
-                if conclusion == 'failure':
+                if conclusion == "failure":
                     print(f"       -> FAILED!")
+
 
 if __name__ == "__main__":
     run = get_latest_coverage_run()
     if run:
         print(f"Run ID: {run.get('id')}")
         print(f"Run URL: {run.get('html_url')}")
-        get_job_logs(run.get('id'))
+        get_job_logs(run.get("id"))
     else:
         print("No Test Coverage run found")

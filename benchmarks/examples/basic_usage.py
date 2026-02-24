@@ -39,7 +39,9 @@ async def example_1_list_scenarios():
         print(f"  Name: {scenario['name']}")
         print(f"  Type: {scenario['type']}")
         print(f"  Difficulty: {scenario['difficulty']}")
-        print(f"  Expected Vulnerabilities: {scenario['expected_vulnerabilities_count']}")
+        print(
+            f"  Expected Vulnerabilities: {scenario['expected_vulnerabilities_count']}"
+        )
         print()
 
 
@@ -79,10 +81,17 @@ async def example_3_work_with_metrics():
     print("=" * 60)
 
     # Create a benchmark metrics instance
-    metrics = BenchmarkMetrics(benchmark_id="demo-001", scenario_name="DVWA", tool_version="1.0.0")
+    metrics = BenchmarkMetrics(
+        benchmark_id="demo-001", scenario_name="DVWA", tool_version="1.0.0"
+    )
 
     # Set classification metrics
-    metrics.classification = ClassificationMetrics(true_positives=42, false_positives=3, true_negatives=95, false_negatives=5)
+    metrics.classification = ClassificationMetrics(
+        true_positives=42,
+        false_positives=3,
+        true_negatives=95,
+        false_negatives=5,
+    )
 
     # Calculate and display metrics
     print("\nClassification Metrics:")
@@ -95,7 +104,9 @@ async def example_3_work_with_metrics():
     print(f"  Recall: {metrics.classification.recall:.4f}")
     print(f"  F1-Score: {metrics.classification.f1_score:.4f}")
     print(f"  Accuracy: {metrics.classification.accuracy:.4f}")
-    print(f"  Matthews Correlation: {metrics.classification.matthews_correlation:.4f}")
+    print(
+        f"  Matthews Correlation: {metrics.classification.matthews_correlation:.4f}"
+    )
 
     # Set coverage metrics
     metrics.coverage = CoverageMetrics(
@@ -115,7 +126,9 @@ async def example_3_work_with_metrics():
     print("\nCoverage Metrics:")
     print(f"  Endpoint Coverage: {metrics.coverage.endpoint_coverage:.1f}%")
     print(f"  Parameter Coverage: {metrics.coverage.parameter_coverage:.1f}%")
-    print(f"  Attack Vector Coverage: {metrics.coverage.attack_vector_coverage:.1f}%")
+    print(
+        f"  Attack Vector Coverage: {metrics.coverage.attack_vector_coverage:.1f}%"
+    )
     print(f"  OWASP Coverage: {metrics.coverage.owasp_coverage:.1f}%")
 
     # Add some findings
@@ -144,10 +157,17 @@ async def example_3_work_with_metrics():
 
     print(f"\nFindings: {len(metrics.findings)}")
     for finding in metrics.findings:
-        print(f"  - {finding.finding_type.value}: {finding.severity.value} (confidence: {finding.confidence:.2f})")
+        print(
+            f"  - {finding.finding_type.value}: {finding.severity.value} (confidence: {finding.confidence:.2f})"
+        )
 
     # Set token usage
-    metrics.token_usage = TokenUsage(prompt_tokens=5000, completion_tokens=3000, cost_usd=0.15, model="gpt-4")
+    metrics.token_usage = TokenUsage(
+        prompt_tokens=5000,
+        completion_tokens=3000,
+        cost_usd=0.15,
+        model="gpt-4",
+    )
 
     print("\nToken Usage:")
     print(f"  Prompt Tokens: {metrics.token_usage.prompt_tokens}")
@@ -175,7 +195,10 @@ async def example_4_create_custom_suite():
 
     # Create a suite of web application scenarios
     web_suite = create_benchmark_suite(
-        scenario_type="web_app", difficulty_levels=["easy", "medium"], tags=["owasp"], max_duration_minutes=60
+        scenario_type="web_app",
+        difficulty_levels=["easy", "medium"],
+        tags=["owasp"],
+        max_duration_minutes=60,
     )
 
     print("\nCreated web app benchmark suite:")
@@ -184,7 +207,9 @@ async def example_4_create_custom_suite():
         print(f"    - {scenario.name} ({scenario.difficulty.value})")
 
     # Create a suite for beginners
-    beginner_suite = create_benchmark_suite(difficulty_levels=["easy"], tags=["training"])
+    beginner_suite = create_benchmark_suite(
+        difficulty_levels=["easy"], tags=["training"]
+    )
 
     print("\nCreated beginner benchmark suite:")
     print(f"  Total scenarios: {len(beginner_suite)}")
@@ -201,7 +226,13 @@ async def example_5_compare_tools():
     framework = ComparisonFramework()
 
     # Get metadata for various tools
-    tools = ["Zen-AI-Pentest", "PentestGPT", "Nuclei", "OWASP ZAP", "Burp Suite"]
+    tools = [
+        "Zen-AI-Pentest",
+        "PentestGPT",
+        "Nuclei",
+        "OWASP ZAP",
+        "Burp Suite",
+    ]
 
     print("\nTool Capabilities Comparison:\n")
 
@@ -232,7 +263,9 @@ async def example_6_historical_tracking():
 
     print(f"\nBenchmark History ({len(history)} entries):")
     for entry in history:
-        print(f"  - {entry.get('benchmark_id', 'N/A')}: {entry.get('success_rate', 0):.1f}% success")
+        print(
+            f"  - {entry.get('benchmark_id', 'N/A')}: {entry.get('success_rate', 0):.1f}% success"
+        )
 
 
 async def main():
@@ -240,7 +273,9 @@ async def main():
     print("\n")
     print("█" * 60)
     print("█" + " " * 58 + "█")
-    print("█" + "  Zen-AI-Pentest Benchmark Framework Examples".center(58) + "█")
+    print(
+        "█" + "  Zen-AI-Pentest Benchmark Framework Examples".center(58) + "█"
+    )
     print("█" + " " * 58 + "█")
     print("█" * 60)
     print("\n")

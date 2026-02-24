@@ -3,10 +3,17 @@
 
 import os
 import sys
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from github_app_auth import get_installation_token, get_headers, REPO_OWNER, REPO_NAME
 import requests
+from github_app_auth import (
+    REPO_NAME,
+    REPO_OWNER,
+    get_headers,
+    get_installation_token,
+)
+
 
 def fix_pages_source():
     """Update Pages source from master to main"""
@@ -18,12 +25,7 @@ def fix_pages_source():
 
         # Update Pages configuration
         url = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/pages"
-        data = {
-            "source": {
-                "branch": "main",
-                "path": "/docs"
-            }
-        }
+        data = {"source": {"branch": "main", "path": "/docs"}}
 
         response = requests.put(url, headers=headers, json=data)
 
@@ -38,7 +40,7 @@ def fix_pages_source():
             commits_resp = requests.get(commits_url, headers=headers)
 
             if commits_resp.status_code == 200:
-                latest_sha = commits_resp.json().get('sha')
+                latest_sha = commits_resp.json().get("sha")
                 print(f"Latest commit: {latest_sha[:7]}")
 
                 # Create a Pages build request
@@ -59,6 +61,7 @@ def fix_pages_source():
     except Exception as e:
         print(f"Error: {e}")
         return False
+
 
 if __name__ == "__main__":
     fix_pages_source()

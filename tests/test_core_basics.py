@@ -66,7 +66,12 @@ def test_dict_operations():
 
 def test_file_exists():
     """Test that critical files exist"""
-    critical_files = ["README.md", "requirements.txt", "setup.py", ".github/workflows/ci.yml"]
+    critical_files = [
+        "README.md",
+        "requirements.txt",
+        "setup.py",
+        ".github/workflows/ci.yml",
+    ]
     for file in critical_files:
         assert os.path.exists(file), f"{file} not found"
 

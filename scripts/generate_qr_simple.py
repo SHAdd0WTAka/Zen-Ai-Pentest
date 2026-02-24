@@ -42,9 +42,18 @@ def main():
     links = [
         ("https://discord.gg/zJZUJwK9AC", "discord_qr.png"),
         ("https://t.me/botfather", "telegram_botfather_qr.png"),
-        ("https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/settings/environments", "github_env_qr.png"),
-        ("https://github.com/SHAdd0WTAka/Zen-Ai-Pentest", "github_repo_qr.png"),
-        ("https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/actions", "github_actions_qr.png"),
+        (
+            "https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/settings/environments",
+            "github_env_qr.png",
+        ),
+        (
+            "https://github.com/SHAdd0WTAka/Zen-Ai-Pentest",
+            "github_repo_qr.png",
+        ),
+        (
+            "https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/actions",
+            "github_actions_qr.png",
+        ),
     ]
 
     for url, filename in links:

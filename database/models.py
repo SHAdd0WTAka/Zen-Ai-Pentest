@@ -12,7 +12,18 @@ import enum
 import os
 from datetime import datetime, timezone
 
-from sqlalchemy import JSON, Column, DateTime, Float, ForeignKey, Index, Integer, String, Text, create_engine
+from sqlalchemy import (
+    JSON,
+    Column,
+    DateTime,
+    Float,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    Text,
+    create_engine,
+)
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 
@@ -70,7 +81,9 @@ class User(Base):
     role = Column(String(50), default="operator", index=True)
     is_active = Column(Integer, default=1, index=True)
     created_at = Column(DateTime, default=datetime.utcnow, index=True)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at = Column(
+        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
 
     # Relationships
     scans = relationship("Scan", back_populates="user", lazy="dynamic")
@@ -124,7 +137,9 @@ class Finding(Base):
     __tablename__ = "findings"
 
     id = Column(Integer, primary_key=True, index=True)
-    scan_id = Column(Integer, ForeignKey("scans.id"), nullable=False, index=True)
+    scan_id = Column(
+        Integer, ForeignKey("scans.id"), nullable=False, index=True
+    )
     title = Column(String(500), nullable=False)
     description = Column(Text)
     severity = Column(String(50), default=Severity.MEDIUM, index=True)
@@ -175,7 +190,9 @@ class Report(Base):
     scan = relationship("Scan", back_populates="reports")
     user = relationship("User", back_populates="reports")
 
-    __table_args__ = (Index("ix_reports_status_created", "status", "created_at"),)
+    __table_args__ = (
+        Index("ix_reports_status_created", "status", "created_at"),
+    )
 
 
 class VulnerabilityDB(Base):
@@ -276,9 +293,13 @@ class ToolConfig(Base):
     tool_name = Column(String(100), nullable=False, index=True)
     config = Column(JSON, default={})
     created_at = Column(DateTime, default=datetime.utcnow, index=True)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at = Column(
+        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
 
-    __table_args__ = (Index("ix_toolconfig_user_tool", "user_id", "tool_name"),)
+    __table_args__ = (
+        Index("ix_toolconfig_user_tool", "user_id", "tool_name"),
+    )
 
 
 # ============================================================================
@@ -286,7 +307,9 @@ class ToolConfig(Base):
 # ============================================================================
 
 # PostgreSQL URL - in production aus Umgebungsvariablen
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/zen_pentest")
+DATABASE_URL = os.getenv(
+    "DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/zen_pentest"
+)
 
 # =============================================================================
 # Connection Pool Configuration - Optimized
@@ -316,7 +339,9 @@ connect_args = {
 
 try:
     # Try PostgreSQL with optimized settings
-    print(f"Connecting to PostgreSQL with pool_size={POOL_SIZE}, max_overflow={MAX_OVERFLOW}")
+    print(
+        f"Connecting to PostgreSQL with pool_size={POOL_SIZE}, max_overflow={MAX_OVERFLOW}"
+    )
     engine = create_engine(
         DATABASE_URL,
         **engine_args,
@@ -324,20 +349,32 @@ try:
     )
 except ImportError:
     # Fallback auf SQLite für lokale Entwicklung/Tests
-    print("Warning: PostgreSQL/psycopg2 not available. Using SQLite fallback (zen_pentest.db)")
+    print(
+        "Warning: PostgreSQL/psycopg2 not available. Using SQLite fallback (zen_pentest.db)"
+    )
     DATABASE_URL = "sqlite:///./zen_pentest.db"
     engine = create_engine(
         DATABASE_URL,
         connect_args={"check_same_thread": False},
-        **{k: v for k, v in engine_args.items() if k not in ["pool_use_lifo", "pool_pre_ping"]},
+        **{
+            k: v
+            for k, v in engine_args.items()
+            if k not in ["pool_use_lifo", "pool_pre_ping"]
+        },
     )
 except Exception as e:
-    print(f"Warning: PostgreSQL connection failed ({e}). Using SQLite fallback (zen_pentest.db)")
+    print(
+        f"Warning: PostgreSQL connection failed ({e}). Using SQLite fallback (zen_pentest.db)"
+    )
     DATABASE_URL = "sqlite:///./zen_pentest.db"
     engine = create_engine(
         DATABASE_URL,
         connect_args={"check_same_thread": False},
-        **{k: v for k, v in engine_args.items() if k not in ["pool_use_lifo", "pool_pre_ping"]},
+        **{
+            k: v
+            for k, v in engine_args.items()
+            if k not in ["pool_use_lifo", "pool_pre_ping"]
+        },
     )
 
 # Optimized session factory
@@ -368,7 +405,9 @@ def get_db():
 # ============================================================================
 
 
-def create_scan(db, name: str, target: str, scan_type: str, config: dict, user_id: int):
+def create_scan(
+    db, name: str, target: str, scan_type: str, config: dict, user_id: int
+):
     """Erstellt neuen Scan"""
     db_scan = Scan(
         name=name,
@@ -394,12 +433,21 @@ def get_scans(db, skip: int = 0, limit: int = 100, status: str = None):
     if status:
         query = query.filter(Scan.status == status)
     # Use the composite index (status, created_at) or (user_id, created_at)
-    return query.order_by(Scan.created_at.desc()).offset(skip).limit(limit).all()
+    return (
+        query.order_by(Scan.created_at.desc()).offset(skip).limit(limit).all()
+    )
 
 
 def get_scans_by_user(db, user_id: int, skip: int = 0, limit: int = 100):
     """Get scans for a specific user - uses composite index"""
-    return db.query(Scan).filter(Scan.user_id == user_id).order_by(Scan.created_at.desc()).offset(skip).limit(limit).all()
+    return (
+        db.query(Scan)
+        .filter(Scan.user_id == user_id)
+        .order_by(Scan.created_at.desc())
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
 
 
 def update_scan_status(db, scan_id: int, status: str, result: dict = None):
@@ -462,7 +510,13 @@ def get_findings(db, scan_id: int, severity: str = None):
 
 def get_findings_by_severity(db, severity: str, limit: int = 100):
     """Get findings filtered by severity - uses index"""
-    return db.query(Finding).filter(Finding.severity == severity).order_by(Finding.created_at.desc()).limit(limit).all()
+    return (
+        db.query(Finding)
+        .filter(Finding.severity == severity)
+        .order_by(Finding.created_at.desc())
+        .limit(limit)
+        .all()
+    )
 
 
 def create_report(db, scan_id: int, format: str, template: str, user_id: int):
@@ -482,7 +536,13 @@ def create_report(db, scan_id: int, format: str, template: str, user_id: int):
 
 def get_reports(db, skip: int = 0, limit: int = 100):
     """Listet Reports auf"""
-    return db.query(Report).order_by(Report.created_at.desc()).offset(skip).limit(limit).all()
+    return (
+        db.query(Report)
+        .order_by(Report.created_at.desc())
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
 
 
 def create_audit_log(

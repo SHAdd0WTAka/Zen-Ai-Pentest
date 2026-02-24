@@ -25,7 +25,11 @@ from fastapi.responses import JSONResponse
 
 from .audit_logger import AuditEventType, AuditSeverity, get_audit_logger
 from .config import Environment, get_config
-from .jwt_handler import TokenBlacklistedError, TokenExpiredError, TokenInvalidError
+from .jwt_handler import (
+    TokenBlacklistedError,
+    TokenExpiredError,
+    TokenInvalidError,
+)
 from .router import router
 
 # Get configuration
@@ -45,7 +49,9 @@ async def lifespan(app: FastAPI):
     print("=" * 60)
     print(f"Environment: {config.environment.value}")
     print(f"JWT Algorithm: {config.jwt.algorithm}")
-    print(f"Access Token Expiry: {config.jwt.access_token_expire_minutes} minutes")
+    print(
+        f"Access Token Expiry: {config.jwt.access_token_expire_minutes} minutes"
+    )
     print(f"Refresh Token Expiry: {config.jwt.refresh_token_expire_days} days")
     print(f"MFA Enabled: {config.require_mfa}")
     print("=" * 60)
@@ -81,8 +87,14 @@ app = FastAPI(
     """,
     version="1.0.0",
     docs_url="/docs" if config.environment != Environment.PRODUCTION else None,
-    redoc_url="/redoc" if config.environment != Environment.PRODUCTION else None,
-    openapi_url="/openapi.json" if config.environment != Environment.PRODUCTION else None,
+    redoc_url=(
+        "/redoc" if config.environment != Environment.PRODUCTION else None
+    ),
+    openapi_url=(
+        "/openapi.json"
+        if config.environment != Environment.PRODUCTION
+        else None
+    ),
     lifespan=lifespan,
 )
 
@@ -93,7 +105,11 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
-    expose_headers=["X-MFA-Required", "X-RateLimit-Remaining", "X-RateLimit-Reset"],
+    expose_headers=[
+        "X-MFA-Required",
+        "X-RateLimit-Remaining",
+        "X-RateLimit-Reset",
+    ],
 )
 
 # Add trusted host middleware in production
@@ -134,7 +150,9 @@ async def token_invalid_handler(request: Request, exc: TokenInvalidError):
 
 
 @app.exception_handler(TokenBlacklistedError)
-async def token_blacklisted_handler(request: Request, exc: TokenBlacklistedError):
+async def token_blacklisted_handler(
+    request: Request, exc: TokenBlacklistedError
+):
     """Handle blacklisted token errors"""
     return JSONResponse(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -241,10 +259,14 @@ async def security_headers_middleware(request: Request, call_next):
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Frame-Options"] = "DENY"
     response.headers["X-XSS-Protection"] = "1; mode=block"
-    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    response.headers["Strict-Transport-Security"] = (
+        "max-age=31536000; includeSubDomains"
+    )
     response.headers["Content-Security-Policy"] = "default-src 'self'"
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-    response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
+    response.headers["Permissions-Policy"] = (
+        "geolocation=(), microphone=(), camera=()"
+    )
 
     # Remove server header
     response.headers.pop("Server", None)
@@ -267,7 +289,9 @@ async def request_logging_middleware(request: Request, call_next):
 
     # Log request (in production, use proper logging)
     if config.environment != Environment.PRODUCTION:
-        print(f"{request.method} {request.url.path} - {response.status_code} - {duration:.3f}s")
+        print(
+            f"{request.method} {request.url.path} - {response.status_code} - {duration:.3f}s"
+        )
 
     return response
 
@@ -329,5 +353,7 @@ if __name__ == "__main__":
         host="0.0.0.0",
         port=int(os.getenv("PORT", "8000")),
         reload=config.environment == Environment.DEVELOPMENT,
-        log_level="info" if config.environment == Environment.PRODUCTION else "debug",
+        log_level=(
+            "info" if config.environment == Environment.PRODUCTION else "debug"
+        ),
     )

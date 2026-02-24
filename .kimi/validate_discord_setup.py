@@ -3,10 +3,17 @@
 
 import os
 import sys
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from github_app_auth import get_installation_token, get_headers, REPO_OWNER, REPO_NAME
 import requests
+from github_app_auth import (
+    REPO_NAME,
+    REPO_OWNER,
+    get_headers,
+    get_installation_token,
+)
+
 
 def check_discord_secret():
     """Check if Discord webhook secret exists"""
@@ -19,14 +26,16 @@ def check_discord_secret():
     print("\n[1/3] Checking GitHub Secrets...")
     print("  Secret Name: DISCORD_WEBHOOK_URL")
     print("  Status: Must be set manually in GitHub UI")
-    print("  URL: https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/settings/secrets/actions")
+    print(
+        "  URL: https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/settings/secrets/actions"
+    )
     print("  [WARN] This cannot be checked via API (security feature)")
 
     print("\n[2/3] Checking Workflow File...")
     workflow_path = ".github/workflows/zenclaw-discord.yml"
     if os.path.exists(workflow_path):
         print(f"  [OK] Workflow exists: {workflow_path}")
-        with open(workflow_path, 'r') as f:
+        with open(workflow_path, "r") as f:
             content = f.read()
             if "DISCORD_WEBHOOK_URL" in content:
                 print("  [OK] References DISCORD_WEBHOOK_URL secret")
@@ -56,6 +65,7 @@ def check_discord_secret():
     print("• Never commit webhook URLs")
     print("• Never log webhook URLs")
     print("• Only store in GitHub Secrets")
+
 
 if __name__ == "__main__":
     check_discord_secret()

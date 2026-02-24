@@ -37,7 +37,11 @@ class UserManager:
     - Audit logging
     """
 
-    def __init__(self, jwt_handler: Optional[JWTHandler] = None, password_hasher: Optional[PasswordHasher] = None):
+    def __init__(
+        self,
+        jwt_handler: Optional[JWTHandler] = None,
+        password_hasher: Optional[PasswordHasher] = None,
+    ):
         self.jwt = jwt_handler or JWTHandler()
         self.pwd = password_hasher or PasswordHasher()
 
@@ -46,7 +50,12 @@ class UserManager:
     # ========================================================================
 
     def authenticate_user(
-        self, db: Session, username: str, password: str, ip_address: str = None, user_agent: str = None
+        self,
+        db: Session,
+        username: str,
+        password: str,
+        ip_address: str = None,
+        user_agent: str = None,
     ) -> Optional[User]:
         """
         Authenticate user with username and password.
@@ -62,26 +71,54 @@ class UserManager:
             User object if authenticated, None otherwise
         """
         # Find user by username or email
-        user = db.query(User).filter((User.username == username) | (User.email == username)).first()
+        user = (
+            db.query(User)
+            .filter((User.username == username) | (User.email == username))
+            .first()
+        )
 
         if not user:
             # Log failed login attempt
             self._log_audit(
-                db, None, "login", "auth", ip_address, user_agent, result="failure", failure_reason="user_not_found"
+                db,
+                None,
+                "login",
+                "auth",
+                ip_address,
+                user_agent,
+                result="failure",
+                failure_reason="user_not_found",
             )
             return None
 
         # Check if account is locked
-        if user.locked_until and datetime.now(timezone.utc) < user.locked_until:
+        if (
+            user.locked_until
+            and datetime.now(timezone.utc) < user.locked_until
+        ):
             self._log_audit(
-                db, user.id, "login", "auth", ip_address, user_agent, result="failure", failure_reason="account_locked"
+                db,
+                user.id,
+                "login",
+                "auth",
+                ip_address,
+                user_agent,
+                result="failure",
+                failure_reason="account_locked",
             )
             return None
 
         # Check if account is active
         if not user.is_active:
             self._log_audit(
-                db, user.id, "login", "auth", ip_address, user_agent, result="failure", failure_reason="account_inactive"
+                db,
+                user.id,
+                "login",
+                "auth",
+                ip_address,
+                user_agent,
+                result="failure",
+                failure_reason="account_inactive",
             )
             return None
 
@@ -92,7 +129,9 @@ class UserManager:
 
             # Lock account after 5 failed attempts
             if user.failed_login_attempts >= 5:
-                user.locked_until = datetime.now(timezone.utc) + timedelta(minutes=30)
+                user.locked_until = datetime.now(timezone.utc) + timedelta(
+                    minutes=30
+                )
 
             db.commit()
 
@@ -116,12 +155,26 @@ class UserManager:
         user.last_login_ip = ip_address
         db.commit()
 
-        self._log_audit(db, user.id, "login", "auth", ip_address, user_agent, result="success")
+        self._log_audit(
+            db,
+            user.id,
+            "login",
+            "auth",
+            ip_address,
+            user_agent,
+            result="success",
+        )
 
         return user
 
     def create_user(
-        self, db: Session, username: str, email: str, password: str, role: UserRole = UserRole.USER, created_by: int = None
+        self,
+        db: Session,
+        username: str,
+        email: str,
+        password: str,
+        role: UserRole = UserRole.USER,
+        created_by: int = None,
     ) -> User:
         """
         Create a new user.
@@ -155,11 +208,24 @@ class UserManager:
         db.refresh(user)
 
         # Log creation
-        self._log_audit(db, created_by, "user_create", "account", details={"created_user_id": user.id, "role": role.value})
+        self._log_audit(
+            db,
+            created_by,
+            "user_create",
+            "account",
+            details={"created_user_id": user.id, "role": role.value},
+        )
 
         return user
 
-    def change_password(self, db: Session, user_id: int, old_password: str, new_password: str, ip_address: str = None) -> bool:
+    def change_password(
+        self,
+        db: Session,
+        user_id: int,
+        old_password: str,
+        new_password: str,
+        ip_address: str = None,
+    ) -> bool:
         """
         Change user password.
 
@@ -180,7 +246,13 @@ class UserManager:
         # Verify old password
         if not self.pwd.verify(old_password, user.hashed_password):
             self._log_audit(
-                db, user_id, "password_change", "security", ip_address, result="failure", failure_reason="invalid_old_password"
+                db,
+                user_id,
+                "password_change",
+                "security",
+                ip_address,
+                result="failure",
+                failure_reason="invalid_old_password",
             )
             return False
 
@@ -200,7 +272,14 @@ class UserManager:
         # Revoke all sessions for security
         self.revoke_all_user_sessions(db, user_id, "password_change")
 
-        self._log_audit(db, user_id, "password_change", "security", ip_address, result="success")
+        self._log_audit(
+            db,
+            user_id,
+            "password_change",
+            "security",
+            ip_address,
+            result="success",
+        )
 
         return True
 
@@ -208,7 +287,13 @@ class UserManager:
     # Session Management
     # ========================================================================
 
-    def create_session(self, db: Session, user: User, ip_address: str = None, user_agent: str = None) -> Dict[str, str]:
+    def create_session(
+        self,
+        db: Session,
+        user: User,
+        ip_address: str = None,
+        user_agent: str = None,
+    ) -> Dict[str, str]:
         """
         Create a new session with tokens.
 
@@ -238,7 +323,9 @@ class UserManager:
             mfa_verified=not user.is_mfa_enabled,  # Auto-verify if no MFA
         )
 
-        refresh_token = self.jwt.create_refresh_token(user_id=str(user.id), session_id=session_id)
+        refresh_token = self.jwt.create_refresh_token(
+            user_id=str(user.id), session_id=session_id
+        )
 
         # Decode refresh token to get JTI
         refresh_payload = self.jwt.decode_token(refresh_token)
@@ -266,7 +353,9 @@ class UserManager:
             "expires_in": 900,  # 15 minutes
         }
 
-    def refresh_session(self, db: Session, refresh_token: str, ip_address: str = None) -> Optional[Dict[str, str]]:
+    def refresh_session(
+        self, db: Session, refresh_token: str, ip_address: str = None
+    ) -> Optional[Dict[str, str]]:
         """
         Refresh access token using refresh token.
 
@@ -290,7 +379,14 @@ class UserManager:
                 return None
 
             # Get session
-            session = db.query(UserSession).filter(UserSession.refresh_token_jti == payload.jti, UserSession.is_active).first()
+            session = (
+                db.query(UserSession)
+                .filter(
+                    UserSession.refresh_token_jti == payload.jti,
+                    UserSession.is_active,
+                )
+                .first()
+            )
 
             if not session or session.is_expired():
                 return None
@@ -317,12 +413,18 @@ class UserManager:
             session.touch()
             db.commit()
 
-            return {"access_token": access_token, "token_type": "bearer", "expires_in": 900}
+            return {
+                "access_token": access_token,
+                "token_type": "bearer",
+                "expires_in": 900,
+            }
 
         except Exception:
             return None
 
-    def revoke_session(self, db: Session, session_id: str, reason: str = "logout") -> bool:
+    def revoke_session(
+        self, db: Session, session_id: str, reason: str = "logout"
+    ) -> bool:
         """
         Revoke a session.
 
@@ -334,13 +436,24 @@ class UserManager:
         Returns:
             True if successful
         """
-        session = db.query(UserSession).filter(UserSession.session_id == session_id).first()
+        session = (
+            db.query(UserSession)
+            .filter(UserSession.session_id == session_id)
+            .first()
+        )
 
         if not session:
             return False
 
         # Blacklist the refresh token
-        self.blacklist_token(db, session.refresh_token_jti, DBTokenType.REFRESH, session.expires_at, session.user_id, reason)
+        self.blacklist_token(
+            db,
+            session.refresh_token_jti,
+            DBTokenType.REFRESH,
+            session.expires_at,
+            session.user_id,
+            reason,
+        )
 
         # Mark session as revoked
         session.is_active = False
@@ -351,7 +464,9 @@ class UserManager:
 
         return True
 
-    def revoke_all_user_sessions(self, db: Session, user_id: int, reason: str = "security") -> int:
+    def revoke_all_user_sessions(
+        self, db: Session, user_id: int, reason: str = "security"
+    ) -> int:
         """
         Revoke all sessions for a user.
 
@@ -363,12 +478,23 @@ class UserManager:
         Returns:
             Number of sessions revoked
         """
-        sessions = db.query(UserSession).filter(UserSession.user_id == user_id, UserSession.is_active).all()
+        sessions = (
+            db.query(UserSession)
+            .filter(UserSession.user_id == user_id, UserSession.is_active)
+            .all()
+        )
 
         count = 0
         for session in sessions:
             # Blacklist token
-            self.blacklist_token(db, session.refresh_token_jti, DBTokenType.REFRESH, session.expires_at, user_id, reason)
+            self.blacklist_token(
+                db,
+                session.refresh_token_jti,
+                DBTokenType.REFRESH,
+                session.expires_at,
+                user_id,
+                reason,
+            )
 
             # Revoke session
             session.is_active = False
@@ -380,7 +506,9 @@ class UserManager:
         db.commit()
         return count
 
-    def get_user_sessions(self, db: Session, user_id: int, active_only: bool = True) -> List[UserSession]:
+    def get_user_sessions(
+        self, db: Session, user_id: int, active_only: bool = True
+    ) -> List[UserSession]:
         """Get all sessions for a user"""
         query = db.query(UserSession).filter(UserSession.user_id == user_id)
         if active_only:
@@ -392,17 +520,32 @@ class UserManager:
     # ========================================================================
 
     def blacklist_token(
-        self, db: Session, jti: str, token_type: DBTokenType, expires_at: datetime, user_id: int = None, reason: str = "logout"
+        self,
+        db: Session,
+        jti: str,
+        token_type: DBTokenType,
+        expires_at: datetime,
+        user_id: int = None,
+        reason: str = "logout",
     ) -> TokenBlacklist:
         """Add token to blacklist"""
-        entry = TokenBlacklist(jti=jti, token_type=token_type, user_id=user_id, reason=reason, expires_at=expires_at)
+        entry = TokenBlacklist(
+            jti=jti,
+            token_type=token_type,
+            user_id=user_id,
+            reason=reason,
+            expires_at=expires_at,
+        )
         db.add(entry)
         db.commit()
         return entry
 
     def is_token_blacklisted(self, db: Session, jti: str) -> bool:
         """Check if token is blacklisted"""
-        return db.query(TokenBlacklist).filter(TokenBlacklist.jti == jti).first() is not None
+        return (
+            db.query(TokenBlacklist).filter(TokenBlacklist.jti == jti).first()
+            is not None
+        )
 
     def cleanup_expired_tokens(self, db: Session) -> int:
         """
@@ -411,7 +554,11 @@ class UserManager:
         Returns:
             Number of tokens removed
         """
-        expired = db.query(TokenBlacklist).filter(TokenBlacklist.expires_at < datetime.now(timezone.utc)).all()
+        expired = (
+            db.query(TokenBlacklist)
+            .filter(TokenBlacklist.expires_at < datetime.now(timezone.utc))
+            .all()
+        )
 
         count = len(expired)
         for entry in expired:
@@ -424,7 +571,9 @@ class UserManager:
     # User Management
     # ========================================================================
 
-    def deactivate_user(self, db: Session, user_id: int, reason: str = "admin_action") -> bool:
+    def deactivate_user(
+        self, db: Session, user_id: int, reason: str = "admin_action"
+    ) -> bool:
         """Deactivate user account and revoke all sessions"""
         user = db.query(User).filter(User.id == user_id).first()
         if not user:
@@ -436,11 +585,19 @@ class UserManager:
         # Revoke all sessions
         self.revoke_all_user_sessions(db, user_id, reason)
 
-        self._log_audit(db, user_id, "user_deactivate", "account", details={"reason": reason})
+        self._log_audit(
+            db,
+            user_id,
+            "user_deactivate",
+            "account",
+            details={"reason": reason},
+        )
 
         return True
 
-    def update_user_role(self, db: Session, user_id: int, new_role: UserRole) -> bool:
+    def update_user_role(
+        self, db: Session, user_id: int, new_role: UserRole
+    ) -> bool:
         """Update user role"""
         user = db.query(User).filter(User.id == user_id).first()
         if not user:
@@ -451,7 +608,11 @@ class UserManager:
         db.commit()
 
         self._log_audit(
-            db, user_id, "role_change", "account", details={"old_role": old_role.value, "new_role": new_role.value}
+            db,
+            user_id,
+            "role_change",
+            "account",
+            details={"old_role": old_role.value, "new_role": new_role.value},
         )
 
         return True
@@ -489,7 +650,9 @@ class UserManager:
         db.commit()
         return log
 
-    def get_user_audit_logs(self, db: Session, user_id: int, limit: int = 100) -> List[UserAuditLog]:
+    def get_user_audit_logs(
+        self, db: Session, user_id: int, limit: int = 100
+    ) -> List[UserAuditLog]:
         """Get audit logs for a user"""
         return (
             db.query(UserAuditLog)
@@ -505,7 +668,8 @@ _user_manager = None
 
 
 def get_user_manager(
-    jwt_handler: Optional[JWTHandler] = None, password_hasher: Optional[PasswordHasher] = None
+    jwt_handler: Optional[JWTHandler] = None,
+    password_hasher: Optional[PasswordHasher] = None,
 ) -> UserManager:
     """Get or create global UserManager instance"""
     global _user_manager

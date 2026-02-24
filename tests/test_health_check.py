@@ -85,7 +85,14 @@ def mock_health_report():
             HealthCheckResult("check1", HealthStatus.OK, "OK"),
             HealthCheckResult("check2", HealthStatus.WARNING, "Warning"),
         ],
-        summary={"total": 2, "ok": 1, "warning": 1, "error": 0, "critical": 0, "skipped": 0},
+        summary={
+            "total": 2,
+            "ok": 1,
+            "warning": 1,
+            "error": 0,
+            "critical": 0,
+            "skipped": 0,
+        },
         metadata={},
     )
 
@@ -469,7 +476,10 @@ class TestAPIHealthCheck:
         result = await check.run()
         # Should detect that API is not available
         assert result.status in [HealthStatus.CRITICAL, HealthStatus.ERROR]
-        assert "error" in result.message.lower() or "failed" in result.message.lower()
+        assert (
+            "error" in result.message.lower()
+            or "failed" in result.message.lower()
+        )
 
 
 # ==================== ResourcesHealthCheck Tests ====================
@@ -595,7 +605,9 @@ class TestSecurityHealthCheck:
         with tempfile.TemporaryDirectory() as tmp_dir:
             test_dir = os.path.join(tmp_dir, "test_code")
             os.makedirs(test_dir, exist_ok=True)
-            test_file = os.path.join(test_dir, "test.pyc")  # Should be excluded
+            test_file = os.path.join(
+                test_dir, "test.pyc"
+            )  # Should be excluded
             with open(test_file, "w") as f:
                 f.write('api_key = "sk-test12345678901234567890"')
 
@@ -784,11 +796,16 @@ class TestHealthCheckIntegration:
 
         # Check that we got meaningful results for enabled checks
         tools_check = next(c for c in report.checks if c.name == "tools")
-        resources_check = next(c for c in report.checks if c.name == "resources")
+        resources_check = next(
+            c for c in report.checks if c.name == "resources"
+        )
 
         # Tools check should be OK since python is required and available
         assert tools_check.status == HealthStatus.OK
-        assert resources_check.status in [HealthStatus.OK, HealthStatus.WARNING]
+        assert resources_check.status in [
+            HealthStatus.OK,
+            HealthStatus.WARNING,
+        ]
 
     def test_health_check_json_roundtrip(self):
         """Test that JSON output can be parsed back"""
@@ -829,7 +846,12 @@ class TestEdgeCases:
         check = DatabaseHealthCheck(config)
         result = await check.run()
         # Should complete with any valid status
-        assert result.status in [HealthStatus.OK, HealthStatus.WARNING, HealthStatus.ERROR, HealthStatus.SKIPPED]
+        assert result.status in [
+            HealthStatus.OK,
+            HealthStatus.WARNING,
+            HealthStatus.ERROR,
+            HealthStatus.SKIPPED,
+        ]
 
     def test_empty_config_lists(self):
         """Test configuration with empty lists"""
@@ -884,7 +906,11 @@ class TestPerformance:
         """Test JSON generation for large reports"""
         # Add many checks to simulate large report
         for i in range(100):
-            mock_health_report.checks.append(HealthCheckResult(f"check_{i}", HealthStatus.OK, f"Check {i} passed"))
+            mock_health_report.checks.append(
+                HealthCheckResult(
+                    f"check_{i}", HealthStatus.OK, f"Check {i} passed"
+                )
+            )
 
         start = time.time()
         json_str = mock_health_report.to_json()

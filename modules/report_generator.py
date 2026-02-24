@@ -1,6 +1,7 @@
 """
 Report Generator mit Template Support
 """
+
 import os
 from datetime import datetime
 from typing import Dict, List
@@ -16,20 +17,16 @@ class ReportGenerator:
 
     def count_severities(self, findings: List[Dict]) -> Dict:
         """Zählt Findings nach Severity"""
-        counts = {
-            "critical": 0,
-            "high": 0,
-            "medium": 0,
-            "low": 0,
-            "info": 0
-        }
+        counts = {"critical": 0, "high": 0, "medium": 0, "low": 0, "info": 0}
         for finding in findings:
             sev = finding.get("severity", "").lower()
             if sev in counts:
                 counts[sev] += 1
         return counts
 
-    def generate_html(self, scan: Dict, findings: List[Dict], template: str = "default") -> str:
+    def generate_html(
+        self, scan: Dict, findings: List[Dict], template: str = "default"
+    ) -> str:
         """Generiert HTML Report"""
         template_file = f"{template}.html"
         template_obj = self.env.get_template(template_file)
@@ -38,12 +35,18 @@ class ReportGenerator:
             scan=scan,
             findings=findings,
             counts=self.count_severities(findings),
-            generated_at=datetime.now()
+            generated_at=datetime.now(),
         )
 
         return html_content
 
-    def generate_pdf(self, scan: Dict, findings: List[Dict], template: str = "default", output_path: str = None) -> str:
+    def generate_pdf(
+        self,
+        scan: Dict,
+        findings: List[Dict],
+        template: str = "default",
+        output_path: str = None,
+    ) -> str:
         """Generiert PDF Report (benötigt WeasyPrint oder pdfkit)"""
         try:
             import pdfkit
@@ -63,7 +66,13 @@ class ReportGenerator:
             print("pdfkit nicht installiert. Verwende HTML Report.")
             return self.save_html(scan, findings, template)
 
-    def save_html(self, scan: Dict, findings: List[Dict], template: str = "default", output_path: str = None) -> str:
+    def save_html(
+        self,
+        scan: Dict,
+        findings: List[Dict],
+        template: str = "default",
+        output_path: str = None,
+    ) -> str:
         """Speichert HTML Report in Datei"""
         html_content = self.generate_html(scan, findings, template)
 
@@ -72,7 +81,7 @@ class ReportGenerator:
 
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
-        with open(output_path, 'w', encoding='utf-8') as f:
+        with open(output_path, "w", encoding="utf-8") as f:
             f.write(html_content)
 
         return output_path
@@ -86,9 +95,9 @@ class ReportGenerator:
             "findings": findings,
             "summary": {
                 "total": len(findings),
-                "severity_counts": self.count_severities(findings)
+                "severity_counts": self.count_severities(findings),
             },
-            "generated_at": datetime.now().isoformat()
+            "generated_at": datetime.now().isoformat(),
         }
 
         return report

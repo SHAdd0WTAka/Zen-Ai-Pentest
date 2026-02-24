@@ -30,7 +30,9 @@ class SubfinderIntegration:
     def __init__(self, timeout: int = 300):
         self.timeout = timeout
 
-    async def enumerate(self, domain: str, recursive: bool = False) -> SubfinderResult:
+    async def enumerate(
+        self, domain: str, recursive: bool = False
+    ) -> SubfinderResult:
         """
         Enumerate subdomains for a domain
 
@@ -54,10 +56,14 @@ class SubfinderIntegration:
 
         try:
             process = await asyncio.create_subprocess_exec(
-                *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+                *cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
             )
 
-            stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=self.timeout)
+            stdout, stderr = await asyncio.wait_for(
+                process.communicate(), timeout=self.timeout
+            )
 
             subdomains = []
 
@@ -78,12 +84,18 @@ class SubfinderIntegration:
             duration = time.time() - start_time
 
             return SubfinderResult(
-                success=True, domain=domain, subdomains=sorted(set(subdomains)), count=len(subdomains), duration=duration
+                success=True,
+                domain=domain,
+                subdomains=sorted(set(subdomains)),
+                count=len(subdomains),
+                duration=duration,
             )
 
         except asyncio.TimeoutError:
             logger.error("Subfinder enumeration timed out")
-            return SubfinderResult(success=False, domain=domain, error="Timeout")
+            return SubfinderResult(
+                success=False, domain=domain, error="Timeout"
+            )
         except Exception as e:
             logger.error(f"Subfinder error: {e}")
             return SubfinderResult(success=False, domain=domain, error=str(e))

@@ -24,7 +24,10 @@ def validate_webhook_url(url: str) -> tuple[bool, str]:
     try:
         parsed = urlparse(url)
         if parsed.scheme not in ("http", "https"):
-            return False, f"Invalid scheme: {parsed.scheme}. Must be http or https."
+            return (
+                False,
+                f"Invalid scheme: {parsed.scheme}. Must be http or https.",
+            )
 
         if not parsed.netloc:
             return False, "Missing host in URL"
@@ -54,8 +57,16 @@ def create_test_payload() -> dict:
                 "timestamp": "2024-01-01T00:00:00.000Z",
                 "footer": {"text": "ZenClaw Guardian | Test"},
                 "fields": [
-                    {"name": "Status", "value": "Webhook configuration valid", "inline": True},
-                    {"name": "Repository", "value": "zen-ai-pentest", "inline": True},
+                    {
+                        "name": "Status",
+                        "value": "Webhook configuration valid",
+                        "inline": True,
+                    },
+                    {
+                        "name": "Repository",
+                        "value": "zen-ai-pentest",
+                        "inline": True,
+                    },
                 ],
             }
         ]
@@ -120,7 +131,9 @@ def test_webhook_payload(webhook_url: str) -> bool:
     try:
         import requests
     except ImportError:
-        print("[WARN] 'requests' library not installed. Install with: pip install requests")
+        print(
+            "[WARN] 'requests' library not installed. Install with: pip install requests"
+        )
         print("   Skipping live webhook test.")
         return True
 
@@ -129,7 +142,12 @@ def test_webhook_payload(webhook_url: str) -> bool:
     payload = create_test_payload()
 
     try:
-        response = requests.post(webhook_url, json=payload, headers={"Content-Type": "application/json"}, timeout=10)
+        response = requests.post(
+            webhook_url,
+            json=payload,
+            headers={"Content-Type": "application/json"},
+            timeout=10,
+        )
 
         if response.status_code == 204:
             print("  [OK] Webhook test message sent successfully!")
@@ -163,7 +181,11 @@ def main():
     print("=" * 60)
 
     # Get webhook URL
-    webhook_url = sys.argv[1] if len(sys.argv) > 1 else os.environ.get("DISCORD_WEBHOOK_URL", "")
+    webhook_url = (
+        sys.argv[1]
+        if len(sys.argv) > 1
+        else os.environ.get("DISCORD_WEBHOOK_URL", "")
+    )
 
     # Validate URL format
     print("\n1. Validating webhook URL format...")
@@ -173,8 +195,12 @@ def main():
     else:
         print(f"  [ERR] {message}")
         print("\nHow to fix:")
-        print("   1. Get webhook URL from Discord: Server Settings -> Integrations -> Webhooks")
-        print("   2. Add to GitHub Secrets: Settings -> Secrets -> DISCORD_WEBHOOK_URL")
+        print(
+            "   1. Get webhook URL from Discord: Server Settings -> Integrations -> Webhooks"
+        )
+        print(
+            "   2. Add to GitHub Secrets: Settings -> Secrets -> DISCORD_WEBHOOK_URL"
+        )
         return 1
 
     # Test JSON serialization
@@ -184,7 +210,10 @@ def main():
 
     # Test live webhook (optional)
     print("\n3. Testing live webhook (optional)...")
-    test_live = input("   Send test message to Discord? (y/N): ").lower().strip() == "y"
+    test_live = (
+        input("   Send test message to Discord? (y/N): ").lower().strip()
+        == "y"
+    )
 
     if test_live:
         if not test_webhook_payload(webhook_url):

@@ -183,7 +183,9 @@ class CVSSCalculator:
 
         return round(base_score, 1)
 
-    def calculate_temporal_score(self, vector: CVSSVector, base_score: float) -> float:
+    def calculate_temporal_score(
+        self, vector: CVSSVector, base_score: float
+    ) -> float:
         """
         Calculate Temporal Score (if temporal metrics present)
         """
@@ -194,7 +196,9 @@ class CVSSCalculator:
         rl_weight = self.TEMPORAL_WEIGHTS["RL"].get(vector.rl or "X", 1.0)
         rc_weight = self.TEMPORAL_WEIGHTS["RC"].get(vector.rc or "X", 1.0)
 
-        temporal_score = round(base_score * e_weight * rl_weight * rc_weight, 1)
+        temporal_score = round(
+            base_score * e_weight * rl_weight * rc_weight, 1
+        )
         return min(temporal_score, 10.0)
 
     def get_severity_rating(self, score: float) -> str:

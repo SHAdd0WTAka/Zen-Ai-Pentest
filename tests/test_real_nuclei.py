@@ -32,7 +32,11 @@ async def test_nuclei_real_execution():
 
     # Test against scanme.nmap.org
     result = await scanner.execute(
-        {"target": "scanme.nmap.org", "templates": "technologies", "severity": "info"}  # Fast technology detection
+        {
+            "target": "scanme.nmap.org",
+            "templates": "technologies",
+            "severity": "info",
+        }  # Fast technology detection
     )
 
     # Assertions
@@ -57,10 +61,15 @@ async def test_nuclei_safety_validation():
     """Test that private IPs are blocked."""
     scanner = NucleiScanner()
 
-    result = await scanner.execute({"target": "192.168.1.1", "templates": "technologies"})
+    result = await scanner.execute(
+        {"target": "192.168.1.1", "templates": "technologies"}
+    )
 
     assert not result.success
-    assert "blocked" in result.error_message.lower() or "private" in result.error_message.lower()
+    assert (
+        "blocked" in result.error_message.lower()
+        or "private" in result.error_message.lower()
+    )
     print(f"\n[SUCCESS] Safety check working: {result.error_message}")
 
 

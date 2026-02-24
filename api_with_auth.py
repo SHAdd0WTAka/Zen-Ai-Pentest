@@ -10,7 +10,9 @@ print("=" * 50)
 print("1. LOGIN")
 print("=" * 50)
 
-login_resp = requests.post(f"{BASE}/auth/login", json={"username": "admin", "password": "admin"})
+login_resp = requests.post(
+    f"{BASE}/auth/login", json={"username": "admin", "password": "admin"}
+)
 
 token = login_resp.json()["access_token"]
 print("Token erhalten!")
@@ -35,7 +37,11 @@ print("=" * 50)
 scan_resp = requests.post(
     f"{BASE}/api/v1/scans",
     headers=headers,
-    json={"target": "scanme.nmap.org", "scan_type": "network", "modules": ["recon", "vuln_scan"]},
+    json={
+        "target": "scanme.nmap.org",
+        "scan_type": "network",
+        "modules": ["recon", "vuln_scan"],
+    },
 )
 print(f"Status: {scan_resp.status_code}")
 print(f"Response: {scan_resp.json()}")

@@ -3,10 +3,17 @@
 
 import os
 import sys
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from github_app_auth import get_installation_token, get_headers, REPO_OWNER, REPO_NAME
 import requests
+from github_app_auth import (
+    REPO_NAME,
+    REPO_OWNER,
+    get_headers,
+    get_installation_token,
+)
+
 
 def check_detailed_alerts():
     """Get detailed information about open alerts"""
@@ -26,9 +33,9 @@ def check_detailed_alerts():
         print(f"{'='*80}\n")
 
         for alert in alerts:
-            adv = alert.get('security_advisory', {})
-            dep = alert.get('dependency', {})
-            pkg = dep.get('package', {})
+            adv = alert.get("security_advisory", {})
+            dep = alert.get("dependency", {})
+            pkg = dep.get("package", {})
 
             print(f"Alert #{alert.get('number')}")
             print(f"  Package: {pkg.get('name')} ({pkg.get('ecosystem')})")
@@ -43,6 +50,7 @@ def check_detailed_alerts():
     else:
         print(f"Failed to get alerts: {response.status_code}")
         print(response.text)
+
 
 if __name__ == "__main__":
     check_detailed_alerts()

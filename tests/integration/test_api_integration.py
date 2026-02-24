@@ -22,7 +22,12 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 # Ensure project root is in path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+sys.path.insert(
+    0,
+    os.path.dirname(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    ),
+)
 
 from database.models import Base
 
@@ -51,7 +56,9 @@ def test_db_engine():
 @pytest.fixture(scope="function")
 def test_db_session(test_db_engine):
     """Create a database session for testing."""
-    TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=test_db_engine)
+    TestingSessionLocal = sessionmaker(
+        autocommit=False, autoflush=False, bind=test_db_engine
+    )
     session = TestingSessionLocal()
     try:
         yield session
@@ -64,7 +71,9 @@ def client(test_db_engine):
     """Create a FastAPI TestClient with test database."""
     from api.main import app, get_db
 
-    TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=test_db_engine)
+    TestingSessionLocal = sessionmaker(
+        autocommit=False, autoflush=False, bind=test_db_engine
+    )
 
     def override_get_db():
         try:
@@ -172,7 +181,9 @@ class TestAuthenticationFlow:
         )
         assert response.status_code == 401  # Unauthorized
 
-    def test_access_protected_endpoint_with_valid_token(self, client, auth_headers):
+    def test_access_protected_endpoint_with_valid_token(
+        self, client, auth_headers
+    ):
         """Test accessing protected endpoint with valid token."""
         response = client.get("/scans", headers=auth_headers)
         assert response.status_code == 200
@@ -450,7 +461,9 @@ class TestFindingsManagement:
         assert isinstance(data, list)
         assert len(data) >= 3
 
-    def test_get_findings_by_severity(self, client, auth_headers, scan_with_findings):
+    def test_get_findings_by_severity(
+        self, client, auth_headers, scan_with_findings
+    ):
         """Test filtering findings by severity."""
         scan_id = scan_with_findings
 
@@ -586,7 +599,9 @@ class TestReportGeneration:
         return scan_id
 
     @patch("api.main.generate_report_task")
-    def test_generate_report(self, mock_generate, client, auth_headers, completed_scan):
+    def test_generate_report(
+        self, mock_generate, client, auth_headers, completed_scan
+    ):
         """Test generating a report."""
         mock_generate.return_value = None  # Background task
 
@@ -614,7 +629,9 @@ class TestReportGeneration:
         assert isinstance(data, list)
 
     @patch("api.main.generate_report_task")
-    def test_generate_report_invalid_format(self, mock_generate, client, auth_headers, completed_scan):
+    def test_generate_report_invalid_format(
+        self, mock_generate, client, auth_headers, completed_scan
+    ):
         """Test generating a report with invalid format."""
         report_request = {
             "scan_id": completed_scan,

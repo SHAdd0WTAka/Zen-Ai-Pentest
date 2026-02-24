@@ -27,7 +27,9 @@ def create_qr_with_label(url, label, filename, output_dir="qr_codes"):
     qr.make(fit=True)
 
     # QR-Code als Bild (konvertiere zu RGB für Kompatibilität)
-    qr_img = qr.make_image(fill_color="black", back_color="white").convert("RGB")
+    qr_img = qr.make_image(fill_color="black", back_color="white").convert(
+        "RGB"
+    )
 
     # Größe anpassen
     qr_width, qr_height = qr_img.size
@@ -47,7 +49,9 @@ def create_qr_with_label(url, label, filename, output_dir="qr_codes"):
         font = ImageFont.truetype("arial.ttf", 20)
     except Exception:
         try:
-            font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 20)
+            font = ImageFont.truetype(
+                "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 20
+            )
         except Exception:
             font = ImageFont.load_default()
 
@@ -106,9 +110,21 @@ def main():
             "label": "GitHub Environments",
             "filename": "03_github_env.png",
         },
-        {"url": "https://discord.gg/zJZUJwK9AC", "label": "Discord Server", "filename": "04_discord.png"},
-        {"url": "https://t.me/botfather", "label": "Telegram BotFather", "filename": "05_telegram_botfather.png"},
-        {"url": "https://pypi.org/project/zen-ai-pentest/", "label": "PyPI Package", "filename": "06_pypi.png"},
+        {
+            "url": "https://discord.gg/zJZUJwK9AC",
+            "label": "Discord Server",
+            "filename": "04_discord.png",
+        },
+        {
+            "url": "https://t.me/botfather",
+            "label": "Telegram BotFather",
+            "filename": "05_telegram_botfather.png",
+        },
+        {
+            "url": "https://pypi.org/project/zen-ai-pentest/",
+            "label": "PyPI Package",
+            "filename": "06_pypi.png",
+        },
         {
             "url": "https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/blob/main/docs/TELEGRAM_SETUP.md",
             "label": "Telegram Setup Guide",
@@ -126,7 +142,9 @@ def main():
 
     generated_files = []
     for link in links:
-        filepath = create_qr_with_label(link["url"], link["label"], link["filename"], output_dir)
+        filepath = create_qr_with_label(
+            link["url"], link["label"], link["filename"], output_dir
+        )
         generated_files.append((link["label"], filepath))
 
     print()

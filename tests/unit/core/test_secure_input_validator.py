@@ -44,7 +44,9 @@ class TestSecureInputValidator:
     def test_validate_url_allow_local_with_flag(self):
         """Test allowing local URLs with flag"""
         validator = SecureInputValidator()
-        result = validator.validate_url("http://localhost/api", allow_local=True)
+        result = validator.validate_url(
+            "http://localhost/api", allow_local=True
+        )
         assert "localhost" in result
 
     def test_validate_ip_valid(self):
@@ -99,7 +101,9 @@ class TestSecureInputValidator:
         """Test blocking UNION injection"""
         validator = SecureInputValidator()
         with pytest.raises(ValidationError):
-            validator.validate_sql("SELECT * FROM users UNION SELECT * FROM admin")
+            validator.validate_sql(
+                "SELECT * FROM users UNION SELECT * FROM admin"
+            )
 
     def test_validate_path_valid(self):
         """Test valid path"""

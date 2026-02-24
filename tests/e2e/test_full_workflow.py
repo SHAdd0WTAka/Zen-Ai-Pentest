@@ -31,7 +31,12 @@ from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
 # Ensure project root is in path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+sys.path.insert(
+    0,
+    os.path.dirname(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    ),
+)
 
 from database.models import Base
 
@@ -68,7 +73,9 @@ def client(test_db_engine):
     """Create a FastAPI TestClient with test database."""
     from api.main import app, get_db
 
-    TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=test_db_engine)
+    TestingSessionLocal = sessionmaker(
+        autocommit=False, autoflush=False, bind=test_db_engine
+    )
 
     def override_get_db():
         try:
@@ -123,7 +130,10 @@ def mock_scan_tools():
 @pytest.fixture
 def mock_external_services():
     """Mock all external services."""
-    with patch("api.main.redis") as mock_redis, patch("agents.react_agent.ReActAgent") as mock_agent:
+    with (
+        patch("api.main.redis") as mock_redis,
+        patch("agents.react_agent.ReActAgent") as mock_agent,
+    ):
 
         # Mock Redis
         mock_redis_client = MagicMock()
@@ -157,7 +167,9 @@ def mock_external_services():
 class TestCompletePentestWorkflow:
     """Test complete pentest workflow from target creation to report generation."""
 
-    def test_full_workflow_success(self, client, auth_headers, mock_external_services):
+    def test_full_workflow_success(
+        self, client, auth_headers, mock_external_services
+    ):
         """Test successful complete pentest workflow."""
         # Step 1: Create a target/scan
         scan_data = {
@@ -230,7 +242,9 @@ class TestCompletePentestWorkflow:
             assert finding_response.status_code == 200
 
         # Step 4: Verify findings were added
-        findings_response = client.get(f"/scans/{scan_id}/findings", headers=auth_headers)
+        findings_response = client.get(
+            f"/scans/{scan_id}/findings", headers=auth_headers
+        )
         assert findings_response.status_code == 200
         findings_list = findings_response.json()
         assert len(findings_list) == 3
@@ -268,7 +282,9 @@ class TestCompletePentestWorkflow:
 
         with patch("api.main.generate_report_task") as mock_report_task:
             mock_report_task.return_value = None
-            report_response = client.post("/reports", json=report_data, headers=auth_headers)
+            report_response = client.post(
+                "/reports", json=report_data, headers=auth_headers
+            )
             assert report_response.status_code == 200
             report_result = report_response.json()
             report_id = report_result["id"]
@@ -281,7 +297,9 @@ class TestCompletePentestWorkflow:
         assert isinstance(reports_list, list)
 
         # Step 9: Verify workflow completion
-        final_scan = client.get(f"/scans/{scan_id}", headers=auth_headers).json()
+        final_scan = client.get(
+            f"/scans/{scan_id}", headers=auth_headers
+        ).json()
         assert final_scan["status"] == "completed"
 
     def test_workflow_with_findings_filtering(self, client, auth_headers):
@@ -300,10 +318,26 @@ class TestCompletePentestWorkflow:
 
         # Add findings with different severities
         severity_findings = [
-            {"title": "Critical Issue", "severity": "critical", "description": "Critical"},
-            {"title": "High Issue 1", "severity": "high", "description": "High 1"},
-            {"title": "High Issue 2", "severity": "high", "description": "High 2"},
-            {"title": "Medium Issue", "severity": "medium", "description": "Medium"},
+            {
+                "title": "Critical Issue",
+                "severity": "critical",
+                "description": "Critical",
+            },
+            {
+                "title": "High Issue 1",
+                "severity": "high",
+                "description": "High 1",
+            },
+            {
+                "title": "High Issue 2",
+                "severity": "high",
+                "description": "High 2",
+            },
+            {
+                "title": "Medium Issue",
+                "severity": "medium",
+                "description": "Medium",
+            },
             {"title": "Low Issue", "severity": "low", "description": "Low"},
         ]
 
@@ -331,7 +365,9 @@ class TestCompletePentestWorkflow:
         high_findings = high_response.json()
         assert len(high_findings) == 2
 
-    def test_workflow_state_transitions(self, client, auth_headers, mock_external_services):
+    def test_workflow_state_transitions(
+        self, client, auth_headers, mock_external_services
+    ):
         """Test state transitions throughout the workflow."""
         # Create scan
         scan_response = client.post(
@@ -350,12 +386,20 @@ class TestCompletePentestWorkflow:
         assert scan["status"] == "pending"
 
         # Transition: pending -> running
-        client.patch(f"/scans/{scan_id}", json={"status": "running"}, headers=auth_headers)
+        client.patch(
+            f"/scans/{scan_id}",
+            json={"status": "running"},
+            headers=auth_headers,
+        )
         scan = client.get(f"/scans/{scan_id}", headers=auth_headers).json()
         assert scan["status"] == "running"
 
         # Transition: running -> completed
-        client.patch(f"/scans/{scan_id}", json={"status": "completed"}, headers=auth_headers)
+        client.patch(
+            f"/scans/{scan_id}",
+            json={"status": "completed"},
+            headers=auth_headers,
+        )
         scan = client.get(f"/scans/{scan_id}", headers=auth_headers).json()
         assert scan["status"] == "completed"
 
@@ -413,7 +457,11 @@ class TestCompletePentestWorkflow:
         with patch("api.main.generate_report_task"):
             pdf_response = client.post(
                 "/reports",
-                json={"scan_id": scan_id, "format": "pdf", "template": "default"},
+                json={
+                    "scan_id": scan_id,
+                    "format": "pdf",
+                    "template": "default",
+                },
                 headers=auth_headers,
             )
             assert pdf_response.status_code == 200
@@ -422,7 +470,11 @@ class TestCompletePentestWorkflow:
         with patch("api.main.generate_report_task"):
             html_response = client.post(
                 "/reports",
-                json={"scan_id": scan_id, "format": "html", "template": "default"},
+                json={
+                    "scan_id": scan_id,
+                    "format": "html",
+                    "template": "default",
+                },
                 headers=auth_headers,
             )
             assert html_response.status_code == 200
@@ -451,7 +503,9 @@ class TestWorkflowErrorScenarios:
         # Should either accept and validate later or reject immediately
         assert response.status_code in [200, 400, 422]
 
-    def test_workflow_add_finding_to_nonexistent_scan(self, client, auth_headers):
+    def test_workflow_add_finding_to_nonexistent_scan(
+        self, client, auth_headers
+    ):
         """Test adding finding to non-existent scan."""
         response = client.post(
             "/scans/99999/findings",
@@ -503,7 +557,9 @@ class TestWorkflowErrorScenarios:
 class TestWebSocketWorkflow:
     """Test workflow with WebSocket connections."""
 
-    def test_websocket_scan_monitoring(self, client, auth_headers, mock_external_services):
+    def test_websocket_scan_monitoring(
+        self, client, auth_headers, mock_external_services
+    ):
         """Test WebSocket connection for scan monitoring."""
         # Create scan
         scan_response = client.post(
@@ -542,7 +598,9 @@ class TestWebSocketWorkflow:
 class TestComplexWorkflowScenarios:
     """Test complex workflow scenarios."""
 
-    def test_full_reconnaissance_to_exploitation_workflow(self, client, auth_headers, mock_external_services):
+    def test_full_reconnaissance_to_exploitation_workflow(
+        self, client, auth_headers, mock_external_services
+    ):
         """Test full workflow from recon to exploitation."""
         # Phase 1: Reconnaissance
         recon_scan = client.post(

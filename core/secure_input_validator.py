@@ -82,14 +82,18 @@ class SecureInputValidator:
     )
 
     SAFE_IP_PATTERN = re.compile(
-        r"^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}" r"(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
+        r"^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}"
+        r"(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
     )
 
     SAFE_DOMAIN_PATTERN = re.compile(
-        r"^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)*" r"[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])$"
+        r"^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)*"
+        r"[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])$"
     )
 
-    SAFE_EMAIL_PATTERN = re.compile(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
+    SAFE_EMAIL_PATTERN = re.compile(
+        r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+    )
 
     # Dangerous commands (Command Injection Prevention)
     DANGEROUS_COMMANDS = {
@@ -146,7 +150,9 @@ class SecureInputValidator:
     ]
 
     # Path traversal patterns
-    PATH_TRAVERSAL_PATTERN = re.compile(r"\.\./|\.\.\\|%2e%2e%2f|%2e%2e/", re.IGNORECASE)
+    PATH_TRAVERSAL_PATTERN = re.compile(
+        r"\.\./|\.\.\\|%2e%2e%2f|%2e%2e/", re.IGNORECASE
+    )
 
     # Private IP ranges (SSRF prevention)
     PRIVATE_IP_RANGES = [
@@ -161,7 +167,11 @@ class SecureInputValidator:
     def __init__(self, strict_mode: bool = True, audit_logging: bool = True):
         self.strict_mode = strict_mode
         self.audit_logging = audit_logging
-        self.validation_stats = {"total_validated": 0, "rejected": 0, "sanitized": 0}
+        self.validation_stats = {
+            "total_validated": 0,
+            "rejected": 0,
+            "sanitized": 0,
+        }
 
     def validate_url(self, url: str, allow_local: bool = False) -> str:
         """
@@ -193,11 +203,19 @@ class SecureInputValidator:
         # URL pattern check
         if not self.SAFE_URL_PATTERN.match(cleaned):
             self._log_rejection("url", cleaned, "Invalid URL format")
-            raise ValidationError("url", f"Invalid URL format: {cleaned[:50]}...")
+            raise ValidationError(
+                "url", f"Invalid URL format: {cleaned[:50]}..."
+            )
 
         # Block local URLs (SSRF prevention)
         if not allow_local:
-            local_patterns = ["localhost", "127.", "192.168.", "10.", "172.16."]
+            local_patterns = [
+                "localhost",
+                "127.",
+                "192.168.",
+                "10.",
+                "172.16.",
+            ]
             if any(pattern in cleaned.lower() for pattern in local_patterns):
                 self._log_rejection("url", cleaned, "Local URL not allowed")
                 raise ValidationError("url", "Local URLs not allowed")
@@ -206,8 +224,12 @@ class SecureInputValidator:
             try:
                 parsed_ip = self._extract_ip_from_url(cleaned)
                 if parsed_ip and self._is_private_ip(parsed_ip):
-                    self._log_rejection("url", cleaned, "Private IP not allowed")
-                    raise ValidationError("url", "Private IP addresses not allowed")
+                    self._log_rejection(
+                        "url", cleaned, "Private IP not allowed"
+                    )
+                    raise ValidationError(
+                        "url", "Private IP addresses not allowed"
+                    )
             except Exception:
                 pass
 
@@ -248,7 +270,9 @@ class SecureInputValidator:
         # Pattern check
         if not self.SAFE_DOMAIN_PATTERN.match(cleaned):
             self._log_rejection("domain", cleaned, "Invalid domain format")
-            raise ValidationError("domain", f"Invalid domain format: {cleaned}")
+            raise ValidationError(
+                "domain", f"Invalid domain format: {cleaned}"
+            )
 
         self.validation_stats["total_validated"] += 1
         return cleaned
@@ -268,15 +292,35 @@ class SecureInputValidator:
         tokens = re.findall(r"\b\w+\b", cleaned.lower())
         for token in tokens:
             if token in self.DANGEROUS_COMMANDS:
-                self._log_rejection("command", cleaned, f"Dangerous command: {token}")
-                raise ValidationError("command", f"Dangerous command detected: {token}")
+                self._log_rejection(
+                    "command", cleaned, f"Dangerous command: {token}"
+                )
+                raise ValidationError(
+                    "command", f"Dangerous command detected: {token}"
+                )
 
         # Check for shell metacharacters
-        dangerous_chars = [";", "&", "|", "`", "$", "(", ")", "<", ">", "{", "}"]
+        dangerous_chars = [
+            ";",
+            "&",
+            "|",
+            "`",
+            "$",
+            "(",
+            ")",
+            "<",
+            ">",
+            "{",
+            "}",
+        ]
         for char in dangerous_chars:
             if char in cleaned:
-                self._log_rejection("command", cleaned, f"Shell metacharacter: {char}")
-                raise ValidationError("command", f"Shell metacharacter not allowed: {char}")
+                self._log_rejection(
+                    "command", cleaned, f"Shell metacharacter: {char}"
+                )
+                raise ValidationError(
+                    "command", f"Shell metacharacter not allowed: {char}"
+                )
 
         self.validation_stats["total_validated"] += 1
         return cleaned
@@ -295,7 +339,9 @@ class SecureInputValidator:
         # Check for SQL injection patterns
         for pattern in self.SQL_INJECTION_PATTERNS:
             if re.search(pattern, cleaned, re.IGNORECASE):
-                self._log_rejection("sql", cleaned, f"SQL injection pattern: {pattern}")
+                self._log_rejection(
+                    "sql", cleaned, f"SQL injection pattern: {pattern}"
+                )
                 raise ValidationError("sql", "SQL injection pattern detected")
 
         self.validation_stats["total_validated"] += 1
@@ -315,7 +361,9 @@ class SecureInputValidator:
         # Check for XSS patterns
         for pattern in self.XSS_PATTERNS:
             if re.search(pattern, cleaned, re.IGNORECASE):
-                self._log_rejection("html", cleaned[:100], "XSS pattern detected")
+                self._log_rejection(
+                    "html", cleaned[:100], "XSS pattern detected"
+                )
                 raise ValidationError("html", "XSS pattern detected")
 
         # Escape HTML entities
@@ -345,7 +393,9 @@ class SecureInputValidator:
         self.validation_stats["total_validated"] += 1
         return cleaned
 
-    def _is_private_ip(self, ip: Union[str, ipaddress.IPv4Address, ipaddress.IPv6Address]) -> bool:
+    def _is_private_ip(
+        self, ip: Union[str, ipaddress.IPv4Address, ipaddress.IPv6Address]
+    ) -> bool:
         """Check if IP is private"""
         try:
             if isinstance(ip, str):
@@ -368,7 +418,10 @@ class SecureInputValidator:
     def _log_rejection(self, field: str, value: str, reason: str):
         """Log rejected input for audit"""
         if self.audit_logging:
-            logger.warning(f"VALIDATION_REJECTED: field={field}, reason={reason}, " f"value_preview={value[:50]}...")
+            logger.warning(
+                f"VALIDATION_REJECTED: field={field}, reason={reason}, "
+                f"value_preview={value[:50]}..."
+            )
         self.validation_stats["rejected"] += 1
 
     def get_stats(self) -> Dict[str, int]:

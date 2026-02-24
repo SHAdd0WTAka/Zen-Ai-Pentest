@@ -156,7 +156,12 @@ class ClassificationMetrics:
     @property
     def accuracy(self) -> float:
         """Accuracy = (TP + TN) / (TP + TN + FP + FN)"""
-        total = self.true_positives + self.true_negatives + self.false_positives + self.false_negatives
+        total = (
+            self.true_positives
+            + self.true_negatives
+            + self.false_positives
+            + self.false_negatives
+        )
         if total == 0:
             return 0.0
         return (self.true_positives + self.true_negatives) / total
@@ -171,7 +176,12 @@ class ClassificationMetrics:
     @property
     def matthews_correlation(self) -> float:
         """Matthews Correlation Coefficient (-1 to +1)."""
-        tp, tn, fp, fn = self.true_positives, self.true_negatives, self.false_positives, self.false_negatives
+        tp, tn, fp, fn = (
+            self.true_positives,
+            self.true_negatives,
+            self.false_positives,
+            self.false_negatives,
+        )
 
         denominator = math.sqrt((tp + fp) * (tp + fn) * (tn + fp) * (tn + fn))
         if denominator == 0:
@@ -256,7 +266,10 @@ class ExploitMetrics:
         if self.total_exploits_attempted == 0:
             return 100.0
         # Higher is better - fewer unexpected successes
-        return ((self.total_exploits_attempted - self.blocked_exploits) / self.total_exploits_attempted) * 100
+        return (
+            (self.total_exploits_attempted - self.blocked_exploits)
+            / self.total_exploits_attempted
+        ) * 100
 
 
 @dataclass
@@ -270,7 +283,9 @@ class BenchmarkMetrics:
     timestamp: datetime = field(default_factory=datetime.utcnow)
 
     # Component metrics
-    classification: ClassificationMetrics = field(default_factory=ClassificationMetrics)
+    classification: ClassificationMetrics = field(
+        default_factory=ClassificationMetrics
+    )
     coverage: CoverageMetrics = field(default_factory=CoverageMetrics)
     performance: PerformanceMetrics = field(default_factory=PerformanceMetrics)
     exploit: ExploitMetrics = field(default_factory=ExploitMetrics)
@@ -291,7 +306,9 @@ class BenchmarkMetrics:
             "recall": self.classification.recall,
             "f1_score": self.classification.f1_score,
             "coverage": (
-                self.coverage.endpoint_coverage + self.coverage.parameter_coverage + self.coverage.attack_vector_coverage
+                self.coverage.endpoint_coverage
+                + self.coverage.parameter_coverage
+                + self.coverage.attack_vector_coverage
             )
             / 3,
             "speed": self._calculate_speed_score(),
@@ -403,7 +420,9 @@ class BenchmarkMetrics:
             benchmark_id=data.get("benchmark_id", ""),
             scenario_name=data.get("scenario_name", ""),
             tool_version=data.get("tool_version", ""),
-            timestamp=datetime.fromisoformat(data.get("timestamp", datetime.utcnow().isoformat())),
+            timestamp=datetime.fromisoformat(
+                data.get("timestamp", datetime.utcnow().isoformat())
+            ),
         )
 
         # Parse classification
@@ -457,7 +476,10 @@ class MetricsAggregator:
         all_scores = [m.calculate_aggregate_scores() for m in self.metrics]
         keys = all_scores[0].keys()
 
-        return {key: statistics.mean(s.get(key, 0) for s in all_scores) for key in keys}
+        return {
+            key: statistics.mean(s.get(key, 0) for s in all_scores)
+            for key in keys
+        }
 
     def get_statistics(self) -> Dict[str, Dict[str, float]]:
         """Get statistical analysis of all metrics."""
@@ -484,7 +506,10 @@ class MetricsAggregator:
         if len(self.metrics) < 2:
             return "insufficient_data"
 
-        scores = [m.calculate_aggregate_scores().get(metric_key, 0) for m in self.metrics]
+        scores = [
+            m.calculate_aggregate_scores().get(metric_key, 0)
+            for m in self.metrics
+        ]
 
         # Simple linear regression
         n = len(scores)
@@ -507,7 +532,9 @@ class MetricsAggregator:
 
 
 # Convenience functions
-def calculate_confidence_interval(values: List[float], confidence: float = 0.95) -> tuple:
+def calculate_confidence_interval(
+    values: List[float], confidence: float = 0.95
+) -> tuple:
     """Calculate confidence interval for a list of values."""
     if len(values) < 2:
         return (0.0, 0.0)
@@ -522,7 +549,9 @@ def calculate_confidence_interval(values: List[float], confidence: float = 0.95)
     return (mean - margin, mean + margin)
 
 
-def compare_metrics(baseline: BenchmarkMetrics, current: BenchmarkMetrics) -> Dict[str, Any]:
+def compare_metrics(
+    baseline: BenchmarkMetrics, current: BenchmarkMetrics
+) -> Dict[str, Any]:
     """Compare two benchmark runs and return differences."""
     baseline_scores = baseline.calculate_aggregate_scores()
     current_scores = current.calculate_aggregate_scores()

@@ -61,7 +61,12 @@ class ProtonVPNManager:
     def _check_cli_available(self) -> bool:
         """Check if ProtonVPN CLI is installed"""
         try:
-            result = subprocess.run([self.cli_command, "--version"], capture_output=True, text=True, timeout=5)
+            result = subprocess.run(
+                [self.cli_command, "--version"],
+                capture_output=True,
+                text=True,
+                timeout=5,
+            )
             self.cli_available = result.returncode == 0
             if self.cli_available:
                 logger.info(f"✅ ProtonVPN CLI found: {result.stdout.strip()}")
@@ -79,10 +84,18 @@ class ProtonVPNManager:
             VPNInfo with connection details
         """
         if not self.cli_available:
-            return VPNInfo(status=VPNStatus.UNKNOWN, error_message="ProtonVPN CLI not installed")
+            return VPNInfo(
+                status=VPNStatus.UNKNOWN,
+                error_message="ProtonVPN CLI not installed",
+            )
 
         try:
-            result = subprocess.run([self.cli_command, "status"], capture_output=True, text=True, timeout=10)
+            result = subprocess.run(
+                [self.cli_command, "status"],
+                capture_output=True,
+                text=True,
+                timeout=10,
+            )
 
             output = result.stdout.lower()
 
@@ -90,14 +103,22 @@ class ProtonVPNManager:
             if "connected" in output and "disconnected" not in output:
                 return self._parse_connected_status(result.stdout)
             elif "disconnected" in output:
-                return VPNInfo(status=VPNStatus.DISCONNECTED, provider="ProtonVPN")
+                return VPNInfo(
+                    status=VPNStatus.DISCONNECTED, provider="ProtonVPN"
+                )
             else:
                 return VPNInfo(status=VPNStatus.UNKNOWN, provider="ProtonVPN")
 
         except subprocess.TimeoutExpired:
-            return VPNInfo(status=VPNStatus.ERROR, error_message="Timeout checking VPN status")
+            return VPNInfo(
+                status=VPNStatus.ERROR,
+                error_message="Timeout checking VPN status",
+            )
         except Exception as e:
-            return VPNInfo(status=VPNStatus.ERROR, error_message=f"Error checking VPN: {str(e)}")
+            return VPNInfo(
+                status=VPNStatus.ERROR,
+                error_message=f"Error checking VPN: {str(e)}",
+            )
 
     def _parse_connected_status(self, output: str) -> VPNInfo:
         """Parse connected status output"""
@@ -141,9 +162,13 @@ class ProtonVPNManager:
             if server:
                 cmd.append(server)
 
-            logger.info(f"🔌 Connecting to ProtonVPN{' (' + server + ')' if server else ''}...")
+            logger.info(
+                f"🔌 Connecting to ProtonVPN{' (' + server + ')' if server else ''}..."
+            )
 
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+            result = subprocess.run(
+                cmd, capture_output=True, text=True, timeout=60
+            )
 
             if result.returncode == 0:
                 logger.info("✅ Connected to ProtonVPN")
@@ -170,7 +195,12 @@ class ProtonVPNManager:
             return False
 
         try:
-            result = subprocess.run([self.cli_command, "disconnect"], capture_output=True, text=True, timeout=30)
+            result = subprocess.run(
+                [self.cli_command, "disconnect"],
+                capture_output=True,
+                text=True,
+                timeout=30,
+            )
 
             if result.returncode == 0:
                 logger.info("🔌 Disconnected from ProtonVPN")
@@ -213,19 +243,29 @@ class GenericVPNDetector:
         vpn_interface = self._check_vpn_interfaces()
         if vpn_interface:
             return VPNInfo(
-                status=VPNStatus.CONNECTED, provider=self._detect_provider_from_interface(vpn_interface), server=vpn_interface
+                status=VPNStatus.CONNECTED,
+                provider=self._detect_provider_from_interface(vpn_interface),
+                server=vpn_interface,
             )
 
         # Check for VPN processes
         if self._check_vpn_processes():
-            return VPNInfo(status=VPNStatus.CONNECTED, provider="Unknown (detected via process)")
+            return VPNInfo(
+                status=VPNStatus.CONNECTED,
+                provider="Unknown (detected via process)",
+            )
 
         return VPNInfo(status=VPNStatus.DISCONNECTED)
 
     def _check_vpn_interfaces(self) -> Optional[str]:
         """Check for VPN network interfaces"""
         try:
-            result = subprocess.run(["ip", "link", "show"], capture_output=True, text=True, timeout=5)
+            result = subprocess.run(
+                ["ip", "link", "show"],
+                capture_output=True,
+                text=True,
+                timeout=5,
+            )
 
             output = result.stdout.lower()
             for interface in self.VPN_INTERFACES:
@@ -233,7 +273,9 @@ class GenericVPNDetector:
                     return interface
 
             # macOS alternative
-            result = subprocess.run(["ifconfig"], capture_output=True, text=True, timeout=5)
+            result = subprocess.run(
+                ["ifconfig"], capture_output=True, text=True, timeout=5
+            )
             output = result.stdout.lower()
             for interface in self.VPN_INTERFACES:
                 if interface in output:
@@ -247,10 +289,20 @@ class GenericVPNDetector:
     def _check_vpn_processes(self) -> bool:
         """Check for running VPN processes"""
         try:
-            result = subprocess.run(["ps", "aux"], capture_output=True, text=True, timeout=5)
+            result = subprocess.run(
+                ["ps", "aux"], capture_output=True, text=True, timeout=5
+            )
 
             output = result.stdout.lower()
-            vpn_processes = ["openvpn", "wireguard", "wg", "protonvpn", "nordvpn", "expressvpn", "mullvad"]
+            vpn_processes = [
+                "openvpn",
+                "wireguard",
+                "wg",
+                "protonvpn",
+                "nordvpn",
+                "expressvpn",
+                "mullvad",
+            ]
 
             for proc in vpn_processes:
                 if proc in output:
@@ -362,14 +414,19 @@ class VPNManager:
         # Strict mode blocks scans without VPN
         if self.strict_mode:
             result["allowed"] = False
-            result["warning"] = "❌ SCAN BLOCKED: VPN required in strict mode.\n" "Connect to a VPN before scanning."
+            result["warning"] = (
+                "❌ SCAN BLOCKED: VPN required in strict mode.\n"
+                "Connect to a VPN before scanning."
+            )
 
         return result
 
     def set_strict_mode(self, enabled: bool):
         """Enable/disable strict mode (require VPN)"""
         self.strict_mode = enabled
-        logger.info(f"🔒 VPN strict mode: {'enabled' if enabled else 'disabled'}")
+        logger.info(
+            f"🔒 VPN strict mode: {'enabled' if enabled else 'disabled'}"
+        )
 
     def set_recommendations(self, enabled: bool):
         """Enable/disable VPN recommendations"""
@@ -392,7 +449,10 @@ class VPNManager:
             current_status = self.get_status()
 
             # Notify on status change
-            if last_status is None or last_status.status != current_status.status:
+            if (
+                last_status is None
+                or last_status.status != current_status.status
+            ):
                 for callback in self._status_callbacks:
                     try:
                         callback(current_status)

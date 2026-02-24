@@ -46,7 +46,12 @@ class TestWorkflow:
 
     def test_workflow_creation(self):
         """Test workflow initialization."""
-        workflow = Workflow(name="Test Workflow", workflow_id="test-123", description="A test workflow", version="1.0.0")
+        workflow = Workflow(
+            name="Test Workflow",
+            workflow_id="test-123",
+            description="A test workflow",
+            version="1.0.0",
+        )
 
         assert workflow.name == "Test Workflow"
         assert workflow.workflow_id == "test-123"
@@ -105,7 +110,9 @@ class TestWorkflow:
         workflow = Workflow(name="Test")
 
         task1 = FunctionTask(name="task1", func=lambda: None, task_id="t1")
-        task2 = FunctionTask(name="task2", func=lambda: None, task_id="t2", dependencies=["t1"])
+        task2 = FunctionTask(
+            name="task2", func=lambda: None, task_id="t2", dependencies=["t1"]
+        )
 
         workflow.add_task(task1)
         workflow.add_task(task2)
@@ -121,8 +128,12 @@ class TestWorkflow:
         workflow = Workflow(name="Test")
 
         task1 = FunctionTask(name="task1", func=lambda: None, task_id="t1")
-        task2 = FunctionTask(name="task2", func=lambda: None, task_id="t2", dependencies=["t1"])
-        task3 = FunctionTask(name="task3", func=lambda: None, task_id="t3", dependencies=["t2"])
+        task2 = FunctionTask(
+            name="task2", func=lambda: None, task_id="t2", dependencies=["t1"]
+        )
+        task3 = FunctionTask(
+            name="task3", func=lambda: None, task_id="t3", dependencies=["t2"]
+        )
 
         workflow.add_tasks(task1, task2, task3)
 
@@ -137,9 +148,18 @@ class TestWorkflow:
         workflow = Workflow(name="Test")
 
         task1 = FunctionTask(name="task1", func=lambda: None, task_id="t1")
-        task2 = FunctionTask(name="task2", func=lambda: None, task_id="t2", dependencies=["t1"])
-        task3 = FunctionTask(name="task3", func=lambda: None, task_id="t3", dependencies=["t1"])
-        task4 = FunctionTask(name="task4", func=lambda: None, task_id="t4", dependencies=["t2", "t3"])
+        task2 = FunctionTask(
+            name="task2", func=lambda: None, task_id="t2", dependencies=["t1"]
+        )
+        task3 = FunctionTask(
+            name="task3", func=lambda: None, task_id="t3", dependencies=["t1"]
+        )
+        task4 = FunctionTask(
+            name="task4",
+            func=lambda: None,
+            task_id="t4",
+            dependencies=["t2", "t3"],
+        )
 
         workflow.add_tasks(task1, task2, task3, task4)
 
@@ -153,8 +173,12 @@ class TestWorkflow:
         """Test error on circular dependency."""
         workflow = Workflow(name="Test")
 
-        task1 = FunctionTask(name="task1", func=lambda: None, task_id="t1", dependencies=["t2"])
-        task2 = FunctionTask(name="task2", func=lambda: None, task_id="t2", dependencies=["t1"])
+        task1 = FunctionTask(
+            name="task1", func=lambda: None, task_id="t1", dependencies=["t2"]
+        )
+        task2 = FunctionTask(
+            name="task2", func=lambda: None, task_id="t2", dependencies=["t1"]
+        )
 
         workflow.add_tasks(task1, task2)
 
@@ -163,7 +187,12 @@ class TestWorkflow:
 
     def test_workflow_to_dict(self):
         """Test workflow serialization."""
-        workflow = Workflow(name="Test", workflow_id="test-123", description="Test workflow", version="1.0")
+        workflow = Workflow(
+            name="Test",
+            workflow_id="test-123",
+            description="Test workflow",
+            version="1.0",
+        )
 
         task1 = FunctionTask(name="task1", func=lambda: None, task_id="t1")
         workflow.add_task(task1)
@@ -289,7 +318,12 @@ class TestFunctionTask:
         async def async_func(arg1, arg2, context):
             return {"sum": arg1 + arg2, "context_keys": list(context.keys())}
 
-        task = FunctionTask(name="Async Task", func=async_func, args=[1, 2], kwargs={"extra": "value"})
+        task = FunctionTask(
+            name="Async Task",
+            func=async_func,
+            args=[1, 2],
+            kwargs={"extra": "value"},
+        )
 
         context = {"workflow_id": "wf-1"}
         result = await task.execute(context)
@@ -409,7 +443,9 @@ class TestWorkflowEngine:
         assert result is engine  # Returns self for chaining
 
         # Verify registration
-        assert handler in engine.event_bus._listeners.get("workflow.started", [])
+        assert handler in engine.event_bus._listeners.get(
+            "workflow.started", []
+        )
 
     @pytest.mark.asyncio
     async def test_execute_simple_workflow(self, engine):
@@ -427,9 +463,14 @@ class TestWorkflowEngine:
             return {"step": 2}
 
         task1 = FunctionTask(
-            name="task1", func=task1_func, task_id="t1", metadata={"save_to_context": True, "context_key": "result1"}
+            name="task1",
+            func=task1_func,
+            task_id="t1",
+            metadata={"save_to_context": True, "context_key": "result1"},
         )
-        task2 = FunctionTask(name="task2", func=task2_func, task_id="t2", dependencies=["t1"])
+        task2 = FunctionTask(
+            name="task2", func=task2_func, task_id="t2", dependencies=["t1"]
+        )
 
         workflow.add_tasks(task1, task2)
 
@@ -455,9 +496,15 @@ class TestWorkflowEngine:
 
             return task_func
 
-        task1 = FunctionTask(name="task1", func=await parallel_task("A"), task_id="t1")
-        task2 = FunctionTask(name="task2", func=await parallel_task("B"), task_id="t2")
-        task3 = FunctionTask(name="task3", func=await parallel_task("C"), task_id="t3")
+        task1 = FunctionTask(
+            name="task1", func=await parallel_task("A"), task_id="t1"
+        )
+        task2 = FunctionTask(
+            name="task2", func=await parallel_task("B"), task_id="t2"
+        )
+        task3 = FunctionTask(
+            name="task3", func=await parallel_task("C"), task_id="t3"
+        )
 
         # All three can run in parallel (no dependencies)
         workflow.add_tasks(task1, task2, task3)
@@ -487,13 +534,21 @@ class TestWorkflowEngine:
             return {"success": True}
 
         task1 = FunctionTask(
-            name="retry_task", func=failing_task, task_id="t1", max_retries=3, retry_delay=0.01  # Fast retry for tests
+            name="retry_task",
+            func=failing_task,
+            task_id="t1",
+            max_retries=3,
+            retry_delay=0.01,  # Fast retry for tests
         )
         workflow.add_task(task1)
 
         events_received = []
-        engine.on("task.retrying", lambda e: events_received.append("retrying"))
-        engine.on("task.completed", lambda e: events_received.append("completed"))
+        engine.on(
+            "task.retrying", lambda e: events_received.append("retrying")
+        )
+        engine.on(
+            "task.completed", lambda e: events_received.append("completed")
+        )
 
         state = await engine.execute_workflow(workflow)
 
@@ -510,7 +565,13 @@ class TestWorkflowEngine:
         async def always_failing(context):
             raise ValueError("Always fails")
 
-        task1 = FunctionTask(name="failing_task", func=always_failing, task_id="t1", max_retries=2, retry_delay=0.01)
+        task1 = FunctionTask(
+            name="failing_task",
+            func=always_failing,
+            task_id="t1",
+            max_retries=2,
+            retry_delay=0.01,
+        )
         workflow.add_task(task1)
 
         events_received = []
@@ -531,7 +592,9 @@ class TestWorkflowEngine:
             await asyncio.sleep(10)  # Much longer than timeout
             return {}
 
-        task1 = FunctionTask(name="slow_task", func=slow_task, task_id="t1", timeout=0.1)  # 100ms timeout
+        task1 = FunctionTask(
+            name="slow_task", func=slow_task, task_id="t1", timeout=0.1
+        )  # 100ms timeout
         workflow.add_task(task1)
 
         state = await engine.execute_workflow(workflow)
@@ -560,12 +623,19 @@ class TestWorkflowEngine:
             return ctx.get("run_condition", False)
 
         task1 = FunctionTask(name="task1", func=always_run, task_id="t1")
-        task2 = FunctionTask(name="task2", func=conditional_run, task_id="t2", condition=should_run)
+        task2 = FunctionTask(
+            name="task2",
+            func=conditional_run,
+            task_id="t2",
+            condition=should_run,
+        )
 
         workflow.add_tasks(task1, task2)
 
         # First run - condition is False
-        state = await engine.execute_workflow(workflow, {"run_condition": False})
+        state = await engine.execute_workflow(
+            workflow, {"run_condition": False}
+        )
 
         assert state.status == WorkflowStatus.COMPLETED
         assert execution_log == ["always"]
@@ -573,7 +643,9 @@ class TestWorkflowEngine:
 
         # Second run - condition is True
         execution_log.clear()
-        state = await engine.execute_workflow(workflow, {"run_condition": True})
+        state = await engine.execute_workflow(
+            workflow, {"run_condition": True}
+        )
 
         assert execution_log == ["always", "conditional"]
 
@@ -590,7 +662,9 @@ class TestWorkflowEngine:
         workflow.add_task(task1)
 
         # Start workflow in background
-        workflow_task = asyncio.create_task(engine.execute_workflow(workflow, workflow_id="wf-cancel"))
+        workflow_task = asyncio.create_task(
+            engine.execute_workflow(workflow, workflow_id="wf-cancel")
+        )
 
         # Give it time to start
         await asyncio.sleep(0.05)
@@ -602,7 +676,10 @@ class TestWorkflowEngine:
         state = await workflow_task
 
         # The workflow should have been cancelled or failed
-        assert state.status in [WorkflowStatus.CANCELLED, WorkflowStatus.FAILED]
+        assert state.status in [
+            WorkflowStatus.CANCELLED,
+            WorkflowStatus.FAILED,
+        ]
 
     @pytest.mark.asyncio
     async def test_workflow_with_state_manager(self):
@@ -611,7 +688,9 @@ class TestWorkflowEngine:
         mock_state_manager.exists = AsyncMock(return_value=False)
         mock_state_manager.save = AsyncMock(return_value=True)
 
-        engine = WorkflowEngine(max_parallel_tasks=5, state_manager=mock_state_manager)
+        engine = WorkflowEngine(
+            max_parallel_tasks=5, state_manager=mock_state_manager
+        )
 
         workflow = Workflow(name="Persisted Workflow")
 
@@ -636,8 +715,12 @@ class TestWorkflowEngine:
             name="Resumable Workflow",
             status=WorkflowStatus.RUNNING,
             tasks={
-                "t1": TaskState(task_id="t1", name="task1", status=TaskStatus.COMPLETED),
-                "t2": TaskState(task_id="t2", name="task2", status=TaskStatus.PENDING),
+                "t1": TaskState(
+                    task_id="t1", name="task1", status=TaskStatus.COMPLETED
+                ),
+                "t2": TaskState(
+                    task_id="t2", name="task2", status=TaskStatus.PENDING
+                ),
             },
             context={"step1_result": "done"},
         )
@@ -646,7 +729,9 @@ class TestWorkflowEngine:
         mock_state_manager.exists = AsyncMock(return_value=True)
         mock_state_manager.load = AsyncMock(return_value=saved_state)
 
-        engine = WorkflowEngine(max_parallel_tasks=5, state_manager=mock_state_manager)
+        engine = WorkflowEngine(
+            max_parallel_tasks=5, state_manager=mock_state_manager
+        )
 
         workflow = Workflow(name="Resumable Workflow")
 
@@ -661,11 +746,15 @@ class TestWorkflowEngine:
             return {"step": 2}
 
         task1 = FunctionTask(name="task1", func=task1_func, task_id="t1")
-        task2 = FunctionTask(name="task2", func=task2_func, task_id="t2", dependencies=["t1"])
+        task2 = FunctionTask(
+            name="task2", func=task2_func, task_id="t2", dependencies=["t1"]
+        )
 
         workflow.add_tasks(task1, task2)
 
-        state = await engine.execute_workflow(workflow, workflow_id="wf-resume")
+        state = await engine.execute_workflow(
+            workflow, workflow_id="wf-resume"
+        )
 
         # Should resume from saved state - task1 already done
         assert "task1" not in execution_log  # Should not re-run
@@ -705,7 +794,12 @@ class TestTaskResult:
 
     def test_success_result(self):
         """Test successful result."""
-        result = TaskResult(success=True, data={"key": "value"}, execution_time=1.5, retry_count=0)
+        result = TaskResult(
+            success=True,
+            data={"key": "value"},
+            execution_time=1.5,
+            retry_count=0,
+        )
 
         d = result.to_dict()
         assert d["success"] is True
@@ -736,7 +830,12 @@ class TestTaskState:
     def test_task_state_creation(self):
         """Test task state initialization."""
         state = TaskState(
-            task_id="task-1", name="Test Task", status=TaskStatus.RUNNING, dependencies=["dep1"], retry_count=1, max_retries=3
+            task_id="task-1",
+            name="Test Task",
+            status=TaskStatus.RUNNING,
+            dependencies=["dep1"],
+            retry_count=1,
+            max_retries=3,
         )
 
         assert state.task_id == "task-1"
@@ -778,7 +877,10 @@ class TestWorkflowState:
     def test_workflow_state_creation(self):
         """Test workflow state initialization."""
         state = WorkflowState(
-            workflow_id="wf-1", name="Test Workflow", status=WorkflowStatus.RUNNING, context={"key": "value"}
+            workflow_id="wf-1",
+            name="Test Workflow",
+            status=WorkflowStatus.RUNNING,
+            context={"key": "value"},
         )
 
         assert state.workflow_id == "wf-1"
@@ -789,7 +891,9 @@ class TestWorkflowState:
 
     def test_workflow_state_to_dict(self):
         """Test workflow state serialization."""
-        task_state = TaskState(task_id="t1", name="task1", status=TaskStatus.COMPLETED)
+        task_state = TaskState(
+            task_id="t1", name="task1", status=TaskStatus.COMPLETED
+        )
 
         state = WorkflowState(
             workflow_id="wf-1",
@@ -1006,10 +1110,25 @@ class TestWorkflowEngineIntegration:
             return context.get("aggregated", False)
 
         task1 = FunctionTask(
-            name="load", func=load_data, task_id="t1", metadata={"save_to_context": True, "context_key": "loaded_data"}
+            name="load",
+            func=load_data,
+            task_id="t1",
+            metadata={"save_to_context": True, "context_key": "loaded_data"},
         )
-        task2a = FunctionTask(name="process_a", func=process_a, task_id="t2a", dependencies=["t1"], parallel=True)
-        task2b = FunctionTask(name="process_b", func=process_b, task_id="t2b", dependencies=["t1"], parallel=True)
+        task2a = FunctionTask(
+            name="process_a",
+            func=process_a,
+            task_id="t2a",
+            dependencies=["t1"],
+            parallel=True,
+        )
+        task2b = FunctionTask(
+            name="process_b",
+            func=process_b,
+            task_id="t2b",
+            dependencies=["t1"],
+            parallel=True,
+        )
         task3 = FunctionTask(
             name="aggregate",
             func=aggregate,
@@ -1017,7 +1136,13 @@ class TestWorkflowEngineIntegration:
             dependencies=["t2a", "t2b"],
             metadata={"save_to_context": True, "context_key": "aggregated"},
         )
-        task4 = FunctionTask(name="finalize", func=finalize, task_id="t4", dependencies=["t3"], condition=should_finalize)
+        task4 = FunctionTask(
+            name="finalize",
+            func=finalize,
+            task_id="t4",
+            dependencies=["t3"],
+            condition=should_finalize,
+        )
 
         workflow.add_tasks(task1, task2a, task2b, task3, task4)
 
@@ -1039,8 +1164,13 @@ class TestWorkflowEngineIntegration:
 
         engine.on("workflow.started", lambda e: events.append("started"))
         engine.on("workflow.completed", lambda e: events.append("completed"))
-        engine.on("task.started", lambda e: events.append(f"task_started:{e.name}"))
-        engine.on("task.completed", lambda e: events.append(f"task_completed:{e.name}"))
+        engine.on(
+            "task.started", lambda e: events.append(f"task_started:{e.name}")
+        )
+        engine.on(
+            "task.completed",
+            lambda e: events.append(f"task_completed:{e.name}"),
+        )
 
         workflow = Workflow(name="Event Test")
 
@@ -1075,7 +1205,13 @@ class TestWorkflowEngineIntegration:
                 raise ValueError("Second attempt fails")
             return {"success": True}
 
-        task1 = FunctionTask(name="flaky", func=flaky_task, task_id="t1", max_retries=3, retry_delay=0.01)
+        task1 = FunctionTask(
+            name="flaky",
+            func=flaky_task,
+            task_id="t1",
+            max_retries=3,
+            retry_delay=0.01,
+        )
         workflow.add_task(task1)
 
         state = await engine.execute_workflow(workflow)
@@ -1094,7 +1230,9 @@ class TestWorkflowEngineIntegration:
         async def sub_task_func(context):
             return {"sub": "result"}
 
-        sub_task = FunctionTask(name="sub_task", func=sub_task_func, task_id="st1")
+        sub_task = FunctionTask(
+            name="sub_task", func=sub_task_func, task_id="st1"
+        )
         sub_workflow.add_task(sub_task)
 
         # Create parent workflow
@@ -1104,12 +1242,19 @@ class TestWorkflowEngineIntegration:
             mock_sub_engine = MagicMock()
             mock_state = MagicMock()
             mock_state.status = WorkflowStatus.COMPLETED
-            mock_state.to_dict.return_value = {"status": "completed", "sub_result": "ok"}
+            mock_state.to_dict.return_value = {
+                "status": "completed",
+                "sub_result": "ok",
+            }
             mock_state.workflow_id = "sub-wf"
-            mock_sub_engine.execute_workflow = AsyncMock(return_value=mock_state)
+            mock_sub_engine.execute_workflow = AsyncMock(
+                return_value=mock_state
+            )
             mock_engine_class.return_value = mock_sub_engine
 
-            sub_task_wrapper = SubWorkflowTask(name="sub", workflow=sub_workflow, task_id="t1")
+            sub_task_wrapper = SubWorkflowTask(
+                name="sub", workflow=sub_workflow, task_id="t1"
+            )
             parent_workflow.add_task(sub_task_wrapper)
 
             state = await engine.execute_workflow(parent_workflow)

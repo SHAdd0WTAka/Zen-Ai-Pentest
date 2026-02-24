@@ -12,7 +12,9 @@ from pathlib import Path
 if sys.platform == "win32":
     import warnings
 
-    warnings.filterwarnings("ignore", message="unclosed transport", category=ResourceWarning)
+    warnings.filterwarnings(
+        "ignore", message="unclosed transport", category=ResourceWarning
+    )
 
 # Add parent to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -23,7 +25,17 @@ from contextlib import asynccontextmanager
 from datetime import datetime
 from typing import List, Optional
 
-from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, Request, Response, WebSocket, WebSocketDisconnect, status
+from fastapi import (
+    BackgroundTasks,
+    Depends,
+    FastAPI,
+    HTTPException,
+    Request,
+    Response,
+    WebSocket,
+    WebSocketDisconnect,
+    status,
+)
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
@@ -57,7 +69,13 @@ from database.models import Report, SessionLocal, get_db, init_db
 
 # Import new auth system
 try:
-    from auth import AuthMiddleware, JWTHandler, PasswordHasher, RBACManager, UserManager
+    from auth import (
+        AuthMiddleware,
+        JWTHandler,
+        PasswordHasher,
+        RBACManager,
+        UserManager,
+    )
     from database.auth_models import init_auth_db
 
     NEW_AUTH_AVAILABLE = True
@@ -109,7 +127,9 @@ security = HTTPBearer()
 
 
 # Create unified verify_token that works with both systems
-async def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)) -> dict:
+async def verify_token(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+) -> dict:
     """
     Verify JWT token - uses new auth system if available, falls back to legacy
     """
@@ -172,7 +192,12 @@ async def lifespan(app: FastAPI):
             logger.info("Auth database initialized")
 
             # Create default admin user if not exists
-            from database.auth_models import SessionLocal, UserRole, create_user, get_user_by_username
+            from database.auth_models import (
+                SessionLocal,
+                UserRole,
+                create_user,
+                get_user_by_username,
+            )
 
             db = SessionLocal()
             try:
@@ -183,7 +208,9 @@ async def lifespan(app: FastAPI):
                         db,
                         username="admin",
                         email="admin@zen-pentest.local",
-                        hashed_password=_password_hasher.hash_password(admin_pass),
+                        hashed_password=_password_hasher.hash_password(
+                            admin_pass
+                        ),
                         role=UserRole.ADMIN,
                     )
                     logger.info("Default admin user created")
@@ -198,7 +225,10 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="Zen-AI-Pentest API", description="Professional Pentesting Framework API", version="2.2.0", lifespan=lifespan
+    title="Zen-AI-Pentest API",
+    description="Professional Pentesting Framework API",
+    version="2.2.0",
+    lifespan=lifespan,
 )
 
 # =============================================================================
@@ -207,7 +237,9 @@ app = FastAPI(
 # Load allowed origins from environment variable
 # Format: comma-separated list of origins
 # Example: CORS_ORIGINS=https://domain.com,https://app.domain.com
-cors_origins_str = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:8000")
+cors_origins_str = os.getenv(
+    "CORS_ORIGINS", "http://localhost:3000,http://localhost:8000"
+)
 ALLOWED_ORIGINS = [origin.strip() for origin in cors_origins_str.split(",")]
 
 app.add_middleware(
@@ -250,7 +282,9 @@ def verify_admin_credentials(username: str, password: str) -> bool:
     """Securely verify admin credentials using constant-time comparison"""
     import hmac
 
-    return hmac.compare_digest(username, ADMIN_USERNAME) and hmac.compare_digest(password, ADMIN_PASSWORD)
+    return hmac.compare_digest(
+        username, ADMIN_USERNAME
+    ) and hmac.compare_digest(password, ADMIN_PASSWORD)
 
 
 @app.post("/auth/login", response_model=TokenResponse)
@@ -274,7 +308,13 @@ async def login(credentials: UserLogin, request: Request):
         db = SessionLocal()
         try:
             # Authenticate user against database
-            user = _user_manager.authenticate_user(db, credentials.username, credentials.password, client_ip, user_agent)
+            user = _user_manager.authenticate_user(
+                db,
+                credentials.username,
+                credentials.password,
+                client_ip,
+                user_agent,
+            )
 
             if not user:
                 raise HTTPException(
@@ -284,7 +324,9 @@ async def login(credentials: UserLogin, request: Request):
                 )
 
             # Create session with tokens
-            session_data = _user_manager.create_session(db, user, client_ip, user_agent)
+            session_data = _user_manager.create_session(
+                db, user, client_ip, user_agent
+            )
 
             return {
                 "access_token": session_data["access_token"],
@@ -307,7 +349,9 @@ async def login(credentials: UserLogin, request: Request):
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    access_token = legacy_create_access_token(data={"sub": user["username"], "role": user["role"]})
+    access_token = legacy_create_access_token(
+        data={"sub": user["username"], "role": user["role"]}
+    )
 
     return {
         "access_token": access_token,
@@ -327,7 +371,10 @@ async def me(request: Request):
         if auth_header.startswith("Bearer "):
             token = auth_header[7:]
             try:
-                from auth.jwt_handler import TokenExpiredError, TokenInvalidError
+                from auth.jwt_handler import (
+                    TokenExpiredError,
+                    TokenInvalidError,
+                )
 
                 payload = _jwt_handler.decode_token(token)
                 return {
@@ -351,7 +398,10 @@ async def refresh_token(request: Request):
     Header: Authorization: Bearer <refresh_token>
     """
     if not NEW_AUTH_AVAILABLE or not _user_manager:
-        raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail="Token refresh not available with legacy auth")
+        raise HTTPException(
+            status_code=status.HTTP_501_NOT_IMPLEMENTED,
+            detail="Token refresh not available with legacy auth",
+        )
 
     auth_header = request.headers.get("Authorization", "")
     if not auth_header.startswith("Bearer "):
@@ -425,7 +475,9 @@ async def logout(request: Request, user: dict = Depends(verify_token)):
 
 
 @app.post("/auth/logout-all")
-async def logout_all_devices(request: Request, user: dict = Depends(verify_token)):
+async def logout_all_devices(
+    request: Request, user: dict = Depends(verify_token)
+):
     """
     Logout from all devices - revoke all sessions (Database-backed)
 
@@ -438,7 +490,9 @@ async def logout_all_devices(request: Request, user: dict = Depends(verify_token
         if user_id:
             db = SessionLocal()
             try:
-                count = _user_manager.revoke_all_user_sessions(db, int(user_id), "logout_all")
+                count = _user_manager.revoke_all_user_sessions(
+                    db, int(user_id), "logout_all"
+                )
                 return {"message": f"Logged out from {count} device(s)"}
             finally:
                 db.close()
@@ -462,7 +516,12 @@ async def create_new_scan(
 ):
     """Create a new pentest scan"""
     db_scan = create_scan(
-        db, name=scan.name, target=scan.target, scan_type=scan.scan_type, config=scan.config, user_id=user.get("sub")
+        db,
+        name=scan.name,
+        target=scan.target,
+        scan_type=scan.scan_type,
+        config=scan.config,
+        user_id=user.get("sub"),
     )
 
     # Start scan in background
@@ -473,7 +532,11 @@ async def create_new_scan(
 
 @app.get("/scans", response_model=List[ScanResponse])
 async def list_scans(
-    skip: int = 0, limit: int = 100, status: Optional[str] = None, user: dict = Depends(verify_token), db=Depends(get_db)
+    skip: int = 0,
+    limit: int = 100,
+    status: Optional[str] = None,
+    user: dict = Depends(verify_token),
+    db=Depends(get_db),
 ):
     """List all scans with optional filtering"""
     scans = get_scans(db, skip=skip, limit=limit, status=status)
@@ -481,7 +544,9 @@ async def list_scans(
 
 
 @app.get("/scans/{scan_id}", response_model=ScanResponse)
-async def get_scan_by_id(scan_id: int, user: dict = Depends(verify_token), db=Depends(get_db)):
+async def get_scan_by_id(
+    scan_id: int, user: dict = Depends(verify_token), db=Depends(get_db)
+):
     """Get scan details by ID"""
     scan = get_scan(db, scan_id)
     if not scan:
@@ -490,7 +555,12 @@ async def get_scan_by_id(scan_id: int, user: dict = Depends(verify_token), db=De
 
 
 @app.patch("/scans/{scan_id}", response_model=ScanResponse)
-async def update_scan(scan_id: int, update: ScanUpdate, user: dict = Depends(verify_token), db=Depends(get_db)):
+async def update_scan(
+    scan_id: int,
+    update: ScanUpdate,
+    user: dict = Depends(verify_token),
+    db=Depends(get_db),
+):
     """Update scan status or config"""
     scan = update_scan_status(db, scan_id, update.status, update.config)
     if not scan:
@@ -499,7 +569,9 @@ async def update_scan(scan_id: int, update: ScanUpdate, user: dict = Depends(ver
 
 
 @app.delete("/scans/{scan_id}")
-async def delete_scan(scan_id: int, user: dict = Depends(verify_token), db=Depends(get_db)):
+async def delete_scan(
+    scan_id: int, user: dict = Depends(verify_token), db=Depends(get_db)
+):
     """Delete a scan"""
     # Implementation here
     return {"message": "Scan deleted"}
@@ -512,7 +584,10 @@ async def delete_scan(scan_id: int, user: dict = Depends(verify_token), db=Depen
 
 @app.get("/scans/{scan_id}/findings", response_model=List[FindingResponse])
 async def get_scan_findings(
-    scan_id: int, severity: Optional[str] = None, user: dict = Depends(verify_token), db=Depends(get_db)
+    scan_id: int,
+    severity: Optional[str] = None,
+    user: dict = Depends(verify_token),
+    db=Depends(get_db),
 ):
     """Get all findings for a scan"""
     findings = get_findings(db, scan_id, severity)
@@ -520,7 +595,12 @@ async def get_scan_findings(
 
 
 @app.post("/scans/{scan_id}/findings", response_model=FindingResponse)
-async def add_finding(scan_id: int, finding: FindingCreate, user: dict = Depends(verify_token), db=Depends(get_db)):
+async def add_finding(
+    scan_id: int,
+    finding: FindingCreate,
+    user: dict = Depends(verify_token),
+    db=Depends(get_db),
+):
     """Add a finding to a scan"""
     db_finding = create_finding(
         db,
@@ -536,7 +616,12 @@ async def add_finding(scan_id: int, finding: FindingCreate, user: dict = Depends
 
 
 @app.patch("/findings/{finding_id}")
-async def update_finding(finding_id: int, update: dict, user: dict = Depends(verify_token), db=Depends(get_db)):
+async def update_finding(
+    finding_id: int,
+    update: dict,
+    user: dict = Depends(verify_token),
+    db=Depends(get_db),
+):
     """Update a finding"""
     from database.models import Finding
 
@@ -545,7 +630,15 @@ async def update_finding(finding_id: int, update: dict, user: dict = Depends(ver
         raise HTTPException(status_code=404, detail="Finding not found")
 
     # Update allowed fields
-    allowed_fields = ["title", "description", "severity", "cvss_score", "evidence", "remediation", "verified"]
+    allowed_fields = [
+        "title",
+        "description",
+        "severity",
+        "cvss_score",
+        "evidence",
+        "remediation",
+        "verified",
+    ]
 
     for field, value in update.items():
         if field in allowed_fields and hasattr(finding, field):
@@ -570,7 +663,10 @@ async def update_finding(finding_id: int, update: dict, user: dict = Depends(ver
 
 @app.post("/tools/execute", response_model=ToolExecuteResponse)
 async def execute_tool(
-    request: ToolExecuteRequest, background_tasks: BackgroundTasks, user: dict = Depends(verify_token), db=Depends(get_db)
+    request: ToolExecuteRequest,
+    background_tasks: BackgroundTasks,
+    user: dict = Depends(verify_token),
+    db=Depends(get_db),
 ):
     """Execute a pentesting tool"""
     # Create scan entry
@@ -584,9 +680,19 @@ async def execute_tool(
     )
 
     # Execute in background
-    background_tasks.add_task(execute_tool_task, db_scan.id, request.tool_name, request.target, request.parameters)
+    background_tasks.add_task(
+        execute_tool_task,
+        db_scan.id,
+        request.tool_name,
+        request.target,
+        request.parameters,
+    )
 
-    return ToolExecuteResponse(scan_id=db_scan.id, status="started", message=f"Tool {request.tool_name} execution started")
+    return ToolExecuteResponse(
+        scan_id=db_scan.id,
+        status="started",
+        message=f"Tool {request.tool_name} execution started",
+    )
 
 
 @app.get("/tools")
@@ -597,7 +703,13 @@ async def list_tools(user: dict = Depends(verify_token)):
     tools = []
     for name, func in TOOL_REGISTRY.items():
         if func:
-            tools.append({"name": name, "description": func.__doc__ or "No description", "category": get_tool_category(name)})
+            tools.append(
+                {
+                    "name": name,
+                    "description": func.__doc__ or "No description",
+                    "category": get_tool_category(name),
+                }
+            )
 
     return {"tools": tools}
 
@@ -634,28 +746,44 @@ def get_tool_category(tool_name: str) -> str:
 
 @app.post("/reports", response_model=ReportResponse)
 async def generate_report(
-    report: ReportCreate, background_tasks: BackgroundTasks, user: dict = Depends(verify_token), db=Depends(get_db)
+    report: ReportCreate,
+    background_tasks: BackgroundTasks,
+    user: dict = Depends(verify_token),
+    db=Depends(get_db),
 ):
     """Generate a report from scan findings"""
     db_report = create_report(
-        db, scan_id=report.scan_id, format=report.format, template=report.template, user_id=user.get("sub")
+        db,
+        scan_id=report.scan_id,
+        format=report.format,
+        template=report.template,
+        user_id=user.get("sub"),
     )
 
     # Generate in background
-    background_tasks.add_task(generate_report_task, db_report.id, report.scan_id, report.format)
+    background_tasks.add_task(
+        generate_report_task, db_report.id, report.scan_id, report.format
+    )
 
     return db_report
 
 
 @app.get("/reports", response_model=List[ReportResponse])
-async def list_reports(skip: int = 0, limit: int = 100, user: dict = Depends(verify_token), db=Depends(get_db)):
+async def list_reports(
+    skip: int = 0,
+    limit: int = 100,
+    user: dict = Depends(verify_token),
+    db=Depends(get_db),
+):
     """List all reports"""
     reports = get_reports(db, skip, limit)
     return reports
 
 
 @app.get("/reports/{report_id}/download")
-async def download_report(report_id: int, user: dict = Depends(verify_token), db=Depends(get_db)):
+async def download_report(
+    report_id: int, user: dict = Depends(verify_token), db=Depends(get_db)
+):
     """Download a generated report"""
     from fastapi.responses import FileResponse
 
@@ -663,7 +791,9 @@ async def download_report(report_id: int, user: dict = Depends(verify_token), db
     if not report or not report.file_path:
         raise HTTPException(status_code=404, detail="Report not found")
 
-    return FileResponse(report.file_path, filename=f"report_{report_id}.{report.format}")
+    return FileResponse(
+        report.file_path, filename=f"report_{report_id}.{report.format}"
+    )
 
 
 # ============================================================================
@@ -714,13 +844,19 @@ async def run_scan_task(scan_id: int, scan_config: dict):
         update_scan_status(db, scan_id, "running")
 
         # Notify via WebSocket
-        await ws_manager.broadcast_to_scan(scan_id, {"type": "status", "status": "running", "message": "Scan started"})
+        await ws_manager.broadcast_to_scan(
+            scan_id,
+            {"type": "status", "status": "running", "message": "Scan started"},
+        )
 
         # Run agent
         config = ReActAgentConfig(max_iterations=10)
         agent = ReActAgent(config)
 
-        result = agent.run(target=scan_config["target"], objective=scan_config.get("objective", "comprehensive scan"))
+        result = agent.run(
+            target=scan_config["target"],
+            objective=scan_config.get("objective", "comprehensive scan"),
+        )
 
         # Save findings
         for finding_data in result.get("findings", []):
@@ -734,7 +870,13 @@ async def run_scan_task(scan_id: int, scan_config: dict):
             )
 
         update_scan_status(
-            db, scan_id, "completed", {"result": result.get("final_message", ""), "iterations": result.get("iterations", 0)}
+            db,
+            scan_id,
+            "completed",
+            {
+                "result": result.get("final_message", ""),
+                "iterations": result.get("iterations", 0),
+            },
         )
 
         # Notify completion
@@ -752,12 +894,16 @@ async def run_scan_task(scan_id: int, scan_config: dict):
         logger.error(f"Scan task error: {e}")
         update_scan_status(db, scan_id, "failed", {"error": str(e)})
 
-        await ws_manager.broadcast_to_scan(scan_id, {"type": "error", "message": str(e)})
+        await ws_manager.broadcast_to_scan(
+            scan_id, {"type": "error", "message": str(e)}
+        )
     finally:
         db.close()
 
 
-async def execute_tool_task(scan_id: int, tool_name: str, target: str, parameters: dict):
+async def execute_tool_task(
+    scan_id: int, tool_name: str, target: str, parameters: dict
+):
     """Execute a single tool"""
     from tools import TOOL_REGISTRY
 
@@ -772,7 +918,12 @@ async def execute_tool_task(scan_id: int, tool_name: str, target: str, parameter
 
         # Save finding
         create_finding(
-            db, scan_id=scan_id, title=f"{tool_name} result", description=str(result)[:1000], severity="info", tool=tool_name
+            db,
+            scan_id=scan_id,
+            title=f"{tool_name} result",
+            description=str(result)[:1000],
+            severity="info",
+            tool=tool_name,
         )
 
         update_scan_status(db, scan_id, "completed")
@@ -830,25 +981,42 @@ async def health_check():
     import redis
     from sqlalchemy import text
 
-    health_status = {"status": "healthy", "version": "2.2.0", "timestamp": datetime.utcnow().isoformat(), "services": {}}
+    health_status = {
+        "status": "healthy",
+        "version": "2.2.0",
+        "timestamp": datetime.utcnow().isoformat(),
+        "services": {},
+    }
 
     # Check Database
     try:
         db = SessionLocal()
         db.execute(text("SELECT 1"))
         db.close()
-        health_status["services"]["database"] = {"status": "ok", "type": "postgresql"}
+        health_status["services"]["database"] = {
+            "status": "ok",
+            "type": "postgresql",
+        }
     except Exception as e:
-        health_status["services"]["database"] = {"status": "error", "error": str(e)}
+        health_status["services"]["database"] = {
+            "status": "error",
+            "error": str(e),
+        }
         health_status["status"] = "degraded"
 
     # Check Redis
     try:
-        redis_client = redis.from_url(os.getenv("REDIS_URL", "redis://localhost:6379/0"), socket_connect_timeout=2)
+        redis_client = redis.from_url(
+            os.getenv("REDIS_URL", "redis://localhost:6379/0"),
+            socket_connect_timeout=2,
+        )
         redis_client.ping()
         health_status["services"]["redis"] = {"status": "ok"}
     except Exception as e:
-        health_status["services"]["redis"] = {"status": "error", "error": str(e)}
+        health_status["services"]["redis"] = {
+            "status": "error",
+            "error": str(e),
+        }
         health_status["status"] = "degraded"
 
     # Check API selbst
@@ -864,7 +1032,12 @@ async def api_info():
         "name": "Zen-AI-Pentest API",
         "version": "2.0.0",
         "description": "Professional Pentesting Framework",
-        "endpoints": {"scans": "/scans", "findings": "/scans/{id}/findings", "tools": "/tools", "reports": "/reports"},
+        "endpoints": {
+            "scans": "/scans",
+            "findings": "/scans/{id}/findings",
+            "tools": "/tools",
+            "reports": "/reports",
+        },
     }
 
 
@@ -885,12 +1058,23 @@ async def websocket_endpoint(websocket: WebSocket, client_id: str):
             message = json.loads(data)
 
             if message.get("type") == "ping":
-                await manager.send_personal_message({"type": "pong", "timestamp": datetime.utcnow().isoformat()}, websocket)
+                await manager.send_personal_message(
+                    {
+                        "type": "pong",
+                        "timestamp": datetime.utcnow().isoformat(),
+                    },
+                    websocket,
+                )
 
             elif message.get("type") == "subscribe":
                 channel = message.get("channel", "general")
                 await manager.send_personal_message(
-                    {"type": "subscribed", "channel": channel, "client_id": client_id}, websocket
+                    {
+                        "type": "subscribed",
+                        "channel": channel,
+                        "client_id": client_id,
+                    },
+                    websocket,
                 )
 
     except WebSocketDisconnect:
@@ -910,9 +1094,13 @@ class SimpleAgentConnection:
 
     def __init__(self):
         self.active_connections: dict[str, WebSocket] = {}
-        self.agent_info: dict[str, dict] = {}  # agent_id -> {api_key, connected_at, ...}
+        self.agent_info: dict[str, dict] = (
+            {}
+        )  # agent_id -> {api_key, connected_at, ...}
 
-    async def connect(self, websocket: WebSocket, agent_id: str, api_key: str = None):
+    async def connect(
+        self, websocket: WebSocket, agent_id: str, api_key: str = None
+    ):
         await websocket.accept()
         self.active_connections[agent_id] = websocket
         self.agent_info[agent_id] = {
@@ -934,7 +1122,9 @@ class SimpleAgentConnection:
         if agent_id in self.active_connections:
             try:
                 await self.active_connections[agent_id].send_json(message)
-                self.agent_info[agent_id]["last_seen"] = datetime.utcnow().isoformat()
+                self.agent_info[agent_id][
+                    "last_seen"
+                ] = datetime.utcnow().isoformat()
                 return True
             except Exception as e:
                 logger.error(f"❌ Failed to send to {agent_id}: {e}")
@@ -943,14 +1133,23 @@ class SimpleAgentConnection:
 
     async def send_task(self, agent_id: str, task: dict) -> bool:
         """Send task to agent"""
-        return await self.send_to_agent(agent_id, {"type": "task", "task": task, "timestamp": datetime.utcnow().isoformat()})
+        return await self.send_to_agent(
+            agent_id,
+            {
+                "type": "task",
+                "task": task,
+                "timestamp": datetime.utcnow().isoformat(),
+            },
+        )
 
     async def broadcast(self, message: dict, exclude: Optional[str] = None):
         for agent_id, ws in self.active_connections.items():
             if agent_id != exclude:
                 try:
                     await ws.send_json(message)
-                    self.agent_info[agent_id]["last_seen"] = datetime.utcnow().isoformat()
+                    self.agent_info[agent_id][
+                        "last_seen"
+                    ] = datetime.utcnow().isoformat()
                 except Exception as e:
                     logger.error(f"❌ Failed to send to {agent_id}: {e}")
 
@@ -988,7 +1187,12 @@ async def agent_websocket_endpoint(websocket: WebSocket):
         auth_data = await websocket.receive_json()
 
         if auth_data.get("type") != "auth":
-            await websocket.send_json({"type": "auth_failed", "error": "Expected auth message with type 'auth'"})
+            await websocket.send_json(
+                {
+                    "type": "auth_failed",
+                    "error": "Expected auth message with type 'auth'",
+                }
+            )
             await websocket.close()
             return
 
@@ -997,14 +1201,18 @@ async def agent_websocket_endpoint(websocket: WebSocket):
         auth_data.get("api_secret")
 
         if not agent_id:
-            await websocket.send_json({"type": "auth_failed", "error": "agent_id required"})
+            await websocket.send_json(
+                {"type": "auth_failed", "error": "agent_id required"}
+            )
             await websocket.close()
             return
 
         # Validate API Key (simple check for now)
         # In production: Use AgentAuthenticator to validate
         if not api_key or not api_key.startswith("zen_"):
-            await websocket.send_json({"type": "auth_failed", "error": "Invalid API key format"})
+            await websocket.send_json(
+                {"type": "auth_failed", "error": "Invalid API key format"}
+            )
             await websocket.close()
             return
 
@@ -1012,10 +1220,16 @@ async def agent_websocket_endpoint(websocket: WebSocket):
         await agent_connection_manager.connect(websocket, agent_id, api_key)
 
         await websocket.send_json(
-            {"type": "auth_success", "agent_id": agent_id, "message": "Connected to Zen-AI-Pentest Agent Network"}
+            {
+                "type": "auth_success",
+                "agent_id": agent_id,
+                "message": "Connected to Zen-AI-Pentest Agent Network",
+            }
         )
 
-        logger.info(f"🔌 Agent {agent_id} authenticated with API key {api_key[:15]}...")
+        logger.info(
+            f"🔌 Agent {agent_id} authenticated with API key {api_key[:15]}..."
+        )
 
         # Main message loop
         while True:
@@ -1028,11 +1242,15 @@ async def agent_websocket_endpoint(websocket: WebSocket):
                     task_id = data.get("task_id")
                     result = data.get("result", {})
 
-                    logger.info(f"✅ Task result received from {agent_id}: {task_id}")
+                    logger.info(
+                        f"✅ Task result received from {agent_id}: {task_id}"
+                    )
 
                     # Forward to workflow orchestrator
                     try:
-                        from agents.workflows.orchestrator import get_workflow_orchestrator
+                        from agents.workflows.orchestrator import (
+                            get_workflow_orchestrator,
+                        )
 
                         orchestrator = get_workflow_orchestrator()
                         await orchestrator.submit_task_result(task_id, result)
@@ -1051,7 +1269,9 @@ async def agent_websocket_endpoint(websocket: WebSocket):
                 elif msg_type == "task_ack":
                     # Agent acknowledged task receipt
                     task_id = data.get("task_id")
-                    logger.debug(f"📋 Task {task_id} acknowledged by {agent_id}")
+                    logger.debug(
+                        f"📋 Task {task_id} acknowledged by {agent_id}"
+                    )
 
                 elif msg_type == "message":
                     # Agent-to-agent messaging
@@ -1090,7 +1310,12 @@ async def agent_websocket_endpoint(websocket: WebSocket):
                         )
 
                 elif msg_type == "heartbeat":
-                    await websocket.send_json({"type": "heartbeat_ack", "timestamp": datetime.utcnow().isoformat()})
+                    await websocket.send_json(
+                        {
+                            "type": "heartbeat_ack",
+                            "timestamp": datetime.utcnow().isoformat(),
+                        }
+                    )
 
                 elif msg_type == "disconnect":
                     break
@@ -1098,7 +1323,9 @@ async def agent_websocket_endpoint(websocket: WebSocket):
             except WebSocketDisconnect:
                 break
             except json.JSONDecodeError:
-                await websocket.send_json({"type": "error", "error": "Invalid JSON"})
+                await websocket.send_json(
+                    {"type": "error", "error": "Invalid JSON"}
+                )
             except Exception as e:
                 logger.error(f"WebSocket message error: {e}")
                 await websocket.send_json({"type": "error", "error": str(e)})
@@ -1122,7 +1349,11 @@ SCHEDULE_ID_COUNTER = 1
 
 
 @app.post("/schedules", response_model=ScheduledScanResponse)
-async def create_schedule(schedule: ScheduledScanCreate, user: dict = Depends(verify_token), db=Depends(get_db)):
+async def create_schedule(
+    schedule: ScheduledScanCreate,
+    user: dict = Depends(verify_token),
+    db=Depends(get_db),
+):
     """Create a new scheduled scan"""
     global SCHEDULE_ID_COUNTER
 
@@ -1139,7 +1370,11 @@ async def create_schedule(schedule: ScheduledScanCreate, user: dict = Depends(ve
         "notification_slack": schedule.notification_slack,
         "last_run_at": None,
         "last_run_status": None,
-        "next_run_at": calculate_next_run(schedule.frequency.value, schedule.schedule_time, schedule.schedule_day),
+        "next_run_at": calculate_next_run(
+            schedule.frequency.value,
+            schedule.schedule_time,
+            schedule.schedule_day,
+        ),
         "created_at": datetime.utcnow(),
         "created_by": user.get("sub", "unknown"),
     }
@@ -1151,13 +1386,17 @@ async def create_schedule(schedule: ScheduledScanCreate, user: dict = Depends(ve
 
 
 @app.get("/schedules", response_model=List[ScheduledScanResponse])
-async def list_schedules(user: dict = Depends(verify_token), db=Depends(get_db)):
+async def list_schedules(
+    user: dict = Depends(verify_token), db=Depends(get_db)
+):
     """List all scheduled scans"""
     return SCHEDULED_SCANS
 
 
 @app.get("/schedules/{schedule_id}", response_model=ScheduledScanResponse)
-async def get_schedule(schedule_id: int, user: dict = Depends(verify_token), db=Depends(get_db)):
+async def get_schedule(
+    schedule_id: int, user: dict = Depends(verify_token), db=Depends(get_db)
+):
     """Get a specific scheduled scan"""
     for schedule in SCHEDULED_SCANS:
         if schedule["id"] == schedule_id:
@@ -1167,7 +1406,10 @@ async def get_schedule(schedule_id: int, user: dict = Depends(verify_token), db=
 
 @app.patch("/schedules/{schedule_id}", response_model=ScheduledScanResponse)
 async def update_schedule(
-    schedule_id: int, update: ScheduledScanUpdate, user: dict = Depends(verify_token), db=Depends(get_db)
+    schedule_id: int,
+    update: ScheduledScanUpdate,
+    user: dict = Depends(verify_token),
+    db=Depends(get_db),
 ):
     """Update a scheduled scan"""
     for schedule in SCHEDULED_SCANS:
@@ -1178,9 +1420,15 @@ async def update_schedule(
                     schedule[field] = value
 
             # Recalculate next run if schedule changed
-            if update.frequency or update.schedule_time or update.schedule_day is not None:
+            if (
+                update.frequency
+                or update.schedule_time
+                or update.schedule_day is not None
+            ):
                 schedule["next_run_at"] = calculate_next_run(
-                    schedule["frequency"], schedule["schedule_time"], schedule["schedule_day"]
+                    schedule["frequency"],
+                    schedule["schedule_time"],
+                    schedule["schedule_day"],
                 )
 
             return schedule
@@ -1188,7 +1436,9 @@ async def update_schedule(
 
 
 @app.delete("/schedules/{schedule_id}")
-async def delete_schedule(schedule_id: int, user: dict = Depends(verify_token), db=Depends(get_db)):
+async def delete_schedule(
+    schedule_id: int, user: dict = Depends(verify_token), db=Depends(get_db)
+):
     """Delete a scheduled scan"""
     global SCHEDULED_SCANS
     for i, schedule in enumerate(SCHEDULED_SCANS):
@@ -1200,17 +1450,24 @@ async def delete_schedule(schedule_id: int, user: dict = Depends(verify_token), 
 
 @app.post("/schedules/{schedule_id}/run")
 async def run_schedule_now(
-    schedule_id: int, background_tasks: BackgroundTasks, user: dict = Depends(verify_token), db=Depends(get_db)
+    schedule_id: int,
+    background_tasks: BackgroundTasks,
+    user: dict = Depends(verify_token),
+    db=Depends(get_db),
 ):
     """Manually trigger a scheduled scan"""
     for schedule in SCHEDULED_SCANS:
         if schedule["id"] == schedule_id:
-            background_tasks.add_task(execute_scheduled_scan, schedule, user.get("sub"))
+            background_tasks.add_task(
+                execute_scheduled_scan, schedule, user.get("sub")
+            )
             return {"message": "Scan triggered"}
     raise HTTPException(status_code=404, detail="Schedule not found")
 
 
-def calculate_next_run(frequency: str, time_str: str, day: Optional[int] = None) -> datetime:
+def calculate_next_run(
+    frequency: str, time_str: str, day: Optional[int] = None
+) -> datetime:
     """Calculate the next run time for a schedule"""
     from datetime import timedelta
 
@@ -1233,7 +1490,9 @@ def calculate_next_run(frequency: str, time_str: str, day: Optional[int] = None)
     elif frequency == "monthly":
         # Simplified: run on the first of next month
         if now.day > 1 or (now.day == 1 and next_run <= now):
-            next_run = next_run.replace(month=now.month + 1 if now.month < 12 else 1)
+            next_run = next_run.replace(
+                month=now.month + 1 if now.month < 12 else 1
+            )
             if next_run.month == 1:
                 next_run = next_run.replace(year=next_run.year + 1)
 
@@ -1278,7 +1537,9 @@ async def execute_scheduled_scan(schedule: dict, user_id: str):
 
         # Calculate next run
         schedule["next_run_at"] = calculate_next_run(
-            schedule["frequency"], schedule["schedule_time"], schedule.get("schedule_day")
+            schedule["frequency"],
+            schedule["schedule_time"],
+            schedule.get("schedule_day"),
         )
 
         # Send notifications
@@ -1296,7 +1557,9 @@ async def execute_scheduled_scan(schedule: dict, user_id: str):
 
 async def send_email_notification(schedule: dict, scan_id: int):
     """Send email notification"""
-    logger.info(f"Would send email to {schedule['notification_email']} for scan {scan_id}")
+    logger.info(
+        f"Would send email to {schedule['notification_email']} for scan {scan_id}"
+    )
 
 
 async def send_slack_notification(schedule: dict, scan_id: int):
@@ -1310,7 +1573,9 @@ async def send_slack_notification(schedule: dict, scan_id: int):
 
 
 @app.get("/stats/overview")
-async def get_stats_overview(user: dict = Depends(verify_token), db=Depends(get_db)):
+async def get_stats_overview(
+    user: dict = Depends(verify_token), db=Depends(get_db)
+):
     """Get dashboard statistics overview"""
     from sqlalchemy import func
 
@@ -1325,10 +1590,19 @@ async def get_stats_overview(user: dict = Depends(verify_token), db=Depends(get_
     total_findings = db.query(Finding).count()
 
     # Severity distribution
-    severity_counts = db.query(Finding.severity, func.count(Finding.id)).group_by(Finding.severity).all()
+    severity_counts = (
+        db.query(Finding.severity, func.count(Finding.id))
+        .group_by(Finding.severity)
+        .all()
+    )
 
     severity_distribution = [
-        {"name": sev.capitalize(), "value": count, "color": get_severity_color(sev)} for sev, count in severity_counts
+        {
+            "name": sev.capitalize(),
+            "value": count,
+            "color": get_severity_color(sev),
+        }
+        for sev, count in severity_counts
     ]
 
     # Fill missing severities
@@ -1336,14 +1610,22 @@ async def get_stats_overview(user: dict = Depends(verify_token), db=Depends(get_
     existing = {s["name"].lower(): s for s in severity_distribution}
     for sev in all_severities:
         if sev not in existing:
-            severity_distribution.append({"name": sev.capitalize(), "value": 0, "color": get_severity_color(sev)})
+            severity_distribution.append(
+                {
+                    "name": sev.capitalize(),
+                    "value": 0,
+                    "color": get_severity_color(sev),
+                }
+            )
 
     return {
         "total_scans": total_scans,
         "completed_scans": completed_scans,
         "running_scans": running_scans,
         "total_findings": total_findings,
-        "critical_findings": sum(1 for s in severity_counts if s[0] == "critical"),
+        "critical_findings": sum(
+            1 for s in severity_counts if s[0] == "critical"
+        ),
         "severity_distribution": severity_distribution,
         "trends": [],  # TODO: Implement trends
         "tool_usage": [],  # TODO: Implement tool usage
@@ -1352,31 +1634,49 @@ async def get_stats_overview(user: dict = Depends(verify_token), db=Depends(get_
 
 def get_severity_color(severity: str) -> str:
     """Get color for severity level"""
-    colors = {"critical": "#ef4444", "high": "#f97316", "medium": "#eab308", "low": "#22c55e", "info": "#3b82f6"}
+    colors = {
+        "critical": "#ef4444",
+        "high": "#f97316",
+        "medium": "#eab308",
+        "low": "#22c55e",
+        "info": "#3b82f6",
+    }
     return colors.get(severity.lower(), "#6b7280")
 
 
 @app.get("/stats/trends")
-async def get_stats_trends(days: int = 30, user: dict = Depends(verify_token), db=Depends(get_db)):
+async def get_stats_trends(
+    days: int = 30, user: dict = Depends(verify_token), db=Depends(get_db)
+):
     """Get scan trends for the last N days"""
     # TODO: Implement trend calculation
     return []
 
 
 @app.get("/stats/severity")
-async def get_severity_stats(user: dict = Depends(verify_token), db=Depends(get_db)):
+async def get_severity_stats(
+    user: dict = Depends(verify_token), db=Depends(get_db)
+):
     """Get findings by severity"""
     from sqlalchemy import func
 
     from database.models import Finding
 
-    severity_counts = db.query(Finding.severity, func.count(Finding.id)).group_by(Finding.severity).all()
+    severity_counts = (
+        db.query(Finding.severity, func.count(Finding.id))
+        .group_by(Finding.severity)
+        .all()
+    )
 
-    return [{"severity": sev, "count": count} for sev, count in severity_counts]
+    return [
+        {"severity": sev, "count": count} for sev, count in severity_counts
+    ]
 
 
 @app.get("/stats/tools")
-async def get_tool_usage(user: dict = Depends(verify_token), db=Depends(get_db)):
+async def get_tool_usage(
+    user: dict = Depends(verify_token), db=Depends(get_db)
+):
     """Get tool usage statistics"""
     # TODO: Implement tool usage tracking
     return []
@@ -1399,7 +1699,9 @@ def _validate_slack_webhook_url(webhook_url: str) -> str:
 
     try:
         # Reuse centralized validation logic from notifications.slack
-        from notifications.slack import _validate_slack_webhook_url as _core_validate_slack_webhook_url
+        from notifications.slack import (
+            _validate_slack_webhook_url as _core_validate_slack_webhook_url,
+        )
 
         return _core_validate_slack_webhook_url(webhook_url)
     except ValueError as e:
@@ -1408,7 +1710,9 @@ def _validate_slack_webhook_url(webhook_url: str) -> str:
 
 
 @app.post("/notifications/slack/test")
-async def test_slack_notification(webhook_url: str, user: dict = Depends(verify_token)):
+async def test_slack_notification(
+    webhook_url: str, user: dict = Depends(verify_token)
+):
     """Test Slack webhook configuration"""
     try:
         from notifications.slack import SlackNotifier
@@ -1421,7 +1725,9 @@ async def test_slack_notification(webhook_url: str, user: dict = Depends(verify_
         if success:
             return {"status": "success", "message": "Test notification sent"}
         else:
-            raise HTTPException(status_code=400, detail="Failed to send Slack notification")
+            raise HTTPException(
+                status_code=400, detail="Failed to send Slack notification"
+            )
     except HTTPException:
         # Re-raise validation errors without wrapping in 500
         raise
@@ -1430,7 +1736,12 @@ async def test_slack_notification(webhook_url: str, user: dict = Depends(verify_
 
 
 @app.post("/notifications/slack/scan-complete")
-async def notify_slack_scan_complete(scan_id: int, webhook_url: str, user: dict = Depends(verify_token), db=Depends(get_db)):
+async def notify_slack_scan_complete(
+    scan_id: int,
+    webhook_url: str,
+    user: dict = Depends(verify_token),
+    db=Depends(get_db),
+):
     """Send Slack notification for scan completion"""
     try:
         from database.models import Finding, Scan
@@ -1451,13 +1762,18 @@ async def notify_slack_scan_complete(scan_id: int, webhook_url: str, user: dict 
         # Send notification
         notifier = SlackNotifier(safe_webhook_url)
         success = notifier.send_scan_completed(
-            scan_id=scan_id, target=scan.target, findings_count=findings_count, critical_count=critical_count
+            scan_id=scan_id,
+            target=scan.target,
+            findings_count=findings_count,
+            critical_count=critical_count,
         )
 
         if success:
             return {"status": "success", "message": "Notification sent"}
         else:
-            raise HTTPException(status_code=400, detail="Failed to send notification")
+            raise HTTPException(
+                status_code=400, detail="Failed to send notification"
+            )
     except HTTPException:
         # Re-raise validation errors without wrapping in 500
         raise
@@ -1472,11 +1788,16 @@ SLACK_CONFIG = {"webhook_url": None, "enabled": False}
 @app.get("/settings/slack")
 async def get_slack_settings(user: dict = Depends(verify_token)):
     """Get Slack configuration (without sensitive data)"""
-    return {"enabled": SLACK_CONFIG["enabled"], "configured": SLACK_CONFIG["webhook_url"] is not None}
+    return {
+        "enabled": SLACK_CONFIG["enabled"],
+        "configured": SLACK_CONFIG["webhook_url"] is not None,
+    }
 
 
 @app.post("/settings/slack")
-async def update_slack_settings(webhook_url: str, enabled: bool = True, user: dict = Depends(verify_token)):
+async def update_slack_settings(
+    webhook_url: str, enabled: bool = True, user: dict = Depends(verify_token)
+):
     """Update Slack configuration"""
     global SLACK_CONFIG
     SLACK_CONFIG["webhook_url"] = webhook_url
@@ -1503,7 +1824,11 @@ async def get_jira_settings(user: dict = Depends(verify_token)):
 
 @app.post("/settings/jira")
 async def update_jira_settings(
-    base_url: str, username: str, api_token: str, enabled: bool = True, user: dict = Depends(verify_token)
+    base_url: str,
+    username: str,
+    api_token: str,
+    enabled: bool = True,
+    user: dict = Depends(verify_token),
 ):
     """Update JIRA configuration"""
     from integrations.jira_client import JIRA_CONFIG
@@ -1544,7 +1869,12 @@ async def get_jira_projects(user: dict = Depends(verify_token)):
 
 
 @app.post("/integrations/jira/create-ticket")
-async def create_jira_ticket(finding_id: int, project_key: str, user: dict = Depends(verify_token), db=Depends(get_db)):
+async def create_jira_ticket(
+    finding_id: int,
+    project_key: str,
+    user: dict = Depends(verify_token),
+    db=Depends(get_db),
+):
     """Create JIRA ticket from finding"""
     from database.models import Finding
     from integrations.jira_client import get_jira_client
@@ -1588,7 +1918,9 @@ async def create_jira_ticket(finding_id: int, project_key: str, user: dict = Dep
 try:
     from api.v1.siem import router as siem_v1_router
 
-    app.include_router(siem_v1_router, prefix="/api/v1/siem", tags=["SIEM v1.0"])
+    app.include_router(
+        siem_v1_router, prefix="/api/v1/siem", tags=["SIEM v1.0"]
+    )
     logger.info("API v1.0 SIEM endpoints loaded")
 except ImportError as e:
     logger.warning(f"Could not load SIEM v1.0 endpoints: {e}")
@@ -1596,7 +1928,9 @@ except ImportError as e:
 try:
     from api.v1.dashboard import router as dashboard_v1_router
 
-    app.include_router(dashboard_v1_router, prefix="/api/v1", tags=["Dashboard v1.0"])
+    app.include_router(
+        dashboard_v1_router, prefix="/api/v1", tags=["Dashboard v1.0"]
+    )
     logger.info("API v1.0 Dashboard endpoints loaded")
 except ImportError as e:
     logger.warning(f"Could not load Dashboard v1.0 endpoints: {e}")
@@ -1604,7 +1938,9 @@ except ImportError as e:
 try:
     from api.v1.scans_extended import router as scans_v1_router
 
-    app.include_router(scans_v1_router, prefix="/api/v1/scans-extended", tags=["Scans v1.0"])
+    app.include_router(
+        scans_v1_router, prefix="/api/v1/scans-extended", tags=["Scans v1.0"]
+    )
     logger.info("API v1.0 Scans endpoints loaded")
 except ImportError as e:
     logger.warning(f"Could not load Scans v1.0 endpoints: {e}")
@@ -1613,7 +1949,9 @@ except ImportError as e:
 try:
     from api.routes.subdomain import router as subdomain_router
 
-    app.include_router(subdomain_router, prefix="/api/v1/subdomain", tags=["Subdomain"])
+    app.include_router(
+        subdomain_router, prefix="/api/v1/subdomain", tags=["Subdomain"]
+    )
     logger.info("Subdomain scanning endpoints loaded")
 except ImportError as e:
     logger.warning(f"Could not load Subdomain endpoints: {e}")

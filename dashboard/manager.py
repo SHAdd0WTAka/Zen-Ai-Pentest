@@ -78,12 +78,16 @@ class DashboardManager:
 
         # Start WebSocket
         if self.config.websocket_enabled:
-            self.websocket = DashboardWebSocket(max_connections=self.config.max_connections)
+            self.websocket = DashboardWebSocket(
+                max_connections=self.config.max_connections
+            )
             await self.websocket.start()
 
         # Start metrics collector
         if self.config.metrics_enabled:
-            self.metrics = MetricsCollector(collection_interval=self.config.metrics_interval)
+            self.metrics = MetricsCollector(
+                collection_interval=self.config.metrics_interval
+            )
             self.metrics.on_metrics(self._on_metrics_collected)
             await self.metrics.start()
 
@@ -121,9 +125,13 @@ class DashboardManager:
 
         return 0
 
-    async def broadcast_task_progress(self, task_id: str, progress: float, message: str = "", **kwargs) -> int:
+    async def broadcast_task_progress(
+        self, task_id: str, progress: float, message: str = "", **kwargs
+    ) -> int:
         """Broadcast task progress update"""
-        event = DashboardEvent.task_progress(task_id=task_id, progress=progress, message=message, **kwargs)
+        event = DashboardEvent.task_progress(
+            task_id=task_id, progress=progress, message=message, **kwargs
+        )
         return await self.broadcast(event)
 
     async def broadcast_system_metrics(self, metrics: Dict[str, Any]) -> int:
@@ -131,12 +139,16 @@ class DashboardManager:
         event = DashboardEvent.system_metrics(metrics)
         return await self.broadcast(event)
 
-    async def broadcast_security_alert(self, alert_type: str, severity: str, details: Dict[str, Any]) -> int:
+    async def broadcast_security_alert(
+        self, alert_type: str, severity: str, details: Dict[str, Any]
+    ) -> int:
         """Broadcast security alert"""
         event = DashboardEvent.security_alert(alert_type, severity, details)
         return await self.broadcast(event)
 
-    async def broadcast_notification(self, title: str, message: str, level: str = "info") -> int:
+    async def broadcast_notification(
+        self, title: str, message: str, level: str = "info"
+    ) -> int:
         """Broadcast user notification"""
         event = DashboardEvent(
             type=EventType.NOTIFICATION,
@@ -154,7 +166,9 @@ class DashboardManager:
 
     # ==================== WebSocket Integration ====================
 
-    async def handle_websocket_connect(self, websocket, user_id: Optional[str] = None) -> str:
+    async def handle_websocket_connect(
+        self, websocket, user_id: Optional[str] = None
+    ) -> str:
         """Handle new WebSocket connection"""
         if not self.websocket:
             raise RuntimeError("WebSocket not enabled")
@@ -173,7 +187,9 @@ class DashboardManager:
         if self.websocket:
             await self.websocket.disconnect(connection_id)
 
-    async def handle_websocket_message(self, connection_id: str, message: Dict[str, Any]) -> None:
+    async def handle_websocket_message(
+        self, connection_id: str, message: Dict[str, Any]
+    ) -> None:
         """Handle incoming WebSocket message"""
         if self.websocket:
             await self.websocket.handle_message(connection_id, message)
@@ -211,7 +227,9 @@ class DashboardManager:
         """Get dashboard statistics"""
         stats = {
             "running": self._running,
-            "started_at": self._started_at.isoformat() if self._started_at else None,
+            "started_at": (
+                self._started_at.isoformat() if self._started_at else None
+            ),
             "buffered_events": len(self._event_buffer),
         }
 
@@ -239,6 +257,14 @@ class DashboardManager:
         return {
             "status": "healthy" if self._running else "stopped",
             "dashboard": "running" if self._running else "stopped",
-            "websocket": "running" if self.websocket and self.websocket._running else "stopped",
-            "metrics": "running" if self.metrics and self.metrics._running else "stopped",
+            "websocket": (
+                "running"
+                if self.websocket and self.websocket._running
+                else "stopped"
+            ),
+            "metrics": (
+                "running"
+                if self.metrics and self.metrics._running
+                else "stopped"
+            ),
         }

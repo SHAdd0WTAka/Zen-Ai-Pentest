@@ -35,7 +35,13 @@ def setup_branch_protection():
     data = {
         "required_status_checks": {
             "strict": True,
-            "contexts": ["backend (3.13)", "frontend", "pre-commit", "docker", "ci-summary"],
+            "contexts": [
+                "backend (3.13)",
+                "frontend",
+                "pre-commit",
+                "docker",
+                "ci-summary",
+            ],
         },
         "enforce_admins": True,
         "required_pull_request_reviews": {
@@ -139,7 +145,9 @@ def verify_branch_protection():
             print("\n⚠️  Branch Protection: Not configured")
             return False
         else:
-            print(f"\n⚠️  Could not verify status (HTTP {response.status_code})")
+            print(
+                f"\n⚠️  Could not verify status (HTTP {response.status_code})"
+            )
             return False
     except Exception as e:
         print(f"\n⚠️  Could not verify status: {e}")
@@ -169,5 +177,7 @@ if __name__ == "__main__":
     else:
         print("\n❌ Setup cancelled")
         print("\nYou can manually configure branch protection at:")
-        print("   https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/settings/branches")
+        print(
+            "   https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/settings/branches"
+        )
         sys.exit(0)

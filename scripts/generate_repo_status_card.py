@@ -12,7 +12,9 @@ from pathlib import Path
 def install_package(package):
     import subprocess
 
-    subprocess.check_call([sys.executable, "-m", "pip", "install", package, "-q"])
+    subprocess.check_call(
+        [sys.executable, "-m", "pip", "install", package, "-q"]
+    )
 
 
 try:
@@ -46,7 +48,11 @@ def get_repo_stats():
         "security": "2 alerts",
     }
     try:
-        result = subprocess.run(["git", "-C", str(BASE_DIR), "log", "--oneline", "-1"], capture_output=True, text=True)
+        result = subprocess.run(
+            ["git", "-C", str(BASE_DIR), "log", "--oneline", "-1"],
+            capture_output=True,
+            text=True,
+        )
         if result.returncode == 0:
             stats["last_commit"] = result.stdout.strip()[:40]
     except Exception:
@@ -100,7 +106,12 @@ def generate_status_card():
 
     # Header-Bereich
     draw.text((30, 20), "Zen-AI-Pentest", fill=text_color, font=title_font)
-    draw.text((30, 55), f"v{stats['version']} | {stats['date']}", fill=accent_color, font=text_font)
+    draw.text(
+        (30, 55),
+        f"v{stats['version']} | {stats['date']}",
+        fill=accent_color,
+        font=text_font,
+    )
 
     # Linie unter Header
     draw.line([(30, 80), (width - 30, 80)], fill=(48, 54, 61), width=1)
@@ -113,43 +124,103 @@ def generate_status_card():
     # Box 1: Integrations
     x1 = 30
     draw.rounded_rectangle(
-        [x1, box_y, x1 + box_width, box_y + box_height], radius=8, fill=(22, 27, 34), outline=accent_color, width=2
+        [x1, box_y, x1 + box_width, box_y + box_height],
+        radius=8,
+        fill=(22, 27, 34),
+        outline=accent_color,
+        width=2,
     )
-    draw.text((x1 + 10, box_y + 8), "Integrations", fill=text_color, font=header_font)
-    draw.text((x1 + 10, box_y + 32), f"Telegram: {stats['telegram']}", fill=green_color, font=text_font)
-    draw.text((x1 + 10, box_y + 48), f"Discord: {stats['discord']}", fill=green_color, font=text_font)
+    draw.text(
+        (x1 + 10, box_y + 8), "Integrations", fill=text_color, font=header_font
+    )
+    draw.text(
+        (x1 + 10, box_y + 32),
+        f"Telegram: {stats['telegram']}",
+        fill=green_color,
+        font=text_font,
+    )
+    draw.text(
+        (x1 + 10, box_y + 48),
+        f"Discord: {stats['discord']}",
+        fill=green_color,
+        font=text_font,
+    )
 
     # Box 2: Compliance
     x2 = x1 + box_width + 15
     draw.rounded_rectangle(
-        [x2, box_y, x2 + box_width, box_y + box_height], radius=8, fill=(22, 27, 34), outline=accent_color, width=2
+        [x2, box_y, x2 + box_width, box_y + box_height],
+        radius=8,
+        fill=(22, 27, 34),
+        outline=accent_color,
+        width=2,
     )
-    draw.text((x2 + 10, box_y + 8), "Compliance", fill=text_color, font=header_font)
-    draw.text((x2 + 10, box_y + 35), f"ISO 27001: {stats['iso27001']}", fill=yellow_color, font=text_font)
+    draw.text(
+        (x2 + 10, box_y + 8), "Compliance", fill=text_color, font=header_font
+    )
+    draw.text(
+        (x2 + 10, box_y + 35),
+        f"ISO 27001: {stats['iso27001']}",
+        fill=yellow_color,
+        font=text_font,
+    )
 
     # Box 3: Stats
     x3 = x2 + box_width + 15
     draw.rounded_rectangle(
-        [x3, box_y, x3 + box_width, box_y + box_height], radius=8, fill=(22, 27, 34), outline=accent_color, width=2
+        [x3, box_y, x3 + box_width, box_y + box_height],
+        radius=8,
+        fill=(22, 27, 34),
+        outline=accent_color,
+        width=2,
     )
-    draw.text((x3 + 10, box_y + 8), "Repository", fill=text_color, font=header_font)
-    draw.text((x3 + 10, box_y + 28), f"Workflows: {stats['workflows']}", fill=gray_color, font=text_font)
-    draw.text((x3 + 10, box_y + 44), f"Tests: {stats['tests']}", fill=gray_color, font=text_font)
+    draw.text(
+        (x3 + 10, box_y + 8), "Repository", fill=text_color, font=header_font
+    )
+    draw.text(
+        (x3 + 10, box_y + 28),
+        f"Workflows: {stats['workflows']}",
+        fill=gray_color,
+        font=text_font,
+    )
+    draw.text(
+        (x3 + 10, box_y + 44),
+        f"Tests: {stats['tests']}",
+        fill=gray_color,
+        font=text_font,
+    )
 
     # Unterer Bereich
     bottom_y = 200
 
     # Security Status
-    draw.text((30, bottom_y), f"Security: {stats['security']}", fill=yellow_color, font=text_font)
-    draw.text((30, bottom_y + 20), f"Last Update: {stats['date']}", fill=gray_color, font=small_font)
+    draw.text(
+        (30, bottom_y),
+        f"Security: {stats['security']}",
+        fill=yellow_color,
+        font=text_font,
+    )
+    draw.text(
+        (30, bottom_y + 20),
+        f"Last Update: {stats['date']}",
+        fill=gray_color,
+        font=small_font,
+    )
 
     # QR Code (rechts unten) - Link to AGENTS.md for AI Agents
-    qr_url = "https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/blob/main/AGENTS.md"
+    qr_url = (
+        "https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/blob/main/AGENTS.md"
+    )
     qr_img = create_qr_code(qr_url, 90)
     qr_x = width - 120
     qr_y = height - 120
     img.paste(qr_img, (qr_x, qr_y), qr_img if qr_img.mode == "RGBA" else None)
-    draw.text((qr_x - 10, qr_y + 95), "Scan for Details", fill=gray_color, font=small_font)
+    draw.text(
+        (qr_x - 10, qr_y + 95),
+        "Scan for Details",
+        fill=gray_color,
+        font=small_font,
+    )
 
     # Speichern
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -171,7 +242,9 @@ def update_readme_with_card():
     with open(readme_path, "r", encoding="utf-8") as f:
         content = f.read()
 
-    card_markdown = "![Repository Status](docs/status/repo_status_card.png)\n\n"
+    card_markdown = (
+        "![Repository Status](docs/status/repo_status_card.png)\n\n"
+    )
 
     if "repo_status_card.png" not in content:
         lines = content.split("\n")

@@ -15,7 +15,9 @@ class SelfCorrection:
     def __init__(self):
         self.correction_history: List[Dict] = []
 
-    def attempt_correction(self, output: str, issues: List[str], fact_corrections: List[str]) -> Dict[str, Any]:
+    def attempt_correction(
+        self, output: str, issues: List[str], fact_corrections: List[str]
+    ) -> Dict[str, Any]:
         """
         Attempt to correct output automatically
         """
@@ -44,15 +46,27 @@ class SelfCorrection:
         for pattern, replacement in uncertainty_fixes.items():
             matches = re.findall(pattern, corrected, re.IGNORECASE)
             if matches:
-                corrected = re.sub(pattern, replacement, corrected, flags=re.IGNORECASE)
+                corrected = re.sub(
+                    pattern, replacement, corrected, flags=re.IGNORECASE
+                )
                 corrections_made.append(f"Reduced uncertainty: {matches}")
 
         # Remove false security claims
-        false_claims = ["impossible to exploit", "completely secure", "100% safe", "unhackable"]
+        false_claims = [
+            "impossible to exploit",
+            "completely secure",
+            "100% safe",
+            "unhackable",
+        ]
 
         for claim in false_claims:
             if claim.lower() in corrected.lower():
-                corrected = re.sub(claim, "[REVIEW NEEDED: Absolute security claim removed]", corrected, flags=re.IGNORECASE)
+                corrected = re.sub(
+                    claim,
+                    "[REVIEW NEEDED: Absolute security claim removed]",
+                    corrected,
+                    flags=re.IGNORECASE,
+                )
                 corrections_made.append(f"Removed false claim: {claim}")
 
         # Record correction
@@ -73,7 +87,12 @@ class SelfCorrection:
             "still_needs_review": len(issues) > len(corrections_made),
         }
 
-    def generate_retry_prompt(self, original_prompt: str, issues: List[str], confidence_breakdown: Dict[str, float]) -> str:
+    def generate_retry_prompt(
+        self,
+        original_prompt: str,
+        issues: List[str],
+        confidence_breakdown: Dict[str, float],
+    ) -> str:
         """
         Generate an improved prompt for retry
         """
@@ -83,13 +102,24 @@ IMPORTANT - Previous attempt had issues:
 """
 
         # Add specific guidance based on issues
-        if "guardrails" in confidence_breakdown and confidence_breakdown["guardrails"] < 0.7:
+        if (
+            "guardrails" in confidence_breakdown
+            and confidence_breakdown["guardrails"] < 0.7
+        ):
             retry_prompt += "\n- Be more specific and avoid uncertainty language (maybe, perhaps, I think)"
 
-        if "fact_check" in confidence_breakdown and confidence_breakdown["fact_check"] < 0.8:
-            retry_prompt += "\n- Verify all technical claims against known data"
+        if (
+            "fact_check" in confidence_breakdown
+            and confidence_breakdown["fact_check"] < 0.8
+        ):
+            retry_prompt += (
+                "\n- Verify all technical claims against known data"
+            )
 
-        if "validation" in confidence_breakdown and confidence_breakdown["validation"] < 0.8:
+        if (
+            "validation" in confidence_breakdown
+            and confidence_breakdown["validation"] < 0.8
+        ):
             retry_prompt += "\n- Follow the exact output format specified"
 
         retry_prompt += "\n\nPlease provide a corrected response."
@@ -102,11 +132,16 @@ IMPORTANT - Previous attempt had issues:
             return {"total_attempts": 0}
 
         total = len(self.correction_history)
-        successful = sum(1 for h in self.correction_history if h["corrections_made"] > 0)
+        successful = sum(
+            1 for h in self.correction_history if h["corrections_made"] > 0
+        )
 
         return {
             "total_attempts": total,
             "successful_corrections": successful,
             "success_rate": successful / total if total > 0 else 0,
-            "avg_corrections": sum(h["corrections_made"] for h in self.correction_history) / total,
+            "avg_corrections": sum(
+                h["corrections_made"] for h in self.correction_history
+            )
+            / total,
         }

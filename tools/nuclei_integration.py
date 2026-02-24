@@ -18,9 +18,16 @@ class NucleiTool:
 
     async def scan(self, target: str, **kwargs) -> Dict[str, Any]:
         """Run nuclei scan - stub implementation"""
-        return {"tool": "nuclei", "target": target, "findings": [], "status": "stub"}
+        return {
+            "tool": "nuclei",
+            "target": target,
+            "findings": [],
+            "status": "stub",
+        }
 
-    async def scan_with_templates(self, target: str, templates: List[str]) -> Dict[str, Any]:
+    async def scan_with_templates(
+        self, target: str, templates: List[str]
+    ) -> Dict[str, Any]:
         """Scan with specific templates - stub implementation"""
         return await self.scan(target)
 

@@ -110,7 +110,9 @@ class ClaudeDirectBackend:
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
             }
 
-            async with self.session.get("https://claude.ai/api/organizations", headers=headers) as resp:
+            async with self.session.get(
+                "https://claude.ai/api/organizations", headers=headers
+            ) as resp:
                 if resp.status == 200:
                     data = await resp.json()
                     if data and len(data) > 0:

@@ -122,8 +122,12 @@ class TestSingleton:
 
     def test_singleton_dependency_resolution(self, fresh_container):
         """Test singleton with dependency resolution"""
-        fresh_container.register("simple", Singleton(SimpleService, "injected"))
-        fresh_container.register("dependent", Singleton(DependentService, "@simple"))
+        fresh_container.register(
+            "simple", Singleton(SimpleService, "injected")
+        )
+        fresh_container.register(
+            "dependent", Singleton(DependentService, "@simple")
+        )
 
         dependent = fresh_container.get("dependent")
 
@@ -333,7 +337,9 @@ class TestDependencyResolution:
     def test_resolve_positional_reference(self, fresh_container):
         """Test resolving positional dependency reference"""
         fresh_container.register_value("simple", SimpleService("ref"))
-        fresh_container.register("dependent", Singleton(DependentService, "@simple"))
+        fresh_container.register(
+            "dependent", Singleton(DependentService, "@simple")
+        )
 
         result = fresh_container.get("dependent")
 
@@ -343,7 +349,9 @@ class TestDependencyResolution:
     def test_resolve_keyword_reference(self, fresh_container):
         """Test resolving keyword dependency reference"""
         fresh_container.register_value("simple", SimpleService("kw_ref"))
-        fresh_container.register("dependent", Singleton(DependentService, simple="@simple"))
+        fresh_container.register(
+            "dependent", Singleton(DependentService, simple="@simple")
+        )
 
         result = fresh_container.get("dependent")
 
@@ -353,7 +361,9 @@ class TestDependencyResolution:
         """Test resolving nested provider references"""
         inner_provider = Value(SimpleService("inner"))
         fresh_container.register("inner", inner_provider)
-        fresh_container.register("outer", Singleton(DependentService, "@inner"))
+        fresh_container.register(
+            "outer", Singleton(DependentService, "@inner")
+        )
 
         result = fresh_container.get("outer")
 
@@ -568,8 +578,12 @@ class TestIntegration:
     def test_mixed_provider_types(self, fresh_container):
         """Test using different provider types together"""
         fresh_container.register_value("config", {"debug": False})
-        fresh_container.register_singleton("service", SimpleService, "singleton")
-        fresh_container.register_factory("factory_service", SimpleService, "factory")
+        fresh_container.register_singleton(
+            "service", SimpleService, "singleton"
+        )
+        fresh_container.register_factory(
+            "factory_service", SimpleService, "factory"
+        )
 
         # Value always same
         assert fresh_container.get("config") is fresh_container.get("config")
@@ -578,11 +592,17 @@ class TestIntegration:
         assert fresh_container.get("service") is fresh_container.get("service")
 
         # Factory creates new
-        assert fresh_container.get("factory_service") is not fresh_container.get("factory_service")
+        assert fresh_container.get(
+            "factory_service"
+        ) is not fresh_container.get("factory_service")
 
     def test_container_chaining(self, fresh_container):
         """Test fluent interface chaining"""
-        result = fresh_container.register_value("a", 1).register_value("b", 2).register_singleton("service", SimpleService)
+        result = (
+            fresh_container.register_value("a", 1)
+            .register_value("b", 2)
+            .register_singleton("service", SimpleService)
+        )
 
         assert result is fresh_container
         assert fresh_container.get("a") == 1

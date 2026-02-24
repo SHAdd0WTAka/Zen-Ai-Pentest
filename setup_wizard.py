@@ -23,7 +23,12 @@ BACKENDS = {
         "name": "🔀 OpenRouter",
         "env_var": "OPENROUTER_API_KEY",
         "url": "https://openrouter.ai/keys",
-        "models": ["openrouter/auto", "anthropic/claude-3.5-sonnet", "openai/gpt-4o", "google/gemini-pro"],
+        "models": [
+            "openrouter/auto",
+            "anthropic/claude-3.5-sonnet",
+            "openai/gpt-4o",
+            "google/gemini-pro",
+        ],
         "test_url": "https://openrouter.ai/api/v1/auth/key",
     },
     "openai": {
@@ -39,9 +44,17 @@ BACKENDS = {
 def show_banner():
     console.print(
         Panel.fit(
-            Text("🧠 Zen-AI Pentest Configurator", justify="center", style="bold cyan")
+            Text(
+                "🧠 Zen-AI Pentest Configurator",
+                justify="center",
+                style="bold cyan",
+            )
             + "\n"
-            + Text("Wähle dein AI-Backend und Modell", justify="center", style="dim"),
+            + Text(
+                "Wähle dein AI-Backend und Modell",
+                justify="center",
+                style="dim",
+            ),
             border_style="cyan",
         )
     )
@@ -51,7 +64,9 @@ def test_api_key(backend_key, api_key):
     backend = BACKENDS[backend_key]
     try:
         headers = {"Authorization": f"Bearer {api_key}"}
-        response = requests.get(backend["test_url"], headers=headers, timeout=10)
+        response = requests.get(
+            backend["test_url"], headers=headers, timeout=10
+        )
         return response.status_code == 200
     except Exception:
         return False
@@ -61,11 +76,14 @@ def main():
     show_banner()
 
     # FIX: questionary.Choice verwenden statt Tupel
-    choices = [questionary.Choice(title=v["name"], value=k) for k, v in BACKENDS.items()] + [
-        questionary.Choice(title="❌ Abbrechen", value=None)
-    ]
+    choices = [
+        questionary.Choice(title=v["name"], value=k)
+        for k, v in BACKENDS.items()
+    ] + [questionary.Choice(title="❌ Abbrechen", value=None)]
 
-    backend_choice = questionary.select("Wähle dein AI Backend:", choices=choices).ask()
+    backend_choice = questionary.select(
+        "Wähle dein AI Backend:", choices=choices
+    ).ask()
 
     if not backend_choice:
         console.print("[yellow]Abgebrochen.[/yellow]")
@@ -74,7 +92,11 @@ def main():
     backend = BACKENDS[backend_choice]
 
     console.print(f"\n[blue]Verfügbare Modelle für {backend['name']}:[/blue]")
-    model = questionary.select("Wähle das Modell:", choices=backend["models"], default=backend["models"][0]).ask()
+    model = questionary.select(
+        "Wähle das Modell:",
+        choices=backend["models"],
+        default=backend["models"][0],
+    ).ask()
 
     console.print(f"\n[dim]Hole deinen Key bei: {backend['url']}[/dim]")
     api_key = questionary.password("API Key eingeben:").ask()

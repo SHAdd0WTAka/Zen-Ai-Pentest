@@ -40,7 +40,10 @@ print("\n[TEST 2] Autonomer Scan")
 print("-" * 70)
 try:
     result = subprocess.run(
-        [sys.executable, "autonomous_demo_final.py", "192.168.1.1"], capture_output=True, text=True, timeout=30
+        [sys.executable, "autonomous_demo_final.py", "192.168.1.1"],
+        capture_output=True,
+        text=True,
+        timeout=30,
     )
     if "AUTONOMER SCAN ABGESCHLOSSEN" in result.stdout:
         print("  [OK] Autonomer Scan erfolgreich")
@@ -90,9 +93,13 @@ try:
     )
     if r.status_code == 200:
         # Events abrufen
-        r2 = requests.get("http://localhost:8000/api/v1/siem/events", timeout=5)
+        r2 = requests.get(
+            "http://localhost:8000/api/v1/siem/events", timeout=5
+        )
         events = r2.json()
-        print(f"  [OK] SIEM funktioniert ({events.get('total', 0)} Events gespeichert)")
+        print(
+            f"  [OK] SIEM funktioniert ({events.get('total', 0)} Events gespeichert)"
+        )
         test_results["siem"] = "PASS"
     else:
         print("  [FAIL] SIEM Fehler")
@@ -107,7 +114,11 @@ print("-" * 70)
 try:
     import requests
 
-    r = requests.post("http://localhost:8000/auth/login", json={"username": "admin", "password": "admin"}, timeout=5)
+    r = requests.post(
+        "http://localhost:8000/auth/login",
+        json={"username": "admin", "password": "admin"},
+        timeout=5,
+    )
     if r.status_code == 200 and "access_token" in r.json():
         print("  [OK] Login funktioniert")
         test_results["auth"] = "PASS"
@@ -130,7 +141,9 @@ try:
     md_reports = [f for f in log_files if f.endswith(".md")]
 
     if len(json_reports) > 0 and len(md_reports) > 0:
-        print(f"  [OK] Reports vorhanden ({len(json_reports)} JSON, {len(md_reports)} MD)")
+        print(
+            f"  [OK] Reports vorhanden ({len(json_reports)} JSON, {len(md_reports)} MD)"
+        )
         test_results["reports"] = "PASS"
     else:
         print("  [FAIL] Keine Reports gefunden")
@@ -143,7 +156,12 @@ except Exception as e:
 print("\n[TEST 7] Echter Port-Scan")
 print("-" * 70)
 try:
-    result = subprocess.run([sys.executable, "real_scan.py", "127.0.0.1"], capture_output=True, text=True, timeout=60)
+    result = subprocess.run(
+        [sys.executable, "real_scan.py", "127.0.0.1"],
+        capture_output=True,
+        text=True,
+        timeout=60,
+    )
     if "SCAN ABGESCHLOSSEN" in result.stdout:
         print("  [OK] Port-Scan erfolgreich")
         test_results["port_scan"] = "PASS"
@@ -175,7 +193,9 @@ if passed == total:
 elif passed >= total * 0.7:
     print("\n*** Meiste Tests bestanden. Kleine Probleme vorhanden. ***")
 else:
-    print("\n*** Viele Tests fehlgeschlagen. System braucht Aufmerksamkeit. ***")
+    print(
+        "\n*** Viele Tests fehlgeschlagen. System braucht Aufmerksamkeit. ***"
+    )
 
 print("=" * 70)
 
@@ -183,7 +203,11 @@ print("=" * 70)
 report = {
     "timestamp": datetime.now().isoformat(),
     "results": test_results,
-    "summary": {"passed": passed, "total": total, "percentage": round(passed / total * 100, 1)},
+    "summary": {
+        "passed": passed,
+        "total": total,
+        "percentage": round(passed / total * 100, 1),
+    },
 }
 
 with open("logs/system_test_report.json", "w") as f:

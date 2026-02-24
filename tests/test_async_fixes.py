@@ -13,7 +13,12 @@ import pytest
 # Add parent directory to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from utils.async_fixes import apply_windows_async_fixes, safe_close_session, setup_event_loop, silence_asyncio_warnings
+from utils.async_fixes import (
+    apply_windows_async_fixes,
+    safe_close_session,
+    setup_event_loop,
+    silence_asyncio_warnings,
+)
 
 
 @pytest.mark.asyncio

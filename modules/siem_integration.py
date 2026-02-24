@@ -92,7 +92,10 @@ class SplunkConnector(BaseSIEMConnector):
     def send_event(self, event: SecurityEvent) -> bool:
         try:
             url = urljoin(self.config.url, "/services/collector/event")
-            headers = {"Authorization": f"Splunk {self.config.api_key}", "Content-Type": "application/json"}
+            headers = {
+                "Authorization": f"Splunk {self.config.api_key}",
+                "Content-Type": "application/json",
+            }
 
             payload = {
                 "time": event.timestamp.timestamp(),
@@ -120,7 +123,10 @@ class SplunkConnector(BaseSIEMConnector):
         """Send multiple events to Splunk"""
         try:
             url = urljoin(self.config.url, "/services/collector/event")
-            headers = {"Authorization": f"Splunk {self.config.api_key}", "Content-Type": "application/json"}
+            headers = {
+                "Authorization": f"Splunk {self.config.api_key}",
+                "Content-Type": "application/json",
+            }
 
             batch_data = ""
             for event in events:
@@ -149,7 +155,9 @@ class SplunkConnector(BaseSIEMConnector):
     def query_threat_intel(self, indicator: str) -> Optional[Dict]:
         """Query Splunk for threat intelligence"""
         try:
-            search_query = f'search index=threat_intel indicator="{indicator}" | head 1'
+            search_query = (
+                f'search index=threat_intel indicator="{indicator}" | head 1'
+            )
             url = urljoin(self.config.url, "/services/search/jobs")
             headers = {"Authorization": f"Splunk {self.config.api_key}"}
 
@@ -224,7 +232,11 @@ class ElasticConnector(BaseSIEMConnector):
                 )
                 bulk_data += action + "\n" + document + "\n"
 
-            response = self.session.post(url, headers={**headers, "Content-Type": "application/x-ndjson"}, data=bulk_data)
+            response = self.session.post(
+                url,
+                headers={**headers, "Content-Type": "application/x-ndjson"},
+                data=bulk_data,
+            )
             return response.status_code == 200
         except Exception as e:
             logger.error(f"Failed to send bulk to Elastic: {e}")
@@ -263,7 +275,10 @@ class AzureSentinelConnector(BaseSIEMConnector):
             headers = self._build_auth_header()
 
             response = self.session.get(url, headers=headers)
-            return response.status_code in [200, 401]  # 401 means auth works but query invalid
+            return response.status_code in [
+                200,
+                401,
+            ]  # 401 means auth works but query invalid
         except Exception as e:
             logger.error(f"Sentinel connection failed: {e}")
             return False
@@ -275,9 +290,15 @@ class AzureSentinelConnector(BaseSIEMConnector):
         import hmac
 
         date = datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S GMT")
-        string_to_hash = f"POST\n{len('')}\napplication/json\nx-ms-date:{date}\n/api/logs"
+        string_to_hash = (
+            f"POST\n{len('')}\napplication/json\nx-ms-date:{date}\n/api/logs"
+        )
         decoded_key = base64.b64decode(self.shared_key)
-        encoded_hash = base64.b64encode(hmac.new(decoded_key, string_to_hash.encode(), hashlib.sha256).digest()).decode()
+        encoded_hash = base64.b64encode(
+            hmac.new(
+                decoded_key, string_to_hash.encode(), hashlib.sha256
+            ).digest()
+        ).decode()
 
         return {
             "Content-Type": "application/json",
@@ -345,7 +366,9 @@ class AzureSentinelConnector(BaseSIEMConnector):
 
             query = f"ThreatIntelligenceIndicator | where Indicator == '{indicator}' | limit 1"
 
-            response = self.session.post(url, headers=headers, json={"query": query})
+            response = self.session.post(
+                url, headers=headers, json={"query": query}
+            )
 
             if response.status_code == 200:
                 return response.json()
@@ -375,7 +398,9 @@ class QRadarConnector(BaseSIEMConnector):
         if self.config.api_key:
             return {"SEC": self.config.api_key}
         elif self.config.username and self.config.password:
-            credentials = base64.b64encode(f"{self.config.username}:{self.config.password}".encode()).decode()
+            credentials = base64.b64encode(
+                f"{self.config.username}:{self.config.password}".encode()
+            ).decode()
             return {"Authorization": f"Basic {credentials}"}
         return {}
 
@@ -411,7 +436,9 @@ class QRadarConnector(BaseSIEMConnector):
     def query_threat_intel(self, indicator: str) -> Optional[Dict]:
         """Query QRadar reference sets"""
         try:
-            url = urljoin(self.config.url, f"/api/reference_data/sets/{indicator}")
+            url = urljoin(
+                self.config.url, f"/api/reference_data/sets/{indicator}"
+            )
             headers = self._build_auth_header()
 
             response = self.session.get(url, headers=headers)
@@ -458,7 +485,9 @@ class SIEMIntegrationManager:
             results[name] = connector.send_event(event)
         return results
 
-    def send_batch_to_all(self, events: List[SecurityEvent]) -> Dict[str, bool]:
+    def send_batch_to_all(
+        self, events: List[SecurityEvent]
+    ) -> Dict[str, bool]:
         """Send batch of events to all SIEMs"""
         results = {}
         for name, connector in self.connectors.items():
@@ -467,7 +496,10 @@ class SIEMIntegrationManager:
 
     def get_status(self) -> Dict[str, bool]:
         """Get connection status of all SIEMs"""
-        return {name: connector.connect() for name, connector in self.connectors.items()}
+        return {
+            name: connector.connect()
+            for name, connector in self.connectors.items()
+        }
 
 
 # Factory function

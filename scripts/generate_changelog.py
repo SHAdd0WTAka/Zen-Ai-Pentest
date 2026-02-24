@@ -72,7 +72,9 @@ class ChangelogGenerator:
 
         # Format: hash|date|author|message
         log_format = "%H|%aI|%an|%s"
-        output = self.run_git_command(["log", range_spec, f"--format={log_format}", "--no-merges"])
+        output = self.run_git_command(
+            ["log", range_spec, f"--format={log_format}", "--no-merges"]
+        )
 
         commits = []
         for line in output.split("\n"):
@@ -115,7 +117,9 @@ class ChangelogGenerator:
         categorized["other"] = []
 
         for commit in commits:
-            commit_type, scope, description = self.parse_conventional_commit(commit["message"])
+            commit_type, scope, description = self.parse_conventional_commit(
+                commit["message"]
+            )
 
             if commit_type in categorized:
                 categorized[commit_type].append(
@@ -146,7 +150,9 @@ class ChangelogGenerator:
     def get_stats(self, commits: List[Dict]) -> Dict:
         """Get statistics for the release."""
         # Count files changed, insertions, deletions
-        stats_output = self.run_git_command(["diff", "--stat", f"{self.get_last_tag()}..HEAD"])
+        stats_output = self.run_git_command(
+            ["diff", "--stat", f"{self.get_last_tag()}..HEAD"]
+        )
 
         files_changed = 0
         insertions = 0
@@ -172,13 +178,17 @@ class ChangelogGenerator:
             "deletions": deletions,
         }
 
-    def generate_changelog(self, version: str, since_tag: Optional[str] = None) -> str:
+    def generate_changelog(
+        self, version: str, since_tag: Optional[str] = None
+    ) -> str:
         """Generate the changelog content."""
         today = datetime.now().strftime("%Y-%m-%d")
         commits = self.get_commits_since(since_tag)
 
         if not commits:
-            return f"## [{version}] - {today}\n\nNo changes since last release.\n"
+            return (
+                f"## [{version}] - {today}\n\nNo changes since last release.\n"
+            )
 
         categorized = self.categorize_commits(commits)
         contributors = self.get_contributors(commits)
@@ -201,7 +211,9 @@ class ChangelogGenerator:
                 lines.append("")
                 for item in items:
                     scope = f"**{item['scope']}:** " if item["scope"] else ""
-                    lines.append(f"- {scope}{item['description']} ({item['hash']})")
+                    lines.append(
+                        f"- {scope}{item['description']} ({item['hash']})"
+                    )
                 lines.append("")
 
         # Add other commits
@@ -224,7 +236,9 @@ class ChangelogGenerator:
 
         return "\n".join(lines)
 
-    def update_changelog_file(self, new_content: str, output_file: str = "CHANGELOG.md"):
+    def update_changelog_file(
+        self, new_content: str, output_file: str = "CHANGELOG.md"
+    ):
         """Update the changelog file with new content."""
         existing_content = ""
 
@@ -255,7 +269,12 @@ class ChangelogGenerator:
                 header_end = i + 1
                 break
 
-        new_lines = lines[:header_end] + [""] + new_content.split("\n") + lines[header_end:]
+        new_lines = (
+            lines[:header_end]
+            + [""]
+            + new_content.split("\n")
+            + lines[header_end:]
+        )
 
         with open(output_file, "w", encoding="utf-8") as f:
             f.write("\n".join(new_lines))
@@ -264,7 +283,9 @@ class ChangelogGenerator:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Generate changelog for Zen AI Pentest")
+    parser = argparse.ArgumentParser(
+        description="Generate changelog for Zen AI Pentest"
+    )
     parser.add_argument(
         "--version",
         type=str,

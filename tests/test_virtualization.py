@@ -26,7 +26,11 @@ from virtualization.cloud_vm_manager import (
     create_azure_manager,
     create_gcp_manager,
 )
-from virtualization.vm_manager import PentestSandbox, VirtualBoxManager, VMConfig
+from virtualization.vm_manager import (
+    PentestSandbox,
+    VirtualBoxManager,
+    VMConfig,
+)
 
 # ============================================================================
 # CloudVMConfig Tests
@@ -39,7 +43,11 @@ class TestCloudVMConfig:
     def test_config_creation(self):
         """Test CloudVMConfig creation"""
         config = CloudVMConfig(
-            provider="aws", instance_type="t3.medium", image_id="ami-12345", region="us-east-1", ssh_key_name="test-key"
+            provider="aws",
+            instance_type="t3.medium",
+            image_id="ami-12345",
+            region="us-east-1",
+            ssh_key_name="test-key",
         )
 
         assert config.provider == "aws"
@@ -90,7 +98,9 @@ class TestCloudVMManager:
         provider.terminate_instance.return_value = True
         provider.get_instance_status.return_value = "running"
         provider.get_instance_ip.return_value = "10.0.0.1"
-        provider.list_instances.return_value = [{"id": "i-12345", "name": "test-vm", "state": "running"}]
+        provider.list_instances.return_value = [
+            {"id": "i-12345", "name": "test-vm", "state": "running"}
+        ]
         return provider
 
     def test_initialization(self, manager):
@@ -110,22 +120,34 @@ class TestCloudVMManager:
         manager.add_provider("aws", mock_provider)
 
         config = CloudVMConfig(
-            provider="aws", instance_type="t3.medium", image_id="ami-12345", region="us-east-1", ssh_key_name="test-key"
+            provider="aws",
+            instance_type="t3.medium",
+            image_id="ami-12345",
+            region="us-east-1",
+            ssh_key_name="test-key",
         )
 
         instance_id = manager.create_instance("aws", config, "test-vm")
 
         assert instance_id == "i-12345"
         assert instance_id in manager.active_instances
-        mock_provider.create_instance.assert_called_once_with(config, "test-vm")
+        mock_provider.create_instance.assert_called_once_with(
+            config, "test-vm"
+        )
 
     def test_create_instance_unknown_provider(self, manager):
         """Test creating instance with unknown provider"""
         config = CloudVMConfig(
-            provider="unknown", instance_type="t3.medium", image_id="ami-12345", region="us-east-1", ssh_key_name="test-key"
+            provider="unknown",
+            instance_type="t3.medium",
+            image_id="ami-12345",
+            region="us-east-1",
+            ssh_key_name="test-key",
         )
 
-        with pytest.raises(ValueError, match="Provider unknown nicht konfiguriert"):
+        with pytest.raises(
+            ValueError, match="Provider unknown nicht konfiguriert"
+        ):
             manager.create_instance("unknown", config, "test-vm")
 
     def test_get_provider_for_instance(self, manager, mock_provider):
@@ -133,7 +155,11 @@ class TestCloudVMManager:
         manager.add_provider("aws", mock_provider)
 
         config = CloudVMConfig(
-            provider="aws", instance_type="t3.medium", image_id="ami-12345", region="us-east-1", ssh_key_name="test-key"
+            provider="aws",
+            instance_type="t3.medium",
+            image_id="ami-12345",
+            region="us-east-1",
+            ssh_key_name="test-key",
         )
 
         instance_id = manager.create_instance("aws", config, "test-vm")
@@ -143,14 +169,20 @@ class TestCloudVMManager:
 
     def test_get_provider_for_unknown_instance(self, manager):
         """Test getting provider for unknown instance"""
-        with pytest.raises(ValueError, match="Instance unknown nicht gefunden"):
+        with pytest.raises(
+            ValueError, match="Instance unknown nicht gefunden"
+        ):
             manager.get_provider_for_instance("unknown")
 
     def test_start_instance(self, manager, mock_provider):
         """Test starting an instance"""
         manager.add_provider("aws", mock_provider)
         config = CloudVMConfig(
-            provider="aws", instance_type="t3.medium", image_id="ami-12345", region="us-east-1", ssh_key_name="test-key"
+            provider="aws",
+            instance_type="t3.medium",
+            image_id="ami-12345",
+            region="us-east-1",
+            ssh_key_name="test-key",
         )
         instance_id = manager.create_instance("aws", config, "test-vm")
 
@@ -163,7 +195,11 @@ class TestCloudVMManager:
         """Test stopping an instance"""
         manager.add_provider("aws", mock_provider)
         config = CloudVMConfig(
-            provider="aws", instance_type="t3.medium", image_id="ami-12345", region="us-east-1", ssh_key_name="test-key"
+            provider="aws",
+            instance_type="t3.medium",
+            image_id="ami-12345",
+            region="us-east-1",
+            ssh_key_name="test-key",
         )
         instance_id = manager.create_instance("aws", config, "test-vm")
 
@@ -176,7 +212,11 @@ class TestCloudVMManager:
         """Test terminating an instance"""
         manager.add_provider("aws", mock_provider)
         config = CloudVMConfig(
-            provider="aws", instance_type="t3.medium", image_id="ami-12345", region="us-east-1", ssh_key_name="test-key"
+            provider="aws",
+            instance_type="t3.medium",
+            image_id="ami-12345",
+            region="us-east-1",
+            ssh_key_name="test-key",
         )
         instance_id = manager.create_instance("aws", config, "test-vm")
 
@@ -190,7 +230,11 @@ class TestCloudVMManager:
         """Test getting instance status"""
         manager.add_provider("aws", mock_provider)
         config = CloudVMConfig(
-            provider="aws", instance_type="t3.medium", image_id="ami-12345", region="us-east-1", ssh_key_name="test-key"
+            provider="aws",
+            instance_type="t3.medium",
+            image_id="ami-12345",
+            region="us-east-1",
+            ssh_key_name="test-key",
         )
         instance_id = manager.create_instance("aws", config, "test-vm")
 
@@ -203,7 +247,11 @@ class TestCloudVMManager:
         """Test getting instance IP"""
         manager.add_provider("aws", mock_provider)
         config = CloudVMConfig(
-            provider="aws", instance_type="t3.medium", image_id="ami-12345", region="us-east-1", ssh_key_name="test-key"
+            provider="aws",
+            instance_type="t3.medium",
+            image_id="ami-12345",
+            region="us-east-1",
+            ssh_key_name="test-key",
         )
         instance_id = manager.create_instance("aws", config, "test-vm")
 
@@ -231,7 +279,9 @@ class TestCloudVMManager:
 
         # Mock paramiko at module level where it's imported
         with patch.dict("sys.modules", {"paramiko": MagicMock()}):
-            with patch("virtualization.cloud_vm_manager.paramiko") as mock_paramiko:
+            with patch(
+                "virtualization.cloud_vm_manager.paramiko"
+            ) as mock_paramiko:
                 # Setup mock SSH client
                 mock_ssh = Mock()
                 mock_paramiko.SSHClient.return_value = mock_ssh
@@ -242,7 +292,11 @@ class TestCloudVMManager:
                 mock_stdout.read.return_value = b"command output"
                 mock_stderr.read.return_value = b""
                 mock_stdout.channel.recv_exit_status.return_value = 0
-                mock_ssh.exec_command.return_value = (mock_stdin, mock_stdout, mock_stderr)
+                mock_ssh.exec_command.return_value = (
+                    mock_stdin,
+                    mock_stdout,
+                    mock_stderr,
+                )
 
                 manager.add_provider("aws", mock_provider)
                 config = CloudVMConfig(
@@ -254,7 +308,9 @@ class TestCloudVMManager:
                 )
                 instance_id = manager.create_instance("aws", config, "test-vm")
 
-                exit_code, stdout, stderr = manager.execute_ssh_command(instance_id, "ls -la", "/path/to/key", "ubuntu")
+                exit_code, stdout, stderr = manager.execute_ssh_command(
+                    instance_id, "ls -la", "/path/to/key", "ubuntu"
+                )
 
                 assert exit_code == 0
                 assert stdout == "command output"
@@ -271,11 +327,17 @@ class TestCloudVMManager:
 
         manager.add_provider("aws", mock_provider)
         config = CloudVMConfig(
-            provider="aws", instance_type="t3.medium", image_id="ami-12345", region="us-east-1", ssh_key_name="test-key"
+            provider="aws",
+            instance_type="t3.medium",
+            image_id="ami-12345",
+            region="us-east-1",
+            ssh_key_name="test-key",
         )
         instance_id = manager.create_instance("aws", config, "test-vm")
 
-        exit_code, stdout, stderr = manager.execute_ssh_command(instance_id, "ls -la", "/path/to/key")
+        exit_code, stdout, stderr = manager.execute_ssh_command(
+            instance_id, "ls -la", "/path/to/key"
+        )
 
         assert exit_code == -1
         assert "Keine IP" in stderr
@@ -284,12 +346,18 @@ class TestCloudVMManager:
         """Test automatic cleanup of old instances"""
         manager.add_provider("aws", mock_provider)
         config = CloudVMConfig(
-            provider="aws", instance_type="t3.medium", image_id="ami-12345", region="us-east-1", ssh_key_name="test-key"
+            provider="aws",
+            instance_type="t3.medium",
+            image_id="ami-12345",
+            region="us-east-1",
+            ssh_key_name="test-key",
         )
         instance_id = manager.create_instance("aws", config, "test-vm")
 
         # Simulate old instance
-        manager.active_instances[instance_id]["created_at"] = time.time() - 3600 * 5  # 5 hours ago
+        manager.active_instances[instance_id]["created_at"] = (
+            time.time() - 3600 * 5
+        )  # 5 hours ago
 
         manager.auto_cleanup(max_age_hours=4)
 
@@ -300,7 +368,9 @@ class TestCloudVMManager:
         """Test creating Kali instance on AWS"""
         manager.add_provider("aws", mock_provider)
 
-        instance_id = manager.create_kali_instance("aws", "us-east-1", "test-kali")
+        instance_id = manager.create_kali_instance(
+            "aws", "us-east-1", "test-kali"
+        )
 
         assert instance_id == "i-12345"
         mock_provider.create_instance.assert_called_once()
@@ -326,7 +396,9 @@ class TestFactoryFunctions:
         manager = create_aws_manager("AKIA...", "secret...", "us-east-1")
 
         assert isinstance(manager, CloudVMManager)
-        mock_aws_class.assert_called_once_with("AKIA...", "secret...", "us-east-1")
+        mock_aws_class.assert_called_once_with(
+            "AKIA...", "secret...", "us-east-1"
+        )
 
     @patch("virtualization.cloud_vm_manager.AzureProvider")
     def test_create_azure_manager(self, mock_azure_class):
@@ -334,10 +406,14 @@ class TestFactoryFunctions:
         mock_azure_instance = Mock(spec=CloudProviderBase)
         mock_azure_class.return_value = mock_azure_instance
 
-        manager = create_azure_manager("sub-id", "tenant-id", "client-id", "client-secret")
+        manager = create_azure_manager(
+            "sub-id", "tenant-id", "client-id", "client-secret"
+        )
 
         assert isinstance(manager, CloudVMManager)
-        mock_azure_class.assert_called_once_with("sub-id", "tenant-id", "client-id", "client-secret")
+        mock_azure_class.assert_called_once_with(
+            "sub-id", "tenant-id", "client-id", "client-secret"
+        )
 
     @patch("virtualization.cloud_vm_manager.GCPProvider")
     def test_create_gcp_manager(self, mock_gcp_class):
@@ -345,10 +421,14 @@ class TestFactoryFunctions:
         mock_gcp_instance = Mock(spec=CloudProviderBase)
         mock_gcp_class.return_value = mock_gcp_instance
 
-        manager = create_gcp_manager("project-id", "/path/to/creds.json", "us-central1-a")
+        manager = create_gcp_manager(
+            "project-id", "/path/to/creds.json", "us-central1-a"
+        )
 
         assert isinstance(manager, CloudVMManager)
-        mock_gcp_class.assert_called_once_with("project-id", "/path/to/creds.json", "us-central1-a")
+        mock_gcp_class.assert_called_once_with(
+            "project-id", "/path/to/creds.json", "us-central1-a"
+        )
 
 
 # ============================================================================
@@ -365,7 +445,11 @@ class TestVirtualBoxManager:
         with patch("subprocess.run") as mock_run:
             # First call returns version (initialization)
             # Subsequent calls return command results
-            mock_run.return_value = Mock(returncode=0, stdout='"TestVM" {12345678-1234-1234-1234-123456789012}\n', stderr="")
+            mock_run.return_value = Mock(
+                returncode=0,
+                stdout='"TestVM" {12345678-1234-1234-1234-123456789012}\n',
+                stderr="",
+            )
             yield mock_run
 
     @pytest.fixture
@@ -382,7 +466,9 @@ class TestVirtualBoxManager:
     def test_initialization_not_found(self):
         """Test initialization when VBoxManage not found"""
         with patch("subprocess.run", side_effect=FileNotFoundError()):
-            with pytest.raises(RuntimeError, match="VBoxManage nicht gefunden"):
+            with pytest.raises(
+                RuntimeError, match="VBoxManage nicht gefunden"
+            ):
                 VirtualBoxManager()
 
     def test_list_vms(self, vbox_manager, mock_vboxmanage):
@@ -416,7 +502,9 @@ class TestVirtualBoxManager:
     def test_is_running_true(self, vbox_manager, mock_vboxmanage):
         """Test is_running when VM is running"""
         mock_vboxmanage.return_value = Mock(
-            returncode=0, stdout='"TestVM" {12345678-1234-1234-1234-123456789012}\n', stderr=""
+            returncode=0,
+            stdout='"TestVM" {12345678-1234-1234-1234-123456789012}\n',
+            stderr="",
         )
 
         running = vbox_manager.is_running("TestVM")
@@ -457,7 +545,11 @@ class TestVirtualBoxManager:
 
         assert result is True
         # Should not call VBoxManage for startvm (just for version check in init)
-        startvm_calls = [call for call in mock_vboxmanage.call_args_list if "startvm" in str(call)]
+        startvm_calls = [
+            call
+            for call in mock_vboxmanage.call_args_list
+            if "startvm" in str(call)
+        ]
         assert len(startvm_calls) == 0
 
     def test_stop_vm_success(self, vbox_manager, mock_vboxmanage):
@@ -505,7 +597,9 @@ class TestVirtualBoxManager:
         """Test creating snapshot"""
         mock_vboxmanage.return_value = Mock(returncode=0, stdout="", stderr="")
 
-        result = vbox_manager.create_snapshot("TestVM", "clean_state", "Clean state")
+        result = vbox_manager.create_snapshot(
+            "TestVM", "clean_state", "Clean state"
+        )
 
         assert result is True
         call_args = mock_vboxmanage.call_args[0][0]
@@ -529,7 +623,9 @@ class TestVirtualBoxManager:
     def test_list_snapshots(self, vbox_manager, mock_vboxmanage):
         """Test listing snapshots"""
         mock_vboxmanage.return_value = Mock(
-            returncode=0, stdout='CurrentSnapshotUUID="abc123"\nSnapshotName="clean_state"', stderr=""
+            returncode=0,
+            stdout='CurrentSnapshotUUID="abc123"\nSnapshotName="clean_state"',
+            stderr="",
         )
 
         snapshots = vbox_manager.list_snapshots("TestVM")
@@ -541,7 +637,9 @@ class TestVirtualBoxManager:
         """Test configuring network"""
         mock_vboxmanage.return_value = Mock(returncode=0, stdout="", stderr="")
 
-        result = vbox_manager.configure_network("TestVM", mode="bridged", adapter=1)
+        result = vbox_manager.configure_network(
+            "TestVM", mode="bridged", adapter=1
+        )
 
         assert result is True
         call_args = mock_vboxmanage.call_args[0][0]
@@ -551,7 +649,9 @@ class TestVirtualBoxManager:
 
     def test_get_vm_info(self, vbox_manager, mock_vboxmanage):
         """Test getting VM info"""
-        mock_vboxmanage.return_value = Mock(returncode=0, stdout='name="TestVM"\nmemory="4096"', stderr="")
+        mock_vboxmanage.return_value = Mock(
+            returncode=0, stdout='name="TestVM"\nmemory="4096"', stderr=""
+        )
 
         info = vbox_manager.get_vm_info("TestVM")
 
@@ -620,8 +720,12 @@ class TestPentestSandbox:
 
         assert result is True
         assert "session-123" in sandbox.active_sessions
-        mock_vbox.restore_snapshot.assert_called_once_with("kali-pentest", "clean_state")
-        mock_vbox.start_vm.assert_called_once_with("kali-pentest", headless=False)
+        mock_vbox.restore_snapshot.assert_called_once_with(
+            "kali-pentest", "clean_state"
+        )
+        mock_vbox.start_vm.assert_called_once_with(
+            "kali-pentest", headless=False
+        )
 
     def test_create_session_vm_not_found(self, sandbox, mock_vbox):
         """Test creating session when VM not found"""
@@ -646,7 +750,9 @@ class TestPentestSandbox:
         sandbox.create_session("session-123", "kali-pentest")
         mock_vbox.execute_in_vm.return_value = (0, "nmap output", "")
 
-        exit_code, stdout, stderr = sandbox.execute_tool("session-123", "nmap", "-sV 192.168.1.1")
+        exit_code, stdout, stderr = sandbox.execute_tool(
+            "session-123", "nmap", "-sV 192.168.1.1"
+        )
 
         assert exit_code == 0
         assert stdout == "nmap output"
@@ -654,7 +760,9 @@ class TestPentestSandbox:
 
     def test_execute_tool_invalid_session(self, sandbox):
         """Test executing tool with invalid session"""
-        exit_code, stdout, stderr = sandbox.execute_tool("invalid-session", "nmap", "-sV 192.168.1.1")
+        exit_code, stdout, stderr = sandbox.execute_tool(
+            "invalid-session", "nmap", "-sV 192.168.1.1"
+        )
 
         assert exit_code == -1
         assert "Session nicht gefunden" in stderr
@@ -696,7 +804,9 @@ class TestPentestSandbox:
         result = sandbox.end_session("session-123", save_snapshot=True)
 
         assert result is True
-        mock_vbox.create_snapshot.assert_called_with("kali-pentest", "session_session-123_ended")
+        mock_vbox.create_snapshot.assert_called_with(
+            "kali-pentest", "session_session-123_ended"
+        )
 
     def test_end_session_invalid(self, sandbox):
         """Test ending an invalid session"""
@@ -715,7 +825,9 @@ class TestVMConfig:
 
     def test_config_creation(self):
         """Test VMConfig creation"""
-        config = VMConfig(name="kali-pentest", os_type="kali", vm_path="/path/to/vm.vbox")
+        config = VMConfig(
+            name="kali-pentest", os_type="kali", vm_path="/path/to/vm.vbox"
+        )
 
         assert config.name == "kali-pentest"
         assert config.os_type == "kali"

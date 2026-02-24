@@ -54,8 +54,14 @@ class TestVulnerabilityType:
 
     def test_config_types(self):
         """Test configuration vulnerability types"""
-        assert VulnerabilityType.CORS_MISCONFIGURATION.value == "cors_misconfiguration"
-        assert VulnerabilityType.SECURITY_HEADERS_MISSING.value == "security_headers_missing"
+        assert (
+            VulnerabilityType.CORS_MISCONFIGURATION.value
+            == "cors_misconfiguration"
+        )
+        assert (
+            VulnerabilityType.SECURITY_HEADERS_MISSING.value
+            == "security_headers_missing"
+        )
 
 
 class TestVulnerability:
@@ -85,7 +91,10 @@ class TestVulnerability:
             title="Reflected XSS",
             description="XSS in search parameter",
             endpoint="/api/search",
-            evidence={"payload": "<script>alert(1)</script>", "response": "..."},
+            evidence={
+                "payload": "<script>alert(1)</script>",
+                "response": "...",
+            },
             remediation="Sanitize user input",
             cvss_score=7.5,
             references=["https://owasp.org/xss"],
@@ -252,7 +261,9 @@ class TestScanResult:
         result.add_vulnerability(vuln1)
         result.add_vulnerability(vuln2)
 
-        critical = result.get_vulnerabilities_by_severity(VulnerabilitySeverity.CRITICAL)
+        critical = result.get_vulnerabilities_by_severity(
+            VulnerabilitySeverity.CRITICAL
+        )
         assert len(critical) == 1
         assert critical[0].title == "SQLi"
 
@@ -294,7 +305,9 @@ class TestBaseAPIScannerInit:
             async def scan(self):
                 return self.result
 
-            async def _make_request(self, method, url, headers=None, data=None, params=None):
+            async def _make_request(
+                self, method, url, headers=None, data=None, params=None
+            ):
                 return (200, {}, {})
 
         scanner = TestScanner("https://api.example.com")
@@ -311,7 +324,9 @@ class TestBaseAPIScannerInit:
             async def scan(self):
                 return self.result
 
-            async def _make_request(self, method, url, headers=None, data=None, params=None):
+            async def _make_request(
+                self, method, url, headers=None, data=None, params=None
+            ):
                 return (200, {}, {})
 
         scanner = TestScanner(
@@ -332,7 +347,9 @@ class TestBaseAPIScannerInit:
             async def scan(self):
                 return self.result
 
-            async def _make_request(self, method, url, headers=None, data=None, params=None):
+            async def _make_request(
+                self, method, url, headers=None, data=None, params=None
+            ):
                 return (200, {}, {})
 
         scanner = TestScanner("https://api.example.com/")
@@ -348,7 +365,9 @@ class TestGetHeaders:
             async def scan(self):
                 return self.result
 
-            async def _make_request(self, method, url, headers=None, data=None, params=None):
+            async def _make_request(
+                self, method, url, headers=None, data=None, params=None
+            ):
                 return (200, {}, {})
 
         return TestScanner("https://api.example.com")
@@ -415,7 +434,9 @@ class TestRateLimiting:
             async def scan(self):
                 return self.result
 
-            async def _make_request(self, method, url, headers=None, data=None, params=None):
+            async def _make_request(
+                self, method, url, headers=None, data=None, params=None
+            ):
                 return (200, {}, {})
 
         return TestScanner("https://api.example.com", rate_limit_delay=0.1)
@@ -456,7 +477,9 @@ class TestCheckAPIPath:
             async def scan(self):
                 return self.result
 
-            async def _make_request(self, method, url, headers=None, data=None, params=None):
+            async def _make_request(
+                self, method, url, headers=None, data=None, params=None
+            ):
                 return (200, {}, {})
 
         return TestScanner("https://api.example.com")
@@ -486,7 +509,9 @@ class TestCheckAPIPath:
             )
         )
 
-        result = await scanner._check_api_path("https://api.example.com/swagger.json")
+        result = await scanner._check_api_path(
+            "https://api.example.com/swagger.json"
+        )
         assert result is True
 
     @pytest.mark.asyncio
@@ -500,7 +525,9 @@ class TestCheckAPIPath:
             )
         )
 
-        result = await scanner._check_api_path("https://api.example.com/graphql")
+        result = await scanner._check_api_path(
+            "https://api.example.com/graphql"
+        )
         assert result is True
 
     @pytest.mark.asyncio
@@ -528,7 +555,9 @@ class TestCheckAPIPath:
             )
         )
 
-        result = await scanner._check_api_path("https://api.example.com/notapi")
+        result = await scanner._check_api_path(
+            "https://api.example.com/notapi"
+        )
         assert result is False
 
 
@@ -541,7 +570,9 @@ class TestExtractParameters:
             async def scan(self):
                 return self.result
 
-            async def _make_request(self, method, url, headers=None, data=None, params=None):
+            async def _make_request(
+                self, method, url, headers=None, data=None, params=None
+            ):
                 return (200, {}, {})
 
         return TestScanner("https://api.example.com")
@@ -602,7 +633,9 @@ class TestInferSchema:
             async def scan(self):
                 return self.result
 
-            async def _make_request(self, method, url, headers=None, data=None, params=None):
+            async def _make_request(
+                self, method, url, headers=None, data=None, params=None
+            ):
                 return (200, {}, {})
 
         return TestScanner("https://api.example.com")
@@ -652,7 +685,9 @@ class TestTestWeakAuth:
             async def scan(self):
                 return self.result
 
-            async def _make_request(self, method, url, headers=None, data=None, params=None):
+            async def _make_request(
+                self, method, url, headers=None, data=None, params=None
+            ):
                 return (200, {}, {})
 
         return TestScanner("https://api.example.com")
@@ -693,7 +728,9 @@ class TestTestJWT:
             async def scan(self):
                 return self.result
 
-            async def _make_request(self, method, url, headers=None, data=None, params=None):
+            async def _make_request(
+                self, method, url, headers=None, data=None, params=None
+            ):
                 return (200, {}, {})
 
         return TestScanner("https://api.example.com")
@@ -709,7 +746,9 @@ class TestTestJWT:
         await scanner._test_jwt_vulnerabilities(endpoint, vulnerabilities)
 
         assert len(vulnerabilities) == 1
-        assert vulnerabilities[0].vuln_type == VulnerabilityType.JWT_VULNERABILITY
+        assert (
+            vulnerabilities[0].vuln_type == VulnerabilityType.JWT_VULNERABILITY
+        )
         assert "none" in vulnerabilities[0].title.lower()
 
 
@@ -722,7 +761,9 @@ class TestInjectionTests:
             async def scan(self):
                 return self.result
 
-            async def _make_request(self, method, url, headers=None, data=None, params=None):
+            async def _make_request(
+                self, method, url, headers=None, data=None, params=None
+            ):
                 return (200, {}, {})
 
         return TestScanner("https://api.example.com")
@@ -739,7 +780,9 @@ class TestInjectionTests:
         )
 
         endpoint = APIEndpoint(path="/api/search", method="GET")
-        vulnerabilities = await scanner._test_sql_injection(endpoint, "' OR '1'='1")
+        vulnerabilities = await scanner._test_sql_injection(
+            endpoint, "' OR '1'='1"
+        )
 
         assert len(vulnerabilities) == 1
         assert vulnerabilities[0].vuln_type == VulnerabilityType.SQL_INJECTION
@@ -756,10 +799,14 @@ class TestInjectionTests:
         )
 
         endpoint = APIEndpoint(path="/api/users", method="POST")
-        vulnerabilities = await scanner._test_nosql_injection(endpoint, '{"$ne": null}')
+        vulnerabilities = await scanner._test_nosql_injection(
+            endpoint, '{"$ne": null}'
+        )
 
         assert len(vulnerabilities) == 1
-        assert vulnerabilities[0].vuln_type == VulnerabilityType.NOSQL_INJECTION
+        assert (
+            vulnerabilities[0].vuln_type == VulnerabilityType.NOSQL_INJECTION
+        )
 
     @pytest.mark.asyncio
     async def test_command_injection_detected(self, scanner):
@@ -773,10 +820,14 @@ class TestInjectionTests:
         )
 
         endpoint = APIEndpoint(path="/api/ping", method="GET")
-        vulnerabilities = await scanner._test_command_injection(endpoint, "; cat /etc/passwd")
+        vulnerabilities = await scanner._test_command_injection(
+            endpoint, "; cat /etc/passwd"
+        )
 
         assert len(vulnerabilities) == 1
-        assert vulnerabilities[0].vuln_type == VulnerabilityType.COMMAND_INJECTION
+        assert (
+            vulnerabilities[0].vuln_type == VulnerabilityType.COMMAND_INJECTION
+        )
 
 
 class TestSecurityHeaders:
@@ -788,7 +839,9 @@ class TestSecurityHeaders:
             async def scan(self):
                 return self.result
 
-            async def _make_request(self, method, url, headers=None, data=None, params=None):
+            async def _make_request(
+                self, method, url, headers=None, data=None, params=None
+            ):
                 return (200, {}, {})
 
         return TestScanner("https://api.example.com")
@@ -804,10 +857,15 @@ class TestSecurityHeaders:
             )
         )
 
-        vulnerabilities = await scanner.test_security_headers("https://api.example.com")
+        vulnerabilities = await scanner.test_security_headers(
+            "https://api.example.com"
+        )
 
         assert len(vulnerabilities) == 1
-        assert vulnerabilities[0].vuln_type == VulnerabilityType.SECURITY_HEADERS_MISSING
+        assert (
+            vulnerabilities[0].vuln_type
+            == VulnerabilityType.SECURITY_HEADERS_MISSING
+        )
 
     @pytest.mark.asyncio
     async def test_security_headers_present(self, scanner):
@@ -829,7 +887,9 @@ class TestSecurityHeaders:
             )
         )
 
-        vulnerabilities = await scanner.test_security_headers("https://api.example.com")
+        vulnerabilities = await scanner.test_security_headers(
+            "https://api.example.com"
+        )
 
         # Only CORS test might find something
         assert len(vulnerabilities) <= 1
@@ -844,7 +904,9 @@ class TestCORS:
             async def scan(self):
                 return self.result
 
-            async def _make_request(self, method, url, headers=None, data=None, params=None):
+            async def _make_request(
+                self, method, url, headers=None, data=None, params=None
+            ):
                 return (200, {}, {})
 
         return TestScanner("https://api.example.com")
@@ -863,10 +925,15 @@ class TestCORS:
             )
         )
 
-        vulnerabilities = await scanner._test_cors("https://api.example.com", {})
+        vulnerabilities = await scanner._test_cors(
+            "https://api.example.com", {}
+        )
 
         assert len(vulnerabilities) == 1
-        assert vulnerabilities[0].vuln_type == VulnerabilityType.CORS_MISCONFIGURATION
+        assert (
+            vulnerabilities[0].vuln_type
+            == VulnerabilityType.CORS_MISCONFIGURATION
+        )
         assert vulnerabilities[0].severity == VulnerabilitySeverity.HIGH
 
     @pytest.mark.asyncio
@@ -883,10 +950,15 @@ class TestCORS:
             )
         )
 
-        vulnerabilities = await scanner._test_cors("https://api.example.com", {})
+        vulnerabilities = await scanner._test_cors(
+            "https://api.example.com", {}
+        )
 
         assert len(vulnerabilities) == 1
-        assert vulnerabilities[0].vuln_type == VulnerabilityType.CORS_MISCONFIGURATION
+        assert (
+            vulnerabilities[0].vuln_type
+            == VulnerabilityType.CORS_MISCONFIGURATION
+        )
 
 
 class TestPayloadLists:
@@ -934,11 +1006,15 @@ class TestFinalizeScan:
             async def scan(self):
                 return self.result
 
-            async def _make_request(self, method, url, headers=None, data=None, params=None):
+            async def _make_request(
+                self, method, url, headers=None, data=None, params=None
+            ):
                 return (200, {}, {})
 
         scanner = TestScanner("https://api.example.com")
-        scanner.result.add_endpoint(APIEndpoint(path="/api/users", method="GET"))
+        scanner.result.add_endpoint(
+            APIEndpoint(path="/api/users", method="GET")
+        )
         scanner.result.add_vulnerability(
             Vulnerability(
                 vuln_type=VulnerabilityType.MISSING_AUTH,

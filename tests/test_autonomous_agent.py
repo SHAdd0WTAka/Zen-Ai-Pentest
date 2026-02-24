@@ -16,7 +16,9 @@ except ImportError:
     AUTONOMOUS_AVAILABLE = False
 
 
-@pytest.mark.skipif(not AUTONOMOUS_AVAILABLE, reason="Autonomous modules not available")
+@pytest.mark.skipif(
+    not AUTONOMOUS_AVAILABLE, reason="Autonomous modules not available"
+)
 class TestAutonomousAgent:
     """Test autonomous agent functionality"""
 
@@ -31,7 +33,9 @@ class TestAutonomousAgent:
             assert agent is not None
 
 
-@pytest.mark.skipif(not AUTONOMOUS_AVAILABLE, reason="Autonomous modules not available")
+@pytest.mark.skipif(
+    not AUTONOMOUS_AVAILABLE, reason="Autonomous modules not available"
+)
 class TestAgentLoop:
     """Test agent loop functionality"""
 
@@ -54,7 +58,9 @@ class TestAgentLoop:
             assert hasattr(loop, "run") or hasattr(loop, "execute")
 
 
-@pytest.mark.skipif(not AUTONOMOUS_AVAILABLE, reason="Autonomous modules not available")
+@pytest.mark.skipif(
+    not AUTONOMOUS_AVAILABLE, reason="Autonomous modules not available"
+)
 class TestAgentMemory:
     """Test agent memory functionality"""
 
@@ -81,10 +87,14 @@ class TestAgentMemory:
             if hasattr(memory, "retrieve"):
                 value = memory.retrieve("key")
                 # Value might be None or the stored value
-                assert value is not None or value is None  # Just test it doesn't crash
+                assert (
+                    value is not None or value is None
+                )  # Just test it doesn't crash
 
 
-@pytest.mark.skipif(not AUTONOMOUS_AVAILABLE, reason="Autonomous modules not available")
+@pytest.mark.skipif(
+    not AUTONOMOUS_AVAILABLE, reason="Autonomous modules not available"
+)
 class TestAgentState:
     """Test agent state management"""
 
@@ -99,7 +109,9 @@ class TestAgentState:
             assert state is not None
 
 
-@pytest.mark.skipif(not AUTONOMOUS_AVAILABLE, reason="Autonomous modules not available")
+@pytest.mark.skipif(
+    not AUTONOMOUS_AVAILABLE, reason="Autonomous modules not available"
+)
 class TestToolExecution:
     """Test tool execution in autonomous mode"""
 

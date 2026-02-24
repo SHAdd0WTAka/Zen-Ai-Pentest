@@ -11,7 +11,9 @@ if sys.platform == "win32":
         """Silence unclosed transport warnings on Windows"""
         import warnings
 
-        warnings.filterwarnings("ignore", message="unclosed transport", category=ResourceWarning)
+        warnings.filterwarnings(
+            "ignore", message="unclosed transport", category=ResourceWarning
+        )
 
     silence_asyncio_warnings()
 

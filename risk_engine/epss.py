@@ -64,7 +64,9 @@ class EPSSClient:
     def _fetch_epss(self, cve_id: str) -> float:
         """Fetch EPSS score from API."""
         try:
-            response = requests.get(self.API_URL, params={"cve": cve_id}, timeout=10)
+            response = requests.get(
+                self.API_URL, params={"cve": cve_id}, timeout=10
+            )
             response.raise_for_status()
 
             data = response.json()
@@ -129,7 +131,9 @@ class EPSSClient:
         Indicates how this CVE ranks compared to all others.
         """
         try:
-            response = requests.get(self.API_URL, params={"cve": cve_id.upper()}, timeout=10)
+            response = requests.get(
+                self.API_URL, params={"cve": cve_id.upper()}, timeout=10
+            )
             response.raise_for_status()
 
             data = response.json()

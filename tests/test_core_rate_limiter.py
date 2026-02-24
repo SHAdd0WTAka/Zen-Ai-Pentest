@@ -133,7 +133,9 @@ class TestExponentialBackoff:
 
     def test_exponential_increase(self):
         """Test delay increases exponentially"""
-        backoff = ExponentialBackoff(base_delay=1.0, max_delay=60.0, jitter=False)
+        backoff = ExponentialBackoff(
+            base_delay=1.0, max_delay=60.0, jitter=False
+        )
 
         delay1 = backoff.next_delay()
         delay2 = backoff.next_delay()
@@ -145,7 +147,9 @@ class TestExponentialBackoff:
 
     def test_max_delay_cap(self):
         """Test delay is capped at max_delay"""
-        backoff = ExponentialBackoff(base_delay=1.0, max_delay=10.0, jitter=False)
+        backoff = ExponentialBackoff(
+            base_delay=1.0, max_delay=10.0, jitter=False
+        )
 
         # Get several delays
         for _ in range(10):
@@ -155,7 +159,9 @@ class TestExponentialBackoff:
 
     def test_jitter_enabled(self):
         """Test jitter adds randomness"""
-        backoff = ExponentialBackoff(base_delay=1.0, max_delay=60.0, jitter=True)
+        backoff = ExponentialBackoff(
+            base_delay=1.0, max_delay=60.0, jitter=True
+        )
 
         delays = [backoff.next_delay() for _ in range(10)]
 
@@ -164,7 +170,9 @@ class TestExponentialBackoff:
 
     def test_jitter_disabled(self):
         """Test no jitter gives consistent delays"""
-        backoff = ExponentialBackoff(base_delay=1.0, max_delay=60.0, jitter=False)
+        backoff = ExponentialBackoff(
+            base_delay=1.0, max_delay=60.0, jitter=False
+        )
 
         delay1 = backoff.next_delay()
         backoff.reset()
@@ -272,7 +280,9 @@ class TestCircuitBreaker:
     @pytest.mark.asyncio
     async def test_half_open_failure_reopens(self):
         """Test failure in half-open reopens circuit"""
-        config = CircuitBreakerConfig(failure_threshold=1, recovery_timeout=0.1)
+        config = CircuitBreakerConfig(
+            failure_threshold=1, recovery_timeout=0.1
+        )
         cb = CircuitBreaker("test", config)
 
         async def fail_func():
@@ -483,7 +493,9 @@ class TestRateLimitConfig:
 
     def test_custom_config(self):
         """Test custom rate limit configuration"""
-        config = RateLimitConfig(requests_per_second=10.0, burst_size=20, max_retries=5)
+        config = RateLimitConfig(
+            requests_per_second=10.0, burst_size=20, max_retries=5
+        )
 
         assert config.requests_per_second == 10.0
         assert config.burst_size == 20
@@ -506,7 +518,9 @@ class TestCircuitBreakerConfig:
 
     def test_custom_config(self):
         """Test custom circuit breaker configuration"""
-        config = CircuitBreakerConfig(failure_threshold=3, recovery_timeout=10.0, half_open_max_calls=1)
+        config = CircuitBreakerConfig(
+            failure_threshold=3, recovery_timeout=10.0, half_open_max_calls=1
+        )
 
         assert config.failure_threshold == 3
         assert config.recovery_timeout == 10.0
@@ -664,7 +678,12 @@ class TestIntegration:
                 raise Exception("First call fails")
             return f"result_{call_count}"
 
-        router.register_backend("api", Mock(), priority=5, circuit_config=CircuitBreakerConfig(failure_threshold=3))
+        router.register_backend(
+            "api",
+            Mock(),
+            priority=5,
+            circuit_config=CircuitBreakerConfig(failure_threshold=3),
+        )
 
         # First call fails
         with pytest.raises(Exception):

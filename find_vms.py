@@ -32,7 +32,12 @@ def scan_host(ip_suffix):
     ip = f"{network}.{ip_suffix}"
     try:
         # Ping mit kurzem Timeout
-        result = subprocess.run(["ping", "-n", "1", "-w", "500", ip], capture_output=True, text=True, timeout=2)
+        result = subprocess.run(
+            ["ping", "-n", "1", "-w", "500", ip],
+            capture_output=True,
+            text=True,
+            timeout=2,
+        )
         if "TTL=" in result.stdout or "bytes=" in result.stdout:
             # Host ist online, versuche Hostname zu bekommen
             try:
@@ -50,13 +55,17 @@ print("[1] Suche nach aktiven Hosts...")
 print("-" * 70)
 
 with ThreadPoolExecutor(max_workers=50) as executor:
-    futures = [executor.submit(scan_host, i) for i in range(start_ip, end_ip + 1)]
+    futures = [
+        executor.submit(scan_host, i) for i in range(start_ip, end_ip + 1)
+    ]
 
     completed = 0
     for future in as_completed(futures):
         completed += 1
         if completed % 50 == 0:
-            print(f"  Fortschritt: {completed}/{end_ip - start_ip + 1} IPs geprüft...")
+            print(
+                f"  Fortschritt: {completed}/{end_ip - start_ip + 1} IPs geprüft..."
+            )
 
         result = future.result()
         if result:
@@ -112,7 +121,9 @@ print("=" * 70)
 vm_candidates = [
     h
     for h in found_hosts
-    if int(h[0].split(".")[-1]) > 100 and h[0] not in ["192.168.1.1", "192.168.1.243"] and h[1] == "Unknown"
+    if int(h[0].split(".")[-1]) > 100
+    and h[0] not in ["192.168.1.1", "192.168.1.243"]
+    and h[1] == "Unknown"
 ]
 
 if vm_candidates:
@@ -133,7 +144,9 @@ print("SCAN-EMPFEHLUNGEN")
 print("=" * 70)
 
 if len(found_hosts) > 2:
-    interesting = [h for h in found_hosts if h[0] not in ["192.168.1.1", "192.168.1.243"]]
+    interesting = [
+        h for h in found_hosts if h[0] not in ["192.168.1.1", "192.168.1.243"]
+    ]
     if interesting:
         print("\nInteressante Ziele zum Scannen:")
         for ip, hostname, _ in interesting[:5]:

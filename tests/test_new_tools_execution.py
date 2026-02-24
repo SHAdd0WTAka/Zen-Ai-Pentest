@@ -20,7 +20,9 @@ class TestFFuFEnhancedExecution:
     def test_ffuf_finding_dataclass(self):
         from tools.ffuf_integration_enhanced import FFuFFinding
 
-        f = FFuFFinding(url="http://test.com", status_code=200, length=100, words=10)
+        f = FFuFFinding(
+            url="http://test.com", status_code=200, length=100, words=10
+        )
         assert f.url == "http://test.com"
         assert f.status_code == 200
 
@@ -60,7 +62,9 @@ class TestWhatWebExecution:
     def test_whatweb_technology_dataclass(self):
         from tools.whatweb_integration import WhatWebTechnology
 
-        tech = WhatWebTechnology(name="WordPress", version="5.8", confidence=100)
+        tech = WhatWebTechnology(
+            name="WordPress", version="5.8", confidence=100
+        )
         assert tech.name == "WordPress"
         assert tech.confidence == 100
 
@@ -104,7 +108,9 @@ class TestSubfinderExecution:
     def test_subfinder_result_dataclass(self):
         from tools.subfinder_integration import SubfinderResult
 
-        result = SubfinderResult(subdomain="test.example.com", sources=["crtsh"])
+        result = SubfinderResult(
+            subdomain="test.example.com", sources=["crtsh"]
+        )
         assert result.subdomain == "test.example.com"
 
     def test_subfinder_integration_creation(self):
@@ -125,7 +131,9 @@ class TestHTTPXExecution:
     def test_httpx_result_dataclass(self):
         from tools.httpx_integration import HTTPXResult
 
-        result = HTTPXResult(url="http://test.com", status_code=200, title="Test")
+        result = HTTPXResult(
+            url="http://test.com", status_code=200, title="Test"
+        )
         assert result.url == "http://test.com"
         assert result.status_code == 200
 
@@ -168,7 +176,11 @@ class TestSherlockExecution:
     def test_sherlock_result_dataclass(self):
         from tools.sherlock_integration import SherlockResult
 
-        result = SherlockResult(username="testuser", site="GitHub", url="https://github.com/testuser")
+        result = SherlockResult(
+            username="testuser",
+            site="GitHub",
+            url="https://github.com/testuser",
+        )
         assert result.username == "testuser"
 
     def test_sherlock_integration_creation(self):
@@ -189,7 +201,9 @@ class TestIgnorantExecution:
     def test_ignorant_result_dataclass(self):
         from tools.ignorant_integration import IgnorantResult
 
-        result = IgnorantResult(email="test@gmail.com", service="Gmail", exists=True)
+        result = IgnorantResult(
+            email="test@gmail.com", service="Gmail", exists=True
+        )
         assert result.email == "test@gmail.com"
 
     def test_ignorant_integration_creation(self):

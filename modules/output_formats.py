@@ -80,11 +80,15 @@ class SARIFFormatter:
         "info": {"level": "none", "rank": 1},
     }
 
-    def __init__(self, tool_name: str = "Zen AI Pentest", tool_version: str = "2.0.0"):
+    def __init__(
+        self, tool_name: str = "Zen AI Pentest", tool_version: str = "2.0.0"
+    ):
         self.tool_name = tool_name
         self.tool_version = tool_version
 
-    def format(self, findings: List[Finding], summary: ScanSummary) -> Dict[str, Any]:
+    def format(
+        self, findings: List[Finding], summary: ScanSummary
+    ) -> Dict[str, Any]:
         """Convert findings to SARIF format"""
 
         sarif = {
@@ -105,7 +109,9 @@ class SARIFFormatter:
                         {
                             "executionSuccessful": True,
                             "startTimeUtc": summary.scan_date,
-                            "endTimeUtc": self._calculate_end_time(summary.scan_date, summary.duration),
+                            "endTimeUtc": self._calculate_end_time(
+                                summary.scan_date, summary.duration
+                            ),
                         }
                     ],
                     "properties": {
@@ -140,17 +146,26 @@ class SARIFFormatter:
                 "id": self._sanitize_rule_id(finding.category),
                 "name": finding.category,
                 "shortDescription": {"text": finding.category},
-                "fullDescription": {"text": f"Security issue category: {finding.category}"},
-                "defaultConfiguration": {
-                    "level": self.SEVERITY_LEVELS.get(finding.severity.lower(), {"level": "warning"})["level"]
+                "fullDescription": {
+                    "text": f"Security issue category: {finding.category}"
                 },
-                "properties": {"category": finding.category, "severity": finding.severity},
+                "defaultConfiguration": {
+                    "level": self.SEVERITY_LEVELS.get(
+                        finding.severity.lower(), {"level": "warning"}
+                    )["level"]
+                },
+                "properties": {
+                    "category": finding.category,
+                    "severity": finding.severity,
+                },
             }
             rules.append(rule)
 
         return rules
 
-    def _generate_results(self, findings: List[Finding]) -> List[Dict[str, Any]]:
+    def _generate_results(
+        self, findings: List[Finding]
+    ) -> List[Dict[str, Any]]:
         """Generate SARIF results from findings"""
         results = []
 
@@ -158,10 +173,17 @@ class SARIFFormatter:
             result = {
                 "ruleId": self._sanitize_rule_id(finding.category),
                 "ruleIndex": 0,
-                "message": {"text": finding.title, "markdown": f"**{finding.title}**\n\n{finding.description}"},
+                "message": {
+                    "text": finding.title,
+                    "markdown": f"**{finding.title}**\n\n{finding.description}",
+                },
                 "locations": self._generate_locations(finding),
-                "level": self.SEVERITY_LEVELS.get(finding.severity.lower(), {"level": "warning"})["level"],
-                "rank": self.SEVERITY_LEVELS.get(finding.severity.lower(), {"rank": 5})["rank"],
+                "level": self.SEVERITY_LEVELS.get(
+                    finding.severity.lower(), {"level": "warning"}
+                )["level"],
+                "rank": self.SEVERITY_LEVELS.get(
+                    finding.severity.lower(), {"rank": 5}
+                )["rank"],
                 "properties": {
                     "findingId": finding.id,
                     "severity": finding.severity,
@@ -174,14 +196,21 @@ class SARIFFormatter:
 
             # Add remediation if available
             if finding.remediation:
-                result["fixes"] = [{"description": {"text": finding.remediation}}]
+                result["fixes"] = [
+                    {"description": {"text": finding.remediation}}
+                ]
 
             # Add references if available
             if finding.references:
                 result["relatedLocations"] = [
                     {
                         "id": i + 1,
-                        "physicalLocation": {"artifactLocation": {"uri": ref, "description": {"text": f"Reference {i + 1}"}}},
+                        "physicalLocation": {
+                            "artifactLocation": {
+                                "uri": ref,
+                                "description": {"text": f"Reference {i + 1}"},
+                            }
+                        },
                     }
                     for i, ref in enumerate(finding.references)
                 ]
@@ -197,16 +226,23 @@ class SARIFFormatter:
         # Primary location from target
         location = {
             "physicalLocation": {
-                "artifactLocation": {"uri": finding.target, "description": {"text": f"Target: {finding.target}"}}
+                "artifactLocation": {
+                    "uri": finding.target,
+                    "description": {"text": f"Target: {finding.target}"},
+                }
             }
         }
 
         # Add specific location if available
         if finding.location:
             if "uri" in finding.location:
-                location["physicalLocation"]["artifactLocation"]["uri"] = finding.location["uri"]
+                location["physicalLocation"]["artifactLocation"]["uri"] = (
+                    finding.location["uri"]
+                )
             if "region" in finding.location:
-                location["physicalLocation"]["region"] = finding.location["region"]
+                location["physicalLocation"]["region"] = finding.location[
+                    "region"
+                ]
 
         locations.append(location)
         return locations
@@ -224,7 +260,12 @@ class SARIFFormatter:
         except Exception:
             return start_time
 
-    def write(self, findings: List[Finding], summary: ScanSummary, output_path: Union[str, Path]) -> Path:
+    def write(
+        self,
+        findings: List[Finding],
+        summary: ScanSummary,
+        output_path: Union[str, Path],
+    ) -> Path:
         """Write SARIF output to file"""
         output_path = Path(output_path)
         sarif_data = self.format(findings, summary)
@@ -242,12 +283,20 @@ class JUnitXMLFormatter:
     Compatible with Jenkins, GitLab CI Test Reports, and most CI platforms.
     """
 
-    SEVERITY_WEIGHTS = {"critical": 100, "high": 50, "medium": 20, "low": 5, "info": 1}
+    SEVERITY_WEIGHTS = {
+        "critical": 100,
+        "high": 50,
+        "medium": 20,
+        "low": 5,
+        "info": 1,
+    }
 
     def __init__(self, tool_name: str = "Zen AI Pentest"):
         self.tool_name = tool_name
 
-    def format(self, findings: List[Finding], summary: ScanSummary) -> ET.Element:
+    def format(
+        self, findings: List[Finding], summary: ScanSummary
+    ) -> ET.Element:
         """Convert findings to JUnit XML format"""
 
         # Create root testsuites element
@@ -296,7 +345,9 @@ class JUnitXMLFormatter:
         prop.set("name", name)
         prop.set("value", value)
 
-    def _create_testcase(self, testsuite: ET.Element, finding: Finding, summary: ScanSummary) -> ET.Element:
+    def _create_testcase(
+        self, testsuite: ET.Element, finding: Finding, summary: ScanSummary
+    ) -> ET.Element:
         """Create a JUnit test case for a finding"""
 
         testcase = ET.SubElement(testsuite, "testcase")
@@ -308,7 +359,9 @@ class JUnitXMLFormatter:
         if finding.severity.lower() in ["critical", "high"]:
             failure = ET.SubElement(testcase, "failure")
             failure.set("type", f"security.{finding.severity.lower()}")
-            failure.set("message", f"[{finding.severity.upper()}] {finding.title}")
+            failure.set(
+                "message", f"[{finding.severity.upper()}] {finding.title}"
+            )
 
             # Build detailed failure text
             failure_text = self._generate_failure_text(finding)
@@ -389,7 +442,12 @@ Findings by Severity:
         reparsed = minidom.parseString(rough_string)
         return reparsed.toprettyxml(indent="  ")
 
-    def write(self, findings: List[Finding], summary: ScanSummary, output_path: Union[str, Path]) -> Path:
+    def write(
+        self,
+        findings: List[Finding],
+        summary: ScanSummary,
+        output_path: Union[str, Path],
+    ) -> Path:
         """Write JUnit XML output to file"""
         output_path = Path(output_path)
         xml_element = self.format(findings, summary)
@@ -420,7 +478,9 @@ class HTMLFormatter:
         "info": {"bg": "#6b7280", "text": "#ffffff", "light": "#f3f4f6"},
     }
 
-    def __init__(self, tool_name: str = "Zen AI Pentest", tool_version: str = "2.0.0"):
+    def __init__(
+        self, tool_name: str = "Zen AI Pentest", tool_version: str = "2.0.0"
+    ):
         self.tool_name = tool_name
         self.tool_version = tool_version
 
@@ -686,7 +746,9 @@ class HTMLFormatter:
 
     def _generate_header(self, summary: ScanSummary) -> str:
         """Generate report header"""
-        scan_date = datetime.fromisoformat(summary.scan_date.replace("Z", "+00:00"))
+        scan_date = datetime.fromisoformat(
+            summary.scan_date.replace("Z", "+00:00")
+        )
         formatted_date = scan_date.strftime("%Y-%m-%d %H:%M:%S UTC")
 
         return f"""
@@ -706,7 +768,13 @@ class HTMLFormatter:
     def _generate_summary(self, summary: ScanSummary) -> str:
         """Generate summary section with cards"""
 
-        total = summary.critical + summary.high + summary.medium + summary.low + summary.info
+        total = (
+            summary.critical
+            + summary.high
+            + summary.medium
+            + summary.low
+            + summary.info
+        )
 
         # Determine risk class
         if summary.risk_score >= 80:
@@ -766,7 +834,9 @@ class HTMLFormatter:
         findings_html = []
         for i, finding in enumerate(findings, 1):
             severity = finding.severity.lower()
-            colors = self.SEVERITY_COLORS.get(severity, self.SEVERITY_COLORS["info"])
+            colors = self.SEVERITY_COLORS.get(
+                severity, self.SEVERITY_COLORS["info"]
+            )
 
             finding_html = f"""
             <div class="finding-item" data-severity="{severity}">
@@ -882,7 +952,12 @@ class HTMLFormatter:
         }
         """
 
-    def write(self, findings: List[Finding], summary: ScanSummary, output_path: Union[str, Path]) -> Path:
+    def write(
+        self,
+        findings: List[Finding],
+        summary: ScanSummary,
+        output_path: Union[str, Path],
+    ) -> Path:
         """Write HTML report to file"""
         output_path = Path(output_path)
         html_content = self.format(findings, summary)
@@ -913,7 +988,9 @@ def convert_findings(raw_findings: List[Dict[str, Any]]) -> List[Finding]:
             cvss_score=f.get("cvss_score"),
             remediation=f.get("remediation"),
             references=f.get("references", []),
-            discovered_at=f.get("discovered_at", datetime.utcnow().isoformat()),
+            discovered_at=f.get(
+                "discovered_at", datetime.utcnow().isoformat()
+            ),
             evidence=f.get("evidence"),
             location=f.get("location"),
         )
@@ -921,7 +998,9 @@ def convert_findings(raw_findings: List[Dict[str, Any]]) -> List[Finding]:
     return findings
 
 
-def create_summary(findings: List[Finding], scan_id: str, target: str, duration: int = 0) -> ScanSummary:
+def create_summary(
+    findings: List[Finding], scan_id: str, target: str, duration: int = 0
+) -> ScanSummary:
     """Create scan summary from findings"""
 
     counts = {"critical": 0, "high": 0, "medium": 0, "low": 0, "info": 0}
@@ -931,7 +1010,15 @@ def create_summary(findings: List[Finding], scan_id: str, target: str, duration:
             counts[sev] += 1
 
     # Calculate risk score (simple algorithm)
-    risk_score = min(100, (counts["critical"] * 20 + counts["high"] * 10 + counts["medium"] * 5 + counts["low"] * 1))
+    risk_score = min(
+        100,
+        (
+            counts["critical"] * 20
+            + counts["high"] * 10
+            + counts["medium"] * 5
+            + counts["low"] * 1
+        ),
+    )
 
     return ScanSummary(
         scan_id=scan_id,
@@ -949,7 +1036,10 @@ def create_summary(findings: List[Finding], scan_id: str, target: str, duration:
 
 
 def export_all_formats(
-    findings: List[Finding], summary: ScanSummary, output_dir: Union[str, Path], prefix: str = "scan"
+    findings: List[Finding],
+    summary: ScanSummary,
+    output_dir: Union[str, Path],
+    prefix: str = "scan",
 ) -> Dict[str, Path]:
     """Export findings to all supported formats"""
 
@@ -960,20 +1050,34 @@ def export_all_formats(
 
     # SARIF
     sarif_formatter = SARIFFormatter()
-    results["sarif"] = sarif_formatter.write(findings, summary, output_dir / f"{prefix}.sarif")
+    results["sarif"] = sarif_formatter.write(
+        findings, summary, output_dir / f"{prefix}.sarif"
+    )
 
     # JUnit XML
     junit_formatter = JUnitXMLFormatter()
-    results["junit"] = junit_formatter.write(findings, summary, output_dir / f"{prefix}.xml")
+    results["junit"] = junit_formatter.write(
+        findings, summary, output_dir / f"{prefix}.xml"
+    )
 
     # HTML
     html_formatter = HTMLFormatter()
-    results["html"] = html_formatter.write(findings, summary, output_dir / f"{prefix}.html")
+    results["html"] = html_formatter.write(
+        findings, summary, output_dir / f"{prefix}.html"
+    )
 
     # JSON
     json_path = output_dir / f"{prefix}.json"
     with open(json_path, "w") as f:
-        json.dump({"summary": asdict(summary), "findings": [asdict(f) for f in findings]}, f, indent=2, default=str)
+        json.dump(
+            {
+                "summary": asdict(summary),
+                "findings": [asdict(f) for f in findings],
+            },
+            f,
+            indent=2,
+            default=str,
+        )
     results["json"] = json_path
 
     return results
@@ -998,7 +1102,9 @@ if __name__ == "__main__":
             cve_id="CVE-2023-1234",
             cvss_score=9.8,
             remediation="Use parameterized queries and input validation.",
-            references=["https://owasp.org/www-community/attacks/SQL_Injection"],
+            references=[
+                "https://owasp.org/www-community/attacks/SQL_Injection"
+            ],
         ),
         Finding(
             id="FIND-002",
@@ -1020,7 +1126,9 @@ if __name__ == "__main__":
         ),
     ]
 
-    summary = create_summary(example_findings, "scan-001", "https://example.com", 120)
+    summary = create_summary(
+        example_findings, "scan-001", "https://example.com", 120
+    )
 
     if len(sys.argv) > 1:
         output_dir = sys.argv[1]

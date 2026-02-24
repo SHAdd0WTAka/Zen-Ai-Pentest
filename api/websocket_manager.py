@@ -41,7 +41,11 @@ class ConnectionManager:
         if client_id and client_id in self.active_connections:
             connections = self.active_connections[client_id]
         else:
-            connections = [ws for conns in self.active_connections.values() for ws in conns]
+            connections = [
+                ws
+                for conns in self.active_connections.values()
+                for ws in conns
+            ]
 
         disconnected = []
         for connection in connections:

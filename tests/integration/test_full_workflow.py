@@ -33,12 +33,19 @@ class TestFullWorkflow:
         """Initialize complete system"""
         # Config
         orch_config = OrchestratorConfig(
-            max_workers=2, enable_analysis_bot=False, enable_audit_logging=True, enable_secure_validation=True
+            max_workers=2,
+            enable_analysis_bot=False,
+            enable_audit_logging=True,
+            enable_secure_validation=True,
         )
 
-        scheduler_config = ScheduleConfig(persistence_enabled=False, check_interval=1)
+        scheduler_config = ScheduleConfig(
+            persistence_enabled=False, check_interval=1
+        )
 
-        dashboard_config = DashboardConfig(websocket_enabled=False, metrics_enabled=True, metrics_interval=5)
+        dashboard_config = DashboardConfig(
+            websocket_enabled=False, metrics_enabled=True, metrics_interval=5
+        )
 
         # Create components
         orchestrator = ZenOrchestrator(orch_config)
@@ -61,7 +68,11 @@ class TestFullWorkflow:
         await scheduler.start()
         await dashboard.start()
 
-        yield {"orchestrator": orchestrator, "scheduler": scheduler, "dashboard": dashboard}
+        yield {
+            "orchestrator": orchestrator,
+            "scheduler": scheduler,
+            "dashboard": dashboard,
+        }
 
         # Cleanup
         await dashboard.stop()
@@ -75,7 +86,11 @@ class TestFullWorkflow:
 
         # Submit scan task
         task_id = await orch.submit_task(
-            {"type": "vulnerability_scan", "target": "test.example.com", "options": {"ports": "80,443"}}
+            {
+                "type": "vulnerability_scan",
+                "target": "test.example.com",
+                "options": {"ports": "80,443"},
+            }
         )
 
         assert task_id is not None
@@ -120,7 +135,9 @@ class TestFullWorkflow:
         orch = system["orchestrator"]
 
         # Submit task to generate events
-        task_id = await orch.submit_task({"type": "test_task", "target": "test.com"})
+        task_id = await orch.submit_task(
+            {"type": "test_task", "target": "test.com"}
+        )
 
         await asyncio.sleep(0.2)
 
@@ -161,7 +178,12 @@ class TestSecurityIntegration:
         await logger.start()
 
         # Log security event
-        await logger.security("test_security_event", "Test security event", user_id="test_user", details={"severity": "high"})
+        await logger.security(
+            "test_security_event",
+            "Test security event",
+            user_id="test_user",
+            details={"severity": "high"},
+        )
 
         # Query logs
         logs = await logger.query(limit=10)
@@ -227,7 +249,9 @@ class TestComponentInteraction:
     @pytest.mark.asyncio
     async def test_orchestrator_scheduler_interaction(self):
         """Test orchestrator and scheduler work together"""
-        orch_config = OrchestratorConfig(max_workers=2, enable_audit_logging=False)
+        orch_config = OrchestratorConfig(
+            max_workers=2, enable_audit_logging=False
+        )
         scheduler_config = ScheduleConfig(persistence_enabled=False)
 
         orchestrator = ZenOrchestrator(orch_config)
@@ -238,7 +262,9 @@ class TestComponentInteraction:
             task_id = await orchestrator.submit_task(task_data)
             return {"orchestrator_task_id": task_id}
 
-        scheduler.register_callback("orchestrated_task", scheduled_task_callback)
+        scheduler.register_callback(
+            "orchestrated_task", scheduled_task_callback
+        )
 
         await orchestrator.start()
         await scheduler.start()

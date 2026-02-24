@@ -264,7 +264,9 @@ class TestReportParsing:
         scanner = ScoutSuiteScanner(provider=CloudProvider.AWS)
 
         with patch("builtins.open", MagicMock()) as mock_open:
-            mock_open.return_value.__enter__.return_value.read.return_value = json.dumps(SAMPLE_SCOUTSUITE_REPORT)
+            mock_open.return_value.__enter__.return_value.read.return_value = (
+                json.dumps(SAMPLE_SCOUTSUITE_REPORT)
+            )
             data = scanner._parse_report("/tmp/report.json")
             assert data["provider_code"] == "aws"
 
@@ -325,7 +327,10 @@ class TestCredentialChecks:
     """Test cloud credential checking"""
 
     @patch("shutil.which")
-    @patch.dict(os.environ, {"AWS_ACCESS_KEY_ID": "test", "AWS_SECRET_ACCESS_KEY": "test"})
+    @patch.dict(
+        os.environ,
+        {"AWS_ACCESS_KEY_ID": "test", "AWS_SECRET_ACCESS_KEY": "test"},
+    )
     def test_check_aws_credentials_env(self, mock_which):
         """Test AWS credentials from environment"""
         mock_which.return_value = "/usr/bin/scout"
@@ -344,7 +349,9 @@ class TestCredentialChecks:
                 assert scanner._check_aws_credentials() is False
 
     @patch("shutil.which")
-    @patch.dict(os.environ, {"AZURE_CLIENT_ID": "test", "AZURE_CLIENT_SECRET": "test"})
+    @patch.dict(
+        os.environ, {"AZURE_CLIENT_ID": "test", "AZURE_CLIENT_SECRET": "test"}
+    )
     def test_check_azure_credentials_env(self, mock_which):
         """Test Azure credentials from environment"""
         mock_which.return_value = "/usr/bin/scout"
@@ -352,7 +359,9 @@ class TestCredentialChecks:
         assert scanner._check_azure_credentials() is True
 
     @patch("shutil.which")
-    @patch.dict(os.environ, {"GOOGLE_APPLICATION_CREDENTIALS": "/path/to/creds.json"})
+    @patch.dict(
+        os.environ, {"GOOGLE_APPLICATION_CREDENTIALS": "/path/to/creds.json"}
+    )
     def test_check_gcp_credentials_env(self, mock_which):
         """Test GCP credentials from environment"""
         mock_which.return_value = "/usr/bin/scout"
@@ -379,7 +388,9 @@ class TestCommandBuilding:
     def test_build_command_with_profile(self, mock_which):
         """Test command with AWS profile"""
         mock_which.return_value = "/usr/bin/scout"
-        scanner = ScoutSuiteScanner(provider=CloudProvider.AWS, profile="production")
+        scanner = ScoutSuiteScanner(
+            provider=CloudProvider.AWS, profile="production"
+        )
         cmd = scanner._build_command()
 
         assert "--profile" in cmd
@@ -428,9 +439,19 @@ class TestAsyncScanning:
         mock_result.stderr = ""
 
         with patch.object(scanner, "_check_credentials", return_value=True):
-            with patch.object(scanner, "_run_subprocess", return_value=mock_result):
-                with patch.object(scanner, "_find_latest_report", return_value="/tmp/report.json"):
-                    with patch.object(scanner, "_parse_report", return_value=SAMPLE_SCOUTSUITE_REPORT):
+            with patch.object(
+                scanner, "_run_subprocess", return_value=mock_result
+            ):
+                with patch.object(
+                    scanner,
+                    "_find_latest_report",
+                    return_value="/tmp/report.json",
+                ):
+                    with patch.object(
+                        scanner,
+                        "_parse_report",
+                        return_value=SAMPLE_SCOUTSUITE_REPORT,
+                    ):
                         result = await scanner.scan()
 
                         assert result.success is True
@@ -457,7 +478,9 @@ class TestAsyncScanning:
         scanner = ScoutSuiteScanner(provider=CloudProvider.AWS)
 
         with patch.object(scanner, "_check_credentials", return_value=True):
-            with patch.object(scanner, "_run_subprocess", side_effect=asyncio.TimeoutError):
+            with patch.object(
+                scanner, "_run_subprocess", side_effect=asyncio.TimeoutError
+            ):
                 result = await scanner.scan(timeout=1)
 
                 assert result.success is False

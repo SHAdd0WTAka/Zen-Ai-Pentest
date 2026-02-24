@@ -65,7 +65,9 @@ class TestReconTargetAnalysis:
     """Test target analysis functionality"""
 
     @pytest.mark.asyncio
-    async def test_analyze_target_success(self, recon_module, mock_orchestrator):
+    async def test_analyze_target_success(
+        self, recon_module, mock_orchestrator
+    ):
         """Test successful target analysis"""
         mock_orchestrator.process.return_value = MockResponse(
             content="""
@@ -81,9 +83,19 @@ Suggested Tools:
 """
         )
 
-        with patch.object(recon_module, "_resolve_ip", return_value="93.184.216.34"):
-            with patch.object(recon_module, "_get_dns_records", return_value=["A: 93.184.216.34"]):
-                with patch.object(recon_module, "_get_whois", return_value="Domain Name: EXAMPLE.COM"):
+        with patch.object(
+            recon_module, "_resolve_ip", return_value="93.184.216.34"
+        ):
+            with patch.object(
+                recon_module,
+                "_get_dns_records",
+                return_value=["A: 93.184.216.34"],
+            ):
+                with patch.object(
+                    recon_module,
+                    "_get_whois",
+                    return_value="Domain Name: EXAMPLE.COM",
+                ):
                     result = await recon_module.analyze_target("example.com")
 
         assert result["target"] == "example.com"
@@ -95,14 +107,30 @@ Suggested Tools:
         mock_orchestrator.process.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_analyze_target_dns_failure(self, recon_module, mock_orchestrator):
+    async def test_analyze_target_dns_failure(
+        self, recon_module, mock_orchestrator
+    ):
         """Test target analysis with DNS failure"""
-        mock_orchestrator.process.return_value = MockResponse(content="No attack vectors found")
+        mock_orchestrator.process.return_value = MockResponse(
+            content="No attack vectors found"
+        )
 
-        with patch.object(recon_module, "_resolve_ip", return_value="Could not resolve"):
-            with patch.object(recon_module, "_get_dns_records", return_value=["No DNS records found"]):
-                with patch.object(recon_module, "_get_whois", return_value="WHOIS not available"):
-                    result = await recon_module.analyze_target("invalid.invalid")
+        with patch.object(
+            recon_module, "_resolve_ip", return_value="Could not resolve"
+        ):
+            with patch.object(
+                recon_module,
+                "_get_dns_records",
+                return_value=["No DNS records found"],
+            ):
+                with patch.object(
+                    recon_module,
+                    "_get_whois",
+                    return_value="WHOIS not available",
+                ):
+                    result = await recon_module.analyze_target(
+                        "invalid.invalid"
+                    )
 
         assert result["target"] == "invalid.invalid"
         assert result["ip"] == "Could not resolve"
@@ -121,7 +149,9 @@ class TestReconDNSResolution:
     @pytest.mark.asyncio
     async def test_resolve_ip_failure(self, recon_module):
         """Test IP resolution failure"""
-        with patch("socket.gethostbyname", side_effect=socket.gaierror("DNS Error")):
+        with patch(
+            "socket.gethostbyname", side_effect=socket.gaierror("DNS Error")
+        ):
             result = await recon_module._resolve_ip("invalid.invalid")
         assert result == "Could not resolve"
 
@@ -145,7 +175,10 @@ class TestReconDNSRecords:
     @pytest.mark.asyncio
     async def test_get_dns_records_failure(self, recon_module):
         """Test DNS records retrieval failure"""
-        with patch("subprocess.run", side_effect=subprocess.SubprocessError("Command failed")):
+        with patch(
+            "subprocess.run",
+            side_effect=subprocess.SubprocessError("Command failed"),
+        ):
             result = await recon_module._get_dns_records("example.com")
 
         assert result == ["No DNS records found"]
@@ -181,7 +214,9 @@ class TestReconWHOIS:
         """Test successful WHOIS lookup"""
         mock_result = MagicMock()
         mock_result.returncode = 0
-        mock_result.stdout = "Domain Name: EXAMPLE.COM\\nRegistrar: Example Registrar"
+        mock_result.stdout = (
+            "Domain Name: EXAMPLE.COM\\nRegistrar: Example Registrar"
+        )
 
         with patch("subprocess.run", return_value=mock_result):
             result = await recon_module._get_whois("example.com")
@@ -191,7 +226,10 @@ class TestReconWHOIS:
     @pytest.mark.asyncio
     async def test_get_whois_failure(self, recon_module):
         """Test WHOIS lookup failure"""
-        with patch("subprocess.run", side_effect=subprocess.SubprocessError("Command failed")):
+        with patch(
+            "subprocess.run",
+            side_effect=subprocess.SubprocessError("Command failed"),
+        ):
             result = await recon_module._get_whois("example.com")
 
         assert result == "WHOIS not available"
@@ -225,7 +263,13 @@ class TestReconAttackVectorParsing:
         result = recon_module._parse_attack_vectors(content)
 
         assert len(result) == 5  # Should find 5 lines with keywords
-        assert all(any(kw in line.lower() for kw in ["vector", "attack", "exploit", "vulnerability"]) for line in result)
+        assert all(
+            any(
+                kw in line.lower()
+                for kw in ["vector", "attack", "exploit", "vulnerability"]
+            )
+            for line in result
+        )
 
     def test_parse_attack_vectors_limit(self, recon_module):
         """Test that parsing limits to 10 vectors"""
@@ -244,32 +288,50 @@ class TestReconNmapCommandGeneration:
     """Test nmap command generation"""
 
     @pytest.mark.asyncio
-    async def test_generate_nmap_command_valid(self, recon_module, mock_orchestrator):
+    async def test_generate_nmap_command_valid(
+        self, recon_module, mock_orchestrator
+    ):
         """Test generating valid nmap command"""
-        mock_orchestrator.process.return_value = MockResponse(content="nmap -sV -sC -p- -O example.com")
+        mock_orchestrator.process.return_value = MockResponse(
+            content="nmap -sV -sC -p- -O example.com"
+        )
 
-        result = await recon_module.generate_nmap_command("example.com", "normal")
+        result = await recon_module.generate_nmap_command(
+            "example.com", "normal"
+        )
 
         assert result.startswith("nmap")
         assert "example.com" in result
 
     @pytest.mark.asyncio
-    async def test_generate_nmap_command_fallback(self, recon_module, mock_orchestrator):
+    async def test_generate_nmap_command_fallback(
+        self, recon_module, mock_orchestrator
+    ):
         """Test fallback when LLM returns invalid command"""
-        mock_orchestrator.process.return_value = MockResponse(content="This is not a valid nmap command")
+        mock_orchestrator.process.return_value = MockResponse(
+            content="This is not a valid nmap command"
+        )
 
-        result = await recon_module.generate_nmap_command("example.com", "normal")
+        result = await recon_module.generate_nmap_command(
+            "example.com", "normal"
+        )
 
         assert result == "nmap -sV -sC -O example.com"
 
     @pytest.mark.asyncio
-    async def test_generate_nmap_command_different_intensities(self, recon_module, mock_orchestrator):
+    async def test_generate_nmap_command_different_intensities(
+        self, recon_module, mock_orchestrator
+    ):
         """Test generating commands for different intensities"""
         intensities = ["stealth", "normal", "aggressive"]
 
         for intensity in intensities:
-            mock_orchestrator.process.return_value = MockResponse(content=f"nmap -sV {intensity} example.com")
-            result = await recon_module.generate_nmap_command("example.com", intensity)
+            mock_orchestrator.process.return_value = MockResponse(
+                content=f"nmap -sV {intensity} example.com"
+            )
+            result = await recon_module.generate_nmap_command(
+                "example.com", intensity
+            )
             assert result.startswith("nmap")
 
 
@@ -277,9 +339,13 @@ class TestReconSubdomainEnum:
     """Test subdomain enumeration"""
 
     @pytest.mark.asyncio
-    async def test_subdomain_enum_success(self, recon_module, mock_orchestrator):
+    async def test_subdomain_enum_success(
+        self, recon_module, mock_orchestrator
+    ):
         """Test successful subdomain enumeration"""
-        mock_orchestrator.process.return_value = MockResponse(content="admin, api, dev, staging, test, mail, ftp, vpn")
+        mock_orchestrator.process.return_value = MockResponse(
+            content="admin, api, dev, staging, test, mail, ftp, vpn"
+        )
 
         result = await recon_module.subdomain_enum("example.com")
 
@@ -289,9 +355,13 @@ class TestReconSubdomainEnum:
         assert "api.example.com" in result
 
     @pytest.mark.asyncio
-    async def test_subdomain_enum_multiline(self, recon_module, mock_orchestrator):
+    async def test_subdomain_enum_multiline(
+        self, recon_module, mock_orchestrator
+    ):
         """Test subdomain enumeration with multiline response"""
-        mock_orchestrator.process.return_value = MockResponse(content="admin\\napi\\ndev\\nstaging")
+        mock_orchestrator.process.return_value = MockResponse(
+            content="admin\\napi\\ndev\\nstaging"
+        )
 
         result = await recon_module.subdomain_enum("example.com")
 
@@ -299,9 +369,13 @@ class TestReconSubdomainEnum:
         assert all(sub.endswith(".example.com") for sub in result)
 
     @pytest.mark.asyncio
-    async def test_subdomain_enum_no_duplicates(self, recon_module, mock_orchestrator):
+    async def test_subdomain_enum_no_duplicates(
+        self, recon_module, mock_orchestrator
+    ):
         """Test that duplicates are removed"""
-        mock_orchestrator.process.return_value = MockResponse(content="admin, admin, api, api, dev")
+        mock_orchestrator.process.return_value = MockResponse(
+            content="admin, admin, api, api, dev"
+        )
 
         result = await recon_module.subdomain_enum("example.com")
 
@@ -316,8 +390,14 @@ class TestReconComprehensiveSubdomainScan:
     async def test_comprehensive_subdomain_scan_no_scanner(self, recon_module):
         """Test scan when SubdomainScanner is not available"""
         with patch("modules.recon.SUBDOMAIN_SCANNER_AVAILABLE", False):
-            with patch.object(recon_module, "subdomain_enum", return_value=["admin.example.com"]):
-                result = await recon_module.comprehensive_subdomain_scan("example.com")
+            with patch.object(
+                recon_module,
+                "subdomain_enum",
+                return_value=["admin.example.com"],
+            ):
+                result = await recon_module.comprehensive_subdomain_scan(
+                    "example.com"
+                )
 
         assert result["domain"] == "example.com"
         assert result["method"] == "basic_llm"
@@ -333,11 +413,17 @@ class TestReconComprehensiveSubdomainScan:
         mock_result.is_alive = True
 
         mock_scanner = MagicMock()
-        mock_scanner.scan = AsyncMock(return_value={"admin.example.com": mock_result})
+        mock_scanner.scan = AsyncMock(
+            return_value={"admin.example.com": mock_result}
+        )
 
         with patch("modules.recon.SUBDOMAIN_SCANNER_AVAILABLE", True):
-            with patch("modules.recon.SubdomainScanner", return_value=mock_scanner):
-                result = await recon_module.comprehensive_subdomain_scan("example.com", advanced=False)
+            with patch(
+                "modules.recon.SubdomainScanner", return_value=mock_scanner
+            ):
+                result = await recon_module.comprehensive_subdomain_scan(
+                    "example.com", advanced=False
+                )
 
         assert result["domain"] == "example.com"
         assert result["total_discovered"] == 1
@@ -355,11 +441,18 @@ class TestReconComprehensiveSubdomainScan:
         mock_result.is_alive = True
 
         mock_scanner = MagicMock()
-        mock_scanner.scan_advanced = AsyncMock(return_value={"blog.example.com": mock_result})
+        mock_scanner.scan_advanced = AsyncMock(
+            return_value={"blog.example.com": mock_result}
+        )
 
         with patch("modules.recon.SUBDOMAIN_SCANNER_AVAILABLE", True):
-            with patch("modules.recon.AdvancedSubdomainScanner", return_value=mock_scanner):
-                result = await recon_module.comprehensive_subdomain_scan("example.com", advanced=True)
+            with patch(
+                "modules.recon.AdvancedSubdomainScanner",
+                return_value=mock_scanner,
+            ):
+                result = await recon_module.comprehensive_subdomain_scan(
+                    "example.com", advanced=True
+                )
 
         assert result["method"] == "advanced_scan"
         assert "subdomains" in result
@@ -369,7 +462,9 @@ class TestReconAttackSurfaceDiscovery:
     """Test attack surface discovery"""
 
     @pytest.mark.asyncio
-    async def test_discover_attack_surface_success(self, recon_module, mock_orchestrator):
+    async def test_discover_attack_surface_success(
+        self, recon_module, mock_orchestrator
+    ):
         """Test successful attack surface discovery"""
         mock_orchestrator.process.return_value = MockResponse(
             content="Priority targets: admin.example.com\\nEntry points: login, api"
@@ -385,11 +480,27 @@ class TestReconAttackSurfaceDiscovery:
             },
         }
 
-        with patch.object(recon_module, "comprehensive_subdomain_scan", return_value=subdomain_data):
-            with patch.object(recon_module, "_resolve_ip", return_value="93.184.216.34"):
-                with patch.object(recon_module, "_get_dns_records", return_value=["A: 93.184.216.34"]):
-                    with patch.object(recon_module, "_get_whois", return_value="Domain: example.com"):
-                        result = await recon_module.discover_attack_surface("example.com")
+        with patch.object(
+            recon_module,
+            "comprehensive_subdomain_scan",
+            return_value=subdomain_data,
+        ):
+            with patch.object(
+                recon_module, "_resolve_ip", return_value="93.184.216.34"
+            ):
+                with patch.object(
+                    recon_module,
+                    "_get_dns_records",
+                    return_value=["A: 93.184.216.34"],
+                ):
+                    with patch.object(
+                        recon_module,
+                        "_get_whois",
+                        return_value="Domain: example.com",
+                    ):
+                        result = await recon_module.discover_attack_surface(
+                            "example.com"
+                        )
 
         assert result["domain"] == "example.com"
         assert "target_info" in result
@@ -398,33 +509,79 @@ class TestReconAttackSurfaceDiscovery:
         assert "recommended_targets" in result
 
     @pytest.mark.asyncio
-    async def test_discover_attack_surface_llm_failure(self, recon_module, mock_orchestrator):
+    async def test_discover_attack_surface_llm_failure(
+        self, recon_module, mock_orchestrator
+    ):
         """Test attack surface discovery when LLM fails"""
         mock_orchestrator.process.side_effect = Exception("LLM Error")
 
-        subdomain_data = {"total_discovered": 2, "live_hosts": 1, "subdomains": {"admin.example.com": {"is_alive": True}}}
+        subdomain_data = {
+            "total_discovered": 2,
+            "live_hosts": 1,
+            "subdomains": {"admin.example.com": {"is_alive": True}},
+        }
 
-        with patch.object(recon_module, "comprehensive_subdomain_scan", return_value=subdomain_data):
-            with patch.object(recon_module, "_resolve_ip", return_value="93.184.216.34"):
-                with patch.object(recon_module, "_get_dns_records", return_value=["A: 93.184.216.34"]):
-                    with patch.object(recon_module, "_get_whois", return_value="Domain: example.com"):
-                        result = await recon_module.discover_attack_surface("example.com")
+        with patch.object(
+            recon_module,
+            "comprehensive_subdomain_scan",
+            return_value=subdomain_data,
+        ):
+            with patch.object(
+                recon_module, "_resolve_ip", return_value="93.184.216.34"
+            ):
+                with patch.object(
+                    recon_module,
+                    "_get_dns_records",
+                    return_value=["A: 93.184.216.34"],
+                ):
+                    with patch.object(
+                        recon_module,
+                        "_get_whois",
+                        return_value="Domain: example.com",
+                    ):
+                        result = await recon_module.discover_attack_surface(
+                            "example.com"
+                        )
 
         assert result["analysis"] == "LLM analysis not available"
         assert result["recommended_targets"] == ["admin.example.com"]
 
     @pytest.mark.asyncio
-    async def test_discover_attack_surface_no_live_subdomains(self, recon_module, mock_orchestrator):
+    async def test_discover_attack_surface_no_live_subdomains(
+        self, recon_module, mock_orchestrator
+    ):
         """Test attack surface discovery with no live subdomains"""
-        mock_orchestrator.process.return_value = MockResponse(content="No live targets found")
+        mock_orchestrator.process.return_value = MockResponse(
+            content="No live targets found"
+        )
 
-        subdomain_data = {"total_discovered": 2, "live_hosts": 0, "subdomains": {"dead.example.com": {"is_alive": False}}}
+        subdomain_data = {
+            "total_discovered": 2,
+            "live_hosts": 0,
+            "subdomains": {"dead.example.com": {"is_alive": False}},
+        }
 
-        with patch.object(recon_module, "comprehensive_subdomain_scan", return_value=subdomain_data):
-            with patch.object(recon_module, "_resolve_ip", return_value="93.184.216.34"):
-                with patch.object(recon_module, "_get_dns_records", return_value=["A: 93.184.216.34"]):
-                    with patch.object(recon_module, "_get_whois", return_value="Domain: example.com"):
-                        result = await recon_module.discover_attack_surface("example.com")
+        with patch.object(
+            recon_module,
+            "comprehensive_subdomain_scan",
+            return_value=subdomain_data,
+        ):
+            with patch.object(
+                recon_module, "_resolve_ip", return_value="93.184.216.34"
+            ):
+                with patch.object(
+                    recon_module,
+                    "_get_dns_records",
+                    return_value=["A: 93.184.216.34"],
+                ):
+                    with patch.object(
+                        recon_module,
+                        "_get_whois",
+                        return_value="Domain: example.com",
+                    ):
+                        result = await recon_module.discover_attack_surface(
+                            "example.com"
+                        )
 
         # Should default to the main domain
         assert "example.com" in result["recommended_targets"]
@@ -434,15 +591,32 @@ class TestReconEdgeCases:
     """Test edge cases and error handling"""
 
     @pytest.mark.asyncio
-    async def test_concurrent_analyze_calls(self, recon_module, mock_orchestrator):
+    async def test_concurrent_analyze_calls(
+        self, recon_module, mock_orchestrator
+    ):
         """Test concurrent target analysis"""
-        mock_orchestrator.process.return_value = MockResponse(content="Analysis complete")
+        mock_orchestrator.process.return_value = MockResponse(
+            content="Analysis complete"
+        )
 
-        with patch.object(recon_module, "_resolve_ip", return_value="93.184.216.34"):
-            with patch.object(recon_module, "_get_dns_records", return_value=["A: 93.184.216.34"]):
-                with patch.object(recon_module, "_get_whois", return_value="Domain: example.com"):
+        with patch.object(
+            recon_module, "_resolve_ip", return_value="93.184.216.34"
+        ):
+            with patch.object(
+                recon_module,
+                "_get_dns_records",
+                return_value=["A: 93.184.216.34"],
+            ):
+                with patch.object(
+                    recon_module,
+                    "_get_whois",
+                    return_value="Domain: example.com",
+                ):
                     # Run multiple analyses concurrently
-                    tasks = [recon_module.analyze_target(f"example{i}.com") for i in range(5)]
+                    tasks = [
+                        recon_module.analyze_target(f"example{i}.com")
+                        for i in range(5)
+                    ]
                     results = await asyncio.gather(*tasks)
 
         assert len(results) == 5
@@ -450,15 +624,21 @@ class TestReconEdgeCases:
 
     def test_parse_attack_vectors_case_insensitive(self, recon_module):
         """Test that attack vector parsing is case insensitive"""
-        content = "VECTOR: Test\nAttack: Test\nEXPLOIT: Test\nVULNERABILITY: Test"
+        content = (
+            "VECTOR: Test\nAttack: Test\nEXPLOIT: Test\nVULNERABILITY: Test"
+        )
         result = recon_module._parse_attack_vectors(content)
 
         assert len(result) == 4
 
     @pytest.mark.asyncio
-    async def test_subdomain_enum_filters_invalid(self, recon_module, mock_orchestrator):
+    async def test_subdomain_enum_filters_invalid(
+        self, recon_module, mock_orchestrator
+    ):
         """Test that invalid subdomains are filtered"""
-        mock_orchestrator.process.return_value = MockResponse(content="admin, sub.example.com, valid, another.test.com")
+        mock_orchestrator.process.return_value = MockResponse(
+            content="admin, sub.example.com, valid, another.test.com"
+        )
 
         result = await recon_module.subdomain_enum("example.com")
 

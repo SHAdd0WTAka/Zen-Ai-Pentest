@@ -17,7 +17,11 @@ import aiohttp
 import pytest
 
 from backends.claude_direct import ClaudeDirectBackend
-from backends.kimi_auth_backend import AuthenticationRequiredError, KimiAuthBackend, create_kimi_backend
+from backends.kimi_auth_backend import (
+    AuthenticationRequiredError,
+    KimiAuthBackend,
+    create_kimi_backend,
+)
 from backends.openrouter import OpenRouterBackend
 
 
@@ -91,11 +95,17 @@ class TestKimiAuthBackend:
 
         mock_response = AsyncMock()
         mock_response.status = 200
-        mock_response.json.return_value = {"choices": [{"message": {"content": "This is the AI response"}}]}
+        mock_response.json.return_value = {
+            "choices": [{"message": {"content": "This is the AI response"}}]
+        }
         mock_response.raise_for_status = Mock()
 
-        backend.session.post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
-        backend.session.post.return_value.__aexit__ = AsyncMock(return_value=False)
+        backend.session.post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
+        backend.session.post.return_value.__aexit__ = AsyncMock(
+            return_value=False
+        )
 
         response = await backend.chat("Hello, AI!")
 
@@ -118,10 +128,16 @@ class TestKimiAuthBackend:
         mock_response = AsyncMock()
         mock_response.status = 401
 
-        backend.session.post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
-        backend.session.post.return_value.__aexit__ = AsyncMock(return_value=False)
+        backend.session.post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
+        backend.session.post.return_value.__aexit__ = AsyncMock(
+            return_value=False
+        )
 
-        with patch.object(backend, "_refresh_token_if_needed", return_value=False):
+        with patch.object(
+            backend, "_refresh_token_if_needed", return_value=False
+        ):
             with pytest.raises(AuthenticationRequiredError):
                 await backend.chat("Hello")
 
@@ -130,7 +146,9 @@ class TestKimiAuthBackend:
         """Handle API error"""
         backend = KimiAuthBackend(api_key="test-key")
         backend.session = AsyncMock()
-        backend.session.post.side_effect = aiohttp.ClientError("Connection failed")
+        backend.session.post.side_effect = aiohttp.ClientError(
+            "Connection failed"
+        )
 
         with pytest.raises(aiohttp.ClientError):
             await backend.chat("Hello")
@@ -159,8 +177,12 @@ class TestKimiAuthBackend:
 
         mock_response.content = mock_iter()
 
-        backend.session.post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
-        backend.session.post.return_value.__aexit__ = AsyncMock(return_value=False)
+        backend.session.post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
+        backend.session.post.return_value.__aexit__ = AsyncMock(
+            return_value=False
+        )
 
         chunks = []
         async for chunk in backend.chat_stream("Hello"):
@@ -191,7 +213,9 @@ class TestKimiAuthBackend:
             "expires_in": 3600,
         }
 
-        with patch("backends.kimi_auth_backend.DeviceCodeFlow", return_value=mock_flow):
+        with patch(
+            "backends.kimi_auth_backend.DeviceCodeFlow", return_value=mock_flow
+        ):
             with patch.object(mock_flow, "__aenter__", return_value=mock_flow):
                 with patch.object(mock_flow, "__aexit__", AsyncMock()):
                     result = await backend._refresh_token_if_needed()
@@ -218,9 +242,13 @@ class TestKimiAuthBackend:
         backend.token_store.get_refresh_token.return_value = "refresh-token"
 
         mock_flow = AsyncMock()
-        mock_flow.refresh_access_token.side_effect = Exception("Refresh failed")
+        mock_flow.refresh_access_token.side_effect = Exception(
+            "Refresh failed"
+        )
 
-        with patch("backends.kimi_auth_backend.DeviceCodeFlow", return_value=mock_flow):
+        with patch(
+            "backends.kimi_auth_backend.DeviceCodeFlow", return_value=mock_flow
+        ):
             with patch.object(mock_flow, "__aenter__", return_value=mock_flow):
                 with patch.object(mock_flow, "__aexit__", AsyncMock()):
                     result = await backend._refresh_token_if_needed()
@@ -282,10 +310,16 @@ class TestOpenRouterBackend:
 
         mock_response = AsyncMock()
         mock_response.status = 200
-        mock_response.json.return_value = {"choices": [{"message": {"content": "OpenRouter response"}}]}
+        mock_response.json.return_value = {
+            "choices": [{"message": {"content": "OpenRouter response"}}]
+        }
 
-        backend.session.post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
-        backend.session.post.return_value.__aexit__ = AsyncMock(return_value=False)
+        backend.session.post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
+        backend.session.post.return_value.__aexit__ = AsyncMock(
+            return_value=False
+        )
 
         response = await backend.chat("Hello", "Context")
 
@@ -309,8 +343,12 @@ class TestOpenRouterBackend:
         mock_response = AsyncMock()
         mock_response.status = 429
 
-        backend.session.post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
-        backend.session.post.return_value.__aexit__ = AsyncMock(return_value=False)
+        backend.session.post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
+        backend.session.post.return_value.__aexit__ = AsyncMock(
+            return_value=False
+        )
 
         response = await backend.chat("Hello")
 
@@ -325,8 +363,12 @@ class TestOpenRouterBackend:
         mock_response = AsyncMock()
         mock_response.status = 401
 
-        backend.session.post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
-        backend.session.post.return_value.__aexit__ = AsyncMock(return_value=False)
+        backend.session.post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
+        backend.session.post.return_value.__aexit__ = AsyncMock(
+            return_value=False
+        )
 
         response = await backend.chat("Hello")
 
@@ -341,8 +383,12 @@ class TestOpenRouterBackend:
         mock_response = AsyncMock()
         mock_response.status = 500
 
-        backend.session.post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
-        backend.session.post.return_value.__aexit__ = AsyncMock(return_value=False)
+        backend.session.post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
+        backend.session.post.return_value.__aexit__ = AsyncMock(
+            return_value=False
+        )
 
         response = await backend.chat("Hello")
 
@@ -369,8 +415,12 @@ class TestOpenRouterBackend:
         mock_response.status = 200
         mock_response.json.return_value = {"choices": []}
 
-        backend.session.post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
-        backend.session.post.return_value.__aexit__ = AsyncMock(return_value=False)
+        backend.session.post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
+        backend.session.post.return_value.__aexit__ = AsyncMock(
+            return_value=False
+        )
 
         response = await backend.chat("Hello")
 
@@ -385,8 +435,12 @@ class TestOpenRouterBackend:
         mock_response = AsyncMock()
         mock_response.status = 200
 
-        backend.session.get.return_value.__aenter__ = AsyncMock(return_value=mock_response)
-        backend.session.get.return_value.__aexit__ = AsyncMock(return_value=False)
+        backend.session.get.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
+        backend.session.get.return_value.__aexit__ = AsyncMock(
+            return_value=False
+        )
 
         is_healthy = await backend.health_check()
 
@@ -457,8 +511,12 @@ class TestClaudeDirectBackend:
 
         mock_response.content = mock_iter()
 
-        backend.session.post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
-        backend.session.post.return_value.__aexit__ = AsyncMock(return_value=False)
+        backend.session.post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
+        backend.session.post.return_value.__aexit__ = AsyncMock(
+            return_value=False
+        )
 
         response = await backend.chat("Hello")
 
@@ -493,8 +551,12 @@ class TestClaudeDirectBackend:
         mock_response = AsyncMock()
         mock_response.status = 401
 
-        backend.session.post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
-        backend.session.post.return_value.__aexit__ = AsyncMock(return_value=False)
+        backend.session.post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
+        backend.session.post.return_value.__aexit__ = AsyncMock(
+            return_value=False
+        )
 
         response = await backend.chat("Hello")
 
@@ -510,8 +572,12 @@ class TestClaudeDirectBackend:
         mock_response = AsyncMock()
         mock_response.status = 500
 
-        backend.session.post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
-        backend.session.post.return_value.__aexit__ = AsyncMock(return_value=False)
+        backend.session.post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
+        backend.session.post.return_value.__aexit__ = AsyncMock(
+            return_value=False
+        )
 
         response = await backend.chat("Hello")
 
@@ -539,8 +605,12 @@ class TestClaudeDirectBackend:
         mock_response.status = 200
         mock_response.json.return_value = [{"uuid": "org-123"}]
 
-        backend.session.get.return_value.__aenter__ = AsyncMock(return_value=mock_response)
-        backend.session.get.return_value.__aexit__ = AsyncMock(return_value=False)
+        backend.session.get.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
+        backend.session.get.return_value.__aexit__ = AsyncMock(
+            return_value=False
+        )
 
         org_id = await backend._get_org_id()
 
@@ -567,8 +637,12 @@ class TestClaudeDirectBackend:
         mock_response.status = 200
         mock_response.json.return_value = []
 
-        backend.session.get.return_value.__aenter__ = AsyncMock(return_value=mock_response)
-        backend.session.get.return_value.__aexit__ = AsyncMock(return_value=False)
+        backend.session.get.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
+        backend.session.get.return_value.__aexit__ = AsyncMock(
+            return_value=False
+        )
 
         org_id = await backend._get_org_id()
 

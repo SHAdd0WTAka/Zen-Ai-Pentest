@@ -17,13 +17,21 @@ console = Console()
 def check_config():
     env_path = Path(__file__).parent.parent / ".env"
 
-    console.print(Panel.fit("Zen-AI Pentest - Konfigurations-Check", title="Setup", border_style="cyan"))
+    console.print(
+        Panel.fit(
+            "Zen-AI Pentest - Konfigurations-Check",
+            title="Setup",
+            border_style="cyan",
+        )
+    )
 
     # Prüfe ob .env existiert
     if not env_path.exists():
         console.print("[yellow].env Datei nicht gefunden![/yellow]")
         console.print("\n[bold]Erstmalige Einrichtung:[/bold]")
-        console.print("  python scripts/setup_wizard.py -b kimi -m kimi-k2.5 -k YOUR_KEY")
+        console.print(
+            "  python scripts/setup_wizard.py -b kimi -m kimi-k2.5 -k YOUR_KEY"
+        )
         return False
 
     with open(env_path, "r") as f:
@@ -55,7 +63,13 @@ def check_config():
         is_default = default_backend == backend_id
 
         # Prüfe ob Key valide aussieht (nicht leer, nicht dummy)
-        is_dummy = key in ["", "test-key-12345", "your-api-key", "xxx", "sk-xxx"]
+        is_dummy = key in [
+            "",
+            "test-key-12345",
+            "your-api-key",
+            "xxx",
+            "sk-xxx",
+        ]
 
         if key and not is_dummy and len(key) > 20:
             status = "[green]Konfiguriert"

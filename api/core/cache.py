@@ -39,7 +39,11 @@ def get_redis_client() -> Optional[Any]:
     try:
         redis_url = os.getenv("REDIS_URL", "redis://localhost:6379/0")
         _redis_client = redis.from_url(
-            redis_url, decode_responses=True, socket_connect_timeout=5, socket_timeout=5, health_check_interval=30
+            redis_url,
+            decode_responses=True,
+            socket_connect_timeout=5,
+            socket_timeout=5,
+            health_check_interval=30,
         )
         # Test connection
         _redis_client.ping()
@@ -83,7 +87,9 @@ def _is_memory_key_expired(key: str) -> bool:
 
 def _cleanup_expired_memory_keys():
     """Remove expired keys from memory cache"""
-    expired_keys = [key for key in _memory_cache_expiry if _is_memory_key_expired(key)]
+    expired_keys = [
+        key for key in _memory_cache_expiry if _is_memory_key_expired(key)
+    ]
     for key in expired_keys:
         _memory_cache.pop(key, None)
         _memory_cache_expiry.pop(key, None)
@@ -130,7 +136,11 @@ def set_cache(key: str, value: Any, ttl: int = 300) -> None:
     client = get_redis_client()
     if client:
         try:
-            serialized = json.dumps(value) if not isinstance(value, (str, bytes)) else value
+            serialized = (
+                json.dumps(value)
+                if not isinstance(value, (str, bytes))
+                else value
+            )
             client.setex(key, ttl, serialized)
             return
         except Exception as e:
@@ -193,7 +203,9 @@ def clear_cache(pattern: str = "*") -> int:
         # Simple pattern matching for memory cache
         import fnmatch
 
-        keys_to_remove = [key for key in _memory_cache if fnmatch.fnmatch(key, pattern)]
+        keys_to_remove = [
+            key for key in _memory_cache if fnmatch.fnmatch(key, pattern)
+        ]
         for key in keys_to_remove:
             del _memory_cache[key]
             _memory_cache_expiry.pop(key, None)
@@ -235,7 +247,9 @@ def cached(ttl: int = 300, key_prefix: str = ""):
     def decorator(func):
         def wrapper(*args, **kwargs):
             # Build cache key
-            cache_key = f"{key_prefix}:{func.__name__}:{str(args)}:{str(kwargs)}"
+            cache_key = (
+                f"{key_prefix}:{func.__name__}:{str(args)}:{str(kwargs)}"
+            )
 
             # Try to get from cache
             cached_value = get_cache(cache_key)

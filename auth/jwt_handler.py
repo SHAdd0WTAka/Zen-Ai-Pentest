@@ -170,7 +170,9 @@ class JWTHandler:
             Encoded JWT access token
         """
         now = datetime.now(timezone.utc)
-        expires = now + timedelta(minutes=self.config.access_token_expire_minutes)
+        expires = now + timedelta(
+            minutes=self.config.access_token_expire_minutes
+        )
         jti = self._generate_jti()
 
         payload = TokenPayload(
@@ -203,7 +205,9 @@ class JWTHandler:
             "session_id": session_id,
         }
 
-        return jwt.encode(claims, self.config.secret_key, algorithm=self.config.algorithm)
+        return jwt.encode(
+            claims, self.config.secret_key, algorithm=self.config.algorithm
+        )
 
     def create_refresh_token(
         self,
@@ -254,9 +258,15 @@ class JWTHandler:
             "session_id": session_id,
         }
 
-        return jwt.encode(payload.to_dict(), self.config.secret_key, algorithm=self.config.algorithm)
+        return jwt.encode(
+            payload.to_dict(),
+            self.config.secret_key,
+            algorithm=self.config.algorithm,
+        )
 
-    def decode_token(self, token: str, verify_type: Optional[TokenType] = None) -> TokenPayload:
+    def decode_token(
+        self, token: str, verify_type: Optional[TokenType] = None
+    ) -> TokenPayload:
         """
         Decode and validate a JWT token
 
@@ -274,7 +284,9 @@ class JWTHandler:
         """
         try:
             # Decode without verification first to get JTI
-            unverified = jwt.decode(token, options={"verify_signature": False, "verify_exp": False})
+            unverified = jwt.decode(
+                token, options={"verify_signature": False, "verify_exp": False}
+            )
             jti = unverified.get("jti")
 
             # Check if blacklisted
@@ -295,7 +307,8 @@ class JWTHandler:
             # Verify token type if specified
             if verify_type and token_payload.type != verify_type:
                 raise TokenInvalidError(
-                    f"Invalid token type. Expected {verify_type.value}, " f"got {token_payload.type.value}"
+                    f"Invalid token type. Expected {verify_type.value}, "
+                    f"got {token_payload.type.value}"
                 )
 
             return token_payload
@@ -325,13 +338,17 @@ class JWTHandler:
         if jti in self._token_metadata:
             self._token_metadata[jti]["blacklisted"] = True
             self._token_metadata[jti]["blacklist_reason"] = reason
-            self._token_metadata[jti]["blacklisted_at"] = datetime.now(timezone.utc).isoformat()
+            self._token_metadata[jti]["blacklisted_at"] = datetime.now(
+                timezone.utc
+            ).isoformat()
 
     def is_blacklisted(self, jti: str) -> bool:
         """Check if a token JTI is blacklisted"""
         return jti in self._blacklisted_tokens
 
-    def blacklist_user_tokens(self, user_id: str, reason: str = "security") -> int:
+    def blacklist_user_tokens(
+        self, user_id: str, reason: str = "security"
+    ) -> int:
         """
         Blacklist all tokens for a user
 
@@ -344,7 +361,10 @@ class JWTHandler:
         """
         count = 0
         for jti, metadata in self._token_metadata.items():
-            if metadata.get("user_id") == user_id and jti not in self._blacklisted_tokens:
+            if (
+                metadata.get("user_id") == user_id
+                and jti not in self._blacklisted_tokens
+            ):
                 self.blacklist_token(jti, reason)
                 count += 1
         return count

@@ -168,7 +168,9 @@ class RecurringSchedule:
             days_ahead = 1
 
         next_day = now + timedelta(days=days_ahead)
-        return next_day.replace(hour=hour, minute=minute, second=0, microsecond=0)
+        return next_day.replace(
+            hour=hour, minute=minute, second=0, microsecond=0
+        )
 
     @staticmethod
     def end_of_month(hour: int = 23, minute: int = 0) -> str:
@@ -192,7 +194,9 @@ class RecurringSchedule:
         return f"{minute} {hour} 31 12 *"
 
 
-def calculate_next_occurrence(base_time: datetime, interval_minutes: int) -> datetime:
+def calculate_next_occurrence(
+    base_time: datetime, interval_minutes: int
+) -> datetime:
     """
     Calculate next occurrence based on interval
 
@@ -210,7 +214,9 @@ def calculate_next_occurrence(base_time: datetime, interval_minutes: int) -> dat
     intervals_passed = int(elapsed / interval_minutes)
 
     # Calculate next occurrence
-    next_occurrence = base_time + timedelta(minutes=(intervals_passed + 1) * interval_minutes)
+    next_occurrence = base_time + timedelta(
+        minutes=(intervals_passed + 1) * interval_minutes
+    )
 
     return next_occurrence
 

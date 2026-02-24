@@ -73,7 +73,10 @@ class WebScraper:
         self.timeout = self.config.get("timeout", 10.0)
         self.max_pages = self.config.get("max_pages", 10)
         self.follow_redirects = self.config.get("follow_redirects", True)
-        self.user_agent = self.config.get("user_agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.0")
+        self.user_agent = self.config.get(
+            "user_agent",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.0",
+        )
 
         self.visited_urls: Set[str] = set()
         self.found_emails: Set[str] = set()
@@ -154,7 +157,10 @@ class WebScraper:
 
             async with aiohttp.ClientSession(headers=headers) as session:
                 async with session.get(
-                    url, timeout=aiohttp.ClientTimeout(total=self.timeout), allow_redirects=self.follow_redirects, ssl=False
+                    url,
+                    timeout=aiohttp.ClientTimeout(total=self.timeout),
+                    allow_redirects=self.follow_redirects,
+                    ssl=False,
                 ) as response:
 
                     if response.status != 200:
@@ -163,7 +169,9 @@ class WebScraper:
 
                     content_type = response.headers.get("Content-Type", "")
                     if "text/html" not in content_type:
-                        logger.debug(f"Nicht-HTML Content-Type: {content_type}")
+                        logger.debug(
+                            f"Nicht-HTML Content-Type: {content_type}"
+                        )
                         return None
 
                     html = await response.text()
@@ -208,9 +216,15 @@ class WebScraper:
 
             # Formulare
             for form in soup.find_all("form"):
-                form_data = {"action": form.get("action", ""), "method": form.get("method", "get").upper(), "inputs": []}
+                form_data = {
+                    "action": form.get("action", ""),
+                    "method": form.get("method", "get").upper(),
+                    "inputs": [],
+                }
 
-                for input_tag in form.find_all(["input", "textarea", "select"]):
+                for input_tag in form.find_all(
+                    ["input", "textarea", "select"]
+                ):
                     input_data = {
                         "name": input_tag.get("name", ""),
                         "type": input_tag.get("type", "text"),
@@ -242,7 +256,10 @@ class WebScraper:
                     page.images.append(absolute)
 
             # Kommentare
-            comments = soup.find_all(string=lambda text: isinstance(text, str) and text.strip().startswith("<!--"))
+            comments = soup.find_all(
+                string=lambda text: isinstance(text, str)
+                and text.strip().startswith("<!--")
+            )
             for comment in comments:
                 text = comment.strip()
                 if len(text) > 10:  # Nur längere Kommentare
@@ -260,12 +277,16 @@ class WebScraper:
 
             # Fallback zu Regex
             # Titel
-            title_match = re.search(r"<title[^>]*>(.*?)</title>", html, re.IGNORECASE | re.DOTALL)
+            title_match = re.search(
+                r"<title[^>]*>(.*?)</title>", html, re.IGNORECASE | re.DOTALL
+            )
             if title_match:
                 page.title = title_match.group(1).strip()
 
             # Links
-            links = re.findall(r'href=["\']([^"\']+)["\']', html, re.IGNORECASE)
+            links = re.findall(
+                r'href=["\']([^"\']+)["\']', html, re.IGNORECASE
+            )
             for link in links:
                 absolute = urljoin(url, link)
                 if absolute not in page.links:
@@ -312,7 +333,9 @@ async def main():
 
     parser = argparse.ArgumentParser(description="Web Scraper")
     parser.add_argument("url", help="Ziel-URL")
-    parser.add_argument("-d", "--depth", type=int, default=1, help="Crawling-Tiefe")
+    parser.add_argument(
+        "-d", "--depth", type=int, default=1, help="Crawling-Tiefe"
+    )
     parser.add_argument("-o", "--output", help="Ausgabedatei")
     parser.add_argument("-v", "--verbose", action="store_true")
 

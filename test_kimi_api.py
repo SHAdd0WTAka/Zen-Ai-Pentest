@@ -19,7 +19,9 @@ def test_kimi_connection():
         sys.exit(1)
 
     print(f"✅ Key geladen: {api_key[:10]}... (gekürzt)")
-    print(f"📊 Rate Limit: {config['rate_limits']['requests_per_minute']} req/min")
+    print(
+        f"📊 Rate Limit: {config['rate_limits']['requests_per_minute']} req/min"
+    )
     print(f"📝 Log Level: {config['output']['log_level']}")
 
     # Hier würde der tatsächliche API-Call kommen:

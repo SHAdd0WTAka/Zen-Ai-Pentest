@@ -10,7 +10,16 @@ import logging
 from datetime import datetime
 from typing import Any, AsyncGenerator, Dict, List, Optional
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, WebSocket, WebSocketDisconnect, status
+from fastapi import (
+    APIRouter,
+    BackgroundTasks,
+    Depends,
+    HTTPException,
+    Request,
+    WebSocket,
+    WebSocketDisconnect,
+    status,
+)
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
@@ -38,13 +47,31 @@ scan_logs: Dict[int, List[Dict[str, Any]]] = {}
 class CreateScanRequest(BaseModel):
     """Extended scan creation request"""
 
-    name: str = Field(..., min_length=1, max_length=255, description="Scan name")
-    target: str = Field(..., min_length=1, max_length=500, description="Target URL or IP")
-    scan_type: str = Field(default="comprehensive", description="Scan type: quick, standard, comprehensive")
-    config: Dict[str, Any] = Field(default_factory=dict, description="Scan configuration")
-    objective: Optional[str] = Field(default=None, description="Scan objective")
-    priority: int = Field(default=2, ge=1, le=4, description="Priority: 1=low, 2=normal, 3=high, 4=critical")
-    scheduled_for: Optional[str] = Field(default=None, description="ISO datetime for scheduled scan")
+    name: str = Field(
+        ..., min_length=1, max_length=255, description="Scan name"
+    )
+    target: str = Field(
+        ..., min_length=1, max_length=500, description="Target URL or IP"
+    )
+    scan_type: str = Field(
+        default="comprehensive",
+        description="Scan type: quick, standard, comprehensive",
+    )
+    config: Dict[str, Any] = Field(
+        default_factory=dict, description="Scan configuration"
+    )
+    objective: Optional[str] = Field(
+        default=None, description="Scan objective"
+    )
+    priority: int = Field(
+        default=2,
+        ge=1,
+        le=4,
+        description="Priority: 1=low, 2=normal, 3=high, 4=critical",
+    )
+    scheduled_for: Optional[str] = Field(
+        default=None, description="ISO datetime for scheduled scan"
+    )
 
 
 class ScanStatusResponse(BaseModel):
@@ -91,8 +118,12 @@ class ScanListFilters(BaseModel):
 class ScanActionRequest(BaseModel):
     """Scan action request (pause, resume, stop)"""
 
-    action: str = Field(..., description="Action: pause, resume, stop, restart")
-    reason: Optional[str] = Field(default=None, description="Reason for action")
+    action: str = Field(
+        ..., description="Action: pause, resume, stop, restart"
+    )
+    reason: Optional[str] = Field(
+        default=None, description="Reason for action"
+    )
 
 
 # ============================================================================
@@ -105,7 +136,9 @@ def get_scan_logs(scan_id: int) -> List[Dict]:
     return scan_logs.get(scan_id, [])
 
 
-def add_scan_log(scan_id: int, level: str, phase: str, message: str, details: Dict = None):
+def add_scan_log(
+    scan_id: int, level: str, phase: str, message: str, details: Dict = None
+):
     """Add a log entry for a scan"""
     if scan_id not in scan_logs:
         scan_logs[scan_id] = []
@@ -129,7 +162,13 @@ def add_scan_log(scan_id: int, level: str, phase: str, message: str, details: Di
 async def broadcast_scan_update(scan_id: int, update_type: str, data: Dict):
     """Broadcast update to scan WebSocket clients"""
     await scan_ws_manager.broadcast_to_scan(
-        scan_id, {"type": update_type, "scan_id": scan_id, "timestamp": datetime.utcnow().isoformat(), **data}
+        scan_id,
+        {
+            "type": update_type,
+            "scan_id": scan_id,
+            "timestamp": datetime.utcnow().isoformat(),
+            **data,
+        },
     )
 
 
@@ -181,7 +220,9 @@ async def list_scans(
             end_time = scan.completed_at or datetime.utcnow()
             duration = int((end_time - scan.started_at).total_seconds())
 
-        findings_count = db.query(Finding).filter(Finding.scan_id == scan.id).count()
+        findings_count = (
+            db.query(Finding).filter(Finding.scan_id == scan.id).count()
+        )
 
         progress = 0
         if scan.status == "running" and scan.started_at:
@@ -198,10 +239,18 @@ async def list_scans(
                 scan_type=scan.scan_type,
                 status=scan.status,
                 progress=progress,
-                current_phase=scan.config.get("phase") if scan.config else None,
+                current_phase=(
+                    scan.config.get("phase") if scan.config else None
+                ),
                 phase_description=None,
-                started_at=scan.started_at.isoformat() if scan.started_at else None,
-                completed_at=scan.completed_at.isoformat() if scan.completed_at else None,
+                started_at=(
+                    scan.started_at.isoformat() if scan.started_at else None
+                ),
+                completed_at=(
+                    scan.completed_at.isoformat()
+                    if scan.completed_at
+                    else None
+                ),
                 duration_seconds=duration,
                 findings_count=findings_count,
                 error_message=None,
@@ -212,7 +261,9 @@ async def list_scans(
     return result
 
 
-@router.post("/", response_model=ScanResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/", response_model=ScanResponse, status_code=status.HTTP_201_CREATED
+)
 async def create_new_scan(
     request: CreateScanRequest,
     background_tasks: BackgroundTasks,
@@ -235,7 +286,8 @@ async def create_new_scan(
             config={
                 **request.config,
                 "priority": request.priority,
-                "objective": request.objective or f"Security scan of {request.target}",
+                "objective": request.objective
+                or f"Security scan of {request.target}",
                 "scheduled_for": request.scheduled_for,
             },
             user_id=1,  # TODO: Map username to user_id properly
@@ -248,30 +300,55 @@ async def create_new_scan(
             "INFO",
             "initializing",
             f"Scan '{request.name}' created",
-            {"target": request.target, "scan_type": request.scan_type, "user": user.get("sub")},
+            {
+                "target": request.target,
+                "scan_type": request.scan_type,
+                "user": user.get("sub"),
+            },
         )
 
         # Start scan in background (unless scheduled)
         if not request.scheduled_for:
-            background_tasks.add_task(run_scan_task, db_scan.id, request.dict())
-            add_scan_log(db_scan.id, "INFO", "initializing", "Scan queued for execution")
+            background_tasks.add_task(
+                run_scan_task, db_scan.id, request.dict()
+            )
+            add_scan_log(
+                db_scan.id, "INFO", "initializing", "Scan queued for execution"
+            )
         else:
-            add_scan_log(db_scan.id, "INFO", "initializing", f"Scan scheduled for {request.scheduled_for}")
+            add_scan_log(
+                db_scan.id,
+                "INFO",
+                "initializing",
+                f"Scan scheduled for {request.scheduled_for}",
+            )
 
         # Broadcast creation event
         await broadcast_scan_update(
-            db_scan.id, "created", {"name": request.name, "target": request.target, "status": "pending"}
+            db_scan.id,
+            "created",
+            {
+                "name": request.name,
+                "target": request.target,
+                "status": "pending",
+            },
         )
 
         return db_scan
 
     except Exception as e:
         logger.error(f"Error creating scan: {e}")
-        raise HTTPException(status_code=500, detail=f"Failed to create scan: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to create scan: {str(e)}"
+        )
 
 
 @router.get("/{scan_id}/status", response_model=ScanStatusResponse)
-async def get_scan_status_detail(scan_id: int, user: dict = Depends(verify_token), db: Session = Depends(get_db)):
+async def get_scan_status_detail(
+    scan_id: int,
+    user: dict = Depends(verify_token),
+    db: Session = Depends(get_db),
+):
     """
     Get detailed status of a specific scan.
 
@@ -288,7 +365,9 @@ async def get_scan_status_detail(scan_id: int, user: dict = Depends(verify_token
         duration = int((end_time - scan.started_at).total_seconds())
 
     # Get findings count
-    findings_count = db.query(Finding).filter(Finding.scan_id == scan_id).count()
+    findings_count = (
+        db.query(Finding).filter(Finding.scan_id == scan_id).count()
+    )
 
     # Determine current phase from logs
     current_phase = "initializing"
@@ -322,7 +401,9 @@ async def get_scan_status_detail(scan_id: int, user: dict = Depends(verify_token
         current_phase=current_phase,
         phase_description=phase_description,
         started_at=scan.started_at.isoformat() if scan.started_at else None,
-        completed_at=scan.completed_at.isoformat() if scan.completed_at else None,
+        completed_at=(
+            scan.completed_at.isoformat() if scan.completed_at else None
+        ),
         duration_seconds=duration,
         findings_count=findings_count,
         error_message=scan.result_summary if scan.status == "failed" else None,
@@ -367,11 +448,19 @@ async def get_scan_logs_endpoint(
     limit = min(limit, 1000)
     paginated = logs[offset : offset + limit]
 
-    return {"scan_id": scan_id, "total": total, "offset": offset, "limit": limit, "logs": paginated}
+    return {
+        "scan_id": scan_id,
+        "total": total,
+        "offset": offset,
+        "limit": limit,
+        "logs": paginated,
+    }
 
 
 @router.get("/{scan_id}/logs/stream")
-async def stream_scan_logs(scan_id: int, request: Request, user: dict = Depends(verify_token)):
+async def stream_scan_logs(
+    scan_id: int, request: Request, user: dict = Depends(verify_token)
+):
     """
     Stream scan logs in real-time using Server-Sent Events (SSE).
 
@@ -425,7 +514,10 @@ async def stream_scan_logs(scan_id: int, request: Request, user: dict = Depends(
 
 @router.post("/{scan_id}/action")
 async def scan_action(
-    scan_id: int, action_request: ScanActionRequest, user: dict = Depends(verify_token), db: Session = Depends(get_db)
+    scan_id: int,
+    action_request: ScanActionRequest,
+    user: dict = Depends(verify_token),
+    db: Session = Depends(get_db),
 ):
     """
     Perform an action on a scan (pause, resume, stop).
@@ -441,16 +533,34 @@ async def scan_action(
 
     if action == "stop":
         if scan.status not in ["pending", "running"]:
-            raise HTTPException(status_code=400, detail=f"Cannot stop scan with status: {scan.status}")
+            raise HTTPException(
+                status_code=400,
+                detail=f"Cannot stop scan with status: {scan.status}",
+            )
 
-        update_scan_status(db, scan_id, "cancelled", {"stopped_by": user.get("sub"), "reason": action_request.reason})
-        add_scan_log(scan_id, "WARNING", "control", f"Scan stopped by user: {action_request.reason or 'No reason provided'}")
+        update_scan_status(
+            db,
+            scan_id,
+            "cancelled",
+            {"stopped_by": user.get("sub"), "reason": action_request.reason},
+        )
+        add_scan_log(
+            scan_id,
+            "WARNING",
+            "control",
+            f"Scan stopped by user: {action_request.reason or 'No reason provided'}",
+        )
 
-        await broadcast_scan_update(scan_id, "stopped", {"reason": action_request.reason})
+        await broadcast_scan_update(
+            scan_id, "stopped", {"reason": action_request.reason}
+        )
 
     elif action == "restart":
         if scan.status not in ["completed", "failed", "cancelled"]:
-            raise HTTPException(status_code=400, detail="Can only restart completed/failed/cancelled scans")
+            raise HTTPException(
+                status_code=400,
+                detail="Can only restart completed/failed/cancelled scans",
+            )
 
         # Reset status and re-queue
         update_scan_status(db, scan_id, "pending")
@@ -460,13 +570,19 @@ async def scan_action(
         await broadcast_scan_update(scan_id, "restarted", {})
 
     else:
-        raise HTTPException(status_code=400, detail=f"Unknown action: {action}")
+        raise HTTPException(
+            status_code=400, detail=f"Unknown action: {action}"
+        )
 
     return {"message": f"Scan {action} successful", "scan_id": scan_id}
 
 
 @router.get("/{scan_id}/timeline")
-async def get_scan_timeline(scan_id: int, user: dict = Depends(verify_token), db: Session = Depends(get_db)):
+async def get_scan_timeline(
+    scan_id: int,
+    user: dict = Depends(verify_token),
+    db: Session = Depends(get_db),
+):
     """
     Get scan execution timeline.
 
@@ -489,7 +605,13 @@ async def get_scan_timeline(scan_id: int, user: dict = Depends(verify_token), db
         if phase not in phases:
             phases[phase] = {"start": timestamp, "end": None}
             timeline.append(
-                {"phase": phase, "started_at": timestamp, "completed_at": None, "duration_seconds": None, "logs_count": 1}
+                {
+                    "phase": phase,
+                    "started_at": timestamp,
+                    "completed_at": None,
+                    "duration_seconds": None,
+                    "logs_count": 1,
+                }
             )
         else:
             phases[phase]["end"] = timestamp
@@ -508,7 +630,11 @@ async def get_scan_timeline(scan_id: int, user: dict = Depends(verify_token), db
             except Exception:
                 pass
 
-    return {"scan_id": scan_id, "scan_status": scan.status, "timeline": timeline}
+    return {
+        "scan_id": scan_id,
+        "scan_status": scan.status,
+        "timeline": timeline,
+    }
 
 
 # ============================================================================
@@ -553,15 +679,27 @@ async def scan_websocket(websocket: WebSocket, scan_id: int):
             action = message.get("action")
 
             if action == "ping":
-                await websocket.send_json({"type": "pong", "timestamp": datetime.utcnow().isoformat()})
+                await websocket.send_json(
+                    {
+                        "type": "pong",
+                        "timestamp": datetime.utcnow().isoformat(),
+                    }
+                )
 
             elif action == "get_logs":
                 # Send recent logs
                 logs = get_scan_logs(scan_id)[-100:]  # Last 100 logs
-                await websocket.send_json({"type": "logs", "scan_id": scan_id, "logs": logs})
+                await websocket.send_json(
+                    {"type": "logs", "scan_id": scan_id, "logs": logs}
+                )
 
             elif action == "subscribe":
-                await websocket.send_json({"type": "subscribed", "events": message.get("events", ["all"])})
+                await websocket.send_json(
+                    {
+                        "type": "subscribed",
+                        "events": message.get("events", ["all"]),
+                    }
+                )
 
     except WebSocketDisconnect:
         scan_ws_manager.disconnect(websocket, scan_id)
@@ -602,20 +740,35 @@ async def run_scan_task(scan_id: int, config: Dict):
 
         for phase, description, duration in phases:
             add_scan_log(scan_id, "INFO", phase, f"Starting: {description}")
-            await broadcast_scan_update(scan_id, "phase", {"phase": phase, "description": description})
+            await broadcast_scan_update(
+                scan_id, "phase", {"phase": phase, "description": description}
+            )
 
             # Simulate work
             for i in range(duration):
                 await asyncio.sleep(1)
                 progress = ((i + 1) / duration) * 100
-                await broadcast_scan_update(scan_id, "progress", {"phase": phase, "progress": int(progress)})
+                await broadcast_scan_update(
+                    scan_id,
+                    "progress",
+                    {"phase": phase, "progress": int(progress)},
+                )
 
             add_scan_log(scan_id, "INFO", phase, f"Completed: {description}")
 
         # Mark as completed
-        update_scan_status(db, scan_id, "completed", {"summary": "Scan completed successfully"})
-        add_scan_log(scan_id, "INFO", "complete", "Scan completed successfully")
-        await broadcast_scan_update(scan_id, "complete", {"status": "completed"})
+        update_scan_status(
+            db,
+            scan_id,
+            "completed",
+            {"summary": "Scan completed successfully"},
+        )
+        add_scan_log(
+            scan_id, "INFO", "complete", "Scan completed successfully"
+        )
+        await broadcast_scan_update(
+            scan_id, "complete", {"status": "completed"}
+        )
 
     except Exception as e:
         logger.error(f"Scan task error for scan {scan_id}: {e}")

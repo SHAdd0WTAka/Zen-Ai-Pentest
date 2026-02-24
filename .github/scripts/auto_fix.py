@@ -74,7 +74,9 @@ class GitHubAPI:
         """Make a GET request."""
         url = urljoin(self.base_url + "/", endpoint)
         try:
-            response = requests.get(url, headers=self.headers, params=params, timeout=30)
+            response = requests.get(
+                url, headers=self.headers, params=params, timeout=30
+            )
             if response.status_code == 200:
                 return response.json()
             return None
@@ -86,7 +88,9 @@ class GitHubAPI:
         """Make a POST request."""
         url = urljoin(self.base_url + "/", endpoint)
         try:
-            response = requests.post(url, headers=self.headers, json=data, timeout=30)
+            response = requests.post(
+                url, headers=self.headers, json=data, timeout=30
+            )
             if response.status_code in [200, 201, 204]:
                 return response.json() if response.text else {}
             print(f"⚠️ POST {endpoint} failed: {response.status_code}")
@@ -99,7 +103,9 @@ class GitHubAPI:
         """Make a PATCH request."""
         url = urljoin(self.base_url + "/", endpoint)
         try:
-            response = requests.patch(url, headers=self.headers, json=data, timeout=30)
+            response = requests.patch(
+                url, headers=self.headers, json=data, timeout=30
+            )
             if response.status_code in [200, 204]:
                 return response.json() if response.text else {}
             print(f"⚠️ PATCH {endpoint} failed: {response.status_code}")
@@ -129,7 +135,9 @@ class GitHubAPI:
             params["page"] = page
             url = urljoin(self.base_url + "/", endpoint)
             try:
-                response = requests.get(url, headers=self.headers, params=params, timeout=30)
+                response = requests.get(
+                    url, headers=self.headers, params=params, timeout=30
+                )
                 if response.status_code != 200:
                     break
                 data = response.json()
@@ -205,7 +213,12 @@ class AutoFixer:
         issues = self.api.get_all_pages("issues", {"state": "open"})
         if not issues:
             self.results.append(
-                FixResult(category="Issues", action="Close stale", success=True, message="No open issues to check")
+                FixResult(
+                    category="Issues",
+                    action="Close stale",
+                    success=True,
+                    message="No open issues to check",
+                )
             )
             return
 
@@ -216,12 +229,16 @@ class AutoFixer:
                 continue  # Skip PRs
 
             # Check if issue has stale label
-            labels = [label["name"].lower() for label in issue.get("labels", [])]
+            labels = [
+                label["name"].lower() for label in issue.get("labels", [])
+            ]
             if "stale" not in labels and "auto-close" not in labels:
                 continue
 
             # Check if issue is old enough
-            updated_at = datetime.fromisoformat(issue["updated_at"].replace("Z", "+00:00"))
+            updated_at = datetime.fromisoformat(
+                issue["updated_at"].replace("Z", "+00:00")
+            )
             if updated_at.replace(tzinfo=None) > stale_threshold:
                 continue
 
@@ -248,16 +265,25 @@ If this issue is still relevant, please:
 *This action was performed automatically. If you believe this was done in error, please reopen the issue.*"""
 
             # Add comment
-            self.api.post(f"issues/{issue_number}/comments", {"body": comment_body})
+            self.api.post(
+                f"issues/{issue_number}/comments", {"body": comment_body}
+            )
 
             # Close issue
-            result = self.api.patch(f"issues/{issue_number}", {"state": "closed", "state_reason": "not_planned"})
+            result = self.api.patch(
+                f"issues/{issue_number}",
+                {"state": "closed", "state_reason": "not_planned"},
+            )
 
             if result:
-                print_colored(f"   ✅ Closed stale issue #{issue_number}", Colors.GREEN)
+                print_colored(
+                    f"   ✅ Closed stale issue #{issue_number}", Colors.GREEN
+                )
                 closed_count += 1
             else:
-                print_colored(f"   ❌ Failed to close issue #{issue_number}", Colors.RED)
+                print_colored(
+                    f"   ❌ Failed to close issue #{issue_number}", Colors.RED
+                )
 
         self.results.append(
             FixResult(
@@ -278,13 +304,22 @@ If this issue is still relevant, please:
 
         prs = self.api.get_all_pages("pulls", {"state": "open"})
         if not prs:
-            self.results.append(FixResult(category="PRs", action="Label stale", success=True, message="No open PRs to check"))
+            self.results.append(
+                FixResult(
+                    category="PRs",
+                    action="Label stale",
+                    success=True,
+                    message="No open PRs to check",
+                )
+            )
             return
 
         labeled_count = 0
 
         for pr in prs:
-            updated_at = datetime.fromisoformat(pr["updated_at"].replace("Z", "+00:00"))
+            updated_at = datetime.fromisoformat(
+                pr["updated_at"].replace("Z", "+00:00")
+            )
             if updated_at.replace(tzinfo=None) > stale_threshold:
                 continue
 
@@ -301,7 +336,9 @@ If this issue is still relevant, please:
                 continue
 
             # Add stale label
-            result = self.api.post(f"issues/{pr_number}/labels", {"labels": ["stale"]})
+            result = self.api.post(
+                f"issues/{pr_number}/labels", {"labels": ["stale"]}
+            )
 
             if result is not None:
                 # Add comment
@@ -317,8 +354,12 @@ Please:
 ---
 *This action was performed automatically by Repository Health Check.*"""
 
-                self.api.post(f"issues/{pr_number}/comments", {"body": comment_body})
-                print_colored(f"   ✅ Labeled stale PR #{pr_number}", Colors.GREEN)
+                self.api.post(
+                    f"issues/{pr_number}/comments", {"body": comment_body}
+                )
+                print_colored(
+                    f"   ✅ Labeled stale PR #{pr_number}", Colors.GREEN
+                )
                 labeled_count += 1
 
         self.results.append(
@@ -337,11 +378,17 @@ Please:
         print_colored("🌿 Checking for Orphaned Branches", Colors.BLUE)
 
         # Only run in aggressive mode or if explicitly enabled
-        if self.fix_level != "aggressive" and os.environ.get("DELETE_BRANCHES", "false") != "true":
+        if (
+            self.fix_level != "aggressive"
+            and os.environ.get("DELETE_BRANCHES", "false") != "true"
+        ):
             print("   ℹ️ Skipping (use aggressive mode to delete branches)\n")
             self.results.append(
                 FixResult(
-                    category="Branches", action="Delete orphaned", success=True, message="Skipped (not in aggressive mode)"
+                    category="Branches",
+                    action="Delete orphaned",
+                    success=True,
+                    message="Skipped (not in aggressive mode)",
                 )
             )
             return
@@ -349,13 +396,20 @@ Please:
         branches = self.api.get_all_pages("branches")
         if not branches:
             self.results.append(
-                FixResult(category="Branches", action="Delete orphaned", success=True, message="Could not fetch branches")
+                FixResult(
+                    category="Branches",
+                    action="Delete orphaned",
+                    success=True,
+                    message="Could not fetch branches",
+                )
             )
             return
 
         # Get default branch
         repo_info = self.api.get("")
-        default_branch = repo_info.get("default_branch", "main") if repo_info else "main"
+        default_branch = (
+            repo_info.get("default_branch", "main") if repo_info else "main"
+        )
 
         # Get PR branches
         prs = self.api.get_all_pages("pulls", {"state": "all"})
@@ -388,11 +442,18 @@ Please:
             if not branch_detail:
                 continue
 
-            commit_date_str = branch_detail.get("commit", {}).get("commit", {}).get("committer", {}).get("date")
+            commit_date_str = (
+                branch_detail.get("commit", {})
+                .get("commit", {})
+                .get("committer", {})
+                .get("date")
+            )
             if not commit_date_str:
                 continue
 
-            commit_date = datetime.fromisoformat(commit_date_str.replace("Z", "+00:00"))
+            commit_date = datetime.fromisoformat(
+                commit_date_str.replace("Z", "+00:00")
+            )
             if commit_date.replace(tzinfo=None) > orphaned_threshold:
                 continue
 
@@ -403,10 +464,15 @@ Please:
 
             # Delete the branch
             if self.api.delete(f"git/refs/heads/{branch_name}"):
-                print_colored(f"   ✅ Deleted orphaned branch: {branch_name}", Colors.GREEN)
+                print_colored(
+                    f"   ✅ Deleted orphaned branch: {branch_name}",
+                    Colors.GREEN,
+                )
                 deleted_count += 1
             else:
-                print_colored(f"   ❌ Failed to delete branch: {branch_name}", Colors.RED)
+                print_colored(
+                    f"   ❌ Failed to delete branch: {branch_name}", Colors.RED
+                )
 
         self.results.append(
             FixResult(
@@ -414,7 +480,10 @@ Please:
                 action="Delete orphaned",
                 success=deleted_count >= 0,
                 message=f"Deleted {deleted_count} orphaned branches",
-                details={"deleted": deleted_count, "protected_skip": protected_deletions},
+                details={
+                    "deleted": deleted_count,
+                    "protected_skip": protected_deletions,
+                },
             )
         )
         print()
@@ -426,18 +495,35 @@ Please:
         repo_info = self.api.get("")
         if not repo_info:
             self.results.append(
-                FixResult(category="Sync", action="Fork sync", success=False, message="Could not fetch repo info")
+                FixResult(
+                    category="Sync",
+                    action="Fork sync",
+                    success=False,
+                    message="Could not fetch repo info",
+                )
             )
             return
 
         if not repo_info.get("fork", False):
-            self.results.append(FixResult(category="Sync", action="Fork sync", success=True, message="Not a fork repository"))
+            self.results.append(
+                FixResult(
+                    category="Sync",
+                    action="Fork sync",
+                    success=True,
+                    message="Not a fork repository",
+                )
+            )
             return
 
         parent = repo_info.get("parent", {})
         if not parent:
             self.results.append(
-                FixResult(category="Sync", action="Fork sync", success=False, message="No parent repository info")
+                FixResult(
+                    category="Sync",
+                    action="Fork sync",
+                    success=False,
+                    message="No parent repository info",
+                )
             )
             return
 
@@ -446,17 +532,31 @@ Please:
         parent_default = parent.get("default_branch", "main")
         parent_owner = parent.get("owner", {}).get("login")
 
-        comparison = self.api.get(f"compare/{parent_owner}:{parent_default}...{default_branch}")
+        comparison = self.api.get(
+            f"compare/{parent_owner}:{parent_default}...{default_branch}"
+        )
         if not comparison:
             self.results.append(
-                FixResult(category="Sync", action="Fork sync", success=False, message="Could not compare with upstream")
+                FixResult(
+                    category="Sync",
+                    action="Fork sync",
+                    success=False,
+                    message="Could not compare with upstream",
+                )
             )
             return
 
         behind_by = comparison.get("behind_by", 0)
 
         if behind_by == 0:
-            self.results.append(FixResult(category="Sync", action="Fork sync", success=True, message="Fork is up to date"))
+            self.results.append(
+                FixResult(
+                    category="Sync",
+                    action="Fork sync",
+                    success=True,
+                    message="Fork is up to date",
+                )
+            )
             print()
             return
 
@@ -479,7 +579,10 @@ Please:
             print("   [DRY RUN] Would sync fork with upstream")
             self.results.append(
                 FixResult(
-                    category="Sync", action="Fork sync", success=True, message=f"Would sync {behind_by} commits (dry run)"
+                    category="Sync",
+                    action="Fork sync",
+                    success=True,
+                    message=f"Would sync {behind_by} commits (dry run)",
                 )
             )
             print()
@@ -508,24 +611,41 @@ Please review and merge this PR to keep your fork up to date.
 
             pr = self.api.post("pulls", pr_data)
             if pr:
-                print_colored(f"   ✅ Created sync PR #{pr['number']}", Colors.GREEN)
+                print_colored(
+                    f"   ✅ Created sync PR #{pr['number']}", Colors.GREEN
+                )
                 self.results.append(
                     FixResult(
                         category="Sync",
                         action="Fork sync",
                         success=True,
                         message=f"Created sync PR #{pr['number']} ({behind_by} commits)",
-                        details={"pr_number": pr["number"], "commits": behind_by},
+                        details={
+                            "pr_number": pr["number"],
+                            "commits": behind_by,
+                        },
                     )
                 )
             else:
                 print_colored("   ❌ Failed to create sync PR", Colors.RED)
                 self.results.append(
-                    FixResult(category="Sync", action="Fork sync", success=False, message="Failed to create sync PR")
+                    FixResult(
+                        category="Sync",
+                        action="Fork sync",
+                        success=False,
+                        message="Failed to create sync PR",
+                    )
                 )
         except Exception as e:
             print_colored(f"   ❌ Error creating sync PR: {e}", Colors.RED)
-            self.results.append(FixResult(category="Sync", action="Fork sync", success=False, message=f"Error: {str(e)}"))
+            self.results.append(
+                FixResult(
+                    category="Sync",
+                    action="Fork sync",
+                    success=False,
+                    message=f"Error: {str(e)}",
+                )
+            )
 
         print()
 
@@ -534,19 +654,31 @@ Please review and merge this PR to keep your fork up to date.
         print_colored("📦 Checking Dependabot PRs", Colors.BLUE)
 
         # Check if Dependabot is enabled
-        if not health_data.get("security_details", {}).get("dependabot_enabled", False):
+        if not health_data.get("security_details", {}).get(
+            "dependabot_enabled", False
+        ):
             self.results.append(
-                FixResult(category="Security", action="Dependabot merge", success=True, message="Dependabot not enabled")
+                FixResult(
+                    category="Security",
+                    action="Dependabot merge",
+                    success=True,
+                    message="Dependabot not enabled",
+                )
             )
             print()
             return
 
         # Only run in aggressive mode
         if self.fix_level != "aggressive":
-            print("   ℹ️ Skipping (use aggressive mode to auto-merge Dependabot PRs)\n")
+            print(
+                "   ℹ️ Skipping (use aggressive mode to auto-merge Dependabot PRs)\n"
+            )
             self.results.append(
                 FixResult(
-                    category="Security", action="Dependabot merge", success=True, message="Skipped (not in aggressive mode)"
+                    category="Security",
+                    action="Dependabot merge",
+                    success=True,
+                    message="Skipped (not in aggressive mode)",
                 )
             )
             return
@@ -554,15 +686,31 @@ Please review and merge this PR to keep your fork up to date.
         # Find Dependabot PRs
         prs = self.api.get_all_pages("pulls", {"state": "open"})
         if not prs:
-            self.results.append(FixResult(category="Security", action="Dependabot merge", success=True, message="No open PRs"))
+            self.results.append(
+                FixResult(
+                    category="Security",
+                    action="Dependabot merge",
+                    success=True,
+                    message="No open PRs",
+                )
+            )
             print()
             return
 
-        dependabot_prs = [p for p in prs if p.get("user", {}).get("login") == "dependabot[bot]"]
+        dependabot_prs = [
+            p
+            for p in prs
+            if p.get("user", {}).get("login") == "dependabot[bot]"
+        ]
 
         if not dependabot_prs:
             self.results.append(
-                FixResult(category="Security", action="Dependabot merge", success=True, message="No Dependabot PRs found")
+                FixResult(
+                    category="Security",
+                    action="Dependabot merge",
+                    success=True,
+                    message="No Dependabot PRs found",
+                )
             )
             print()
             return
@@ -575,14 +723,18 @@ Please review and merge this PR to keep your fork up to date.
 
             # Only merge minor/patch updates
             if "major" in title:
-                print(f"   Skipping major update PR #{pr_number}: {title[:50]}...")
+                print(
+                    f"   Skipping major update PR #{pr_number}: {title[:50]}..."
+                )
                 continue
 
             # Check if checks are passing
             checks = self.api.get(f"commits/{pr['head']['sha']}/check-runs")
             if checks:
                 check_runs = checks.get("check_runs", [])
-                failed_checks = [c for c in check_runs if c.get("conclusion") == "failure"]
+                failed_checks = [
+                    c for c in check_runs if c.get("conclusion") == "failure"
+                ]
 
                 if failed_checks:
                     print(f"   Skipping PR #{pr_number} with failed checks")
@@ -603,10 +755,14 @@ Please review and merge this PR to keep your fork up to date.
 
             result = self.api.post(f"pulls/{pr_number}/merge", merge_data)
             if result and result.get("merged"):
-                print_colored(f"   ✅ Merged Dependabot PR #{pr_number}", Colors.GREEN)
+                print_colored(
+                    f"   ✅ Merged Dependabot PR #{pr_number}", Colors.GREEN
+                )
                 merged_count += 1
             else:
-                print_colored(f"   ❌ Failed to merge PR #{pr_number}", Colors.RED)
+                print_colored(
+                    f"   ❌ Failed to merge PR #{pr_number}", Colors.RED
+                )
 
         self.results.append(
             FixResult(
@@ -632,7 +788,10 @@ Please review and merge this PR to keep your fork up to date.
 
         self.results.append(
             FixResult(
-                category="Workflows", action="Update actions", success=True, message="Workflow update check not implemented"
+                category="Workflows",
+                action="Update actions",
+                success=True,
+                message="Workflow update check not implemented",
             )
         )
 
@@ -648,7 +807,12 @@ Please review and merge this PR to keep your fork up to date.
         print("   ℹ️ Linting fix not implemented in this version\n")
 
         self.results.append(
-            FixResult(category="Linting", action="Auto-fix", success=True, message="Linting fix not implemented")
+            FixResult(
+                category="Linting",
+                action="Auto-fix",
+                success=True,
+                message="Linting fix not implemented",
+            )
         )
 
     def save_outputs(self) -> None:
@@ -659,7 +823,9 @@ Please review and merge this PR to keep your fork up to date.
         summary_lines = ["# Auto-Fix Results\n"]
         for result in self.results:
             status = "✅" if result.success else "❌"
-            summary_lines.append(f"{status} **{result.category}**: {result.action}")
+            summary_lines.append(
+                f"{status} **{result.category}**: {result.action}"
+            )
             summary_lines.append(f"   {result.message}\n")
 
         summary = "\n".join(summary_lines)

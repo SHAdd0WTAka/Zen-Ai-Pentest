@@ -76,7 +76,9 @@ class WorkflowDashboard:
         "unknown": "white",
     }
 
-    def __init__(self, repo: Optional[str] = None, token: Optional[str] = None):
+    def __init__(
+        self, repo: Optional[str] = None, token: Optional[str] = None
+    ):
         self.token = token or os.environ.get("GITHUB_TOKEN")
         self.repo = repo or self._detect_repo()
         self.workflows_dir = Path(".github/workflows")
@@ -96,7 +98,9 @@ class WorkflowDashboard:
             url = result.stdout.strip()
             # Handle both HTTPS and SSH URLs
             if url.startswith("https://github.com/"):
-                return url.replace("https://github.com/", "").replace(".git", "")
+                return url.replace("https://github.com/", "").replace(
+                    ".git", ""
+                )
             elif url.startswith("git@github.com:"):
                 return url.replace("git@github.com:", "").replace(".git", "")
         except Exception:
@@ -121,30 +125,50 @@ class WorkflowDashboard:
             return json.loads(result.stdout) if result.stdout else {}
         except subprocess.CalledProcessError as e:
             if "gh" in str(e).lower() or "not found" in str(e).lower():
-                print("⚠️ GitHub CLI (gh) not found. Install it from: https://cli.github.com/")
+                print(
+                    "⚠️ GitHub CLI (gh) not found. Install it from: https://cli.github.com/"
+                )
             return None
         except json.JSONDecodeError:
             return None
         except FileNotFoundError:
-            print("⚠️ GitHub CLI (gh) not found. Install it from: https://cli.github.com/")
+            print(
+                "⚠️ GitHub CLI (gh) not found. Install it from: https://cli.github.com/"
+            )
             return None
 
     def list_workflows(self) -> list[dict]:
         """List all workflows in the repository."""
         if not self.repo:
-            print("⚠️ Repository not detected. Set GITHUB_REPOSITORY or run from a git repo.")
+            print(
+                "⚠️ Repository not detected. Set GITHUB_REPOSITORY or run from a git repo."
+            )
             return []
 
-        result = self._run_gh_command(["api", f"/repos/{self.repo}/actions/workflows", "--jq", ".workflows"])
+        result = self._run_gh_command(
+            [
+                "api",
+                f"/repos/{self.repo}/actions/workflows",
+                "--jq",
+                ".workflows",
+            ]
+        )
         return result if result else []
 
-    def get_workflow_runs(self, workflow_id: str, limit: int = 5) -> list[dict]:
+    def get_workflow_runs(
+        self, workflow_id: str, limit: int = 5
+    ) -> list[dict]:
         """Get recent runs for a workflow."""
         if not self.repo:
             return []
 
         result = self._run_gh_command(
-            ["api", f"/repos/{self.repo}/actions/workflows/{workflow_id}/runs?per_page={limit}", "--jq", ".workflow_runs"]
+            [
+                "api",
+                f"/repos/{self.repo}/actions/workflows/{workflow_id}/runs?per_page={limit}",
+                "--jq",
+                ".workflow_runs",
+            ]
         )
         return result if result else []
 
@@ -158,7 +182,10 @@ class WorkflowDashboard:
         if not self.workflows_dir.exists():
             return []
 
-        self.workflow_files = sorted(list(self.workflows_dir.glob("*.yml")) + list(self.workflows_dir.glob("*.yaml")))
+        self.workflow_files = sorted(
+            list(self.workflows_dir.glob("*.yml"))
+            + list(self.workflows_dir.glob("*.yaml"))
+        )
         return self.workflow_files
 
     def check_health(self) -> dict:
@@ -174,7 +201,9 @@ class WorkflowDashboard:
             return {
                 "summary": summary,
                 "issues": checker.issues,
-                "issues_by_workflow": self._group_issues_by_workflow(checker.issues),
+                "issues_by_workflow": self._group_issues_by_workflow(
+                    checker.issues
+                ),
             }
         except Exception as e:
             print(f"⚠️ Could not run health check: {e}")
@@ -208,7 +237,9 @@ class WorkflowDashboard:
         except Exception:
             return ts
 
-    def display_dashboard(self, failed_only: bool = False, show_health: bool = True):
+    def display_dashboard(
+        self, failed_only: bool = False, show_health: bool = True
+    ):
         """Display the workflow dashboard."""
         workflows = self.list_workflows()
         local_workflows = self.scan_local_workflows()
@@ -222,17 +253,28 @@ class WorkflowDashboard:
         issues_by_workflow = health_data.get("issues_by_workflow", {})
 
         if RICH_AVAILABLE:
-            self._display_rich_dashboard(workflows, local_workflows, issues_by_workflow, failed_only)
+            self._display_rich_dashboard(
+                workflows, local_workflows, issues_by_workflow, failed_only
+            )
         else:
-            self._display_simple_dashboard(workflows, local_workflows, issues_by_workflow, failed_only)
+            self._display_simple_dashboard(
+                workflows, local_workflows, issues_by_workflow, failed_only
+            )
 
-    def _display_rich_dashboard(self, workflows: list, local_workflows: list, issues_by_workflow: dict, failed_only: bool):
+    def _display_rich_dashboard(
+        self,
+        workflows: list,
+        local_workflows: list,
+        issues_by_workflow: dict,
+        failed_only: bool,
+    ):
         """Display dashboard using rich formatting."""
         # Header
         console.print()
         console.print(
             Panel.fit(
-                f"[bold cyan]GitHub Actions Workflow Dashboard[/bold cyan]\n" f"[dim]Repository: {self.repo or 'N/A'}[/dim]",
+                f"[bold cyan]GitHub Actions Workflow Dashboard[/bold cyan]\n"
+                f"[dim]Repository: {self.repo or 'N/A'}[/dim]",
                 border_style="cyan",
             )
         )
@@ -244,14 +286,21 @@ class WorkflowDashboard:
         summary_table.add_column("Value", style="white")
 
         total_workflows = len(workflows) if workflows else len(local_workflows)
-        active_workflows = sum(1 for w in workflows if w.get("state") == "active")
+        active_workflows = sum(
+            1 for w in workflows if w.get("state") == "active"
+        )
 
         summary_table.add_row("Total Workflows", str(total_workflows))
         summary_table.add_row("Active Workflows", str(active_workflows))
         if health_data := self.check_health():
             summary = health_data.get("summary", {})
-            summary_table.add_row("Workflows with Issues", str(summary.get("workflows_with_issues", 0)))
-            summary_table.add_row("Total Issues", str(summary.get("total_issues", 0)))
+            summary_table.add_row(
+                "Workflows with Issues",
+                str(summary.get("workflows_with_issues", 0)),
+            )
+            summary_table.add_row(
+                "Total Issues", str(summary.get("total_issues", 0))
+            )
 
         console.print(summary_table)
         console.print()
@@ -275,7 +324,9 @@ class WorkflowDashboard:
             if latest_run:
                 status = latest_run.get("status", "unknown")
                 conclusion = latest_run.get("conclusion", "unknown")
-                updated_at = self.format_timestamp(latest_run.get("updated_at", ""))
+                updated_at = self.format_timestamp(
+                    latest_run.get("updated_at", "")
+                )
                 branch = latest_run.get("head_branch", "-")
 
                 # Skip if filtering for failed only
@@ -291,8 +342,12 @@ class WorkflowDashboard:
             workflow_file = Path(workflow.get("path", "")).name
             issues = issues_by_workflow.get(workflow_file, [])
             if issues:
-                error_count = sum(1 for i in issues if i.get("severity") == "error")
-                warning_count = sum(1 for i in issues if i.get("severity") == "warning")
+                error_count = sum(
+                    1 for i in issues if i.get("severity") == "error"
+                )
+                warning_count = sum(
+                    1 for i in issues if i.get("severity") == "warning"
+                )
                 health = (
                     f"[red]{error_count}E[/red]/[yellow]{warning_count}W[/yellow]"
                     if error_count
@@ -310,7 +365,11 @@ class WorkflowDashboard:
             table.add_row(
                 name,
                 f"[{status_color}]{status_icon} {status}[/{status_color}]",
-                f"[{conclusion_color}]{conclusion_icon} {conclusion}[/{conclusion_color}]" if conclusion != "-" else "-",
+                (
+                    f"[{conclusion_color}]{conclusion_icon} {conclusion}[/{conclusion_color}]"
+                    if conclusion != "-"
+                    else "-"
+                ),
                 updated_at,
                 branch,
                 health,
@@ -320,10 +379,18 @@ class WorkflowDashboard:
         console.print()
 
         # Legend
-        console.print("[dim]Legend: ✅ Success | ❌ Failure | 🔄 In Progress | ⏳ Queued | 🚫 Cancelled | ⏭️ Skipped[/dim]")
+        console.print(
+            "[dim]Legend: ✅ Success | ❌ Failure | 🔄 In Progress | ⏳ Queued | 🚫 Cancelled | ⏭️ Skipped[/dim]"
+        )
         console.print()
 
-    def _display_simple_dashboard(self, workflows: list, local_workflows: list, issues_by_workflow: dict, failed_only: bool):
+    def _display_simple_dashboard(
+        self,
+        workflows: list,
+        local_workflows: list,
+        issues_by_workflow: dict,
+        failed_only: bool,
+    ):
         """Display dashboard using simple formatting."""
         print("\n" + "=" * 80)
         print("GitHub Actions Workflow Dashboard")
@@ -335,11 +402,15 @@ class WorkflowDashboard:
 
         if health_data := self.check_health():
             summary = health_data.get("summary", {})
-            print(f"Workflows with Issues: {summary.get('workflows_with_issues', 0)}")
+            print(
+                f"Workflows with Issues: {summary.get('workflows_with_issues', 0)}"
+            )
             print(f"Total Issues: {summary.get('total_issues', 0)}")
 
         print("\n" + "-" * 80)
-        print(f"{'Workflow':<30} {'Status':<15} {'Conclusion':<12} {'Last Run':<12} {'Health':<10}")
+        print(
+            f"{'Workflow':<30} {'Status':<15} {'Conclusion':<12} {'Last Run':<12} {'Health':<10}"
+        )
         print("-" * 80)
 
         for workflow in workflows:
@@ -350,7 +421,9 @@ class WorkflowDashboard:
             if latest_run:
                 status = latest_run.get("status", "unknown")
                 conclusion = latest_run.get("conclusion", "-")
-                updated_at = self.format_timestamp(latest_run.get("updated_at", ""))
+                updated_at = self.format_timestamp(
+                    latest_run.get("updated_at", "")
+                )
 
                 if failed_only and conclusion != "failure":
                     continue
@@ -362,17 +435,27 @@ class WorkflowDashboard:
             workflow_file = Path(workflow.get("path", "")).name
             issues = issues_by_workflow.get(workflow_file, [])
             if issues:
-                error_count = sum(1 for i in issues if i.get("severity") == "error")
-                warning_count = sum(1 for i in issues if i.get("severity") == "warning")
+                error_count = sum(
+                    1 for i in issues if i.get("severity") == "error"
+                )
+                warning_count = sum(
+                    1 for i in issues if i.get("severity") == "warning"
+                )
                 health = f"{error_count}E/{warning_count}W"
             else:
                 health = "OK"
 
-            icon = self.STATUS_ICONS.get(conclusion if conclusion != "-" else status, "?")
-            print(f"{icon} {name:<28} {status:<15} {conclusion:<12} {updated_at:<12} {health:<10}")
+            icon = self.STATUS_ICONS.get(
+                conclusion if conclusion != "-" else status, "?"
+            )
+            print(
+                f"{icon} {name:<28} {status:<15} {conclusion:<12} {updated_at:<12} {health:<10}"
+            )
 
         print("-" * 80)
-        print("\nLegend: ✅ Success | ❌ Failure | 🔄 In Progress | ⏳ Queued | 🚫 Cancelled")
+        print(
+            "\nLegend: ✅ Success | ❌ Failure | 🔄 In Progress | ⏳ Queued | 🚫 Cancelled"
+        )
 
     def generate_report(self) -> dict:
         """Generate a JSON report of workflow status."""
@@ -418,7 +501,9 @@ class WorkflowDashboard:
         import time
 
         if not RICH_AVAILABLE:
-            print("Watch mode requires 'rich' package. Install with: pip install rich")
+            print(
+                "Watch mode requires 'rich' package. Install with: pip install rich"
+            )
             return
 
         try:
@@ -435,13 +520,35 @@ class WorkflowDashboard:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="GitHub Actions Workflow Status Dashboard")
-    parser.add_argument("--repo", "-r", help="Repository name (owner/repo). Auto-detected if not provided.")
-    parser.add_argument("--token", "-t", help="GitHub token. Can also use GITHUB_TOKEN env var.")
-    parser.add_argument("--failed-only", "-f", action="store_true", help="Show only failing workflows")
-    parser.add_argument("--watch", "-w", action="store_true", help="Watch mode - auto-refresh every 30 seconds")
+    parser = argparse.ArgumentParser(
+        description="GitHub Actions Workflow Status Dashboard"
+    )
+    parser.add_argument(
+        "--repo",
+        "-r",
+        help="Repository name (owner/repo). Auto-detected if not provided.",
+    )
+    parser.add_argument(
+        "--token",
+        "-t",
+        help="GitHub token. Can also use GITHUB_TOKEN env var.",
+    )
+    parser.add_argument(
+        "--failed-only",
+        "-f",
+        action="store_true",
+        help="Show only failing workflows",
+    )
+    parser.add_argument(
+        "--watch",
+        "-w",
+        action="store_true",
+        help="Watch mode - auto-refresh every 30 seconds",
+    )
     parser.add_argument("--save-report", "-o", help="Save JSON report to file")
-    parser.add_argument("--no-health", action="store_true", help="Skip health check (faster)")
+    parser.add_argument(
+        "--no-health", action="store_true", help="Skip health check (faster)"
+    )
 
     args = parser.parse_args()
 
@@ -455,7 +562,9 @@ def main():
             json.dump(report, f, indent=2)
         print(f"✅ Report saved to {args.save_report}")
     else:
-        dashboard.display_dashboard(failed_only=args.failed_only, show_health=not args.no_health)
+        dashboard.display_dashboard(
+            failed_only=args.failed_only, show_health=not args.no_health
+        )
 
 
 if __name__ == "__main__":

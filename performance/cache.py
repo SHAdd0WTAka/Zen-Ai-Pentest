@@ -115,7 +115,9 @@ class CacheManager:
             self._hits += 1
             return entry.value
 
-    async def set(self, key: str, value: Any, ttl: Optional[int] = None) -> bool:
+    async def set(
+        self, key: str, value: Any, ttl: Optional[int] = None
+    ) -> bool:
         """Set value in cache"""
         ttl = ttl or self.config.default_ttl
 
@@ -141,13 +143,19 @@ class CacheManager:
         async with self._lock:
             self._memory.clear()
 
-    async def get_or_set(self, key: str, factory: Callable, ttl: Optional[int] = None) -> Any:
+    async def get_or_set(
+        self, key: str, factory: Callable, ttl: Optional[int] = None
+    ) -> Any:
         """Get or create cache entry"""
         value = await self.get(key)
         if value is not None:
             return value
 
-        value = await factory() if asyncio.iscoroutinefunction(factory) else factory()
+        value = (
+            await factory()
+            if asyncio.iscoroutinefunction(factory)
+            else factory()
+        )
         await self.set(key, value, ttl)
         return value
 
@@ -158,22 +166,39 @@ class CacheManager:
             @wraps(func)
             async def async_wrapper(*args, **kwargs):
                 cache_key = self._generate_key(key_prefix, func, args, kwargs)
-                return await self.get_or_set(cache_key, lambda: func(*args, **kwargs), ttl)
+                return await self.get_or_set(
+                    cache_key, lambda: func(*args, **kwargs), ttl
+                )
 
             @wraps(func)
             def sync_wrapper(*args, **kwargs):
                 cache_key = self._generate_key(key_prefix, func, args, kwargs)
                 # For sync functions, use run_in_executor
                 loop = asyncio.get_event_loop()
-                return loop.run_until_complete(self.get_or_set(cache_key, lambda: func(*args, **kwargs), ttl))
+                return loop.run_until_complete(
+                    self.get_or_set(
+                        cache_key, lambda: func(*args, **kwargs), ttl
+                    )
+                )
 
-            return async_wrapper if asyncio.iscoroutinefunction(func) else sync_wrapper
+            return (
+                async_wrapper
+                if asyncio.iscoroutinefunction(func)
+                else sync_wrapper
+            )
 
         return decorator
 
-    def _generate_key(self, prefix: str, func: Callable, args: tuple, kwargs: dict) -> str:
+    def _generate_key(
+        self, prefix: str, func: Callable, args: tuple, kwargs: dict
+    ) -> str:
         """Generate cache key from function call"""
-        key_data = {"prefix": prefix, "func": func.__name__, "args": args, "kwargs": kwargs}
+        key_data = {
+            "prefix": prefix,
+            "func": func.__name__,
+            "args": args,
+            "kwargs": kwargs,
+        }
         key_str = json.dumps(key_data, sort_keys=True, default=str)
         hash_key = hashlib.md5(key_str.encode()).hexdigest()
         return f"{prefix}:{func.__name__}:{hash_key}"
@@ -183,7 +208,9 @@ class CacheManager:
         if not self._memory:
             return
 
-        lru_key = min(self._memory.keys(), key=lambda k: self._memory[k].last_accessed)
+        lru_key = min(
+            self._memory.keys(), key=lambda k: self._memory[k].last_accessed
+        )
         del self._memory[lru_key]
         self._evictions += 1
 
@@ -206,12 +233,16 @@ class CacheManager:
                 del self._memory[k]
 
             if expired:
-                logger.debug(f"Cleaned up {len(expired)} expired cache entries")
+                logger.debug(
+                    f"Cleaned up {len(expired)} expired cache entries"
+                )
 
     def get_stats(self) -> Dict[str, Any]:
         """Get cache statistics"""
         total_requests = self._hits + self._misses
-        hit_rate = (self._hits / total_requests * 100) if total_requests > 0 else 0
+        hit_rate = (
+            (self._hits / total_requests * 100) if total_requests > 0 else 0
+        )
 
         return {
             "size": len(self._memory),

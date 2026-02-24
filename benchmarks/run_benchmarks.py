@@ -35,12 +35,25 @@ try:
 except ImportError:
     MATPLOTLIB_AVAILABLE = False
 
-from .benchmark_engine import BenchmarkConfig, BenchmarkEngine, BenchmarkReport, BenchmarkStatus
+from .benchmark_engine import (
+    BenchmarkConfig,
+    BenchmarkEngine,
+    BenchmarkReport,
+    BenchmarkStatus,
+)
 from .ci_benchmark import CIBenchmarkRunner, CIConfig
-from .scenarios import ALL_SCENARIOS, DifficultyLevel, ScenarioType, list_all_scenarios
+from .scenarios import (
+    ALL_SCENARIOS,
+    DifficultyLevel,
+    ScenarioType,
+    list_all_scenarios,
+)
 
 # Setup logging
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
 logger = logging.getLogger(__name__)
 
 # Console for output
@@ -64,7 +77,10 @@ class BenchmarkCLI:
             )
 
     def list_scenarios(
-        self, scenario_type: Optional[str] = None, difficulty: Optional[str] = None, tag: Optional[str] = None
+        self,
+        scenario_type: Optional[str] = None,
+        difficulty: Optional[str] = None,
+        tag: Optional[str] = None,
     ) -> None:
         """List available benchmark scenarios."""
 
@@ -72,14 +88,20 @@ class BenchmarkCLI:
 
         # Apply filters
         if scenario_type:
-            scenarios = [s for s in scenarios if s.get("type") == scenario_type]
+            scenarios = [
+                s for s in scenarios if s.get("type") == scenario_type
+            ]
         if difficulty:
-            scenarios = [s for s in scenarios if s.get("difficulty") == difficulty]
+            scenarios = [
+                s for s in scenarios if s.get("difficulty") == difficulty
+            ]
         if tag:
             scenarios = [s for s in scenarios if tag in s.get("tags", [])]
 
         if RICH_AVAILABLE:
-            table = Table(title="Available Benchmark Scenarios", box=box.ROUNDED)
+            table = Table(
+                title="Available Benchmark Scenarios", box=box.ROUNDED
+            )
             table.add_column("ID", style="cyan", no_wrap=True)
             table.add_column("Name", style="green")
             table.add_column("Type", style="blue")
@@ -88,9 +110,12 @@ class BenchmarkCLI:
             table.add_column("Vulns", justify="right")
 
             for s in scenarios:
-                diff_color = {"easy": "green", "medium": "yellow", "hard": "red", "expert": "magenta"}.get(
-                    s.get("difficulty", ""), "white"
-                )
+                diff_color = {
+                    "easy": "green",
+                    "medium": "yellow",
+                    "hard": "red",
+                    "expert": "magenta",
+                }.get(s.get("difficulty", ""), "white")
 
                 table.add_row(
                     s.get("id", ""),
@@ -107,7 +132,9 @@ class BenchmarkCLI:
             # Plain text output
             print("\nAvailable Benchmark Scenarios:")
             print("-" * 100)
-            print(f"{'ID':<25} {'Name':<30} {'Type':<12} {'Difficulty':<10} {'Duration':<10}")
+            print(
+                f"{'ID':<25} {'Name':<30} {'Type':<12} {'Difficulty':<10} {'Duration':<10}"
+            )
             print("-" * 100)
 
             for s in scenarios:
@@ -137,7 +164,8 @@ class BenchmarkCLI:
 
         # Build configuration
         config = BenchmarkConfig(
-            benchmark_name=name or f"benchmark_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
+            benchmark_name=name
+            or f"benchmark_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
             scenarios=scenarios or [],
             tags=tags,
             max_concurrent=concurrent,
@@ -161,7 +189,9 @@ class BenchmarkCLI:
                 logger.warning(f"Unknown difficulty: {difficulty}")
 
         if RICH_AVAILABLE:
-            console.print(f"\n[bold]Starting Benchmark:[/bold] {config.benchmark_name}")
+            console.print(
+                f"\n[bold]Starting Benchmark:[/bold] {config.benchmark_name}"
+            )
             console.print(f"[dim]ID: {config.benchmark_id}[/dim]\n")
         else:
             print(f"\nStarting Benchmark: {config.benchmark_name}")
@@ -189,7 +219,9 @@ class BenchmarkCLI:
                 f"[bold]Failed:[/bold] {report.scenarios_failed} ❌\n"
                 f"[bold]Success Rate:[/bold] {report.success_rate:.1f}%"
             )
-            console.print(Panel(summary_text, title="Summary", border_style="green"))
+            console.print(
+                Panel(summary_text, title="Summary", border_style="green")
+            )
 
             # Results table
             table = Table(title="Scenario Results", box=box.ROUNDED)
@@ -289,20 +321,30 @@ class BenchmarkCLI:
                 data = json.load(f)
 
             if RICH_AVAILABLE:
-                console.print(f"\n[bold]Benchmark Report:[/bold] {benchmark_id}")
+                console.print(
+                    f"\n[bold]Benchmark Report:[/bold] {benchmark_id}"
+                )
 
                 # Display as tree
-                tree = Tree(f"[bold]{data.get('benchmark_name', benchmark_id)}[/bold]")
+                tree = Tree(
+                    f"[bold]{data.get('benchmark_name', benchmark_id)}[/bold]"
+                )
 
                 summary = data.get("summary", {})
                 summary_branch = tree.add("[blue]Summary[/blue]")
-                summary_branch.add(f"Total: {summary.get('total_scenarios', 0)}")
+                summary_branch.add(
+                    f"Total: {summary.get('total_scenarios', 0)}"
+                )
                 summary_branch.add(f"Passed: {summary.get('passed', 0)}")
                 summary_branch.add(f"Failed: {summary.get('failed', 0)}")
-                summary_branch.add(f"Success Rate: {summary.get('success_rate', 0):.1f}%")
+                summary_branch.add(
+                    f"Success Rate: {summary.get('success_rate', 0):.1f}%"
+                )
 
                 if "aggregate_metrics" in data and data["aggregate_metrics"]:
-                    metrics_branch = tree.add("[green]Aggregate Metrics[/green]")
+                    metrics_branch = tree.add(
+                        "[green]Aggregate Metrics[/green]"
+                    )
                     for key, value in data["aggregate_metrics"].items():
                         if isinstance(value, float):
                             metrics_branch.add(f"{key}: {value:.3f}")
@@ -387,7 +429,9 @@ class BenchmarkCLI:
 
             if RICH_AVAILABLE:
                 console.print("\n[bold]Comparing Benchmarks:[/bold]")
-                console.print(f"  [cyan]{benchmark_id1}[/cyan] vs [cyan]{benchmark_id2}[/cyan]\n")
+                console.print(
+                    f"  [cyan]{benchmark_id1}[/cyan] vs [cyan]{benchmark_id2}[/cyan]\n"
+                )
 
                 table = Table(box=box.ROUNDED)
                 table.add_column("Metric", style="bold")
@@ -402,12 +446,19 @@ class BenchmarkCLI:
 
                         if isinstance(val1, float) and isinstance(val2, float):
                             change = val2 - val1
-                            change_pct = (change / val1 * 100) if val1 != 0 else 0
+                            change_pct = (
+                                (change / val1 * 100) if val1 != 0 else 0
+                            )
 
                             change_color = "green" if change > 0 else "red"
                             change_str = f"{change:+.3f} ({change_pct:+.1f}%)"
 
-                            table.add_row(key, f"{val1:.3f}", f"{val2:.3f}", f"[{change_color}]{change_str}[/{change_color}]")
+                            table.add_row(
+                                key,
+                                f"{val1:.3f}",
+                                f"{val2:.3f}",
+                                f"[{change_color}]{change_str}[/{change_color}]",
+                            )
 
                 console.print(table)
             else:
@@ -419,7 +470,9 @@ class BenchmarkCLI:
                         val2 = metrics2[key]
                         if isinstance(val1, float):
                             change = val2 - val1
-                            print(f"{key}: {val1:.3f} → {val2:.3f} ({change:+.3f})")
+                            print(
+                                f"{key}: {val1:.3f} → {val2:.3f} ({change:+.3f})"
+                            )
 
         except Exception as e:
             if RICH_AVAILABLE:
@@ -432,7 +485,9 @@ class BenchmarkCLI:
 
         if not MATPLOTLIB_AVAILABLE:
             if RICH_AVAILABLE:
-                console.print("[yellow]Matplotlib not available. Install with: pip install matplotlib[/yellow]")
+                console.print(
+                    "[yellow]Matplotlib not available. Install with: pip install matplotlib[/yellow]"
+                )
             else:
                 print("Matplotlib not available")
             return
@@ -442,7 +497,9 @@ class BenchmarkCLI:
             report_path = self.output_dir / benchmark_id / "report.json"
             if not report_path.exists():
                 if RICH_AVAILABLE:
-                    console.print(f"[red]Report not found: {benchmark_id}[/red]")
+                    console.print(
+                        f"[red]Report not found: {benchmark_id}[/red]"
+                    )
                 else:
                     print(f"Report not found: {benchmark_id}")
                 return
@@ -456,7 +513,9 @@ class BenchmarkCLI:
             history = self.engine.get_benchmark_history(limit=20)
             if not history:
                 if RICH_AVAILABLE:
-                    console.print("[yellow]No history available for trend chart[/yellow]")
+                    console.print(
+                        "[yellow]No history available for trend chart[/yellow]"
+                    )
                 else:
                     print("No history available")
                 return
@@ -467,13 +526,19 @@ class BenchmarkCLI:
         """Create chart for single benchmark."""
 
         fig, axes = plt.subplots(2, 2, figsize=(12, 10))
-        fig.suptitle(f"Benchmark Results: {benchmark_id}", fontsize=14, fontweight="bold")
+        fig.suptitle(
+            f"Benchmark Results: {benchmark_id}",
+            fontsize=14,
+            fontweight="bold",
+        )
 
         scenario_results = data.get("scenario_results", [])
 
         # 1. Scores by scenario
         ax1 = axes[0, 0]
-        scenarios = [r["scenario_id"] for r in scenario_results if r.get("metrics")]
+        scenarios = [
+            r["scenario_id"] for r in scenario_results if r.get("metrics")
+        ]
         scores_data = []
 
         for r in scenario_results:
@@ -491,9 +556,27 @@ class BenchmarkCLI:
             x = range(len(scenarios))
             width = 0.25
 
-            ax1.bar([i - width for i in x], [s["precision"] for s in scores_data], width, label="Precision", alpha=0.8)
-            ax1.bar(x, [s["recall"] for s in scores_data], width, label="Recall", alpha=0.8)
-            ax1.bar([i + width for i in x], [s["f1"] for s in scores_data], width, label="F1-Score", alpha=0.8)
+            ax1.bar(
+                [i - width for i in x],
+                [s["precision"] for s in scores_data],
+                width,
+                label="Precision",
+                alpha=0.8,
+            )
+            ax1.bar(
+                x,
+                [s["recall"] for s in scores_data],
+                width,
+                label="Recall",
+                alpha=0.8,
+            )
+            ax1.bar(
+                [i + width for i in x],
+                [s["f1"] for s in scores_data],
+                width,
+                label="F1-Score",
+                alpha=0.8,
+            )
 
             ax1.set_xlabel("Scenario")
             ax1.set_ylabel("Score")
@@ -523,9 +606,22 @@ class BenchmarkCLI:
                     all_severities[sev] = all_severities.get(sev, 0) + count
 
         if all_severities:
-            colors_sev = {"critical": "#d32f2f", "high": "#f57c00", "medium": "#fbc02d", "low": "#388e3c", "info": "#1976d2"}
-            sev_colors = [colors_sev.get(s, "#757575") for s in all_severities.keys()]
-            ax3.pie(all_severities.values(), labels=all_severities.keys(), colors=sev_colors, autopct="%1.1f%%")
+            colors_sev = {
+                "critical": "#d32f2f",
+                "high": "#f57c00",
+                "medium": "#fbc02d",
+                "low": "#388e3c",
+                "info": "#1976d2",
+            }
+            sev_colors = [
+                colors_sev.get(s, "#757575") for s in all_severities.keys()
+            ]
+            ax3.pie(
+                all_severities.values(),
+                labels=all_severities.keys(),
+                colors=sev_colors,
+                autopct="%1.1f%%",
+            )
             ax3.set_title("Findings by Severity")
 
         # 4. Aggregate metrics
@@ -534,13 +630,20 @@ class BenchmarkCLI:
         metric_names = []
         metric_values = []
 
-        for key in ["avg_precision", "avg_recall", "avg_f1_score", "avg_accuracy"]:
+        for key in [
+            "avg_precision",
+            "avg_recall",
+            "avg_f1_score",
+            "avg_accuracy",
+        ]:
             if key in metrics:
                 metric_names.append(key.replace("avg_", "").title())
                 metric_values.append(metrics[key])
 
         if metric_values:
-            bars = ax4.bar(metric_names, metric_values, color="steelblue", alpha=0.7)
+            bars = ax4.bar(
+                metric_names, metric_values, color="steelblue", alpha=0.7
+            )
             ax4.set_ylabel("Score")
             ax4.set_title("Aggregate Metrics")
             ax4.set_ylim(0, 1)
@@ -575,10 +678,22 @@ class BenchmarkCLI:
         dates = [h.get("timestamp", "")[:10] for h in history]
 
         metrics_to_plot = {
-            "F1-Score": [h.get("aggregate_metrics", {}).get("avg_f1_score", 0) for h in history],
-            "Precision": [h.get("aggregate_metrics", {}).get("avg_precision", 0) for h in history],
-            "Recall": [h.get("aggregate_metrics", {}).get("avg_recall", 0) for h in history],
-            "Accuracy": [h.get("aggregate_metrics", {}).get("avg_accuracy", 0) for h in history],
+            "F1-Score": [
+                h.get("aggregate_metrics", {}).get("avg_f1_score", 0)
+                for h in history
+            ],
+            "Precision": [
+                h.get("aggregate_metrics", {}).get("avg_precision", 0)
+                for h in history
+            ],
+            "Recall": [
+                h.get("aggregate_metrics", {}).get("avg_recall", 0)
+                for h in history
+            ],
+            "Accuracy": [
+                h.get("aggregate_metrics", {}).get("avg_accuracy", 0)
+                for h in history
+            ],
         }
 
         for label, values in metrics_to_plot.items():
@@ -613,22 +728,30 @@ class BenchmarkCLI:
         """Run CI/CD benchmark pipeline."""
 
         config = CIConfig(
-            output_format=output_format, fail_on_gate_failure=fail_on_gate, fail_on_critical_regression=fail_on_regression
+            output_format=output_format,
+            fail_on_gate_failure=fail_on_gate,
+            fail_on_critical_regression=fail_on_regression,
         )
 
-        runner = CIBenchmarkRunner(engine=self.engine, config=config, output_dir=str(self.output_dir))
+        runner = CIBenchmarkRunner(
+            engine=self.engine, config=config, output_dir=str(self.output_dir)
+        )
 
         result = await runner.run_ci_pipeline(benchmark_type)
 
         if RICH_AVAILABLE:
             if result["should_fail"]:
-                console.print(f"\n[red]❌ Build Failed: {result['fail_reason']}[/red]")
+                console.print(
+                    f"\n[red]❌ Build Failed: {result['fail_reason']}[/red]"
+                )
             else:
                 console.print("\n[green]✅ All Checks Passed[/green]")
 
             console.print("\n[bold]Results:[/bold]")
             console.print(f"  Success Rate: {result['success_rate']:.1f}%")
-            console.print(f"  Gates Passed: {result['gates_passed']}/{result['gates_total']}")
+            console.print(
+                f"  Gates Passed: {result['gates_passed']}/{result['gates_total']}"
+            )
             console.print(f"  Regressions: {result['regressions']}")
         else:
             if result["should_fail"]:
@@ -679,47 +802,84 @@ Examples:
     subparsers = parser.add_subparsers(dest="command", help="Commands")
 
     # List command
-    list_parser = subparsers.add_parser("list", help="List available scenarios")
+    list_parser = subparsers.add_parser(
+        "list", help="List available scenarios"
+    )
     list_parser.add_argument("--type", help="Filter by scenario type")
     list_parser.add_argument("--difficulty", help="Filter by difficulty")
     list_parser.add_argument("--tag", help="Filter by tag")
 
     # Run command
     run_parser = subparsers.add_parser("run", help="Run benchmark")
-    run_parser.add_argument("--scenarios", nargs="+", help="Specific scenarios to run")
-    run_parser.add_argument("--all", action="store_true", help="Run all scenarios")
+    run_parser.add_argument(
+        "--scenarios", nargs="+", help="Specific scenarios to run"
+    )
+    run_parser.add_argument(
+        "--all", action="store_true", help="Run all scenarios"
+    )
     run_parser.add_argument("--type", help="Filter by scenario type")
     run_parser.add_argument("--difficulty", help="Filter by difficulty")
     run_parser.add_argument("--tags", nargs="+", help="Filter by tags")
     run_parser.add_argument("--name", help="Benchmark name")
-    run_parser.add_argument("--concurrent", type=int, default=1, help="Max concurrent scenarios")
-    run_parser.add_argument("--timeout", type=int, default=3600, help="Timeout per scenario (seconds)")
-    run_parser.add_argument("--compare", action="store_true", help="Compare with competitors")
-    run_parser.add_argument("--competitors", nargs="+", help="Competitors to compare")
+    run_parser.add_argument(
+        "--concurrent", type=int, default=1, help="Max concurrent scenarios"
+    )
+    run_parser.add_argument(
+        "--timeout",
+        type=int,
+        default=3600,
+        help="Timeout per scenario (seconds)",
+    )
+    run_parser.add_argument(
+        "--compare", action="store_true", help="Compare with competitors"
+    )
+    run_parser.add_argument(
+        "--competitors", nargs="+", help="Competitors to compare"
+    )
 
     # View command
     view_parser = subparsers.add_parser("view", help="View benchmark report")
     view_parser.add_argument("benchmark_id", help="Benchmark ID")
 
     # History command
-    history_parser = subparsers.add_parser("history", help="View benchmark history")
-    history_parser.add_argument("--limit", type=int, default=10, help="Number of entries")
+    history_parser = subparsers.add_parser(
+        "history", help="View benchmark history"
+    )
+    history_parser.add_argument(
+        "--limit", type=int, default=10, help="Number of entries"
+    )
 
     # Compare command
-    compare_parser = subparsers.add_parser("compare", help="Compare two benchmarks")
+    compare_parser = subparsers.add_parser(
+        "compare", help="Compare two benchmarks"
+    )
     compare_parser.add_argument("benchmark_id1", help="First benchmark ID")
     compare_parser.add_argument("benchmark_id2", help="Second benchmark ID")
 
     # Chart command
-    chart_parser = subparsers.add_parser("chart", help="Generate visualization charts")
-    chart_parser.add_argument("--benchmark", help="Benchmark ID (or omit for trend)")
+    chart_parser = subparsers.add_parser(
+        "chart", help="Generate visualization charts"
+    )
+    chart_parser.add_argument(
+        "--benchmark", help="Benchmark ID (or omit for trend)"
+    )
 
     # CI command
-    ci_parser = subparsers.add_parser("ci", help="Run CI/CD benchmark pipeline")
-    ci_parser.add_argument("--type", choices=["quick", "full"], default="quick")
-    ci_parser.add_argument("--format", choices=["json", "junit", "markdown", "all"], default="all")
-    ci_parser.add_argument("--fail-on-gate", action="store_true", help="Fail on gate failure")
-    ci_parser.add_argument("--fail-on-regression", action="store_true", help="Fail on regression")
+    ci_parser = subparsers.add_parser(
+        "ci", help="Run CI/CD benchmark pipeline"
+    )
+    ci_parser.add_argument(
+        "--type", choices=["quick", "full"], default="quick"
+    )
+    ci_parser.add_argument(
+        "--format", choices=["json", "junit", "markdown", "all"], default="all"
+    )
+    ci_parser.add_argument(
+        "--fail-on-gate", action="store_true", help="Fail on gate failure"
+    )
+    ci_parser.add_argument(
+        "--fail-on-regression", action="store_true", help="Fail on regression"
+    )
 
     args = parser.parse_args()
 
@@ -730,7 +890,9 @@ Examples:
     cli = BenchmarkCLI()
 
     if args.command == "list":
-        cli.list_scenarios(scenario_type=args.type, difficulty=args.difficulty, tag=args.tag)
+        cli.list_scenarios(
+            scenario_type=args.type, difficulty=args.difficulty, tag=args.tag
+        )
 
     elif args.command == "run":
         scenarios = None

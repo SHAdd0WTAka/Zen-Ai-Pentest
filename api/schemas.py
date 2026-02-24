@@ -354,8 +354,12 @@ class ScheduledScanCreate(BaseModel):
     target: str = Field(..., min_length=1, max_length=500)
     scan_type: str = "comprehensive"
     frequency: ScheduleFrequency = ScheduleFrequency.WEEKLY
-    schedule_time: str = Field(..., pattern=r"^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$")  # HH:MM format
-    schedule_day: Optional[int] = Field(None, ge=0, le=6)  # 0=Monday, 6=Sunday for weekly
+    schedule_time: str = Field(
+        ..., pattern=r"^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$"
+    )  # HH:MM format
+    schedule_day: Optional[int] = Field(
+        None, ge=0, le=6
+    )  # 0=Monday, 6=Sunday for weekly
     enabled: bool = True
     notification_email: Optional[str] = None
     notification_slack: Optional[str] = None

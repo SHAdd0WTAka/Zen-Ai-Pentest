@@ -253,7 +253,9 @@ class TestCVSSEstimate:
         """Test network keyword increases score"""
         calc = CVSSCalculator()
         base = calc.estimate("SQL injection vulnerability")
-        network = calc.estimate("SQL injection vulnerability network accessible")
+        network = calc.estimate(
+            "SQL injection vulnerability network accessible"
+        )
         assert network > base
 
     def test_estimate_unauthenticated_boost(self):
@@ -283,7 +285,10 @@ class TestCVSSGetDetails:
     def test_details_critical(self):
         """Test details for critical finding"""
         calc = CVSSCalculator()
-        finding = {"cvss_score": 9.5, "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"}
+        finding = {
+            "cvss_score": 9.5,
+            "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H",
+        }
         details = calc.get_details(finding)
 
         assert details["base_score"] == 9.5

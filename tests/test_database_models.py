@@ -58,9 +58,13 @@ from database.models import update_scan_status as models_update_scan_status
 def db_session():
     """Create a fresh database session for each test"""
     # Create in-memory SQLite database
-    engine = create_engine("sqlite:///:memory:", connect_args={"check_same_thread": False})
+    engine = create_engine(
+        "sqlite:///:memory:", connect_args={"check_same_thread": False}
+    )
     Base.metadata.create_all(bind=engine)
-    TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    TestingSessionLocal = sessionmaker(
+        autocommit=False, autoflush=False, bind=engine
+    )
     session = TestingSessionLocal()
 
     yield session
@@ -99,8 +103,16 @@ class TestUserModel:
 
     def test_user_unique_username(self, db_session):
         """Test username uniqueness constraint"""
-        user1 = User(username="uniqueuser", email="user1@test.com", hashed_password="pass1")
-        user2 = User(username="uniqueuser", email="user2@test.com", hashed_password="pass2")
+        user1 = User(
+            username="uniqueuser",
+            email="user1@test.com",
+            hashed_password="pass1",
+        )
+        user2 = User(
+            username="uniqueuser",
+            email="user2@test.com",
+            hashed_password="pass2",
+        )
 
         db_session.add(user1)
         db_session.commit()
@@ -111,8 +123,12 @@ class TestUserModel:
 
     def test_user_unique_email(self, db_session):
         """Test email uniqueness constraint"""
-        user1 = User(username="user1", email="same@test.com", hashed_password="pass1")
-        user2 = User(username="user2", email="same@test.com", hashed_password="pass2")
+        user1 = User(
+            username="user1", email="same@test.com", hashed_password="pass1"
+        )
+        user2 = User(
+            username="user2", email="same@test.com", hashed_password="pass2"
+        )
 
         db_session.add(user1)
         db_session.commit()
@@ -123,7 +139,9 @@ class TestUserModel:
 
     def test_user_default_role(self, db_session):
         """Test default role is operator"""
-        user = User(username="testuser", email="test@test.com", hashed_password="pass")
+        user = User(
+            username="testuser", email="test@test.com", hashed_password="pass"
+        )
         db_session.add(user)
         db_session.commit()
         db_session.refresh(user)
@@ -132,7 +150,9 @@ class TestUserModel:
 
     def test_user_default_active(self, db_session):
         """Test default is_active is 1"""
-        user = User(username="testuser", email="test@test.com", hashed_password="pass")
+        user = User(
+            username="testuser", email="test@test.com", hashed_password="pass"
+        )
         db_session.add(user)
         db_session.commit()
         db_session.refresh(user)
@@ -151,7 +171,9 @@ class TestScanModel:
     def test_scan_creation(self, db_session):
         """Test scan model creation"""
         # Create user first
-        user = User(username="scanuser", email="scan@test.com", hashed_password="pass")
+        user = User(
+            username="scanuser", email="scan@test.com", hashed_password="pass"
+        )
         db_session.add(user)
         db_session.commit()
 
@@ -178,11 +200,18 @@ class TestScanModel:
 
     def test_scan_status_transitions(self, db_session):
         """Test scan status transitions"""
-        user = User(username="testuser", email="test@test.com", hashed_password="pass")
+        user = User(
+            username="testuser", email="test@test.com", hashed_password="pass"
+        )
         db_session.add(user)
         db_session.commit()
 
-        scan = Scan(name="Test", target="example.com", scan_type="network", user_id=user.id)
+        scan = Scan(
+            name="Test",
+            target="example.com",
+            scan_type="network",
+            user_id=user.id,
+        )
         db_session.add(scan)
         db_session.commit()
 
@@ -198,7 +227,9 @@ class TestScanModel:
 
     def test_scan_all_status_values(self, db_session):
         """Test all scan status values"""
-        user = User(username="testuser", email="test@test.com", hashed_password="pass")
+        user = User(
+            username="testuser", email="test@test.com", hashed_password="pass"
+        )
         db_session.add(user)
         db_session.commit()
 
@@ -223,7 +254,9 @@ class TestScanModel:
         db_session.commit()
 
         for i, status in enumerate(statuses):
-            scan = db_session.query(Scan).filter(Scan.name == f"Scan {i}").first()
+            scan = (
+                db_session.query(Scan).filter(Scan.name == f"Scan {i}").first()
+            )
             assert scan.status == status
 
 
@@ -238,11 +271,18 @@ class TestFindingModel:
     def test_finding_creation(self, db_session):
         """Test finding model creation"""
         # Create user and scan first
-        user = User(username="testuser", email="test@test.com", hashed_password="pass")
+        user = User(
+            username="testuser", email="test@test.com", hashed_password="pass"
+        )
         db_session.add(user)
         db_session.commit()
 
-        scan = Scan(name="Test Scan", target="example.com", scan_type="web", user_id=user.id)
+        scan = Scan(
+            name="Test Scan",
+            target="example.com",
+            scan_type="web",
+            user_id=user.id,
+        )
         db_session.add(scan)
         db_session.commit()
 
@@ -272,11 +312,18 @@ class TestFindingModel:
 
     def test_finding_all_severities(self, db_session):
         """Test finding with all severity levels"""
-        user = User(username="testuser", email="test@test.com", hashed_password="pass")
+        user = User(
+            username="testuser", email="test@test.com", hashed_password="pass"
+        )
         db_session.add(user)
         db_session.commit()
 
-        scan = Scan(name="Test Scan", target="example.com", scan_type="web", user_id=user.id)
+        scan = Scan(
+            name="Test Scan",
+            target="example.com",
+            scan_type="web",
+            user_id=user.id,
+        )
         db_session.add(scan)
         db_session.commit()
 
@@ -299,16 +346,27 @@ class TestFindingModel:
         db_session.commit()
 
         for i, severity in enumerate(severities):
-            finding = db_session.query(Finding).filter(Finding.title == f"Finding {i}").first()
+            finding = (
+                db_session.query(Finding)
+                .filter(Finding.title == f"Finding {i}")
+                .first()
+            )
             assert finding.severity == severity
 
     def test_finding_default_severity(self, db_session):
         """Test default severity is medium"""
-        user = User(username="testuser", email="test@test.com", hashed_password="pass")
+        user = User(
+            username="testuser", email="test@test.com", hashed_password="pass"
+        )
         db_session.add(user)
         db_session.commit()
 
-        scan = Scan(name="Test Scan", target="example.com", scan_type="web", user_id=user.id)
+        scan = Scan(
+            name="Test Scan",
+            target="example.com",
+            scan_type="web",
+            user_id=user.id,
+        )
         db_session.add(scan)
         db_session.commit()
 
@@ -321,11 +379,18 @@ class TestFindingModel:
 
     def test_finding_default_verified(self, db_session):
         """Test default verified status is 0"""
-        user = User(username="testuser", email="test@test.com", hashed_password="pass")
+        user = User(
+            username="testuser", email="test@test.com", hashed_password="pass"
+        )
         db_session.add(user)
         db_session.commit()
 
-        scan = Scan(name="Test Scan", target="example.com", scan_type="web", user_id=user.id)
+        scan = Scan(
+            name="Test Scan",
+            target="example.com",
+            scan_type="web",
+            user_id=user.id,
+        )
         db_session.add(scan)
         db_session.commit()
 
@@ -347,11 +412,18 @@ class TestReportModel:
 
     def test_report_creation(self, db_session):
         """Test report model creation"""
-        user = User(username="testuser", email="test@test.com", hashed_password="pass")
+        user = User(
+            username="testuser", email="test@test.com", hashed_password="pass"
+        )
         db_session.add(user)
         db_session.commit()
 
-        scan = Scan(name="Test Scan", target="example.com", scan_type="web", user_id=user.id)
+        scan = Scan(
+            name="Test Scan",
+            target="example.com",
+            scan_type="web",
+            user_id=user.id,
+        )
         db_session.add(scan)
         db_session.commit()
 
@@ -376,11 +448,18 @@ class TestReportModel:
 
     def test_report_all_formats(self, db_session):
         """Test all report formats"""
-        user = User(username="testuser", email="test@test.com", hashed_password="pass")
+        user = User(
+            username="testuser", email="test@test.com", hashed_password="pass"
+        )
         db_session.add(user)
         db_session.commit()
 
-        scan = Scan(name="Test Scan", target="example.com", scan_type="web", user_id=user.id)
+        scan = Scan(
+            name="Test Scan",
+            target="example.com",
+            scan_type="web",
+            user_id=user.id,
+        )
         db_session.add(scan)
         db_session.commit()
 
@@ -403,17 +482,26 @@ class TestReportModel:
         db_session.commit()
 
         for i, fmt in enumerate(formats):
-            report = db_session.query(Report).filter(Report.format == fmt).first()
+            report = (
+                db_session.query(Report).filter(Report.format == fmt).first()
+            )
             assert report is not None
             assert report.format == fmt
 
     def test_report_all_statuses(self, db_session):
         """Test all report statuses"""
-        user = User(username="testuser", email="test@test.com", hashed_password="pass")
+        user = User(
+            username="testuser", email="test@test.com", hashed_password="pass"
+        )
         db_session.add(user)
         db_session.commit()
 
-        scan = Scan(name="Test Scan", target="example.com", scan_type="web", user_id=user.id)
+        scan = Scan(
+            name="Test Scan",
+            target="example.com",
+            scan_type="web",
+            user_id=user.id,
+        )
         db_session.add(scan)
         db_session.commit()
 
@@ -436,7 +524,11 @@ class TestReportModel:
         db_session.commit()
 
         for i, status in enumerate(statuses):
-            report = db_session.query(Report).filter(Report.status == status).first()
+            report = (
+                db_session.query(Report)
+                .filter(Report.status == status)
+                .first()
+            )
             assert report is not None
             assert report.status == status
 
@@ -457,7 +549,10 @@ class TestAssetModel:
             ip_address="192.168.1.10",
             hostname="web01.internal",
             os="Ubuntu 22.04",
-            services=[{"port": 80, "service": "http"}, {"port": 443, "service": "https"}],
+            services=[
+                {"port": 80, "service": "http"},
+                {"port": 443, "service": "https"},
+            ],
             owner="IT Team",
             criticality="high",
         )
@@ -538,7 +633,9 @@ class TestAuditLogModel:
 
     def test_audit_log_creation(self, db_session):
         """Test audit log entry creation"""
-        user = User(username="testuser", email="test@test.com", hashed_password="pass")
+        user = User(
+            username="testuser", email="test@test.com", hashed_password="pass"
+        )
         db_session.add(user)
         db_session.commit()
 
@@ -587,7 +684,9 @@ class TestNotificationModel:
 
     def test_notification_creation(self, db_session):
         """Test notification creation"""
-        user = User(username="testuser", email="test@test.com", hashed_password="pass")
+        user = User(
+            username="testuser", email="test@test.com", hashed_password="pass"
+        )
         db_session.add(user)
         db_session.commit()
 
@@ -610,7 +709,9 @@ class TestNotificationModel:
 
     def test_notification_default_read(self, db_session):
         """Test default read status is 0 (unread)"""
-        user = User(username="testuser", email="test@test.com", hashed_password="pass")
+        user = User(
+            username="testuser", email="test@test.com", hashed_password="pass"
+        )
         db_session.add(user)
         db_session.commit()
 
@@ -637,7 +738,9 @@ class TestToolConfigModel:
 
     def test_tool_config_creation(self, db_session):
         """Test tool configuration creation"""
-        user = User(username="testuser", email="test@test.com", hashed_password="pass")
+        user = User(
+            username="testuser", email="test@test.com", hashed_password="pass"
+        )
         db_session.add(user)
         db_session.commit()
 
@@ -669,12 +772,24 @@ class TestModelRelationships:
 
     def test_user_scans_relationship(self, db_session):
         """Test User-Scan relationship"""
-        user = User(username="testuser", email="test@test.com", hashed_password="pass")
+        user = User(
+            username="testuser", email="test@test.com", hashed_password="pass"
+        )
         db_session.add(user)
         db_session.commit()
 
-        scan1 = Scan(name="Scan 1", target="target1.com", scan_type="web", user_id=user.id)
-        scan2 = Scan(name="Scan 2", target="target2.com", scan_type="network", user_id=user.id)
+        scan1 = Scan(
+            name="Scan 1",
+            target="target1.com",
+            scan_type="web",
+            user_id=user.id,
+        )
+        scan2 = Scan(
+            name="Scan 2",
+            target="target2.com",
+            scan_type="network",
+            user_id=user.id,
+        )
         db_session.add_all([scan1, scan2])
         db_session.commit()
 
@@ -686,16 +801,27 @@ class TestModelRelationships:
 
     def test_scan_findings_relationship(self, db_session):
         """Test Scan-Finding relationship"""
-        user = User(username="testuser", email="test@test.com", hashed_password="pass")
+        user = User(
+            username="testuser", email="test@test.com", hashed_password="pass"
+        )
         db_session.add(user)
         db_session.commit()
 
-        scan = Scan(name="Test Scan", target="example.com", scan_type="web", user_id=user.id)
+        scan = Scan(
+            name="Test Scan",
+            target="example.com",
+            scan_type="web",
+            user_id=user.id,
+        )
         db_session.add(scan)
         db_session.commit()
 
-        finding1 = Finding(scan_id=scan.id, title="Finding 1", severity=Severity.HIGH)
-        finding2 = Finding(scan_id=scan.id, title="Finding 2", severity=Severity.MEDIUM)
+        finding1 = Finding(
+            scan_id=scan.id, title="Finding 1", severity=Severity.HIGH
+        )
+        finding2 = Finding(
+            scan_id=scan.id, title="Finding 2", severity=Severity.MEDIUM
+        )
         db_session.add_all([finding1, finding2])
         db_session.commit()
 
@@ -706,15 +832,27 @@ class TestModelRelationships:
 
     def test_scan_reports_relationship(self, db_session):
         """Test Scan-Report relationship"""
-        user = User(username="testuser", email="test@test.com", hashed_password="pass")
+        user = User(
+            username="testuser", email="test@test.com", hashed_password="pass"
+        )
         db_session.add(user)
         db_session.commit()
 
-        scan = Scan(name="Test Scan", target="example.com", scan_type="web", user_id=user.id)
+        scan = Scan(
+            name="Test Scan",
+            target="example.com",
+            scan_type="web",
+            user_id=user.id,
+        )
         db_session.add(scan)
         db_session.commit()
 
-        report = Report(scan_id=scan.id, user_id=user.id, format=ReportFormat.PDF, status=ReportStatus.COMPLETED)
+        report = Report(
+            scan_id=scan.id,
+            user_id=user.id,
+            format=ReportFormat.PDF,
+            status=ReportStatus.COMPLETED,
+        )
         db_session.add(report)
         db_session.commit()
 
@@ -725,15 +863,27 @@ class TestModelRelationships:
 
     def test_user_reports_relationship(self, db_session):
         """Test User-Report relationship"""
-        user = User(username="testuser", email="test@test.com", hashed_password="pass")
+        user = User(
+            username="testuser", email="test@test.com", hashed_password="pass"
+        )
         db_session.add(user)
         db_session.commit()
 
-        scan = Scan(name="Test Scan", target="example.com", scan_type="web", user_id=user.id)
+        scan = Scan(
+            name="Test Scan",
+            target="example.com",
+            scan_type="web",
+            user_id=user.id,
+        )
         db_session.add(scan)
         db_session.commit()
 
-        report = Report(scan_id=scan.id, user_id=user.id, format=ReportFormat.PDF, status=ReportStatus.COMPLETED)
+        report = Report(
+            scan_id=scan.id,
+            user_id=user.id,
+            format=ReportFormat.PDF,
+            status=ReportStatus.COMPLETED,
+        )
         db_session.add(report)
         db_session.commit()
 
@@ -744,15 +894,24 @@ class TestModelRelationships:
 
     def test_finding_scan_relationship(self, db_session):
         """Test Finding-Scan back-reference"""
-        user = User(username="testuser", email="test@test.com", hashed_password="pass")
+        user = User(
+            username="testuser", email="test@test.com", hashed_password="pass"
+        )
         db_session.add(user)
         db_session.commit()
 
-        scan = Scan(name="Test Scan", target="example.com", scan_type="web", user_id=user.id)
+        scan = Scan(
+            name="Test Scan",
+            target="example.com",
+            scan_type="web",
+            user_id=user.id,
+        )
         db_session.add(scan)
         db_session.commit()
 
-        finding = Finding(scan_id=scan.id, title="Test Finding", severity=Severity.HIGH)
+        finding = Finding(
+            scan_id=scan.id, title="Test Finding", severity=Severity.HIGH
+        )
         db_session.add(finding)
         db_session.commit()
         db_session.refresh(finding)
@@ -772,7 +931,9 @@ class TestModelsCRUD:
 
     def test_create_scan(self, db_session):
         """Test create_scan function"""
-        user = User(username="testuser", email="test@test.com", hashed_password="pass")
+        user = User(
+            username="testuser", email="test@test.com", hashed_password="pass"
+        )
         db_session.add(user)
         db_session.commit()
 
@@ -790,11 +951,18 @@ class TestModelsCRUD:
 
     def test_get_scan(self, db_session):
         """Test get_scan function"""
-        user = User(username="testuser", email="test@test.com", hashed_password="pass")
+        user = User(
+            username="testuser", email="test@test.com", hashed_password="pass"
+        )
         db_session.add(user)
         db_session.commit()
 
-        scan = Scan(name="Test Scan", target="example.com", scan_type="web", user_id=user.id)
+        scan = Scan(
+            name="Test Scan",
+            target="example.com",
+            scan_type="web",
+            user_id=user.id,
+        )
         db_session.add(scan)
         db_session.commit()
 
@@ -812,12 +980,19 @@ class TestModelsCRUD:
 
     def test_get_scans(self, db_session):
         """Test get_scans function"""
-        user = User(username="testuser", email="test@test.com", hashed_password="pass")
+        user = User(
+            username="testuser", email="test@test.com", hashed_password="pass"
+        )
         db_session.add(user)
         db_session.commit()
 
         for i in range(5):
-            scan = Scan(name=f"Scan {i}", target=f"target{i}.com", scan_type="web", user_id=user.id)
+            scan = Scan(
+                name=f"Scan {i}",
+                target=f"target{i}.com",
+                scan_type="web",
+                user_id=user.id,
+            )
             db_session.add(scan)
         db_session.commit()
 
@@ -827,42 +1002,75 @@ class TestModelsCRUD:
 
     def test_get_scans_by_status(self, db_session):
         """Test get_scans with status filter"""
-        user = User(username="testuser", email="test@test.com", hashed_password="pass")
+        user = User(
+            username="testuser", email="test@test.com", hashed_password="pass"
+        )
         db_session.add(user)
         db_session.commit()
 
-        scan1 = Scan(name="Scan 1", target="target1.com", scan_type="web", status=ScanStatus.COMPLETED, user_id=user.id)
-        scan2 = Scan(name="Scan 2", target="target2.com", scan_type="web", status=ScanStatus.PENDING, user_id=user.id)
+        scan1 = Scan(
+            name="Scan 1",
+            target="target1.com",
+            scan_type="web",
+            status=ScanStatus.COMPLETED,
+            user_id=user.id,
+        )
+        scan2 = Scan(
+            name="Scan 2",
+            target="target2.com",
+            scan_type="web",
+            status=ScanStatus.PENDING,
+            user_id=user.id,
+        )
         db_session.add_all([scan1, scan2])
         db_session.commit()
 
-        completed_scans = models_get_scans(db_session, status=ScanStatus.COMPLETED)
+        completed_scans = models_get_scans(
+            db_session, status=ScanStatus.COMPLETED
+        )
 
         assert len(completed_scans) == 1
         assert completed_scans[0].name == "Scan 1"
 
     def test_update_scan_status(self, db_session):
         """Test update_scan_status function"""
-        user = User(username="testuser", email="test@test.com", hashed_password="pass")
+        user = User(
+            username="testuser", email="test@test.com", hashed_password="pass"
+        )
         db_session.add(user)
         db_session.commit()
 
-        scan = Scan(name="Test Scan", target="example.com", scan_type="web", status=ScanStatus.PENDING, user_id=user.id)
+        scan = Scan(
+            name="Test Scan",
+            target="example.com",
+            scan_type="web",
+            status=ScanStatus.PENDING,
+            user_id=user.id,
+        )
         db_session.add(scan)
         db_session.commit()
 
-        updated = models_update_scan_status(db_session, scan.id, ScanStatus.RUNNING)
+        updated = models_update_scan_status(
+            db_session, scan.id, ScanStatus.RUNNING
+        )
 
         assert updated.status == ScanStatus.RUNNING
         assert updated.started_at is not None
 
     def test_create_finding(self, db_session):
         """Test create_finding function"""
-        user = User(username="testuser", email="test@test.com", hashed_password="pass")
+        user = User(
+            username="testuser", email="test@test.com", hashed_password="pass"
+        )
         db_session.add(user)
         db_session.commit()
 
-        scan = Scan(name="Test Scan", target="example.com", scan_type="web", user_id=user.id)
+        scan = Scan(
+            name="Test Scan",
+            target="example.com",
+            scan_type="web",
+            user_id=user.id,
+        )
         db_session.add(scan)
         db_session.commit()
 
@@ -880,16 +1088,27 @@ class TestModelsCRUD:
 
     def test_get_findings(self, db_session):
         """Test get_findings function"""
-        user = User(username="testuser", email="test@test.com", hashed_password="pass")
+        user = User(
+            username="testuser", email="test@test.com", hashed_password="pass"
+        )
         db_session.add(user)
         db_session.commit()
 
-        scan = Scan(name="Test Scan", target="example.com", scan_type="web", user_id=user.id)
+        scan = Scan(
+            name="Test Scan",
+            target="example.com",
+            scan_type="web",
+            user_id=user.id,
+        )
         db_session.add(scan)
         db_session.commit()
 
-        finding1 = Finding(scan_id=scan.id, title="Finding 1", severity=Severity.HIGH)
-        finding2 = Finding(scan_id=scan.id, title="Finding 2", severity=Severity.LOW)
+        finding1 = Finding(
+            scan_id=scan.id, title="Finding 1", severity=Severity.HIGH
+        )
+        finding2 = Finding(
+            scan_id=scan.id, title="Finding 2", severity=Severity.LOW
+        )
         db_session.add_all([finding1, finding2])
         db_session.commit()
 
@@ -899,31 +1118,51 @@ class TestModelsCRUD:
 
     def test_get_findings_by_severity(self, db_session):
         """Test get_findings with severity filter"""
-        user = User(username="testuser", email="test@test.com", hashed_password="pass")
+        user = User(
+            username="testuser", email="test@test.com", hashed_password="pass"
+        )
         db_session.add(user)
         db_session.commit()
 
-        scan = Scan(name="Test Scan", target="example.com", scan_type="web", user_id=user.id)
+        scan = Scan(
+            name="Test Scan",
+            target="example.com",
+            scan_type="web",
+            user_id=user.id,
+        )
         db_session.add(scan)
         db_session.commit()
 
-        finding1 = Finding(scan_id=scan.id, title="Finding 1", severity=Severity.HIGH)
-        finding2 = Finding(scan_id=scan.id, title="Finding 2", severity=Severity.LOW)
+        finding1 = Finding(
+            scan_id=scan.id, title="Finding 1", severity=Severity.HIGH
+        )
+        finding2 = Finding(
+            scan_id=scan.id, title="Finding 2", severity=Severity.LOW
+        )
         db_session.add_all([finding1, finding2])
         db_session.commit()
 
-        high_findings = models_get_findings(db_session, scan_id=scan.id, severity=Severity.HIGH)
+        high_findings = models_get_findings(
+            db_session, scan_id=scan.id, severity=Severity.HIGH
+        )
 
         assert len(high_findings) == 1
         assert high_findings[0].severity == Severity.HIGH
 
     def test_create_report(self, db_session):
         """Test create_report function"""
-        user = User(username="testuser", email="test@test.com", hashed_password="pass")
+        user = User(
+            username="testuser", email="test@test.com", hashed_password="pass"
+        )
         db_session.add(user)
         db_session.commit()
 
-        scan = Scan(name="Test Scan", target="example.com", scan_type="web", user_id=user.id)
+        scan = Scan(
+            name="Test Scan",
+            target="example.com",
+            scan_type="web",
+            user_id=user.id,
+        )
         db_session.add(scan)
         db_session.commit()
 
@@ -940,11 +1179,18 @@ class TestModelsCRUD:
 
     def test_get_reports(self, db_session):
         """Test get_reports function"""
-        user = User(username="testuser", email="test@test.com", hashed_password="pass")
+        user = User(
+            username="testuser", email="test@test.com", hashed_password="pass"
+        )
         db_session.add(user)
         db_session.commit()
 
-        scan = Scan(name="Test Scan", target="example.com", scan_type="web", user_id=user.id)
+        scan = Scan(
+            name="Test Scan",
+            target="example.com",
+            scan_type="web",
+            user_id=user.id,
+        )
         db_session.add(scan)
         db_session.commit()
 
@@ -964,7 +1210,9 @@ class TestModelsCRUD:
 
     def test_create_audit_log(self, db_session):
         """Test create_audit_log function"""
-        user = User(username="testuser", email="test@test.com", hashed_password="pass")
+        user = User(
+            username="testuser", email="test@test.com", hashed_password="pass"
+        )
         db_session.add(user)
         db_session.commit()
 
@@ -979,7 +1227,11 @@ class TestModelsCRUD:
         )
 
         # Verify log was created
-        log = db_session.query(AuditLog).filter(AuditLog.action == "test_action").first()
+        log = (
+            db_session.query(AuditLog)
+            .filter(AuditLog.action == "test_action")
+            .first()
+        )
         assert log is not None
         assert log.details == {"key": "value"}
 
@@ -994,11 +1246,19 @@ class TestCRUDOperations:
 
     def test_crud_create_scan_with_object(self, db_session):
         """Test create_scan with scan_data object"""
-        user = User(username="testuser", email="test@test.com", hashed_password="pass")
+        user = User(
+            username="testuser", email="test@test.com", hashed_password="pass"
+        )
         db_session.add(user)
         db_session.commit()
 
-        scan_data = MockNameTarget(name="Test Scan", target="example.com", scan_type="web", config={}, user_id=user.id)
+        scan_data = MockNameTarget(
+            name="Test Scan",
+            target="example.com",
+            scan_type="web",
+            config={},
+            user_id=user.id,
+        )
         scan = crud_create_scan(db_session, scan_data=scan_data)
 
         assert scan.name == "Test Scan"
@@ -1006,7 +1266,9 @@ class TestCRUDOperations:
 
     def test_crud_create_scan_with_kwargs(self, db_session):
         """Test create_scan with kwargs"""
-        user = User(username="testuser", email="test@test.com", hashed_password="pass")
+        user = User(
+            username="testuser", email="test@test.com", hashed_password="pass"
+        )
         db_session.add(user)
         db_session.commit()
 
@@ -1023,11 +1285,18 @@ class TestCRUDOperations:
 
     def test_crud_get_scan(self, db_session):
         """Test crud get_scan"""
-        user = User(username="testuser", email="test@test.com", hashed_password="pass")
+        user = User(
+            username="testuser", email="test@test.com", hashed_password="pass"
+        )
         db_session.add(user)
         db_session.commit()
 
-        scan = Scan(name="Test Scan", target="example.com", scan_type="web", user_id=user.id)
+        scan = Scan(
+            name="Test Scan",
+            target="example.com",
+            scan_type="web",
+            user_id=user.id,
+        )
         db_session.add(scan)
         db_session.commit()
 
@@ -1038,12 +1307,19 @@ class TestCRUDOperations:
 
     def test_crud_get_scans(self, db_session):
         """Test crud get_scans"""
-        user = User(username="testuser", email="test@test.com", hashed_password="pass")
+        user = User(
+            username="testuser", email="test@test.com", hashed_password="pass"
+        )
         db_session.add(user)
         db_session.commit()
 
         for i in range(3):
-            scan = Scan(name=f"Scan {i}", target=f"target{i}.com", scan_type="web", user_id=user.id)
+            scan = Scan(
+                name=f"Scan {i}",
+                target=f"target{i}.com",
+                scan_type="web",
+                user_id=user.id,
+            )
             db_session.add(scan)
         db_session.commit()
 
@@ -1053,15 +1329,25 @@ class TestCRUDOperations:
 
     def test_crud_update_scan_status(self, db_session):
         """Test crud update_scan_status"""
-        user = User(username="testuser", email="test@test.com", hashed_password="pass")
+        user = User(
+            username="testuser", email="test@test.com", hashed_password="pass"
+        )
         db_session.add(user)
         db_session.commit()
 
-        scan = Scan(name="Test Scan", target="example.com", scan_type="web", status=ScanStatus.PENDING, user_id=user.id)
+        scan = Scan(
+            name="Test Scan",
+            target="example.com",
+            scan_type="web",
+            status=ScanStatus.PENDING,
+            user_id=user.id,
+        )
         db_session.add(scan)
         db_session.commit()
 
-        updated = crud_update_scan_status(db_session, scan.id, ScanStatus.RUNNING)
+        updated = crud_update_scan_status(
+            db_session, scan.id, ScanStatus.RUNNING
+        )
 
         assert updated is not None
         assert updated.status == ScanStatus.RUNNING
@@ -1069,26 +1355,43 @@ class TestCRUDOperations:
 
     def test_crud_update_scan_status_to_completed(self, db_session):
         """Test crud update_scan_status to completed"""
-        user = User(username="testuser", email="test@test.com", hashed_password="pass")
+        user = User(
+            username="testuser", email="test@test.com", hashed_password="pass"
+        )
         db_session.add(user)
         db_session.commit()
 
-        scan = Scan(name="Test Scan", target="example.com", scan_type="web", status=ScanStatus.RUNNING, user_id=user.id)
+        scan = Scan(
+            name="Test Scan",
+            target="example.com",
+            scan_type="web",
+            status=ScanStatus.RUNNING,
+            user_id=user.id,
+        )
         db_session.add(scan)
         db_session.commit()
 
-        updated = crud_update_scan_status(db_session, scan.id, ScanStatus.COMPLETED, result={"findings": 5})
+        updated = crud_update_scan_status(
+            db_session, scan.id, ScanStatus.COMPLETED, result={"findings": 5}
+        )
 
         assert updated.status == ScanStatus.COMPLETED
         assert updated.completed_at is not None
 
     def test_crud_create_finding(self, db_session):
         """Test crud create_finding"""
-        user = User(username="testuser", email="test@test.com", hashed_password="pass")
+        user = User(
+            username="testuser", email="test@test.com", hashed_password="pass"
+        )
         db_session.add(user)
         db_session.commit()
 
-        scan = Scan(name="Test Scan", target="example.com", scan_type="web", user_id=user.id)
+        scan = Scan(
+            name="Test Scan",
+            target="example.com",
+            scan_type="web",
+            user_id=user.id,
+        )
         db_session.add(scan)
         db_session.commit()
 
@@ -1107,15 +1410,24 @@ class TestCRUDOperations:
 
     def test_crud_get_findings(self, db_session):
         """Test crud get_findings"""
-        user = User(username="testuser", email="test@test.com", hashed_password="pass")
+        user = User(
+            username="testuser", email="test@test.com", hashed_password="pass"
+        )
         db_session.add(user)
         db_session.commit()
 
-        scan = Scan(name="Test Scan", target="example.com", scan_type="web", user_id=user.id)
+        scan = Scan(
+            name="Test Scan",
+            target="example.com",
+            scan_type="web",
+            user_id=user.id,
+        )
         db_session.add(scan)
         db_session.commit()
 
-        finding = Finding(scan_id=scan.id, title="Test Finding", severity=Severity.HIGH)
+        finding = Finding(
+            scan_id=scan.id, title="Test Finding", severity=Severity.HIGH
+        )
         db_session.add(finding)
         db_session.commit()
 
@@ -1126,16 +1438,25 @@ class TestCRUDOperations:
 
     def test_crud_get_findings_no_filter(self, db_session):
         """Test crud get_findings without scan filter"""
-        user = User(username="testuser", email="test@test.com", hashed_password="pass")
+        user = User(
+            username="testuser", email="test@test.com", hashed_password="pass"
+        )
         db_session.add(user)
         db_session.commit()
 
-        scan = Scan(name="Test Scan", target="example.com", scan_type="web", user_id=user.id)
+        scan = Scan(
+            name="Test Scan",
+            target="example.com",
+            scan_type="web",
+            user_id=user.id,
+        )
         db_session.add(scan)
         db_session.commit()
 
         for i in range(3):
-            finding = Finding(scan_id=scan.id, title=f"Finding {i}", severity=Severity.HIGH)
+            finding = Finding(
+                scan_id=scan.id, title=f"Finding {i}", severity=Severity.HIGH
+            )
             db_session.add(finding)
         db_session.commit()
 
@@ -1145,15 +1466,24 @@ class TestCRUDOperations:
 
     def test_crud_create_report(self, db_session):
         """Test crud create_report"""
-        user = User(username="testuser", email="test@test.com", hashed_password="pass")
+        user = User(
+            username="testuser", email="test@test.com", hashed_password="pass"
+        )
         db_session.add(user)
         db_session.commit()
 
-        scan = Scan(name="Test Scan", target="example.com", scan_type="web", user_id=user.id)
+        scan = Scan(
+            name="Test Scan",
+            target="example.com",
+            scan_type="web",
+            user_id=user.id,
+        )
         db_session.add(scan)
         db_session.commit()
 
-        report_data = MockReportData(scan_id=scan.id, user_id=user.id, format=ReportFormat.PDF)
+        report_data = MockReportData(
+            scan_id=scan.id, user_id=user.id, format=ReportFormat.PDF
+        )
 
         report = crud_create_report(db_session, report_data=report_data)
 
@@ -1163,16 +1493,28 @@ class TestCRUDOperations:
 
     def test_crud_get_reports(self, db_session):
         """Test crud get_reports"""
-        user = User(username="testuser", email="test@test.com", hashed_password="pass")
+        user = User(
+            username="testuser", email="test@test.com", hashed_password="pass"
+        )
         db_session.add(user)
         db_session.commit()
 
-        scan = Scan(name="Test Scan", target="example.com", scan_type="web", user_id=user.id)
+        scan = Scan(
+            name="Test Scan",
+            target="example.com",
+            scan_type="web",
+            user_id=user.id,
+        )
         db_session.add(scan)
         db_session.commit()
 
         for i in range(3):
-            report = Report(scan_id=scan.id, user_id=user.id, format=ReportFormat.PDF, status=ReportStatus.COMPLETED)
+            report = Report(
+                scan_id=scan.id,
+                user_id=user.id,
+                format=ReportFormat.PDF,
+                status=ReportStatus.COMPLETED,
+            )
             db_session.add(report)
         db_session.commit()
 
@@ -1182,7 +1524,9 @@ class TestCRUDOperations:
 
     def test_crud_create_audit_log(self, db_session):
         """Test models create_audit_log"""
-        user = User(username="testuser", email="test@test.com", hashed_password="pass")
+        user = User(
+            username="testuser", email="test@test.com", hashed_password="pass"
+        )
         db_session.add(user)
         db_session.commit()
 
@@ -1196,7 +1540,11 @@ class TestCRUDOperations:
             details={"test": "data"},
         )
 
-        log = db_session.query(AuditLog).filter(AuditLog.action == "test_action").first()
+        log = (
+            db_session.query(AuditLog)
+            .filter(AuditLog.action == "test_action")
+            .first()
+        )
         assert log is not None
 
 
@@ -1204,7 +1552,9 @@ class TestCRUDOperations:
 class MockNameTarget:
     """Mock object with name, target attributes"""
 
-    def __init__(self, name, target, scan_type=None, config=None, user_id=None):
+    def __init__(
+        self, name, target, scan_type=None, config=None, user_id=None
+    ):
         self.name = name
         self.target = target
         self.scan_type = scan_type

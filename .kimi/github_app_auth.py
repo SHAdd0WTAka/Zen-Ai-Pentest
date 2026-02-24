@@ -3,10 +3,11 @@
 
 import os
 import sys
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
+
 import jwt
 import requests
-from datetime import datetime, timezone, timedelta
-from pathlib import Path
 
 # Configuration
 APP_ID = "2872904"
@@ -17,22 +18,20 @@ REPO_NAME = "Zen-Ai-Pentest"
 # Private key path
 PRIVATE_KEY_PATH = os.environ.get(
     "GITHUB_APP_KEY_PATH",
-    r"G:\zen-ai-pentest-kimi-assistant.2026-02-15.private-key.pem"
+    r"G:\zen-ai-pentest-kimi-assistant.2026-02-15.private-key.pem",
 )
+
 
 def generate_jwt():
     """Generate JWT for GitHub App authentication"""
     now = datetime.now(timezone.utc)
-    payload = {
-        "iat": now,
-        "exp": now + timedelta(minutes=10),
-        "iss": APP_ID
-    }
+    payload = {"iat": now, "exp": now + timedelta(minutes=10), "iss": APP_ID}
 
-    with open(PRIVATE_KEY_PATH, 'r') as f:
+    with open(PRIVATE_KEY_PATH, "r") as f:
         private_key = f.read()
 
     return jwt.encode(payload, private_key, algorithm="RS256")
+
 
 def get_installation_token():
     """Get installation access token"""
@@ -41,7 +40,7 @@ def get_installation_token():
     url = f"https://api.github.com/app/installations/{INSTALLATION_ID}/access_tokens"
     headers = {
         "Authorization": f"Bearer {jwt_token}",
-        "Accept": "application/vnd.github.v3+json"
+        "Accept": "application/vnd.github.v3+json",
     }
 
     response = requests.post(url, headers=headers)
@@ -49,7 +48,10 @@ def get_installation_token():
     if response.status_code == 201:
         return response.json()["token"]
     else:
-        raise Exception(f"Failed to get installation token: {response.status_code} - {response.text}")
+        raise Exception(
+            f"Failed to get installation token: {response.status_code} - {response.text}"
+        )
+
 
 def get_headers(token=None):
     """Get headers with authentication"""
@@ -58,8 +60,9 @@ def get_headers(token=None):
 
     return {
         "Authorization": f"token {token}",
-        "Accept": "application/vnd.github.v3+json"
+        "Accept": "application/vnd.github.v3+json",
     }
+
 
 if __name__ == "__main__":
     # Test authentication

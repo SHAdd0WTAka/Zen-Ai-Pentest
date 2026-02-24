@@ -30,24 +30,40 @@ class OutputValidator:
         "vulnerability_report": {
             "required": ["cve_id", "severity", "description"],
             "optional": ["cvss_score", "affected_versions", "remediation"],
-            "types": {"cve_id": str, "severity": str, "cvss_score": (int, float), "description": str},
+            "types": {
+                "cve_id": str,
+                "severity": str,
+                "cvss_score": (int, float),
+                "description": str,
+            },
         },
         "port_scan": {
             "required": ["target", "open_ports"],
             "optional": ["scan_duration", "service_versions"],
-            "types": {"target": str, "open_ports": list, "scan_duration": (int, float)},
+            "types": {
+                "target": str,
+                "open_ports": list,
+                "scan_duration": (int, float),
+            },
         },
         "tool_output": {
             "required": ["tool_name", "command", "output"],
             "optional": ["return_code", "execution_time"],
-            "types": {"tool_name": str, "command": str, "output": str, "return_code": int},
+            "types": {
+                "tool_name": str,
+                "command": str,
+                "output": str,
+                "return_code": int,
+            },
         },
     }
 
     def __init__(self):
         self.validation_history: List[Dict] = []
 
-    def validate_json(self, output: str, schema_name: Optional[str] = None) -> ValidationResult:
+    def validate_json(
+        self, output: str, schema_name: Optional[str] = None
+    ) -> ValidationResult:
         """
         Validate JSON output against schema
         """
@@ -61,7 +77,13 @@ class OutputValidator:
         except json.JSONDecodeError as e:
             errors.append(f"Invalid JSON: {e}")
             confidence_impact = 0.8
-            return ValidationResult(False, errors, warnings, schema_name or "unknown", confidence_impact)
+            return ValidationResult(
+                False,
+                errors,
+                warnings,
+                schema_name or "unknown",
+                confidence_impact,
+            )
 
         # Validate against schema if specified
         if schema_name and schema_name in self.SCHEMAS:
@@ -78,7 +100,9 @@ class OutputValidator:
                 if field in data:
                     actual_value = data[field]
                     if not isinstance(actual_value, expected_type):
-                        errors.append(f"Field '{field}' has wrong type: expected {expected_type}, got {type(actual_value)}")
+                        errors.append(
+                            f"Field '{field}' has wrong type: expected {expected_type}, got {type(actual_value)}"
+                        )
                         confidence_impact += 0.15
 
             # Check for unexpected fields (possible hallucination)
@@ -89,7 +113,13 @@ class OutputValidator:
                     confidence_impact += 0.1
 
         # Record validation
-        self.validation_history.append({"schema": schema_name, "valid": len(errors) == 0, "error_count": len(errors)})
+        self.validation_history.append(
+            {
+                "schema": schema_name,
+                "valid": len(errors) == 0,
+                "error_count": len(errors),
+            }
+        )
 
         return ValidationResult(
             is_valid=len(errors) == 0,
@@ -99,7 +129,9 @@ class OutputValidator:
             confidence_impact=min(confidence_impact, 1.0),
         )
 
-    def validate_command_output(self, output: str, expected_tool: Optional[str] = None) -> ValidationResult:
+    def validate_command_output(
+        self, output: str, expected_tool: Optional[str] = None
+    ) -> ValidationResult:
         """
         Validate that tool output looks legitimate
         """
@@ -117,7 +149,9 @@ class OutputValidator:
 
         for indicator in fake_indicators:
             if re.search(indicator, output, re.IGNORECASE):
-                warnings.append(f"Possible placeholder data detected: {indicator}")
+                warnings.append(
+                    f"Possible placeholder data detected: {indicator}"
+                )
                 confidence_impact += 0.15
 
         # Check output length (hallucinations often too verbose)
@@ -136,7 +170,9 @@ class OutputValidator:
             is_valid=len(errors) == 0,
             errors=errors,
             warnings=warnings,
-            schema_type=f"tool:{expected_tool}" if expected_tool else "generic",
+            schema_type=(
+                f"tool:{expected_tool}" if expected_tool else "generic"
+            ),
             confidence_impact=min(confidence_impact, 1.0),
         )
 
@@ -154,11 +190,15 @@ class OutputValidator:
         if tool_name in format_patterns:
             pattern = format_patterns[tool_name]
             if not re.search(pattern, output, re.IGNORECASE):
-                issues.append(f"Output doesn't match expected {tool_name} format")
+                issues.append(
+                    f"Output doesn't match expected {tool_name} format"
+                )
 
         return issues
 
-    def validate_factual_consistency(self, new_output: str, memory_context: List[str]) -> ValidationResult:
+    def validate_factual_consistency(
+        self, new_output: str, memory_context: List[str]
+    ) -> ValidationResult:
         """
         Check if new output contradicts previous known facts
         """
@@ -195,11 +235,17 @@ class OutputValidator:
             confidence_impact=min(confidence_impact, 1.0),
         )
 
-    def _check_contradiction(self, text1: str, text2: str, keyword: str) -> bool:
+    def _check_contradiction(
+        self, text1: str, text2: str, keyword: str
+    ) -> bool:
         """Simple contradiction detection around keyword"""
         # Extract sentences containing keyword
-        sentences1 = [s for s in text1.split(".") if keyword.lower() in s.lower()]
-        sentences2 = [s for s in text2.split(".") if keyword.lower() in s.lower()]
+        sentences1 = [
+            s for s in text1.split(".") if keyword.lower() in s.lower()
+        ]
+        sentences2 = [
+            s for s in text2.split(".") if keyword.lower() in s.lower()
+        ]
 
         # Check for opposite sentiments (simplified)
         negations = ["not", "no", "false", "incorrect", "wrong"]

@@ -55,10 +55,14 @@ class WAFW00FIntegration:
 
         try:
             process = await asyncio.create_subprocess_exec(
-                *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+                *cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
             )
 
-            stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=60)
+            stdout, stderr = await asyncio.wait_for(
+                process.communicate(), timeout=60
+            )
 
             output = stdout.decode().strip()
             error = stderr.decode().strip()
@@ -82,12 +86,24 @@ class WAFW00FIntegration:
                             for waf_name in detected_wafs.split(","):
                                 waf_name = waf_name.strip()
                                 if waf_name:
-                                    wafs.append(WAFFinding(name=waf_name, detected=True, confidence="high"))
+                                    wafs.append(
+                                        WAFFinding(
+                                            name=waf_name,
+                                            detected=True,
+                                            confidence="high",
+                                        )
+                                    )
             except json.JSONDecodeError:
                 # Fallback: parse text output
                 wafs, firewall_detected = self._parse_text_output(output)
 
-            return WAFW00FResult(success=True, url=target, wafs=wafs, firewall_detected=firewall_detected, raw_output=output)
+            return WAFW00FResult(
+                success=True,
+                url=target,
+                wafs=wafs,
+                firewall_detected=firewall_detected,
+                raw_output=output,
+            )
 
         except asyncio.TimeoutError:
             logger.error("WAFW00F detection timed out")
@@ -109,7 +125,11 @@ class WAFW00FIntegration:
             firewall_detected = True
             waf_names = match.split(" and ")
             for name in waf_names:
-                wafs.append(WAFFinding(name=name.strip(), detected=True, confidence="high"))
+                wafs.append(
+                    WAFFinding(
+                        name=name.strip(), detected=True, confidence="high"
+                    )
+                )
 
         # Check for "No WAF detected"
         if "No WAF" in output or "not behind" in output.lower():

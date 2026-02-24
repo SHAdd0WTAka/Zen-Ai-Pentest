@@ -105,8 +105,12 @@ class ChatGPTDirectBackend:
                             import json
 
                             data = json.loads(line[6:])
-                            if data.get("message") and data["message"].get("content"):
-                                full_response = data["message"]["content"]["parts"][0]
+                            if data.get("message") and data["message"].get(
+                                "content"
+                            ):
+                                full_response = data["message"]["content"][
+                                    "parts"
+                                ][0]
                             # Update conversation ID for context
                             if data.get("conversation_id"):
                                 self.conversation_id = data["conversation_id"]
@@ -125,7 +129,9 @@ class ChatGPTDirectBackend:
             return False
         try:
             headers = {"Authorization": f"Bearer {self.access_token}"}
-            async with self.session.get("https://chat.openai.com/backend-api/models", headers=headers) as resp:
+            async with self.session.get(
+                "https://chat.openai.com/backend-api/models", headers=headers
+            ) as resp:
                 return resp.status == 200
         except Exception:
             return False

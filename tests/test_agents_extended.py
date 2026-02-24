@@ -11,7 +11,11 @@ class TestAgentBaseExtended:
     def test_agent_message_creation(self):
         from agents.agent_base import AgentMessage
 
-        msg = AgentMessage(sender="researcher", content="Test message", message_type="findings")
+        msg = AgentMessage(
+            sender="researcher",
+            content="Test message",
+            message_type="findings",
+        )
         assert msg.sender == "researcher"
         assert msg.content == "Test message"
         assert msg.message_type == "findings"

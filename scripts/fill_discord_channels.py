@@ -213,7 +213,10 @@ def main():
         print("set DISCORD_BOT_TOKEN=dein-token")
         sys.exit(1)
 
-    headers = {"Authorization": f"Bot {bot_token}", "Content-Type": "application/json"}
+    headers = {
+        "Authorization": f"Bot {bot_token}",
+        "Content-Type": "application/json",
+    }
 
     print(f"\n🏰 Guild ID: {GUILD_ID}")
     print("⏳ Suche Channels und poste Content...\n")
@@ -240,7 +243,9 @@ def main():
             fail_count += 1
 
     print("=" * 50)
-    print(f"📊 Ergebnis: {success_count} erfolgreich, {fail_count} fehlgeschlagen")
+    print(
+        f"📊 Ergebnis: {success_count} erfolgreich, {fail_count} fehlgeschlagen"
+    )
 
     if success_count == len(CHANNELS_CONTENT):
         print("🎉 Alle Channels wurden gefüllt!")

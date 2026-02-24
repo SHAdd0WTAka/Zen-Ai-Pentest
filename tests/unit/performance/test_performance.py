@@ -11,14 +11,22 @@ import pytest
 # Import performance components
 try:
     from performance import CacheManager, PerformanceMetrics
-    from performance.async_optimizer import AsyncOptimizer, CircuitBreaker, RetryHandler
+    from performance.async_optimizer import (
+        AsyncOptimizer,
+        CircuitBreaker,
+        RetryHandler,
+    )
     from performance.pool import ConnectionPool, PoolConfig
 except ImportError:
     import sys
 
     sys.path.insert(0, "../../..")
     from performance import CacheManager, PerformanceMetrics
-    from performance.async_optimizer import AsyncOptimizer, CircuitBreaker, RetryHandler
+    from performance.async_optimizer import (
+        AsyncOptimizer,
+        CircuitBreaker,
+        RetryHandler,
+    )
     from performance.pool import ConnectionPool, PoolConfig
 
 

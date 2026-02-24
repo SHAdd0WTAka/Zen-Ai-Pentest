@@ -22,10 +22,17 @@ class AircrackSuite:
         """Aktiviert Monitor Mode auf Interface"""
         try:
             # Stop interfering processes
-            subprocess.run([self.tools["airmon-ng"], "check", "kill"], capture_output=True)
+            subprocess.run(
+                [self.tools["airmon-ng"], "check", "kill"], capture_output=True
+            )
 
             # Start monitor mode
-            subprocess.run([self.tools["airmon-ng"], "start", interface], capture_output=True, text=True, check=True)
+            subprocess.run(
+                [self.tools["airmon-ng"], "start", interface],
+                capture_output=True,
+                text=True,
+                check=True,
+            )
 
             return f"Monitor mode enabled on {interface}"
         except Exception as e:
@@ -35,7 +42,14 @@ class AircrackSuite:
         """Scannt nach WLAN-Netzwerken"""
         output_file = "/tmp/airodump_scan"
 
-        cmd = [self.tools["airodump-ng"], "-w", output_file, "--output-format", "csv", interface]
+        cmd = [
+            self.tools["airodump-ng"],
+            "-w",
+            output_file,
+            "--output-format",
+            "csv",
+            interface,
+        ]
 
         try:
             # Run for specified duration
@@ -63,9 +77,24 @@ class AircrackSuite:
             logger.error(f"Scan error: {e}")
             return []
 
-    def capture_handshake(self, bssid: str, channel: str, interface: str, output: str = "/tmp/capture") -> str:
+    def capture_handshake(
+        self,
+        bssid: str,
+        channel: str,
+        interface: str,
+        output: str = "/tmp/capture",
+    ) -> str:
         """Capture WPA Handshake"""
-        cmd = [self.tools["airodump-ng"], "-c", channel, "--bssid", bssid, "-w", output, interface]
+        cmd = [
+            self.tools["airodump-ng"],
+            "-c",
+            channel,
+            "--bssid",
+            bssid,
+            "-w",
+            output,
+            interface,
+        ]
 
         return f"Start capture: {' '.join(cmd)} (Run manually)"
 
@@ -81,7 +110,9 @@ class AircrackSuite:
         ]
 
         try:
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=3600)
+            result = subprocess.run(
+                cmd, capture_output=True, text=True, timeout=3600
+            )
             if "KEY FOUND" in result.stdout:
                 return "Password found!"
             return "Password not in wordlist"

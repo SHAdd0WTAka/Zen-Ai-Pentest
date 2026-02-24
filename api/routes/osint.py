@@ -42,7 +42,9 @@ class DomainReconRequest(BaseModel):
     domain: str
     enumerate_subdomains: bool = Field(default=True)
     detect_tech: bool = Field(default=True)
-    wordlist_size: str = Field(default="small", description="small, medium, large")
+    wordlist_size: str = Field(
+        default="small", description="small, medium, large"
+    )
 
 
 class DomainReconResponse(BaseModel):
@@ -83,7 +85,9 @@ class UsernameInvestigationRequest(BaseModel):
     """Username investigation request"""
 
     username: str = Field(..., min_length=2, max_length=50)
-    platforms: Optional[List[str]] = Field(default=["twitter", "github", "linkedin", "instagram"])
+    platforms: Optional[List[str]] = Field(
+        default=["twitter", "github", "linkedin", "instagram"]
+    )
 
 
 class OSINTTaskResponse(BaseModel):
@@ -112,7 +116,9 @@ async def harvest_emails(
     **Rate limited**: Max 5 requests per hour per domain
     """
     async with OSINTModule() as osint:
-        results = await osint.harvest_emails(domain=request.domain, sources=request.sources)
+        results = await osint.harvest_emails(
+            domain=request.domain, sources=request.sources
+        )
 
         return [
             EmailResult(
@@ -126,7 +132,9 @@ async def harvest_emails(
 
 
 @router.post("/domain/recon", response_model=DomainReconResponse)
-async def recon_domain(request: DomainReconRequest, current_user: User = Depends(get_current_user)):
+async def recon_domain(
+    request: DomainReconRequest, current_user: User = Depends(get_current_user)
+):
     """
     Perform comprehensive domain reconnaissance.
 
@@ -157,15 +165,23 @@ async def recon_domain(request: DomainReconRequest, current_user: User = Depends
 
 
 @router.get("/domain/{domain}/subdomains")
-async def get_subdomains(domain: str, current_user: User = Depends(get_current_user)):
+async def get_subdomains(
+    domain: str, current_user: User = Depends(get_current_user)
+):
     """Quick subdomain enumeration"""
     async with OSINTModule() as osint:
         subdomains = await osint._enumerate_subdomains(domain)
-        return {"domain": domain, "subdomains": subdomains, "count": len(subdomains)}
+        return {
+            "domain": domain,
+            "subdomains": subdomains,
+            "count": len(subdomains),
+        }
 
 
 @router.post("/breach/check", response_model=BreachCheckResponse)
-async def check_breach(request: BreachCheckRequest, current_user: User = Depends(get_current_user)):
+async def check_breach(
+    request: BreachCheckRequest, current_user: User = Depends(get_current_user)
+):
     """
     Check if email appears in known data breaches.
 
@@ -192,7 +208,9 @@ async def check_breach(request: BreachCheckRequest, current_user: User = Depends
             breached=profile.breached,
             breach_sources=profile.breach_sources,
             breach_count=len(profile.breach_sources),
-            last_breach=profile.breach_sources[0] if profile.breach_sources else None,
+            last_breach=(
+                profile.breach_sources[0] if profile.breach_sources else None
+            ),
             recommendations=recommendations,
         )
 
@@ -226,12 +244,16 @@ async def investigate_username(
             "platforms_checked": len(results),
             "found_on": len(found_on),
             "platforms": results,
-            "profile_urls": {p: d["url"] for p, d in results.items() if d.get("exists")},
+            "profile_urls": {
+                p: d["url"] for p, d in results.items() if d.get("exists")
+            },
         }
 
 
 @router.get("/ip/{ip}/investigate")
-async def investigate_ip(ip: str, current_user: User = Depends(get_current_user)):
+async def investigate_ip(
+    ip: str, current_user: User = Depends(get_current_user)
+):
     """
     Gather intelligence about IP address.
 

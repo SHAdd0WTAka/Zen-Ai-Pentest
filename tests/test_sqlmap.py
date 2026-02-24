@@ -33,7 +33,10 @@ async def test_sqlmap_real_scan():
 
     # Test against deliberately vulnerable test site
     # This is a LEGAL test target maintained by Acunetix for testing
-    result = await scanner.scan_target(target_url="http://testphp.vulnweb.com/artists.php?artist=1", method="GET")
+    result = await scanner.scan_target(
+        target_url="http://testphp.vulnweb.com/artists.php?artist=1",
+        method="GET",
+    )
 
     # Assertions
     assert result.success, f"SQLMap failed: {result.error_message}"

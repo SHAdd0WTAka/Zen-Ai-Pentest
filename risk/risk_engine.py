@@ -103,21 +103,27 @@ class RiskEngine:
 
         # 3. Business Impact
         if business_context:
-            impact_result = self.impact.calculate_impact(cvss_severity, business_context)
+            impact_result = self.impact.calculate_impact(
+                cvss_severity, business_context
+            )
             business_score = impact_result["business_impact_score"]
             business_level = impact_result["impact_level"]
         else:
             # Default: assume medium impact
             business_score = 5.0
             business_level = "Medium Business Impact"
-            data_quality = "Partial" if data_quality == "Complete" else data_quality
+            data_quality = (
+                "Partial" if data_quality == "Complete" else data_quality
+            )
 
         # 4. Calculate Overall Risk
         technical_risk = cvss_score * self.WEIGHTS["cvss"]
         exploitation_risk = epss_score * 10 * self.WEIGHTS["epss"]
         business_risk_score = business_score * self.WEIGHTS["business"]
 
-        overall_score = technical_risk + exploitation_risk + business_risk_score
+        overall_score = (
+            technical_risk + exploitation_risk + business_risk_score
+        )
         overall_score = min(round(overall_score, 1), 10.0)
 
         # Determine priority
@@ -143,7 +149,11 @@ class RiskEngine:
         self.calculation_history.append(risk_score)
         return risk_score
 
-    def calculate_batch(self, cves: List[Dict], business_context: Optional[BusinessContext] = None) -> List[RiskScore]:
+    def calculate_batch(
+        self,
+        cves: List[Dict],
+        business_context: Optional[BusinessContext] = None,
+    ) -> List[RiskScore]:
         """
         Calculate risk for multiple CVEs
         """
@@ -162,13 +172,21 @@ class RiskEngine:
                 # Temporarily inject into client cache
                 self.epss.cache[cve_id] = epss_batch[cve_id]
 
-            risk = self.calculate_risk(cve_id=cve_id, cve_data=cve_data, business_context=business_context)
+            risk = self.calculate_risk(
+                cve_id=cve_id,
+                cve_data=cve_data,
+                business_context=business_context,
+            )
             results.append(risk)
 
         # Sort by overall risk descending
-        return sorted(results, key=lambda x: x.overall_risk_score, reverse=True)
+        return sorted(
+            results, key=lambda x: x.overall_risk_score, reverse=True
+        )
 
-    def _get_priority(self, overall_score: float, epss_score: float, cvss_severity: str) -> str:
+    def _get_priority(
+        self, overall_score: float, epss_score: float, cvss_severity: str
+    ) -> str:
         """
         Determine risk priority considering all factors
         """
@@ -198,7 +216,13 @@ class RiskEngine:
         if not self.calculation_history:
             return {}
 
-        distribution = {"Critical": 0, "High": 0, "Medium": 0, "Low": 0, "Minimal": 0}
+        distribution = {
+            "Critical": 0,
+            "High": 0,
+            "Medium": 0,
+            "Low": 0,
+            "Minimal": 0,
+        }
 
         for score in self.calculation_history:
             priority = score.risk_priority
@@ -209,12 +233,18 @@ class RiskEngine:
 
     def get_critical_cves(self, threshold: float = 7.0) -> List[RiskScore]:
         """Get CVEs above risk threshold"""
-        return [score for score in self.calculation_history if score.overall_risk_score >= threshold]
+        return [
+            score
+            for score in self.calculation_history
+            if score.overall_risk_score >= threshold
+        ]
 
     def get_remediation_priority(self) -> List[Dict]:
         """Generate remediation priority list"""
         sorted_scores = sorted(
-            self.calculation_history, key=lambda x: (x.overall_risk_score, x.epss_probability), reverse=True
+            self.calculation_history,
+            key=lambda x: (x.overall_risk_score, x.epss_probability),
+            reverse=True,
         )
 
         priority_list = []

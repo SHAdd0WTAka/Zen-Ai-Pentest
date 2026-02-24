@@ -71,7 +71,9 @@ class ShieldedOrchestrator:
         if self.session:
             await self.session.close()
 
-    async def analyze_tool_output(self, raw_output: str, source_tool: str, intent: str = "analyze") -> Dict[str, Any]:
+    async def analyze_tool_output(
+        self, raw_output: str, source_tool: str, intent: str = "analyze"
+    ) -> Dict[str, Any]:
         """
         Analyze tool output with security sanitization
 
@@ -84,7 +86,9 @@ class ShieldedOrchestrator:
             Analysis result with metadata
         """
         # Step 1: Sanitize through Zen Shield
-        sanitized = await self._sanitize_through_shield(raw_output, source_tool, intent)
+        sanitized = await self._sanitize_through_shield(
+            raw_output, source_tool, intent
+        )
 
         if not sanitized:
             # Fallback: analyze locally without LLM
@@ -93,7 +97,9 @@ class ShieldedOrchestrator:
 
         if not sanitized.safe_to_send:
             # High risk data - analyze locally
-            logger.warning(f"High risk data detected ({len(sanitized.redactions)} redactions), using local analysis")
+            logger.warning(
+                f"High risk data detected ({len(sanitized.redactions)} redactions), using local analysis"
+            )
             return self._local_analysis(sanitized.cleaned_data)
 
         # Step 2: Send to big LLM with sanitized data
@@ -119,12 +125,16 @@ class ShieldedOrchestrator:
             },
         }
 
-    async def _sanitize_through_shield(self, raw_data: str, source_tool: str, intent: str) -> Optional[SanitizerResponse]:
+    async def _sanitize_through_shield(
+        self, raw_data: str, source_tool: str, intent: str
+    ) -> Optional[SanitizerResponse]:
         """
         Send data to Zen Shield for sanitization
         Falls back to local sanitizer if service unavailable
         """
-        request = SanitizerRequest(raw_data=raw_data, source_tool=source_tool, intent=intent)
+        request = SanitizerRequest(
+            raw_data=raw_data, source_tool=source_tool, intent=intent
+        )
 
         # Try remote shield service first
         if self.session:
@@ -149,7 +159,9 @@ class ShieldedOrchestrator:
 
         return None
 
-    async def _analyze_with_big_llm(self, cleaned_data: str, metadata: Dict[str, Any]) -> Dict[str, Any]:
+    async def _analyze_with_big_llm(
+        self, cleaned_data: str, metadata: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """
         Send sanitized data to big LLM for analysis
         """
@@ -203,10 +215,15 @@ Be concise and technical."""
                 "findings": findings,
                 "note": "Local analysis (LLM bypassed due to security concerns)",
             },
-            "sanitization": {"local_only": True, "reason": "security_fallback"},
+            "sanitization": {
+                "local_only": True,
+                "reason": "security_fallback",
+            },
         }
 
-    async def comprehensive_scan_with_shield(self, target: str, tools: list[str], use_shield: bool = True) -> Dict[str, Any]:
+    async def comprehensive_scan_with_shield(
+        self, target: str, tools: list[str], use_shield: bool = True
+    ) -> Dict[str, Any]:
         """
         Run comprehensive scan with shield protection
 
@@ -233,11 +250,17 @@ Be concise and technical."""
 
                     if use_shield and raw_output:
                         # Sanitize and analyze
-                        analysis = await self.analyze_tool_output(raw_output, tool, intent="analyze")
-                        results["findings"].append({"tool": tool, "analysis": analysis})
+                        analysis = await self.analyze_tool_output(
+                            raw_output, tool, intent="analyze"
+                        )
+                        results["findings"].append(
+                            {"tool": tool, "analysis": analysis}
+                        )
                     else:
                         # Raw output without sanitization (not recommended)
-                        results["findings"].append({"tool": tool, "raw": raw_output[:1000]})  # Truncate
+                        results["findings"].append(
+                            {"tool": tool, "raw": raw_output[:1000]}
+                        )  # Truncate
 
                 except Exception as e:
                     logger.error(f"Tool {tool} failed: {e}")
@@ -245,7 +268,9 @@ Be concise and technical."""
 
         return results
 
-    async def _run_tool(self, orchestrator, tool: str, target: str) -> Dict[str, Any]:
+    async def _run_tool(
+        self, orchestrator, tool: str, target: str
+    ) -> Dict[str, Any]:
         """Run specific tool through orchestrator"""
         method_map = {
             "nmap": orchestrator.scan_with_nmap,

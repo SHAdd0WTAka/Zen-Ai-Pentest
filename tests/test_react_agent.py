@@ -140,7 +140,9 @@ class TestReActAgentTools:
     @patch("agents.react_agent.LLMBackend")
     @patch("agents.react_agent.CVEDatabase")
     @patch("agents.react_agent.NmapTool")
-    def test_scan_ports_tool(self, mock_nmap_class, mock_cve_db, mock_llm_backend):
+    def test_scan_ports_tool(
+        self, mock_nmap_class, mock_cve_db, mock_llm_backend
+    ):
         """Test scan_ports tool"""
         mock_llm = Mock()
         mock_llm_backend.return_value = mock_llm
@@ -152,7 +154,9 @@ class TestReActAgentTools:
         agent = ReActAgent()
         scan_ports_tool = agent.tools_by_name["scan_ports"]
 
-        result = scan_ports_tool.invoke({"target": "example.com", "ports": "top-100"})
+        result = scan_ports_tool.invoke(
+            {"target": "example.com", "ports": "top-100"}
+        )
 
         mock_nmap.scan.assert_called_once_with("example.com", "top-100")
         assert "ports" in result
@@ -160,7 +164,9 @@ class TestReActAgentTools:
     @patch("agents.react_agent.LLMBackend")
     @patch("agents.react_agent.CVEDatabase")
     @patch("agents.react_agent.NucleiTool")
-    def test_scan_vulnerabilities_tool(self, mock_nuclei_class, mock_cve_db, mock_llm_backend):
+    def test_scan_vulnerabilities_tool(
+        self, mock_nuclei_class, mock_cve_db, mock_llm_backend
+    ):
         """Test scan_vulnerabilities tool"""
         mock_llm = Mock()
         mock_llm_backend.return_value = mock_llm
@@ -172,29 +178,41 @@ class TestReActAgentTools:
         agent = ReActAgent()
         scan_vuln_tool = agent.tools_by_name["scan_vulnerabilities"]
 
-        result = scan_vuln_tool.invoke({"target": "example.com", "templates": "critical"})
+        result = scan_vuln_tool.invoke(
+            {"target": "example.com", "templates": "critical"}
+        )
 
-        mock_nuclei.scan.assert_called_once_with("example.com", severity="critical")
+        mock_nuclei.scan.assert_called_once_with(
+            "example.com", severity="critical"
+        )
         assert "vulnerabilities" in result
 
     @patch("agents.react_agent.LLMBackend")
     @patch("agents.react_agent.CVEDatabase")
     @patch("agents.react_agent.FfufTool")
-    def test_enumerate_directories_tool(self, mock_ffuf_class, mock_cve_db, mock_llm_backend):
+    def test_enumerate_directories_tool(
+        self, mock_ffuf_class, mock_cve_db, mock_llm_backend
+    ):
         """Test enumerate_directories tool"""
         mock_llm = Mock()
         mock_llm_backend.return_value = mock_llm
 
         mock_ffuf = Mock()
-        mock_ffuf.directory_bruteforce.return_value = {"directories": ["/admin", "/api"]}
+        mock_ffuf.directory_bruteforce.return_value = {
+            "directories": ["/admin", "/api"]
+        }
         mock_ffuf_class.return_value = mock_ffuf
 
         agent = ReActAgent()
         enum_tool = agent.tools_by_name["enumerate_directories"]
 
-        result = enum_tool.invoke({"target": "example.com", "wordlist": "common.txt"})
+        result = enum_tool.invoke(
+            {"target": "example.com", "wordlist": "common.txt"}
+        )
 
-        mock_ffuf.directory_bruteforce.assert_called_once_with("example.com", "common.txt")
+        mock_ffuf.directory_bruteforce.assert_called_once_with(
+            "example.com", "common.txt"
+        )
         assert "directories" in result
 
     @patch("agents.react_agent.LLMBackend")
@@ -226,7 +244,9 @@ class TestReActAgentTools:
 
     @patch("agents.react_agent.LLMBackend")
     @patch("agents.react_agent.CVEDatabase")
-    def test_lookup_cve_tool_not_found(self, mock_cve_db_class, mock_llm_backend):
+    def test_lookup_cve_tool_not_found(
+        self, mock_cve_db_class, mock_llm_backend
+    ):
         """Test lookup_cve tool when CVE is not found"""
         mock_llm = Mock()
         mock_llm_backend.return_value = mock_llm
@@ -252,7 +272,9 @@ class TestReActAgentTools:
         agent = ReActAgent()
         validate_tool = agent.tools_by_name["validate_exploit"]
 
-        result = validate_tool.invoke({"cve_id": "CVE-2021-44228", "target": "example.com"})
+        result = validate_tool.invoke(
+            {"cve_id": "CVE-2021-44228", "target": "example.com"}
+        )
 
         assert "CVE-2021-44228" in result
         assert "example.com" in result
@@ -273,7 +295,9 @@ class TestReActAgentSafety:
         assert agent._is_dangerous_tool("validate_exploit") is True
         assert agent._is_dangerous_tool("exploit") is True
         assert agent._is_dangerous_tool("sqlmap_exploit") is True
-        assert agent._is_dangerous_tool("VALIDATE_EXPLOIT") is True  # Case insensitive
+        assert (
+            agent._is_dangerous_tool("VALIDATE_EXPLOIT") is True
+        )  # Case insensitive
 
     @patch("agents.react_agent.LLMBackend")
     @patch("agents.react_agent.CVEDatabase")
@@ -403,7 +427,9 @@ class TestReActAgentReport:
 
     @patch("agents.react_agent.LLMBackend")
     @patch("agents.react_agent.CVEDatabase")
-    def test_generate_report_with_findings(self, mock_cve_db, mock_llm_backend):
+    def test_generate_report_with_findings(
+        self, mock_cve_db, mock_llm_backend
+    ):
         """Test report generation with findings"""
         mock_llm = Mock()
         mock_llm_backend.return_value = mock_llm
@@ -415,7 +441,11 @@ class TestReActAgentReport:
             "status": "completed",
             "iterations": 3,
             "findings": [
-                {"tool": "scan_ports", "args": {"target": "example.com"}, "result": "Ports: 80,443"},
+                {
+                    "tool": "scan_ports",
+                    "args": {"target": "example.com"},
+                    "result": "Ports: 80,443",
+                },
             ],
             "final_message": "Scan complete",
         }
@@ -452,7 +482,9 @@ class TestReActAgentReport:
 
     @patch("agents.react_agent.LLMBackend")
     @patch("agents.react_agent.CVEDatabase")
-    def test_generate_report_long_result_truncated(self, mock_cve_db, mock_llm_backend):
+    def test_generate_report_long_result_truncated(
+        self, mock_cve_db, mock_llm_backend
+    ):
         """Test that long results are truncated in report"""
         mock_llm = Mock()
         mock_llm_backend.return_value = mock_llm
@@ -498,7 +530,9 @@ class TestGetAgent:
 
     @patch("agents.react_agent.LLMBackend")
     @patch("agents.react_agent.CVEDatabase")
-    def test_get_agent_with_config_creates_new(self, mock_cve_db, mock_llm_backend):
+    def test_get_agent_with_config_creates_new(
+        self, mock_cve_db, mock_llm_backend
+    ):
         """Test that passing config creates new instance"""
         mock_llm = Mock()
         mock_llm_backend.return_value = mock_llm
@@ -544,7 +578,9 @@ class TestReActAgentEdgeCases:
 
     @patch("agents.react_agent.LLMBackend")
     @patch("agents.react_agent.CVEDatabase")
-    def test_tool_execution_error_handling(self, mock_cve_db, mock_llm_backend):
+    def test_tool_execution_error_handling(
+        self, mock_cve_db, mock_llm_backend
+    ):
         """Test error handling during tool execution"""
         mock_llm = Mock()
         mock_llm_backend.return_value = mock_llm

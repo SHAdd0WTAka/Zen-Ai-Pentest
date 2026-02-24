@@ -47,11 +47,25 @@ def mock_vpn_status():
 def mock_servers():
     """Create mock VPN servers"""
     return [
-        VPNServer("CH-01", "CH", "Zurich", "185.159.158.1", 45, ["secure-core"], 2),
-        VPNServer("CH-02", "CH", "Geneva", "185.159.158.2", 30, ["secure-core", "p2p"], 2),
-        VPNServer("NL-01", "NL", "Amsterdam", "185.107.56.1", 60, ["p2p", "tor"], 2),
+        VPNServer(
+            "CH-01", "CH", "Zurich", "185.159.158.1", 45, ["secure-core"], 2
+        ),
+        VPNServer(
+            "CH-02",
+            "CH",
+            "Geneva",
+            "185.159.158.2",
+            30,
+            ["secure-core", "p2p"],
+            2,
+        ),
+        VPNServer(
+            "NL-01", "NL", "Amsterdam", "185.107.56.1", 60, ["p2p", "tor"], 2
+        ),
         VPNServer("NL-02", "NL", "Amsterdam", "185.107.56.2", 25, ["p2p"], 2),
-        VPNServer("SE-01", "SE", "Stockholm", "185.210.217.1", 40, ["secure-core"], 2),
+        VPNServer(
+            "SE-01", "SE", "Stockholm", "185.210.217.1", 40, ["secure-core"], 2
+        ),
     ]
 
 
@@ -233,11 +247,19 @@ class TestProtonVPNManager:
 
         # Mock the connect command
         connect_proc = AsyncMock()
-        connect_proc.communicate.return_value = (b"Connected successfully", b"")
+        connect_proc.communicate.return_value = (
+            b"Connected successfully",
+            b"",
+        )
         connect_proc.returncode = 0
 
-        with patch("asyncio.create_subprocess_exec", side_effect=[help_proc, connect_proc, AsyncMock()]):
-            with patch.object(vpn_manager, "get_public_ip", return_value="185.159.158.100"):
+        with patch(
+            "asyncio.create_subprocess_exec",
+            side_effect=[help_proc, connect_proc, AsyncMock()],
+        ):
+            with patch.object(
+                vpn_manager, "get_public_ip", return_value="185.159.158.100"
+            ):
                 status = await vpn_manager.connect(country="CH")
 
                 assert status.connected is True
@@ -291,8 +313,12 @@ class TestProtonVPNManager:
             disconnect_proc = AsyncMock()
             disconnect_proc.communicate.return_value = (b"Disconnected", b"")
 
-            with patch("asyncio.create_subprocess_exec", return_value=disconnect_proc):
-                with patch.object(vpn_manager, "get_public_ip", return_value="192.168.1.100"):
+            with patch(
+                "asyncio.create_subprocess_exec", return_value=disconnect_proc
+            ):
+                with patch.object(
+                    vpn_manager, "get_public_ip", return_value="192.168.1.100"
+                ):
                     status = await vpn_manager.disconnect()
 
                     assert status.connected is False
@@ -318,7 +344,9 @@ class TestProtonVPNManager:
     def test_get_server_name(self, vpn_manager):
         """Test server name generation"""
         assert vpn_manager._get_server_name("CH", None, False) == "CH"
-        assert vpn_manager._get_server_name("CH", "Zurich", False) == "CH-Zurich"
+        assert (
+            vpn_manager._get_server_name("CH", "Zurich", False) == "CH-Zurich"
+        )
         assert vpn_manager._get_server_name("NL", None, True) == "NL-P2P"
 
     @pytest.mark.asyncio
@@ -633,7 +661,10 @@ class TestEdgeCases:
     @pytest.mark.asyncio
     async def test_connect_exception_handling(self, vpn_manager):
         """Test exception handling during connect"""
-        with patch("asyncio.create_subprocess_exec", side_effect=Exception("Process error")):
+        with patch(
+            "asyncio.create_subprocess_exec",
+            side_effect=Exception("Process error"),
+        ):
             # Should fallback to mock mode
             status = await vpn_manager.connect()
 
@@ -645,7 +676,10 @@ class TestEdgeCases:
         """Test exception handling during disconnect"""
         vpn_manager.connected = True
 
-        with patch("asyncio.create_subprocess_exec", side_effect=Exception("Process error")):
+        with patch(
+            "asyncio.create_subprocess_exec",
+            side_effect=Exception("Process error"),
+        ):
             # Should handle exception gracefully
             status = await vpn_manager.disconnect()
 
@@ -666,8 +700,12 @@ class TestEdgeCases:
 
     def test_server_comparison(self):
         """Test server comparison by load"""
-        server1 = VPNServer("CH-01", "CH", "Zurich", "185.159.158.1", 30, [], 2)
-        server2 = VPNServer("CH-02", "CH", "Geneva", "185.159.158.2", 60, [], 2)
+        server1 = VPNServer(
+            "CH-01", "CH", "Zurich", "185.159.158.1", 30, [], 2
+        )
+        server2 = VPNServer(
+            "CH-02", "CH", "Geneva", "185.159.158.2", 60, [], 2
+        )
 
         # Lower load should be preferred
         assert server1.load < server2.load

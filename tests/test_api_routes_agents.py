@@ -18,7 +18,9 @@ mock_agents.agent_manager = MagicMock()
 mock_agents.agent_manager.get_all_agents = MagicMock(return_value=[])
 mock_agents.agent_manager.get_agent = MagicMock(return_value=None)
 mock_agents.agent_manager.assign_task = AsyncMock(return_value="task-123")
-mock_agents.agent_manager.send_message_to_agent = AsyncMock(return_value={"response": "ok"})
+mock_agents.agent_manager.send_message_to_agent = AsyncMock(
+    return_value={"response": "ok"}
+)
 mock_agents.agent_manager.get_agent_logs = AsyncMock(return_value=[])
 mock_agents.agent_manager.broadcast = AsyncMock()
 mock_agents.agent_manager.shared_context = {}
@@ -110,7 +112,9 @@ class TestListAgents:
         assert result == []
 
     @pytest.mark.asyncio
-    async def test_list_agents_with_agents(self, mock_current_user, mock_agent):
+    async def test_list_agents_with_agents(
+        self, mock_current_user, mock_agent
+    ):
         """Test listing agents"""
         mock_agents.agent_manager.get_all_agents.return_value = [mock_agent]
 
@@ -134,7 +138,10 @@ class TestListAgents:
         agent2.messages_processed = 5
         agent2.errors_count = 1
 
-        mock_agents.agent_manager.get_all_agents.return_value = [mock_agent, agent2]
+        mock_agents.agent_manager.get_all_agents.return_value = [
+            mock_agent,
+            agent2,
+        ]
 
         result = await list_agents(mock_current_user)
 
@@ -245,7 +252,9 @@ class TestAssignTask:
             "priority": 5,
         }
 
-        result = await assign_task("agent-001", task_request, Mock(), mock_current_user)
+        result = await assign_task(
+            "agent-001", task_request, Mock(), mock_current_user
+        )
 
         assert result["task_id"] == "task-456"
         assert result["agent_id"] == "agent-001"
@@ -259,12 +268,16 @@ class TestAssignTask:
         task_request.dict.return_value = {}
 
         with pytest.raises(HTTPException) as exc_info:
-            await assign_task("nonexistent", task_request, Mock(), mock_current_user)
+            await assign_task(
+                "nonexistent", task_request, Mock(), mock_current_user
+            )
 
         assert exc_info.value.status_code == 404
 
     @pytest.mark.asyncio
-    async def test_assign_task_agent_not_running(self, mock_current_user, mock_agent):
+    async def test_assign_task_agent_not_running(
+        self, mock_current_user, mock_agent
+    ):
         """Test assigning task to non-running agent"""
         mock_agent.state.value = "idle"
         mock_agents.agent_manager.get_agent.return_value = mock_agent
@@ -273,7 +286,9 @@ class TestAssignTask:
         task_request.dict.return_value = {}
 
         with pytest.raises(HTTPException) as exc_info:
-            await assign_task("agent-001", task_request, Mock(), mock_current_user)
+            await assign_task(
+                "agent-001", task_request, Mock(), mock_current_user
+            )
 
         assert exc_info.value.status_code == 400
         assert "not running" in exc_info.value.detail.lower()
@@ -289,12 +304,16 @@ class TestSendMessage:
     async def test_send_message_success(self, mock_current_user, mock_agent):
         """Test sending message to agent"""
         mock_agents.agent_manager.get_agent.return_value = mock_agent
-        mock_agents.agent_manager.send_message_to_agent.return_value = {"status": "received"}
+        mock_agents.agent_manager.send_message_to_agent.return_value = {
+            "status": "received"
+        }
 
         message_request = Mock()
         message_request.dict.return_value = {"message": "Hello", "context": {}}
 
-        result = await send_message("agent-001", message_request, mock_current_user)
+        result = await send_message(
+            "agent-001", message_request, mock_current_user
+        )
 
         assert result["agent_id"] == "agent-001"
         assert "response" in result
@@ -308,7 +327,9 @@ class TestSendMessage:
         message_request.dict.return_value = {}
 
         with pytest.raises(HTTPException) as exc_info:
-            await send_message("nonexistent", message_request, mock_current_user)
+            await send_message(
+                "nonexistent", message_request, mock_current_user
+            )
 
         assert exc_info.value.status_code == 404
 
@@ -356,7 +377,9 @@ class TestBroadcastMessage:
         result = await broadcast_message("Test message", mock_admin_user)
 
         assert "broadcast sent" in result["message"].lower()
-        mock_agents.agent_manager.broadcast.assert_called_once_with("Test message")
+        mock_agents.agent_manager.broadcast.assert_called_once_with(
+            "Test message"
+        )
 
 
 # ==================== System Status Tests ====================
@@ -391,7 +414,11 @@ class TestGetSystemStatus:
         error_agent = Mock()
         error_agent.state.value = "error"
 
-        mock_agents.agent_manager.get_all_agents.return_value = [running_agent, idle_agent, error_agent]
+        mock_agents.agent_manager.get_all_agents.return_value = [
+            running_agent,
+            idle_agent,
+            error_agent,
+        ]
         mock_agents.agent_manager.shared_context = {"key": "value"}
         mock_agents.agent_manager.message_history = ["msg1", "msg2"]
 
@@ -422,7 +449,12 @@ class TestAgentModels:
             priority: int = Field(default=5, ge=1, le=10)
 
         # Valid request
-        request = AgentTaskRequest(agent_id="agent-001", task_type="scan", parameters={"target": "example.com"}, priority=8)
+        request = AgentTaskRequest(
+            agent_id="agent-001",
+            task_type="scan",
+            parameters={"target": "example.com"},
+            priority=8,
+        )
         assert request.priority == 8
 
         # Default priority
@@ -438,7 +470,9 @@ class TestAgentModels:
             message: str
             context: dict = Field(default_factory=dict)
 
-        request = AgentMessageRequest(agent_id="agent-001", message="Hello", context={"key": "value"})
+        request = AgentMessageRequest(
+            agent_id="agent-001", message="Hello", context={"key": "value"}
+        )
         assert request.message == "Hello"
 
     def test_agent_response_model(self):

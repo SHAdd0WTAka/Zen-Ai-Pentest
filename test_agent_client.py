@@ -22,7 +22,9 @@ import websockets
 class TestAgent:
     """Simple test agent for WebSocket communication"""
 
-    def __init__(self, agent_id: str, server_url: str = "ws://localhost:8000/agents/ws"):
+    def __init__(
+        self, agent_id: str, server_url: str = "ws://localhost:8000/agents/ws"
+    ):
         self.agent_id = agent_id
         self.server_url = server_url
         self.websocket = None
@@ -37,7 +39,9 @@ class TestAgent:
             self.websocket = await websockets.connect(self.server_url)
 
             # Send auth
-            await self.websocket.send(json.dumps({"type": "auth", "agent_id": self.agent_id}))
+            await self.websocket.send(
+                json.dumps({"type": "auth", "agent_id": self.agent_id})
+            )
 
             # Wait for auth response
             response = await self.websocket.recv()
@@ -64,7 +68,12 @@ class TestAgent:
 
         await self.websocket.send(
             json.dumps(
-                {"type": "message", "message_id": f"msg_{self.message_count}", "recipient": recipient, "payload": payload}
+                {
+                    "type": "message",
+                    "message_id": f"msg_{self.message_count}",
+                    "recipient": recipient,
+                    "payload": payload,
+                }
             )
         )
 
@@ -135,7 +144,9 @@ async def test_single_agent():
 
     # Send a broadcast message
     await asyncio.sleep(1)
-    await agent.send_message("broadcast", {"action": "test", "message": "Hello from test agent!"})
+    await agent.send_message(
+        "broadcast", {"action": "test", "message": "Hello from test agent!"}
+    )
 
     # Wait a bit
     await asyncio.sleep(5)
@@ -169,19 +180,26 @@ async def test_two_agents():
     # Agent 1 sends to Agent 2
     await asyncio.sleep(1)
     print("\n--- Agent Alpha sending to Agent Beta ---")
-    await agent1.send_message("agent-beta", {"action": "ping", "message": "Hello Beta!"})
+    await agent1.send_message(
+        "agent-beta", {"action": "ping", "message": "Hello Beta!"}
+    )
 
     await asyncio.sleep(2)
 
     # Agent 2 sends to Agent 1
     print("\n--- Agent Beta sending to Agent Alpha ---")
-    await agent2.send_message("agent-alpha", {"action": "pong", "message": "Hello Alpha!"})
+    await agent2.send_message(
+        "agent-alpha", {"action": "pong", "message": "Hello Alpha!"}
+    )
 
     await asyncio.sleep(2)
 
     # Test broadcast
     print("\n--- Testing broadcast ---")
-    await agent1.send_message("broadcast", {"action": "announce", "message": "Broadcast to all agents!"})
+    await agent1.send_message(
+        "broadcast",
+        {"action": "announce", "message": "Broadcast to all agents!"},
+    )
 
     await asyncio.sleep(3)
 
@@ -215,7 +233,9 @@ async def interactive_mode():
 
     try:
         while agent.connected:
-            command = await asyncio.get_event_loop().run_in_executor(None, input, "> ")
+            command = await asyncio.get_event_loop().run_in_executor(
+                None, input, "> "
+            )
 
             parts = command.strip().split(maxsplit=1)
             if not parts:
@@ -258,8 +278,17 @@ async def main():
     import argparse
 
     parser = argparse.ArgumentParser(description="Test Agent Client")
-    parser.add_argument("--mode", choices=["single", "dual", "interactive"], default="single", help="Test mode")
-    parser.add_argument("--server", default="ws://localhost:8000/agents/ws", help="WebSocket server URL")
+    parser.add_argument(
+        "--mode",
+        choices=["single", "dual", "interactive"],
+        default="single",
+        help="Test mode",
+    )
+    parser.add_argument(
+        "--server",
+        default="ws://localhost:8000/agents/ws",
+        help="WebSocket server URL",
+    )
 
     args = parser.parse_args()
 
@@ -300,7 +329,9 @@ async def test_single_agent_with_url(server_url: str):
     receive_task = asyncio.create_task(agent.receive_loop())
 
     await asyncio.sleep(1)
-    await agent.send_message("broadcast", {"action": "test", "message": "Hello from test agent!"})
+    await agent.send_message(
+        "broadcast", {"action": "test", "message": "Hello from test agent!"}
+    )
 
     await asyncio.sleep(5)
     await agent.send_heartbeat()
@@ -327,17 +358,23 @@ async def test_two_agents_with_url(server_url: str):
 
     await asyncio.sleep(1)
     print("\n--- Agent Alpha sending to Agent Beta ---")
-    await agent1.send_message("agent-beta", {"action": "ping", "message": "Hello Beta!"})
+    await agent1.send_message(
+        "agent-beta", {"action": "ping", "message": "Hello Beta!"}
+    )
 
     await asyncio.sleep(2)
 
     print("\n--- Agent Beta sending to Agent Alpha ---")
-    await agent2.send_message("agent-alpha", {"action": "pong", "message": "Hello Alpha!"})
+    await agent2.send_message(
+        "agent-alpha", {"action": "pong", "message": "Hello Alpha!"}
+    )
 
     await asyncio.sleep(2)
 
     print("\n--- Testing broadcast ---")
-    await agent1.send_message("broadcast", {"action": "announce", "message": "Broadcast!"})
+    await agent1.send_message(
+        "broadcast", {"action": "announce", "message": "Broadcast!"}
+    )
 
     await asyncio.sleep(3)
 
@@ -361,11 +398,15 @@ async def interactive_mode_with_url(server_url: str):
 
     receive_task = asyncio.create_task(agent.receive_loop())
 
-    print("\nCommands: send <recipient> <message> | broadcast <message> | heartbeat | quit\n")
+    print(
+        "\nCommands: send <recipient> <message> | broadcast <message> | heartbeat | quit\n"
+    )
 
     try:
         while agent.connected:
-            command = await asyncio.get_event_loop().run_in_executor(None, input, "> ")
+            command = await asyncio.get_event_loop().run_in_executor(
+                None, input, "> "
+            )
             parts = command.strip().split(maxsplit=1)
             if not parts:
                 continue
@@ -379,7 +420,9 @@ async def interactive_mode_with_url(server_url: str):
             elif cmd == "send" and len(parts) > 1:
                 msg_parts = parts[1].split(maxsplit=1)
                 if len(msg_parts) >= 2:
-                    await agent.send_message(msg_parts[0], {"text": msg_parts[1]})
+                    await agent.send_message(
+                        msg_parts[0], {"text": msg_parts[1]}
+                    )
                 else:
                     print("Usage: send <recipient> <message>")
             elif cmd == "broadcast" and len(parts) > 1:

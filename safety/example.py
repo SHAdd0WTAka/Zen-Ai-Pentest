@@ -15,10 +15,16 @@ def example_basic_usage():
     Port 80 is maybe open. This is probably critical.
     """
 
-    result = safety.check_output(output=output, context={"target": "192.168.1.1"}, schema_name="vulnerability_report")
+    result = safety.check_output(
+        output=output,
+        context={"target": "192.168.1.1"},
+        schema_name="vulnerability_report",
+    )
 
     print(f"Passed: {result['passed']}")
-    print(f"Confidence: {result['confidence'].score} ({result['confidence'].level})")
+    print(
+        f"Confidence: {result['confidence'].score} ({result['confidence'].level})"
+    )
     print(f"Issues: {result['issues']}")
     print(f"Should retry: {result['should_retry']}")
 
@@ -41,7 +47,10 @@ def example_with_agent():
     agent_output = "Port scan complete. Port 22 is closed."
 
     # Add context from memory
-    context = {"scan_results": {"ports": {"22": {"state": "open"}}}, "memory_context": memory.get_recent(5)}
+    context = {
+        "scan_results": {"ports": {"22": {"state": "open"}}},
+        "memory_context": memory.get_recent(5),
+    }
 
     # Safety check
     result = safety.check_output(agent_output, context)

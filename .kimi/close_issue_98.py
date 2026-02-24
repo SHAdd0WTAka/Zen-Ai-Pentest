@@ -3,10 +3,17 @@
 
 import os
 import sys
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from github_app_auth import get_installation_token, get_headers, REPO_OWNER, REPO_NAME
 import requests
+from github_app_auth import (
+    REPO_NAME,
+    REPO_OWNER,
+    get_headers,
+    get_installation_token,
+)
+
 
 def close_issue_98():
     """Close issue #98 with comment"""
@@ -37,10 +44,14 @@ Closing this issue as resolved. 🦞 ZenClaw Guardian confirmed operational stat
         print("[OK] Comment added to Issue #98")
 
         # Close issue
-        issue_url = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/issues/98"
+        issue_url = (
+            f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/issues/98"
+        )
         close_data = {"state": "closed"}
 
-        close_resp = requests.patch(issue_url, headers=headers, json=close_data)
+        close_resp = requests.patch(
+            issue_url, headers=headers, json=close_data
+        )
 
         if close_resp.status_code == 200:
             print("[OK] Issue #98 closed successfully")
@@ -52,6 +63,7 @@ Closing this issue as resolved. 🦞 ZenClaw Guardian confirmed operational stat
         print(response.text[:500])
 
     return False
+
 
 if __name__ == "__main__":
     close_issue_98()

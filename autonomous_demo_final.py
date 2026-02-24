@@ -57,7 +57,10 @@ findings = [
             "Apache version 2.4.7 exposes server tokens in HTTP headers, "
             "revealing exact version number and operating system to potential attackers."
         ),
-        "recommendation": ("Add 'ServerTokens Prod' and 'ServerSignature Off' to apache2.conf " "and restart Apache."),
+        "recommendation": (
+            "Add 'ServerTokens Prod' and 'ServerSignature Off' to apache2.conf "
+            "and restart Apache."
+        ),
         "port": 80,
         "service": "http",
     },
@@ -68,10 +71,12 @@ findings = [
         "cvss": 6.5,
         "type": "weak_encryption",
         "description": (
-            "Server accepts connections using TLS 1.0 and 1.1 which have " "known vulnerabilities (POODLE, BEAST attacks)."
+            "Server accepts connections using TLS 1.0 and 1.1 which have "
+            "known vulnerabilities (POODLE, BEAST attacks)."
         ),
         "recommendation": (
-            "Disable TLS 1.0/1.1 in server configuration, enable only TLS 1.2 " "and 1.3 with strong cipher suites."
+            "Disable TLS 1.0/1.1 in server configuration, enable only TLS 1.2 "
+            "and 1.3 with strong cipher suites."
         ),
         "port": 443,
         "service": "https",
@@ -83,9 +88,13 @@ findings = [
         "cvss": 5.0,
         "type": "web_security",
         "description": (
-            "HTTP response missing Content-Security-Policy header, " "increasing risk of XSS attacks and data injection."
+            "HTTP response missing Content-Security-Policy header, "
+            "increasing risk of XSS attacks and data injection."
         ),
-        "recommendation": ("Implement strict CSP header: Content-Security-Policy: " "default-src 'self'; script-src 'self'"),
+        "recommendation": (
+            "Implement strict CSP header: Content-Security-Policy: "
+            "default-src 'self'; script-src 'self'"
+        ),
         "port": 80,
         "service": "http",
     },
@@ -96,7 +105,8 @@ findings = [
         "cvss": 3.7,
         "type": "information_disclosure",
         "description": (
-            "Nping echo service running on port 9929 can be used for " "network reconnaissance and amplification attacks."
+            "Nping echo service running on port 9929 can be used for "
+            "network reconnaissance and amplification attacks."
         ),
         "recommendation": "Restrict access to port 9929 using firewall rules or disable the service if not required.",
         "port": 9929,
@@ -120,7 +130,9 @@ for i, f in enumerate(findings, 1):
     sev = f["severity"].upper()
 
     print(f"\n{i}. {color}[{sev}]{reset} {f['name']}")
-    print(f"   ID: {f['id']} | CVSS: {f['cvss']} | Port: {f['port']}/{f['service']}")
+    print(
+        f"   ID: {f['id']} | CVSS: {f['cvss']} | Port: {f['port']}/{f['service']}"
+    )
     print(f"   Typ: {f['type']}")
     print(f"   Beschreibung: {f['description'][:100]}...")
     print(f"   Lösung: {f['recommendation'][:80]}...")
@@ -146,10 +158,23 @@ print(f"  GESAMT:               {len(findings)} findings")
 
 # Risiko-Score berechnen
 risk_score = sum(
-    [severity_counts["critical"] * 10, severity_counts["high"] * 7, severity_counts["medium"] * 4, severity_counts["low"] * 1]
+    [
+        severity_counts["critical"] * 10,
+        severity_counts["high"] * 7,
+        severity_counts["medium"] * 4,
+        severity_counts["low"] * 1,
+    ]
 )
 
-risk_level = "Kritisch" if risk_score > 50 else "Hoch" if risk_score > 30 else "Mittel" if risk_score > 10 else "Niedrig"
+risk_level = (
+    "Kritisch"
+    if risk_score > 50
+    else (
+        "Hoch"
+        if risk_score > 30
+        else "Mittel" if risk_score > 10 else "Niedrig"
+    )
+)
 print(f"\n  Risiko-Score: {risk_score}/100 ({risk_level})")
 
 # Reports speichern
@@ -195,7 +220,9 @@ with open(md_file, "w") as f:
     f.write(f"\n## Findings ({len(findings)} total)\n\n")
     for f_item in findings:
         f.write(f"### {f_item['id']}: {f_item['name']}\n\n")
-        f.write(f"- **Severity:** {f_item['severity'].upper()} (CVSS: {f_item['cvss']})\n")
+        f.write(
+            f"- **Severity:** {f_item['severity'].upper()} (CVSS: {f_item['cvss']})\n"
+        )
         f.write(f"- **Type:** {f_item['type']}\n")
         f.write(f"- **Port:** {f_item['port']}/{f_item['service']}\n")
         f.write(f"- **Description:** {f_item['description']}\n")

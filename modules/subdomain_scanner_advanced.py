@@ -187,7 +187,9 @@ class AdvancedSubdomainScanner(SubdomainScanner):
         "-south",
     ]
 
-    def __init__(self, orchestrator=None, max_workers: int = 50, timeout: int = 10):
+    def __init__(
+        self, orchestrator=None, max_workers: int = 50, timeout: int = 10
+    ):
         super().__init__(orchestrator, max_workers, timeout)
         self.virustotal_api_key: Optional[str] = None
         self.permutation_config = PermutationConfig()
@@ -237,42 +239,56 @@ class AdvancedSubdomainScanner(SubdomainScanner):
         if "axfr" in techniques:
             axfr_results = await self._try_zone_transfer(domain)
             discovered.update(axfr_results)
-            logger.info(f"[AdvancedScanner] Zone transfer found {len(axfr_results)} subdomains")
+            logger.info(
+                f"[AdvancedScanner] Zone transfer found {len(axfr_results)} subdomains"
+            )
 
         # Subdomain permutation
         if "permute" in techniques and permutation_depth > 0:
             permute_results = await self._permutation_scan(domain, discovered)
             discovered.update(permute_results)
-            logger.info(f"[AdvancedScanner] Permutation found {len(permute_results)} subdomains")
+            logger.info(
+                f"[AdvancedScanner] Permutation found {len(permute_results)} subdomains"
+            )
 
         # VirusTotal lookup
         if "virustotal" in techniques and self.virustotal_api_key:
             vt_results = await self._virustotal_lookup(domain)
             discovered.update(vt_results)
-            logger.info(f"[AdvancedScanner] VirusTotal found {len(vt_results)} subdomains")
+            logger.info(
+                f"[AdvancedScanner] VirusTotal found {len(vt_results)} subdomains"
+            )
 
         # DNS records analysis
         if "dnsrecords" in techniques:
             dns_results = await self._analyze_dns_records(domain)
             discovered.update(dns_results)
-            logger.info(f"[AdvancedScanner] DNS analysis found {len(dns_results)} subdomains")
+            logger.info(
+                f"[AdvancedScanner] DNS analysis found {len(dns_results)} subdomains"
+            )
 
         # IPv6 enumeration
         if "ipv6" in techniques:
             ipv6_results = await self._ipv6_enumeration(domain)
             discovered.update(ipv6_results)
-            logger.info(f"[AdvancedScanner] IPv6 found {len(ipv6_results)} subdomains")
+            logger.info(
+                f"[AdvancedScanner] IPv6 found {len(ipv6_results)} subdomains"
+            )
 
         # External sources
         if "alienvault" in techniques:
             av_results = await self._alienvault_lookup(domain)
             discovered.update(av_results)
-            logger.info(f"[AdvancedScanner] AlienVault found {len(av_results)} subdomains")
+            logger.info(
+                f"[AdvancedScanner] AlienVault found {len(av_results)} subdomains"
+            )
 
         if "bufferover" in techniques:
             bo_results = await self._bufferover_lookup(domain)
             discovered.update(bo_results)
-            logger.info(f"[AdvancedScanner] BufferOver found {len(bo_results)} subdomains")
+            logger.info(
+                f"[AdvancedScanner] BufferOver found {len(bo_results)} subdomains"
+            )
 
         # Filter and validate
         discovered = self._filter_wildcards(discovered, domain)
@@ -287,7 +303,9 @@ class AdvancedSubdomainScanner(SubdomainScanner):
                 self.results[subdomain] = SubdomainResult(subdomain=subdomain)
 
         duration = (datetime.now() - start_time).total_seconds()
-        logger.info(f"[AdvancedScanner] Completed in {duration:.2f}s - Total: {len(self.results)}")
+        logger.info(
+            f"[AdvancedScanner] Completed in {duration:.2f}s - Total: {len(self.results)}"
+        )
 
         return self.results
 
@@ -304,18 +322,34 @@ class AdvancedSubdomainScanner(SubdomainScanner):
                 ns_server = str(ns).rstrip(".")
                 try:
                     # Try AXFR
-                    zone = dns.zone.from_xfr(dns.query.xfr(ns_server, domain, timeout=self.timeout))
+                    zone = dns.zone.from_xfr(
+                        dns.query.xfr(ns_server, domain, timeout=self.timeout)
+                    )
                     if zone:
                         for name, node in zone.nodes.items():
                             subdomain = f"{name}.{domain}".rstrip(".")
                             if subdomain != domain:
                                 discovered.add(subdomain.lower())
-                        logger.info(f"[AdvancedScanner] AXFR successful from {ns_server}")
-                except (dns.exception.DNSException, ConnectionError, TimeoutError) as e:
-                    logger.debug(f"[AdvancedScanner] AXFR failed from {ns_server}: {e}")
+                        logger.info(
+                            f"[AdvancedScanner] AXFR successful from {ns_server}"
+                        )
+                except (
+                    dns.exception.DNSException,
+                    ConnectionError,
+                    TimeoutError,
+                ) as e:
+                    logger.debug(
+                        f"[AdvancedScanner] AXFR failed from {ns_server}: {e}"
+                    )
 
-        except (dns.exception.DNSException, ConnectionError, TimeoutError) as e:
-            logger.debug(f"[AdvancedScanner] Zone transfer enumeration failed: {e}")
+        except (
+            dns.exception.DNSException,
+            ConnectionError,
+            TimeoutError,
+        ) as e:
+            logger.debug(
+                f"[AdvancedScanner] Zone transfer enumeration failed: {e}"
+            )
 
         return discovered
 
@@ -361,7 +395,9 @@ class AdvancedSubdomainScanner(SubdomainScanner):
                 permutations.add(base.replace("-", "_"))
 
         # Limit permutations
-        permutations = list(permutations)[: self.permutation_config.max_permutations]
+        permutations = list(permutations)[
+            : self.permutation_config.max_permutations
+        ]
 
         # Test permutations
         semaphore = asyncio.Semaphore(self.max_workers)
@@ -373,10 +409,18 @@ class AdvancedSubdomainScanner(SubdomainScanner):
                     loop = asyncio.get_event_loop()
                     with ThreadPoolExecutor(max_workers=1) as executor:
                         await asyncio.wait_for(
-                            loop.run_in_executor(executor, lambda: dns.resolver.resolve(subdomain, "A")), timeout=self.timeout
+                            loop.run_in_executor(
+                                executor,
+                                lambda: dns.resolver.resolve(subdomain, "A"),
+                            ),
+                            timeout=self.timeout,
                         )
                     return subdomain
-                except (dns.exception.DNSException, asyncio.TimeoutError, ConnectionError):
+                except (
+                    dns.exception.DNSException,
+                    asyncio.TimeoutError,
+                    ConnectionError,
+                ):
                     return None
 
         tasks = [test_permutation(p) for p in permutations]
@@ -476,7 +520,17 @@ class AdvancedSubdomainScanner(SubdomainScanner):
         resolver.timeout = self.timeout
 
         # Common prefixes to check for AAAA records
-        prefixes = ["www", "mail", "ftp", "ns", "ns1", "ns2", "mx", "api", "dev"]
+        prefixes = [
+            "www",
+            "mail",
+            "ftp",
+            "ns",
+            "ns1",
+            "ns2",
+            "mx",
+            "api",
+            "dev",
+        ]
 
         for prefix in prefixes:
             subdomain = f"{prefix}.{domain}"
@@ -554,8 +608,12 @@ class AdvancedSubdomainScanner(SubdomainScanner):
                 "live_hosts": len(live_hosts),
                 "dns_only": len(dns_only),
             },
-            "technologies": dict(sorted(tech_stats.items(), key=lambda x: x[1], reverse=True)),
-            "servers": dict(sorted(server_stats.items(), key=lambda x: x[1], reverse=True)),
+            "technologies": dict(
+                sorted(tech_stats.items(), key=lambda x: x[1], reverse=True)
+            ),
+            "servers": dict(
+                sorted(server_stats.items(), key=lambda x: x[1], reverse=True)
+            ),
             "live_subdomains": [
                 {
                     "subdomain": r.subdomain,
@@ -591,7 +649,9 @@ async def scan_subdomains_advanced(
     if virustotal_key:
         scanner.set_virustotal_key(virustotal_key)
 
-    return await scanner.scan_advanced(domain=domain, techniques=techniques, check_http=check_http)
+    return await scanner.scan_advanced(
+        domain=domain, techniques=techniques, check_http=check_http
+    )
 
 
 if __name__ == "__main__":
@@ -609,7 +669,13 @@ if __name__ == "__main__":
 
     scanner = AdvancedSubdomainScanner(max_workers=30)
 
-    results = asyncio.run(scanner.scan_advanced(target, techniques=["basic", "permute", "dnsrecords"], check_http=True))
+    results = asyncio.run(
+        scanner.scan_advanced(
+            target,
+            techniques=["basic", "permute", "dnsrecords"],
+            check_http=True,
+        )
+    )
 
     print(f"\n[+] Found {len(results)} subdomains\n")
 

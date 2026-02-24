@@ -19,7 +19,9 @@ import logging
 
 from agents.v2.worker_agent import WorkerAgent
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 logger = logging.getLogger(__name__)
 
 
@@ -27,8 +29,12 @@ async def main():
     parser = argparse.ArgumentParser(description="Test Agent Worker")
     parser.add_argument("--agent-id", default="test-agent-1", help="Agent ID")
     parser.add_argument("--api-key", default="zen_test123", help="API Key")
-    parser.add_argument("--api-secret", default="sec_test456", help="API Secret")
-    parser.add_argument("--server", default="ws://localhost:8000/agents/ws", help="Server URL")
+    parser.add_argument(
+        "--api-secret", default="sec_test456", help="API Secret"
+    )
+    parser.add_argument(
+        "--server", default="ws://localhost:8000/agents/ws", help="Server URL"
+    )
 
     args = parser.parse_args()
 

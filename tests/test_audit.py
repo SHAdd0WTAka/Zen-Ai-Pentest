@@ -16,12 +16,24 @@ from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
 
-from audit.compliance import ComplianceControl, ComplianceFinding, ComplianceReporter, ComplianceStandard
+from audit.compliance import (
+    ComplianceControl,
+    ComplianceFinding,
+    ComplianceReporter,
+    ComplianceStandard,
+)
 from audit.config import AuditConfig, RetentionPolicy
 
 # Import audit modules
 from audit.logger import AuditLogEntry, AuditLogger, EventCategory, LogLevel
-from audit.siem import ElasticsearchBackend, GenericHTTPBackend, QRadarBackend, SIEMConfig, SIEMIntegration, SplunkBackend
+from audit.siem import (
+    ElasticsearchBackend,
+    GenericHTTPBackend,
+    QRadarBackend,
+    SIEMConfig,
+    SIEMIntegration,
+    SplunkBackend,
+)
 
 # ============================================================================
 # AuditLogEntry Tests
@@ -52,7 +64,12 @@ class TestAuditLogEntry:
     def test_hash_calculation(self):
         """Test hash is calculated on creation"""
         entry = AuditLogEntry(
-            id="test-id", timestamp=datetime.utcnow(), level="info", category="system", event_type="test", message="Test"
+            id="test-id",
+            timestamp=datetime.utcnow(),
+            level="info",
+            category="system",
+            event_type="test",
+            message="Test",
         )
 
         assert entry.hash is not None
@@ -62,16 +79,35 @@ class TestAuditLogEntry:
         """Test hash is consistent for same data"""
         ts = datetime.utcnow()
 
-        entry1 = AuditLogEntry(id="test-id", timestamp=ts, level="info", category="system", event_type="test", message="Test")
+        entry1 = AuditLogEntry(
+            id="test-id",
+            timestamp=ts,
+            level="info",
+            category="system",
+            event_type="test",
+            message="Test",
+        )
 
-        entry2 = AuditLogEntry(id="test-id", timestamp=ts, level="info", category="system", event_type="test", message="Test")
+        entry2 = AuditLogEntry(
+            id="test-id",
+            timestamp=ts,
+            level="info",
+            category="system",
+            event_type="test",
+            message="Test",
+        )
 
         assert entry1.hash == entry2.hash
 
     def test_sign_and_verify(self):
         """Test signing and verification"""
         entry = AuditLogEntry(
-            id="test-id", timestamp=datetime.utcnow(), level="info", category="system", event_type="test", message="Test"
+            id="test-id",
+            timestamp=datetime.utcnow(),
+            level="info",
+            category="system",
+            event_type="test",
+            message="Test",
         )
 
         secret_key = "test-secret-key"
@@ -84,7 +120,12 @@ class TestAuditLogEntry:
     def test_verify_wrong_key(self):
         """Test verification fails with wrong key"""
         entry = AuditLogEntry(
-            id="test-id", timestamp=datetime.utcnow(), level="info", category="system", event_type="test", message="Test"
+            id="test-id",
+            timestamp=datetime.utcnow(),
+            level="info",
+            category="system",
+            event_type="test",
+            message="Test",
         )
 
         entry.sign("correct-key")
@@ -94,7 +135,12 @@ class TestAuditLogEntry:
     def test_verify_no_signature(self):
         """Test verification fails without signature"""
         entry = AuditLogEntry(
-            id="test-id", timestamp=datetime.utcnow(), level="info", category="system", event_type="test", message="Test"
+            id="test-id",
+            timestamp=datetime.utcnow(),
+            level="info",
+            category="system",
+            event_type="test",
+            message="Test",
         )
 
         assert entry.verify("any-key") is False
@@ -116,7 +162,12 @@ class TestAuditLogEntry:
     def test_verify_chain_valid(self):
         """Test valid chain verification"""
         entry1 = AuditLogEntry(
-            id="entry1", timestamp=datetime.utcnow(), level="info", category="system", event_type="test", message="First"
+            id="entry1",
+            timestamp=datetime.utcnow(),
+            level="info",
+            category="system",
+            event_type="test",
+            message="First",
         )
 
         entry2 = AuditLogEntry(
@@ -134,7 +185,12 @@ class TestAuditLogEntry:
     def test_verify_chain_invalid(self):
         """Test invalid chain verification"""
         entry1 = AuditLogEntry(
-            id="entry1", timestamp=datetime.utcnow(), level="info", category="system", event_type="test", message="First"
+            id="entry1",
+            timestamp=datetime.utcnow(),
+            level="info",
+            category="system",
+            event_type="test",
+            message="First",
         )
 
         entry2 = AuditLogEntry(
@@ -171,7 +227,12 @@ class TestAuditLogEntry:
     def test_from_dict(self):
         """Test creating entry from dictionary"""
         original = AuditLogEntry(
-            id="test-id", timestamp=datetime.utcnow(), level="info", category="system", event_type="test", message="Test"
+            id="test-id",
+            timestamp=datetime.utcnow(),
+            level="info",
+            category="system",
+            event_type="test",
+            message="Test",
         )
 
         data = original.to_dict()
@@ -212,7 +273,10 @@ class TestAuditLogger:
     async def test_log_basic(self, logger):
         """Test basic logging"""
         entry = await logger.log(
-            level=LogLevel.INFO, category=EventCategory.SYSTEM, event_type="test_event", message="Test message"
+            level=LogLevel.INFO,
+            category=EventCategory.SYSTEM,
+            event_type="test_event",
+            message="Test message",
         )
 
         assert entry is not None
@@ -242,11 +306,19 @@ class TestAuditLogger:
     @pytest.mark.asyncio
     async def test_convenience_methods(self, logger):
         """Test convenience logging methods"""
-        await logger.debug(EventCategory.SYSTEM, "debug_event", "Debug message")
+        await logger.debug(
+            EventCategory.SYSTEM, "debug_event", "Debug message"
+        )
         await logger.info(EventCategory.SYSTEM, "info_event", "Info message")
-        await logger.warning(EventCategory.SYSTEM, "warn_event", "Warning message")
-        await logger.error(EventCategory.SYSTEM, "error_event", "Error message")
-        await logger.critical(EventCategory.SYSTEM, "critical_event", "Critical message")
+        await logger.warning(
+            EventCategory.SYSTEM, "warn_event", "Warning message"
+        )
+        await logger.error(
+            EventCategory.SYSTEM, "error_event", "Error message"
+        )
+        await logger.critical(
+            EventCategory.SYSTEM, "critical_event", "Critical message"
+        )
 
         assert len(logger._entries) == 5
         assert logger._entries[0].level == "debug"
@@ -258,7 +330,9 @@ class TestAuditLogger:
     @pytest.mark.asyncio
     async def test_security_log(self, logger):
         """Test security event logging"""
-        entry = await logger.security("security_event", "Security alert", user_id="admin")
+        entry = await logger.security(
+            "security_event", "Security alert", user_id="admin"
+        )
 
         assert entry.level == "alert"
         assert entry.category == "security"
@@ -304,15 +378,22 @@ class TestAuditLogger:
 
         await logger.info(EventCategory.SYSTEM, "event", "Message")
 
-        results = await logger.query(start_time=now - timedelta(minutes=5), end_time=now + timedelta(minutes=5))
+        results = await logger.query(
+            start_time=now - timedelta(minutes=5),
+            end_time=now + timedelta(minutes=5),
+        )
 
         assert len(results) == 1
 
     @pytest.mark.asyncio
     async def test_query_by_user(self, logger):
         """Test querying by user ID"""
-        await logger.info(EventCategory.SYSTEM, "event", "Message", user_id="user1")
-        await logger.info(EventCategory.SYSTEM, "event", "Message", user_id="user2")
+        await logger.info(
+            EventCategory.SYSTEM, "event", "Message", user_id="user1"
+        )
+        await logger.info(
+            EventCategory.SYSTEM, "event", "Message", user_id="user2"
+        )
 
         results = await logger.query(user_id="user1")
 
@@ -336,7 +417,12 @@ class TestAuditLogger:
         """Test integrity verification with chain break"""
         # Create entries manually to simulate tampering
         entry1 = AuditLogEntry(
-            id="entry1", timestamp=datetime.utcnow(), level="info", category="system", event_type="test", message="First"
+            id="entry1",
+            timestamp=datetime.utcnow(),
+            level="info",
+            category="system",
+            event_type="test",
+            message="First",
         )
         entry1.sign(logger._secret_key)
 
@@ -399,7 +485,9 @@ class TestAuditLogger:
     @pytest.mark.asyncio
     async def test_session_context_manager(self):
         """Test session context manager"""
-        async with AuditLogger(AuditConfig(async_logging=False)).session() as logger:
+        async with AuditLogger(
+            AuditConfig(async_logging=False)
+        ).session() as logger:
             await logger.info(EventCategory.SYSTEM, "event", "Message")
 
         assert len(logger._entries) == 1
@@ -427,7 +515,9 @@ class TestAuditConfig:
         config = AuditConfig.strict()
 
         assert config.compliance_mode == "strict"
-        assert config.async_logging is False  # Synchronous for strict compliance
+        assert (
+            config.async_logging is False
+        )  # Synchronous for strict compliance
         assert config.siem_enabled is True
 
     def test_retention_policies(self):
@@ -435,11 +525,22 @@ class TestAuditConfig:
         config = AuditConfig()
 
         # Check keys exist using .keys() for Enum keys
-        assert any(k.value == "debug" for k in config.retention_policies.keys())
-        assert any(k.value == "critical" for k in config.retention_policies.keys())
+        assert any(
+            k.value == "debug" for k in config.retention_policies.keys()
+        )
+        assert any(
+            k.value == "critical" for k in config.retention_policies.keys()
+        )
         # Check the value for CRITICAL level
-        critical_key = next(k for k in config.retention_policies.keys() if k.value == "critical")
-        assert config.retention_policies[critical_key] == RetentionPolicy.PERMANENT
+        critical_key = next(
+            k
+            for k in config.retention_policies.keys()
+            if k.value == "critical"
+        )
+        assert (
+            config.retention_policies[critical_key]
+            == RetentionPolicy.PERMANENT
+        )
 
     def test_mask_fields(self):
         """Test default mask fields"""
@@ -465,7 +566,13 @@ class TestComplianceReporter:
         logger = AsyncMock(spec=AuditLogger)
         logger.query = AsyncMock(return_value=[])
         logger.verify_integrity = AsyncMock(
-            return_value={"total_entries": 0, "valid_signatures": 0, "invalid_signatures": 0, "chain_breaks": 0, "errors": []}
+            return_value={
+                "total_entries": 0,
+                "valid_signatures": 0,
+                "invalid_signatures": 0,
+                "chain_breaks": 0,
+                "errors": [],
+            }
         )
         return logger
 
@@ -484,7 +591,9 @@ class TestComplianceReporter:
 
     def test_get_controls_for_standard_iso27001(self, reporter):
         """Test getting ISO 27001 controls"""
-        controls = reporter._get_controls_for_standard(ComplianceStandard.ISO27001)
+        controls = reporter._get_controls_for_standard(
+            ComplianceStandard.ISO27001
+        )
 
         assert len(controls) > 0
         assert all(c.standard == ComplianceStandard.ISO27001 for c in controls)
@@ -521,12 +630,18 @@ class TestComplianceReporter:
         assert report["summary"]["total_controls"] > 0
 
     @pytest.mark.asyncio
-    async def test_generate_report_with_date_range(self, reporter, mock_logger):
+    async def test_generate_report_with_date_range(
+        self, reporter, mock_logger
+    ):
         """Test generating report with date range"""
         start_date = datetime.utcnow() - timedelta(days=30)
         end_date = datetime.utcnow()
 
-        await reporter.generate_report(ComplianceStandard.ISO27001, start_date=start_date, end_date=end_date)
+        await reporter.generate_report(
+            ComplianceStandard.ISO27001,
+            start_date=start_date,
+            end_date=end_date,
+        )
 
         mock_logger.query.assert_called_once()
         call_kwargs = mock_logger.query.call_args.kwargs
@@ -579,7 +694,12 @@ class TestComplianceReporter:
     def test_finding_to_dict(self, reporter):
         """Test converting finding to dict"""
         finding = ComplianceFinding(
-            control_id="A.9.1.2", status="pass", evidence_count=5, findings=[], recommendations=[], severity=None
+            control_id="A.9.1.2",
+            status="pass",
+            evidence_count=5,
+            findings=[],
+            recommendations=[],
+            severity=None,
         )
 
         data = reporter._finding_to_dict(finding)
@@ -592,13 +712,28 @@ class TestComplianceReporter:
         """Test summarizing logs by category"""
         logs = [
             AuditLogEntry(
-                id="1", timestamp=datetime.utcnow(), level="info", category="system", event_type="test", message="Test"
+                id="1",
+                timestamp=datetime.utcnow(),
+                level="info",
+                category="system",
+                event_type="test",
+                message="Test",
             ),
             AuditLogEntry(
-                id="2", timestamp=datetime.utcnow(), level="info", category="system", event_type="test", message="Test"
+                id="2",
+                timestamp=datetime.utcnow(),
+                level="info",
+                category="system",
+                event_type="test",
+                message="Test",
             ),
             AuditLogEntry(
-                id="3", timestamp=datetime.utcnow(), level="info", category="security", event_type="test", message="Test"
+                id="3",
+                timestamp=datetime.utcnow(),
+                level="info",
+                category="security",
+                event_type="test",
+                message="Test",
             ),
         ]
 
@@ -717,12 +852,19 @@ class TestSIEMIntegration:
         mock_session.__aexit__ = AsyncMock(return_value=None)
         mock_session_class.return_value = mock_session
 
-        config = SIEMConfig(url="https://splunk.example.com", api_key="test-key")
+        config = SIEMConfig(
+            url="https://splunk.example.com", api_key="test-key"
+        )
         backend = SplunkBackend(config)
 
         entries = [
             AuditLogEntry(
-                id="1", timestamp=datetime.utcnow(), level="info", category="system", event_type="test", message="Test"
+                id="1",
+                timestamp=datetime.utcnow(),
+                level="info",
+                category="system",
+                event_type="test",
+                message="Test",
             )
         ]
 
@@ -757,12 +899,20 @@ class TestSIEMIntegration:
         # Skip this test for now as mocking is complex
         pytest.skip("Complex mocking of async session - tested in integration")
 
-        configs = [SIEMConfig(url="https://es1.example.com:9200"), SIEMConfig(url="https://es2.example.com:9200")]
+        configs = [
+            SIEMConfig(url="https://es1.example.com:9200"),
+            SIEMConfig(url="https://es2.example.com:9200"),
+        ]
         integration = SIEMIntegration(configs)
 
         entries = [
             AuditLogEntry(
-                id="1", timestamp=datetime.utcnow(), level="info", category="system", event_type="test", message="Test"
+                id="1",
+                timestamp=datetime.utcnow(),
+                level="info",
+                category="system",
+                event_type="test",
+                message="Test",
             )
         ]
 
@@ -811,9 +961,17 @@ class TestAuditIntegration:
 
         try:
             # Log various events
-            await logger.info(EventCategory.SYSTEM, "startup", "System started")
-            await logger.security("auth_failure", "Failed login attempt", user_id="user1")
-            await logger.warning(EventCategory.SECURITY, "scan_started", "Security scan initiated")
+            await logger.info(
+                EventCategory.SYSTEM, "startup", "System started"
+            )
+            await logger.security(
+                "auth_failure", "Failed login attempt", user_id="user1"
+            )
+            await logger.warning(
+                EventCategory.SECURITY,
+                "scan_started",
+                "Security scan initiated",
+            )
 
             # Verify integrity
             integrity = await logger.verify_integrity()

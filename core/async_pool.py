@@ -164,7 +164,9 @@ class SmartHTTPClient(RateLimitedClient):
         super().__init__(name, rate_config, circuit_config)
         self.pool = ConnectionPool(pool_config)
 
-    async def _do_request(self, method: str, url: str, **kwargs) -> Dict[str, Any]:
+    async def _do_request(
+        self, method: str, url: str, **kwargs
+    ) -> Dict[str, Any]:
         """Execute HTTP request with full error handling"""
         async with self.pool.request(method, url, **kwargs) as response:
             content_type = response.headers.get("Content-Type", "")
@@ -213,7 +215,9 @@ class ParallelProcessor:
         bounded = [bounded_task(t) for t in tasks]
 
         # Execute with exception handling
-        return await asyncio.gather(*bounded, return_exceptions=return_exceptions)
+        return await asyncio.gather(
+            *bounded, return_exceptions=return_exceptions
+        )
 
     async def map(self, func: callable, items: list, *args, **kwargs) -> list:
         """
@@ -272,7 +276,9 @@ async def example_with_circuit_breaker():
         name="api-client",
         pool_config=PoolConfig(limit_per_host=5),
         rate_config=RateLimitConfig(requests_per_second=2.0, burst_size=5),
-        circuit_config=CircuitBreakerConfig(failure_threshold=3, recovery_timeout=30.0),
+        circuit_config=CircuitBreakerConfig(
+            failure_threshold=3, recovery_timeout=30.0
+        ),
     )
 
     try:

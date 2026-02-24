@@ -28,7 +28,9 @@ class TestJWTToken:
 
     def test_create_access_token(self):
         """Test JWT token creation"""
-        token = create_access_token(data={"sub": "testuser"}, expires_delta=timedelta(minutes=30))
+        token = create_access_token(
+            data={"sub": "testuser"}, expires_delta=timedelta(minutes=30)
+        )
         assert isinstance(token, str)
         assert len(token) > 0
 

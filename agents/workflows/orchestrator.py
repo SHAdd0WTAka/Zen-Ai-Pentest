@@ -97,7 +97,9 @@ class Task:
     parameters: Dict[str, Any]
     status: str = "pending"  # pending, assigned, running, completed, failed
     result: Optional[Dict] = None
-    created_at: str = field(default_factory=lambda: datetime.utcnow().isoformat())
+    created_at: str = field(
+        default_factory=lambda: datetime.utcnow().isoformat()
+    )
     started_at: Optional[str] = None
     completed_at: Optional[str] = None
 
@@ -120,7 +122,9 @@ class Workflow:
     agents: List[str] = field(default_factory=list)
     tasks: Dict[str, Task] = field(default_factory=dict)
     findings: List[Dict] = field(default_factory=list)
-    created_at: str = field(default_factory=lambda: datetime.utcnow().isoformat())
+    created_at: str = field(
+        default_factory=lambda: datetime.utcnow().isoformat()
+    )
     started_at: Optional[str] = None
     completed_at: Optional[str] = None
     metadata: Dict[str, Any] = field(default_factory=dict)
@@ -203,7 +207,9 @@ class WorkflowOrchestrator:
     - Progress tracking
     """
 
-    def __init__(self, step_timeout: int = 300, risk_level: Optional[RiskLevel] = None):
+    def __init__(
+        self, step_timeout: int = 300, risk_level: Optional[RiskLevel] = None
+    ):
         self.workflows: Dict[str, Workflow] = {}
         self.active_workflows: Set[str] = set()
         self.task_callbacks: Dict[str, Callable] = {}
@@ -224,8 +230,12 @@ class WorkflowOrchestrator:
             self.risk_manager = None
             self.guardrails_enabled = False
 
-        guardrails_status = "enabled" if self.guardrails_enabled else "disabled"
-        logger.info(f"✅ WorkflowOrchestrator initialized (step_timeout={step_timeout}s, guardrails={guardrails_status})")
+        guardrails_status = (
+            "enabled" if self.guardrails_enabled else "disabled"
+        )
+        logger.info(
+            f"✅ WorkflowOrchestrator initialized (step_timeout={step_timeout}s, guardrails={guardrails_status})"
+        )
 
     def _validate_target(self, target: str) -> tuple[bool, Optional[str]]:
         """
@@ -262,7 +272,10 @@ class WorkflowOrchestrator:
             if "Invalid IP address format" in (result.reason or ""):
                 domain_result = validate_domain(target)
                 if not domain_result.is_valid:
-                    return False, f"Domain validation failed: {domain_result.reason}"
+                    return (
+                        False,
+                        f"Domain validation failed: {domain_result.reason}",
+                    )
                 return True, None
             # Otherwise it was a valid IP format but blocked
             return False, f"IP validation failed: {result.reason}"
@@ -274,7 +287,9 @@ class WorkflowOrchestrator:
 
         return True, None
 
-    def _validate_tool_permission(self, tool_name: str) -> tuple[bool, Optional[str]]:
+    def _validate_tool_permission(
+        self, tool_name: str
+    ) -> tuple[bool, Optional[str]]:
         """
         Check if tool is allowed at current risk level.
 
@@ -321,7 +336,11 @@ class WorkflowOrchestrator:
             logger.debug(f"VPN check error (non-critical): {e}")
 
     async def start_workflow(
-        self, workflow_type: str, target: str, agents: List[str], parameters: Optional[Dict] = None
+        self,
+        workflow_type: str,
+        target: str,
+        agents: List[str],
+        parameters: Optional[Dict] = None,
     ) -> str:
         """
         Start a new workflow.
@@ -371,7 +390,9 @@ class WorkflowOrchestrator:
 
         self.workflows[workflow_id] = workflow
 
-        logger.info(f"🚀 Workflow {workflow_id} created ({workflow_type} on {target})")
+        logger.info(
+            f"🚀 Workflow {workflow_id} created ({workflow_type} on {target})"
+        )
 
         # Start workflow execution
         asyncio.create_task(self._execute_workflow(workflow_id))
@@ -396,7 +417,9 @@ class WorkflowOrchestrator:
                     break
 
                 workflow.current_step = step
-                logger.info(f"▶️  Workflow {workflow_id}: Starting step '{step}'")
+                logger.info(
+                    f"▶️  Workflow {workflow_id}: Starting step '{step}'"
+                )
 
                 success = await self._execute_step(workflow_id, step)
 
@@ -411,7 +434,9 @@ class WorkflowOrchestrator:
                     )
                 else:
                     workflow.failed_steps.append(step)
-                    logger.error(f"❌ Workflow {workflow_id}: Step '{step}' failed")
+                    logger.error(
+                        f"❌ Workflow {workflow_id}: Step '{step}' failed"
+                    )
 
                     # Continue or fail based on step criticality
                     if step in [WorkflowStep.REPORTING.value]:
@@ -422,10 +447,14 @@ class WorkflowOrchestrator:
                 pass  # Already set
             elif len(workflow.failed_steps) == 0:
                 workflow.state = WorkflowState.COMPLETED
-                logger.info(f"✅ Workflow {workflow_id} completed successfully")
+                logger.info(
+                    f"✅ Workflow {workflow_id} completed successfully"
+                )
             elif len(workflow.completed_steps) > 0:
                 workflow.state = WorkflowState.COMPLETED  # Partial completion
-                logger.info(f"⚠️  Workflow {workflow_id} completed with {len(workflow.failed_steps)} failed steps")
+                logger.info(
+                    f"⚠️  Workflow {workflow_id} completed with {len(workflow.failed_steps)} failed steps"
+                )
             else:
                 workflow.state = WorkflowState.FAILED
                 logger.error(f"❌ Workflow {workflow_id} failed")
@@ -465,7 +494,9 @@ class WorkflowOrchestrator:
             await self._distribute_tasks(workflow_id, tasks)
 
             # Wait for all tasks to complete
-            completed = await self._wait_for_tasks(workflow_id, tasks, self.step_timeout)
+            completed = await self._wait_for_tasks(
+                workflow_id, tasks, self.step_timeout
+            )
 
             return completed
 
@@ -515,7 +546,9 @@ class WorkflowOrchestrator:
             # Check if tool is allowed at current risk level
             is_allowed, error = self._validate_tool_permission(tool_name)
             if not is_allowed:
-                logger.warning(f"🛡️  Guardrails blocked tool '{tool_name}': {error}")
+                logger.warning(
+                    f"🛡️  Guardrails blocked tool '{tool_name}': {error}"
+                )
                 continue  # Skip this task
 
             task_id = f"task_{workflow_id}_{step}_{i}"
@@ -534,7 +567,9 @@ class WorkflowOrchestrator:
             workflow.tasks[task_id] = task
 
         if not tasks and definitions:
-            logger.warning(f"🛡️  All tasks for step '{step}' were blocked by guardrails")
+            logger.warning(
+                f"🛡️  All tasks for step '{step}' were blocked by guardrails"
+            )
 
         return tasks
 
@@ -560,16 +595,24 @@ class WorkflowOrchestrator:
                 # Check if agent is connected
                 if agent_connection_manager.is_agent_connected(agent_id):
                     # Send task via WebSocket
-                    success = await agent_connection_manager.send_task(agent_id, task.to_dict())
+                    success = await agent_connection_manager.send_task(
+                        agent_id, task.to_dict()
+                    )
 
                     if success:
-                        logger.info(f"📤 Task {task.id} sent to agent {agent_id}")
+                        logger.info(
+                            f"📤 Task {task.id} sent to agent {agent_id}"
+                        )
                         task.status = "sent"
                     else:
-                        logger.error(f"❌ Failed to send task {task.id} to agent {agent_id}")
+                        logger.error(
+                            f"❌ Failed to send task {task.id} to agent {agent_id}"
+                        )
                         task.status = "failed"
                 else:
-                    logger.warning(f"⚠️  Agent {agent_id} not connected, task {task.id} queued")
+                    logger.warning(
+                        f"⚠️  Agent {agent_id} not connected, task {task.id} queued"
+                    )
                     task.status = "queued"
 
                 # Also put in queue for tracking
@@ -582,14 +625,18 @@ class WorkflowOrchestrator:
                 task.status = "pending"
                 await self._task_queue.put(task)
 
-    async def _wait_for_tasks(self, workflow_id: str, tasks: List[Task], timeout: int) -> bool:
+    async def _wait_for_tasks(
+        self, workflow_id: str, tasks: List[Task], timeout: int
+    ) -> bool:
         """Wait for all tasks to complete"""
         {t.id for t in tasks}
         start_time = asyncio.get_event_loop().time()
 
         while True:
             # Check if all tasks completed
-            completed = sum(1 for t in tasks if t.status in ["completed", "failed"])
+            completed = sum(
+                1 for t in tasks if t.status in ["completed", "failed"]
+            )
 
             if completed == len(tasks):
                 # All done
@@ -616,7 +663,9 @@ class WorkflowOrchestrator:
             if task_id in workflow.tasks:
                 task = workflow.tasks[task_id]
                 task.result = result
-                task.status = "completed" if not result.get("error") else "failed"
+                task.status = (
+                    "completed" if not result.get("error") else "failed"
+                )
                 task.completed_at = datetime.utcnow().isoformat()
 
                 # Add findings
@@ -660,7 +709,10 @@ class WorkflowOrchestrator:
 
         workflow = self.workflows[workflow_id]
 
-        if workflow.state not in [WorkflowState.RUNNING, WorkflowState.PENDING]:
+        if workflow.state not in [
+            WorkflowState.RUNNING,
+            WorkflowState.PENDING,
+        ]:
             return False
 
         workflow.state = WorkflowState.CANCELLED

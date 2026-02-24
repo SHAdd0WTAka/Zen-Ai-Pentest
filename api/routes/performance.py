@@ -70,13 +70,17 @@ async def delete_cache_key(key: str, cache: CacheManager = Depends(get_cache)):
 
 
 @router.get("/pools/stats")
-async def get_pool_stats(pool_manager: PoolManager = Depends(get_pool_manager)):
+async def get_pool_stats(
+    pool_manager: PoolManager = Depends(get_pool_manager),
+):
     """Get connection pool statistics"""
     return pool_manager.get_all_stats()
 
 
 @router.get("/pools/{name}/stats")
-async def get_pool_stats_by_name(name: str, pool_manager: PoolManager = Depends(get_pool_manager)):
+async def get_pool_stats_by_name(
+    name: str, pool_manager: PoolManager = Depends(get_pool_manager)
+):
     """Get specific pool statistics"""
     pool = pool_manager.get(name)
     if not pool:
@@ -85,7 +89,9 @@ async def get_pool_stats_by_name(name: str, pool_manager: PoolManager = Depends(
 
 
 @router.post("/pools/{name}/cleanup")
-async def cleanup_pool(name: str, pool_manager: PoolManager = Depends(get_pool_manager)):
+async def cleanup_pool(
+    name: str, pool_manager: PoolManager = Depends(get_pool_manager)
+):
     """Clean up idle connections in pool"""
     pool = pool_manager.get(name)
     if not pool:
@@ -103,5 +109,9 @@ async def detailed_health_check():
     """Detailed performance health check"""
     return {
         "status": "healthy",
-        "components": {"cache": "operational", "pools": "operational", "async_optimizer": "operational"},
+        "components": {
+            "cache": "operational",
+            "pools": "operational",
+            "async_optimizer": "operational",
+        },
     }

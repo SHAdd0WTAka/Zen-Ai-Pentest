@@ -5,14 +5,42 @@ Penetration Testing Modules for Zen AI
 from .cve_database import CVEDatabase, CVEEntry, RansomwareEntry
 from .exploit_assist import ExploitAssistModule
 from .nuclei_integration import NucleiIntegration, NucleiTemplateManager
-from .osint import DomainInfo, EmailProfile, OSINTModule, OSINTResult, check_email_breach, enumerate_subdomains, harvest_emails
-from .protonvpn import ProtonVPNManager, VPNProtocol, VPNSecurityLevel, VPNServer, VPNStatus, quick_connect, secure_connect
+from .osint import (
+    DomainInfo,
+    EmailProfile,
+    OSINTModule,
+    OSINTResult,
+    check_email_breach,
+    enumerate_subdomains,
+    harvest_emails,
+)
+from .protonvpn import (
+    ProtonVPNManager,
+    VPNProtocol,
+    VPNSecurityLevel,
+    VPNServer,
+    VPNStatus,
+    quick_connect,
+    secure_connect,
+)
 from .recon import ReconModule
 
 # from .report_gen import ReportGenerator  # Module not available
-from .sql_injection_db import DBType, SQLInjectionDatabase, SQLITechnique, SQLPayload
-from .subdomain_scanner import SubdomainResult, SubdomainScanner, scan_subdomains
-from .subdomain_scanner_advanced import AdvancedSubdomainScanner, scan_subdomains_advanced
+from .sql_injection_db import (
+    DBType,
+    SQLInjectionDatabase,
+    SQLITechnique,
+    SQLPayload,
+)
+from .subdomain_scanner import (
+    SubdomainResult,
+    SubdomainScanner,
+    scan_subdomains,
+)
+from .subdomain_scanner_advanced import (
+    AdvancedSubdomainScanner,
+    scan_subdomains_advanced,
+)
 from .vuln_scanner import VulnScannerModule
 
 __all__ = [

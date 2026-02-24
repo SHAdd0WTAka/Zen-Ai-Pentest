@@ -27,7 +27,11 @@ class TestLLMResponse:
         from core.orchestrator import LLMResponse, QualityLevel
 
         response = LLMResponse(
-            content="Test response", source="test_backend", latency=0.5, quality=QualityLevel.HIGH, metadata={"tokens": 100}
+            content="Test response",
+            source="test_backend",
+            latency=0.5,
+            quality=QualityLevel.HIGH,
+            metadata={"tokens": 100},
         )
 
         assert response.content == "Test response"
@@ -40,7 +44,12 @@ class TestLLMResponse:
         """Test LLMResponse with default metadata"""
         from core.orchestrator import LLMResponse, QualityLevel
 
-        response = LLMResponse(content="Test", source="backend", latency=1.0, quality=QualityLevel.LOW)
+        response = LLMResponse(
+            content="Test",
+            source="backend",
+            latency=1.0,
+            quality=QualityLevel.LOW,
+        )
 
         assert response.metadata is None
 
@@ -159,7 +168,11 @@ class TestZenOrchestrator:
     @pytest.mark.asyncio
     async def test_process_with_backends(self):
         """Test process with registered backends"""
-        from core.orchestrator import BaseBackend, QualityLevel, ZenOrchestrator
+        from core.orchestrator import (
+            BaseBackend,
+            QualityLevel,
+            ZenOrchestrator,
+        )
 
         class TestBackend(BaseBackend):
             async def chat(self, prompt: str, context: str = "") -> str:
@@ -174,7 +187,9 @@ class TestZenOrchestrator:
 
         # Test process
         async with backend:
-            response = await orchestrator.process("Hello", required_quality=QualityLevel.LOW)
+            response = await orchestrator.process(
+                "Hello", required_quality=QualityLevel.LOW
+            )
 
         assert response is not None
         assert isinstance(response.content, str)
@@ -232,7 +247,11 @@ class TestOrchestratorWithMocks:
     @pytest.mark.asyncio
     async def test_process_with_mock_backend(self):
         """Test process with mock backend"""
-        from core.orchestrator import BaseBackend, QualityLevel, ZenOrchestrator
+        from core.orchestrator import (
+            BaseBackend,
+            QualityLevel,
+            ZenOrchestrator,
+        )
 
         class MockBackend(BaseBackend):
             async def chat(self, prompt: str, context: str = "") -> str:
@@ -246,7 +265,9 @@ class TestOrchestratorWithMocks:
         orchestrator.add_backend(backend)
 
         async with backend:
-            response = await orchestrator.process("Test prompt", required_quality=QualityLevel.MEDIUM)
+            response = await orchestrator.process(
+                "Test prompt", required_quality=QualityLevel.MEDIUM
+            )
 
         assert response is not None
         assert response.content == "Mock response"
@@ -300,6 +321,10 @@ class TestAsyncOperations:
 
         # Call both backends concurrently
         async with backend1, backend2:
-            results = await asyncio.gather(backend1.chat("test"), backend2.chat("test"), return_exceptions=True)
+            results = await asyncio.gather(
+                backend1.chat("test"),
+                backend2.chat("test"),
+                return_exceptions=True,
+            )
 
         assert len(results) == 2

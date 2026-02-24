@@ -95,8 +95,12 @@ class Task:
             "state": self.state.value,
             "metadata": self.metadata,
             "created_at": self.created_at.isoformat(),
-            "started_at": self.started_at.isoformat() if self.started_at else None,
-            "completed_at": self.completed_at.isoformat() if self.completed_at else None,
+            "started_at": (
+                self.started_at.isoformat() if self.started_at else None
+            ),
+            "completed_at": (
+                self.completed_at.isoformat() if self.completed_at else None
+            ),
             "progress": self.progress,
             "result": self.result,
             "error": self.error,
@@ -139,7 +143,12 @@ class TaskManager:
         task = await manager.get_task(task_id)
     """
 
-    def __init__(self, max_workers: int = 4, max_concurrent: int = 10, queue_size: int = 1000):
+    def __init__(
+        self,
+        max_workers: int = 4,
+        max_concurrent: int = 10,
+        queue_size: int = 1000,
+    ):
         self.max_workers = max_workers
         self.max_concurrent = max_concurrent
         self.queue_size = queue_size
@@ -149,7 +158,9 @@ class TaskManager:
         self._results: Dict[str, Dict[str, Any]] = {}
 
         # Priority queue
-        self._queue: asyncio.PriorityQueue = asyncio.PriorityQueue(maxsize=queue_size)
+        self._queue: asyncio.PriorityQueue = asyncio.PriorityQueue(
+            maxsize=queue_size
+        )
 
         # Handlers
         self._handlers: Dict[str, TaskHandler] = {}
@@ -172,12 +183,20 @@ class TaskManager:
     @property
     def pending_tasks(self) -> List[str]:
         """Get list of pending task IDs"""
-        return [tid for tid, task in self._tasks.items() if task.state in (TaskState.PENDING, TaskState.QUEUED)]
+        return [
+            tid
+            for tid, task in self._tasks.items()
+            if task.state in (TaskState.PENDING, TaskState.QUEUED)
+        ]
 
     @property
     def running_tasks(self) -> List[str]:
         """Get list of running task IDs"""
-        return [tid for tid, task in self._tasks.items() if task.state == TaskState.RUNNING]
+        return [
+            tid
+            for tid, task in self._tasks.items()
+            if task.state == TaskState.RUNNING
+        ]
 
     # ==================== Lifecycle ====================
 
@@ -192,7 +211,10 @@ class TaskManager:
         self._semaphore = asyncio.Semaphore(self.max_concurrent)
 
         # Start worker tasks
-        self._workers = [asyncio.create_task(self._worker_loop(i)) for i in range(self.max_workers)]
+        self._workers = [
+            asyncio.create_task(self._worker_loop(i))
+            for i in range(self.max_workers)
+        ]
 
         logger.info("✅ TaskManager started")
 
@@ -213,7 +235,10 @@ class TaskManager:
         # Wait for workers with timeout
         if self._workers:
             try:
-                await asyncio.wait_for(asyncio.gather(*self._workers, return_exceptions=True), timeout=timeout)
+                await asyncio.wait_for(
+                    asyncio.gather(*self._workers, return_exceptions=True),
+                    timeout=timeout,
+                )
             except asyncio.TimeoutError:
                 logger.warning("TaskManager shutdown timed out")
 
@@ -240,7 +265,11 @@ class TaskManager:
 
         # Add to priority queue
         # Lower priority value = higher priority
-        priority_tuple = (task.priority.value, task.created_at.timestamp(), task.id)
+        priority_tuple = (
+            task.priority.value,
+            task.created_at.timestamp(),
+            task.id,
+        )
 
         try:
             self._queue.put_nowait((priority_tuple, task))
@@ -309,7 +338,9 @@ class TaskManager:
             try:
                 # Wait for task with timeout
                 try:
-                    _, task = await asyncio.wait_for(self._queue.get(), timeout=1.0)
+                    _, task = await asyncio.wait_for(
+                        self._queue.get(), timeout=1.0
+                    )
                 except asyncio.TimeoutError:
                     continue
 
@@ -347,7 +378,9 @@ class TaskManager:
             task.started_at = datetime.utcnow()
 
             # Create asyncio task
-            asyncio_task = asyncio.create_task(self._run_with_timeout(task, handler))
+            asyncio_task = asyncio.create_task(
+                self._run_with_timeout(task, handler)
+            )
             self._running_tasks[task.id] = asyncio_task
 
             try:
@@ -394,7 +427,9 @@ class TaskManager:
                 if task.id in self._running_tasks:
                     del self._running_tasks[task.id]
 
-    async def _run_with_timeout(self, task: Task, handler: TaskHandler) -> Dict[str, Any]:
+    async def _run_with_timeout(
+        self, task: Task, handler: TaskHandler
+    ) -> Dict[str, Any]:
         """Run task handler with timeout"""
         return await asyncio.wait_for(handler(task), timeout=task.timeout)
 
@@ -406,7 +441,10 @@ class TaskManager:
         # Exponential backoff
         delay = min(2**task.retry_count, 60)  # Max 60 seconds
 
-        logger.info(f"Retrying task {task.id} (attempt {task.retry_count}/{task.max_retries}) " f"in {delay}s")
+        logger.info(
+            f"Retrying task {task.id} (attempt {task.retry_count}/{task.max_retries}) "
+            f"in {delay}s"
+        )
 
         await asyncio.sleep(delay)
 
@@ -417,7 +455,9 @@ class TaskManager:
 
     # ==================== Progress Updates ====================
 
-    def update_progress(self, task_id: str, progress: float, message: str = "") -> None:
+    def update_progress(
+        self, task_id: str, progress: float, message: str = ""
+    ) -> None:
         """
         Update task progress
 
@@ -442,7 +482,12 @@ class TaskManager:
         """Get task results"""
         return self._results.get(task_id)
 
-    async def list_tasks(self, status: Optional[str] = None, task_type: Optional[str] = None, limit: int = 100) -> List[Task]:
+    async def list_tasks(
+        self,
+        status: Optional[str] = None,
+        task_type: Optional[str] = None,
+        limit: int = 100,
+    ) -> List[Task]:
         """List tasks with filtering"""
         tasks = list(self._tasks.values())
 
@@ -471,7 +516,11 @@ class TaskManager:
         to_remove = []
 
         for task_id, task in self._tasks.items():
-            if task.state in (TaskState.COMPLETED, TaskState.FAILED, TaskState.CANCELLED):
+            if task.state in (
+                TaskState.COMPLETED,
+                TaskState.FAILED,
+                TaskState.CANCELLED,
+            ):
                 if task.completed_at and task.completed_at < cutoff:
                     to_remove.append(task_id)
 
@@ -495,7 +544,9 @@ class TaskManager:
         alive_workers = sum(1 for w in self._workers if not w.done())
 
         if alive_workers < self.max_workers / 2:
-            logger.warning(f"Only {alive_workers}/{self.max_workers} workers alive")
+            logger.warning(
+                f"Only {alive_workers}/{self.max_workers} workers alive"
+            )
             return False
 
         return True

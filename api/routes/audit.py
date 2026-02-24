@@ -84,7 +84,9 @@ class LogExportRequest(BaseModel):
 
 
 class ComplianceReportRequest(BaseModel):
-    standard: str = Field(..., regex="^(iso27001|soc2|gdpr|pci_dss|nist_csf|hipaa)$")
+    standard: str = Field(
+        ..., regex="^(iso27001|soc2|gdpr|pci_dss|nist_csf|hipaa)$"
+    )
     start_date: Optional[datetime] = None
     end_date: Optional[datetime] = None
     format: str = Field(default="json", regex="^(json|markdown|csv)$")
@@ -137,7 +139,9 @@ async def query_logs(
     try:
         category_enum = EventCategory(category) if category else None
     except ValueError:
-        raise HTTPException(status_code=400, detail=f"Invalid category: {category}")
+        raise HTTPException(
+            status_code=400, detail=f"Invalid category: {category}"
+        )
 
     entries = await logger.query(
         start_time=start_time,
@@ -153,7 +157,9 @@ async def query_logs(
 
 
 @router.post("/logs/export")
-async def export_logs(request: LogExportRequest, logger: AuditLogger = Depends(get_audit_logger)):
+async def export_logs(
+    request: LogExportRequest, logger: AuditLogger = Depends(get_audit_logger)
+):
     """
     Export audit logs to various formats
 
@@ -162,12 +168,18 @@ async def export_logs(request: LogExportRequest, logger: AuditLogger = Depends(g
     try:
         level_enum = LogLevel(request.level) if request.level else None
     except ValueError:
-        raise HTTPException(status_code=400, detail=f"Invalid level: {request.level}")
+        raise HTTPException(
+            status_code=400, detail=f"Invalid level: {request.level}"
+        )
 
     try:
-        category_enum = EventCategory(request.category) if request.category else None
+        category_enum = (
+            EventCategory(request.category) if request.category else None
+        )
     except ValueError:
-        raise HTTPException(status_code=400, detail=f"Invalid category: {request.category}")
+        raise HTTPException(
+            status_code=400, detail=f"Invalid category: {request.category}"
+        )
 
     data = await logger.export(
         format=request.format,
@@ -178,14 +190,20 @@ async def export_logs(request: LogExportRequest, logger: AuditLogger = Depends(g
     )
 
     # Set content type based on format
-    content_types = {"json": "application/json", "csv": "text/csv", "syslog": "text/plain"}
+    content_types = {
+        "json": "application/json",
+        "csv": "text/csv",
+        "syslog": "text/plain",
+    }
 
     from fastapi.responses import PlainTextResponse
 
     return PlainTextResponse(
         content=data,
         media_type=content_types[request.format],
-        headers={"Content-Disposition": f"attachment; filename=audit_logs.{request.format}"},
+        headers={
+            "Content-Disposition": f"attachment; filename=audit_logs.{request.format}"
+        },
     )
 
 
@@ -206,14 +224,17 @@ async def verify_integrity(logger: AuditLogger = Depends(get_audit_logger)):
         valid_signatures=result["valid_signatures"],
         invalid_signatures=result["invalid_signatures"],
         chain_breaks=result["chain_breaks"],
-        is_valid=(result["invalid_signatures"] == 0 and result["chain_breaks"] == 0),
+        is_valid=(
+            result["invalid_signatures"] == 0 and result["chain_breaks"] == 0
+        ),
         errors=result["errors"],
     )
 
 
 @router.post("/compliance/report")
 async def generate_compliance_report(
-    request: ComplianceReportRequest, reporter: ComplianceReporter = Depends(get_compliance_reporter)
+    request: ComplianceReportRequest,
+    reporter: ComplianceReporter = Depends(get_compliance_reporter),
 ):
     """
     Generate compliance report for a specific standard
@@ -231,9 +252,15 @@ async def generate_compliance_report(
     try:
         standard = ComplianceStandard(request.standard)
     except ValueError:
-        raise HTTPException(status_code=400, detail=f"Invalid standard: {request.standard}")
+        raise HTTPException(
+            status_code=400, detail=f"Invalid standard: {request.standard}"
+        )
 
-    report = await reporter.generate_report(standard=standard, start_date=request.start_date, end_date=request.end_date)
+    report = await reporter.generate_report(
+        standard=standard,
+        start_date=request.start_date,
+        end_date=request.end_date,
+    )
 
     # Export to requested format
     if request.format != "json":
@@ -246,7 +273,9 @@ async def generate_compliance_report(
         return PlainTextResponse(
             content=data,
             media_type=content_types[request.format],
-            headers={"Content-Disposition": f"attachment; filename=compliance_report.{request.format}"},
+            headers={
+                "Content-Disposition": f"attachment; filename=compliance_report.{request.format}"
+            },
         )
 
     return report
@@ -263,15 +292,30 @@ async def list_compliance_standards():
                 "description": "Information Security Management System",
                 "controls_count": 10,
             },
-            {"id": "soc2", "name": "SOC 2", "description": "Service Organization Control 2", "controls_count": 0},
-            {"id": "gdpr", "name": "GDPR", "description": "General Data Protection Regulation", "controls_count": 4},
+            {
+                "id": "soc2",
+                "name": "SOC 2",
+                "description": "Service Organization Control 2",
+                "controls_count": 0,
+            },
+            {
+                "id": "gdpr",
+                "name": "GDPR",
+                "description": "General Data Protection Regulation",
+                "controls_count": 4,
+            },
             {
                 "id": "pci_dss",
                 "name": "PCI DSS",
                 "description": "Payment Card Industry Data Security Standard",
                 "controls_count": 4,
             },
-            {"id": "nist_csf", "name": "NIST CSF", "description": "NIST Cybersecurity Framework", "controls_count": 0},
+            {
+                "id": "nist_csf",
+                "name": "NIST CSF",
+                "description": "NIST Cybersecurity Framework",
+                "controls_count": 0,
+            },
             {
                 "id": "hipaa",
                 "name": "HIPAA",
@@ -291,7 +335,9 @@ async def siem_health():
     """
     # This would check actual SIEM connections
     # For now, return placeholder
-    return SIEMHealthResponse(backends={"Splunk": True, "Elasticsearch": True}, all_healthy=True)
+    return SIEMHealthResponse(
+        backends={"Splunk": True, "Elasticsearch": True}, all_healthy=True
+    )
 
 
 @router.get("/stats")
@@ -318,8 +364,12 @@ async def get_audit_stats(logger: AuditLogger = Depends(get_audit_logger)):
     return {
         "total_events": len(entries),
         "time_range": {
-            "first_event": entries[0].timestamp.isoformat() if entries else None,
-            "last_event": entries[-1].timestamp.isoformat() if entries else None,
+            "first_event": (
+                entries[0].timestamp.isoformat() if entries else None
+            ),
+            "last_event": (
+                entries[-1].timestamp.isoformat() if entries else None
+            ),
         },
         "by_category": by_category,
         "by_level": by_level,

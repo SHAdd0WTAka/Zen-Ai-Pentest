@@ -22,20 +22,28 @@ async def main():
 """
     )
 
-    print(f"[*] Starting scan at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print(
+        f"[*] Starting scan at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+    )
     print("[*] Techniques: DNS + Wordlist + Certificate Transparency\n")
 
     scanner = SubdomainScanner(max_workers=50, timeout=10)
 
     try:
-        results = await scanner.scan(domain=target, techniques=["dns", "wordlist", "crt"], check_http=True)
+        results = await scanner.scan(
+            domain=target,
+            techniques=["dns", "wordlist", "crt"],
+            check_http=True,
+        )
 
         print(f"\n[+] Scan complete! Found {len(results)} subdomains\n")
 
         if results:
             # Separate live and DNS-only
             live = [(sub, r) for sub, r in results.items() if r.is_alive]
-            dns_only = [(sub, r) for sub, r in results.items() if not r.is_alive]
+            dns_only = [
+                (sub, r) for sub, r in results.items() if not r.is_alive
+            ]
 
             # Live hosts
             if live:
@@ -43,7 +51,11 @@ async def main():
                 print(f"{'Subdomain':<45} {'Status':<8} {'Server'}")
                 print("-" * 70)
                 for subdomain, result in sorted(live):
-                    status = f"{result.status_code}" if result.status_code else "???"
+                    status = (
+                        f"{result.status_code}"
+                        if result.status_code
+                        else "???"
+                    )
                     server = (result.server_header or "Unknown")[:20]
                     print(f"{subdomain:<45} {status:<8} {server}")
 

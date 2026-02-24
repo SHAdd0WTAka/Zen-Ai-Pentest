@@ -134,9 +134,13 @@ class CircuitBreaker:
             elif self.metrics.failures >= self.failure_threshold:
                 # Threshold reached
                 self.state = CircuitState.OPEN
-                logger.warning(f"Circuit OPEN - {self.metrics.failures} failures")
+                logger.warning(
+                    f"Circuit OPEN - {self.metrics.failures} failures"
+                )
 
-    async def _fallback_response(self, raw_data: str, source_tool: str = "unknown", **kwargs) -> SanitizerResponse:
+    async def _fallback_response(
+        self, raw_data: str, source_tool: str = "unknown", **kwargs
+    ) -> SanitizerResponse:
         """
         Generate fallback response using only regex
 
@@ -176,7 +180,9 @@ class CircuitBreaker:
             cleaned_data=cleaned,
             redactions=redactions,
             risk_indicators=risk_indicators,
-            compression_ratio=len(cleaned) / len(raw_data) if raw_data else 1.0,
+            compression_ratio=(
+                len(cleaned) / len(raw_data) if raw_data else 1.0
+            ),
             safe_to_send=risk_level != RiskLevel.DANGER,
             fallback_used=True,
             risk_level=risk_level,

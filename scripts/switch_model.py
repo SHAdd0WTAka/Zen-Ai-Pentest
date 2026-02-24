@@ -40,13 +40,26 @@ else:
 
 # Bekannte Backends und ihre Keys
 BACKENDS = {
-    "kimi": {"name": "Kimi", "key_var": "KIMI_API_KEY", "models": ["kimi-k2.5", "kimi-k1.5", "kimi-latest"]},
+    "kimi": {
+        "name": "Kimi",
+        "key_var": "KIMI_API_KEY",
+        "models": ["kimi-k2.5", "kimi-k1.5", "kimi-latest"],
+    },
     "openrouter": {
         "name": "OpenRouter",
         "key_var": "OPENROUTER_API_KEY",
-        "models": ["openrouter/auto", "anthropic/claude-3.5-sonnet", "openai/gpt-4o", "google/gemini-pro"],
+        "models": [
+            "openrouter/auto",
+            "anthropic/claude-3.5-sonnet",
+            "openai/gpt-4o",
+            "google/gemini-pro",
+        ],
     },
-    "openai": {"name": "OpenAI", "key_var": "OPENAI_API_KEY", "models": ["gpt-4o", "gpt-4o-mini", "gpt-3.5-turbo"]},
+    "openai": {
+        "name": "OpenAI",
+        "key_var": "OPENAI_API_KEY",
+        "models": ["gpt-4o", "gpt-4o-mini", "gpt-3.5-turbo"],
+    },
 }
 
 
@@ -81,7 +94,11 @@ def parse_env(env_path):
 def show_status(config, env_path):
     """Zeigt aktuelle Konfiguration"""
     if RICH_AVAILABLE:
-        table = Table(title="Zen-AI Aktuelle Konfiguration", show_header=True, header_style="bold cyan")
+        table = Table(
+            title="Zen-AI Aktuelle Konfiguration",
+            show_header=True,
+            header_style="bold cyan",
+        )
         table.add_column("Einstellung", style="dim")
         table.add_column("Wert", style="green")
 
@@ -90,14 +107,19 @@ def show_status(config, env_path):
 
         table.add_row("Backend", current_backend)
         table.add_row("Modell", current_model)
-        table.add_row("Verfuegbare Keys", ", ".join(config["available"].keys()) or "Keine")
+        table.add_row(
+            "Verfuegbare Keys",
+            ", ".join(config["available"].keys()) or "Keine",
+        )
 
         console.print(table)
     else:
         print("\n=== Zen-AI Konfiguration ===")
         print(f"Backend: {config.get('current_backend', 'Nicht gesetzt')}")
         print(f"Modell: {config.get('current_model', 'Nicht gesetzt')}")
-        print(f"Verfuegbare Keys: {', '.join(config['available'].keys()) or 'Keine'}")
+        print(
+            f"Verfuegbare Keys: {', '.join(config['available'].keys()) or 'Keine'}"
+        )
         print(f"Env-Datei: {env_path}")
         print("===========================\n")
 
@@ -105,7 +127,11 @@ def show_status(config, env_path):
 def list_backends(config):
     """Listet alle verfuegbaren Backends"""
     if RICH_AVAILABLE:
-        table = Table(title="Verfuegbare Backends", show_header=True, header_style="bold cyan")
+        table = Table(
+            title="Verfuegbare Backends",
+            show_header=True,
+            header_style="bold cyan",
+        )
         table.add_column("ID", style="dim")
         table.add_column("Name")
         table.add_column("Env-Variable")
@@ -113,16 +139,36 @@ def list_backends(config):
         table.add_column("Status")
 
         for key, data in BACKENDS.items():
-            status = "[green]Konfiguriert[/green]" if key in config["available"] else "[yellow]Nicht konfiguriert[/yellow]"
-            current = " [blue]<- Aktiv[/blue]" if config.get("current_backend") == key else ""
-            table.add_row(key, data["name"], data["key_var"], ", ".join(data["models"]), status + current)
+            status = (
+                "[green]Konfiguriert[/green]"
+                if key in config["available"]
+                else "[yellow]Nicht konfiguriert[/yellow]"
+            )
+            current = (
+                " [blue]<- Aktiv[/blue]"
+                if config.get("current_backend") == key
+                else ""
+            )
+            table.add_row(
+                key,
+                data["name"],
+                data["key_var"],
+                ", ".join(data["models"]),
+                status + current,
+            )
 
         console.print(table)
     else:
         print("\n=== Verfuegbare Backends ===")
         for key, data in BACKENDS.items():
-            status = "Konfiguriert" if key in config["available"] else "Nicht konfiguriert"
-            current = " <- Aktiv" if config.get("current_backend") == key else ""
+            status = (
+                "Konfiguriert"
+                if key in config["available"]
+                else "Nicht konfiguriert"
+            )
+            current = (
+                " <- Aktiv" if config.get("current_backend") == key else ""
+            )
             print(f"\n{key}: {data['name']} ({status}){current}")
             print(f"  Env: {data['key_var']}")
             print(f"  Modelle: {', '.join(data['models'])}")
@@ -136,14 +182,18 @@ def switch_backend(config, env_path, new_backend, new_model=None):
         return False
 
     if new_backend not in config["available"]:
-        print_msg(f"[yellow]Warnung: {new_backend} ist nicht konfiguriert (kein API Key)[/yellow]")
+        print_msg(
+            f"[yellow]Warnung: {new_backend} ist nicht konfiguriert (kein API Key)[/yellow]"
+        )
 
     backend_data = BACKENDS[new_backend]
 
     # Modell bestimmen
     if new_model:
         if new_model not in backend_data["models"]:
-            print_msg(f"[red]Ungueltiges Modell '{new_model}' fuer {new_backend}[/red]")
+            print_msg(
+                f"[red]Ungueltiges Modell '{new_model}' fuer {new_backend}[/red]"
+            )
             print_msg(f"Verfuegbar: {', '.join(backend_data['models'])}")
             return False
     else:
@@ -155,7 +205,9 @@ def switch_backend(config, env_path, new_backend, new_model=None):
             new_model = backend_data["models"][0]
 
     update_env(env_path, new_backend, new_model)
-    print_msg(f"[green]Gewechselt zu:[/green] {backend_data['name']} mit {new_model}")
+    print_msg(
+        f"[green]Gewechselt zu:[/green] {backend_data['name']} mit {new_model}"
+    )
     return True
 
 
@@ -164,7 +216,9 @@ def switch_model(config, env_path, new_model):
     current_backend = config.get("current_backend")
 
     if not current_backend:
-        print_msg("[red]Kein Backend konfiguriert. Nutze --backend um eines zu waehlen.[/red]")
+        print_msg(
+            "[red]Kein Backend konfiguriert. Nutze --backend um eines zu waehlen.[/red]"
+        )
         return False
 
     backend_data = BACKENDS.get(current_backend)
@@ -173,7 +227,9 @@ def switch_model(config, env_path, new_model):
         return False
 
     if new_model not in backend_data["models"]:
-        print_msg(f"[red]Ungueltiges Modell '{new_model}' fuer {current_backend}[/red]")
+        print_msg(
+            f"[red]Ungueltiges Modell '{new_model}' fuer {current_backend}[/red]"
+        )
         print_msg(f"Verfuegbar: {', '.join(backend_data['models'])}")
         return False
 
@@ -218,7 +274,9 @@ def interactive_mode(config, env_path):
         if RICH_AVAILABLE:
             console.print(
                 Panel.fit(
-                    "[red]Keine API Keys gefunden![/red]\n\n" "Fuehre zuerst aus:\n" "[cyan]python3 setup_wizard.py[/cyan]",
+                    "[red]Keine API Keys gefunden![/red]\n\n"
+                    "Fuehre zuerst aus:\n"
+                    "[cyan]python3 setup_wizard.py[/cyan]",
                     title="Zen-AI Switch",
                     border_style="red",
                 )
@@ -246,26 +304,43 @@ def interactive_mode(config, env_path):
         for key in config["available"].keys():
             backend_info = BACKENDS[key]
             is_active = "(Aktiv) " if config["current_backend"] == key else ""
-            choices.append(questionary.Choice(title=f"{is_active}{backend_info['name']}", value=key))
+            choices.append(
+                questionary.Choice(
+                    title=f"{is_active}{backend_info['name']}", value=key
+                )
+            )
 
-        new_backend = questionary.select("Waehle Backend:", choices=choices).ask()
+        new_backend = questionary.select(
+            "Waehle Backend:", choices=choices
+        ).ask()
         if not new_backend:
             return
 
         # Modell auswaehlen
         backend_data = BACKENDS[new_backend]
         current_model = config.get("current_model", "")
-        default_model = current_model if current_model in backend_data["models"] else backend_data["models"][0]
+        default_model = (
+            current_model
+            if current_model in backend_data["models"]
+            else backend_data["models"][0]
+        )
 
         new_model = questionary.select(
-            f"Modell fuer {backend_data['name']}:", choices=backend_data["models"], default=default_model
+            f"Modell fuer {backend_data['name']}:",
+            choices=backend_data["models"],
+            default=default_model,
         ).ask()
 
         switch_backend(config, env_path, new_backend, new_model)
 
     elif action == "backend":
-        choices = [questionary.Choice(title=BACKENDS[k]["name"], value=k) for k in config["available"].keys()]
-        new_backend = questionary.select("Waehle Backend:", choices=choices).ask()
+        choices = [
+            questionary.Choice(title=BACKENDS[k]["name"], value=k)
+            for k in config["available"].keys()
+        ]
+        new_backend = questionary.select(
+            "Waehle Backend:", choices=choices
+        ).ask()
         if new_backend:
             switch_backend(config, env_path, new_backend)
 
@@ -277,7 +352,9 @@ def interactive_mode(config, env_path):
 
         backend_data = BACKENDS[current_backend]
         new_model = questionary.select(
-            "Waehle Modell:", choices=backend_data["models"], default=config.get("current_model", backend_data["models"][0])
+            "Waehle Modell:",
+            choices=backend_data["models"],
+            default=config.get("current_model", backend_data["models"][0]),
         ).ask()
 
         if new_model:
@@ -304,10 +381,25 @@ Beispiele:
         """,
     )
 
-    parser.add_argument("-b", "--backend", choices=list(BACKENDS.keys()), help="Zu Backend wechseln")
+    parser.add_argument(
+        "-b",
+        "--backend",
+        choices=list(BACKENDS.keys()),
+        help="Zu Backend wechseln",
+    )
     parser.add_argument("-m", "--model", help="Zu Modell wechseln")
-    parser.add_argument("-l", "--list", action="store_true", help="Verfuegbare Backends anzeigen")
-    parser.add_argument("-s", "--status", action="store_true", help="Aktuelle Konfiguration anzeigen")
+    parser.add_argument(
+        "-l",
+        "--list",
+        action="store_true",
+        help="Verfuegbare Backends anzeigen",
+    )
+    parser.add_argument(
+        "-s",
+        "--status",
+        action="store_true",
+        help="Aktuelle Konfiguration anzeigen",
+    )
 
     args = parser.parse_args()
 

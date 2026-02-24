@@ -86,7 +86,9 @@ class TestChatGPTChat:
         mock_response.text = AsyncMock(return_value="\n".join(response_data))
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -112,7 +114,9 @@ class TestChatGPTChat:
         mock_response.text = AsyncMock(return_value="\n".join(response_data))
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -134,7 +138,9 @@ class TestChatGPTChat:
         mock_response.status = 401
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -157,7 +163,9 @@ class TestChatGPTChat:
         mock_response.status = 429
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -180,7 +188,9 @@ class TestChatGPTChat:
         mock_response.status = 500
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -200,7 +210,9 @@ class TestChatGPTChat:
         import logging
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(side_effect=Exception("Network error"))
+        mock_post.return_value.__aenter__ = AsyncMock(
+            side_effect=Exception("Network error")
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -227,7 +239,9 @@ class TestChatGPTChat:
         mock_response.text = AsyncMock(return_value="\n".join(response_data))
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -251,7 +265,9 @@ class TestChatGPTChat:
         mock_response.text = AsyncMock(return_value="\n".join(response_data))
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -279,7 +295,9 @@ class TestChatGPTChat:
         mock_response.text = AsyncMock(return_value="\n".join(response_data))
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -300,10 +318,14 @@ class TestChatGPTHeaders:
         """Test that correct headers are sent with request"""
         mock_response = AsyncMock()
         mock_response.status = 200
-        mock_response.text = AsyncMock(return_value='data: {"message": {"content": {"parts": ["Hi"]}}}\n')
+        mock_response.text = AsyncMock(
+            return_value='data: {"message": {"content": {"parts": ["Hi"]}}}\n'
+        )
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -325,10 +347,14 @@ class TestChatGPTHeaders:
         """Test that correct payload is sent"""
         mock_response = AsyncMock()
         mock_response.status = 200
-        mock_response.text = AsyncMock(return_value='data: {"message": {"content": {"parts": ["Hi"]}}}\n')
+        mock_response.text = AsyncMock(
+            return_value='data: {"message": {"content": {"parts": ["Hi"]}}}\n'
+        )
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -353,10 +379,14 @@ class TestChatGPTHeaders:
         """Test that message IDs are generated"""
         mock_response = AsyncMock()
         mock_response.status = 200
-        mock_response.text = AsyncMock(return_value='data: {"message": {"content": {"parts": ["Hi"]}}}\n')
+        mock_response.text = AsyncMock(
+            return_value='data: {"message": {"content": {"parts": ["Hi"]}}}\n'
+        )
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -396,7 +426,9 @@ class TestChatGPTHealthCheck:
         mock_response.status = 200
 
         mock_get = MagicMock()
-        mock_get.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_get.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_get.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -408,7 +440,8 @@ class TestChatGPTHealthCheck:
 
         assert result is True
         mock_get.assert_called_once_with(
-            "https://chat.openai.com/backend-api/models", headers={"Authorization": "Bearer test-access-token"}
+            "https://chat.openai.com/backend-api/models",
+            headers={"Authorization": "Bearer test-access-token"},
         )
 
     @pytest.mark.asyncio
@@ -418,7 +451,9 @@ class TestChatGPTHealthCheck:
         mock_response.status = 401
 
         mock_get = MagicMock()
-        mock_get.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_get.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_get.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -434,7 +469,9 @@ class TestChatGPTHealthCheck:
     async def test_health_check_exception(self, backend_with_token):
         """Test health check with exception"""
         mock_get = MagicMock()
-        mock_get.return_value.__aenter__ = AsyncMock(side_effect=Exception("Connection failed"))
+        mock_get.return_value.__aenter__ = AsyncMock(
+            side_effect=Exception("Connection failed")
+        )
         mock_get.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -455,10 +492,14 @@ class TestChatGPTEndpoint:
         """Test that correct endpoint is called"""
         mock_response = AsyncMock()
         mock_response.status = 200
-        mock_response.text = AsyncMock(return_value='data: {"message": {"content": {"parts": ["Hi"]}}}\n')
+        mock_response.text = AsyncMock(
+            return_value='data: {"message": {"content": {"parts": ["Hi"]}}}\n'
+        )
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -484,10 +525,14 @@ class TestChatGPTTimeout:
 
         mock_response = AsyncMock()
         mock_response.status = 200
-        mock_response.text = AsyncMock(return_value='data: {"message": {"content": {"parts": ["Hi"]}}}\n')
+        mock_response.text = AsyncMock(
+            return_value='data: {"message": {"content": {"parts": ["Hi"]}}}\n'
+        )
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -515,7 +560,9 @@ class TestChatGPTEmptyResponse:
         mock_response.text = AsyncMock(return_value="")
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -540,7 +587,9 @@ class TestChatGPTEmptyResponse:
         mock_response.text = AsyncMock(return_value="\n".join(response_data))
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()

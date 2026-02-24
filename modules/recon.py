@@ -62,7 +62,9 @@ Provide a structured reconnaissance plan including:
         llm_response = await self.orchestrator.process(prompt)
 
         target_info["llm_analysis"] = llm_response.content
-        target_info["attack_vectors"] = self._parse_attack_vectors(llm_response.content)
+        target_info["attack_vectors"] = self._parse_attack_vectors(
+            llm_response.content
+        )
 
         self.results[target] = target_info
         return target_info
@@ -98,9 +100,15 @@ Provide a structured reconnaissance plan including:
     async def _get_whois(self, target: str) -> str:
         """Get WHOIS information"""
         try:
-            result = subprocess.run(["whois", target], capture_output=True, text=True, timeout=15)
+            result = subprocess.run(
+                ["whois", target], capture_output=True, text=True, timeout=15
+            )
             # Return first 500 chars of relevant info
-            return result.stdout[:500] if result.returncode == 0 else "WHOIS failed"
+            return (
+                result.stdout[:500]
+                if result.returncode == 0
+                else "WHOIS failed"
+            )
         except (subprocess.SubprocessError, OSError):
             return "WHOIS not available"
 
@@ -109,11 +117,16 @@ Provide a structured reconnaissance plan including:
         vectors = []
         lines = llm_content.split("\n")
         for line in lines:
-            if any(keyword in line.lower() for keyword in ["vector", "attack", "exploit", "vulnerability"]):
+            if any(
+                keyword in line.lower()
+                for keyword in ["vector", "attack", "exploit", "vulnerability"]
+            ):
                 vectors.append(line.strip())
         return vectors[:10]  # Limit to top 10
 
-    async def generate_nmap_command(self, target: str, intensity: str = "normal") -> str:
+    async def generate_nmap_command(
+        self, target: str, intensity: str = "normal"
+    ) -> str:
         """
         Generate optimized nmap command based on target analysis
         """
@@ -139,7 +152,9 @@ Return ONLY the nmap command, nothing else.
 
         return cmd
 
-    async def subdomain_enum(self, domain: str, wordlist: str = "common") -> List[str]:
+    async def subdomain_enum(
+        self, domain: str, wordlist: str = "common"
+    ) -> List[str]:
         """
         LLM-assisted subdomain enumeration
         """
@@ -185,20 +200,30 @@ Return as a comma-separated list.
             Dictionary with scan results and metadata
         """
         if not SUBDOMAIN_SCANNER_AVAILABLE:
-            logger.warning("[Recon] SubdomainScanner not available, falling back to basic enumeration")
+            logger.warning(
+                "[Recon] SubdomainScanner not available, falling back to basic enumeration"
+            )
             return {
                 "domain": domain,
                 "subdomains": await self.subdomain_enum(domain),
                 "method": "basic_llm",
             }
 
-        logger.info(f"[Recon] Starting comprehensive subdomain scan for {domain}")
+        logger.info(
+            f"[Recon] Starting comprehensive subdomain scan for {domain}"
+        )
 
         if advanced:
-            scanner = AdvancedSubdomainScanner(orchestrator=self.orchestrator, max_workers=max_workers)
-            results = await scanner.scan_advanced(domain=domain, check_http=check_http)
+            scanner = AdvancedSubdomainScanner(
+                orchestrator=self.orchestrator, max_workers=max_workers
+            )
+            results = await scanner.scan_advanced(
+                domain=domain, check_http=check_http
+            )
         else:
-            scanner = SubdomainScanner(orchestrator=self.orchestrator, max_workers=max_workers)
+            scanner = SubdomainScanner(
+                orchestrator=self.orchestrator, max_workers=max_workers
+            )
             results = await scanner.scan(domain=domain, check_http=check_http)
 
         # Build comprehensive result
@@ -223,7 +248,9 @@ Return as a comma-separated list.
             "method": "advanced_scan" if advanced else "standard_scan",
         }
 
-        logger.info(f"[Recon] Subdomain scan complete: {len(results)} found ({len(live_hosts)} live)")
+        logger.info(
+            f"[Recon] Subdomain scan complete: {len(results)} found ({len(live_hosts)} live)"
+        )
         return scan_result
 
     async def discover_attack_surface(self, domain: str) -> Dict:
@@ -239,7 +266,9 @@ Return as a comma-separated list.
         logger.info(f"[Recon] Discovering attack surface for {domain}")
 
         # Run subdomain scan
-        subdomain_data = await self.comprehensive_subdomain_scan(domain=domain, advanced=True, check_http=True)
+        subdomain_data = await self.comprehensive_subdomain_scan(
+            domain=domain, advanced=True, check_http=True
+        )
 
         # Get basic target info
         target_info = {
@@ -249,7 +278,11 @@ Return as a comma-separated list.
         }
 
         # Use LLM to analyze attack surface
-        live_subdomains = [sub for sub, data in subdomain_data["subdomains"].items() if data.get("is_alive")]
+        live_subdomains = [
+            sub
+            for sub, data in subdomain_data["subdomains"].items()
+            if data.get("is_alive")
+        ]
 
         prompt = f"""
 Analyze the attack surface for penetration testing:
@@ -284,5 +317,7 @@ Provide:
             "target_info": target_info,
             "subdomain_data": subdomain_data,
             "analysis": analysis,
-            "recommended_targets": live_subdomains[:10] if live_subdomains else [domain],
+            "recommended_targets": (
+                live_subdomains[:10] if live_subdomains else [domain]
+            ),
         }

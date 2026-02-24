@@ -8,7 +8,14 @@ from datetime import datetime
 
 import pytest
 
-from core.models import APIKeyConfig, BackendType, ScanConfig, ScanStatus, Severity, TimestampedModel
+from core.models import (
+    APIKeyConfig,
+    BackendType,
+    ScanConfig,
+    ScanStatus,
+    Severity,
+    TimestampedModel,
+)
 
 # Mark all tests as unit tests
 pytestmark = pytest.mark.unit
@@ -103,10 +110,19 @@ class TestAPIKeyConfig:
 
     def test_get_key_mapping(self):
         """Test get_key returns correct key for provider"""
-        config = APIKeyConfig(openrouter_key="sk-or-12345678901234567890", openai_key="sk-1234567890123456789012345678")
+        config = APIKeyConfig(
+            openrouter_key="sk-or-12345678901234567890",
+            openai_key="sk-1234567890123456789012345678",
+        )
 
-        assert config.get_key(BackendType.OPENROUTER) == "sk-or-12345678901234567890"
-        assert config.get_key(BackendType.OPENAI) == "sk-1234567890123456789012345678"
+        assert (
+            config.get_key(BackendType.OPENROUTER)
+            == "sk-or-12345678901234567890"
+        )
+        assert (
+            config.get_key(BackendType.OPENAI)
+            == "sk-1234567890123456789012345678"
+        )
         assert config.get_key(BackendType.ANTHROPIC) is None
         assert config.get_key(BackendType.DUCKDUCKGO) is None
 
@@ -134,7 +150,12 @@ class TestScanConfig:
     def test_custom_values(self):
         """Test custom scan configuration"""
         config = ScanConfig(
-            target="test.com", scan_type="full", ports=[22, 80, 443, 8080], timeout=600, concurrent=10, follow_redirects=False
+            target="test.com",
+            scan_type="full",
+            ports=[22, 80, 443, 8080],
+            timeout=600,
+            concurrent=10,
+            follow_redirects=False,
         )
 
         assert config.target == "test.com"

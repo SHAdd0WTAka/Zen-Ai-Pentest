@@ -25,7 +25,11 @@ class ScapyScanner:
             syn_pkt = IP(dst=target) / TCP(dport=port, flags="S")
             resp = sr1(syn_pkt, timeout=2, verbose=0)
 
-            if resp and resp.haslayer(TCP) and resp.getlayer(TCP).flags == 0x12:
+            if (
+                resp
+                and resp.haslayer(TCP)
+                and resp.getlayer(TCP).flags == 0x12
+            ):
                 results.append({"port": port, "state": "open"})
                 rst_pkt = IP(dst=target) / TCP(dport=port, flags="R")
                 sr1(rst_pkt, timeout=1, verbose=0)
@@ -66,4 +70,6 @@ def scapy_arp_scan(network: str) -> str:
     """ARP Scan für lokales Netzwerk"""
     scanner = ScapyScanner()
     results = scanner.arp_scan(network)
-    return f"Found {len(results)} hosts: " + ", ".join([r["ip"] for r in results])
+    return f"Found {len(results)} hosts: " + ", ".join(
+        [r["ip"] for r in results]
+    )

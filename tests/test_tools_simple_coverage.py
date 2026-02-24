@@ -109,7 +109,11 @@ class TestNmapIntegration:
         """Test NmapResult dataclass"""
         from tools.nmap_integration import NmapHost, NmapResult
 
-        result = NmapResult(success=True, hosts=[NmapHost(ip="192.168.1.1")], command="nmap 192.168.1.1")
+        result = NmapResult(
+            success=True,
+            hosts=[NmapHost(ip="192.168.1.1")],
+            command="nmap 192.168.1.1",
+        )
 
         assert result.success is True
         assert len(result.hosts) == 1

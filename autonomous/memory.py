@@ -185,7 +185,9 @@ class LongTermMemory(BaseMemory):
         scored = []
         for entry in self.entries.values():
             if entry.embedding:
-                similarity = self._cosine_similarity(query_embedding, entry.embedding)
+                similarity = self._cosine_similarity(
+                    query_embedding, entry.embedding
+                )
                 scored.append((similarity, entry))
 
         # Sort by similarity
@@ -195,7 +197,9 @@ class LongTermMemory(BaseMemory):
 
     async def get_recent(self, limit: int = 10) -> List[MemoryEntry]:
         """Get most recent entries."""
-        sorted_entries = sorted(self.entries.values(), key=lambda e: e.timestamp, reverse=True)
+        sorted_entries = sorted(
+            self.entries.values(), key=lambda e: e.timestamp, reverse=True
+        )
         return sorted_entries[:limit]
 
     async def _persist(self):
@@ -203,7 +207,10 @@ class LongTermMemory(BaseMemory):
         if not self.storage_path:
             return
 
-        data = {k: {**v.to_dict(), "embedding": v.embedding} for k, v in self.entries.items()}
+        data = {
+            k: {**v.to_dict(), "embedding": v.embedding}
+            for k, v in self.entries.items()
+        }
 
         with open(self.storage_path, "w") as f:
             json.dump(data, f)
@@ -241,7 +248,14 @@ class EpisodicMemory:
     def __init__(self):
         self.episodes: List[Dict] = []
 
-    def record_episode(self, goal: str, steps: List[Dict], outcome: str, success: bool, lessons_learned: List[str]):
+    def record_episode(
+        self,
+        goal: str,
+        steps: List[Dict],
+        outcome: str,
+        success: bool,
+        lessons_learned: List[str],
+    ):
         """Record a complete attack episode."""
         episode = {
             "id": str(uuid.uuid4()),
@@ -263,7 +277,9 @@ class EpisodicMemory:
         scored = []
         for episode in self.episodes:
             episode_words = set(episode["goal"].lower().split())
-            similarity = len(goal_words & episode_words) / len(goal_words | episode_words)
+            similarity = len(goal_words & episode_words) / len(
+                goal_words | episode_words
+            )
             scored.append((similarity, episode))
 
         scored.sort(key=lambda x: x[0], reverse=True)
@@ -276,7 +292,11 @@ class MemoryManager:
     Coordinates working, long-term, and episodic memory.
     """
 
-    def __init__(self, long_term_path: Optional[str] = None, enable_embeddings: bool = False):
+    def __init__(
+        self,
+        long_term_path: Optional[str] = None,
+        enable_embeddings: bool = False,
+    ):
         self.working = WorkingMemory()
         self.long_term = LongTermMemory(long_term_path)
         self.episodic = EpisodicMemory()
@@ -286,17 +306,28 @@ class MemoryManager:
         """Add a new goal to memory."""
         self.working.set_goal(goal, context)
 
-        entry = MemoryEntry(id=str(uuid.uuid4()), content=goal, memory_type="goal", metadata={"context": context or {}})
+        entry = MemoryEntry(
+            id=str(uuid.uuid4()),
+            content=goal,
+            memory_type="goal",
+            metadata={"context": context or {}},
+        )
 
         await self.working.add(entry)
         await self.long_term.add(entry)
 
-    async def add_experience(self, thought: Any, action: Any, observation: Any):
+    async def add_experience(
+        self, thought: Any, action: Any, observation: Any
+    ):
         """Add a complete ReAct cycle to memory."""
         # Add to working memory
         thought_entry = MemoryEntry(
             id=str(uuid.uuid4()),
-            content=str(thought.content) if hasattr(thought, "content") else str(thought),
+            content=(
+                str(thought.content)
+                if hasattr(thought, "content")
+                else str(thought)
+            ),
             memory_type="thought",
             metadata={"step": getattr(thought, "step_number", 0)},
         )
@@ -314,12 +345,19 @@ class MemoryManager:
         )
         await self.working.add(action_entry)
 
-        obs_content = str(observation.result) if hasattr(observation, "result") else str(observation)
+        obs_content = (
+            str(observation.result)
+            if hasattr(observation, "result")
+            else str(observation)
+        )
         obs_entry = MemoryEntry(
             id=str(uuid.uuid4()),
             content=obs_content[:1000],  # Truncate long outputs
             memory_type="observation",
-            metadata={"success": getattr(observation, "success", True), "step": getattr(observation, "step_number", 0)},
+            metadata={
+                "success": getattr(observation, "success", True),
+                "step": getattr(observation, "step_number", 0),
+            },
         )
         await self.working.add(obs_entry)
 
@@ -328,7 +366,10 @@ class MemoryManager:
             findings = self._extract_findings(observation.result)
             for finding in findings:
                 finding_entry = MemoryEntry(
-                    id=str(uuid.uuid4()), content=str(finding), memory_type="finding", metadata={"source": "tool_execution"}
+                    id=str(uuid.uuid4()),
+                    content=str(finding),
+                    memory_type="finding",
+                    metadata={"source": "tool_execution"},
                 )
                 await self.long_term.add(finding_entry)
 

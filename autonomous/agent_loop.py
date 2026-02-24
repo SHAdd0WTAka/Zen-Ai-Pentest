@@ -117,7 +117,9 @@ class AgentMemory:
 
         # Begrenze Größe für LLM Kontext
         if len(self.context_window) > self.max_context_window:
-            self.context_window = self.context_window[-self.max_context_window :]
+            self.context_window = self.context_window[
+                -self.max_context_window :
+            ]
 
     def get_context_for_llm(self) -> str:
         """Erstellt formatierten Kontext für LLM Prompts."""
@@ -132,7 +134,9 @@ class AgentMemory:
         for entry in self.context_window[-5:]:
             entry_type = entry.get("type", "unknown")
             content = entry.get("content", "")
-            context_parts.append(f"  [{entry_type.upper()}] {content[:100]}...")
+            context_parts.append(
+                f"  [{entry_type.upper()}] {content[:100]}..."
+            )
 
         if self.findings:
             context_parts.append(f"\nFindings: {len(self.findings)}")
@@ -191,7 +195,11 @@ class ToolResult:
             "tool_name": self.tool_name,
             "success": self.success,
             "data": self.data,
-            "raw_output": self.raw_output[:500] if len(self.raw_output) > 500 else self.raw_output,
+            "raw_output": (
+                self.raw_output[:500]
+                if len(self.raw_output) > 500
+                else self.raw_output
+            ),
             "error_message": self.error_message,
             "execution_time": self.execution_time,
             "timestamp": self.timestamp.isoformat(),
@@ -249,7 +257,9 @@ class BaseTool(ABC):
         """Führt das Tool mit den gegebenen Parametern aus."""
         pass
 
-    def validate_parameters(self, parameters: Dict[str, Any]) -> Tuple[bool, str]:
+    def validate_parameters(
+        self, parameters: Dict[str, Any]
+    ) -> Tuple[bool, str]:
         """Validiert die Tool-Parameter."""
         return True, ""
 
@@ -261,7 +271,9 @@ class NmapScanner(BaseTool):
         super().__init__("NmapScanner", timeout)
         self.default_options = "-sV -sC -O --script=vuln"
 
-    def validate_parameters(self, parameters: Dict[str, Any]) -> Tuple[bool, str]:
+    def validate_parameters(
+        self, parameters: Dict[str, Any]
+    ) -> Tuple[bool, str]:
         """Validiert Nmap-spezifische Parameter."""
         target = parameters.get("target")
         if not target:
@@ -310,10 +322,16 @@ class NmapScanner(BaseTool):
             self.logger.info(f"[REAL] Executing: {' '.join(cmd)}")
 
             # ECHTE AUSFÜHRUNG via subprocess
-            proc = await asyncio.create_subprocess_exec(*cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+            proc = await asyncio.create_subprocess_exec(
+                *cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+            )
 
             try:
-                stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=self.timeout)
+                stdout, stderr = await asyncio.wait_for(
+                    proc.communicate(), timeout=self.timeout
+                )
             except asyncio.TimeoutError:
                 proc.kill()
                 await proc.wait()
@@ -361,7 +379,12 @@ class NmapScanner(BaseTool):
         except Exception as e:
             execution_time = time.time() - start_time
             self.logger.error(f"Nmap execution failed: {str(e)}")
-            return ToolResult(tool_name=self.name, success=False, error_message=str(e), execution_time=execution_time)
+            return ToolResult(
+                tool_name=self.name,
+                success=False,
+                error_message=str(e),
+                execution_time=execution_time,
+            )
 
     def _validate_target_safety(self, target: str) -> Tuple[bool, str]:
         """Validiert das Target für Safety (keine internen Netzwerke ohne Whitelist)."""
@@ -377,7 +400,10 @@ class NmapScanner(BaseTool):
                 return True, ""
             # Blockiere andere private IPs
             if ip.is_private:
-                return False, f"Private IP {target} blocked. Add to whitelist if intended."
+                return (
+                    False,
+                    f"Private IP {target} blocked. Add to whitelist if intended.",
+                )
         except ValueError:
             # Keine IP, wahrscheinlich Domain - erlaube
             pass
@@ -425,15 +451,28 @@ OS and Service detection performed.
 
                     if state is not None and state.get("state") == "open":
                         service_elem = port.find("service")
-                        service_name = service_elem.get("name", "unknown") if service_elem is not None else "unknown"
-                        service_version = service_elem.get("version", "") if service_elem is not None else ""
-                        product = service_elem.get("product", "") if service_elem is not None else ""
+                        service_name = (
+                            service_elem.get("name", "unknown")
+                            if service_elem is not None
+                            else "unknown"
+                        )
+                        service_version = (
+                            service_elem.get("version", "")
+                            if service_elem is not None
+                            else ""
+                        )
+                        product = (
+                            service_elem.get("product", "")
+                            if service_elem is not None
+                            else ""
+                        )
 
                         port_info = {
                             "port": int(port_id),
                             "protocol": protocol,
                             "service": service_name,
-                            "version": f"{product} {service_version}".strip() or "unknown",
+                            "version": f"{product} {service_version}".strip()
+                            or "unknown",
                             "state": "open",
                         }
                         open_ports.append(port_info)
@@ -441,7 +480,12 @@ OS and Service detection performed.
 
                 # OS Detection
                 for osmatch in host.findall(".//osmatch"):
-                    os_matches.append({"name": osmatch.get("name", "unknown"), "accuracy": osmatch.get("accuracy", "0")})
+                    os_matches.append(
+                        {
+                            "name": osmatch.get("name", "unknown"),
+                            "accuracy": osmatch.get("accuracy", "0"),
+                        }
+                    )
 
             return {
                 "open_ports": open_ports,
@@ -465,11 +509,23 @@ OS and Service detection performed.
                 if len(parts) >= 3:
                     port = parts[0].split("/")[0]
                     service = parts[2]
-                    version = " ".join(parts[3:]) if len(parts) > 3 else "unknown"
-                    open_ports.append({"port": int(port), "service": service, "version": version})
+                    version = (
+                        " ".join(parts[3:]) if len(parts) > 3 else "unknown"
+                    )
+                    open_ports.append(
+                        {
+                            "port": int(port),
+                            "service": service,
+                            "version": version,
+                        }
+                    )
                     services.append(service)
 
-        return {"open_ports": open_ports, "services": list(set(services)), "port_count": len(open_ports)}
+        return {
+            "open_ports": open_ports,
+            "services": list(set(services)),
+            "port_count": len(open_ports),
+        }
 
 
 class NucleiScanner(BaseTool):
@@ -501,15 +557,31 @@ class NucleiScanner(BaseTool):
                 )
 
             # Baue Nuclei Kommando mit JSON Output
-            cmd = ["nuclei", "-u", target, "-t", templates, "-severity", severity, "-json", "-silent"]  # Reduce noise
+            cmd = [
+                "nuclei",
+                "-u",
+                target,
+                "-t",
+                templates,
+                "-severity",
+                severity,
+                "-json",
+                "-silent",
+            ]  # Reduce noise
 
             self.logger.info(f"[REAL] Executing: {' '.join(cmd)}")
 
             # ECHTE AUSFÜHRUNG
-            proc = await asyncio.create_subprocess_exec(*cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+            proc = await asyncio.create_subprocess_exec(
+                *cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+            )
 
             try:
-                stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=self.timeout)
+                stdout, stderr = await asyncio.wait_for(
+                    proc.communicate(), timeout=self.timeout
+                )
             except asyncio.TimeoutError:
                 proc.kill()
                 await proc.wait()
@@ -555,7 +627,12 @@ class NucleiScanner(BaseTool):
         except Exception as e:
             execution_time = time.time() - start_time
             self.logger.error(f"Nuclei execution failed: {str(e)}")
-            return ToolResult(tool_name=self.name, success=False, error_message=str(e), execution_time=execution_time)
+            return ToolResult(
+                tool_name=self.name,
+                success=False,
+                error_message=str(e),
+                execution_time=execution_time,
+            )
 
     def _parse_nuclei_json(self, output: str) -> List[Dict[str, Any]]:
         """Parst Nuclei JSON Output (one JSON object per line)."""
@@ -568,10 +645,14 @@ class NucleiScanner(BaseTool):
                 # Normalize finding structure
                 normalized = {
                     "template": finding.get("template-id", "unknown"),
-                    "severity": finding.get("info", {}).get("severity", "unknown"),
+                    "severity": finding.get("info", {}).get(
+                        "severity", "unknown"
+                    ),
                     "host": finding.get("host", ""),
                     "matched": finding.get("matched-at", ""),
-                    "description": finding.get("info", {}).get("name", "No description"),
+                    "description": finding.get("info", {}).get(
+                        "name", "No description"
+                    ),
                     "tags": finding.get("info", {}).get("tags", []),
                     "reference": finding.get("info", {}).get("reference", []),
                     "curl_command": finding.get("curl-command", ""),
@@ -582,7 +663,9 @@ class NucleiScanner(BaseTool):
                 }
                 findings.append(normalized)
             except json.JSONDecodeError:
-                self.logger.warning(f"Failed to parse Nuclei JSON line: {line[:100]}")
+                self.logger.warning(
+                    f"Failed to parse Nuclei JSON line: {line[:100]}"
+                )
                 continue
         return findings
 
@@ -594,7 +677,10 @@ class NucleiScanner(BaseTool):
         try:
             ip = ipaddress.ip_address(target)
             if ip.is_private and not ip.is_loopback:
-                return False, f"Private IP {target} blocked. Add to whitelist if intended."
+                return (
+                    False,
+                    f"Private IP {target} blocked. Add to whitelist if intended.",
+                )
         except ValueError:
             pass
 
@@ -627,7 +713,11 @@ class ExploitValidator(BaseTool):
         """Lazy initialization of ExploitValidator."""
         if self._validator is None:
             # Import here to avoid circular imports
-            from .exploit_validator import ExploitValidator, SafetyLevel, ScopeConfig
+            from .exploit_validator import (
+                ExploitValidator,
+                SafetyLevel,
+                ScopeConfig,
+            )
 
             safety_map = {
                 "read_only": SafetyLevel.READ_ONLY,
@@ -695,7 +785,9 @@ class ExploitValidator(BaseTool):
                 "privesc": ExploitType.PRIVESC,
             }
 
-            exploit_type = type_map.get(exploit_type_str.lower().replace("-", "_"), ExploitType.WEB_RCE)
+            exploit_type = type_map.get(
+                exploit_type_str.lower().replace("-", "_"), ExploitType.WEB_RCE
+            )
 
             # Run validation
             result = await validator.validate(
@@ -714,7 +806,9 @@ class ExploitValidator(BaseTool):
                 "target": target,
                 "exploitable": result.success,
                 "confidence": 0.9 if result.success else 0.1,
-                "evidence": result.evidence.to_dict() if result.evidence else {},
+                "evidence": (
+                    result.evidence.to_dict() if result.evidence else {}
+                ),
                 "output": result.output,
                 "error": result.error,
                 "risk_level": result.severity or "unknown",
@@ -734,7 +828,12 @@ class ExploitValidator(BaseTool):
         except Exception as e:
             execution_time = time.time() - start_time
             self.logger.error(f"Exploit validation failed: {e}")
-            return ToolResult(tool_name=self.name, success=False, error_message=str(e), execution_time=execution_time)
+            return ToolResult(
+                tool_name=self.name,
+                success=False,
+                error_message=str(e),
+                execution_time=execution_time,
+            )
 
     def _generate_test_payload(self, vulnerability: str) -> str:
         """Generate a basic test payload based on vulnerability type."""
@@ -772,10 +871,22 @@ class ReportGenerator(BaseTool):
                 "target": target,
                 "summary": {
                     "total_findings": len(findings),
-                    "critical": len([f for f in findings if f.get("severity") == "critical"]),
-                    "high": len([f for f in findings if f.get("severity") == "high"]),
-                    "medium": len([f for f in findings if f.get("severity") == "medium"]),
-                    "low": len([f for f in findings if f.get("severity") == "low"]),
+                    "critical": len(
+                        [
+                            f
+                            for f in findings
+                            if f.get("severity") == "critical"
+                        ]
+                    ),
+                    "high": len(
+                        [f for f in findings if f.get("severity") == "high"]
+                    ),
+                    "medium": len(
+                        [f for f in findings if f.get("severity") == "medium"]
+                    ),
+                    "low": len(
+                        [f for f in findings if f.get("severity") == "low"]
+                    ),
                 },
                 "findings": findings,
                 "recommendations": self._generate_recommendations(findings),
@@ -794,7 +905,12 @@ class ReportGenerator(BaseTool):
 
         except Exception as e:
             execution_time = time.time() - start_time
-            return ToolResult(tool_name=self.name, success=False, error_message=str(e), execution_time=execution_time)
+            return ToolResult(
+                tool_name=self.name,
+                success=False,
+                error_message=str(e),
+                execution_time=execution_time,
+            )
 
     def _generate_recommendations(self, findings: List[Dict]) -> List[str]:
         """Generiert Empfehlungen basierend auf Findings."""
@@ -803,7 +919,9 @@ class ReportGenerator(BaseTool):
         severities = {f.get("severity") for f in findings}
 
         if "critical" in severities:
-            recommendations.append("Address critical vulnerabilities immediately")
+            recommendations.append(
+                "Address critical vulnerabilities immediately"
+            )
         if "high" in severities:
             recommendations.append("Prioritize high severity findings")
 
@@ -864,7 +982,12 @@ class SubdomainEnumerator(BaseTool):
 
         except Exception as e:
             execution_time = time.time() - start_time
-            return ToolResult(tool_name=self.name, success=False, error_message=str(e), execution_time=execution_time)
+            return ToolResult(
+                tool_name=self.name,
+                success=False,
+                error_message=str(e),
+                execution_time=execution_time,
+            )
 
 
 class ToolRegistry:
@@ -949,7 +1072,9 @@ class AutonomousAgentLoop:
         }
 
         # Callbacks
-        self.state_callbacks: Dict[AgentState, List[Callable]] = {state: [] for state in AgentState}
+        self.state_callbacks: Dict[AgentState, List[Callable]] = {
+            state: [] for state in AgentState
+        }
         self.progress_callback: Optional[Callable[[Dict], None]] = None
 
         # Execution tracking
@@ -958,7 +1083,9 @@ class AutonomousAgentLoop:
 
         self.logger = logging.getLogger(__name__)
 
-    def register_state_callback(self, state: AgentState, callback: Callable) -> None:
+    def register_state_callback(
+        self, state: AgentState, callback: Callable
+    ) -> None:
         """
         Registriert einen Callback für einen Zustand.
 
@@ -987,7 +1114,9 @@ class AutonomousAgentLoop:
         self.previous_state = self.state
         self.state = new_state
 
-        self.logger.info(f"State transition: {self.previous_state.name} -> {new_state.name}")
+        self.logger.info(
+            f"State transition: {self.previous_state.name} -> {new_state.name}"
+        )
 
         # Trigger callbacks
         for callback in self.state_callbacks.get(new_state, []):
@@ -1006,7 +1135,9 @@ class AutonomousAgentLoop:
             except Exception as e:
                 self.logger.error(f"Progress callback error: {e}")
 
-    async def run(self, goal: str, target: str, scope: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    async def run(
+        self, goal: str, target: str, scope: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
         """
         Haupt-Einstiegspunkt für den Autonomous Agent Loop.
 
@@ -1094,7 +1225,11 @@ class AutonomousAgentLoop:
             self.logger.error(f"Execution failed: {str(e)}")
             self._transition_to(AgentState.ERROR)
             self.progress["errors"].append(
-                {"timestamp": datetime.now().isoformat(), "error": str(e), "traceback": traceback.format_exc()}
+                {
+                    "timestamp": datetime.now().isoformat(),
+                    "error": str(e),
+                    "traceback": traceback.format_exc(),
+                }
             )
             return self._compile_error_result(e)
 
@@ -1157,7 +1292,11 @@ class AutonomousAgentLoop:
 
         # Immer einen Report generieren
         plan.append(
-            PlanStep(tool_type=ToolType.REPORT_GENERATOR, action="Generate final report", parameters={"target": target})
+            PlanStep(
+                tool_type=ToolType.REPORT_GENERATOR,
+                action="Generate final report",
+                parameters={"target": target},
+            )
         )
 
         # Falls kein spezifischer Plan erstellt wurde, Standard-Plan
@@ -1169,10 +1308,14 @@ class AutonomousAgentLoop:
                     parameters={"target": target},
                 ),
                 PlanStep(
-                    tool_type=ToolType.NUCLEI_SCANNER, action=f"Vulnerability scan of {target}", parameters={"target": target}
+                    tool_type=ToolType.NUCLEI_SCANNER,
+                    action=f"Vulnerability scan of {target}",
+                    parameters={"target": target},
                 ),
                 PlanStep(
-                    tool_type=ToolType.REPORT_GENERATOR, action="Generate findings report", parameters={"target": target}
+                    tool_type=ToolType.REPORT_GENERATOR,
+                    action="Generate findings report",
+                    parameters={"target": target},
                 ),
             ]
 
@@ -1180,7 +1323,13 @@ class AutonomousAgentLoop:
 
         # Speichere Plan im Memory
         for step in plan:
-            self.memory.add_to_short_term({"type": "plan_step", "content": step.action, "tool": step.tool_type.value})
+            self.memory.add_to_short_term(
+                {
+                    "type": "plan_step",
+                    "content": step.action,
+                    "tool": step.tool_type.value,
+                }
+            )
 
         return plan
 
@@ -1201,16 +1350,28 @@ class AutonomousAgentLoop:
         try:
             tool_type = ToolType(tool_type_str)
         except ValueError:
-            return ToolResult(tool_name=tool_type_str, success=False, error_message=f"Unknown tool type: {tool_type_str}")
+            return ToolResult(
+                tool_name=tool_type_str,
+                success=False,
+                error_message=f"Unknown tool type: {tool_type_str}",
+            )
 
         tool = self.tool_registry.get_tool(tool_type)
         if not tool:
-            return ToolResult(tool_name=tool_type_str, success=False, error_message=f"Tool not found: {tool_type_str}")
+            return ToolResult(
+                tool_name=tool_type_str,
+                success=False,
+                error_message=f"Tool not found: {tool_type_str}",
+            )
 
         # Validiere Parameter
         valid, error = tool.validate_parameters(parameters)
         if not valid:
-            return ToolResult(tool_name=tool.name, success=False, error_message=f"Parameter validation failed: {error}")
+            return ToolResult(
+                tool_name=tool.name,
+                success=False,
+                error_message=f"Parameter validation failed: {error}",
+            )
 
         # Führe Tool aus
         self.logger.info(f"Executing {tool.name} with params: {parameters}")
@@ -1230,7 +1391,9 @@ class AutonomousAgentLoop:
 
         for attempt in range(1, self.retry_attempts + 1):
             try:
-                self.logger.info(f"Executing step '{step.action}' (attempt {attempt}/{self.retry_attempts})")
+                self.logger.info(
+                    f"Executing step '{step.action}' (attempt {attempt}/{self.retry_attempts})"
+                )
 
                 tool = self.tool_registry.get_tool(step.tool_type)
                 if not tool:
@@ -1305,7 +1468,11 @@ class AutonomousAgentLoop:
             observation["error"] = result.error_message
 
             self.memory.add_to_short_term(
-                {"type": "observation", "content": f"{result.tool_name} failed: {result.error_message}", "error": True}
+                {
+                    "type": "observation",
+                    "content": f"{result.tool_name} failed: {result.error_message}",
+                    "error": True,
+                }
             )
 
         return observation
@@ -1321,7 +1488,12 @@ class AutonomousAgentLoop:
 
         # Prüfe ob kritische Fehler aufgetreten sind
         recent_errors = [
-            e for e in self.progress["errors"] if (datetime.now() - datetime.fromisoformat(e["timestamp"])).seconds < 60
+            e
+            for e in self.progress["errors"]
+            if (
+                datetime.now() - datetime.fromisoformat(e["timestamp"])
+            ).seconds
+            < 60
         ]
 
         if len(recent_errors) > 5:
@@ -1329,10 +1501,15 @@ class AutonomousAgentLoop:
             return False
 
         # Prüfe ob Ziel erreicht (basierend auf Findings)
-        critical_findings = [f for f in self.memory.findings if f.get("severity") == "critical"]
+        critical_findings = [
+            f for f in self.memory.findings if f.get("severity") == "critical"
+        ]
 
         # Wenn kritische Findings gefunden und Report generiert, beenden
-        if critical_findings and self.memory.plan_step >= len(self.memory.current_plan) - 1:
+        if (
+            critical_findings
+            and self.memory.plan_step >= len(self.memory.current_plan) - 1
+        ):
             self.logger.info("Critical findings detected and report ready")
             # Könnte hier entscheiden zu beenden oder weiterzumachen
 
@@ -1361,7 +1538,12 @@ class AutonomousAgentLoop:
         if "open_ports" in data:
             for port_info in data["open_ports"]:
                 self.memory.add_finding(
-                    {"type": "open_port", "severity": "info", "source": result.tool_name, "details": port_info}
+                    {
+                        "type": "open_port",
+                        "severity": "info",
+                        "source": result.tool_name,
+                        "details": port_info,
+                    }
                 )
 
         # Nuclei Findings
@@ -1380,19 +1562,32 @@ class AutonomousAgentLoop:
         if "subdomains" in data:
             for subdomain in data["subdomains"]:
                 self.memory.add_finding(
-                    {"type": "subdomain", "severity": "info", "source": result.tool_name, "details": subdomain}
+                    {
+                        "type": "subdomain",
+                        "severity": "info",
+                        "source": result.tool_name,
+                        "details": subdomain,
+                    }
                 )
 
         self.progress["findings_count"] = len(self.memory.findings)
 
     async def _compile_final_result(self) -> Dict[str, Any]:
         """Kompiliert das finale Ergebnis."""
-        execution_time = self.end_time - self.start_time if self.start_time and self.end_time else 0
+        execution_time = (
+            self.end_time - self.start_time
+            if self.start_time and self.end_time
+            else 0
+        )
 
         # Generiere finalen Report
         report_tool = self.tool_registry.get_tool(ToolType.REPORT_GENERATOR)
         report_result = await report_tool.execute(
-            {"target": self.memory.target, "findings": self.memory.findings, "format": "json"}
+            {
+                "target": self.memory.target,
+                "findings": self.memory.findings,
+                "format": "json",
+            }
         )
 
         return {
@@ -1421,7 +1616,11 @@ class AutonomousAgentLoop:
         return {
             "success": False,
             "state": self.state.name,
-            "error": {"message": str(error), "type": type(error).__name__, "traceback": traceback.format_exc()},
+            "error": {
+                "message": str(error),
+                "type": type(error).__name__,
+                "traceback": traceback.format_exc(),
+            },
             "progress": self.progress,
             "timestamp": datetime.now().isoformat(),
         }
@@ -1436,7 +1635,12 @@ class AutonomousAgentLoop:
 
     def is_running(self) -> bool:
         """Prüft ob der Agent läuft."""
-        return self.state in [AgentState.PLANNING, AgentState.EXECUTING, AgentState.OBSERVING, AgentState.REFLECTING]
+        return self.state in [
+            AgentState.PLANNING,
+            AgentState.EXECUTING,
+            AgentState.OBSERVING,
+            AgentState.REFLECTING,
+        ]
 
     def pause(self) -> None:
         """Pausiert die Ausführung (Human-in-the-loop)."""
@@ -1451,7 +1655,9 @@ class AutonomousAgentLoop:
 
 # Factory Function
 def create_agent_loop(
-    llm_client: Optional[Any] = None, max_iterations: int = 50, retry_attempts: int = 3
+    llm_client: Optional[Any] = None,
+    max_iterations: int = 50,
+    retry_attempts: int = 3,
 ) -> AutonomousAgentLoop:
     """
     Factory-Funktion zum Erstellen eines AutonomousAgentLoop.
@@ -1464,7 +1670,11 @@ def create_agent_loop(
     Returns:
         Konfigurierte AutonomousAgentLoop Instanz
     """
-    return AutonomousAgentLoop(llm_client=llm_client, max_iterations=max_iterations, retry_attempts=retry_attempts)
+    return AutonomousAgentLoop(
+        llm_client=llm_client,
+        max_iterations=max_iterations,
+        retry_attempts=retry_attempts,
+    )
 
 
 # Example usage
@@ -1476,12 +1686,18 @@ if __name__ == "__main__":
 
         # Definiere Progress Callback
         def on_progress(progress):
-            print(f"Progress: {progress['completed_steps']}/{progress['total_steps']} steps")
+            print(
+                f"Progress: {progress['completed_steps']}/{progress['total_steps']} steps"
+            )
 
         agent.set_progress_callback(on_progress)
 
         # Führe Scan aus
-        result = await agent.run(goal="Find vulnerabilities and open ports", target="example.com", scope={"depth": "standard"})
+        result = await agent.run(
+            goal="Find vulnerabilities and open ports",
+            target="example.com",
+            scope={"depth": "standard"},
+        )
 
         print("\n=== Execution Result ===")
         print(json.dumps(result, indent=2, default=str))

@@ -26,14 +26,18 @@ class AnalysisAgent(BaseAgent):
 
         # Register handlers
         self.register_handler("findings", self._handle_findings)
-        self.register_handler("analysis_request", self._handle_analysis_request)
+        self.register_handler(
+            "analysis_request", self._handle_analysis_request
+        )
 
     async def _handle_findings(self, msg: AgentMessage):
         """Process findings from other agents"""
         findings = msg.context.get("findings", [])
         source = msg.sender
 
-        logger.info(f"[AnalysisAgent:{self.name}] Analyzing {len(findings)} findings from {source}")
+        logger.info(
+            f"[AnalysisAgent:{self.name}] Analyzing {len(findings)} findings from {source}"
+        )
 
         # Perform analysis
         analysis = await self._analyze_findings(findings)
@@ -100,7 +104,10 @@ class AnalysisAgent(BaseAgent):
         # Pattern 1: CVE associated with ransomware
         for cve in cves:
             cve_data = cve.get("data", {})
-            if hasattr(cve_data, "ransomware_used_by") and cve_data.ransomware_used_by:
+            if (
+                hasattr(cve_data, "ransomware_used_by")
+                and cve_data.ransomware_used_by
+            ):
                 analysis["critical_patterns"].append(
                     {
                         "type": "ransomware_cve",
@@ -111,7 +118,9 @@ class AnalysisAgent(BaseAgent):
                 analysis["risk_level"] = "critical"
 
         # Pattern 2: Multiple high-severity CVEs
-        high_cves = [c for c in cves if c.get("data", {}).get("severity") == "Critical"]
+        high_cves = [
+            c for c in cves if c.get("data", {}).get("severity") == "Critical"
+        ]
         if len(high_cves) >= 3:
             analysis["critical_patterns"].append(
                 {
@@ -137,7 +146,9 @@ class AnalysisAgent(BaseAgent):
             response = await self.zen_orchestrator.process(prompt)
             analysis["recommendations"] = response.content.split("\n")
 
-        analysis["summary"] = f"Found {len(analysis['critical_patterns'])} critical patterns across {len(findings)} findings"
+        analysis["summary"] = (
+            f"Found {len(analysis['critical_patterns'])} critical patterns across {len(findings)} findings"
+        )
 
         return analysis
 
@@ -173,7 +184,11 @@ class AnalysisAgent(BaseAgent):
                 "agent": self.name,
             }
 
-        return {"type": "attack_path_analysis", "paths": [], "agent": self.name}
+        return {
+            "type": "attack_path_analysis",
+            "paths": [],
+            "agent": self.name,
+        }
 
     async def _correlate_data(self, data: List) -> Dict:
         """Find correlations between different data points"""
@@ -214,6 +229,10 @@ class AnalysisAgent(BaseAgent):
             findings = context.get("findings", [])
             analysis = await self._analyze_findings(findings)
 
-            return {"status": "complete", "analysis": analysis, "agent": self.name}
+            return {
+                "status": "complete",
+                "analysis": analysis,
+                "agent": self.name,
+            }
 
         return {"status": "unknown_task"}

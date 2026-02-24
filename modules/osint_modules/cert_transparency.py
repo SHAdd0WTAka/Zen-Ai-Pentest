@@ -84,7 +84,13 @@ class CertificateTransparency:
         """
         logger.info(f"Starte CT-Log-Suche für: {domain}")
 
-        result = {"domain": domain, "certificates": [], "subdomains": [], "total_count": 0, "sources": []}
+        result = {
+            "domain": domain,
+            "certificates": [],
+            "subdomains": [],
+            "total_count": 0,
+            "sources": [],
+        }
 
         # Sammle von verschiedenen Quellen
         tasks = [
@@ -100,8 +106,12 @@ class CertificateTransparency:
                 continue
 
             if source_result:
-                result["certificates"].extend(source_result.get("certificates", []))
-                result["subdomains"].extend(source_result.get("subdomains", []))
+                result["certificates"].extend(
+                    source_result.get("certificates", [])
+                )
+                result["subdomains"].extend(
+                    source_result.get("subdomains", [])
+                )
                 if source_result.get("source"):
                     result["sources"].append(source_result["source"])
 
@@ -122,11 +132,16 @@ class CertificateTransparency:
         self.cache[domain] = unique_certs
         self.found_subdomains.update(result["subdomains"])
 
-        logger.info(f"CT-Log-Suche abgeschlossen: {len(unique_certs)} Zertifikate, " f"{len(result['subdomains'])} Subdomains")
+        logger.info(
+            f"CT-Log-Suche abgeschlossen: {len(unique_certs)} Zertifikate, "
+            f"{len(result['subdomains'])} Subdomains"
+        )
 
         return result
 
-    async def _search_crtsh(self, domain: str, include_expired: bool = True) -> Dict:
+    async def _search_crtsh(
+        self, domain: str, include_expired: bool = True
+    ) -> Dict:
         """Durchsucht crt.sh"""
         result = {"source": "crt.sh", "certificates": [], "subdomains": []}
 
@@ -159,8 +174,13 @@ class CertificateTransparency:
                                 if line and line.endswith(domain):
                                     # Entferne Wildcards
                                     clean_domain = line.replace("*.", "")
-                                    if clean_domain not in result["subdomains"]:
-                                        result["subdomains"].append(clean_domain)
+                                    if (
+                                        clean_domain
+                                        not in result["subdomains"]
+                                    ):
+                                        result["subdomains"].append(
+                                            clean_domain
+                                        )
 
                             result["certificates"].append(cert)
 
@@ -173,17 +193,27 @@ class CertificateTransparency:
 
     async def _search_certspotter(self, domain: str) -> Dict:
         """Durchsucht CertSpotter"""
-        result = {"source": "certspotter", "certificates": [], "subdomains": []}
+        result = {
+            "source": "certspotter",
+            "certificates": [],
+            "subdomains": [],
+        }
 
         try:
             import aiohttp
 
             # CertSpotter API (ohne API-Key, limitiert)
             url = f"{self.CT_SOURCES['certspotter']}/issuances"
-            params = {"domain": domain, "include_subdomains": "true", "expand": "dns_names"}
+            params = {
+                "domain": domain,
+                "include_subdomains": "true",
+                "expand": "dns_names",
+            }
 
             async with aiohttp.ClientSession() as session:
-                async with session.get(url, params=params, timeout=self.timeout) as response:
+                async with session.get(
+                    url, params=params, timeout=self.timeout
+                ) as response:
                     if response.status == 200:
                         data = await response.json()
 
@@ -193,13 +223,17 @@ class CertificateTransparency:
 
                             for dns_name in dns_names:
                                 if dns_name.endswith(domain):
-                                    result["subdomains"].append(dns_name.lower())
+                                    result["subdomains"].append(
+                                        dns_name.lower()
+                                    )
 
                             # Erstelle Zertifikat
                             cert = Certificate(
                                 id=issuance.get("id", ""),
                                 domain=domain,
-                                issuer=issuance.get("issuer", {}).get("name", ""),
+                                issuer=issuance.get("issuer", {}).get(
+                                    "name", ""
+                                ),
                                 not_before=issuance.get("not_before"),
                                 not_after=issuance.get("not_after"),
                                 san=dns_names,
@@ -214,14 +248,19 @@ class CertificateTransparency:
 
         return result
 
-    async def get_certificate_details(self, domain: str, port: int = 443) -> Optional[Dict]:
+    async def get_certificate_details(
+        self, domain: str, port: int = 443
+    ) -> Optional[Dict]:
         """Holt Zertifikatsdetails direkt vom Server"""
         try:
             context = ssl.create_default_context()
             context.check_hostname = False
             context.verify_mode = ssl.CERT_NONE
 
-            reader, writer = await asyncio.wait_for(asyncio.open_connection(domain, port, ssl=context), timeout=10.0)
+            reader, writer = await asyncio.wait_for(
+                asyncio.open_connection(domain, port, ssl=context),
+                timeout=10.0,
+            )
 
             ssl_obj = writer.get_extra_info("ssl_object")
             if ssl_obj:
@@ -247,7 +286,9 @@ class CertificateTransparency:
                 return result
 
         except Exception as e:
-            logger.debug(f"Zertifikatsdetails konnten nicht abgerufen werden: {e}")
+            logger.debug(
+                f"Zertifikatsdetails konnten nicht abgerufen werden: {e}"
+            )
 
         return None
 
@@ -271,7 +312,9 @@ class CertificateTransparency:
             for cert in certs:
                 if cert.not_after:
                     try:
-                        expiry = datetime.fromisoformat(cert.not_after.replace("Z", "+00:00"))
+                        expiry = datetime.fromisoformat(
+                            cert.not_after.replace("Z", "+00:00")
+                        )
                         days_until_expiry = (expiry - now).days
 
                         if 0 <= days_until_expiry <= days:
@@ -286,9 +329,13 @@ async def main():
     """CLI-Interface für Certificate Transparency"""
     import argparse
 
-    parser = argparse.ArgumentParser(description="Certificate Transparency Scanner")
+    parser = argparse.ArgumentParser(
+        description="Certificate Transparency Scanner"
+    )
     parser.add_argument("domain", help="Ziel-Domain")
-    parser.add_argument("--details", action="store_true", help="Zertifikatsdetails abrufen")
+    parser.add_argument(
+        "--details", action="store_true", help="Zertifikatsdetails abrufen"
+    )
     parser.add_argument("-o", "--output", help="Ausgabedatei")
     parser.add_argument("-v", "--verbose", action="store_true")
 

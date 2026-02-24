@@ -60,7 +60,10 @@ class NVDClient:
         self.last_request_time = asyncio.get_event_loop().time()
 
     async def fetch_cves(
-        self, start_date: Optional[datetime] = None, end_date: Optional[datetime] = None, results_per_page: int = 2000
+        self,
+        start_date: Optional[datetime] = None,
+        end_date: Optional[datetime] = None,
+        results_per_page: int = 2000,
     ) -> List[CVEEntry]:
         """Fetch CVEs from NVD with optional date range"""
         await self._rate_limit()
@@ -68,9 +71,13 @@ class NVDClient:
         params = {"resultsPerPage": results_per_page}
 
         if start_date:
-            params["lastModStartDate"] = start_date.strftime("%Y-%m-%dT%H:%M:%S.000")
+            params["lastModStartDate"] = start_date.strftime(
+                "%Y-%m-%dT%H:%M:%S.000"
+            )
         if end_date:
-            params["lastModEndDate"] = end_date.strftime("%Y-%m-%dT%H:%M:%S.000")
+            params["lastModEndDate"] = end_date.strftime(
+                "%Y-%m-%dT%H:%M:%S.000"
+            )
 
         if self.api_key:
             params["apiKey"] = self.api_key
@@ -98,12 +105,20 @@ class NVDClient:
             if "cvssMetricV31" in metrics:
                 cvss_data = metrics["cvssMetricV31"][0]["cvssData"]
                 cvss_score = cvss_data.get("baseScore", 0.0)
-                severity = metrics["cvssMetricV31"][0].get("baseSeverity", "unknown").lower()
+                severity = (
+                    metrics["cvssMetricV31"][0]
+                    .get("baseSeverity", "unknown")
+                    .lower()
+                )
                 cvss_vector = cvss_data.get("vectorString", "")
             elif "cvssMetricV30" in metrics:
                 cvss_data = metrics["cvssMetricV30"][0]["cvssData"]
                 cvss_score = cvss_data.get("baseScore", 0.0)
-                severity = metrics["cvssMetricV30"][0].get("baseSeverity", "unknown").lower()
+                severity = (
+                    metrics["cvssMetricV30"][0]
+                    .get("baseSeverity", "unknown")
+                    .lower()
+                )
                 cvss_vector = cvss_data.get("vectorString", "")
 
             # Extract description (English only)
@@ -115,7 +130,11 @@ class NVDClient:
                     break
 
             # Extract references
-            references = [ref.get("url", "") for ref in cve_data.get("references", []) if ref.get("url")]
+            references = [
+                ref.get("url", "")
+                for ref in cve_data.get("references", [])
+                if ref.get("url")
+            ]
 
             # Extract CPE matches
             cpe_matches = []
@@ -202,7 +221,9 @@ class CVEUpdater:
         }
         await self._save_metadata(metadata)
 
-        logging.info(f"Update complete: {new_count} new, {updated_count} updated, {len(db)} total")
+        logging.info(
+            f"Update complete: {new_count} new, {updated_count} updated, {len(db)} total"
+        )
 
         return metadata
 

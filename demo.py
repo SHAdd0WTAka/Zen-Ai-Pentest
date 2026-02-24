@@ -32,8 +32,12 @@ async def demo_workflow():
         checker = ToolChecker()
         report = checker.get_status_report()
 
-        print(f"      Required Tools: {report['required']['available']}/{report['required']['total']}")
-        print(f"      Optional Tools: {report['optional']['available']}/{report['optional']['total']}")
+        print(
+            f"      Required Tools: {report['required']['available']}/{report['required']['total']}"
+        )
+        print(
+            f"      Optional Tools: {report['optional']['available']}/{report['optional']['total']}"
+        )
         print(f"      System Ready: {report['ready']}")
     except Exception as e:
         print(f"      Error: {e}")
@@ -68,9 +72,15 @@ async def demo_workflow():
     # Step 3: Submit scan task
     print("[3/5] Submitting scan task...")
     try:
-        task_data = {"type": "vulnerability_scan", "target": TARGET, "options": {"ports": "22,80,443", "scan_type": "quick"}}
+        task_data = {
+            "type": "vulnerability_scan",
+            "target": TARGET,
+            "options": {"ports": "22,80,443", "scan_type": "quick"},
+        }
 
-        task_id = await orchestrator.submit_task(task_data=task_data, priority="normal")
+        task_id = await orchestrator.submit_task(
+            task_data=task_data, priority="normal"
+        )
 
         print(f"      Task ID: {task_id}")
         print(f"      Target: {TARGET}")

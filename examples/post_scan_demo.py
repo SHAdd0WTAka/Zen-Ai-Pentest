@@ -110,7 +110,9 @@ Phases:
     target = "192.168.1.100"
 
     print(f"\n[Target] {target}")
-    print(f"[Initial Findings] {len(simulated_findings)} findings from automated scan")
+    print(
+        f"[Initial Findings] {len(simulated_findings)} findings from automated scan"
+    )
     print("\n" + "-" * 70)
 
     # Run the post-scan workflow
@@ -139,7 +141,9 @@ Phases:
     print(f"  - Sensitive files: {loot.get('sensitive_files', 0)}")
 
     print("\n[Evidence]")
-    print(f"  - Evidence directory: {results.get('evidence_directory', 'N/A')}")
+    print(
+        f"  - Evidence directory: {results.get('evidence_directory', 'N/A')}"
+    )
 
     print("\n[Report Ready]")
     report_data = results.get("report_data", {})
@@ -152,7 +156,9 @@ Phases:
     agent = PostScanAgent()
     agent.report_data = report_data
     agent.evidence_dir = Path(results.get("evidence_directory", "evidence"))
-    agent.loot.screenshots = [f"screenshot_{i}.png" for i in range(loot.get("screenshots", 0))]
+    agent.loot.screenshots = [
+        f"screenshot_{i}.png" for i in range(loot.get("screenshots", 0))
+    ]
     agent.verified_findings = []  # Would be populated from results
 
     print("\n" + "=" * 70)
@@ -163,7 +169,9 @@ Phases:
     # Show first 2000 characters
     print(report_preview[:2000])
     print("\n... [truncated for display] ...")
-    print(f"\n[Full report saved to: {results.get('evidence_directory', 'evidence')}/report.md]")
+    print(
+        f"\n[Full report saved to: {results.get('evidence_directory', 'evidence')}/report.md]"
+    )
 
     print("\n" + "=" * 70)
     print("  Demo Complete!")
@@ -206,17 +214,23 @@ async def demo_individual_phases():
 
     print("\n[Phase 1: Verification]")
     print("  Purpose: Eliminate false positives")
-    verification = await agent._verify_finding(agent._dict_to_finding(test_finding))
+    verification = await agent._verify_finding(
+        agent._dict_to_finding(test_finding)
+    )
     print(f"  Result: {verification}")
 
     print("\n[Phase 2: Validation]")
     print("  Purpose: Confirm exploitability")
-    validation = await agent._validate_vulnerability(agent._dict_to_finding(test_finding))
+    validation = await agent._validate_vulnerability(
+        agent._dict_to_finding(test_finding)
+    )
     print(f"  Result: {validation}")
 
     print("\n[Phase 3: Exploitation]")
     print("  Purpose: Attempt safe exploitation")
-    exploitation = await agent._attempt_exploitation(agent._dict_to_finding(test_finding))
+    exploitation = await agent._attempt_exploitation(
+        agent._dict_to_finding(test_finding)
+    )
     print(f"  Result: {exploitation}")
 
     print("\n[Phases 4-7: Post-Exploitation, Evidence, Loot, Cleanup]")
@@ -231,8 +245,12 @@ def main():
     """Main entry point"""
     import argparse
 
-    parser = argparse.ArgumentParser(description="Post-Scan Workflow Demo - Professional Pentester Methodology")
-    parser.add_argument("--phases", action="store_true", help="Show individual phase details")
+    parser = argparse.ArgumentParser(
+        description="Post-Scan Workflow Demo - Professional Pentester Methodology"
+    )
+    parser.add_argument(
+        "--phases", action="store_true", help="Show individual phase details"
+    )
 
     args = parser.parse_args()
 

@@ -94,5 +94,7 @@ class ConnectionManager:
         return {
             "global_connections": len(self.global_connections),
             "active_scans": len(self.scan_connections),
-            "total_scan_connections": sum(len(conns) for conns in self.scan_connections.values()),
+            "total_scan_connections": sum(
+                len(conns) for conns in self.scan_connections.values()
+            ),
         }

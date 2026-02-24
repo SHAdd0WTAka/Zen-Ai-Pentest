@@ -45,7 +45,18 @@ class DNSEnumerator:
     """
 
     # Standard DNS-Record-Typen
-    RECORD_TYPES = ["A", "AAAA", "MX", "NS", "TXT", "SOA", "CNAME", "PTR", "SRV", "CAA"]
+    RECORD_TYPES = [
+        "A",
+        "AAAA",
+        "MX",
+        "NS",
+        "TXT",
+        "SOA",
+        "CNAME",
+        "PTR",
+        "SRV",
+        "CAA",
+    ]
 
     def __init__(self, config: Optional[Dict] = None):
         """
@@ -104,7 +115,9 @@ class DNSEnumerator:
 
         # Extrahiere Nameserver
         if "NS" in result["records"]:
-            result["nameservers"] = [r["value"] for r in result["records"]["NS"]]
+            result["nameservers"] = [
+                r["value"] for r in result["records"]["NS"]
+            ]
 
         # Prüfe DNSSEC
         result["dnssec"] = await self._check_dnssec(domain)
@@ -129,7 +142,9 @@ class DNSEnumerator:
         logger.info(f"DNS-Enumeration abgeschlossen für: {domain}")
         return result
 
-    async def _query_records(self, domain: str, record_type: str) -> List[Dict]:
+    async def _query_records(
+        self, domain: str, record_type: str
+    ) -> List[Dict]:
         """Fragt DNS-Records ab"""
         records = []
 
@@ -153,7 +168,11 @@ class DNSEnumerator:
                         "type": record_type,
                         "name": domain,
                         "value": str(answer),
-                        "ttl": answers.rrset.ttl if hasattr(answers, "rrset") else 0,
+                        "ttl": (
+                            answers.rrset.ttl
+                            if hasattr(answers, "rrset")
+                            else 0
+                        ),
                     }
 
                     # Extrahiere Priority für MX-Records
@@ -173,9 +192,18 @@ class DNSEnumerator:
             # Fallback zu socket
             if record_type == "A":
                 try:
-                    addr_info = await asyncio.get_event_loop().getaddrinfo(domain, None, family=socket.AF_INET)
+                    addr_info = await asyncio.get_event_loop().getaddrinfo(
+                        domain, None, family=socket.AF_INET
+                    )
                     for info in addr_info:
-                        records.append({"type": "A", "name": domain, "value": info[4][0], "ttl": 0})
+                        records.append(
+                            {
+                                "type": "A",
+                                "name": domain,
+                                "value": info[4][0],
+                                "ttl": 0,
+                            }
+                        )
                 except (socket.gaierror, socket.herror, OSError):
                     pass
 
@@ -183,7 +211,12 @@ class DNSEnumerator:
 
     async def _check_dnssec(self, domain: str) -> Dict:
         """Prüft DNSSEC-Status"""
-        result = {"enabled": False, "validated": False, "algorithm": None, "key_tag": None}
+        result = {
+            "enabled": False,
+            "validated": False,
+            "algorithm": None,
+            "key_tag": None,
+        }
 
         try:
             import dns.dnssec
@@ -197,7 +230,9 @@ class DNSEnumerator:
                 result["enabled"] = True
 
                 for answer in answers:
-                    result["algorithm"] = dns.dnssec.algorithm_to_text(answer.algorithm)
+                    result["algorithm"] = dns.dnssec.algorithm_to_text(
+                        answer.algorithm
+                    )
                     result["key_tag"] = answer.key_tag
                     break
 
@@ -224,14 +259,20 @@ class DNSEnumerator:
             for ns_record in ns_records:
                 ns_server = ns_record["value"].rstrip(".")
                 try:
-                    zone = dns.zone.from_xfr(dns.query.xfr(ns_server, domain, timeout=5))
+                    zone = dns.zone.from_xfr(
+                        dns.query.xfr(ns_server, domain, timeout=5)
+                    )
 
                     if zone:
-                        logger.info(f"Zone Transfer erfolgreich von {ns_server}")
+                        logger.info(
+                            f"Zone Transfer erfolgreich von {ns_server}"
+                        )
                         return True
 
                 except Exception as e:
-                    logger.debug(f"Zone Transfer von {ns_server} fehlgeschlagen: {e}")
+                    logger.debug(
+                        f"Zone Transfer von {ns_server} fehlgeschlagen: {e}"
+                    )
 
         except ImportError:
             logger.debug("dnspython nicht verfügbar für Zone Transfer")
@@ -243,7 +284,9 @@ class DNSEnumerator:
     async def _reverse_dns_lookup(self, ip: str) -> Optional[str]:
         """Führt Reverse DNS-Lookup durch"""
         try:
-            hostname = await asyncio.get_event_loop().run_in_executor(None, socket.gethostbyaddr, ip)
+            hostname = await asyncio.get_event_loop().run_in_executor(
+                None, socket.gethostbyaddr, ip
+            )
             return hostname[0]
         except (socket.herror, socket.gaierror):
             return None
@@ -257,7 +300,10 @@ class DNSEnumerator:
         for record in spf_records:
             value = record["value"]
             if "v=spf1" in value:
-                result["spf"] = {"record": value, "policy": self._parse_spf_policy(value)}
+                result["spf"] = {
+                    "record": value,
+                    "policy": self._parse_spf_policy(value),
+                }
                 break
 
         # DMARC-Record
@@ -266,21 +312,37 @@ class DNSEnumerator:
         for record in dmarc_records:
             value = record["value"]
             if "v=DMARC1" in value:
-                result["dmarc"] = {"record": value, "policy": self._parse_dmarc_policy(value)}
+                result["dmarc"] = {
+                    "record": value,
+                    "policy": self._parse_dmarc_policy(value),
+                }
                 break
 
         # DKIM-Records (versuche gängige Selektoren)
-        dkim_selectors = ["default", "google", "mail", "selector1", "selector2", "dkim"]
+        dkim_selectors = [
+            "default",
+            "google",
+            "mail",
+            "selector1",
+            "selector2",
+            "dkim",
+        ]
         for selector in dkim_selectors:
             dkim_domain = f"{selector}._domainkey.{domain}"
             dkim_records = await self._query_records(dkim_domain, "TXT")
             if dkim_records:
-                result["dkim"] = {"selector": selector, "record": dkim_records[0]["value"]}
+                result["dkim"] = {
+                    "selector": selector,
+                    "record": dkim_records[0]["value"],
+                }
                 break
 
         # MX-Records
         mx_records = await self._query_records(domain, "MX")
-        result["mx"] = [{"server": r["value"], "priority": r.get("priority", 0)} for r in mx_records]
+        result["mx"] = [
+            {"server": r["value"], "priority": r.get("priority", 0)}
+            for r in mx_records
+        ]
 
         return result
 

@@ -13,7 +13,14 @@ from pathlib import Path
 # Add parent to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from flask import Flask, Response, jsonify, render_template, request, send_from_directory
+from flask import (
+    Flask,
+    Response,
+    jsonify,
+    render_template,
+    request,
+    send_from_directory,
+)
 from flask_cors import CORS
 from flask_sock import Sock
 
@@ -32,15 +39,25 @@ log_dir.mkdir(exist_ok=True)
 
 request_logger = logging.getLogger("kimi_api_requests")
 request_logger.setLevel(logging.INFO)
-handler = RotatingFileHandler(log_dir / "api_requests.log", maxBytes=10 * 1024 * 1024, backupCount=5)  # 10MB
+handler = RotatingFileHandler(
+    log_dir / "api_requests.log", maxBytes=10 * 1024 * 1024, backupCount=5
+)  # 10MB
 handler.setFormatter(logging.Formatter("%(asctime)s | %(message)s"))
 request_logger.addHandler(handler)
 
 # Request stats
-request_stats = {"total_requests": 0, "requests_by_persona": {}, "requests_by_endpoint": {}, "start_time": datetime.utcnow()}
+request_stats = {
+    "total_requests": 0,
+    "requests_by_persona": {},
+    "requests_by_endpoint": {},
+    "start_time": datetime.utcnow(),
+}
 
 # Logging
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
 logger = logging.getLogger(__name__)
 
 # Persona Registry
@@ -49,19 +66,34 @@ PERSONAS = {
         "name": "🔍 Recon/OSINT Specialist",
         "description": "Subdomain枚举, Port扫描, Technologie-Erkennung",
         "category": "core",
-        "skills": ["subdomain_enum", "port_scanning", "osint", "tech_detection"],
+        "skills": [
+            "subdomain_enum",
+            "port_scanning",
+            "osint",
+            "tech_detection",
+        ],
     },
     "exploit": {
         "name": "💣 Exploit Developer",
         "description": "Python-Exploits, POC-Entwicklung, Automation",
         "category": "core",
-        "skills": ["python_coding", "poc_development", "automation", "tooling"],
+        "skills": [
+            "python_coding",
+            "poc_development",
+            "automation",
+            "tooling",
+        ],
     },
     "report": {
         "name": "📝 Technical Writer",
         "description": "CVSS-Scoring, Remediation, Executive Summary",
         "category": "core",
-        "skills": ["cvss_scoring", "remediation", "executive_summary", "documentation"],
+        "skills": [
+            "cvss_scoring",
+            "remediation",
+            "executive_summary",
+            "documentation",
+        ],
     },
     "audit": {
         "name": "🔐 Code Auditor",
@@ -73,13 +105,23 @@ PERSONAS = {
         "name": "🎭 Social Engineering Specialist",
         "description": "Phishing, Pretexting, OSINT auf Personen",
         "category": "extended",
-        "skills": ["phishing_analysis", "email_security", "awareness_training", "pretexting"],
+        "skills": [
+            "phishing_analysis",
+            "email_security",
+            "awareness_training",
+            "pretexting",
+        ],
     },
     "network": {
         "name": "🌐 Network Pentester",
         "description": "Infrastruktur, Active Directory, Lateral Movement",
         "category": "extended",
-        "skills": ["active_directory", "lateral_movement", "pivoting", "network_enum"],
+        "skills": [
+            "active_directory",
+            "lateral_movement",
+            "pivoting",
+            "network_enum",
+        ],
     },
     "mobile": {
         "name": "📱 Mobile Security Expert",
@@ -91,13 +133,25 @@ PERSONAS = {
         "name": "🕵️ Red Team Operator",
         "description": "Adversary Simulation, APT TTPs, C2 Operations",
         "category": "extended",
-        "skills": ["apt_ttps", "c2_operations", "lolbas", "opsec", "kill_chain"],
+        "skills": [
+            "apt_ttps",
+            "c2_operations",
+            "lolbas",
+            "opsec",
+            "kill_chain",
+        ],
     },
     "ics": {
         "name": "🧪 ICS/SCADA Specialist",
         "description": "Industrial Control Systems, Modbus, S7, Safety",
         "category": "extended",
-        "skills": ["modbus", "scada", "safety_systems", " Purdue_model", "iec_62443"],
+        "skills": [
+            "modbus",
+            "scada",
+            "safety_systems",
+            " Purdue_model",
+            "iec_62443",
+        ],
     },
     "cloud": {
         "name": "☁️ Cloud Security Expert",
@@ -109,7 +163,13 @@ PERSONAS = {
         "name": "🔬 Cryptography Analyst",
         "description": "Kryptographie, Hash-Analyse, JWT, TLS",
         "category": "extended",
-        "skills": ["jwt", "tls", "hash_analysis", "libsodium", "crypto_review"],
+        "skills": [
+            "jwt",
+            "tls",
+            "hash_analysis",
+            "libsodium",
+            "crypto_review",
+        ],
     },
 }
 
@@ -133,20 +193,26 @@ def require_api_key(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         config = load_config()
-        expected_key = config.get("api", {}).get("api_key") or config.get("backends", {}).get("kimi_api_key")
+        expected_key = config.get("api", {}).get("api_key") or config.get(
+            "backends", {}
+        ).get("kimi_api_key")
 
         # Optional: Allow local requests without key
         if request.remote_addr in ["127.0.0.1", "localhost", "::1"]:
             if not expected_key:
                 return f(*args, **kwargs)
 
-        api_key = request.headers.get("X-API-Key") or request.args.get("api_key")
+        api_key = request.headers.get("X-API-Key") or request.args.get(
+            "api_key"
+        )
 
         if not expected_key:
             return jsonify({"error": "API key not configured on server"}), 500
 
         if not api_key or api_key != expected_key:
-            logger.warning(f"Unauthorized access attempt from {request.remote_addr}")
+            logger.warning(
+                f"Unauthorized access attempt from {request.remote_addr}"
+            )
             return jsonify({"error": "Unauthorized"}), 401
 
         return f(*args, **kwargs)
@@ -174,7 +240,9 @@ def after_request(response):
         # Update stats
         request_stats["total_requests"] += 1
         endpoint = request.endpoint or "unknown"
-        request_stats["requests_by_endpoint"][endpoint] = request_stats["requests_by_endpoint"].get(endpoint, 0) + 1
+        request_stats["requests_by_endpoint"][endpoint] = (
+            request_stats["requests_by_endpoint"].get(endpoint, 0) + 1
+        )
 
         # Log to file
         log_entry = (
@@ -220,7 +288,13 @@ def list_screenshots():
     for ext in ["*.png", "*.jpg", "*.jpeg", "*.gif", "*.bmp"]:
         screenshots.extend(screenshot_dir.glob(ext))
 
-    return jsonify({"screenshots": [s.name for s in screenshots], "count": len(screenshots), "directory": str(screenshot_dir)})
+    return jsonify(
+        {
+            "screenshots": [s.name for s in screenshots],
+            "count": len(screenshots),
+            "directory": str(screenshot_dir),
+        }
+    )
 
 
 @app.route("/api/v1/screenshots", methods=["POST"])
@@ -247,7 +321,12 @@ def upload_screenshot():
     file.save(filepath)
 
     return jsonify(
-        {"status": "success", "filename": filename, "path": str(filepath), "url": f"/static/screenshots/{filename}"}
+        {
+            "status": "success",
+            "filename": filename,
+            "path": str(filepath),
+            "url": f"/static/screenshots/{filename}",
+        }
     )
 
 
@@ -287,7 +366,13 @@ def admin_logs():
         # Get last 100 entries
         recent_logs = [line.strip() for line in lines[-100:]]
 
-        return jsonify({"logs": recent_logs, "count": len(recent_logs), "total_lines": len(lines)})
+        return jsonify(
+            {
+                "logs": recent_logs,
+                "count": len(recent_logs),
+                "total_lines": len(lines),
+            }
+        )
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -317,7 +402,9 @@ def list_personas():
 
     personas = PERSONAS
     if category:
-        personas = {k: v for k, v in personas.items() if v["category"] == category}
+        personas = {
+            k: v for k, v in personas.items() if v["category"] == category
+        }
 
     return jsonify({"count": len(personas), "personas": personas})
 
@@ -328,7 +415,9 @@ def get_persona(persona_id):
     if persona_id not in PERSONAS:
         return jsonify({"error": f"Persona '{persona_id}' not found"}), 404
 
-    include_prompt = request.args.get("include_prompt", "false").lower() == "true"
+    include_prompt = (
+        request.args.get("include_prompt", "false").lower() == "true"
+    )
 
     response = PERSONAS[persona_id].copy()
 
@@ -350,7 +439,10 @@ def get_persona_prompt(persona_id):
 
     prompt = load_persona_content(persona_id)
     if not prompt:
-        return jsonify({"error": f"Prompt file for '{persona_id}' not found"}), 404
+        return (
+            jsonify({"error": f"Prompt file for '{persona_id}' not found"}),
+            404,
+        )
 
     # Plain text response
     return Response(prompt, mimetype="text/plain")
@@ -369,8 +461,12 @@ def list_categories():
     return jsonify(
         {
             "categories": categories,
-            "core_count": len([p for p in PERSONAS.values() if p["category"] == "core"]),
-            "extended_count": len([p for p in PERSONAS.values() if p["category"] == "extended"]),
+            "core_count": len(
+                [p for p in PERSONAS.values() if p["category"] == "core"]
+            ),
+            "extended_count": len(
+                [p for p in PERSONAS.values() if p["category"] == "extended"]
+            ),
         }
     )
 
@@ -407,7 +503,10 @@ def chat():
     # Load system prompt
     system_prompt = load_persona_content(persona_id)
     if not system_prompt:
-        return jsonify({"error": f"Could not load persona '{persona_id}'"}), 500
+        return (
+            jsonify({"error": f"Could not load persona '{persona_id}'"}),
+            500,
+        )
 
     # Build full prompt with context
     context = data.get("context", "")
@@ -417,10 +516,14 @@ def chat():
         full_prompt = message
 
     # Log request
-    logger.info(f"Chat request: persona={persona_id}, message_length={len(message)}")
+    logger.info(
+        f"Chat request: persona={persona_id}, message_length={len(message)}"
+    )
 
     # Update persona stats
-    request_stats["requests_by_persona"][persona_id] = request_stats["requests_by_persona"].get(persona_id, 0) + 1
+    request_stats["requests_by_persona"][persona_id] = (
+        request_stats["requests_by_persona"].get(persona_id, 0) + 1
+    )
 
     # Return structured response (actual Kimi API call would happen here)
     # For now, return the prompt structure
@@ -476,10 +579,16 @@ def chat_complete():
     # Load system prompt
     system_prompt = load_persona_content(persona_id)
     if not system_prompt:
-        return jsonify({"error": f"Could not load persona '{persona_id}'"}), 500
+        return (
+            jsonify({"error": f"Could not load persona '{persona_id}'"}),
+            500,
+        )
 
     # Build messages
-    messages = [{"role": "system", "content": system_prompt}, {"role": "user", "content": message}]
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": message},
+    ]
 
     # Add context if provided
     context = data.get("context")
@@ -499,7 +608,10 @@ def chat_complete():
 
         response = requests.post(
             "https://api.moonshot.cn/v1/chat/completions",
-            headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+            },
             json=kimi_payload,
             timeout=120,
         )
@@ -558,7 +670,13 @@ def batch_process():
         message = req.get("message", "")
 
         if persona_id not in PERSONAS:
-            results.append({"index": idx, "status": "error", "error": f"Unknown persona: {persona_id}"})
+            results.append(
+                {
+                    "index": idx,
+                    "status": "error",
+                    "error": f"Unknown persona: {persona_id}",
+                }
+            )
         else:
             system_prompt = load_persona_content(persona_id)
             results.append(
@@ -585,7 +703,14 @@ def ws_chat(ws):
     """WebSocket für Streaming Chat"""
     import json
 
-    ws.send(json.dumps({"type": "system", "message": "WebSocket verbunden. Sende JSON: {persona: 'recon', message: '...'}"}))
+    ws.send(
+        json.dumps(
+            {
+                "type": "system",
+                "message": "WebSocket verbunden. Sende JSON: {persona: 'recon', message: '...'}",
+            }
+        )
+    )
 
     while True:
         try:
@@ -598,17 +723,39 @@ def ws_chat(ws):
             message = msg.get("message", "")
 
             if persona_id not in PERSONAS:
-                ws.send(json.dumps({"type": "error", "message": f"Unknown persona: {persona_id}"}))
+                ws.send(
+                    json.dumps(
+                        {
+                            "type": "error",
+                            "message": f"Unknown persona: {persona_id}",
+                        }
+                    )
+                )
                 continue
 
             # Load system prompt
             system_prompt = load_persona_content(persona_id)
             if not system_prompt:
-                ws.send(json.dumps({"type": "error", "message": f"Could not load persona '{persona_id}'"}))
+                ws.send(
+                    json.dumps(
+                        {
+                            "type": "error",
+                            "message": f"Could not load persona '{persona_id}'",
+                        }
+                    )
+                )
                 continue
 
             # Send acknowledgment
-            ws.send(json.dumps({"type": "status", "persona": persona_id, "status": "processing"}))
+            ws.send(
+                json.dumps(
+                    {
+                        "type": "status",
+                        "persona": persona_id,
+                        "status": "processing",
+                    }
+                )
+            )
 
             # Check if we should call Kimi API
             config = load_config()
@@ -616,7 +763,11 @@ def ws_chat(ws):
 
             if api_key and msg.get("stream", False):
                 # Stream from Kimi API
-                ws.send(json.dumps({"type": "chunk", "content": "🤖 Denke nach..."}))
+                ws.send(
+                    json.dumps(
+                        {"type": "chunk", "content": "🤖 Denke nach..."}
+                    )
+                )
 
                 # Note: Actual streaming would require SSE or chunked response
                 # For now, send complete response
@@ -626,7 +777,8 @@ def ws_chat(ws):
                             "type": "complete",
                             "persona": persona_id,
                             "content": (
-                                f"[Simulierte Antwort von {PERSONAS[persona_id]['name']}]\n" f"\nAnfrage: {message[:100]}..."
+                                f"[Simulierte Antwort von {PERSONAS[persona_id]['name']}]\n"
+                                f"\nAnfrage: {message[:100]}..."
                             ),
                         }
                     )
@@ -663,7 +815,15 @@ def ws_chat(ws):
 
 @app.errorhandler(404)
 def not_found(e):
-    return jsonify({"error": "Endpoint not found", "available": "/api/v1/health, /api/v1/personas, /api/v1/chat"}), 404
+    return (
+        jsonify(
+            {
+                "error": "Endpoint not found",
+                "available": "/api/v1/health, /api/v1/personas, /api/v1/chat",
+            }
+        ),
+        404,
+    )
 
 
 @app.errorhandler(500)
@@ -681,10 +841,27 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(description="Kimi Personas API Server")
-    parser.add_argument("-H", "--host", default="127.0.0.1", help="Host to bind (default: 127.0.0.1)")
-    parser.add_argument("-p", "--port", type=int, default=5000, help="Port to bind (default: 5000)")
-    parser.add_argument("-d", "--debug", action="store_true", help="Debug mode")
-    parser.add_argument("--no-auth", action="store_true", help="Disable API key auth (dev only!)")
+    parser.add_argument(
+        "-H",
+        "--host",
+        default="127.0.0.1",
+        help="Host to bind (default: 127.0.0.1)",
+    )
+    parser.add_argument(
+        "-p",
+        "--port",
+        type=int,
+        default=5000,
+        help="Port to bind (default: 5000)",
+    )
+    parser.add_argument(
+        "-d", "--debug", action="store_true", help="Debug mode"
+    )
+    parser.add_argument(
+        "--no-auth",
+        action="store_true",
+        help="Disable API key auth (dev only!)",
+    )
 
     args = parser.parse_args()
 

@@ -66,7 +66,11 @@ class ZenTUI:
 
     def show_main_menu(self) -> str:
         """Display main menu and get selection"""
-        menu = Table(title="[bold green]Main Menu[/]", box=box.ROUNDED, show_header=False)
+        menu = Table(
+            title="[bold green]Main Menu[/]",
+            box=box.ROUNDED,
+            show_header=False,
+        )
         menu.add_column("Option", style="cyan", justify="center")
         menu.add_column("Description", style="white")
 
@@ -96,7 +100,9 @@ class ZenTUI:
 
     def scan_config_wizard(self) -> Dict[str, Any]:
         """Interactive scan configuration wizard"""
-        self.console.print(Panel.fit("[bold]New Scan Configuration[/]", border_style="green"))
+        self.console.print(
+            Panel.fit("[bold]New Scan Configuration[/]", border_style="green")
+        )
 
         # Target input with validation
         while True:
@@ -106,7 +112,11 @@ class ZenTUI:
             self.console.print("[red]Please enter a valid target[/]")
 
         # Scan type
-        scan_type = Prompt.ask("[cyan]Scan type[/]", choices=["quick", "full", "stealth"], default="quick")
+        scan_type = Prompt.ask(
+            "[cyan]Scan type[/]",
+            choices=["quick", "full", "stealth"],
+            default="quick",
+        )
 
         # Port selection
         port_choice = Prompt.ask(
@@ -120,11 +130,19 @@ class ZenTUI:
             ports = list(range(1, 65536))
         elif port_choice == "custom":
             custom = Prompt.ask("Enter ports (comma-separated)")
-            ports = [int(p.strip()) for p in custom.split(",") if p.strip().isdigit()]
+            ports = [
+                int(p.strip())
+                for p in custom.split(",")
+                if p.strip().isdigit()
+            ]
 
         # Options
-        nuclei = Confirm.ask("[cyan]Run Nuclei vulnerability scan?[/]", default=True)
-        osint = Confirm.ask("[cyan]Run OSINT reconnaissance?[/]", default=False)
+        nuclei = Confirm.ask(
+            "[cyan]Run Nuclei vulnerability scan?[/]", default=True
+        )
+        osint = Confirm.ask(
+            "[cyan]Run OSINT reconnaissance?[/]", default=False
+        )
 
         config = {
             "target": target,
@@ -162,7 +180,9 @@ class ZenTUI:
             transient=True,
         )
 
-    async def run_scan_with_progress(self, scan_func: Callable, *args, **kwargs) -> Any:
+    async def run_scan_with_progress(
+        self, scan_func: Callable, *args, **kwargs
+    ) -> Any:
         """Run scan with live progress display"""
         with self.create_progress_bar() as progress:
             task = progress.add_task("[cyan]Initializing scan...", total=None)
@@ -189,7 +209,9 @@ class ZenTUI:
 
             try:
                 result = await scan_task
-                progress.update(task, description="[bold green]✓ Scan complete!")
+                progress.update(
+                    task, description="[bold green]✓ Scan complete!"
+                )
             except Exception as e:
                 progress.update(task, description=f"[bold red]✗ Error: {e}")
                 raise
@@ -244,12 +266,18 @@ class ZenTUI:
             for sev in severity_order:
                 if sev in counts:
                     color = severity_colors.get(sev, "white")
-                    sev_table.add_row(f"[{color}]{sev.upper()}[/{color}]", str(counts[sev]))
+                    sev_table.add_row(
+                        f"[{color}]{sev.upper()}[/{color}]", str(counts[sev])
+                    )
 
             self.console.print(sev_table)
 
             # Show critical/high findings
-            critical = [f for f in findings if f.get("severity") in ["critical", "high"]]
+            critical = [
+                f
+                for f in findings
+                if f.get("severity") in ["critical", "high"]
+            ]
             if critical:
                 self.console.print()
                 self.console.print("[bold red]Critical/High Findings:[/]")

@@ -12,7 +12,10 @@ from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
 
-from modules.osint_modules.cert_transparency import Certificate, CertificateTransparency
+from modules.osint_modules.cert_transparency import (
+    Certificate,
+    CertificateTransparency,
+)
 from modules.osint_modules.dns_enum import DNSEnumerator, DNSRecord
 from modules.osint_modules.whois_lookup import WhoisLookup, WhoisRecord
 
@@ -76,7 +79,9 @@ class TestCertificateTransparency:
         assert ct_scanner.found_subdomains == set()
 
     @pytest.mark.asyncio
-    async def test_search(self, ct_scanner, mock_crtsh_response, mock_certspotter_response):
+    async def test_search(
+        self, ct_scanner, mock_crtsh_response, mock_certspotter_response
+    ):
         """Test CT log search"""
         with patch.object(
             ct_scanner,
@@ -150,7 +155,9 @@ class TestCertificateTransparency:
             assert len(result["certificates"]) == 0
 
     @pytest.mark.asyncio
-    async def test_search_certspotter(self, ct_scanner, mock_certspotter_response):
+    async def test_search_certspotter(
+        self, ct_scanner, mock_certspotter_response
+    ):
         """Test CertSpotter search"""
         mock_response = AsyncMock()
         mock_response.status = 200
@@ -181,16 +188,29 @@ class TestCertificateTransparency:
             "notAfter": "Apr 1 00:00:00 2024 GMT",
             "serialNumber": "1234567890",
             "version": 3,
-            "subjectAltName": (("DNS", "example.com"), ("DNS", "www.example.com")),
+            "subjectAltName": (
+                ("DNS", "example.com"),
+                ("DNS", "www.example.com"),
+            ),
         }
-        mock_ssl_obj.cipher.return_value = ("TLS_AES_256_GCM_SHA384", "TLSv1.3", 256)
+        mock_ssl_obj.cipher.return_value = (
+            "TLS_AES_256_GCM_SHA384",
+            "TLSv1.3",
+            256,
+        )
         mock_ssl_obj.version.return_value = "TLSv1.3"
 
         mock_writer.get_extra_info.return_value = mock_ssl_obj
 
-        with patch("asyncio.open_connection", return_value=(mock_reader, mock_writer)):
-            with patch("asyncio.wait_for", side_effect=lambda coro, timeout: coro):
-                result = await ct_scanner.get_certificate_details("example.com")
+        with patch(
+            "asyncio.open_connection", return_value=(mock_reader, mock_writer)
+        ):
+            with patch(
+                "asyncio.wait_for", side_effect=lambda coro, timeout: coro
+            ):
+                result = await ct_scanner.get_certificate_details(
+                    "example.com"
+                )
 
                 assert result is not None
                 assert result["tls_version"] == "TLSv1.3"
@@ -199,7 +219,10 @@ class TestCertificateTransparency:
     @pytest.mark.asyncio
     async def test_get_certificate_details_error(self, ct_scanner):
         """Test getting certificate details with error"""
-        with patch("asyncio.open_connection", side_effect=Exception("Connection failed")):
+        with patch(
+            "asyncio.open_connection",
+            side_effect=Exception("Connection failed"),
+        ):
             result = await ct_scanner.get_certificate_details("example.com")
 
             assert result is None
@@ -211,7 +234,9 @@ class TestCertificateTransparency:
 
     def test_get_subdomains_for_domain(self, ct_scanner):
         """Test getting subdomains for specific domain"""
-        cert1 = Certificate(id="1", domain="example.com", san=["www.example.com"])
+        cert1 = Certificate(
+            id="1", domain="example.com", san=["www.example.com"]
+        )
         cert2 = Certificate(id="2", domain="api.example.com", san=[])
         ct_scanner.cache["example.com"] = [cert1, cert2]
 
@@ -271,7 +296,9 @@ class TestWhoisLookup:
     @pytest.mark.asyncio
     async def test_lookup_from_cache(self, whois):
         """Test lookup returns cached result"""
-        record = WhoisRecord(domain_name="example.com", registrar="Test Registrar")
+        record = WhoisRecord(
+            domain_name="example.com", registrar="Test Registrar"
+        )
         whois.cache["example.com"] = record
 
         result = await whois.lookup("example.com")
@@ -301,7 +328,10 @@ class TestWhoisLookup:
 
             assert result.domain_name == "example.com"
             assert result.registrar == "Example Registrar Inc."
-            assert result.name_servers == ["ns1.example.com", "ns2.example.com"]
+            assert result.name_servers == [
+                "ns1.example.com",
+                "ns2.example.com",
+            ]
             assert result.registrant_name == "John Doe"
             assert result.registrant_email == "admin@example.com"
 
@@ -325,7 +355,9 @@ DNSSEC: unsigned
         mock_proc.communicate.return_value = (whois_output.encode(), b"")
 
         with patch("asyncio.create_subprocess_exec", return_value=mock_proc):
-            with patch("asyncio.wait_for", side_effect=lambda coro, timeout: coro):
+            with patch(
+                "asyncio.wait_for", side_effect=lambda coro, timeout: coro
+            ):
                 result = await whois._lookup_system_whois("example.com")
 
                 assert result.domain_name == "example.com"
@@ -498,11 +530,25 @@ class TestDNSEnumerator:
     @pytest.mark.asyncio
     async def test_enumerate(self, dns_enum):
         """Test full DNS enumeration"""
-        with patch.object(dns_enum, "_query_records", return_value=[{"value": "1.2.3.4"}]):
-            with patch.object(dns_enum, "_check_dnssec", return_value={"enabled": True}):
-                with patch.object(dns_enum, "_try_zone_transfer", return_value=False):
-                    with patch.object(dns_enum, "_reverse_dns_lookup", return_value="host.example.com"):
-                        with patch.object(dns_enum, "_check_email_security", return_value={"spf": None}):
+        with patch.object(
+            dns_enum, "_query_records", return_value=[{"value": "1.2.3.4"}]
+        ):
+            with patch.object(
+                dns_enum, "_check_dnssec", return_value={"enabled": True}
+            ):
+                with patch.object(
+                    dns_enum, "_try_zone_transfer", return_value=False
+                ):
+                    with patch.object(
+                        dns_enum,
+                        "_reverse_dns_lookup",
+                        return_value="host.example.com",
+                    ):
+                        with patch.object(
+                            dns_enum,
+                            "_check_email_security",
+                            return_value={"spf": None},
+                        ):
                             result = await dns_enum.enumerate("example.com")
 
                             assert result["domain"] == "example.com"
@@ -580,7 +626,9 @@ class TestDNSEnumerator:
         mock_resolver.resolve.return_value = mock_answers
 
         with patch("dns.resolver.Resolver", return_value=mock_resolver):
-            with patch("dns.dnssec.algorithm_to_text", return_value="RSASHA256"):
+            with patch(
+                "dns.dnssec.algorithm_to_text", return_value="RSASHA256"
+            ):
                 result = await dns_enum._check_dnssec("example.com")
 
                 assert result["enabled"] is True
@@ -608,7 +656,11 @@ class TestDNSEnumerator:
         import dns.zone
 
         # Mock NS records
-        with patch.object(dns_enum, "_query_records", return_value=[{"value": "ns1.example.com."}]):
+        with patch.object(
+            dns_enum,
+            "_query_records",
+            return_value=[{"value": "ns1.example.com."}],
+        ):
             mock_zone = Mock()
 
             with patch("dns.zone.from_xfr", return_value=mock_zone):
@@ -622,8 +674,15 @@ class TestDNSEnumerator:
         """Test failed zone transfer"""
         import dns.resolver
 
-        with patch.object(dns_enum, "_query_records", return_value=[{"value": "ns1.example.com."}]):
-            with patch("dns.zone.from_xfr", side_effect=Exception("Zone transfer failed")):
+        with patch.object(
+            dns_enum,
+            "_query_records",
+            return_value=[{"value": "ns1.example.com."}],
+        ):
+            with patch(
+                "dns.zone.from_xfr",
+                side_effect=Exception("Zone transfer failed"),
+            ):
                 result = await dns_enum._try_zone_transfer("example.com")
 
                 assert result is False
@@ -631,7 +690,9 @@ class TestDNSEnumerator:
     @pytest.mark.asyncio
     async def test_reverse_dns_lookup_success(self, dns_enum):
         """Test successful reverse DNS lookup"""
-        with patch("socket.gethostbyaddr", return_value=("host.example.com", [], [])):
+        with patch(
+            "socket.gethostbyaddr", return_value=("host.example.com", [], [])
+        ):
             result = await dns_enum._reverse_dns_lookup("1.2.3.4")
 
             assert result == "host.example.com"

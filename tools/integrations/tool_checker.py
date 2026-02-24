@@ -51,7 +51,17 @@ class ToolChecker:
     REQUIRED_TOOLS = ["nmap", "sqlmap"]
 
     # Optional but recommended tools
-    OPTIONAL_TOOLS = ["nuclei", "gobuster", "subfinder", "amass", "ffuf", "hydra", "nikto", "whatweb", "wafw00f"]
+    OPTIONAL_TOOLS = [
+        "nuclei",
+        "gobuster",
+        "subfinder",
+        "amass",
+        "ffuf",
+        "hydra",
+        "nikto",
+        "whatweb",
+        "wafw00f",
+    ]
 
     def __init__(self):
         self._cache: Dict[str, ToolAvailability] = {}
@@ -127,7 +137,9 @@ class ToolChecker:
         flag = version_flags.get(tool_name, "--version")
 
         try:
-            result = subprocess.run([tool_name, flag], capture_output=True, text=True, timeout=5)
+            result = subprocess.run(
+                [tool_name, flag], capture_output=True, text=True, timeout=5
+            )
 
             # Parse version from output (tool-specific)
             output = result.stdout + result.stderr
@@ -188,9 +200,17 @@ class ToolChecker:
         """Get comprehensive status report"""
         results = self.check_all()
 
-        required_available = sum(1 for t in self.REQUIRED_TOOLS if results[t].status == ToolStatus.AVAILABLE)
+        required_available = sum(
+            1
+            for t in self.REQUIRED_TOOLS
+            if results[t].status == ToolStatus.AVAILABLE
+        )
 
-        optional_available = sum(1 for t in self.OPTIONAL_TOOLS if results[t].status == ToolStatus.AVAILABLE)
+        optional_available = sum(
+            1
+            for t in self.OPTIONAL_TOOLS
+            if results[t].status == ToolStatus.AVAILABLE
+        )
 
         return {
             "ready": self.is_ready(),
@@ -226,8 +246,12 @@ def check_tools_cli():
 
     # Print summary
     print("=" * 60)
-    print(f"Required Tools: {report['required']['available']}/{report['required']['total']} ✅")
-    print(f"Optional Tools: {report['optional']['available']}/{report['optional']['total']} 📦")
+    print(
+        f"Required Tools: {report['required']['available']}/{report['required']['total']} ✅"
+    )
+    print(
+        f"Optional Tools: {report['optional']['available']}/{report['optional']['total']} 📦"
+    )
     print("=" * 60)
     print()
 

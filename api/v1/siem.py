@@ -8,7 +8,11 @@ from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-from modules.siem_integration import SecurityEvent, SIEMConfig, SIEMIntegrationManager
+from modules.siem_integration import (
+    SecurityEvent,
+    SIEMConfig,
+    SIEMIntegrationManager,
+)
 
 router = APIRouter()
 
@@ -82,7 +86,9 @@ async def connect_siem(config: SIEMConnectionRequest):
             "timestamp": datetime.utcnow().isoformat(),
         }
     else:
-        raise HTTPException(status_code=400, detail=f"Failed to connect to {config.name}")
+        raise HTTPException(
+            status_code=400, detail=f"Failed to connect to {config.name}"
+        )
 
 
 @router.get("/status", response_model=List[SIEMStatusResponse])
@@ -95,7 +101,12 @@ async def get_siem_status():
         connector = siem_manager.connectors.get(name)
         if connector:
             results.append(
-                SIEMStatusResponse(name=name, type=connector.config.type, connected=connected, url=connector.config.url)
+                SIEMStatusResponse(
+                    name=name,
+                    type=connector.config.type,
+                    connected=connected,
+                    url=connector.config.url,
+                )
             )
 
     return results
@@ -121,7 +132,11 @@ async def send_security_event(event: SecurityEventRequest):
 
     results = siem_manager.send_to_all(security_event)
 
-    return {"success": any(results.values()), "results": results, "timestamp": datetime.utcnow().isoformat()}
+    return {
+        "success": any(results.values()),
+        "results": results,
+        "timestamp": datetime.utcnow().isoformat(),
+    }
 
 
 @router.post("/events/batch", response_model=Dict[str, Any])
@@ -157,11 +172,18 @@ async def query_threat_intel(siem_name: str, indicator: str):
     connector = siem_manager.connectors.get(siem_name)
 
     if not connector:
-        raise HTTPException(status_code=404, detail=f"SIEM '{siem_name}' not found")
+        raise HTTPException(
+            status_code=404, detail=f"SIEM '{siem_name}' not found"
+        )
 
     result = connector.query_threat_intel(indicator)
 
-    return {"siem": siem_name, "indicator": indicator, "found": result is not None, "data": result}
+    return {
+        "siem": siem_name,
+        "indicator": indicator,
+        "found": result is not None,
+        "data": result,
+    }
 
 
 @router.get("/supported")

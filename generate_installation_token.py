@@ -12,7 +12,11 @@ import requests
 
 # GitHub App Configuration
 APP_ID = "2872904"
-PRIVATE_KEY_PATH = Path.home() / "Downloads" / "zen-ai-pentest-kimi-assistant.2026-02-23.private-key.pem"
+PRIVATE_KEY_PATH = (
+    Path.home()
+    / "Downloads"
+    / "zen-ai-pentest-kimi-assistant.2026-02-23.private-key.pem"
+)
 
 
 def generate_jwt():
@@ -20,7 +24,11 @@ def generate_jwt():
     with open(PRIVATE_KEY_PATH, "r") as f:
         private_key = f.read()
 
-    payload = {"iat": int(time.time()), "exp": int(time.time()) + (10 * 60), "iss": APP_ID}  # 10 minutes expiry
+    payload = {
+        "iat": int(time.time()),
+        "exp": int(time.time()) + (10 * 60),
+        "iss": APP_ID,
+    }  # 10 minutes expiry
 
     token = jwt.encode(payload, private_key, algorithm="RS256")
     return token
@@ -29,10 +37,15 @@ def generate_jwt():
 def get_installation_token(jwt_token):
     """Exchange JWT for Installation Access Token"""
     # First, get the installation ID
-    headers = {"Authorization": f"Bearer {jwt_token}", "Accept": "application/vnd.github.v3+json"}
+    headers = {
+        "Authorization": f"Bearer {jwt_token}",
+        "Accept": "application/vnd.github.v3+json",
+    }
 
     # Get installations
-    resp = requests.get("https://api.github.com/app/installations", headers=headers)
+    resp = requests.get(
+        "https://api.github.com/app/installations", headers=headers
+    )
     resp.raise_for_status()
     installations = resp.json()
 
@@ -44,7 +57,10 @@ def get_installation_token(jwt_token):
     print(f"✅ Found Installation ID: {installation_id}")
 
     # Generate access token for this installation
-    resp = requests.post(f"https://api.github.com/app/installations/{installation_id}/access_tokens", headers=headers)
+    resp = requests.post(
+        f"https://api.github.com/app/installations/{installation_id}/access_tokens",
+        headers=headers,
+    )
     resp.raise_for_status()
 
     return resp.json()["token"]
@@ -74,7 +90,9 @@ def main():
         print("=" * 60)
         print("\n📋 Verwendung:")
         print(f"   export GITHUB_TOKEN='{token}'")
-        print("   git push https://$GITHUB_TOKEN@github.com/SHAdd0WTAka/obsidian-vault.git")
+        print(
+            "   git push https://$GITHUB_TOKEN@github.com/SHAdd0WTAka/obsidian-vault.git"
+        )
 
     except Exception as e:
         print(f"❌ Error: {e}")

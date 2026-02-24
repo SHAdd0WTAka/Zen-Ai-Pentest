@@ -147,7 +147,9 @@ class RiskLevelManager:
         """
         self.current_level = current_level
         self.tool_profiles = self.TOOL_PROFILES.copy()
-        self.approved_tools: Set[str] = set()  # Tools explicitly approved for this session
+        self.approved_tools: Set[str] = (
+            set()
+        )  # Tools explicitly approved for this session
 
     def set_risk_level(self, level: RiskLevel):
         """Set current risk level"""
@@ -174,7 +176,9 @@ class RiskLevelManager:
 
         return self.current_level >= profile.min_risk_level
 
-    def validate_tool(self, tool_name: str, flags: Optional[List[str]] = None) -> Dict:
+    def validate_tool(
+        self, tool_name: str, flags: Optional[List[str]] = None
+    ) -> Dict:
         """
         Validate tool execution with flags.
 
@@ -199,9 +203,13 @@ class RiskLevelManager:
         # Check if tool exists
         if not profile:
             if self.current_level < RiskLevel.NORMAL:
-                result["reason"] = f"Unknown tool '{tool_name}' requires at least NORMAL risk level"
+                result["reason"] = (
+                    f"Unknown tool '{tool_name}' requires at least NORMAL risk level"
+                )
                 return result
-            result["warnings"].append(f"Unknown tool '{tool_name}' - proceed with caution")
+            result["warnings"].append(
+                f"Unknown tool '{tool_name}' - proceed with caution"
+            )
             result["allowed"] = True
             return result
 
@@ -218,12 +226,19 @@ class RiskLevelManager:
             for dangerous in profile.dangerous_flags:
                 if dangerous in flag:
                     result["blocked_flags"].append(flag)
-                    result["warnings"].append(f"Flag '{flag}' is potentially dangerous")
+                    result["warnings"].append(
+                        f"Flag '{flag}' is potentially dangerous"
+                    )
 
         # Check if confirmation required
-        if profile.requires_confirmation and tool_name not in self.approved_tools:
+        if (
+            profile.requires_confirmation
+            and tool_name not in self.approved_tools
+        ):
             result["requires_confirmation"] = True
-            result["warnings"].append(f"Tool '{tool_name}' requires explicit confirmation")
+            result["warnings"].append(
+                f"Tool '{tool_name}' requires explicit confirmation"
+            )
 
         result["allowed"] = len(result["blocked_flags"]) == 0
         return result
@@ -234,15 +249,25 @@ class RiskLevelManager:
 
     def get_allowed_tools(self) -> List[str]:
         """Get list of tools allowed at current risk level"""
-        return [name for name, profile in self.tool_profiles.items() if self.current_level >= profile.min_risk_level]
+        return [
+            name
+            for name, profile in self.tool_profiles.items()
+            if self.current_level >= profile.min_risk_level
+        ]
 
     def get_blocked_tools(self) -> List[str]:
         """Get list of tools blocked at current risk level"""
-        return [name for name, profile in self.tool_profiles.items() if self.current_level < profile.min_risk_level]
+        return [
+            name
+            for name, profile in self.tool_profiles.items()
+            if self.current_level < profile.min_risk_level
+        ]
 
     def get_risk_description(self) -> str:
         """Get description of current risk level"""
-        return self.RISK_DESCRIPTIONS.get(self.current_level, "Unknown risk level")
+        return self.RISK_DESCRIPTIONS.get(
+            self.current_level, "Unknown risk level"
+        )
 
     def add_tool_profile(self, profile: ToolRiskProfile):
         """Add or update a tool profile"""

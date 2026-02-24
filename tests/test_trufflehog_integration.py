@@ -227,7 +227,9 @@ class TestJSONParsing:
         """Test parsing filesystem scan JSON output"""
         mock_which.return_value = "/usr/bin/trufflehog"
         scanner = TruffleHogScanner()
-        findings = scanner._parse_json_output(SAMPLE_FILESYSTEM_OUTPUT, "filesystem")
+        findings = scanner._parse_json_output(
+            SAMPLE_FILESYSTEM_OUTPUT, "filesystem"
+        )
 
         assert len(findings) == 1
         assert findings[0].source == "filesystem"
@@ -258,7 +260,10 @@ class TestJSONParsing:
         findings = scanner._parse_json_output(SAMPLE_TRUFFLEHOG_OUTPUT, "git")
 
         # Verify source metadata is parsed from Git data
-        assert "Git" in findings[0].source_metadata or "Data" in findings[0].source_metadata
+        assert (
+            "Git" in findings[0].source_metadata
+            or "Data" in findings[0].source_metadata
+        )
         # The metadata should contain git-related info
         metadata = findings[0].source_metadata
         if "Git" in metadata:
@@ -338,7 +343,9 @@ class TestAsyncScanning:
         mock_result.stdout = SAMPLE_TRUFFLEHOG_OUTPUT
         mock_result.stderr = ""
 
-        with patch.object(scanner, "_run_subprocess", return_value=mock_result):
+        with patch.object(
+            scanner, "_run_subprocess", return_value=mock_result
+        ):
             result = await scanner.scan_git("https://github.com/test/repo")
 
             assert result.success is True
@@ -352,8 +359,12 @@ class TestAsyncScanning:
         mock_which.return_value = "/usr/bin/trufflehog"
         scanner = TruffleHogScanner()
 
-        with patch.object(scanner, "_run_subprocess", side_effect=asyncio.TimeoutError):
-            result = await scanner.scan_git("https://github.com/test/repo", timeout=1)
+        with patch.object(
+            scanner, "_run_subprocess", side_effect=asyncio.TimeoutError
+        ):
+            result = await scanner.scan_git(
+                "https://github.com/test/repo", timeout=1
+            )
 
             assert result.success is False
             assert "timed out" in result.error.lower()
@@ -369,7 +380,9 @@ class TestAsyncScanning:
         mock_result.stdout = SAMPLE_FILESYSTEM_OUTPUT
         mock_result.stderr = ""
 
-        with patch.object(scanner, "_run_subprocess", return_value=mock_result):
+        with patch.object(
+            scanner, "_run_subprocess", return_value=mock_result
+        ):
             with patch("pathlib.Path.exists", return_value=True):
                 result = await scanner.scan_filesystem("/path/to/code")
 

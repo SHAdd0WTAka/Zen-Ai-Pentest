@@ -257,7 +257,9 @@ class AgentAuthenticator:
             expires_at=expires_at,
         )
 
-    def authenticate(self, api_key: str, api_secret: str) -> Optional[AgentIdentity]:
+    def authenticate(
+        self, api_key: str, api_secret: str
+    ) -> Optional[AgentIdentity]:
         """
         Authenticate agent with API key and secret
 
@@ -269,7 +271,11 @@ class AgentAuthenticator:
             AgentIdentity if authenticated, None otherwise
         """
         # Find API key in database
-        key_model = self.db.query(APIKeyModel).filter(APIKeyModel.key_id == api_key, APIKeyModel.is_active).first()
+        key_model = (
+            self.db.query(APIKeyModel)
+            .filter(APIKeyModel.key_id == api_key, APIKeyModel.is_active)
+            .first()
+        )
 
         if not key_model:
             return None
@@ -297,16 +303,28 @@ class AgentAuthenticator:
             role = AgentRole.SCANNER
 
         # Build permissions from scopes
-        permissions = [AgentPermission(p) for p in key_model.scopes if p in AgentPermission._value2member_map_]
+        permissions = [
+            AgentPermission(p)
+            for p in key_model.scopes
+            if p in AgentPermission._value2member_map_
+        ]
 
         return AgentIdentity(
-            agent_id=agent_id, role=role, permissions=permissions, is_active=True, last_seen=key_model.last_used_at
+            agent_id=agent_id,
+            role=role,
+            permissions=permissions,
+            is_active=True,
+            last_seen=key_model.last_used_at,
         )
 
     def revoke_key(self, agent_id: str, reason: str = "admin_action") -> bool:
         """Revoke an agent's API key"""
         # Find by agent_id in name field
-        key_models = self.db.query(APIKeyModel).filter(APIKeyModel.name.like(f"%{agent_id}%")).all()
+        key_models = (
+            self.db.query(APIKeyModel)
+            .filter(APIKeyModel.name.like(f"%{agent_id}%"))
+            .all()
+        )
 
         if not key_models:
             return False
@@ -326,7 +344,13 @@ class AgentAuthenticator:
         Generates new credentials and invalidates old ones.
         """
         # Find existing key
-        key_models = self.db.query(APIKeyModel).filter(APIKeyModel.name.like(f"%{agent_id}%"), APIKeyModel.is_active).all()
+        key_models = (
+            self.db.query(APIKeyModel)
+            .filter(
+                APIKeyModel.name.like(f"%{agent_id}%"), APIKeyModel.is_active
+            )
+            .all()
+        )
 
         if not key_models:
             return None
@@ -346,15 +370,23 @@ class AgentAuthenticator:
         self.db.commit()
 
         # Generate new credentials
-        return self.generate_api_key(role=role, name=name, expires_days=90 if old_key.expires_at else None)
+        return self.generate_api_key(
+            role=role,
+            name=name,
+            expires_days=90 if old_key.expires_at else None,
+        )
 
-    def check_permission(self, identity: AgentIdentity, permission: AgentPermission) -> bool:
+    def check_permission(
+        self, identity: AgentIdentity, permission: AgentPermission
+    ) -> bool:
         """Check if agent has specific permission"""
         return permission in identity.permissions
 
     def list_active_agents(self) -> List[AgentIdentity]:
         """List all active agents"""
-        key_models = self.db.query(APIKeyModel).filter(APIKeyModel.is_active).all()
+        key_models = (
+            self.db.query(APIKeyModel).filter(APIKeyModel.is_active).all()
+        )
 
         agents = []
         for key_model in key_models:
@@ -362,11 +394,19 @@ class AgentAuthenticator:
             if len(parts) >= 3:
                 agent_id = parts[1]
                 role = AgentRole(parts[2])
-                permissions = [AgentPermission(p) for p in key_model.scopes if p in AgentPermission._value2member_map_]
+                permissions = [
+                    AgentPermission(p)
+                    for p in key_model.scopes
+                    if p in AgentPermission._value2member_map_
+                ]
 
                 agents.append(
                     AgentIdentity(
-                        agent_id=agent_id, role=role, permissions=permissions, is_active=True, last_seen=key_model.last_used_at
+                        agent_id=agent_id,
+                        role=role,
+                        permissions=permissions,
+                        is_active=True,
+                        last_seen=key_model.last_used_at,
                     )
                 )
 
@@ -376,14 +416,18 @@ class AgentAuthenticator:
         """Hash API secret using PBKDF2-like approach"""
         # Use HMAC with SHA-256 for hashing
         salt = secrets.token_hex(16)
-        hash_value = hmac.new(salt.encode(), secret.encode(), hashlib.sha256).hexdigest()
+        hash_value = hmac.new(
+            salt.encode(), secret.encode(), hashlib.sha256
+        ).hexdigest()
         return f"{salt}${hash_value}"
 
     def _verify_secret(self, secret: str, hash_value: str) -> bool:
         """Verify API secret against hash"""
         try:
             salt, stored_hash = hash_value.split("$")
-            computed_hash = hmac.new(salt.encode(), secret.encode(), hashlib.sha256).hexdigest()
+            computed_hash = hmac.new(
+                salt.encode(), secret.encode(), hashlib.sha256
+            ).hexdigest()
             return hmac.compare_digest(computed_hash, stored_hash)
         except ValueError:
             return False
@@ -403,7 +447,9 @@ def require_permission(permission: AgentPermission):
                 raise PermissionError("Not authenticated")
 
             if permission not in self.identity.permissions:
-                raise PermissionError(f"Missing permission: {permission.value}")
+                raise PermissionError(
+                    f"Missing permission: {permission.value}"
+                )
 
             return await func(self, *args, **kwargs)
 
@@ -426,7 +472,9 @@ def test_agent_authentication():
     auth = AgentAuthenticator()
 
     # Generate credentials
-    creds = auth.generate_api_key(role=AgentRole.RESEARCHER, name="test-agent", expires_days=30)
+    creds = auth.generate_api_key(
+        role=AgentRole.RESEARCHER, name="test-agent", expires_days=30
+    )
 
     print(f"✅ Generated credentials for {creds.agent_id}")
     print(f"   API Key: {creds.api_key}")
@@ -443,7 +491,9 @@ def test_agent_authentication():
 
     # Check permissions
     assert auth.check_permission(identity, AgentPermission.MESSAGE_SEND)
-    assert not auth.check_permission(identity, AgentPermission.AGENT_REGISTER)  # Admin only
+    assert not auth.check_permission(
+        identity, AgentPermission.AGENT_REGISTER
+    )  # Admin only
 
     print("✅ Permission checking works")
 
@@ -463,7 +513,9 @@ def test_key_rotation():
     auth = AgentAuthenticator()
 
     # Generate initial credentials
-    creds1 = auth.generate_api_key(role=AgentRole.ANALYST, name="rotation-test-agent")
+    creds1 = auth.generate_api_key(
+        role=AgentRole.ANALYST, name="rotation-test-agent"
+    )
 
     print(f"✅ Initial key: {creds1.api_key}")
 

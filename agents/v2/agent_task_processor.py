@@ -25,7 +25,9 @@ try:
 except ImportError:
     GUARDRAILS_AVAILABLE = False
 
-    async def check_tool_execution(tool_name: str, target: str, user_id: Optional[str] = None):
+    async def check_tool_execution(
+        tool_name: str, target: str, user_id: Optional[str] = None
+    ):
         return {"allowed": True, "reason": None, "wait_seconds": 0}
 
 
@@ -85,7 +87,9 @@ class TaskProcessor:
             "report": self._handle_report,
         }
 
-    async def process_task(self, task: Dict[str, Any], user_id: Optional[str] = None) -> TaskResult:
+    async def process_task(
+        self, task: Dict[str, Any], user_id: Optional[str] = None
+    ) -> TaskResult:
         """
         Process a single task.
 
@@ -105,7 +109,9 @@ class TaskProcessor:
         # Check rate limiting
         rate_limit_result = await check_tool_execution(tool, target, user_id)
         if not rate_limit_result["allowed"]:
-            logger.warning(f"🛡️  Rate limit blocked task {task_id}: {rate_limit_result['reason']}")
+            logger.warning(
+                f"🛡️  Rate limit blocked task {task_id}: {rate_limit_result['reason']}"
+            )
             return TaskResult(
                 task_id=task_id,
                 status="blocked",
@@ -119,7 +125,13 @@ class TaskProcessor:
         try:
             handler = self.handlers.get(tool)
             if not handler:
-                return TaskResult(task_id=task_id, status="failed", findings=[], output="", error=f"Unknown tool: {tool}")
+                return TaskResult(
+                    task_id=task_id,
+                    status="failed",
+                    findings=[],
+                    output="",
+                    error=f"Unknown tool: {tool}",
+                )
 
             # Execute tool
             result = await handler(task)
@@ -127,7 +139,9 @@ class TaskProcessor:
             execution_time = asyncio.get_event_loop().time() - start_time
             result.execution_time = execution_time
 
-            logger.info(f"✅ Task {task_id} completed in {execution_time:.2f}s")
+            logger.info(
+                f"✅ Task {task_id} completed in {execution_time:.2f}s"
+            )
             return result
 
         except Exception as e:
@@ -135,7 +149,12 @@ class TaskProcessor:
             execution_time = asyncio.get_event_loop().time() - start_time
 
             return TaskResult(
-                task_id=task_id, status="failed", findings=[], output="", error=str(e), execution_time=execution_time
+                task_id=task_id,
+                status="failed",
+                findings=[],
+                output="",
+                error=str(e),
+                execution_time=execution_time,
             )
 
     async def _handle_nmap(self, task: Dict) -> TaskResult:
@@ -180,17 +199,31 @@ class TaskProcessor:
             if "has address" in line:
                 ip = line.split("has address")[-1].strip()
                 findings.append(
-                    {"type": "dns_record", "severity": "info", "title": f"A Record: {ip}", "description": line.strip()}
+                    {
+                        "type": "dns_record",
+                        "severity": "info",
+                        "title": f"A Record: {ip}",
+                        "description": line.strip(),
+                    }
                 )
 
-        return TaskResult(task_id=task["id"], status="success", findings=findings, output="\n".join(output_lines))
+        return TaskResult(
+            task_id=task["id"],
+            status="success",
+            findings=findings,
+            output="\n".join(output_lines),
+        )
 
     async def _handle_subdomain(self, task: Dict) -> TaskResult:
         """Execute subdomain enumeration"""
         target = task.get("target", "")
 
         # Use subfinder if available, otherwise simple DNS brute
-        cmd = f"subfinder -d {target}" if self._command_exists("subfinder") else f"host -t ns {target}"
+        cmd = (
+            f"subfinder -d {target}"
+            if self._command_exists("subfinder")
+            else f"host -t ns {target}"
+        )
 
         return await self._run_command(task["id"], cmd, "subdomain")
 
@@ -224,7 +257,13 @@ class TaskProcessor:
             cmd = f"nuclei -u {target} -silent -json"
             return await self._run_command(task["id"], cmd, "nuclei")
         else:
-            return TaskResult(task_id=task["id"], status="failed", findings=[], output="", error="nuclei not installed")
+            return TaskResult(
+                task_id=task["id"],
+                status="failed",
+                findings=[],
+                output="",
+                error="nuclei not installed",
+            )
 
     async def _handle_exploit(self, task: Dict) -> TaskResult:
         """Execute exploit (placeholder - safe checks only)"""
@@ -256,17 +295,23 @@ class TaskProcessor:
             error=None,
         )
 
-    async def _run_command(self, task_id: str, cmd: str, tool: str) -> TaskResult:
+    async def _run_command(
+        self, task_id: str, cmd: str, tool: str
+    ) -> TaskResult:
         """Run shell command and return result"""
         import asyncio
 
         try:
             # Run command with timeout
             process = await asyncio.create_subprocess_shell(
-                cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+                cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
             )
 
-            stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=300)  # 5 minute timeout
+            stdout, stderr = await asyncio.wait_for(
+                process.communicate(), timeout=300
+            )  # 5 minute timeout
 
             output = stdout.decode("utf-8", errors="ignore")
             error_output = stderr.decode("utf-8", errors="ignore")
@@ -288,15 +333,26 @@ class TaskProcessor:
                     status="failed",
                     findings=findings,
                     output=output,
-                    error=error_output or f"Command failed with code {process.returncode}",
+                    error=error_output
+                    or f"Command failed with code {process.returncode}",
                 )
 
         except asyncio.TimeoutError:
             return TaskResult(
-                task_id=task_id, status="failed", findings=[], output="", error="Command timed out after 300 seconds"
+                task_id=task_id,
+                status="failed",
+                findings=[],
+                output="",
+                error="Command timed out after 300 seconds",
             )
         except Exception as e:
-            return TaskResult(task_id=task_id, status="failed", findings=[], output="", error=str(e))
+            return TaskResult(
+                task_id=task_id,
+                status="failed",
+                findings=[],
+                output="",
+                error=str(e),
+            )
 
     def _parse_findings(self, tool: str, output: str) -> list:
         """Parse security findings from tool output"""
@@ -330,9 +386,15 @@ class TaskProcessor:
                         findings.append(
                             {
                                 "type": "vulnerability",
-                                "severity": data.get("info", {}).get("severity", "unknown"),
-                                "title": data.get("info", {}).get("name", "Unknown"),
-                                "description": data.get("info", {}).get("description", ""),
+                                "severity": data.get("info", {}).get(
+                                    "severity", "unknown"
+                                ),
+                                "title": data.get("info", {}).get(
+                                    "name", "Unknown"
+                                ),
+                                "description": data.get("info", {}).get(
+                                    "description", ""
+                                ),
                                 "template": data.get("template-id", ""),
                                 "matched": data.get("matched-at", ""),
                             }

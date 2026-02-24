@@ -33,7 +33,12 @@ class EmailNotifier:
         self.from_addr = from_addr or username
 
     def send_email(
-        self, to_addrs: List[str], subject: str, body_text: str, body_html: str = None, attachments: List[str] = None
+        self,
+        to_addrs: List[str],
+        subject: str,
+        body_text: str,
+        body_html: str = None,
+        attachments: List[str] = None,
     ) -> bool:
         """Sendet Email"""
         try:
@@ -54,7 +59,11 @@ class EmailNotifier:
                 for filepath in attachments:
                     with open(filepath, "rb") as f:
                         part = MIMEApplication(f.read())
-                        part.add_header("Content-Disposition", "attachment", filename=filepath.split("/")[-1])
+                        part.add_header(
+                            "Content-Disposition",
+                            "attachment",
+                            filename=filepath.split("/")[-1],
+                        )
                         msg.attach(part)
 
             # Send
@@ -72,7 +81,14 @@ class EmailNotifier:
             logger.error(f"Email send error: {e}")
             return False
 
-    def send_scan_report(self, to_addrs: List[str], scan_id: int, target: str, report_file: str, findings: List[Dict]) -> bool:
+    def send_scan_report(
+        self,
+        to_addrs: List[str],
+        scan_id: int,
+        target: str,
+        report_file: str,
+        findings: List[Dict],
+    ) -> bool:
         """Sendet Scan-Report per Email"""
         subject = f"Pentest Report: {target}"
 

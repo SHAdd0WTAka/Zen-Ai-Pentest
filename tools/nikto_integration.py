@@ -44,7 +44,11 @@ class NiktoIntegration:
         self.timeout = timeout
 
     async def scan(
-        self, target: str, port: Optional[int] = None, ssl: bool = False, max_time: Optional[int] = None
+        self,
+        target: str,
+        port: Optional[int] = None,
+        ssl: bool = False,
+        max_time: Optional[int] = None,
     ) -> NiktoResult:
         """
         Scan a target with Nikto
@@ -75,29 +79,41 @@ class NiktoIntegration:
 
         try:
             process = await asyncio.create_subprocess_exec(
-                *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+                *cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
             )
 
-            stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=self.timeout)
+            stdout, stderr = await asyncio.wait_for(
+                process.communicate(), timeout=self.timeout
+            )
 
             output = stdout.decode()
 
             # Try to parse JSON output
             try:
                 data = json.loads(output)
-                return self._parse_json_output(data, target, time.time() - start_time)
+                return self._parse_json_output(
+                    data, target, time.time() - start_time
+                )
             except json.JSONDecodeError:
                 # Fallback: parse text output
-                return self._parse_text_output(output, target, time.time() - start_time)
+                return self._parse_text_output(
+                    output, target, time.time() - start_time
+                )
 
         except asyncio.TimeoutError:
             logger.error("Nikto scan timed out")
-            return NiktoResult(success=False, target=target, error="Scan timeout")
+            return NiktoResult(
+                success=False, target=target, error="Scan timeout"
+            )
         except Exception as e:
             logger.error(f"Nikto error: {e}")
             return NiktoResult(success=False, target=target, error=str(e))
 
-    def _parse_json_output(self, data: dict, target: str, duration: float) -> NiktoResult:
+    def _parse_json_output(
+        self, data: dict, target: str, duration: float
+    ) -> NiktoResult:
         """Parse Nikto JSON output"""
         findings = []
 
@@ -108,7 +124,9 @@ class NiktoIntegration:
                 method=vuln.get("method", "GET"),
                 path=vuln.get("url", ""),
                 description=vuln.get("msg", ""),
-                severity=self._classify_severity(vuln.get("id", ""), vuln.get("msg", "")),
+                severity=self._classify_severity(
+                    vuln.get("id", ""), vuln.get("msg", "")
+                ),
                 references=vuln.get("references", []),
             )
             findings.append(finding)
@@ -117,11 +135,17 @@ class NiktoIntegration:
             success=True,
             target=target,
             findings=findings,
-            scan_info={"banner": data.get("banner", ""), "ip": data.get("ip", ""), "port": data.get("port", 0)},
+            scan_info={
+                "banner": data.get("banner", ""),
+                "ip": data.get("ip", ""),
+                "port": data.get("port", 0),
+            },
             duration=duration,
         )
 
-    def _parse_text_output(self, output: str, target: str, duration: float) -> NiktoResult:
+    def _parse_text_output(
+        self, output: str, target: str, duration: float
+    ) -> NiktoResult:
         """Parse Nikto text output as fallback"""
         findings = []
 
@@ -154,8 +178,20 @@ class NiktoIntegration:
         """Classify finding severity"""
         desc_lower = description.lower()
 
-        high_keywords = ["rce", "remote code", "sql injection", "xss", "csrf", "file inclusion"]
-        medium_keywords = ["information disclosure", "directory listing", "debug", "backup"]
+        high_keywords = [
+            "rce",
+            "remote code",
+            "sql injection",
+            "xss",
+            "csrf",
+            "file inclusion",
+        ]
+        medium_keywords = [
+            "information disclosure",
+            "directory listing",
+            "debug",
+            "backup",
+        ]
 
         for keyword in high_keywords:
             if keyword in desc_lower:
@@ -189,4 +225,6 @@ if __name__ == "__main__":
     print(f"Target: {result.target}")
     print(f"Found {len(result.findings)} issues:")
     for finding in result.findings[:5]:
-        print(f"  [{finding.severity.upper()}] {finding.id}: {finding.description[:60]}...")
+        print(
+            f"  [{finding.severity.upper()}] {finding.id}: {finding.description[:60]}..."
+        )

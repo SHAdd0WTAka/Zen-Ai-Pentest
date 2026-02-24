@@ -174,7 +174,13 @@ class TestDataclasses:
         """Test FFuFFinding dataclass"""
         from tools.ffuf_integration_enhanced import FFuFFinding
 
-        finding = FFuFFinding(url="http://test.com", status_code=200, content_length=100, content_words=10, content_lines=5)
+        finding = FFuFFinding(
+            url="http://test.com",
+            status_code=200,
+            content_length=100,
+            content_words=10,
+            content_lines=5,
+        )
         assert finding.url == "http://test.com"
         assert finding.status_code == 200
 

@@ -13,8 +13,7 @@ import yaml
 
 # Obsidian Vault Path (anpassen!)
 VAULT_PATH = os.getenv(
-    "OBSIDIAN_VAULT_PATH",
-    "~/Documents/Obsidian Vault/Secrets"
+    "OBSIDIAN_VAULT_PATH", "~/Documents/Obsidian Vault/Secrets"
 )
 
 
@@ -97,7 +96,7 @@ def main():
                     print(
                         f"Secret '{name}' retrieved "
                         f"(masked: {mask_sensitive_data(value)})",
-                        file=os.sys.stderr
+                        file=os.sys.stderr,
                     )
                 else:
                     msg = f"Secret '{name}' not found"

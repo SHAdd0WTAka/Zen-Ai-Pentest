@@ -76,7 +76,9 @@ class TestAuthenticationSecurity:
     @pytest.fixture
     async def client(self):
         """Fixture für HTTP-Client"""
-        async with httpx.AsyncClient(base_url=BASE_URL, follow_redirects=True) as client:
+        async with httpx.AsyncClient(
+            base_url=BASE_URL, follow_redirects=True
+        ) as client:
             yield client
 
     @pytest.mark.asyncio
@@ -86,33 +88,49 @@ class TestAuthenticationSecurity:
 
         # Mehrere fehlgeschlagene Login-Versuche
         for i in range(20):
-            response = await client.post("/api/v1/auth/login", json={"username": "admin", "password": f"wrongpassword{i}"})
+            response = await client.post(
+                "/api/v1/auth/login",
+                json={"username": "admin", "password": f"wrongpassword{i}"},
+            )
             login_attempts.append(response.status_code)
 
         # Nach vielen Fehlversuchen sollte Rate-Limiting greifen
-        assert 429 in login_attempts or 403 in login_attempts, "Kein Brute-Force-Schutz erkannt"
+        assert (
+            429 in login_attempts or 403 in login_attempts
+        ), "Kein Brute-Force-Schutz erkannt"
 
     @pytest.mark.asyncio
     async def test_session_fixation_protection(self, client):
         """DAST: Session Fixation Schutz"""
         # Login
-        response1 = await client.post("/api/v1/auth/login", json={"username": "admin", "password": "admin123"})
+        response1 = await client.post(
+            "/api/v1/auth/login",
+            json={"username": "admin", "password": "admin123"},
+        )
 
         token1 = response1.json().get("access_token")
 
         # Erneuter Login
-        response2 = await client.post("/api/v1/auth/login", json={"username": "admin", "password": "admin123"})
+        response2 = await client.post(
+            "/api/v1/auth/login",
+            json={"username": "admin", "password": "admin123"},
+        )
 
         token2 = response2.json().get("access_token")
 
         # Tokens sollten unterschiedlich sein
-        assert token1 != token2, "Session Fixation möglich - Token bleibt gleich"
+        assert (
+            token1 != token2
+        ), "Session Fixation möglich - Token bleibt gleich"
 
     @pytest.mark.asyncio
     async def test_token_expiration(self, client):
         """DAST: Token läuft ab"""
         # Login
-        login_response = await client.post("/api/v1/auth/login", json={"username": "admin", "password": "admin123"})
+        login_response = await client.post(
+            "/api/v1/auth/login",
+            json={"username": "admin", "password": "admin123"},
+        )
 
         login_response.json()["access_token"]
 
@@ -129,10 +147,16 @@ class TestAuthenticationSecurity:
         # Versuche schwaches Passwort zu setzen
         response = await client.post(
             "/api/v1/auth/register",
-            json={"username": "testuser", "password": "123", "email": "test@example.com"},  # Zu schwach
+            json={
+                "username": "testuser",
+                "password": "123",
+                "email": "test@example.com",
+            },  # Zu schwach
         )
 
-        assert response.status_code == 400, "Schwache Passwörter sollten abgelehnt werden"
+        assert (
+            response.status_code == 400
+        ), "Schwache Passwörter sollten abgelehnt werden"
 
 
 class TestInjectionAttacks:
@@ -142,7 +166,10 @@ class TestInjectionAttacks:
     async def authenticated_client(self):
         """Fixture für authentifizierten Client"""
         async with httpx.AsyncClient(base_url=BASE_URL) as client:
-            login_response = await client.post("/api/v1/auth/login", json={"username": "admin", "password": "admin123"})
+            login_response = await client.post(
+                "/api/v1/auth/login",
+                json={"username": "admin", "password": "admin123"},
+            )
             token = login_response.json()["access_token"]
             client.headers["Authorization"] = f"Bearer {token}"
             yield client
@@ -159,14 +186,19 @@ class TestInjectionAttacks:
         ]
 
         for payload in payloads:
-            response = await authenticated_client.get(f"/api/v1/scans?id={payload}")
+            response = await authenticated_client.get(
+                f"/api/v1/scans?id={payload}"
+            )
 
             # Sollte nicht 500 (Internal Server Error) sein
-            assert response.status_code != 500, f"SQL Injection möglich mit Payload: {payload}"
+            assert (
+                response.status_code != 500
+            ), f"SQL Injection möglich mit Payload: {payload}"
 
             # Sollte keine Datenbank-Fehler enthalten
             assert (
-                "sql" not in response.text.lower() or "database" not in response.text.lower()
+                "sql" not in response.text.lower()
+                or "database" not in response.text.lower()
             ), f"Mögliche SQL Injection: {payload}"
 
     @pytest.mark.asyncio
@@ -179,9 +211,14 @@ class TestInjectionAttacks:
         ]
 
         for payload in nosql_payloads:
-            response = await authenticated_client.post("/api/v1/scans", json={"target": "example.com", "options": payload})
+            response = await authenticated_client.post(
+                "/api/v1/scans",
+                json={"target": "example.com", "options": payload},
+            )
 
-            assert response.status_code != 500, f"NoSQL Injection möglich: {payload}"
+            assert (
+                response.status_code != 500
+            ), f"NoSQL Injection möglich: {payload}"
 
     @pytest.mark.asyncio
     async def test_command_injection_protection(self, authenticated_client):
@@ -195,12 +232,20 @@ class TestInjectionAttacks:
 
         for payload in payloads:
             response = await authenticated_client.post(
-                "/api/v1/scans", json={"target": f"example.com{payload}", "scan_type": "reconnaissance"}
+                "/api/v1/scans",
+                json={
+                    "target": f"example.com{payload}",
+                    "scan_type": "reconnaissance",
+                },
             )
 
             # Sollte keine System-Informationen preisgeben
-            assert "root:" not in response.text, f"Command Injection möglich: {payload}"
-            assert "uid=" not in response.text, f"Command Injection möglich: {payload}"
+            assert (
+                "root:" not in response.text
+            ), f"Command Injection möglich: {payload}"
+            assert (
+                "uid=" not in response.text
+            ), f"Command Injection möglich: {payload}"
 
     @pytest.mark.asyncio
     async def test_xss_protection(self, authenticated_client):
@@ -213,11 +258,17 @@ class TestInjectionAttacks:
         ]
 
         for payload in xss_payloads:
-            response = await authenticated_client.post("/api/v1/scans", json={"target": "example.com", "description": payload})
+            response = await authenticated_client.post(
+                "/api/v1/scans",
+                json={"target": "example.com", "description": payload},
+            )
 
             # Response sollte XSS-Content nicht unescaped enthalten
             if response.status_code == 200:
-                assert "<script>" not in response.text or "&lt;script&gt;" in response.text, f"XSS möglich: {payload}"
+                assert (
+                    "<script>" not in response.text
+                    or "&lt;script&gt;" in response.text
+                ), f"XSS möglich: {payload}"
 
 
 class TestAccessControl:
@@ -227,7 +278,10 @@ class TestAccessControl:
     async def admin_client(self):
         """Fixture für Admin-Client"""
         async with httpx.AsyncClient(base_url=BASE_URL) as client:
-            login_response = await client.post("/api/v1/auth/login", json={"username": "admin", "password": "admin123"})
+            login_response = await client.post(
+                "/api/v1/auth/login",
+                json={"username": "admin", "password": "admin123"},
+            )
             token = login_response.json()["access_token"]
             client.headers["Authorization"] = f"Bearer {token}"
             yield client
@@ -236,7 +290,10 @@ class TestAccessControl:
     async def user_client(self):
         """Fixture für normalen User-Client"""
         async with httpx.AsyncClient(base_url=BASE_URL) as client:
-            login_response = await client.post("/api/v1/auth/login", json={"username": "user", "password": "user123"})
+            login_response = await client.post(
+                "/api/v1/auth/login",
+                json={"username": "user", "password": "user123"},
+            )
             token = login_response.json()["access_token"]
             client.headers["Authorization"] = f"Bearer {token}"
             yield client
@@ -247,15 +304,23 @@ class TestAccessControl:
         # Versuche auf Daten eines anderen Users zuzugreifen
         response = await user_client.get("/api/v1/users/other-user-id/scans")
 
-        assert response.status_code in [403, 404], "Horizontale Privilegieneskalation möglich"
+        assert response.status_code in [
+            403,
+            404,
+        ], "Horizontale Privilegieneskalation möglich"
 
     @pytest.mark.asyncio
     async def test_vertical_privilege_escalation(self, user_client):
         """DAST: Vertikale Privilegieneskalation wird verhindert"""
         # Versuche Admin-Funktion als normaler User
-        response = await user_client.post("/api/v1/admin/users", json={"username": "newadmin", "role": "admin"})
+        response = await user_client.post(
+            "/api/v1/admin/users",
+            json={"username": "newadmin", "role": "admin"},
+        )
 
-        assert response.status_code == 403, "Vertikale Privilegieneskalation möglich"
+        assert (
+            response.status_code == 403
+        ), "Vertikale Privilegieneskalation möglich"
 
     @pytest.mark.asyncio
     async def test_idor_protection(self, user_client):
@@ -289,7 +354,9 @@ class TestSecurityHeaders:
         ]
 
         for header in required_headers:
-            assert header in response.headers, f"Fehlender Security Header: {header}"
+            assert (
+                header in response.headers
+            ), f"Fehlender Security Header: {header}"
 
     @pytest.mark.asyncio
     async def test_no_sensitive_headers(self, client):
@@ -310,7 +377,9 @@ class TestSecurityHeaders:
         if "strict-transport-security" in response.headers:
             hsts = response.headers["strict-transport-security"]
             assert "max-age=" in hsts, "HSTS ohne max-age"
-            assert int(hsts.split("max-age=")[1].split(";")[0]) >= 31536000, "HSTS max-age zu niedrig"
+            assert (
+                int(hsts.split("max-age=")[1].split(";")[0]) >= 31536000
+            ), "HSTS max-age zu niedrig"
 
 
 class TestCSRFProtection:
@@ -326,17 +395,27 @@ class TestCSRFProtection:
     async def test_csrf_token_required(self, client):
         """DAST: CSRF Token wird für State-Changing Requests verlangt"""
         # Versuche POST ohne CSRF Token
-        response = await client.post("/api/v1/scans", json={"target": "example.com", "scan_type": "reconnaissance"})
+        response = await client.post(
+            "/api/v1/scans",
+            json={"target": "example.com", "scan_type": "reconnaissance"},
+        )
 
         # Sollte 403 sein wenn CSRF Schutz aktiv
         # Oder 401 wenn Authentifizierung fehlt
-        assert response.status_code in [401, 403, 422], "CSRF Schutz möglicherweise deaktiviert"
+        assert response.status_code in [
+            401,
+            403,
+            422,
+        ], "CSRF Schutz möglicherweise deaktiviert"
 
     @pytest.mark.asyncio
     async def test_csrf_token_validation(self, client):
         """DAST: CSRF Token wird validiert"""
         # Login
-        login_response = await client.post("/api/v1/auth/login", json={"username": "admin", "password": "admin123"})
+        login_response = await client.post(
+            "/api/v1/auth/login",
+            json={"username": "admin", "password": "admin123"},
+        )
 
         token = login_response.json()["access_token"]
 
@@ -344,10 +423,16 @@ class TestCSRFProtection:
         response = await client.post(
             "/api/v1/scans",
             json={"target": "example.com"},
-            headers={"Authorization": f"Bearer {token}", "X-CSRF-Token": "invalid-token"},
+            headers={
+                "Authorization": f"Bearer {token}",
+                "X-CSRF-Token": "invalid-token",
+            },
         )
 
-        assert response.status_code in [403, 422], "CSRF Token wird nicht validiert"
+        assert response.status_code in [
+            403,
+            422,
+        ], "CSRF Token wird nicht validiert"
 
 
 class TestInformationDisclosure:
@@ -366,8 +451,12 @@ class TestInformationDisclosure:
         response = await client.get("/api/v1/scans/invalid-id-format")
 
         # Sollte keine Stack Traces enthalten
-        assert "Traceback" not in response.text, "Stack Traces werden preisgegeben"
-        assert 'File "' not in response.text, "Stack Traces werden preisgegeben"
+        assert (
+            "Traceback" not in response.text
+        ), "Stack Traces werden preisgegeben"
+        assert (
+            'File "' not in response.text
+        ), "Stack Traces werden preisgegeben"
 
     @pytest.mark.asyncio
     async def test_no_internal_paths(self, client):
@@ -375,17 +464,27 @@ class TestInformationDisclosure:
         response = await client.get("/api/v1/nonexistent")
 
         # Sollte keine internen Dateipfade enthalten
-        assert "/home/" not in response.text, "Interne Pfade werden preisgegeben"
-        assert "/var/" not in response.text, "Interne Pfade werden preisgegeben"
+        assert (
+            "/home/" not in response.text
+        ), "Interne Pfade werden preisgegeben"
+        assert (
+            "/var/" not in response.text
+        ), "Interne Pfade werden preisgegeben"
 
     @pytest.mark.asyncio
     async def test_error_messages_generic(self, client):
         """DAST: Fehlermeldungen sind generisch"""
-        response = await client.post("/api/v1/auth/login", json={"username": "nonexistent", "password": "wrong"})
+        response = await client.post(
+            "/api/v1/auth/login",
+            json={"username": "nonexistent", "password": "wrong"},
+        )
 
         # Sollte nicht verraten ob User existiert
         error_msg = response.json().get("detail", "").lower()
-        assert "user not found" not in error_msg or "invalid credentials" in error_msg, "Fehlermeldung gibt zu viel preis"
+        assert (
+            "user not found" not in error_msg
+            or "invalid credentials" in error_msg
+        ), "Fehlermeldung gibt zu viel preis"
 
 
 class TestRateLimiting:
@@ -409,7 +508,9 @@ class TestRateLimiting:
         ]
 
         for header in rate_limit_headers:
-            assert header in response.headers, f"Rate Limit Header fehlt: {header}"
+            assert (
+                header in response.headers
+            ), f"Rate Limit Header fehlt: {header}"
 
     @pytest.mark.asyncio
     async def test_rate_limit_enforced(self, client):
@@ -432,7 +533,10 @@ class TestSSRFPrevention:
     async def authenticated_client(self):
         """Fixture für authentifizierten Client"""
         async with httpx.AsyncClient(base_url=BASE_URL) as client:
-            login_response = await client.post("/api/v1/auth/login", json={"username": "admin", "password": "admin123"})
+            login_response = await client.post(
+                "/api/v1/auth/login",
+                json={"username": "admin", "password": "admin123"},
+            )
             token = login_response.json()["access_token"]
             client.headers["Authorization"] = f"Bearer {token}"
             yield client
@@ -449,9 +553,15 @@ class TestSSRFPrevention:
         ]
 
         for target in internal_targets:
-            response = await authenticated_client.post("/api/v1/scans", json={"target": target, "scan_type": "reconnaissance"})
+            response = await authenticated_client.post(
+                "/api/v1/scans",
+                json={"target": target, "scan_type": "reconnaissance"},
+            )
 
-            assert response.status_code in [400, 403], f"SSRF möglich mit: {target}"
+            assert response.status_code in [
+                400,
+                403,
+            ], f"SSRF möglich mit: {target}"
 
 
 class TestFileUploadSecurity:
@@ -461,7 +571,10 @@ class TestFileUploadSecurity:
     async def authenticated_client(self):
         """Fixture für authentifizierten Client"""
         async with httpx.AsyncClient(base_url=BASE_URL) as client:
-            login_response = await client.post("/api/v1/auth/login", json={"username": "admin", "password": "admin123"})
+            login_response = await client.post(
+                "/api/v1/auth/login",
+                json={"username": "admin", "password": "admin123"},
+            )
             token = login_response.json()["access_token"]
             client.headers["Authorization"] = f"Bearer {token}"
             yield client
@@ -472,17 +585,26 @@ class TestFileUploadSecurity:
         # EDUCATIONAL: Diese Payloads sind TEST-DATEN für Sicherheitstests
         # Sie werden verwendet, um zu prüfen, ob die API solche Uploads blockiert
         malicious_files = [
-            ("test_shell.php", b"<?php /* TEST PAYLOAD - NOT FUNCTIONAL */ ?>"),
+            (
+                "test_shell.php",
+                b"<?php /* TEST PAYLOAD - NOT FUNCTIONAL */ ?>",
+            ),
             ("test_shell.jsp", b"<% /* TEST PAYLOAD - NOT FUNCTIONAL */ %>"),
             ("test_shell.asp", b"<% /* TEST PAYLOAD - NOT FUNCTIONAL */ %>"),
         ]
 
         for filename, content in malicious_files:
             response = await authenticated_client.post(
-                "/api/v1/uploads", files={"file": (filename, content, "application/octet-stream")}
+                "/api/v1/uploads",
+                files={
+                    "file": (filename, content, "application/octet-stream")
+                },
             )
 
-            assert response.status_code in [400, 403], f"Bösartiger Upload möglich: {filename}"
+            assert response.status_code in [
+                400,
+                403,
+            ], f"Bösartiger Upload möglich: {filename}"
 
 
 class TestAPIVersioning:
@@ -499,7 +621,9 @@ class TestAPIVersioning:
         """DAST: API Version ist in URL"""
         response = await client.get("/api/v1/health")
 
-        assert response.status_code == 200, "API Versionierung nicht korrekt implementiert"
+        assert (
+            response.status_code == 200
+        ), "API Versionierung nicht korrekt implementiert"
 
 
 if __name__ == "__main__":

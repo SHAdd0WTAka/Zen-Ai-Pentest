@@ -128,7 +128,9 @@ class PluginMetadata:
             dependencies=data.get("dependencies", []),
             conflicts=data.get("conflicts", []),
             provides=data.get("provides", []),
-            capabilities=[PluginCapability(c) for c in data.get("capabilities", [])],
+            capabilities=[
+                PluginCapability(c) for c in data.get("capabilities", [])
+            ],
             priority=PluginPriority(data.get("priority", 2)),
             min_framework_version=data.get("min_framework_version", "1.0.0"),
             max_framework_version=data.get("max_framework_version", ""),
@@ -165,13 +167,21 @@ class PluginInfo:
 class PluginEvent:
     """Event für Plugin-Kommunikation"""
 
-    def __init__(self, event_type: str, data: Any = None, source: str = "", priority: int = 1):
+    def __init__(
+        self,
+        event_type: str,
+        data: Any = None,
+        source: str = "",
+        priority: int = 1,
+    ):
         self.event_type = event_type
         self.data = data
         self.source = source
         self.priority = priority
         self.timestamp = datetime.now()
-        self.event_id = hashlib.md5(f"{event_type}:{self.timestamp.isoformat()}:{source}".encode()).hexdigest()[:12]
+        self.event_id = hashlib.md5(
+            f"{event_type}:{self.timestamp.isoformat()}:{source}".encode()
+        ).hexdigest()[:12]
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -187,7 +197,13 @@ class PluginEvent:
 class PluginHook:
     """Hook für Plugin-Erweiterungen"""
 
-    def __init__(self, hook_name: str, callback: Callable, priority: int = 10, plugin_id: str = ""):
+    def __init__(
+        self,
+        hook_name: str,
+        callback: Callable,
+        priority: int = 10,
+        plugin_id: str = "",
+    ):
         self.hook_name = hook_name
         self.callback = callback
         self.priority = priority
@@ -224,7 +240,9 @@ class PluginRegistry:
         """Plugin in Registry registrieren"""
         with self._lock:
             if plugin_info.plugin_id in self._plugins:
-                logger.warning(f"Plugin {plugin_info.plugin_id} already registered")
+                logger.warning(
+                    f"Plugin {plugin_info.plugin_id} already registered"
+                )
                 return False
 
             self._plugins[plugin_info.plugin_id] = plugin_info
@@ -251,12 +269,18 @@ class PluginRegistry:
 
             # Hooks entfernen
             for hook_name in list(self._hooks.keys()):
-                self._hooks[hook_name] = [h for h in self._hooks[hook_name] if h.plugin_id != plugin_id]
+                self._hooks[hook_name] = [
+                    h
+                    for h in self._hooks[hook_name]
+                    if h.plugin_id != plugin_id
+                ]
 
             # Event-Handler entfernen
             for event_type in list(self._event_handlers.keys()):
                 self._event_handlers[event_type] = [
-                    h for h in self._event_handlers[event_type] if getattr(h, "__plugin_id__", None) != plugin_id
+                    h
+                    for h in self._event_handlers[event_type]
+                    if getattr(h, "__plugin_id__", None) != plugin_id
                 ]
 
             del self._plugins[plugin_id]
@@ -268,11 +292,17 @@ class PluginRegistry:
         with self._lock:
             return self._plugins.get(plugin_id)
 
-    def get_plugins_by_capability(self, capability: PluginCapability) -> List[PluginInfo]:
+    def get_plugins_by_capability(
+        self, capability: PluginCapability
+    ) -> List[PluginInfo]:
         """Plugins nach Capability suchen"""
         with self._lock:
             plugin_ids = self._capabilities.get(capability, set())
-            return [self._plugins[pid] for pid in plugin_ids if pid in self._plugins]
+            return [
+                self._plugins[pid]
+                for pid in plugin_ids
+                if pid in self._plugins
+            ]
 
     def get_all_plugins(self) -> List[PluginInfo]:
         """Alle registrierten Plugins"""
@@ -293,7 +323,9 @@ class PluginRegistry:
 
             # Plugin-Info aktualisieren
             if hook.plugin_id in self._plugins:
-                self._plugins[hook.plugin_id].hooks_registered.append(hook.hook_name)
+                self._plugins[hook.plugin_id].hooks_registered.append(
+                    hook.hook_name
+                )
 
             return True
 
@@ -303,10 +335,14 @@ class PluginRegistry:
             if hook_name not in self._hooks:
                 return False
 
-            self._hooks[hook_name] = [h for h in self._hooks[hook_name] if h.plugin_id != plugin_id]
+            self._hooks[hook_name] = [
+                h for h in self._hooks[hook_name] if h.plugin_id != plugin_id
+            ]
             return True
 
-    async def execute_hooks(self, hook_name: str, *args, **kwargs) -> List[Any]:
+    async def execute_hooks(
+        self, hook_name: str, *args, **kwargs
+    ) -> List[Any]:
         """Alle Hooks für einen Namen ausführen"""
         with self._lock:
             hooks = self._hooks.get(hook_name, []).copy()
@@ -321,7 +357,9 @@ class PluginRegistry:
 
         return results
 
-    def subscribe_event(self, event_type: str, handler: Callable, plugin_id: str = "") -> bool:
+    def subscribe_event(
+        self, event_type: str, handler: Callable, plugin_id: str = ""
+    ) -> bool:
         """Event-Handler registrieren"""
         with self._lock:
             handler.__plugin_id__ = plugin_id
@@ -345,7 +383,9 @@ class PluginRegistry:
                 else:
                     handler(event)
             except Exception as e:
-                logger.error(f"Event handler for {event.event_type} failed: {e}")
+                logger.error(
+                    f"Event handler for {event.event_type} failed: {e}"
+                )
 
 
 class PluginDiscovery:
@@ -375,7 +415,9 @@ class PluginDiscovery:
 
         return discovered
 
-    def _discover_plugin_directory(self, plugin_dir: Path) -> Optional[PluginInfo]:
+    def _discover_plugin_directory(
+        self, plugin_dir: Path
+    ) -> Optional[PluginInfo]:
         """Einzelnes Plugin-Verzeichnis analysieren"""
         # Konfiguration laden
         config_file = None
@@ -410,7 +452,12 @@ class PluginDiscovery:
                 logger.warning(f"No plugin module found in {plugin_dir}")
                 return None
 
-            plugin_info = PluginInfo(plugin_id=plugin_id, metadata=metadata, path=plugin_dir, module_name=plugin_dir.name)
+            plugin_info = PluginInfo(
+                plugin_id=plugin_id,
+                metadata=metadata,
+                path=plugin_dir,
+                module_name=plugin_dir.name,
+            )
 
             return plugin_info
 
@@ -457,14 +504,20 @@ class PluginLoader:
 
             # Modul laden
             module_name = f"zen_plugins.{plugin_info.module_name}"
-            spec = importlib.util.spec_from_file_location(module_name, plugin_info.path / "plugin.py")
+            spec = importlib.util.spec_from_file_location(
+                module_name, plugin_info.path / "plugin.py"
+            )
 
             if not spec or not spec.loader:
                 # Fallback zu __init__.py
-                spec = importlib.util.spec_from_file_location(module_name, plugin_info.path / "__init__.py")
+                spec = importlib.util.spec_from_file_location(
+                    module_name, plugin_info.path / "__init__.py"
+                )
 
             if not spec or not spec.loader:
-                raise ImportError(f"Cannot load module from {plugin_info.path}")
+                raise ImportError(
+                    f"Cannot load module from {plugin_info.path}"
+                )
 
             module = importlib.util.module_from_spec(spec)
             sys.modules[module_name] = module
@@ -494,7 +547,11 @@ class PluginLoader:
         from plugin_api import BasePlugin
 
         for name, obj in inspect.getmembers(module):
-            if inspect.isclass(obj) and issubclass(obj, BasePlugin) and obj is not BasePlugin:
+            if (
+                inspect.isclass(obj)
+                and issubclass(obj, BasePlugin)
+                and obj is not BasePlugin
+            ):
                 return obj
         return None
 
@@ -504,7 +561,9 @@ class PluginLoader:
             plugin_info.state = PluginState.UNLOADING
 
             # Cleanup aufrufen
-            if plugin_info.instance and hasattr(plugin_info.instance, "cleanup"):
+            if plugin_info.instance and hasattr(
+                plugin_info.instance, "cleanup"
+            ):
                 if asyncio.iscoroutinefunction(plugin_info.instance.cleanup):
                     await plugin_info.instance.cleanup()
                 else:
@@ -527,7 +586,9 @@ class PluginLoader:
         except Exception as e:
             plugin_info.state = PluginState.ERROR
             plugin_info.error_message = str(e)
-            logger.error(f"Failed to unload plugin {plugin_info.plugin_id}: {e}")
+            logger.error(
+                f"Failed to unload plugin {plugin_info.plugin_id}: {e}"
+            )
             return False
 
 
@@ -590,10 +651,14 @@ class PluginSystem:
         # Initialisieren
         plugin_info.state = PluginState.INITIALIZING
 
-        if plugin_info.instance and hasattr(plugin_info.instance, "initialize"):
+        if plugin_info.instance and hasattr(
+            plugin_info.instance, "initialize"
+        ):
             try:
                 context = PluginContext(self, plugin_info)
-                if asyncio.iscoroutinefunction(plugin_info.instance.initialize):
+                if asyncio.iscoroutinefunction(
+                    plugin_info.instance.initialize
+                ):
                     await plugin_info.instance.initialize(context)
                 else:
                     plugin_info.instance.initialize(context)
@@ -603,7 +668,11 @@ class PluginSystem:
 
                 # Activation-Event senden
                 await self.registry.emit_event(
-                    PluginEvent(event_type="plugin.activated", data={"plugin_id": plugin_id}, source="plugin_system")
+                    PluginEvent(
+                        event_type="plugin.activated",
+                        data={"plugin_id": plugin_id},
+                        source="plugin_system",
+                    )
                 )
 
             except Exception as e:
@@ -625,7 +694,11 @@ class PluginSystem:
 
         # Deactivation-Event senden
         await self.registry.emit_event(
-            PluginEvent(event_type="plugin.deactivated", data={"plugin_id": plugin_id}, source="plugin_system")
+            PluginEvent(
+                event_type="plugin.deactivated",
+                data={"plugin_id": plugin_id},
+                source="plugin_system",
+            )
         )
 
         # Entladen
@@ -641,10 +714,15 @@ class PluginSystem:
         results = {}
 
         # Nach Priorität sortieren
-        plugins = sorted(self.registry.get_all_plugins(), key=lambda p: p.metadata.priority.value)
+        plugins = sorted(
+            self.registry.get_all_plugins(),
+            key=lambda p: p.metadata.priority.value,
+        )
 
         for plugin_info in plugins:
-            results[plugin_info.plugin_id] = await self.load_plugin(plugin_info.plugin_id)
+            results[plugin_info.plugin_id] = await self.load_plugin(
+                plugin_info.plugin_id
+            )
 
         return results
 
@@ -653,10 +731,16 @@ class PluginSystem:
         results = {}
 
         # In umgekehrter Reihenfolge entladen
-        plugins = sorted(self.registry.get_all_plugins(), key=lambda p: p.metadata.priority.value, reverse=True)
+        plugins = sorted(
+            self.registry.get_all_plugins(),
+            key=lambda p: p.metadata.priority.value,
+            reverse=True,
+        )
 
         for plugin_info in plugins:
-            results[plugin_info.plugin_id] = await self.unload_plugin(plugin_info.plugin_id)
+            results[plugin_info.plugin_id] = await self.unload_plugin(
+                plugin_info.plugin_id
+            )
 
         return results
 
@@ -664,11 +748,15 @@ class PluginSystem:
         """Plugin abrufen"""
         return self.registry.get_plugin(plugin_id)
 
-    def get_plugins_by_capability(self, capability: PluginCapability) -> List[PluginInfo]:
+    def get_plugins_by_capability(
+        self, capability: PluginCapability
+    ) -> List[PluginInfo]:
         """Plugins nach Capability"""
         return self.registry.get_plugins_by_capability(capability)
 
-    async def execute_hooks(self, hook_name: str, *args, **kwargs) -> List[Any]:
+    async def execute_hooks(
+        self, hook_name: str, *args, **kwargs
+    ) -> List[Any]:
         """Hooks ausführen"""
         return await self.registry.execute_hooks(hook_name, *args, **kwargs)
 
@@ -676,7 +764,9 @@ class PluginSystem:
         """Event senden"""
         await self.registry.emit_event(event)
 
-    def subscribe_event(self, event_type: str, handler: Callable, plugin_id: str = "") -> None:
+    def subscribe_event(
+        self, event_type: str, handler: Callable, plugin_id: str = ""
+    ) -> None:
         """Event abonnieren"""
         self.registry.subscribe_event(event_type, handler, plugin_id)
 
@@ -692,20 +782,33 @@ class PluginContext:
         self.system = system
         self.plugin_info = plugin_info
         self.config: Dict[str, Any] = {}
-        self.logger = logging.getLogger(f"ZenAI.Plugin.{plugin_info.plugin_id}")
+        self.logger = logging.getLogger(
+            f"ZenAI.Plugin.{plugin_info.plugin_id}"
+        )
 
-    def register_hook(self, hook_name: str, callback: Callable, priority: int = 10) -> None:
+    def register_hook(
+        self, hook_name: str, callback: Callable, priority: int = 10
+    ) -> None:
         """Hook registrieren"""
-        hook = PluginHook(hook_name=hook_name, callback=callback, priority=priority, plugin_id=self.plugin_info.plugin_id)
+        hook = PluginHook(
+            hook_name=hook_name,
+            callback=callback,
+            priority=priority,
+            plugin_id=self.plugin_info.plugin_id,
+        )
         self.system.register_hook(hook)
 
     def subscribe_event(self, event_type: str, handler: Callable) -> None:
         """Event abonnieren"""
-        self.system.subscribe_event(event_type, handler, self.plugin_info.plugin_id)
+        self.system.subscribe_event(
+            event_type, handler, self.plugin_info.plugin_id
+        )
 
     async def emit_event(self, event_type: str, data: Any = None) -> None:
         """Event senden"""
-        event = PluginEvent(event_type=event_type, data=data, source=self.plugin_info.plugin_id)
+        event = PluginEvent(
+            event_type=event_type, data=data, source=self.plugin_info.plugin_id
+        )
         await self.system.emit_event(event)
 
     def get_config(self, key: str, default: Any = None) -> Any:
@@ -742,7 +845,9 @@ if __name__ == "__main__":
         print(f"Load results: {results}")
 
         # Hooks ausführen
-        results = await system.execute_hooks("test.hook", "arg1", kwarg1="value1")
+        results = await system.execute_hooks(
+            "test.hook", "arg1", kwarg1="value1"
+        )
         print(f"Hook results: {results}")
 
     asyncio.run(main())

@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 """Apply security fixes for Dependabot alerts"""
 
-import os
-import sys
-import subprocess
 import json
+import os
+import subprocess
+import sys
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 
 def update_requirements_windows():
     """Update Python dependencies in requirements-windows.txt"""
@@ -17,32 +19,33 @@ def update_requirements_windows():
 
     print("\n[1/4] Updating requirements-windows.txt...")
 
-    with open(req_file, 'r') as f:
+    with open(req_file, "r") as f:
         content = f.read()
 
     # Update cryptography to latest secure version (44.0.1 or 44.0.2)
-    if 'cryptography==44.0.0' in content:
+    if "cryptography==44.0.0" in content:
         content = content.replace(
-            'cryptography==44.0.0  # SECURITY FIX: CVE-2024-26130, CVE-2024-41985, CVE-2024-25185',
-            'cryptography>=44.0.1  # SECURITY FIX: CVE-2024-26130, CVE-2024-41985, CVE-2024-25185, CVE-2024-12797'
+            "cryptography==44.0.0  # SECURITY FIX: CVE-2024-26130, CVE-2024-41985, CVE-2024-25185",
+            "cryptography>=44.0.1  # SECURITY FIX: CVE-2024-26130, CVE-2024-41985, CVE-2024-25185, CVE-2024-12797",
         )
         print("  - Updated cryptography to >=44.0.1")
 
     # Update langchain-core
-    if 'langchain-core' in content:
+    if "langchain-core" in content:
         # Ensure latest version
-        if 'langchain-core==' in content:
+        if "langchain-core==" in content:
             content = content.replace(
-                'langchain-core==0.3.35',
-                'langchain-core>=0.3.35  # SECURITY FIX: CVE-2024-5101 (SSRF)'
+                "langchain-core==0.3.35",
+                "langchain-core>=0.3.35  # SECURITY FIX: CVE-2024-5101 (SSRF)",
             )
             print("  - Updated langchain-core")
 
-    with open(req_file, 'w') as f:
+    with open(req_file, "w") as f:
         f.write(content)
 
     print("  [OK] requirements-windows.txt updated")
     return True
+
 
 def update_frontend_deps():
     """Update frontend dependencies"""
@@ -62,7 +65,7 @@ def update_frontend_deps():
             ["npm", "audit", "fix", "--force"],
             capture_output=True,
             text=True,
-            timeout=120
+            timeout=120,
         )
 
         if result.returncode == 0:
@@ -72,17 +75,13 @@ def update_frontend_deps():
 
         # Update axios explicitly
         subprocess.run(
-            ["npm", "update", "axios"],
-            capture_output=True,
-            timeout=60
+            ["npm", "update", "axios"], capture_output=True, timeout=60
         )
         print("  - Updated axios")
 
         # Update qs explicitly
         subprocess.run(
-            ["npm", "update", "qs"],
-            capture_output=True,
-            timeout=60
+            ["npm", "update", "qs"], capture_output=True, timeout=60
         )
         print("  - Updated qs")
 
@@ -92,6 +91,7 @@ def update_frontend_deps():
         os.chdir("../..")
 
     return True
+
 
 def update_dashboard_deps():
     """Update dashboard dependencies"""
@@ -111,7 +111,7 @@ def update_dashboard_deps():
             ["npm", "audit", "fix", "--force"],
             capture_output=True,
             text=True,
-            timeout=120
+            timeout=120,
         )
 
         if result.returncode == 0:
@@ -121,17 +121,13 @@ def update_dashboard_deps():
 
         # Update axios explicitly
         subprocess.run(
-            ["npm", "update", "axios"],
-            capture_output=True,
-            timeout=60
+            ["npm", "update", "axios"], capture_output=True, timeout=60
         )
         print("  - Updated axios")
 
         # Update qs explicitly
         subprocess.run(
-            ["npm", "update", "qs"],
-            capture_output=True,
-            timeout=60
+            ["npm", "update", "qs"], capture_output=True, timeout=60
         )
         print("  - Updated qs")
 
@@ -141,6 +137,7 @@ def update_dashboard_deps():
         os.chdir("../..")
 
     return True
+
 
 def commit_changes():
     """Commit security fixes"""
@@ -152,10 +149,16 @@ def commit_changes():
 
         # Commit
         result = subprocess.run(
-            ["git", "commit", "-m", "security: Fix Dependabot alerts\n\n- Update cryptography to >=44.0.1 (CVE fixes)\n- Update axios to latest secure version\n- Update qs to latest secure version\n- Update langchain-core", "--no-verify"],
+            [
+                "git",
+                "commit",
+                "-m",
+                "security: Fix Dependabot alerts\n\n- Update cryptography to >=44.0.1 (CVE fixes)\n- Update axios to latest secure version\n- Update qs to latest secure version\n- Update langchain-core",
+                "--no-verify",
+            ],
             capture_output=True,
             text=True,
-            timeout=30
+            timeout=30,
         )
 
         if result.returncode == 0:
@@ -166,7 +169,7 @@ def commit_changes():
                 ["git", "push", "origin", "main"],
                 capture_output=True,
                 text=True,
-                timeout=60
+                timeout=60,
             )
 
             if push_result.returncode == 0:
@@ -178,6 +181,7 @@ def commit_changes():
 
     except Exception as e:
         print(f"  [ERROR] {e}")
+
 
 def main():
     print("=" * 60)
@@ -208,6 +212,7 @@ def main():
     print("1. Check GitHub Actions for build status")
     print("2. Verify Dependabot alerts are resolved")
     print("3. Test the application functionality")
+
 
 if __name__ == "__main__":
     main()

@@ -58,7 +58,12 @@ class StateEvent:
     source: Optional[str] = None
 
     def to_dict(self) -> Dict[str, Any]:
-        return {"name": self.name, "payload": self.payload, "timestamp": self.timestamp.isoformat(), "source": self.source}
+        return {
+            "name": self.name,
+            "payload": self.payload,
+            "timestamp": self.timestamp.isoformat(),
+            "source": self.source,
+        }
 
 
 @dataclass
@@ -115,7 +120,9 @@ class StateContext:
             self.data.update(updates)
 
     def log_event(self, event: StateEvent):
-        self.event_log.append({**event.to_dict(), "context_session": self.session_id})
+        self.event_log.append(
+            {**event.to_dict(), "context_session": self.session_id}
+        )
 
 
 class State:
@@ -124,7 +131,12 @@ class State:
     Unterstützt Hierarchical States und Actions.
     """
 
-    def __init__(self, name: str, state_type: StateType = StateType.SIMPLE, parent: Optional["State"] = None):
+    def __init__(
+        self,
+        name: str,
+        state_type: StateType = StateType.SIMPLE,
+        parent: Optional["State"] = None,
+    ):
         self.name = name
         self.state_type = state_type
         self.parent = parent
@@ -143,11 +155,21 @@ class State:
         if self.initial_sub_state is None:
             self.initial_sub_state = state.name
 
-    def on_entry(self, action: Callable, async_exec: bool = False, timeout: Optional[float] = None):
+    def on_entry(
+        self,
+        action: Callable,
+        async_exec: bool = False,
+        timeout: Optional[float] = None,
+    ):
         self.entry_actions.append(StateAction(action, async_exec, timeout))
         return self
 
-    def on_exit(self, action: Callable, async_exec: bool = False, timeout: Optional[float] = None):
+    def on_exit(
+        self,
+        action: Callable,
+        async_exec: bool = False,
+        timeout: Optional[float] = None,
+    ):
         self.exit_actions.append(StateAction(action, async_exec, timeout))
         return self
 
@@ -155,7 +177,9 @@ class State:
         self.while_in_state_actions.append(StateAction(action, async_exec))
         return self
 
-    async def enter(self, context: StateContext, event: Optional[StateEvent] = None):
+    async def enter(
+        self, context: StateContext, event: Optional[StateEvent] = None
+    ):
         self._active = True
         self._entered_at = datetime.now()
 
@@ -168,7 +192,9 @@ class State:
         if self.while_in_state_actions:
             asyncio.create_task(self._run_while_in_state(context))
 
-    async def exit(self, context: StateContext, event: Optional[StateEvent] = None):
+    async def exit(
+        self, context: StateContext, event: Optional[StateEvent] = None
+    ):
         self._active = False
 
         logger.debug(f"Exiting state: {self.name}")
@@ -176,14 +202,22 @@ class State:
         for action in self.exit_actions:
             await self._execute_action(action, context, event)
 
-    async def _execute_action(self, action: StateAction, context: StateContext, event: Optional[StateEvent] = None):
+    async def _execute_action(
+        self,
+        action: StateAction,
+        context: StateContext,
+        event: Optional[StateEvent] = None,
+    ):
         retry_count = 0
 
         while retry_count <= action.max_retries:
             try:
                 if action.async_execution:
                     if action.timeout_seconds:
-                        await asyncio.wait_for(action.action(self, context), timeout=action.timeout_seconds)
+                        await asyncio.wait_for(
+                            action.action(self, context),
+                            timeout=action.timeout_seconds,
+                        )
                     else:
                         await action.action(self, context)
                 else:
@@ -192,7 +226,10 @@ class State:
 
             except Exception as e:
                 retry_count += 1
-                if retry_count > action.max_retries or not action.retry_on_failure:
+                if (
+                    retry_count > action.max_retries
+                    or not action.retry_on_failure
+                ):
                     logger.error(f"Action failed in state {self.name}: {e}")
                     raise
                 await asyncio.sleep(0.1 * retry_count)
@@ -222,7 +259,11 @@ class State:
             "name": self.name,
             "type": self.state_type.value,
             "active": self._active,
-            "duration_seconds": self.get_duration().total_seconds() if self.get_duration() else None,
+            "duration_seconds": (
+                self.get_duration().total_seconds()
+                if self.get_duration()
+                else None
+            ),
             "sub_states": list(self.sub_states.keys()),
         }
 
@@ -257,7 +298,9 @@ class Transition:
         if self.event and event.name != self.event:
             return False
 
-        for guard in sorted(self.guards, key=lambda g: g.priority, reverse=True):
+        for guard in sorted(
+            self.guards, key=lambda g: g.priority, reverse=True
+        ):
             if not guard.evaluate(event, context):
                 return False
 
@@ -277,7 +320,12 @@ class AdvancedStateMachine:
     Vollständig autonom und selbstverwaltend.
     """
 
-    def __init__(self, name: str = "StateMachine", enable_persistence: bool = True, auto_recovery: bool = True):
+    def __init__(
+        self,
+        name: str = "StateMachine",
+        enable_persistence: bool = True,
+        auto_recovery: bool = True,
+    ):
         self.name = name
         self.states: Dict[str, State] = {}
         self.transitions: List[Transition] = []
@@ -327,7 +375,9 @@ class AdvancedStateMachine:
         # Start event processing
         asyncio.create_task(self._process_events())
 
-        logger.info(f"State Machine '{self.name}' started in state '{initial_state}'")
+        logger.info(
+            f"State Machine '{self.name}' started in state '{initial_state}'"
+        )
 
     async def stop(self):
         """Stoppe die State Machine."""
@@ -338,7 +388,9 @@ class AdvancedStateMachine:
 
         logger.info(f"State Machine '{self.name}' stopped")
 
-    async def send(self, event: Union[str, StateEvent], payload: Optional[Dict] = None):
+    async def send(
+        self, event: Union[str, StateEvent], payload: Optional[Dict] = None
+    ):
         """Sende ein Event an die State Machine."""
         if isinstance(event, str):
             event = StateEvent(name=event, payload=payload or {})
@@ -350,7 +402,9 @@ class AdvancedStateMachine:
         """Hintergrund-Task für Event-Verarbeitung."""
         while self._running:
             try:
-                event = await asyncio.wait_for(self._event_queue.get(), timeout=0.1)
+                event = await asyncio.wait_for(
+                    self._event_queue.get(), timeout=0.1
+                )
                 await self._handle_event(event)
             except asyncio.TimeoutError:
                 # Check for auto-trigger transitions
@@ -366,7 +420,12 @@ class AdvancedStateMachine:
             return
 
         # Find matching transitions
-        matching = [t for t in self.transitions if t.source == self._current_state.name and t.can_fire(event, self.context)]
+        matching = [
+            t
+            for t in self.transitions
+            if t.source == self._current_state.name
+            and t.can_fire(event, self.context)
+        ]
 
         if matching:
             # Take highest priority transition
@@ -383,7 +442,9 @@ class AdvancedStateMachine:
             except Exception as e:
                 logger.warning(f"Event handler error: {e}")
 
-    async def _execute_transition(self, transition: Transition, event: StateEvent):
+    async def _execute_transition(
+        self, transition: Transition, event: StateEvent
+    ):
         """Führe einen Transition aus."""
         logger.debug(f"Transition: {transition.source} -> {transition.target}")
 
@@ -431,7 +492,9 @@ class AdvancedStateMachine:
         auto_transitions = [
             t
             for t in self.transitions
-            if t.source == self._current_state.name and t.auto_trigger and t.can_fire(StateEvent("auto"), self.context)
+            if t.source == self._current_state.name
+            and t.auto_trigger
+            and t.can_fire(StateEvent("auto"), self.context)
         ]
 
         for transition in auto_transitions:
@@ -479,7 +542,11 @@ class AdvancedStateMachine:
             "state_count": len(self.states),
             "transition_count_total": len(self.transitions),
             "running": self._running,
-            "uptime_seconds": (datetime.now() - self._start_time).total_seconds() if self._start_time else 0,
+            "uptime_seconds": (
+                (datetime.now() - self._start_time).total_seconds()
+                if self._start_time
+                else 0
+            ),
         }
 
     def export_state(self) -> Dict[str, Any]:
@@ -539,10 +606,20 @@ class PentestStateMachine(AdvancedStateMachine):
         """Setup Pentest-spezifische Transitions."""
         transitions = [
             Transition("idle", "reconnaissance", event="start"),
-            Transition("reconnaissance", "vulnerability_assessment", event="recon_complete"),
-            Transition("vulnerability_assessment", "exploitation", event="vulns_found"),
-            Transition("exploitation", "post_exploitation", event="exploit_success"),
-            Transition("post_exploitation", "reporting", event="data_collected"),
+            Transition(
+                "reconnaissance",
+                "vulnerability_assessment",
+                event="recon_complete",
+            ),
+            Transition(
+                "vulnerability_assessment", "exploitation", event="vulns_found"
+            ),
+            Transition(
+                "exploitation", "post_exploitation", event="exploit_success"
+            ),
+            Transition(
+                "post_exploitation", "reporting", event="data_collected"
+            ),
             Transition("reporting", "completed", event="report_generated"),
             Transition("*", "error", event="error"),
             Transition("error", "idle", event="reset"),
@@ -553,7 +630,9 @@ class PentestStateMachine(AdvancedStateMachine):
 
 
 # Factory
-async def create_state_machine(name: str = "StateMachine", initial_state: str = "idle") -> AdvancedStateMachine:
+async def create_state_machine(
+    name: str = "StateMachine", initial_state: str = "idle"
+) -> AdvancedStateMachine:
     """Factory für State Machine Erstellung."""
     sm = AdvancedStateMachine(name=name)
     await sm.start(initial_state)

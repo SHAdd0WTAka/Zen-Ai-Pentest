@@ -29,7 +29,9 @@ class TestMFAHandler:
 
         handler = MFAHandler()
         secret = handler.generate_secret()
-        uri = handler.get_qr_code_uri(secret=secret, username="testuser", issuer="ZenAI")
+        uri = handler.get_qr_code_uri(
+            secret=secret, username="testuser", issuer="ZenAI"
+        )
 
         assert uri is not None
         assert isinstance(uri, str)

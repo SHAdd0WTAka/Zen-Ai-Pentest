@@ -27,7 +27,9 @@ class AgentOrchestrator:
         self.agent_by_role: Dict[AgentRole, List[BaseAgent]] = {}
         self.shared_context: Dict[str, Any] = {}
         self.message_history: List[AgentMessage] = []
-        self.conversation_threads: Dict[str, List[str]] = {}  # thread_id -> message_ids
+        self.conversation_threads: Dict[str, List[str]] = (
+            {}
+        )  # thread_id -> message_ids
         self.zen_orchestrator = zen_orchestrator  # Link to LLM orchestrator
         self.running = False
         self.research_coordination: Dict[str, Any] = {}
@@ -42,7 +44,9 @@ class AgentOrchestrator:
             self.agent_by_role[agent.role] = []
         self.agent_by_role[agent.role].append(agent)
 
-        logger.info(f"[Orchestrator] Registered agent {agent.name} ({agent.role.value})")
+        logger.info(
+            f"[Orchestrator] Registered agent {agent.name} ({agent.role.value})"
+        )
 
     def unregister_agent(self, agent_id: str):
         """Remove an agent from the system"""
@@ -51,7 +55,11 @@ class AgentOrchestrator:
 
             # Remove from role index
             if agent.role in self.agent_by_role:
-                self.agent_by_role[agent.role] = [a for a in self.agent_by_role[agent.role] if a.id != agent_id]
+                self.agent_by_role[agent.role] = [
+                    a
+                    for a in self.agent_by_role[agent.role]
+                    if a.id != agent_id
+                ]
 
             del self.agents[agent_id]
             logger.info(f"[Orchestrator] Unregistered agent {agent_id}")
@@ -85,7 +93,9 @@ class AgentOrchestrator:
                 if agent_id in self.agents:
                     await self.agents[agent_id].receive_message(msg)
 
-    async def update_shared_context(self, key: str, value: Any, source_agent_id: str):
+    async def update_shared_context(
+        self, key: str, value: Any, source_agent_id: str
+    ):
         """Update shared context and notify all agents"""
         self.shared_context[key] = {
             "value": value,
@@ -112,7 +122,9 @@ class AgentOrchestrator:
             return self.shared_context.get(key, {}).get("value")
         return self.shared_context
 
-    async def start_research_coordination(self, topic: str, pentest_context: Dict) -> str:
+    async def start_research_coordination(
+        self, topic: str, pentest_context: Dict
+    ) -> str:
         """
         Coordinate multi-agent research on a topic
         Returns thread ID for tracking
@@ -144,9 +156,13 @@ class AgentOrchestrator:
                     priority=3,
                 )
             )
-            self.research_coordination[thread_id]["agents_involved"].append(agent.id)
+            self.research_coordination[thread_id]["agents_involved"].append(
+                agent.id
+            )
 
-        logger.info(f"[Orchestrator] Started research coordination: {thread_id}")
+        logger.info(
+            f"[Orchestrator] Started research coordination: {thread_id}"
+        )
         return thread_id
 
     async def coordinate_agents(self, task_type: str, context: Dict) -> Dict:
@@ -206,7 +222,9 @@ class AgentOrchestrator:
 
         return results
 
-    async def facilitate_conversation(self, topic: str, participants: List[str], rounds: int = 3) -> List[AgentMessage]:
+    async def facilitate_conversation(
+        self, topic: str, participants: List[str], rounds: int = 3
+    ) -> List[AgentMessage]:
         """
         Facilitate a multi-round conversation between agents
         Similar to Clawed/Moltbot group discussions
@@ -214,7 +232,9 @@ class AgentOrchestrator:
         conversation = []
 
         for round_num in range(rounds):
-            logger.info(f"[Orchestrator] Conversation round {round_num + 1}/{rounds}")
+            logger.info(
+                f"[Orchestrator] Conversation round {round_num + 1}/{rounds}"
+            )
 
             for participant_id in participants:
                 if participant_id in self.agents:
@@ -229,7 +249,9 @@ class AgentOrchestrator:
                         context={
                             "round": round_num + 1,
                             "topic": topic,
-                            "conversation_so_far": [m.to_dict() for m in conversation],
+                            "conversation_so_far": [
+                                m.to_dict() for m in conversation
+                            ],
                             "shared_context": self.shared_context,
                         },
                         requires_response=True,
@@ -251,7 +273,9 @@ class AgentOrchestrator:
         for agent in self.agents.values():
             await agent.stop()
 
-    async def execute_post_scan_workflow(self, target: str, scan_results: Dict[str, Any]) -> Dict[str, Any]:
+    async def execute_post_scan_workflow(
+        self, target: str, scan_results: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """
         Execute the complete post-scan pentester workflow
         This runs automatically after every scan to ensure professional standards
@@ -269,7 +293,9 @@ class AgentOrchestrator:
         from .post_scan_agent import PostScanAgent
 
         logger.info(f"[Orchestrator] Starting post-scan workflow for {target}")
-        print("\n[Post-Scan Workflow] Initiating professional pentest follow-up...")
+        print(
+            "\n[Post-Scan Workflow] Initiating professional pentest follow-up..."
+        )
 
         # Create and run post-scan agent
         post_scan_agent = PostScanAgent()
@@ -284,7 +310,9 @@ class AgentOrchestrator:
         results = await post_scan_agent.run(target, findings)
 
         # Store in shared context
-        await self.update_shared_context(f"post_scan_{target}", results, "orchestrator")
+        await self.update_shared_context(
+            f"post_scan_{target}", results, "orchestrator"
+        )
 
         logger.info(f"[Orchestrator] Post-scan workflow complete for {target}")
         return results
@@ -324,9 +352,15 @@ class AgentOrchestrator:
     def get_system_status(self) -> Dict:
         """Get status of entire multi-agent system"""
         return {
-            "agents": {agent_id: agent.get_status() for agent_id, agent in self.agents.items()},
+            "agents": {
+                agent_id: agent.get_status()
+                for agent_id, agent in self.agents.items()
+            },
             "shared_context_keys": list(self.shared_context.keys()),
             "message_count": len(self.message_history),
             "active_research": list(self.research_coordination.keys()),
-            "role_distribution": {role.value: len(agents) for role, agents in self.agent_by_role.items()},
+            "role_distribution": {
+                role.value: len(agents)
+                for role, agents in self.agent_by_role.items()
+            },
         }

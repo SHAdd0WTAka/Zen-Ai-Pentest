@@ -184,7 +184,9 @@ class SemgrepScanner:
         """Validate semgrep binary exists"""
         semgrep_path = shutil.which(path)
         if not semgrep_path:
-            raise RuntimeError(f"semgrep not found at '{path}'. Install with: pip install semgrep")
+            raise RuntimeError(
+                f"semgrep not found at '{path}'. Install with: pip install semgrep"
+            )
         return semgrep_path
 
     def _get_version(self) -> str:
@@ -196,11 +198,15 @@ class SemgrepScanner:
                 text=True,
                 timeout=10,
             )
-            return result.stdout.strip() if result.returncode == 0 else "unknown"
+            return (
+                result.stdout.strip() if result.returncode == 0 else "unknown"
+            )
         except Exception:
             return "unknown"
 
-    def _build_command(self, target: str, output_file: Optional[str] = None) -> List[str]:
+    def _build_command(
+        self, target: str, output_file: Optional[str] = None
+    ) -> List[str]:
         """Build semgrep command"""
         cmd = [self.semgrep_path, "--json"]
 
@@ -361,7 +367,9 @@ class SemgrepScanner:
         try:
             # Run semgrep in executor
             loop = asyncio.get_event_loop()
-            result = await loop.run_in_executor(None, self._run_subprocess, cmd)
+            result = await loop.run_in_executor(
+                None, self._run_subprocess, cmd
+            )
 
             scan_time = asyncio.get_event_loop().time() - start_time
 
@@ -386,7 +394,9 @@ class SemgrepScanner:
             # Restore original config
             self.config = original_config
 
-            success = result.returncode == 0 or (result.returncode == 1 and findings)
+            success = result.returncode == 0 or (
+                result.returncode == 1 and findings
+            )
 
             return SemgrepResult(
                 success=success,
@@ -440,7 +450,9 @@ class SemgrepScanner:
         for finding in result.findings:
             # Extract CWE IDs from metadata
             cwe = finding.metadata.get("cwe", [])
-            cwe_ids = [str(c) for c in cwe] if isinstance(cwe, list) else [str(cwe)]
+            cwe_ids = (
+                [str(c) for c in cwe] if isinstance(cwe, list) else [str(cwe)]
+            )
 
             # Extract OWASP categories
             owasp = finding.metadata.get("owasp", [])
@@ -453,7 +465,9 @@ class SemgrepScanner:
 
             # Extract technology/languages
             technology = finding.metadata.get("technology", [])
-            languages = technology if isinstance(technology, list) else [technology]
+            languages = (
+                technology if isinstance(technology, list) else [technology]
+            )
 
             parsed = {
                 "tool": "semgrep",
@@ -479,7 +493,9 @@ class SemgrepScanner:
 
         return findings
 
-    def normalize_findings(self, findings: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    def normalize_findings(
+        self, findings: List[Dict[str, Any]]
+    ) -> List[Dict[str, Any]]:
         """
         Normalize findings to standard format.
 
@@ -495,7 +511,10 @@ class SemgrepScanner:
             # Build remediation
             remediation = finding.get("fix", "")
             if not remediation:
-                remediation = "Review the code and fix the security issue. " "Refer to the provided references for guidance."
+                remediation = (
+                    "Review the code and fix the security issue. "
+                    "Refer to the provided references for guidance."
+                )
 
             # Build evidence
             evidence = {
@@ -511,7 +530,9 @@ class SemgrepScanner:
             if finding.get("cwe_ids"):
                 for cwe_id in finding.get("cwe_ids", []):
                     if cwe_id.startswith("CWE-"):
-                        references.append(f"https://cwe.mitre.org/data/definitions/{cwe_id[4:]}.html")
+                        references.append(
+                            f"https://cwe.mitre.org/data/definitions/{cwe_id[4:]}.html"
+                        )
 
             normalized_finding = {
                 "tool": "semgrep",
@@ -660,7 +681,9 @@ def semgrep_scan_code(path: str, rules: str = "") -> str:
 
     for sev in ["high", "medium"]:
         if severity_groups[sev]:
-            lines.append(f"\n{sev.upper()} Severity ({len(severity_groups[sev])}):")
+            lines.append(
+                f"\n{sev.upper()} Severity ({len(severity_groups[sev])}):"
+            )
             for finding in severity_groups[sev][:5]:
                 lines.append(f"  - {finding.check_id}")
                 lines.append(f"    File: {finding.path}:{finding.start_line}")

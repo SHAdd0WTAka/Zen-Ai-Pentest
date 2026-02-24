@@ -326,7 +326,9 @@ class TestPluginDiscovery:
         discovered = plugin_manager.discover_plugins()
         assert discovered == []
 
-    def test_discover_plugin_from_manifest(self, plugin_manager, temp_plugin_dir):
+    def test_discover_plugin_from_manifest(
+        self, plugin_manager, temp_plugin_dir
+    ):
         """Test discovering plugin from plugin.json manifest"""
         plugin_path = os.path.join(temp_plugin_dir, "test_plugin")
         os.makedirs(plugin_path)
@@ -355,7 +357,11 @@ class TestPluginDiscovery:
         for i in range(3):
             plugin_path = os.path.join(temp_plugin_dir, f"plugin_{i}")
             os.makedirs(plugin_path)
-            manifest = {"name": f"plugin_{i}", "version": "1.0.0", "type": "tool"}
+            manifest = {
+                "name": f"plugin_{i}",
+                "version": "1.0.0",
+                "type": "tool",
+            }
             with open(os.path.join(plugin_path, "plugin.json"), "w") as f:
                 json.dump(manifest, f)
 
@@ -404,12 +410,19 @@ class TestPluginLoading:
         assert result is True  # Returns True if already loaded
 
     @pytest.mark.asyncio
-    async def test_load_plugin_missing_dependency(self, plugin_manager, temp_plugin_dir):
+    async def test_load_plugin_missing_dependency(
+        self, plugin_manager, temp_plugin_dir
+    ):
         """Test loading plugin with missing dependency"""
         plugin_path = os.path.join(temp_plugin_dir, "dependent_plugin")
         os.makedirs(plugin_path)
 
-        manifest = {"name": "dependent_plugin", "version": "1.0.0", "type": "tool", "dependencies": ["nonexistent_dep"]}
+        manifest = {
+            "name": "dependent_plugin",
+            "version": "1.0.0",
+            "type": "tool",
+            "dependencies": ["nonexistent_dep"],
+        }
 
         with open(os.path.join(plugin_path, "plugin.json"), "w") as f:
             json.dump(manifest, f)
@@ -441,7 +454,9 @@ class TestPluginExecution:
         plugin = SampleTestPlugin()
         plugin_manager.plugins["test_plugin"] = plugin
 
-        result = await plugin_manager.execute_plugin("test_plugin", arg1="value1")
+        result = await plugin_manager.execute_plugin(
+            "test_plugin", arg1="value1"
+        )
 
         assert result["status"] == "success"
         assert result["plugin"] == "test_plugin"
@@ -543,7 +558,9 @@ class TestBasePlugin:
 
     def test_plugin_config(self):
         """Test plugin configuration"""
-        plugin = ConfigurablePlugin(config={"required_key": "value", "extra": "data"})
+        plugin = ConfigurablePlugin(
+            config={"required_key": "value", "extra": "data"}
+        )
 
         assert plugin.get_config("required_key") == "value"
         assert plugin.get_config("missing", "default") == "default"
@@ -622,7 +639,13 @@ class TestPluginInfo:
 
     def test_plugin_info_defaults(self):
         """Test PluginInfo default values"""
-        info = PluginInfo(name="test", version="1.0.0", description="", author="", plugin_type=PluginType.TOOL)
+        info = PluginInfo(
+            name="test",
+            version="1.0.0",
+            description="",
+            author="",
+            plugin_type=PluginType.TOOL,
+        )
 
         assert info.dependencies == []
         assert info.hooks == []

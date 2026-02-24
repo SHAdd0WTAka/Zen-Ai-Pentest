@@ -90,25 +90,34 @@ class OrchestratorStatsResponse(BaseModel):
 
 
 @router.get("/status", response_model=OrchestratorStatusResponse)
-async def get_status(orchestrator: ZenOrchestrator = Depends(get_orchestrator)):
+async def get_status(
+    orchestrator: ZenOrchestrator = Depends(get_orchestrator),
+):
     """Get orchestrator status and configuration"""
     return orchestrator.get_status()
 
 
 @router.post("/start")
-async def start_orchestrator(background_tasks: BackgroundTasks, orchestrator: ZenOrchestrator = Depends(get_orchestrator)):
+async def start_orchestrator(
+    background_tasks: BackgroundTasks,
+    orchestrator: ZenOrchestrator = Depends(get_orchestrator),
+):
     """Start the orchestrator"""
     if orchestrator._running:
         return {"status": "already_running"}
 
     success = await orchestrator.start()
 
-    return {"status": "started" if success else "failed", "instance_id": orchestrator.instance_id}
+    return {
+        "status": "started" if success else "failed",
+        "instance_id": orchestrator.instance_id,
+    }
 
 
 @router.post("/stop")
 async def stop_orchestrator(
-    timeout: int = Query(default=30, ge=5, le=300), orchestrator: ZenOrchestrator = Depends(get_orchestrator)
+    timeout: int = Query(default=30, ge=5, le=300),
+    orchestrator: ZenOrchestrator = Depends(get_orchestrator),
 ):
     """Stop the orchestrator gracefully"""
     if not orchestrator._running:
@@ -120,7 +129,9 @@ async def stop_orchestrator(
 
 
 @router.get("/health")
-async def health_check(orchestrator: ZenOrchestrator = Depends(get_orchestrator)):
+async def health_check(
+    orchestrator: ZenOrchestrator = Depends(get_orchestrator),
+):
     """Comprehensive health check"""
     return await orchestrator.health_check()
 
@@ -129,7 +140,10 @@ async def health_check(orchestrator: ZenOrchestrator = Depends(get_orchestrator)
 
 
 @router.post("/tasks", response_model=dict)
-async def submit_task(request: TaskSubmitRequest, orchestrator: ZenOrchestrator = Depends(get_orchestrator)):
+async def submit_task(
+    request: TaskSubmitRequest,
+    orchestrator: ZenOrchestrator = Depends(get_orchestrator),
+):
     """
     Submit a new task
 
@@ -142,15 +156,27 @@ async def submit_task(request: TaskSubmitRequest, orchestrator: ZenOrchestrator 
     try:
         priority = TaskPriority(request.priority.lower())
     except ValueError:
-        raise HTTPException(status_code=400, detail=f"Invalid priority: {request.priority}")
+        raise HTTPException(
+            status_code=400, detail=f"Invalid priority: {request.priority}"
+        )
 
     # Build task data
-    task_data = {"type": request.type, "target": request.target, "options": request.options}
+    task_data = {
+        "type": request.type,
+        "target": request.target,
+        "options": request.options,
+    }
 
     try:
-        task_id = await orchestrator.submit_task(task_data=task_data, priority=priority, metadata=request.metadata)
+        task_id = await orchestrator.submit_task(
+            task_data=task_data, priority=priority, metadata=request.metadata
+        )
 
-        return {"task_id": task_id, "status": "submitted", "submitted_at": datetime.utcnow().isoformat()}
+        return {
+            "task_id": task_id,
+            "status": "submitted",
+            "submitted_at": datetime.utcnow().isoformat(),
+        }
 
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -159,18 +185,24 @@ async def submit_task(request: TaskSubmitRequest, orchestrator: ZenOrchestrator 
 
 
 @router.get("/tasks/{task_id}", response_model=TaskResponse)
-async def get_task_status(task_id: str, orchestrator: ZenOrchestrator = Depends(get_orchestrator)):
+async def get_task_status(
+    task_id: str, orchestrator: ZenOrchestrator = Depends(get_orchestrator)
+):
     """Get task status and details"""
     status = await orchestrator.get_task_status(task_id)
 
     if not status:
-        raise HTTPException(status_code=404, detail=f"Task {task_id} not found")
+        raise HTTPException(
+            status_code=404, detail=f"Task {task_id} not found"
+        )
 
     return TaskResponse(**status)
 
 
 @router.get("/tasks/{task_id}/results")
-async def get_task_results(task_id: str, orchestrator: ZenOrchestrator = Depends(get_orchestrator)):
+async def get_task_results(
+    task_id: str, orchestrator: ZenOrchestrator = Depends(get_orchestrator)
+):
     """Get task results (if completed)"""
     results = await orchestrator.get_task_results(task_id)
 
@@ -178,23 +210,39 @@ async def get_task_results(task_id: str, orchestrator: ZenOrchestrator = Depends
         # Check if task exists
         status = await orchestrator.get_task_status(task_id)
         if not status:
-            raise HTTPException(status_code=404, detail=f"Task {task_id} not found")
+            raise HTTPException(
+                status_code=404, detail=f"Task {task_id} not found"
+            )
 
         if status["state"] != "completed":
-            return {"task_id": task_id, "state": status["state"], "results_available": False}
+            return {
+                "task_id": task_id,
+                "state": status["state"],
+                "results_available": False,
+            }
 
         return {"task_id": task_id, "results": None}
 
-    return {"task_id": task_id, "state": "completed", "results_available": True, "results": results}
+    return {
+        "task_id": task_id,
+        "state": "completed",
+        "results_available": True,
+        "results": results,
+    }
 
 
 @router.post("/tasks/{task_id}/cancel")
-async def cancel_task(task_id: str, orchestrator: ZenOrchestrator = Depends(get_orchestrator)):
+async def cancel_task(
+    task_id: str, orchestrator: ZenOrchestrator = Depends(get_orchestrator)
+):
     """Cancel a running or pending task"""
     success = await orchestrator.cancel_task(task_id)
 
     if not success:
-        raise HTTPException(status_code=400, detail=f"Task {task_id} not found or cannot be cancelled")
+        raise HTTPException(
+            status_code=400,
+            detail=f"Task {task_id} not found or cannot be cancelled",
+        )
 
     return {"task_id": task_id, "status": "cancelled"}
 
@@ -213,16 +261,24 @@ async def list_tasks(
     - **task_type**: Filter by task type
     - **limit**: Maximum results (1-1000)
     """
-    tasks = await orchestrator.list_tasks(status=status, task_type=task_type, limit=limit)
+    tasks = await orchestrator.list_tasks(
+        status=status, task_type=task_type, limit=limit
+    )
 
-    return TaskListResponse(tasks=[TaskResponse(**t) for t in tasks], total=len(tasks))
+    return TaskListResponse(
+        tasks=[TaskResponse(**t) for t in tasks], total=len(tasks)
+    )
 
 
 @router.get("/stats", response_model=OrchestratorStatsResponse)
-async def get_statistics(orchestrator: ZenOrchestrator = Depends(get_orchestrator)):
+async def get_statistics(
+    orchestrator: ZenOrchestrator = Depends(get_orchestrator),
+):
     """Get orchestrator statistics"""
     if not orchestrator.task_manager:
-        raise HTTPException(status_code=503, detail="Task manager not initialized")
+        raise HTTPException(
+            status_code=503, detail="Task manager not initialized"
+        )
 
     stats = await orchestrator.task_manager.get_statistics()
 
@@ -242,9 +298,13 @@ async def get_recent_events(
     try:
         event_type_enum = EventType(event_type) if event_type else None
     except ValueError:
-        raise HTTPException(status_code=400, detail=f"Invalid event type: {event_type}")
+        raise HTTPException(
+            status_code=400, detail=f"Invalid event type: {event_type}"
+        )
 
-    events = await orchestrator.event_bus.get_history(event_type=event_type_enum, limit=limit)
+    events = await orchestrator.event_bus.get_history(
+        event_type=event_type_enum, limit=limit
+    )
 
     return {"events": [e.to_dict() for e in events], "total": len(events)}
 
@@ -254,7 +314,9 @@ async def get_recent_events(
 
 @router.post("/analyze")
 async def analyze_results(
-    results: dict, analysis_type: str = "vulnerability", orchestrator: ZenOrchestrator = Depends(get_orchestrator)
+    results: dict,
+    analysis_type: str = "vulnerability",
+    orchestrator: ZenOrchestrator = Depends(get_orchestrator),
 ):
     """
     Analyze scan results using the Analysis Bot
@@ -264,4 +326,8 @@ async def analyze_results(
     """
     analysis = await orchestrator.analyze_results(results, analysis_type)
 
-    return {"analysis_type": analysis_type, "results": analysis, "timestamp": datetime.utcnow().isoformat()}
+    return {
+        "analysis_type": analysis_type,
+        "results": analysis,
+        "timestamp": datetime.utcnow().isoformat(),
+    }

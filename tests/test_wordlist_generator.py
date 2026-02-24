@@ -91,20 +91,26 @@ class TestCompanyWordlist:
 
     def test_company_with_industry(self, generator):
         """Test company wordlist with industry"""
-        words = generator.generate_company_wordlist("TechCorp", industry="tech")
+        words = generator.generate_company_wordlist(
+            "TechCorp", industry="tech"
+        )
         # Should include tech-related terms
         assert any("tech" in w.lower() for w in words)
 
     def test_company_with_locations(self, generator):
         """Test company wordlist with locations"""
-        words = generator.generate_company_wordlist("GlobalCorp", locations=["NY", "London"])
+        words = generator.generate_company_wordlist(
+            "GlobalCorp", locations=["NY", "London"]
+        )
         # Check for NY (may be upper or mixed case)
         assert any("ny" in w.lower() for w in words)
         assert any("london" in w.lower() for w in words)
 
     def test_company_with_extras(self, generator):
         """Test company wordlist with extra keywords"""
-        words = generator.generate_company_wordlist("TestCorp", extras=["secret", "admin"])
+        words = generator.generate_company_wordlist(
+            "TestCorp", extras=["secret", "admin"]
+        )
         assert "secret" in words
         assert "admin" in words
 
@@ -112,7 +118,9 @@ class TestCompanyWordlist:
         """Test that numbers are added to company wordlist"""
         words = generator.generate_company_wordlist("Acme")
         # Should have number suffixes
-        assert any(w.startswith("acme") and any(c.isdigit() for c in w) for w in words)
+        assert any(
+            w.startswith("acme") and any(c.isdigit() for c in w) for w in words
+        )
 
     def test_company_wordlist_length_filtering(self, generator):
         """Test that words are filtered by length"""
@@ -130,7 +138,9 @@ class TestCompanyWordlist:
         industries = ["tech", "finance", "healthcare", "education", "retail"]
 
         for industry in industries:
-            words = generator.generate_company_wordlist("TestCorp", industry=industry)
+            words = generator.generate_company_wordlist(
+                "TestCorp", industry=industry
+            )
             assert len(words) > 0
 
     def test_company_wordlist_permutations(self, generator):
@@ -215,7 +225,11 @@ class TestTargetedWordlist:
             "DoeJohn",
         ]
         for combo in combinations:
-            assert combo in words or combo.lower() in words or combo.upper() in words
+            assert (
+                combo in words
+                or combo.lower() in words
+                or combo.upper() in words
+            )
 
 
 class TestPatternWordlist:
@@ -348,7 +362,10 @@ class TestCommonPasswords:
         passwords = generator.generate_common_passwords(count=1000)
 
         # Should have mutated versions
-        assert any("password" in p.lower() and any(c.isdigit() for c in p) for p in passwords)
+        assert any(
+            "password" in p.lower() and any(c.isdigit() for c in p)
+            for p in passwords
+        )
 
     def test_common_passwords_count_limit(self, generator):
         """Test that count limit is respected"""
@@ -574,7 +591,9 @@ class TestWordlistGeneratorIntegration:
         )
 
         # Save and reload
-        with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".txt") as f:
+        with tempfile.NamedTemporaryFile(
+            mode="w", delete=False, suffix=".txt"
+        ) as f:
             filepath = f.name
 
         try:

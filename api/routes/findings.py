@@ -73,17 +73,27 @@ async def list_findings(
     if status:
         filters["status"] = status
 
-    findings = await Finding.find_many(**filters).limit(limit).skip(offset).to_list()
+    findings = (
+        await Finding.find_many(**filters).limit(limit).skip(offset).to_list()
+    )
 
     # Apply text search if provided
     if search:
-        findings = [f for f in findings if search.lower() in f.title.lower() or search.lower() in f.description.lower()]
+        findings = [
+            f
+            for f in findings
+            if search.lower() in f.title.lower()
+            or search.lower() in f.description.lower()
+        ]
 
     return [f.to_response() for f in findings]
 
 
 @router.get("/summary")
-async def get_findings_summary(scan_id: Optional[str] = None, current_user: User = Depends(get_current_user)):
+async def get_findings_summary(
+    scan_id: Optional[str] = None,
+    current_user: User = Depends(get_current_user),
+):
     """Get summary statistics of findings"""
     filters = {}
     if scan_id:
@@ -94,17 +104,37 @@ async def get_findings_summary(scan_id: Optional[str] = None, current_user: User
     summary = {
         "total": len(findings),
         "by_severity": {
-            "critical": len([f for f in findings if f.severity == FindingSeverity.CRITICAL]),
-            "high": len([f for f in findings if f.severity == FindingSeverity.HIGH]),
-            "medium": len([f for f in findings if f.severity == FindingSeverity.MEDIUM]),
-            "low": len([f for f in findings if f.severity == FindingSeverity.LOW]),
-            "info": len([f for f in findings if f.severity == FindingSeverity.INFO]),
+            "critical": len(
+                [f for f in findings if f.severity == FindingSeverity.CRITICAL]
+            ),
+            "high": len(
+                [f for f in findings if f.severity == FindingSeverity.HIGH]
+            ),
+            "medium": len(
+                [f for f in findings if f.severity == FindingSeverity.MEDIUM]
+            ),
+            "low": len(
+                [f for f in findings if f.severity == FindingSeverity.LOW]
+            ),
+            "info": len(
+                [f for f in findings if f.severity == FindingSeverity.INFO]
+            ),
         },
         "by_status": {
             "new": len([f for f in findings if f.status == FindingStatus.NEW]),
-            "verified": len([f for f in findings if f.status == FindingStatus.VERIFIED]),
-            "false_positive": len([f for f in findings if f.status == FindingStatus.FALSE_POSITIVE]),
-            "remediated": len([f for f in findings if f.status == FindingStatus.REMEDIATED]),
+            "verified": len(
+                [f for f in findings if f.status == FindingStatus.VERIFIED]
+            ),
+            "false_positive": len(
+                [
+                    f
+                    for f in findings
+                    if f.status == FindingStatus.FALSE_POSITIVE
+                ]
+            ),
+            "remediated": len(
+                [f for f in findings if f.status == FindingStatus.REMEDIATED]
+            ),
         },
     }
 
@@ -112,7 +142,9 @@ async def get_findings_summary(scan_id: Optional[str] = None, current_user: User
 
 
 @router.get("/{finding_id}", response_model=FindingResponse)
-async def get_finding(finding_id: str, current_user: User = Depends(get_current_user)):
+async def get_finding(
+    finding_id: str, current_user: User = Depends(get_current_user)
+):
     """Get detailed information about a specific finding"""
     finding = await Finding.find_one(id=finding_id)
     if not finding:
@@ -175,12 +207,16 @@ async def get_findings_by_severity(
     current_user: User = Depends(get_current_user),
 ):
     """Get all findings of a specific severity level"""
-    findings = await Finding.find_many(severity=severity).limit(limit).to_list()
+    findings = (
+        await Finding.find_many(severity=severity).limit(limit).to_list()
+    )
     return [f.to_response() for f in findings]
 
 
 @router.delete("/{finding_id}")
-async def delete_finding(finding_id: str, current_user: User = Depends(get_current_user)):
+async def delete_finding(
+    finding_id: str, current_user: User = Depends(get_current_user)
+):
     """Delete a finding (requires admin permissions)"""
     finding = await Finding.find_one(id=finding_id)
     if not finding:

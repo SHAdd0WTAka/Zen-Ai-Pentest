@@ -52,7 +52,9 @@ RATE_LIMITS = {
 
 # Auth endpoints - stricter limits
 AUTH_RATE_LIMIT = int(os.getenv("AUTH_RATE_LIMIT", "5"))
-AUTH_LOCKOUT_DURATION = int(os.getenv("AUTH_LOCKOUT_DURATION", "300"))  # 5 minutes
+AUTH_LOCKOUT_DURATION = int(
+    os.getenv("AUTH_LOCKOUT_DURATION", "300")
+)  # 5 minutes
 
 # User tier detection (customize based on your auth system)
 UserTier = Literal["anonymous", "user", "premium", "admin"]
@@ -100,11 +102,21 @@ class TokenBucket:
 
     def to_dict(self) -> dict:
         self._add_tokens()
-        return {"tokens": self.tokens, "burst_size": self.burst_size, "rate": self.rate, "last_update": self.last_update}
+        return {
+            "tokens": self.tokens,
+            "burst_size": self.burst_size,
+            "rate": self.rate,
+            "last_update": self.last_update,
+        }
 
     @classmethod
     def from_dict(cls, data: dict) -> "TokenBucket":
-        bucket = cls(rate=data["rate"], burst_size=data["burst_size"], tokens=data["tokens"], last_update=data["last_update"])
+        bucket = cls(
+            rate=data["rate"],
+            burst_size=data["burst_size"],
+            tokens=data["tokens"],
+            last_update=data["last_update"],
+        )
         return bucket
 
 
@@ -116,7 +128,9 @@ class TokenBucket:
 class RateLimitStorage:
     """Base storage class for rate limits"""
 
-    def get_bucket(self, key: str, rate: float, burst_size: int) -> TokenBucket:
+    def get_bucket(
+        self, key: str, rate: float, burst_size: int
+    ) -> TokenBucket:
         raise NotImplementedError
 
     def save_bucket(self, key: str, bucket: TokenBucket):
@@ -134,7 +148,9 @@ class MemoryStorage(RateLimitStorage):
         self.last_access: Dict[str, float] = {}
         self.metadata: Dict[str, dict] = {}  # Store tier info
 
-    def get_bucket(self, key: str, rate: float, burst_size: int) -> TokenBucket:
+    def get_bucket(
+        self, key: str, rate: float, burst_size: int
+    ) -> TokenBucket:
         if key not in self.buckets:
             self.buckets[key] = TokenBucket(rate=rate, burst_size=burst_size)
 
@@ -153,7 +169,11 @@ class MemoryStorage(RateLimitStorage):
 
     def cleanup(self, max_age: float = 3600):
         now = time.time()
-        to_remove = [key for key, last in self.last_access.items() if now - last > max_age]
+        to_remove = [
+            key
+            for key, last in self.last_access.items()
+            if now - last > max_age
+        ]
         for key in to_remove:
             del self.buckets[key]
             del self.last_access[key]
@@ -165,7 +185,9 @@ class RedisStorage(RateLimitStorage):
     """Redis storage for distributed systems"""
 
     def __init__(self, redis_url: str = None):
-        self.redis_url = redis_url or os.getenv("REDIS_URL", "redis://localhost:6379/0")
+        self.redis_url = redis_url or os.getenv(
+            "REDIS_URL", "redis://localhost:6379/0"
+        )
         self._redis = None
         self._init_redis()
 
@@ -183,7 +205,9 @@ class RedisStorage(RateLimitStorage):
     def _get_key(self, key: str) -> str:
         return f"rate_limit:{key}"
 
-    def get_bucket(self, key: str, rate: float, burst_size: int) -> TokenBucket:
+    def get_bucket(
+        self, key: str, rate: float, burst_size: int
+    ) -> TokenBucket:
         if not self._redis:
             # Fallback to memory
             return MemoryStorage().get_bucket(key, rate, burst_size)
@@ -280,7 +304,9 @@ def get_user_from_request(request: Request) -> UserContext:
     if user_tier_header in RATE_LIMITS:
         tier = user_tier_header  # type: ignore
 
-    return UserContext(user_id=user_id, username=username, tier=tier, ip_address=client_ip)
+    return UserContext(
+        user_id=user_id, username=username, tier=tier, ip_address=client_ip
+    )
 
 
 # =============================================================================
@@ -288,7 +314,11 @@ def get_user_from_request(request: Request) -> UserContext:
 # =============================================================================
 
 
-def rate_limit(requests_per_minute: Optional[int] = None, burst_size: Optional[int] = None, tier: Optional[UserTier] = None):
+def rate_limit(
+    requests_per_minute: Optional[int] = None,
+    burst_size: Optional[int] = None,
+    tier: Optional[UserTier] = None,
+):
     """
     Rate limiting decorator with user-based limits.
 
@@ -324,23 +354,37 @@ def rate_limit(requests_per_minute: Optional[int] = None, burst_size: Optional[i
             if tier:
                 limits = RATE_LIMITS[tier]
             elif requests_per_minute:
-                limits = {"requests_per_minute": requests_per_minute, "burst_size": burst_size or 10}
+                limits = {
+                    "requests_per_minute": requests_per_minute,
+                    "burst_size": burst_size or 10,
+                }
             else:
                 limits = user.get_limits()
 
             # Get or create bucket
             key = user.get_rate_limit_key()
             rate_per_second = limits["requests_per_minute"] / 60
-            bucket = rate_limit_storage.get_bucket(key, rate_per_second, limits["burst_size"])
+            bucket = rate_limit_storage.get_bucket(
+                key, rate_per_second, limits["burst_size"]
+            )
 
             # Store metadata
             if isinstance(rate_limit_storage, MemoryStorage):
-                rate_limit_storage.set_metadata(key, {"tier": user.tier, "user_id": user.user_id, "ip": user.ip_address})
+                rate_limit_storage.set_metadata(
+                    key,
+                    {
+                        "tier": user.tier,
+                        "user_id": user.user_id,
+                        "ip": user.ip_address,
+                    },
+                )
 
             # Check rate limit
             if not bucket.consume():
                 wait_time = bucket.get_wait_time()
-                logger.warning(f"Rate limit exceeded for {user.tier} user {user.user_id or user.ip_address}")
+                logger.warning(
+                    f"Rate limit exceeded for {user.tier} user {user.user_id or user.ip_address}"
+                )
 
                 raise HTTPException(
                     status_code=status.HTTP_429_TOO_MANY_REQUESTS,
@@ -352,7 +396,9 @@ def rate_limit(requests_per_minute: Optional[int] = None, burst_size: Optional[i
                     },
                     headers={
                         "Retry-After": str(int(wait_time)),
-                        "X-RateLimit-Limit": str(limits["requests_per_minute"]),
+                        "X-RateLimit-Limit": str(
+                            limits["requests_per_minute"]
+                        ),
                         "X-RateLimit-Remaining": "0",
                         "X-RateLimit-Tier": user.tier,
                     },
@@ -409,7 +455,9 @@ class UserRateLimitMiddleware:
         key = f"middleware:{user_tier}:{client_ip}"
         rate_per_second = limits["requests_per_minute"] / 60
 
-        bucket = rate_limit_storage.get_bucket(key, rate_per_second, limits["burst_size"])
+        bucket = rate_limit_storage.get_bucket(
+            key, rate_per_second, limits["burst_size"]
+        )
 
         if not bucket.consume():
             wait_time = bucket.get_wait_time()
@@ -429,7 +477,11 @@ class UserRateLimitMiddleware:
                 {
                     "type": "http.response.body",
                     "body": json.dumps(
-                        {"error": "Rate limit exceeded", "retry_after": int(wait_time), "tier": user_tier}
+                        {
+                            "error": "Rate limit exceeded",
+                            "retry_after": int(wait_time),
+                            "tier": user_tier,
+                        }
                     ).encode(),
                 }
             )
@@ -461,7 +513,9 @@ class UserAuthRateLimiter:
         now = time.time()
         return [t for t in attempts if now - t < window]
 
-    def is_allowed(self, client_ip: str, user_id: Optional[str] = None) -> tuple[bool, Optional[int], str]:
+    def is_allowed(
+        self, client_ip: str, user_id: Optional[str] = None
+    ) -> tuple[bool, Optional[int], str]:
         """
         Prüft ob Auth erlaubt.
 
@@ -470,7 +524,9 @@ class UserAuthRateLimiter:
         now = time.time()
 
         # Check IP-based limits
-        self.ip_attempts[client_ip] = self._cleanup_old(self.ip_attempts.get(client_ip, []))
+        self.ip_attempts[client_ip] = self._cleanup_old(
+            self.ip_attempts.get(client_ip, [])
+        )
 
         if len(self.ip_attempts[client_ip]) >= self.max_attempts:
             oldest = min(self.ip_attempts[client_ip])
@@ -481,7 +537,9 @@ class UserAuthRateLimiter:
 
         # Check user-based limits (if user_id provided)
         if user_id:
-            self.user_attempts[user_id] = self._cleanup_old(self.user_attempts.get(user_id, []))
+            self.user_attempts[user_id] = self._cleanup_old(
+                self.user_attempts.get(user_id, [])
+            )
 
             if len(self.user_attempts[user_id]) >= self.max_attempts:
                 oldest = min(self.user_attempts[user_id])
@@ -517,13 +575,21 @@ user_auth_rate_limiter = UserAuthRateLimiter()
 
 def check_user_auth_rate_limit(client_ip: str, user_id: Optional[str] = None):
     """Prüft Auth Rate Limit"""
-    allowed, lockout, reason = user_auth_rate_limiter.is_allowed(client_ip, user_id)
+    allowed, lockout, reason = user_auth_rate_limiter.is_allowed(
+        client_ip, user_id
+    )
 
     if not allowed:
-        logger.warning(f"Auth rate limit exceeded: {reason} for {client_ip}/{user_id}")
+        logger.warning(
+            f"Auth rate limit exceeded: {reason} for {client_ip}/{user_id}"
+        )
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-            detail={"error": "Too many login attempts", "retry_after": lockout, "reason": reason},
+            detail={
+                "error": "Too many login attempts",
+                "retry_after": lockout,
+                "reason": reason,
+            },
             headers={"Retry-After": str(lockout)},
         )
 
@@ -540,7 +606,13 @@ def get_rate_limit_stats() -> dict:
 
     stats = {
         "total_buckets": len(rate_limit_storage.buckets),
-        "by_tier": {"anonymous": 0, "user": 0, "premium": 0, "admin": 0, "unknown": 0},
+        "by_tier": {
+            "anonymous": 0,
+            "user": 0,
+            "premium": 0,
+            "admin": 0,
+            "unknown": 0,
+        },
     }
 
     for key, metadata in rate_limit_storage.metadata.items():

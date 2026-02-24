@@ -56,7 +56,9 @@ def fresh_registry():
 def mock_tool():
     """Create a mock LangChain tool."""
     if LANGCHAIN_AVAILABLE:
-        return Tool(name="test_tool", description="A test tool", func=lambda x: x)
+        return Tool(
+            name="test_tool", description="A test tool", func=lambda x: x
+        )
     else:
         tool = MagicMock(spec=BaseTool)
         tool.name = "test_tool"
@@ -68,7 +70,11 @@ def mock_tool():
 def mock_tool2():
     """Create a second mock LangChain tool."""
     if LANGCHAIN_AVAILABLE:
-        return Tool(name="test_tool2", description="Another test tool", func=lambda x: x)
+        return Tool(
+            name="test_tool2",
+            description="Another test tool",
+            func=lambda x: x,
+        )
     else:
         tool = MagicMock(spec=BaseTool)
         tool.name = "test_tool2"
@@ -164,7 +170,9 @@ class TestRegisteredTool:
         )
         metadata.invocation_count = 10
 
-        registered = RegisteredTool(tool=mock_tool, metadata=metadata, enabled=True)
+        registered = RegisteredTool(
+            tool=mock_tool, metadata=metadata, enabled=True
+        )
         result = registered.to_dict()
 
         assert result["name"] == "test_tool"
@@ -187,7 +195,9 @@ class TestRegisteredTool:
             safety_level=ToolSafetyLevel.SAFE,
         )
 
-        registered = RegisteredTool(tool=mock_tool, metadata=metadata, enabled=False)
+        registered = RegisteredTool(
+            tool=mock_tool, metadata=metadata, enabled=False
+        )
         result = registered.to_dict()
 
         assert result["enabled"] is False
@@ -310,7 +320,9 @@ class TestToolRegistration:
         assert result.metadata.tags == ["exploit", "network"]
         assert result.enabled is False
 
-    def test_register_overwrite_existing(self, fresh_registry, mock_tool, mock_tool2):
+    def test_register_overwrite_existing(
+        self, fresh_registry, mock_tool, mock_tool2
+    ):
         """Test that registering overwrites existing tool."""
         fresh_registry.register(
             tool=mock_tool,
@@ -327,7 +339,10 @@ class TestToolRegistration:
             )
             mock_logger.warning.assert_called_once()
 
-        assert fresh_registry._tools["test_tool"].metadata.category == ToolCategory.RECONNAISSANCE
+        assert (
+            fresh_registry._tools["test_tool"].metadata.category
+            == ToolCategory.RECONNAISSANCE
+        )
 
     def test_categories_tracking(self, fresh_registry, mock_tool, mock_tool2):
         """Test that categories are properly tracked."""
@@ -344,7 +359,9 @@ class TestToolRegistration:
         )
 
         assert "test_tool" in fresh_registry._categories[ToolCategory.SCANNING]
-        assert "test_tool2" in fresh_registry._categories[ToolCategory.SCANNING]
+        assert (
+            "test_tool2" in fresh_registry._categories[ToolCategory.SCANNING]
+        )
         assert len(fresh_registry._categories[ToolCategory.SCANNING]) == 2
 
 
@@ -368,7 +385,10 @@ class TestToolUnregistration:
 
         assert result is True
         assert "test_tool" not in fresh_registry._tools
-        assert "test_tool" not in fresh_registry._categories[ToolCategory.SCANNING]
+        assert (
+            "test_tool"
+            not in fresh_registry._categories[ToolCategory.SCANNING]
+        )
 
     def test_unregister_nonexistent_tool(self, fresh_registry):
         """Test unregistering a non-existent tool."""
@@ -533,7 +553,9 @@ class TestToolListing:
         assert len(results) == 1
         assert results[0].metadata.name == "test_tool"
 
-    def test_list_by_multiple_tags(self, fresh_registry, mock_tool, mock_tool2):
+    def test_list_by_multiple_tags(
+        self, fresh_registry, mock_tool, mock_tool2
+    ):
         """Test filtering by multiple tags (AND logic)."""
         fresh_registry.register(
             tool=mock_tool,
@@ -553,7 +575,9 @@ class TestToolListing:
         assert len(results) == 1
         assert results[0].metadata.name == "test_tool"
 
-    def test_list_combined_filters(self, fresh_registry, mock_tool, mock_tool2):
+    def test_list_combined_filters(
+        self, fresh_registry, mock_tool, mock_tool2
+    ):
         """Test combining multiple filters."""
         fresh_registry.register(
             tool=mock_tool,
@@ -586,7 +610,9 @@ class TestToolListing:
 class TestCategoryRetrieval:
     """Test getting tools by category."""
 
-    def test_get_tools_by_category(self, fresh_registry, mock_tool, mock_tool2):
+    def test_get_tools_by_category(
+        self, fresh_registry, mock_tool, mock_tool2
+    ):
         """Test getting all tools in a category."""
         fresh_registry.register(
             tool=mock_tool,
@@ -605,10 +631,14 @@ class TestCategoryRetrieval:
 
     def test_get_tools_by_empty_category(self, fresh_registry):
         """Test getting tools from empty category."""
-        results = fresh_registry.get_tools_by_category(ToolCategory.EXPLOITATION)
+        results = fresh_registry.get_tools_by_category(
+            ToolCategory.EXPLOITATION
+        )
         assert len(results) == 0
 
-    def test_get_tools_by_category_disabled_filtered(self, fresh_registry, mock_tool, mock_tool2):
+    def test_get_tools_by_category_disabled_filtered(
+        self, fresh_registry, mock_tool, mock_tool2
+    ):
         """Test that disabled tools are filtered in category query."""
         fresh_registry.register(
             tool=mock_tool,
@@ -655,7 +685,9 @@ class TestSafeAndDangerousTools:
 
         assert len(results) == 1
 
-    def test_get_safe_tools_disabled_filtered(self, fresh_registry, mock_tool, mock_tool2):
+    def test_get_safe_tools_disabled_filtered(
+        self, fresh_registry, mock_tool, mock_tool2
+    ):
         """Test that disabled tools are filtered from safe tools."""
         fresh_registry.register(
             tool=mock_tool,
@@ -692,7 +724,9 @@ class TestSafeAndDangerousTools:
         assert len(results) == 1
         assert results[0].metadata.name == "test_tool2"
 
-    def test_get_dangerous_tools_by_approval(self, fresh_registry, mock_tool, mock_tool2):
+    def test_get_dangerous_tools_by_approval(
+        self, fresh_registry, mock_tool, mock_tool2
+    ):
         """Test getting tools requiring approval."""
         fresh_registry.register(
             tool=mock_tool,
@@ -845,7 +879,9 @@ class TestGetAllTools:
 
         assert len(results) == 2
 
-    def test_get_all_tools_filters_disabled(self, fresh_registry, mock_tool, mock_tool2):
+    def test_get_all_tools_filters_disabled(
+        self, fresh_registry, mock_tool, mock_tool2
+    ):
         """Test that disabled tools are filtered."""
         fresh_registry.register(
             tool=mock_tool,
@@ -920,7 +956,9 @@ class TestToolDiscovery:
 
     @patch("tools.tool_registry.importlib.import_module")
     @patch("tools.tool_registry.inspect.getmembers")
-    def test_discover_tools(self, mock_getmembers, mock_import_module, fresh_registry):
+    def test_discover_tools(
+        self, mock_getmembers, mock_import_module, fresh_registry
+    ):
         """Test discovering tools in a module."""
         # Create mock tool with description
         mock_tool = MagicMock(spec=BaseTool)
@@ -940,7 +978,9 @@ class TestToolDiscovery:
 
     def test_discover_tools_import_error(self, fresh_registry):
         """Test handling import errors during discovery."""
-        with patch("tools.tool_registry.importlib.import_module") as mock_import_module:
+        with patch(
+            "tools.tool_registry.importlib.import_module"
+        ) as mock_import_module:
             mock_import_module.side_effect = ImportError("Module not found")
 
             results = fresh_registry.discover_tools("nonexistent.module")
@@ -967,7 +1007,9 @@ class TestClear:
         fresh_registry.clear()
 
         assert len(fresh_registry._tools) == 0
-        assert all(len(tools) == 0 for tools in fresh_registry._categories.values())
+        assert all(
+            len(tools) == 0 for tools in fresh_registry._categories.values()
+        )
 
 
 # ============================================================================
@@ -983,7 +1025,11 @@ class TestRegisterToolDecorator:
         # Reset to use our fresh registry
         with patch("tools.tool_registry.registry", fresh_registry):
 
-            @register_tool(category=ToolCategory.SCANNING, safety_level=ToolSafetyLevel.SAFE, tags=["test"])
+            @register_tool(
+                category=ToolCategory.SCANNING,
+                safety_level=ToolSafetyLevel.SAFE,
+                tags=["test"],
+            )
             def my_test_tool(target: str) -> str:
                 """Test tool description."""
                 return f"Scanned {target}"
@@ -1030,7 +1076,9 @@ class TestGlobalRegistry:
 class TestErrorCases:
     """Test error handling scenarios."""
 
-    def test_get_tool_returns_none_when_disabled(self, fresh_registry, mock_tool):
+    def test_get_tool_returns_none_when_disabled(
+        self, fresh_registry, mock_tool
+    ):
         """Test that get_tool returns None for disabled tools."""
         fresh_registry.register(
             tool=mock_tool,

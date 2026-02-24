@@ -38,7 +38,9 @@ class SherlockIntegration:
     def __init__(self, timeout: int = 300):
         self.timeout = timeout
 
-    async def search(self, username: str, sites: Optional[List[str]] = None) -> SherlockResult:
+    async def search(
+        self, username: str, sites: Optional[List[str]] = None
+    ) -> SherlockResult:
         """
         Search username across social media platforms
 
@@ -59,10 +61,14 @@ class SherlockIntegration:
 
         try:
             process = await asyncio.create_subprocess_exec(
-                *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+                *cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
             )
 
-            stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=self.timeout)
+            stdout, stderr = await asyncio.wait_for(
+                process.communicate(), timeout=self.timeout
+            )
 
             found_sites = []
             not_found_sites = []
@@ -78,13 +84,21 @@ class SherlockIntegration:
                             status = site_data.get("status", {})
                             if status.get("status") == "FOUND":
                                 found_sites.append(
-                                    {"site": site_name, "url": site_data.get("url_user", ""), "status": "found"}
+                                    {
+                                        "site": site_name,
+                                        "url": site_data.get("url_user", ""),
+                                        "status": "found",
+                                    }
                                 )
                             else:
                                 not_found_sites.append(site_name)
                         elif site_data == "FOUND":
                             found_sites.append(
-                                {"site": site_name, "url": f"https://{site_name}.com/{username}", "status": "found"}
+                                {
+                                    "site": site_name,
+                                    "url": f"https://{site_name}.com/{username}",
+                                    "status": "found",
+                                }
                             )
 
             except json.JSONDecodeError:
@@ -95,7 +109,9 @@ class SherlockIntegration:
                         if len(parts) >= 3:
                             site = parts[1].replace(":", "")
                             url = parts[-1]
-                            found_sites.append({"site": site, "url": url, "status": "found"})
+                            found_sites.append(
+                                {"site": site, "url": url, "status": "found"}
+                            )
 
             return SherlockResult(
                 username=username,
@@ -107,12 +123,18 @@ class SherlockIntegration:
 
         except asyncio.TimeoutError:
             logger.error("Sherlock search timed out")
-            return SherlockResult(username=username, success=False, error="Timeout")
+            return SherlockResult(
+                username=username, success=False, error="Timeout"
+            )
         except Exception as e:
             logger.error(f"Sherlock error: {e}")
-            return SherlockResult(username=username, success=False, error=str(e))
+            return SherlockResult(
+                username=username, success=False, error=str(e)
+            )
 
-    async def search_multiple(self, usernames: List[str]) -> Dict[str, SherlockResult]:
+    async def search_multiple(
+        self, usernames: List[str]
+    ) -> Dict[str, SherlockResult]:
         """
         Search multiple usernames
 

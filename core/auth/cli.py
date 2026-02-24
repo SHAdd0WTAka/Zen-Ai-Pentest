@@ -30,9 +30,15 @@ class AuthCLI:
         # Check if already logged in
         if self.token_store.is_authenticated():
             print("✅ Already authenticated!")
-            print(f"   Credentials stored at: {self.token_store.get_credential_path()}")
+            print(
+                f"   Credentials stored at: {self.token_store.get_credential_path()}"
+            )
             print()
-            response = input("Do you want to re-authenticate? [y/N]: ").strip().lower()
+            response = (
+                input("Do you want to re-authenticate? [y/N]: ")
+                .strip()
+                .lower()
+            )
             if response != "y":
                 print("Keeping existing credentials.")
                 return 0
@@ -87,7 +93,9 @@ class AuthCLI:
 
             # Step 3: Poll for token
             try:
-                token_data = await flow.poll_for_token(device_code=device_code, interval=interval)
+                token_data = await flow.poll_for_token(
+                    device_code=device_code, interval=interval
+                )
             except AuthenticationError as e:
                 print(f"❌ {e}")
                 return 1
@@ -98,11 +106,16 @@ class AuthCLI:
             expires_in = token_data.get("expires_in")
 
             self.token_store.save_credentials(
-                access_token=access_token, refresh_token=refresh_token, expires_in=expires_in, provider="kimi"
+                access_token=access_token,
+                refresh_token=refresh_token,
+                expires_in=expires_in,
+                provider="kimi",
             )
 
             print("✅ Successfully authenticated!")
-            print(f"   Credentials saved to: {self.token_store.get_credential_path()}")
+            print(
+                f"   Credentials saved to: {self.token_store.get_credential_path()}"
+            )
             print()
             print("You can now use Zen AI without providing an API key.")
             return 0
@@ -124,17 +137,26 @@ class AuthCLI:
             return 1
 
         if not api_key.startswith(("sk-", "Bearer ")):
-            print("⚠️  Warning: API key doesn't match expected format (should start with 'sk-')")
+            print(
+                "⚠️  Warning: API key doesn't match expected format (should start with 'sk-')"
+            )
             confirm = input("Continue anyway? [y/N]: ").strip().lower()
             if confirm != "y":
                 return 1
 
         # Save as access token
-        self.token_store.save_credentials(access_token=api_key, refresh_token=None, expires_in=None, provider="kimi")
+        self.token_store.save_credentials(
+            access_token=api_key,
+            refresh_token=None,
+            expires_in=None,
+            provider="kimi",
+        )
 
         print()
         print("✅ API key saved!")
-        print(f"   Credentials stored at: {self.token_store.get_credential_path()}")
+        print(
+            f"   Credentials stored at: {self.token_store.get_credential_path()}"
+        )
         return 0
 
     def logout(self) -> int:
@@ -151,7 +173,9 @@ class AuthCLI:
             print("ℹ️  Not currently authenticated.")
             return 0
 
-        confirm = input("Are you sure you want to log out? [y/N]: ").strip().lower()
+        confirm = (
+            input("Are you sure you want to log out? [y/N]: ").strip().lower()
+        )
 
         if confirm != "y":
             print("Logout cancelled.")

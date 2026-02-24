@@ -186,7 +186,9 @@ class ApplicationFactory:
                 self.components["dashboard"] = dashboard
                 logger.info("✅ Dashboard Manager initialized")
             except Exception as e:
-                logger.warning(f"⚠️ Dashboard Manager initialization failed: {e}")
+                logger.warning(
+                    f"⚠️ Dashboard Manager initialization failed: {e}"
+                )
 
         # 6. ZenOrchestrator (main coordinator)
         if ZenOrchestrator:
@@ -218,7 +220,10 @@ class ApplicationFactory:
         """Wire up component integrations"""
 
         # Connect Dashboard to Orchestrator
-        if "dashboard" in self.components and "orchestrator" in self.components:
+        if (
+            "dashboard" in self.components
+            and "orchestrator" in self.components
+        ):
             dashboard = self.components["dashboard"]
             orchestrator = self.components["orchestrator"]
             dashboard.connect_orchestrator(orchestrator)
@@ -245,8 +250,12 @@ class ApplicationFactory:
                     return {"task_id": task_id, "status": "submitted"}
                 return {"error": "Orchestrator not available"}
 
-            scheduler.register_callback("vulnerability_scan", generic_task_callback)
-            scheduler.register_callback("subdomain_enum", generic_task_callback)
+            scheduler.register_callback(
+                "vulnerability_scan", generic_task_callback
+            )
+            scheduler.register_callback(
+                "subdomain_enum", generic_task_callback
+            )
             scheduler.register_callback("port_scan", generic_task_callback)
             logger.info("🔗 Task callbacks registered with Scheduler")
 
@@ -305,7 +314,10 @@ class ApplicationFactory:
                 except Exception as e:
                     checks[name] = {"healthy": False, "error": str(e)}
 
-            all_healthy = all(c.get("healthy", False) if isinstance(c, dict) else c for c in checks.values())
+            all_healthy = all(
+                c.get("healthy", False) if isinstance(c, dict) else c
+                for c in checks.values()
+            )
 
             return {
                 "status": "healthy" if all_healthy else "degraded",

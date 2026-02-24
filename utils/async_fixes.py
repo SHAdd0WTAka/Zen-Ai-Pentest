@@ -57,7 +57,9 @@ def _patch_proactor_connection_lost():
         _ProactorBasePipeTransport.close = patched_close
 
         # Also patch _call_connection_lost
-        original_call_connection_lost = _ProactorBasePipeTransport._call_connection_lost
+        original_call_connection_lost = (
+            _ProactorBasePipeTransport._call_connection_lost
+        )
 
         def patched_call_connection_lost(self, exc):
             """Patched _call_connection_lost that handles shutdown errors"""
@@ -67,7 +69,9 @@ def _patch_proactor_connection_lost():
                 # Silently ignore shutdown errors
                 pass
 
-        _ProactorBasePipeTransport._call_connection_lost = patched_call_connection_lost
+        _ProactorBasePipeTransport._call_connection_lost = (
+            patched_call_connection_lost
+        )
 
     except ImportError:
         pass  # Not on Windows or different Python version
@@ -143,7 +147,11 @@ def silence_asyncio_warnings():
     """
     Silence common asyncio warnings that don't affect functionality
     """
-    warnings.filterwarnings("ignore", category=RuntimeWarning, message="coroutine.*was never awaited")
+    warnings.filterwarnings(
+        "ignore",
+        category=RuntimeWarning,
+        message="coroutine.*was never awaited",
+    )
     warnings.filterwarnings("ignore", message=r".*socket\.socket.*")
     warnings.filterwarnings("ignore", message=".*_ProactorBasePipeTransport.*")
     warnings.filterwarnings("ignore", message=".*unclosed.*")

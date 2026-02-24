@@ -44,7 +44,9 @@ class ToolMetadata:
     category: ToolCategory
     safety_level: ToolSafetyLevel
     requires_approval: bool = False
-    supported_platforms: List[str] = field(default_factory=lambda: ["linux", "windows", "macos"])
+    supported_platforms: List[str] = field(
+        default_factory=lambda: ["linux", "windows", "macos"]
+    )
     author: str = ""
     version: str = "1.0.0"
     tags: List[str] = field(default_factory=list)
@@ -104,7 +106,9 @@ class ToolRegistry:
             return
 
         self._tools: Dict[str, RegisteredTool] = {}
-        self._categories: Dict[ToolCategory, List[str]] = {cat: [] for cat in ToolCategory}
+        self._categories: Dict[ToolCategory, List[str]] = {
+            cat: [] for cat in ToolCategory
+        }
         self._initialized = True
 
         logger.info("Tool Registry initialisiert")
@@ -149,18 +153,23 @@ class ToolRegistry:
             category=category,
             safety_level=safety_level,
             requires_approval=requires_approval,
-            supported_platforms=supported_platforms or ["linux", "windows", "macos"],
+            supported_platforms=supported_platforms
+            or ["linux", "windows", "macos"],
             author=author,
             version=version,
             tags=tags or [],
         )
 
-        registered = RegisteredTool(tool=tool, metadata=metadata, enabled=enabled)
+        registered = RegisteredTool(
+            tool=tool, metadata=metadata, enabled=enabled
+        )
 
         self._tools[name] = registered
         self._categories[category].append(name)
 
-        logger.info(f"Tool registriert: {name} ({category.value}, {safety_level.value})")
+        logger.info(
+            f"Tool registriert: {name} ({category.value}, {safety_level.value})"
+        )
         return registered
 
     def unregister(self, name: str) -> bool:
@@ -227,18 +236,28 @@ class ToolRegistry:
     def get_tools_by_category(self, category: ToolCategory) -> List[BaseTool]:
         """Holt alle Tools einer Kategorie"""
         tool_names = self._categories.get(category, [])
-        return [self._tools[name].tool for name in tool_names if name in self._tools and self._tools[name].enabled]
+        return [
+            self._tools[name].tool
+            for name in tool_names
+            if name in self._tools and self._tools[name].enabled
+        ]
 
     def get_safe_tools(self) -> List[BaseTool]:
         """Holt alle 'sicheren' Tools (keine Approval nötig)"""
-        return [t.tool for t in self._tools.values() if t.enabled and not t.metadata.requires_approval]
+        return [
+            t.tool
+            for t in self._tools.values()
+            if t.enabled and not t.metadata.requires_approval
+        ]
 
     def get_dangerous_tools(self) -> List[RegisteredTool]:
         """Holt alle 'gefährlichen' Tools (Approval nötig)"""
         return [
             t
             for t in self._tools.values()
-            if t.metadata.safety_level in (ToolSafetyLevel.DANGEROUS, ToolSafetyLevel.CRITICAL) or t.metadata.requires_approval
+            if t.metadata.safety_level
+            in (ToolSafetyLevel.DANGEROUS, ToolSafetyLevel.CRITICAL)
+            or t.metadata.requires_approval
         ]
 
     def enable_tool(self, name: str) -> bool:
@@ -271,7 +290,8 @@ class ToolRegistry:
             meta.avg_execution_time = execution_time
         else:
             meta.avg_execution_time = (
-                meta.avg_execution_time * (meta.invocation_count - 1) + execution_time
+                meta.avg_execution_time * (meta.invocation_count - 1)
+                + execution_time
             ) / meta.invocation_count
 
     def get_all_tools(self) -> List[BaseTool]:
@@ -283,14 +303,18 @@ class ToolRegistry:
         total = len(self._tools)
         enabled = sum(1 for t in self._tools.values() if t.enabled)
 
-        by_category = {cat.value: len(names) for cat, names in self._categories.items()}
+        by_category = {
+            cat.value: len(names) for cat, names in self._categories.items()
+        }
 
         by_safety = {}
         for tool in self._tools.values():
             level = tool.metadata.safety_level.value
             by_safety[level] = by_safety.get(level, 0) + 1
 
-        total_invocations = sum(t.metadata.invocation_count for t in self._tools.values())
+        total_invocations = sum(
+            t.metadata.invocation_count for t in self._tools.values()
+        )
 
         return {
             "total_tools": total,
@@ -315,7 +339,11 @@ class ToolRegistry:
             for name, obj in inspect.getmembers(module):
                 if isinstance(obj, BaseTool):
                     # Tool gefunden, registriere mit Default-Metadaten
-                    registered = self.register(tool=obj, category=ToolCategory.UTILITY, safety_level=ToolSafetyLevel.NORMAL)
+                    registered = self.register(
+                        tool=obj,
+                        category=ToolCategory.UTILITY,
+                        safety_level=ToolSafetyLevel.NORMAL,
+                    )
                     discovered.append(registered)
 
         except Exception as e:
@@ -351,11 +379,17 @@ def register_tool(
 
     def decorator(func):
         # Erstelle LangChain Tool
-        tool = Tool(name=func.__name__, description=func.__doc__ or "", func=func)
+        tool = Tool(
+            name=func.__name__, description=func.__doc__ or "", func=func
+        )
 
         # Registriere
         registry.register(
-            tool=tool, category=category, safety_level=safety_level, requires_approval=requires_approval, **metadata_kwargs
+            tool=tool,
+            category=category,
+            safety_level=safety_level,
+            requires_approval=requires_approval,
+            **metadata_kwargs,
         )
 
         return func
@@ -377,7 +411,10 @@ if __name__ == "__main__":
 
     # Manuelle Registrierung
     registry.register(
-        tool=example_scan, category=ToolCategory.SCANNING, safety_level=ToolSafetyLevel.SAFE, tags=["example", "test"]
+        tool=example_scan,
+        category=ToolCategory.SCANNING,
+        safety_level=ToolSafetyLevel.SAFE,
+        tags=["example", "test"],
     )
 
     print("Registry Stats:", registry.get_registry_stats())

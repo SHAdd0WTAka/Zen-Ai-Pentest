@@ -42,7 +42,9 @@ def print_results(results):
     print(f"{'='*80}\n")
 
     # Sort by status code (live first)
-    sorted_results = sorted(results.items(), key=lambda x: (x[1].status_code or 9999, x[0]))
+    sorted_results = sorted(
+        results.items(), key=lambda x: (x[1].status_code or 9999, x[0])
+    )
 
     # Live subdomains
     live = [(sub, r) for sub, r in sorted_results if r.is_alive]
@@ -51,12 +53,18 @@ def print_results(results):
     if live:
         print(f"\n[+] LIVE SUBDOMAINS ({len(live)}):")
         print("-" * 80)
-        print(f"{'Subdomain':<40} {'Status':<8} {'Server':<15} {'Technologies'}")
+        print(
+            f"{'Subdomain':<40} {'Status':<8} {'Server':<15} {'Technologies'}"
+        )
         print("-" * 80)
         for subdomain, result in live:
             status = f"{result.status_code}" if result.status_code else "???"
             server = (result.server_header or "Unknown")[:14]
-            techs = ", ".join(result.technologies[:2]) if result.technologies else "-"
+            techs = (
+                ", ".join(result.technologies[:2])
+                if result.technologies
+                else "-"
+            )
             print(f"{subdomain:<40} {status:<8} {server:<15} {techs}")
 
     if dead:
@@ -83,15 +91,47 @@ Examples:
         """,
     )
 
-    parser.add_argument("domain", nargs="?", default="target.com", help="Target domain (default: target.com)")
-    parser.add_argument("-o", "--output", help="Output file (JSON, TXT, or CSV)")
-    parser.add_argument("-f", "--format", choices=["json", "txt", "csv"], default="json", help="Output format")
-    parser.add_argument("-t", "--techniques", default="dns,wordlist,crt", help="Enumeration techniques (comma-separated)")
+    parser.add_argument(
+        "domain",
+        nargs="?",
+        default="target.com",
+        help="Target domain (default: target.com)",
+    )
+    parser.add_argument(
+        "-o", "--output", help="Output file (JSON, TXT, or CSV)"
+    )
+    parser.add_argument(
+        "-f",
+        "--format",
+        choices=["json", "txt", "csv"],
+        default="json",
+        help="Output format",
+    )
+    parser.add_argument(
+        "-t",
+        "--techniques",
+        default="dns,wordlist,crt",
+        help="Enumeration techniques (comma-separated)",
+    )
     parser.add_argument("-w", "--wordlist", help="Custom wordlist file")
-    parser.add_argument("--no-http", action="store_true", help="Skip HTTP/HTTPS checking")
-    parser.add_argument("--workers", type=int, default=50, help="Concurrent workers (default: 50)")
-    parser.add_argument("--timeout", type=int, default=10, help="Request timeout in seconds (default: 10)")
-    parser.add_argument("-v", "--verbose", action="store_true", help="Verbose output")
+    parser.add_argument(
+        "--no-http", action="store_true", help="Skip HTTP/HTTPS checking"
+    )
+    parser.add_argument(
+        "--workers",
+        type=int,
+        default=50,
+        help="Concurrent workers (default: 50)",
+    )
+    parser.add_argument(
+        "--timeout",
+        type=int,
+        default=10,
+        help="Request timeout in seconds (default: 10)",
+    )
+    parser.add_argument(
+        "-v", "--verbose", action="store_true", help="Verbose output"
+    )
 
     args = parser.parse_args()
 
@@ -122,7 +162,12 @@ Examples:
 
     # Run scan
     scanner = SubdomainScanner(max_workers=args.workers, timeout=args.timeout)
-    results = await scanner.scan(domain=args.domain, wordlist=wordlist, techniques=techniques, check_http=not args.no_http)
+    results = await scanner.scan(
+        domain=args.domain,
+        wordlist=wordlist,
+        techniques=techniques,
+        check_http=not args.no_http,
+    )
 
     # Print results
     print_results(results)

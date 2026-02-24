@@ -25,7 +25,9 @@ class AgentRole(Enum):
     EXPLOIT = "exploit"  # Develops exploits, payloads
     COORDINATOR = "coordinator"  # Manages workflow between agents
     REPORTER = "reporter"  # Generates reports, summaries
-    POST_EXPLOITATION = "post_exploit"  # Post-scan workflow: verification, evidence, cleanup
+    POST_EXPLOITATION = (
+        "post_exploit"  # Post-scan workflow: verification, evidence, cleanup
+    )
 
 
 class AgentState(Enum):
@@ -86,7 +88,9 @@ class BaseAgent(ABC):
         self.running = False
         self.task: Optional[asyncio.Task] = None
 
-        logger.info(f"[Agent] Initialized {self.name} ({self.role.value}) [{self.id}]")
+        logger.info(
+            f"[Agent] Initialized {self.name} ({self.role.value}) [{self.id}]"
+        )
 
     def register_handler(self, msg_type: str, handler: Callable):
         """Register a handler for specific message types"""
@@ -130,7 +134,9 @@ class BaseAgent(ABC):
         self.inbox.append(msg)
 
         # Store in memory
-        self.memory.append({"type": "received", "message": msg.to_dict(), "processed": False})
+        self.memory.append(
+            {"type": "received", "message": msg.to_dict(), "processed": False}
+        )
 
         logger.debug(f"[Agent:{self.name}] Received message from {msg.sender}")
 
@@ -141,7 +147,9 @@ class BaseAgent(ABC):
         while self.running:
             try:
                 # Get message with timeout to allow checking running flag
-                msg = await asyncio.wait_for(self.message_queue.get(), timeout=1.0)
+                msg = await asyncio.wait_for(
+                    self.message_queue.get(), timeout=1.0
+                )
 
                 # Process based on type
                 if msg.msg_type in self.handlers:
@@ -151,23 +159,32 @@ class BaseAgent(ABC):
 
                 # Mark as processed in memory
                 for mem in self.memory:
-                    if mem["type"] == "received" and mem["message"]["id"] == msg.id:
+                    if (
+                        mem["type"] == "received"
+                        and mem["message"]["id"] == msg.id
+                    ):
                         mem["processed"] = True
 
             except asyncio.TimeoutError:
                 continue
             except Exception as e:
-                logger.error(f"[Agent:{self.name}] Error processing message: {e}")
+                logger.error(
+                    f"[Agent:{self.name}] Error processing message: {e}"
+                )
 
     async def handle_message(self, msg: AgentMessage):
         """Default message handler - override in subclasses"""
-        logger.info(f"[Agent:{self.name}] Handling {msg.msg_type} from {msg.sender}")
+        logger.info(
+            f"[Agent:{self.name}] Handling {msg.msg_type} from {msg.sender}"
+        )
 
         # Default chat response
         if msg.msg_type == "chat":
             response = f"Acknowledged: {msg.content[:50]}..."
             if msg.requires_response:
-                await self.send_message(content=response, recipient=msg.sender, msg_type="response")
+                await self.send_message(
+                    content=response, recipient=msg.sender, msg_type="response"
+                )
 
     def update_context(self, key: str, value: Any, share: bool = False):
         """
@@ -177,7 +194,9 @@ class BaseAgent(ABC):
         self.context[key] = value
 
         if share and self.orchestrator:
-            asyncio.create_task(self.orchestrator.update_shared_context(key, value, self.id))
+            asyncio.create_task(
+                self.orchestrator.update_shared_context(key, value, self.id)
+            )
 
     def get_context(self, key: str) -> Any:
         """Get value from context"""

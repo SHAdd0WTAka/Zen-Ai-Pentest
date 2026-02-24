@@ -27,7 +27,11 @@ class TestAPIKeyManager:
 
     def test_generate_key(self, temp_manager):
         """Test key generation"""
-        key_id, plain_key = temp_manager.generate_key(name="Test Key", permissions=["read", "write"], created_by="test_user")
+        key_id, plain_key = temp_manager.generate_key(
+            name="Test Key",
+            permissions=["read", "write"],
+            created_by="test_user",
+        )
 
         assert key_id.startswith("zen_")
         assert plain_key.startswith("zen_")
@@ -40,7 +44,9 @@ class TestAPIKeyManager:
 
     def test_validate_key_success(self, temp_manager):
         """Test successful key validation"""
-        key_id, plain_key = temp_manager.generate_key(name="Test Key", permissions=["read", "write"])
+        key_id, plain_key = temp_manager.generate_key(
+            name="Test Key", permissions=["read", "write"]
+        )
 
         result = temp_manager.validate_key(plain_key)
         assert result is not None
@@ -54,15 +60,21 @@ class TestAPIKeyManager:
 
     def test_validate_key_wrong_permission(self, temp_manager):
         """Test key validation with wrong permission"""
-        key_id, plain_key = temp_manager.generate_key(name="Read Only Key", permissions=["read"])
+        key_id, plain_key = temp_manager.generate_key(
+            name="Read Only Key", permissions=["read"]
+        )
 
         # Should fail - key only has "read", not "write"
-        result = temp_manager.validate_key(plain_key, required_permission="write")
+        result = temp_manager.validate_key(
+            plain_key, required_permission="write"
+        )
         assert result is None
 
     def test_revoke_key(self, temp_manager):
         """Test key revocation"""
-        key_id, plain_key = temp_manager.generate_key(name="Key to Revoke", permissions=["read"])
+        key_id, plain_key = temp_manager.generate_key(
+            name="Key to Revoke", permissions=["read"]
+        )
 
         # Revoke
         assert temp_manager.revoke_key(key_id, "admin") is True
@@ -82,7 +94,9 @@ class TestAPIKeyManager:
 
     def test_rotate_key(self, temp_manager):
         """Test key rotation"""
-        old_key_id, old_plain_key = temp_manager.generate_key(name="Key to Rotate", permissions=["read", "admin"])
+        old_key_id, old_plain_key = temp_manager.generate_key(
+            name="Key to Rotate", permissions=["read", "admin"]
+        )
 
         # Rotate
         result = temp_manager.rotate_key(old_key_id, "admin")
@@ -139,7 +153,9 @@ class TestAPIKeyManager:
     def test_audit_logging(self, temp_manager):
         """Test audit logging"""
         # Generate key (creates audit entry)
-        key_id, plain_key = temp_manager.generate_key(name="Audited Key", permissions=["read"])
+        key_id, plain_key = temp_manager.generate_key(
+            name="Audited Key", permissions=["read"]
+        )
 
         # Validate key (creates audit entry)
         temp_manager.validate_key(plain_key)
@@ -176,21 +192,30 @@ class TestAPIKeyManager:
 
     def test_key_permissions(self, temp_manager):
         """Test various permissions"""
-        key_id, plain_key = temp_manager.generate_key(name="Multi Permission Key", permissions=["read", "write", "delete"])
+        key_id, plain_key = temp_manager.generate_key(
+            name="Multi Permission Key",
+            permissions=["read", "write", "delete"],
+        )
 
         # Should validate for each permission
         for perm in ["read", "write", "delete"]:
-            result = temp_manager.validate_key(plain_key, required_permission=perm)
+            result = temp_manager.validate_key(
+                plain_key, required_permission=perm
+            )
             assert result is not None, f"Failed for permission: {perm}"
 
         # Should fail for admin (not granted)
-        result = temp_manager.validate_key(plain_key, required_permission="admin")
+        result = temp_manager.validate_key(
+            plain_key, required_permission="admin"
+        )
         assert result is None
 
     def test_key_metadata(self, temp_manager):
         """Test key metadata handling"""
         metadata = {"project": "test", "environment": "dev"}
-        key_id, _ = temp_manager.generate_key(name="Metadata Key", permissions=["read"], metadata=metadata)
+        key_id, _ = temp_manager.generate_key(
+            name="Metadata Key", permissions=["read"], metadata=metadata
+        )
 
         key = temp_manager._get_key_by_id(key_id)
         assert key.metadata["project"] == "test"

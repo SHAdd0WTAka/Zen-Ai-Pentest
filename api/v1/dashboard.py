@@ -9,7 +9,13 @@ import logging
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException,
+    WebSocket,
+    WebSocketDisconnect,
+)
 from pydantic import BaseModel
 from sqlalchemy import func
 from sqlalchemy.orm import Session
@@ -96,7 +102,13 @@ class DashboardActivity(BaseModel):
 
 def get_severity_color(severity: str) -> str:
     """Get color code for severity level"""
-    colors = {"critical": "#ef4444", "high": "#f97316", "medium": "#eab308", "low": "#22c55e", "info": "#3b82f6"}
+    colors = {
+        "critical": "#ef4444",
+        "high": "#f97316",
+        "medium": "#eab308",
+        "low": "#22c55e",
+        "info": "#3b82f6",
+    }
     return colors.get(severity.lower(), "#6b7280")
 
 
@@ -117,7 +129,9 @@ async def broadcast_dashboard_update(message: Dict[str, Any]):
 
 
 @router.get("/stats", response_model=StatsResponse)
-async def get_dashboard_stats(user: dict = Depends(verify_token), db: Session = Depends(get_db)):
+async def get_dashboard_stats(
+    user: dict = Depends(verify_token), db: Session = Depends(get_db)
+):
     """
     Get comprehensive dashboard statistics.
 
@@ -128,27 +142,61 @@ async def get_dashboard_stats(user: dict = Depends(verify_token), db: Session = 
         # Scan counts
         total_scans = db.query(Scan).count()
         active_scans = db.query(Scan).filter(Scan.status == "running").count()
-        completed_scans = db.query(Scan).filter(Scan.status == "completed").count()
+        completed_scans = (
+            db.query(Scan).filter(Scan.status == "completed").count()
+        )
         failed_scans = db.query(Scan).filter(Scan.status == "failed").count()
-        cancelled_scans = db.query(Scan).filter(Scan.status == "cancelled").count()
+        cancelled_scans = (
+            db.query(Scan).filter(Scan.status == "cancelled").count()
+        )
 
         # Findings counts
         total_findings = db.query(Finding).count()
 
-        severity_counts = {"critical": 0, "high": 0, "medium": 0, "low": 0, "info": 0}
+        severity_counts = {
+            "critical": 0,
+            "high": 0,
+            "medium": 0,
+            "low": 0,
+            "info": 0,
+        }
 
-        results = db.query(Finding.severity, func.count(Finding.id)).group_by(Finding.severity).all()
+        results = (
+            db.query(Finding.severity, func.count(Finding.id))
+            .group_by(Finding.severity)
+            .all()
+        )
         for sev, count in results:
             if sev in severity_counts:
                 severity_counts[sev] = count
 
         # Build severity distribution for charts
         severity_distribution = [
-            {"name": "Critical", "value": severity_counts["critical"], "color": "#ef4444"},
-            {"name": "High", "value": severity_counts["high"], "color": "#f97316"},
-            {"name": "Medium", "value": severity_counts["medium"], "color": "#eab308"},
-            {"name": "Low", "value": severity_counts["low"], "color": "#22c55e"},
-            {"name": "Info", "value": severity_counts["info"], "color": "#3b82f6"},
+            {
+                "name": "Critical",
+                "value": severity_counts["critical"],
+                "color": "#ef4444",
+            },
+            {
+                "name": "High",
+                "value": severity_counts["high"],
+                "color": "#f97316",
+            },
+            {
+                "name": "Medium",
+                "value": severity_counts["medium"],
+                "color": "#eab308",
+            },
+            {
+                "name": "Low",
+                "value": severity_counts["low"],
+                "color": "#22c55e",
+            },
+            {
+                "name": "Info",
+                "value": severity_counts["info"],
+                "color": "#3b82f6",
+            },
         ]
 
         # Scans by status
@@ -168,11 +216,30 @@ async def get_dashboard_stats(user: dict = Depends(verify_token), db: Session = 
             day_start = thirty_days_ago + timedelta(days=i)
             day_end = day_start + timedelta(days=1)
 
-            day_scans = db.query(Scan).filter(Scan.created_at >= day_start, Scan.created_at < day_end).count()
+            day_scans = (
+                db.query(Scan)
+                .filter(
+                    Scan.created_at >= day_start, Scan.created_at < day_end
+                )
+                .count()
+            )
 
-            day_findings = db.query(Finding).join(Scan).filter(Scan.created_at >= day_start, Scan.created_at < day_end).count()
+            day_findings = (
+                db.query(Finding)
+                .join(Scan)
+                .filter(
+                    Scan.created_at >= day_start, Scan.created_at < day_end
+                )
+                .count()
+            )
 
-            trends.append({"date": day_start.strftime("%Y-%m-%d"), "scans": day_scans, "findings": day_findings})
+            trends.append(
+                {
+                    "date": day_start.strftime("%Y-%m-%d"),
+                    "scans": day_scans,
+                    "findings": day_findings,
+                }
+            )
 
         return StatsResponse(
             total_scans=total_scans,
@@ -193,11 +260,15 @@ async def get_dashboard_stats(user: dict = Depends(verify_token), db: Session = 
 
     except Exception as e:
         logger.error(f"Error getting dashboard stats: {e}")
-        raise HTTPException(status_code=500, detail=f"Failed to get statistics: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to get statistics: {str(e)}"
+        )
 
 
 @router.get("/active-scans", response_model=List[ActiveScanInfo])
-async def get_active_scans(user: dict = Depends(verify_token), db: Session = Depends(get_db)):
+async def get_active_scans(
+    user: dict = Depends(verify_token), db: Session = Depends(get_db)
+):
     """
     Get all currently running/active scans.
 
@@ -205,23 +276,34 @@ async def get_active_scans(user: dict = Depends(verify_token), db: Session = Dep
     including progress information and duration.
     """
     try:
-        active = db.query(Scan).filter(Scan.status.in_(["running", "pending"])).order_by(Scan.started_at.desc()).all()
+        active = (
+            db.query(Scan)
+            .filter(Scan.status.in_(["running", "pending"]))
+            .order_by(Scan.started_at.desc())
+            .all()
+        )
 
         result = []
         for scan in active:
             duration = None
             if scan.started_at:
-                duration = int((datetime.utcnow() - scan.started_at).total_seconds())
+                duration = int(
+                    (datetime.utcnow() - scan.started_at).total_seconds()
+                )
 
             # Get findings count for this scan
-            findings_count = db.query(Finding).filter(Finding.scan_id == scan.id).count()
+            findings_count = (
+                db.query(Finding).filter(Finding.scan_id == scan.id).count()
+            )
 
             # Calculate progress (simplified - could be enhanced with more granular tracking)
             progress = 0
             if scan.status == "running" and scan.started_at:
                 # Estimate progress based on typical scan duration (10 minutes)
                 elapsed = (datetime.utcnow() - scan.started_at).total_seconds()
-                progress = min(int((elapsed / 600) * 100), 99)  # Cap at 99% until complete
+                progress = min(
+                    int((elapsed / 600) * 100), 99
+                )  # Cap at 99% until complete
             elif scan.status == "completed":
                 progress = 100
 
@@ -233,7 +315,11 @@ async def get_active_scans(user: dict = Depends(verify_token), db: Session = Dep
                     scan_type=scan.scan_type,
                     status=scan.status,
                     progress=progress,
-                    started_at=scan.started_at.isoformat() if scan.started_at else None,
+                    started_at=(
+                        scan.started_at.isoformat()
+                        if scan.started_at
+                        else None
+                    ),
                     duration_seconds=duration,
                     findings_count=findings_count,
                 )
@@ -243,12 +329,17 @@ async def get_active_scans(user: dict = Depends(verify_token), db: Session = Dep
 
     except Exception as e:
         logger.error(f"Error getting active scans: {e}")
-        raise HTTPException(status_code=500, detail=f"Failed to get active scans: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to get active scans: {str(e)}"
+        )
 
 
 @router.get("/recent-findings", response_model=List[RecentFinding])
 async def get_recent_findings(
-    limit: int = 20, severity: Optional[str] = None, user: dict = Depends(verify_token), db: Session = Depends(get_db)
+    limit: int = 20,
+    severity: Optional[str] = None,
+    user: dict = Depends(verify_token),
+    db: Session = Depends(get_db),
 ):
     """
     Get recent findings across all scans.
@@ -259,7 +350,9 @@ async def get_recent_findings(
     Returns findings sorted by creation time (newest first).
     """
     try:
-        query = db.query(Finding).join(Scan).order_by(Finding.created_at.desc())
+        query = (
+            db.query(Finding).join(Scan).order_by(Finding.created_at.desc())
+        )
 
         if severity:
             query = query.filter(Finding.severity == severity.lower())
@@ -286,11 +379,17 @@ async def get_recent_findings(
 
     except Exception as e:
         logger.error(f"Error getting recent findings: {e}")
-        raise HTTPException(status_code=500, detail=f"Failed to get recent findings: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to get recent findings: {str(e)}"
+        )
 
 
 @router.get("/activities", response_model=List[DashboardActivity])
-async def get_recent_activities(limit: int = 50, user: dict = Depends(verify_token), db: Session = Depends(get_db)):
+async def get_recent_activities(
+    limit: int = 50,
+    user: dict = Depends(verify_token),
+    db: Session = Depends(get_db),
+):
     """
     Get recent dashboard activities.
 
@@ -303,7 +402,12 @@ async def get_recent_activities(limit: int = 50, user: dict = Depends(verify_tok
         activities = []
 
         # Recent scans
-        recent_scans = db.query(Scan).order_by(Scan.created_at.desc()).limit(limit // 3).all()
+        recent_scans = (
+            db.query(Scan)
+            .order_by(Scan.created_at.desc())
+            .limit(limit // 3)
+            .all()
+        )
         for scan in recent_scans:
             if scan.status == "running":
                 activities.append(
@@ -323,7 +427,11 @@ async def get_recent_activities(limit: int = 50, user: dict = Depends(verify_tok
                         type="scan_completed",
                         title=f"Scan Completed: {scan.name}",
                         description=f"Target: {scan.target}",
-                        timestamp=scan.completed_at.isoformat() if scan.completed_at else scan.created_at.isoformat(),
+                        timestamp=(
+                            scan.completed_at.isoformat()
+                            if scan.completed_at
+                            else scan.created_at.isoformat()
+                        ),
                         scan_id=scan.id,
                     )
                 )
@@ -351,7 +459,12 @@ async def get_recent_activities(limit: int = 50, user: dict = Depends(verify_tok
             )
 
         # Recent reports
-        recent_reports = db.query(Report).order_by(Report.created_at.desc()).limit(limit // 3).all()
+        recent_reports = (
+            db.query(Report)
+            .order_by(Report.created_at.desc())
+            .limit(limit // 3)
+            .all()
+        )
         for report in recent_reports:
             activities.append(
                 DashboardActivity(
@@ -371,11 +484,15 @@ async def get_recent_activities(limit: int = 50, user: dict = Depends(verify_tok
 
     except Exception as e:
         logger.error(f"Error getting activities: {e}")
-        raise HTTPException(status_code=500, detail=f"Failed to get activities: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to get activities: {str(e)}"
+        )
 
 
 @router.get("/metrics/live")
-async def get_live_metrics(user: dict = Depends(verify_token), db: Session = Depends(get_db)):
+async def get_live_metrics(
+    user: dict = Depends(verify_token), db: Session = Depends(get_db)
+):
     """
     Get live system metrics for real-time monitoring.
 
@@ -387,9 +504,15 @@ async def get_live_metrics(user: dict = Depends(verify_token), db: Session = Dep
 
         # Calculate scan rates (last hour)
         one_hour_ago = datetime.utcnow() - timedelta(hours=1)
-        scans_last_hour = db.query(Scan).filter(Scan.created_at >= one_hour_ago).count()
+        scans_last_hour = (
+            db.query(Scan).filter(Scan.created_at >= one_hour_ago).count()
+        )
 
-        findings_last_hour = db.query(Finding).filter(Finding.created_at >= one_hour_ago).count()
+        findings_last_hour = (
+            db.query(Finding)
+            .filter(Finding.created_at >= one_hour_ago)
+            .count()
+        )
 
         return {
             "websocket_connections": ws_stats,
@@ -400,7 +523,9 @@ async def get_live_metrics(user: dict = Depends(verify_token), db: Session = Dep
 
     except Exception as e:
         logger.error(f"Error getting live metrics: {e}")
-        raise HTTPException(status_code=500, detail=f"Failed to get live metrics: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to get live metrics: {str(e)}"
+        )
 
 
 # ============================================================================
@@ -430,7 +555,11 @@ async def dashboard_websocket(websocket: WebSocket):
     try:
         # Send initial connection acknowledgment
         await websocket.send_json(
-            {"type": "connected", "message": "Dashboard WebSocket connected", "timestamp": datetime.utcnow().isoformat()}
+            {
+                "type": "connected",
+                "message": "Dashboard WebSocket connected",
+                "timestamp": datetime.utcnow().isoformat(),
+            }
         )
 
         while True:
@@ -441,12 +570,22 @@ async def dashboard_websocket(websocket: WebSocket):
                 action = message.get("action")
 
                 if action == "ping":
-                    await websocket.send_json({"type": "pong", "timestamp": datetime.utcnow().isoformat()})
+                    await websocket.send_json(
+                        {
+                            "type": "pong",
+                            "timestamp": datetime.utcnow().isoformat(),
+                        }
+                    )
 
                 elif action == "subscribe":
                     events = message.get("events", ["all"])
                     subscribed_events = set(events)
-                    await websocket.send_json({"type": "subscribed", "events": list(subscribed_events)})
+                    await websocket.send_json(
+                        {
+                            "type": "subscribed",
+                            "events": list(subscribed_events),
+                        }
+                    )
 
                 elif action == "unsubscribe":
                     subscribed_events = set()
@@ -454,13 +593,25 @@ async def dashboard_websocket(websocket: WebSocket):
 
                 elif action == "get_stats":
                     # Trigger immediate stats response
-                    await websocket.send_json({"type": "stats_request_ack", "message": "Use REST API for stats data"})
+                    await websocket.send_json(
+                        {
+                            "type": "stats_request_ack",
+                            "message": "Use REST API for stats data",
+                        }
+                    )
 
                 else:
-                    await websocket.send_json({"type": "error", "message": f"Unknown action: {action}"})
+                    await websocket.send_json(
+                        {
+                            "type": "error",
+                            "message": f"Unknown action: {action}",
+                        }
+                    )
 
             except json.JSONDecodeError:
-                await websocket.send_json({"type": "error", "message": "Invalid JSON"})
+                await websocket.send_json(
+                    {"type": "error", "message": "Invalid JSON"}
+                )
 
     except WebSocketDisconnect:
         dashboard_ws_manager.disconnect(websocket, "global")
@@ -488,7 +639,9 @@ async def notify_scan_started(scan_id: int, scan_name: str, target: str):
     )
 
 
-async def notify_scan_completed(scan_id: int, scan_name: str, findings_count: int):
+async def notify_scan_completed(
+    scan_id: int, scan_name: str, findings_count: int
+):
     """Broadcast scan completed event"""
     await dashboard_ws_manager.broadcast_global(
         {
@@ -501,7 +654,9 @@ async def notify_scan_completed(scan_id: int, scan_name: str, findings_count: in
     )
 
 
-async def notify_finding_found(finding_id: int, title: str, severity: str, scan_id: int):
+async def notify_finding_found(
+    finding_id: int, title: str, severity: str, scan_id: int
+):
     """Broadcast new finding event"""
     await dashboard_ws_manager.broadcast_global(
         {

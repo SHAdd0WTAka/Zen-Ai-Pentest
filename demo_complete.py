@@ -26,7 +26,13 @@ events = [
         "target": "webapp.com",
         "description": "SQL Injection detected",
     },
-    {"severity": "high", "event_type": "xss", "source": "10.0.0.50", "target": "api.com", "description": "XSS in search"},
+    {
+        "severity": "high",
+        "event_type": "xss",
+        "source": "10.0.0.50",
+        "target": "api.com",
+        "description": "XSS in search",
+    },
     {
         "severity": "medium",
         "event_type": "brute_force",
@@ -37,7 +43,9 @@ events = [
 ]
 for e in events:
     r = requests.post(f"{BASE}/siem/events", json=e)
-    print(f"    {e['severity'].upper():<8} {e['event_type']:<15} -> {r.json()['message']}")
+    print(
+        f"    {e['severity'].upper():<8} {e['event_type']:<15} -> {r.json()['message']}"
+    )
 
 # 3. Events anzeigen
 r = requests.get(f"{BASE}/siem/events")
@@ -47,7 +55,9 @@ print(f"\n{'Time':<20} {'Severity':<10} {'Type':<15} {'Description'}")
 print("-" * 70)
 for e in data["events"]:
     ts = e.get("timestamp", "N/A")[:19]
-    print(f"{ts:<20} {e['severity']:<10} {e['event_type']:<15} {e['description'][:30]}")
+    print(
+        f"{ts:<20} {e['severity']:<10} {e['event_type']:<15} {e['description'][:30]}"
+    )
 
 print("\n" + "=" * 60)
 print("MOCK-SIEM DEMO ABGESCHLOSSEN")

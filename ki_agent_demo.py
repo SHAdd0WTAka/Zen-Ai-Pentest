@@ -25,7 +25,12 @@ from pathlib import Path
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from autonomous.ki_analysis_agent import AgentState, KIAutonomousAgent, ReActStep, run_ki_agent
+from autonomous.ki_analysis_agent import (
+    AgentState,
+    KIAutonomousAgent,
+    ReActStep,
+    run_ki_agent,
+)
 
 
 class Colors:
@@ -62,7 +67,9 @@ def print_banner():
     print(banner)
 
 
-def print_state_machine(current_state: AgentState, previous_state: AgentState = None):
+def print_state_machine(
+    current_state: AgentState, previous_state: AgentState = None
+):
     """Visualisiert die State Machine."""
     states = [
         (AgentState.IDLE, "IDLE"),
@@ -76,7 +83,9 @@ def print_state_machine(current_state: AgentState, previous_state: AgentState = 
     state_line = []
     for state, name in states:
         if state == current_state:
-            state_line.append(f"{Colors.GREEN}{Colors.BOLD}[{name}]{Colors.ENDC}")
+            state_line.append(
+                f"{Colors.GREEN}{Colors.BOLD}[{name}]{Colors.ENDC}"
+            )
         elif previous_state == state:
             state_line.append(f"{Colors.DIM}{name}{Colors.ENDC}")
         else:
@@ -87,9 +96,15 @@ def print_state_machine(current_state: AgentState, previous_state: AgentState = 
 
 def print_react_step(step: ReActStep):
     """Zeigt einen ReAct Step an."""
-    print(f"\n{Colors.CYAN}{Colors.BOLD}+==============================================================+")
-    print(f"|  STEP {step.step_number:3d} - ReAct Pattern                              |")
-    print(f"+==============================================================+{Colors.ENDC}")
+    print(
+        f"\n{Colors.CYAN}{Colors.BOLD}+==============================================================+"
+    )
+    print(
+        f"|  STEP {step.step_number:3d} - ReAct Pattern                              |"
+    )
+    print(
+        f"+==============================================================+{Colors.ENDC}"
+    )
 
     # REASON
     print(f"\n{Colors.YELLOW}[REASON] Thought:{Colors.ENDC}")
@@ -103,7 +118,11 @@ def print_react_step(step: ReActStep):
 
     # OBSERVE
     print(f"\n{Colors.CYAN}[OBSERVE] Results:{Colors.ENDC}")
-    obs = step.observation[:200] + "..." if len(step.observation) > 200 else step.observation
+    obs = (
+        step.observation[:200] + "..."
+        if len(step.observation) > 200
+        else step.observation
+    )
     print(f"  {obs}")
 
     # REFLECT
@@ -119,13 +138,19 @@ def print_memory_status(agent: KIAutonomousAgent):
     """Zeigt Memory-Status."""
     mem = agent.memory
 
-    print(f"\n{Colors.DIM}+-- Memory System ---------------------------------------------+{Colors.ENDC}")
+    print(
+        f"\n{Colors.DIM}+-- Memory System ---------------------------------------------+{Colors.ENDC}"
+    )
     print(f"  Session ID: {mem.session_id[:8]}...")
     print(f"  Short-term: {len(mem.short_term)}/{mem.max_short_term} entries")
-    print(f"  Context Window: {len(mem.context_window)}/{mem.max_context_window} steps")
+    print(
+        f"  Context Window: {len(mem.context_window)}/{mem.max_context_window} steps"
+    )
     print(f"  Findings: {len(mem.findings)}")
     print(f"  Phase: {agent.current_phase.value}")
-    print(f"{Colors.DIM}+-------------------------------------------------------------+{Colors.ENDC}")
+    print(
+        f"{Colors.DIM}+-------------------------------------------------------------+{Colors.ENDC}"
+    )
 
 
 def print_finding(finding: dict):
@@ -155,29 +180,45 @@ def print_human_prompt(message: str):
 def print_report(report: dict):
     """Zeigt finalen Report."""
     print(f"\n{Colors.GREEN}{Colors.BOLD}")
-    print("+==================================================================+")
-    print("|                    ASSESSMENT COMPLETE                           |")
-    print("+==================================================================+")
+    print(
+        "+==================================================================+"
+    )
+    print(
+        "|                    ASSESSMENT COMPLETE                           |"
+    )
+    print(
+        "+==================================================================+"
+    )
     print(f"{Colors.ENDC}")
 
     print(f"\n{Colors.CYAN}Session:{Colors.ENDC} {report['session_id']}")
     print(f"{Colors.CYAN}Target:{Colors.ENDC} {report['target']}")
     duration = datetime.now() - datetime.fromisoformat(report["completed_at"])
-    print(f"{Colors.CYAN}Duration:{Colors.ENDC} {duration.total_seconds():.1f}s")
+    print(
+        f"{Colors.CYAN}Duration:{Colors.ENDC} {duration.total_seconds():.1f}s"
+    )
 
     print(f"\n{Colors.BOLD}Statistics:{Colors.ENDC}")
     print(f"  Total Steps: {report['total_steps']}")
     print(f"  Total Findings: {report['findings_count']}")
-    print(f"  Success Rate: {report['execution_summary']['success_rate']:.1f}%")
+    print(
+        f"  Success Rate: {report['execution_summary']['success_rate']:.1f}%"
+    )
     print(f"  Final State: {report['final_state']}")
 
     print(f"\n{Colors.BOLD}Findings by Severity:{Colors.ENDC}")
     for sev, count in report["findings_by_severity"].items():
         if count > 0:
-            color = Colors.RED if sev in ["critical", "high"] else Colors.YELLOW if sev == "medium" else Colors.BLUE
+            color = (
+                Colors.RED
+                if sev in ["critical", "high"]
+                else Colors.YELLOW if sev == "medium" else Colors.BLUE
+            )
             print(f"  {color}[{sev.upper():8}] {count:3d}{Colors.ENDC}")
 
-    print(f"\n{Colors.DIM}Report saved: logs/ki_agent_reports/report_{report['session_id']}.json{Colors.ENDC}")
+    print(
+        f"\n{Colors.DIM}Report saved: logs/ki_agent_reports/report_{report['session_id']}.json{Colors.ENDC}"
+    )
 
 
 async def demo_with_visualization(target: str, human_in_loop: bool = False):
@@ -219,7 +260,10 @@ async def demo_with_visualization(target: str, human_in_loop: bool = False):
 
     # Setze Callbacks
     agent.set_callbacks(
-        state_change=on_state_change, step_complete=on_step_complete, finding=on_finding, human_prompt=on_human_prompt
+        state_change=on_state_change,
+        step_complete=on_step_complete,
+        finding=on_finding,
+        human_prompt=on_human_prompt,
     )
 
     print(f"\n{Colors.GREEN}Starting KI Autonomous Agent...{Colors.ENDC}")
@@ -247,7 +291,12 @@ async def quick_demo(target: str = "192.168.1.1"):
     print_banner()
     print(f"\nRunning quick demo on target: {target}\n")
 
-    result = await run_ki_agent(target=target, goal="Security assessment", human_in_loop=False, verbose=False)
+    result = await run_ki_agent(
+        target=target,
+        goal="Security assessment",
+        human_in_loop=False,
+        verbose=False,
+    )
 
     return result
 
@@ -266,9 +315,20 @@ Examples:
         """,
     )
 
-    parser.add_argument("target", nargs="?", default="192.168.1.1", help="Target IP or domain (default: 192.168.1.1)")
-    parser.add_argument("--human-in-loop", action="store_true", help="Enable human approval for critical actions")
-    parser.add_argument("--quick", action="store_true", help="Quick mode with minimal output")
+    parser.add_argument(
+        "target",
+        nargs="?",
+        default="192.168.1.1",
+        help="Target IP or domain (default: 192.168.1.1)",
+    )
+    parser.add_argument(
+        "--human-in-loop",
+        action="store_true",
+        help="Enable human approval for critical actions",
+    )
+    parser.add_argument(
+        "--quick", action="store_true", help="Quick mode with minimal output"
+    )
 
     args = parser.parse_args()
 
@@ -276,7 +336,9 @@ Examples:
         if args.quick:
             asyncio.run(quick_demo(args.target))
         else:
-            asyncio.run(demo_with_visualization(args.target, args.human_in_loop))
+            asyncio.run(
+                demo_with_visualization(args.target, args.human_in_loop)
+            )
 
     except KeyboardInterrupt:
         print(f"\n\n{Colors.YELLOW}[!] Interrupted by user{Colors.ENDC}")

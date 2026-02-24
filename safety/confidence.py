@@ -26,10 +26,19 @@ class ConfidenceScorer:
     """
 
     def __init__(self):
-        self.weights = {"guardrails": 0.25, "validation": 0.25, "fact_check": 0.30, "consistency": 0.20}
+        self.weights = {
+            "guardrails": 0.25,
+            "validation": 0.25,
+            "fact_check": 0.30,
+            "consistency": 0.20,
+        }
 
     def calculate(
-        self, guardrail_result=None, validation_result=None, fact_check_results=None, consistency_score: float = 1.0
+        self,
+        guardrail_result=None,
+        validation_result=None,
+        fact_check_results=None,
+        consistency_score: float = 1.0,
     ) -> ConfidenceScore:
         """
         Calculate overall confidence score
@@ -42,7 +51,9 @@ class ConfidenceScorer:
             guardrail_score = 1.0 - guardrail_result.confidence_penalty
             breakdown["guardrails"] = max(0.0, guardrail_score)
             if guardrail_score < 0.7:
-                recommendations.append("Review output for uncertainty indicators")
+                recommendations.append(
+                    "Review output for uncertainty indicators"
+                )
         else:
             breakdown["guardrails"] = 1.0
 
@@ -59,7 +70,9 @@ class ConfidenceScorer:
         if fact_check_results:
             total = len(fact_check_results)
             if total > 0:
-                verified = sum(1 for r in fact_check_results if r.confidence > 0.7)
+                verified = sum(
+                    1 for r in fact_check_results if r.confidence > 0.7
+                )
                 fact_score = verified / total
                 breakdown["fact_check"] = fact_score
                 if fact_score < 0.8:
@@ -75,7 +88,9 @@ class ConfidenceScorer:
             recommendations.append("Check for internal contradictions")
 
         # Calculate weighted score
-        total_score = sum(breakdown[key] * self.weights[key] for key in self.weights.keys())
+        total_score = sum(
+            breakdown[key] * self.weights[key] for key in self.weights.keys()
+        )
 
         # Determine level
         if total_score >= 0.9:
@@ -86,11 +101,20 @@ class ConfidenceScorer:
             level = "low"
         else:
             level = "critical"
-            recommendations.insert(0, "HIGH RISK: Significant hallucination detected")
+            recommendations.insert(
+                0, "HIGH RISK: Significant hallucination detected"
+            )
 
-        return ConfidenceScore(score=round(total_score, 3), level=level, breakdown=breakdown, recommendations=recommendations)
+        return ConfidenceScore(
+            score=round(total_score, 3),
+            level=level,
+            breakdown=breakdown,
+            recommendations=recommendations,
+        )
 
-    def should_retry(self, score: ConfidenceScore, threshold: float = 0.6) -> bool:
+    def should_retry(
+        self, score: ConfidenceScore, threshold: float = 0.6
+    ) -> bool:
         """Determine if output should be regenerated"""
         return score.score < threshold
 

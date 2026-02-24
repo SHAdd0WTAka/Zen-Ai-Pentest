@@ -74,7 +74,9 @@ class CVEDatabase:
     Comprehensive CVE and Ransomware Database with caching.
     """
 
-    def __init__(self, orchestrator=None, cache_size: int = 1000, cache_ttl: int = 3600):
+    def __init__(
+        self, orchestrator=None, cache_size: int = 1000, cache_ttl: int = 3600
+    ):
         self.orchestrator = orchestrator
         self.db_path = "data/cve_db"
         self.ransomware_data: Dict[str, Dict] = {}
@@ -106,7 +108,10 @@ class CVEDatabase:
                     self.ransomware_data = data.get("ransomware_campaigns", {})
                     self.cve_data = data.get("critical_historical_cves", {})
                     self.exploit_chains = data.get("common_exploit_chains", {})
-                logger.info(f"[CVE DB] Loaded {len(self.ransomware_data)} ransomware entries, " f"{len(self.cve_data)} CVEs")
+                logger.info(
+                    f"[CVE DB] Loaded {len(self.ransomware_data)} ransomware entries, "
+                    f"{len(self.cve_data)} CVEs"
+                )
             except Exception as e:
                 logger.error(f"[CVE DB] Error loading database: {e}")
 
@@ -125,14 +130,20 @@ class CVEDatabase:
                 cve_upper = cve.upper()
                 if cve_upper not in self._ransomware_cve_index:
                     self._ransomware_cve_index[cve_upper] = set()
-                self._ransomware_cve_index[cve_upper].add(data.get("name", key))
+                self._ransomware_cve_index[cve_upper].add(
+                    data.get("name", key)
+                )
 
     async def _get_from_cache(self, key: str) -> Optional[Dict]:
         """Get item from cache with TTL check."""
         async with self._cache_lock:
             if key in self._cache:
                 cached_time = self._cache_times.get(key)
-                if cached_time and (datetime.utcnow() - cached_time).seconds < self._cache_ttl:
+                if (
+                    cached_time
+                    and (datetime.utcnow() - cached_time).seconds
+                    < self._cache_ttl
+                ):
                     return self._cache[key]
                 else:
                     # Expired
@@ -145,7 +156,10 @@ class CVEDatabase:
         async with self._cache_lock:
             # Evict oldest if at capacity
             if len(self._cache) >= self._cache_size:
-                oldest_key = min(self._cache_times.keys(), key=lambda k: self._cache_times[k])
+                oldest_key = min(
+                    self._cache_times.keys(),
+                    key=lambda k: self._cache_times[k],
+                )
                 del self._cache[oldest_key]
                 del self._cache_times[oldest_key]
 
@@ -190,14 +204,18 @@ class CVEDatabase:
 
         return result
 
-    def search_cve_batch(self, cve_ids: List[str]) -> Dict[str, Optional[CVEEntry]]:
+    def search_cve_batch(
+        self, cve_ids: List[str]
+    ) -> Dict[str, Optional[CVEEntry]]:
         """Batch search for multiple CVEs (more efficient than individual lookups)."""
         results = {}
         for cve_id in cve_ids:
             results[cve_id] = self.search_cve(cve_id)
         return results
 
-    async def search_cve_batch_cached(self, cve_ids: List[str]) -> Dict[str, Optional[CVEEntry]]:
+    async def search_cve_batch_cached(
+        self, cve_ids: List[str]
+    ) -> Dict[str, Optional[CVEEntry]]:
         """Batch search with caching."""
         results = {}
         to_fetch = []
@@ -218,7 +236,9 @@ class CVEDatabase:
             for cve_id, entry in fetched.items():
                 results[cve_id] = entry
                 if entry:
-                    await self._add_to_cache(f"cve:{cve_id.upper()}", entry.to_dict())
+                    await self._add_to_cache(
+                        f"cve:{cve_id.upper()}", entry.to_dict()
+                    )
 
         return results
 
@@ -227,7 +247,10 @@ class CVEDatabase:
         name_lower = name.lower()
 
         for key, data in self.ransomware_data.items():
-            if name_lower in key.lower() or name_lower in data.get("name", "").lower():
+            if (
+                name_lower in key.lower()
+                or name_lower in data.get("name", "").lower()
+            ):
                 return RansomwareEntry(
                     name=data.get("name", key),
                     first_seen=data.get("first_seen", ""),
@@ -262,7 +285,9 @@ class CVEDatabase:
 
         return results
 
-    def get_cves_by_severity_generator(self, severity: str) -> Generator[CVEEntry, None, None]:
+    def get_cves_by_severity_generator(
+        self, severity: str
+    ) -> Generator[CVEEntry, None, None]:
         """Generator for CVEs by severity (memory efficient for large datasets)."""
         severity = severity.capitalize()
         cve_ids = self._severity_index.get(severity, set())
@@ -276,7 +301,9 @@ class CVEDatabase:
         """Get all critical CVEs with optional limit."""
         results = self.get_cves_by_severity("Critical")
         if limit:
-            results = sorted(results, key=lambda x: x.cvss_score or 0, reverse=True)[:limit]
+            results = sorted(
+                results, key=lambda x: x.cvss_score or 0, reverse=True
+            )[:limit]
         return results
 
     def get_ransomware_iocs(self, ransomware_name: str) -> Dict:
@@ -305,13 +332,20 @@ class CVEDatabase:
                 for file in indicators["files"]:
                     file_lower = file.lower()
                     for ioc_file in ioc["files"]:
-                        if file_lower in ioc_file.lower() or ioc_file.lower() in file_lower:
+                        if (
+                            file_lower in ioc_file.lower()
+                            or ioc_file.lower() in file_lower
+                        ):
                             match_score += 10
                             match_details.append(f"File match: {file}")
                             break  # One match per file is enough
 
             # Check registry indicators
-            if "registry" in indicators and "registry" in ioc and match_score < 100:
+            if (
+                "registry" in indicators
+                and "registry" in ioc
+                and match_score < 100
+            ):
                 for reg in indicators["registry"]:
                     reg_lower = reg.lower()
                     for ioc_reg in ioc["registry"]:
@@ -327,10 +361,16 @@ class CVEDatabase:
                 hash_matches = indicator_hashes & ioc_hashes
                 if hash_matches:
                     match_score += 50 * len(hash_matches)
-                    match_details.extend([f"Hash match: {h}" for h in hash_matches])
+                    match_details.extend(
+                        [f"Hash match: {h}" for h in hash_matches]
+                    )
 
             # Check processes
-            if "processes" in indicators and "processes" in ioc and match_score < 100:
+            if (
+                "processes" in indicators
+                and "processes" in ioc
+                and match_score < 100
+            ):
                 for proc in indicators["processes"]:
                     proc_lower = proc.lower()
                     for ioc_proc in ioc["processes"]:
@@ -351,7 +391,9 @@ class CVEDatabase:
 
         return sorted(matches, key=lambda x: x["confidence"], reverse=True)
 
-    async def analyze_vulnerability_for_ransomware_risk(self, cve_id: str) -> Dict:
+    async def analyze_vulnerability_for_ransomware_risk(
+        self, cve_id: str
+    ) -> Dict:
         """Analyze if a CVE is commonly used by ransomware"""
         cve_id = cve_id.upper()
         entry = self.search_cve(cve_id)
@@ -368,7 +410,9 @@ class CVEDatabase:
             "severity": entry.severity,
             "ransomware_associated": ransomware_list,
             "ransomware_risk": risk_level,
-            "mitigation_priority": "Critical" if ransomware_list else entry.severity,
+            "mitigation_priority": (
+                "Critical" if ransomware_list else entry.severity
+            ),
             "recommended_actions": entry.mitigations,
         }
 
@@ -392,7 +436,10 @@ Provide:
         """Get a specific exploit chain"""
         name_lower = chain_name.lower()
         for key, data in self.exploit_chains.items():
-            if name_lower in key.lower() or name_lower in data.get("name", "").lower():
+            if (
+                name_lower in key.lower()
+                or name_lower in data.get("name", "").lower()
+            ):
                 return data
         return None
 
@@ -465,7 +512,13 @@ Provide:
                     report_lines.append(f"- {product}")
 
                 if entry.ransomware_used_by:
-                    report_lines.extend(["", "⚠️ **Ransomware Alert:** This CVE is used by:", ""])
+                    report_lines.extend(
+                        [
+                            "",
+                            "⚠️ **Ransomware Alert:** This CVE is used by:",
+                            "",
+                        ]
+                    )
                     for rw in entry.ransomware_used_by:
                         report_lines.append(f"- {rw}")
 

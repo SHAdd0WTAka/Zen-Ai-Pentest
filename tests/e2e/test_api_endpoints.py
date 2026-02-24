@@ -68,7 +68,9 @@ class TestOrchestratorEndpoints:
             "priority": "normal",
         }
 
-        response = await client.post("/api/v1/orchestrator/tasks", json=task_data)
+        response = await client.post(
+            "/api/v1/orchestrator/tasks", json=task_data
+        )
 
         assert response.status_code == 200
         data = response.json()
@@ -250,7 +252,9 @@ class TestCompleteWorkflow:
             "priority": "high",
         }
 
-        response = await client.post("/api/v1/orchestrator/tasks", json=task_data)
+        response = await client.post(
+            "/api/v1/orchestrator/tasks", json=task_data
+        )
         assert response.status_code == 200
         task_result = response.json()
         task_id = task_result["task_id"]

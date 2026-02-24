@@ -12,7 +12,13 @@ from contextlib import asynccontextmanager
 from datetime import datetime
 from typing import Dict, List, Optional
 
-from fastapi import BackgroundTasks, FastAPI, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi import (
+    BackgroundTasks,
+    FastAPI,
+    HTTPException,
+    WebSocket,
+    WebSocketDisconnect,
+)
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -96,28 +102,47 @@ class ScanManager:
             "error": None,
         }
 
-    async def update_progress(self, scan_id: str, progress: float, step: int, message: str = "") -> None:
+    async def update_progress(
+        self, scan_id: str, progress: float, step: int, message: str = ""
+    ) -> None:
         """Update scan progress."""
         if scan_id in self.active_scans:
             self.active_scans[scan_id]["progress"] = progress
             self.active_scans[scan_id]["current_step"] = step
             if message:
-                self.active_scans[scan_id]["logs"].append({"timestamp": datetime.now().isoformat(), "message": message})
+                self.active_scans[scan_id]["logs"].append(
+                    {
+                        "timestamp": datetime.now().isoformat(),
+                        "message": message,
+                    }
+                )
 
             # Broadcast to connected clients
-            await self.broadcast({"type": "progress", "scan_id": scan_id, "data": self.get_scan_status(scan_id)})
+            await self.broadcast(
+                {
+                    "type": "progress",
+                    "scan_id": scan_id,
+                    "data": self.get_scan_status(scan_id),
+                }
+            )
 
     async def add_finding(self, scan_id: str, finding: Dict) -> None:
         """Add a finding to a scan."""
         if scan_id in self.active_scans:
             self.active_scans[scan_id]["findings"].append(finding)
 
-            await self.broadcast({"type": "finding", "scan_id": scan_id, "data": finding})
+            await self.broadcast(
+                {"type": "finding", "scan_id": scan_id, "data": finding}
+            )
 
-    def complete_scan(self, scan_id: str, success: bool = True, error: Optional[str] = None) -> None:
+    def complete_scan(
+        self, scan_id: str, success: bool = True, error: Optional[str] = None
+    ) -> None:
         """Mark a scan as completed."""
         if scan_id in self.active_scans:
-            self.active_scans[scan_id]["status"] = "completed" if success else "failed"
+            self.active_scans[scan_id]["status"] = (
+                "completed" if success else "failed"
+            )
             self.active_scans[scan_id]["end_time"] = datetime.now().isoformat()
             self.active_scans[scan_id]["error"] = error
 
@@ -155,7 +180,9 @@ class ScanManager:
                 "start_time": s.get("start_time"),
                 "end_time": s.get("end_time"),
             }
-            for s in sorted(all_scans, key=lambda x: x.get("start_time", ""), reverse=True)
+            for s in sorted(
+                all_scans, key=lambda x: x.get("start_time", ""), reverse=True
+            )
         ]
 
     def get_dashboard_stats(self) -> DashboardStats:
@@ -181,8 +208,16 @@ class ScanManager:
         return DashboardStats(
             total_scans=len(all_scans),
             active_scans=len(self.active_scans),
-            completed_scans=len([s for s in self.scan_history if s.get("status") == "completed"]),
-            failed_scans=len([s for s in self.scan_history if s.get("status") == "failed"]),
+            completed_scans=len(
+                [
+                    s
+                    for s in self.scan_history
+                    if s.get("status") == "completed"
+                ]
+            ),
+            failed_scans=len(
+                [s for s in self.scan_history if s.get("status") == "failed"]
+            ),
             total_findings=total_findings,
             critical_findings=critical,
             high_findings=high,
@@ -232,7 +267,10 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="Zen AI Pentest Web UI", description="Autonomous penetration testing dashboard", version="2.0.0", lifespan=lifespan
+    title="Zen AI Pentest Web UI",
+    description="Autonomous penetration testing dashboard",
+    version="2.0.0",
+    lifespan=lifespan,
 )
 
 # CORS
@@ -276,7 +314,11 @@ async def create_scan(request: ScanRequest, background_tasks: BackgroundTasks):
     # Start scan in background
     background_tasks.add_task(run_scan, scan_id, request)
 
-    return {"scan_id": scan_id, "status": "started", "message": f"Scan started for target: {request.target}"}
+    return {
+        "scan_id": scan_id,
+        "status": "started",
+        "message": f"Scan started for target: {request.target}",
+    }
 
 
 @app.get("/api/scans/{scan_id}")
@@ -337,10 +379,14 @@ async def get_scan_logs(scan_id: str):
 async def cancel_scan(scan_id: str):
     """Cancel an active scan."""
     if scan_id in scan_manager.active_scans:
-        scan_manager.complete_scan(scan_id, success=False, error="Cancelled by user")
+        scan_manager.complete_scan(
+            scan_id, success=False, error="Cancelled by user"
+        )
         return {"message": "Scan cancelled"}
 
-    raise HTTPException(status_code=404, detail="Scan not found or already completed")
+    raise HTTPException(
+        status_code=404, detail="Scan not found or already completed"
+    )
 
 
 # ============== WebSocket ==============
@@ -369,7 +415,9 @@ async def websocket_endpoint(websocket: WebSocket):
 async def run_scan(scan_id: str, request: ScanRequest):
     """Background task to run the scan."""
     try:
-        await scan_manager.update_progress(scan_id, 0, 0, "Initializing scan...")
+        await scan_manager.update_progress(
+            scan_id, 0, 0, "Initializing scan..."
+        )
 
         # Map safety level
         safety_map = {
@@ -378,10 +426,14 @@ async def run_scan(scan_id: str, request: ScanRequest):
             "destructive": SafetyLevel.DESTRUCTIVE,
             "exploit": SafetyLevel.EXPLOIT,
         }
-        safety = safety_map.get(request.safety_level, SafetyLevel.NON_DESTRUCTIVE)
+        safety = safety_map.get(
+            request.safety_level, SafetyLevel.NON_DESTRUCTIVE
+        )
 
         # Create agent config
-        config = AgentConfig(safety_level=safety, max_iterations=50, enable_memory=True)
+        config = AgentConfig(
+            safety_level=safety, max_iterations=50, enable_memory=True
+        )
 
         # Create mock LLM client (in production, use real backend)
         class MockLLM:
@@ -391,19 +443,30 @@ async def run_scan(scan_id: str, request: ScanRequest):
                     return "I should start with reconnaissance to understand the target."
                 elif "action" in prompt.lower():
                     return (
-                        '{"action_type": "TOOL_CALL", "tool_name": "nmap", "parameters": {"target": "' + request.target + '"}}'
+                        '{"action_type": "TOOL_CALL", "tool_name": "nmap", "parameters": {"target": "'
+                        + request.target
+                        + '"}}'
                     )
                 return "Continue with the assessment."
 
         agent = AutonomousAgent(MockLLM(), config)
 
-        await scan_manager.update_progress(scan_id, 10, 1, "Starting reconnaissance...")
+        await scan_manager.update_progress(
+            scan_id, 10, 1, "Starting reconnaissance..."
+        )
 
         # Run the scan
-        goal = request.goal or f"Comprehensive security assessment of {request.target}"
-        result = await agent.run(goal=goal, target=request.target, scope=request.scope)
+        goal = (
+            request.goal
+            or f"Comprehensive security assessment of {request.target}"
+        )
+        result = await agent.run(
+            goal=goal, target=request.target, scope=request.scope
+        )
 
-        await scan_manager.update_progress(scan_id, 50, 25, "Analyzing results...")
+        await scan_manager.update_progress(
+            scan_id, 50, 25, "Analyzing results..."
+        )
 
         # Process findings and calculate risk scores
         risk_scorer = RiskScorer()
@@ -441,7 +504,11 @@ async def run_scan(scan_id: str, request: ScanRequest):
 
 # Serve React frontend (in production, build and copy files)
 try:
-    app.mount("/static", StaticFiles(directory="../frontend/build/static"), name="static")
+    app.mount(
+        "/static",
+        StaticFiles(directory="../frontend/build/static"),
+        name="static",
+    )
 
     @app.get("/")
     async def serve_frontend():

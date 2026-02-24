@@ -68,14 +68,26 @@ class AgentCoordinator:
     def _init_resources(self):
         """Initialize system resources"""
         self.resources = {
-            ResourceType.SCANNER: Resource(ResourceType.SCANNER, max_concurrent=3),
-            ResourceType.DATABASE: Resource(ResourceType.DATABASE, max_concurrent=5),
-            ResourceType.API_RATE_LIMIT: Resource(ResourceType.API_RATE_LIMIT, max_concurrent=2),
-            ResourceType.FILE_SYSTEM: Resource(ResourceType.FILE_SYSTEM, max_concurrent=10),
-            ResourceType.NETWORK: Resource(ResourceType.NETWORK, max_concurrent=5),
+            ResourceType.SCANNER: Resource(
+                ResourceType.SCANNER, max_concurrent=3
+            ),
+            ResourceType.DATABASE: Resource(
+                ResourceType.DATABASE, max_concurrent=5
+            ),
+            ResourceType.API_RATE_LIMIT: Resource(
+                ResourceType.API_RATE_LIMIT, max_concurrent=2
+            ),
+            ResourceType.FILE_SYSTEM: Resource(
+                ResourceType.FILE_SYSTEM, max_concurrent=10
+            ),
+            ResourceType.NETWORK: Resource(
+                ResourceType.NETWORK, max_concurrent=5
+            ),
         }
 
-    async def register_agent(self, agent_id: str, name: str, timeout: float = 300.0) -> Agent:
+    async def register_agent(
+        self, agent_id: str, name: str, timeout: float = 300.0
+    ) -> Agent:
         """Register a new agent"""
         async with self._lock:
             if agent_id in self.agents:
@@ -99,7 +111,9 @@ class AgentCoordinator:
 
             del self.agents[agent_id]
 
-    async def _acquire_resource(self, agent_id: str, resource_type: ResourceType, timeout: float = 30.0) -> bool:
+    async def _acquire_resource(
+        self, agent_id: str, resource_type: ResourceType, timeout: float = 30.0
+    ) -> bool:
         """Acquire a resource with timeout"""
         start_time = time.time()
 
@@ -129,7 +143,9 @@ class AgentCoordinator:
 
         return False
 
-    async def _release_resource(self, agent_id: str, resource_type: ResourceType):
+    async def _release_resource(
+        self, agent_id: str, resource_type: ResourceType
+    ):
         """Release an acquired resource"""
         resource = self.resources[resource_type]
 
@@ -144,7 +160,12 @@ class AgentCoordinator:
             agent.acquired_resources.discard(resource_type)
 
     @asynccontextmanager
-    async def acquire_resources(self, agent_id: str, resources: List[ResourceType], timeout: float = 30.0):
+    async def acquire_resources(
+        self,
+        agent_id: str,
+        resources: List[ResourceType],
+        timeout: float = 30.0,
+    ):
         """
         Context manager for acquiring multiple resources
         Uses resource ordering to prevent deadlocks
@@ -156,9 +177,13 @@ class AgentCoordinator:
         try:
             # Acquire all resources in order
             for resource_type in sorted_resources:
-                success = await self._acquire_resource(agent_id, resource_type, timeout)
+                success = await self._acquire_resource(
+                    agent_id, resource_type, timeout
+                )
                 if not success:
-                    raise TimeoutError(f"Could not acquire {resource_type.value}")
+                    raise TimeoutError(
+                        f"Could not acquire {resource_type.value}"
+                    )
                 acquired.append(resource_type)
 
             yield acquired
@@ -182,7 +207,11 @@ class AgentCoordinator:
                                 "agent_id": agent_id,
                                 "type": "timeout",
                                 "wait_time": wait_time,
-                                "waiting_for": agent.waiting_for.value if agent.waiting_for else None,
+                                "waiting_for": (
+                                    agent.waiting_for.value
+                                    if agent.waiting_for
+                                    else None
+                                ),
                             }
                         )
 
@@ -200,7 +229,11 @@ class AgentCoordinator:
                                         "involved": [agent_id, other_id],
                                         "resources": [
                                             agent.waiting_for.value,
-                                            other.waiting_for.value if other.waiting_for else None,
+                                            (
+                                                other.waiting_for.value
+                                                if other.waiting_for
+                                                else None
+                                            ),
                                         ],
                                     }
                                 )
@@ -230,12 +263,18 @@ class AgentCoordinator:
                     "name": a.name,
                     "status": a.status.value,
                     "resources": [r.value for r in a.acquired_resources],
-                    "waiting_for": a.waiting_for.value if a.waiting_for else None,
+                    "waiting_for": (
+                        a.waiting_for.value if a.waiting_for else None
+                    ),
                 }
                 for aid, a in self.agents.items()
             },
             "resources": {
-                rt.value: {"max": r.max_concurrent, "current": len(r.current_users), "queue": len(r.wait_queue)}
+                rt.value: {
+                    "max": r.max_concurrent,
+                    "current": len(r.current_users),
+                    "queue": len(r.wait_queue),
+                }
                 for rt, r in self.resources.items()
             },
         }
@@ -247,5 +286,9 @@ class AgentCoordinator:
             "version": self.version,
             "description": "Multi-agent coordinator with deadlock prevention",
             "resources": [r.value for r in ResourceType],
-            "deadlock_prevention": ["resource_ordering", "timeout_detection", "circular_wait_detection"],
+            "deadlock_prevention": [
+                "resource_ordering",
+                "timeout_detection",
+                "circular_wait_detection",
+            ],
         }

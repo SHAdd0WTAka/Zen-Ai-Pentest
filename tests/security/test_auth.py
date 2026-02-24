@@ -33,13 +33,22 @@ class JWTHandler:
         self.blacklist: Set[str] = set()
 
     def generate_token(
-        self, user_id: str, expires_delta: Optional[timedelta] = None, additional_claims: Optional[Dict] = None
+        self,
+        user_id: str,
+        expires_delta: Optional[timedelta] = None,
+        additional_claims: Optional[Dict] = None,
     ) -> str:
         """Generate a JWT token."""
         import base64
         import json
 
-        header = base64.urlsafe_b64encode(json.dumps({"alg": self.algorithm, "typ": "JWT"}).encode()).rstrip(b"=").decode()
+        header = (
+            base64.urlsafe_b64encode(
+                json.dumps({"alg": self.algorithm, "typ": "JWT"}).encode()
+            )
+            .rstrip(b"=")
+            .decode()
+        )
 
         now = get_utc_now()
         exp = now + (expires_delta or timedelta(minutes=15))
@@ -54,9 +63,17 @@ class JWTHandler:
         if additional_claims:
             payload.update(additional_claims)
 
-        payload_b64 = base64.urlsafe_b64encode(json.dumps(payload).encode()).rstrip(b"=").decode()
+        payload_b64 = (
+            base64.urlsafe_b64encode(json.dumps(payload).encode())
+            .rstrip(b"=")
+            .decode()
+        )
 
-        signature = hmac.new(self.secret.encode(), f"{header}.{payload_b64}".encode(), hashlib.sha256).digest()
+        signature = hmac.new(
+            self.secret.encode(),
+            f"{header}.{payload_b64}".encode(),
+            hashlib.sha256,
+        ).digest()
         sig_b64 = base64.urlsafe_b64encode(signature).rstrip(b"=").decode()
 
         return f"{header}.{payload_b64}.{sig_b64}"
@@ -73,7 +90,9 @@ class JWTHandler:
 
             # Verify signature
             message = f"{parts[0]}.{parts[1]}".encode()
-            expected_sig = hmac.new(self.secret.encode(), message, hashlib.sha256).digest()
+            expected_sig = hmac.new(
+                self.secret.encode(), message, hashlib.sha256
+            ).digest()
 
             # Decode actual signature from base64url
             actual_sig_b64 = parts[2]
@@ -120,7 +139,12 @@ class PasswordHasher:
     def hash_password(cls, password: str) -> str:
         """Hash password with salt using PBKDF2."""
         salt = secrets.token_hex(cls.SALT_LENGTH)
-        pwdhash = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt.encode("ascii"), cls.ITERATIONS)
+        pwdhash = hashlib.pbkdf2_hmac(
+            "sha256",
+            password.encode("utf-8"),
+            salt.encode("ascii"),
+            cls.ITERATIONS,
+        )
         return f"pbkdf2:sha256:{cls.ITERATIONS}${salt}${pwdhash.hex()}"
 
     @classmethod
@@ -139,7 +163,12 @@ class PasswordHasher:
             salt = parts[1]
             stored_hash = parts[2]
 
-            computed_hash = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt.encode("ascii"), iterations).hex()
+            computed_hash = hashlib.pbkdf2_hmac(
+                "sha256",
+                password.encode("utf-8"),
+                salt.encode("ascii"),
+                iterations,
+            ).hex()
 
             return hmac.compare_digest(stored_hash, computed_hash)
         except Exception:
@@ -154,7 +183,9 @@ class PasswordHasher:
             "has_upper": bool(re.search(r"[A-Z]", password)),
             "has_lower": bool(re.search(r"[a-z]", password)),
             "has_digit": bool(re.search(r"\d", password)),
-            "has_special": bool(re.search(r'[!@#$%^&*(),.?":{}|<>]', password)),
+            "has_special": bool(
+                re.search(r'[!@#$%^&*(),.?":{}|<>]', password)
+            ),
             "score": 0,
         }
 
@@ -196,7 +227,9 @@ class APIKeyValidator:
         }
         return key
 
-    def validate_key(self, key: str, required_permission: Optional[str] = None) -> bool:
+    def validate_key(
+        self, key: str, required_permission: Optional[str] = None
+    ) -> bool:
         """Validate an API key and optionally check permission."""
         if not self.KEY_PATTERN.match(key):
             return False
@@ -295,7 +328,9 @@ class TestJWTValidation:
     def test_token_expiration(self, jwt_handler):
         """Test expired token detection."""
         # Generate token that expires immediately
-        token = jwt_handler.generate_token("user123", expires_delta=timedelta(seconds=-1))
+        token = jwt_handler.generate_token(
+            "user123", expires_delta=timedelta(seconds=-1)
+        )
 
         with pytest.raises(ValueError, match="expired"):
             jwt_handler.verify_token(token)
@@ -309,7 +344,11 @@ class TestJWTValidation:
         parts = token.split(".")
 
         # Tamper with payload
-        tampered_payload = base64.urlsafe_b64encode(json.dumps({"sub": "attacker"}).encode()).rstrip(b"=").decode()
+        tampered_payload = (
+            base64.urlsafe_b64encode(json.dumps({"sub": "attacker"}).encode())
+            .rstrip(b"=")
+            .decode()
+        )
 
         tampered_token = f"{parts[0]}.{tampered_payload}.{parts[2]}"
 
@@ -419,7 +458,9 @@ class TestPasswordHashing:
 
     def test_verify_malformed_hash(self):
         """Test verification handles malformed hashes gracefully."""
-        assert PasswordHasher.verify_password("password", "invalid_hash") is False
+        assert (
+            PasswordHasher.verify_password("password", "invalid_hash") is False
+        )
         assert PasswordHasher.verify_password("password", "") is False
 
 
@@ -602,8 +643,12 @@ class TestAuthIntegration:
         jwt_handler = JWTHandler(secret="app_secret")
 
         # Generate tokens
-        access_token = jwt_handler.generate_token("user123", expires_delta=timedelta(minutes=15))
-        refresh_token = jwt_handler.generate_token("user123", expires_delta=timedelta(days=7))
+        access_token = jwt_handler.generate_token(
+            "user123", expires_delta=timedelta(minutes=15)
+        )
+        refresh_token = jwt_handler.generate_token(
+            "user123", expires_delta=timedelta(days=7)
+        )
 
         # Both tokens work initially
         assert jwt_handler.verify_token(access_token)["sub"] == "user123"

@@ -96,7 +96,9 @@ class TimingMetrics:
 
     def to_dict(self) -> Dict[str, Any]:
         return {
-            "start_time": self.start_time.isoformat() if self.start_time else None,
+            "start_time": (
+                self.start_time.isoformat() if self.start_time else None
+            ),
             "end_time": self.end_time.isoformat() if self.end_time else None,
             "duration_ms": self.duration_ms,
             "duration_seconds": self.duration_seconds,
@@ -142,7 +144,11 @@ class CPUMetrics:
     samples: List[float] = field(default_factory=list)
 
     def to_dict(self) -> Dict[str, Any]:
-        return {"avg_percent": self.avg_percent, "peak_percent": self.peak_percent, "sample_count": len(self.samples)}
+        return {
+            "avg_percent": self.avg_percent,
+            "peak_percent": self.peak_percent,
+            "sample_count": len(self.samples),
+        }
 
 
 @dataclass
@@ -274,8 +280,16 @@ class ResourceMonitor:
             initial_mb=self.memory_samples[0] if self.memory_samples else 0,
             peak_mb=max(self.memory_samples) if self.memory_samples else 0,
             final_mb=self.memory_samples[-1] if self.memory_samples else 0,
-            delta_mb=(self.memory_samples[-1] - self.memory_samples[0]) if len(self.memory_samples) > 1 else 0,
-            avg_mb=statistics.mean(self.memory_samples) if self.memory_samples else 0,
+            delta_mb=(
+                (self.memory_samples[-1] - self.memory_samples[0])
+                if len(self.memory_samples) > 1
+                else 0
+            ),
+            avg_mb=(
+                statistics.mean(self.memory_samples)
+                if self.memory_samples
+                else 0
+            ),
             samples=self.memory_samples.copy(),
         )
 
@@ -285,7 +299,9 @@ class ResourceMonitor:
             return CPUMetrics()
 
         return CPUMetrics(
-            avg_percent=statistics.mean(self.cpu_samples) if self.cpu_samples else 0,
+            avg_percent=(
+                statistics.mean(self.cpu_samples) if self.cpu_samples else 0
+            ),
             peak_percent=max(self.cpu_samples) if self.cpu_samples else 0,
             samples=self.cpu_samples.copy(),
         )
@@ -333,7 +349,9 @@ class BenchmarkRunner:
         }
 
     @contextmanager
-    def measure(self, name: str, category: BenchmarkCategory, description: str = ""):
+    def measure(
+        self, name: str, category: BenchmarkCategory, description: str = ""
+    ):
         """Context manager for simple timing measurements."""
         start_time = time.perf_counter()
         start_dt = datetime.utcnow()
@@ -445,8 +463,12 @@ class BenchmarkRunner:
             sorted_times = sorted(iteration_times)
             p95_idx = int(len(sorted_times) * 0.95)
             p99_idx = int(len(sorted_times) * 0.99)
-            result.timing.p95_ms = sorted_times[min(p95_idx, len(sorted_times) - 1)]
-            result.timing.p99_ms = sorted_times[min(p99_idx, len(sorted_times) - 1)]
+            result.timing.p95_ms = sorted_times[
+                min(p95_idx, len(sorted_times) - 1)
+            ]
+            result.timing.p99_ms = sorted_times[
+                min(p99_idx, len(sorted_times) - 1)
+            ]
 
         # Store result
         self.results.append(result)
@@ -465,7 +487,11 @@ class BenchmarkRunner:
             return {"status": "no_baseline", "message": "No baseline found"}
 
         baseline = self.baselines[baseline_key]
-        comparison = {"status": "compared", "baseline_timestamp": baseline.get("timestamp"), "metrics": {}}
+        comparison = {
+            "status": "compared",
+            "baseline_timestamp": baseline.get("timestamp"),
+            "metrics": {},
+        }
 
         # Compare timing
         if "timing" in baseline:
@@ -473,7 +499,11 @@ class BenchmarkRunner:
             current_duration = result.timing.duration_ms
 
             if baseline_duration > 0:
-                change_pct = (current_duration - baseline_duration) / baseline_duration * 100
+                change_pct = (
+                    (current_duration - baseline_duration)
+                    / baseline_duration
+                    * 100
+                )
                 comparison["metrics"]["duration_ms"] = {
                     "baseline": baseline_duration,
                     "current": current_duration,
@@ -487,7 +517,9 @@ class BenchmarkRunner:
             current_peak = result.memory.peak_mb
 
             if baseline_peak > 0:
-                change_pct = (current_peak - baseline_peak) / baseline_peak * 100
+                change_pct = (
+                    (current_peak - baseline_peak) / baseline_peak * 100
+                )
                 comparison["metrics"]["peak_memory_mb"] = {
                     "baseline": baseline_peak,
                     "current": current_peak,
@@ -504,7 +536,9 @@ class BenchmarkRunner:
         self._save_baselines()
         logger.info(f"Set baseline for {baseline_key}")
 
-    def save_result(self, result: BenchmarkResult, filename: Optional[str] = None) -> Path:
+    def save_result(
+        self, result: BenchmarkResult, filename: Optional[str] = None
+    ) -> Path:
         """Save benchmark result to file."""
         if filename is None:
             filename = f"{result.category.value}_{result.name}_{result.benchmark_id}.json"
@@ -552,10 +586,16 @@ class BenchmarkRunner:
                 }
             )
 
-        return {"total_benchmarks": len(self.results), "categories": list(by_category.keys()), "by_category": by_category}
+        return {
+            "total_benchmarks": len(self.results),
+            "categories": list(by_category.keys()),
+            "by_category": by_category,
+        }
 
 
-def benchmark_timer(name: str, category: BenchmarkCategory = BenchmarkCategory.OVERALL):
+def benchmark_timer(
+    name: str, category: BenchmarkCategory = BenchmarkCategory.OVERALL
+):
     """Decorator for timing function execution."""
 
     def decorator(func: Callable) -> Callable:
@@ -577,7 +617,11 @@ def benchmark_timer(name: str, category: BenchmarkCategory = BenchmarkCategory.O
                 duration = (time.perf_counter() - start) * 1000
                 logger.debug(f"[Benchmark] {name}: {duration:.2f}ms")
 
-        return async_wrapper if asyncio.iscoroutinefunction(func) else sync_wrapper
+        return (
+            async_wrapper
+            if asyncio.iscoroutinefunction(func)
+            else sync_wrapper
+        )
 
     return decorator
 
@@ -605,14 +649,18 @@ class ThroughputCalculator:
 
         duration = (self.end_time - self.start_time) if self.start_time else 0
 
-        metrics = ThroughputMetrics(operations=self.operations, duration_seconds=duration)
+        metrics = ThroughputMetrics(
+            operations=self.operations, duration_seconds=duration
+        )
         metrics.calculate()
 
         return metrics
 
 
 # Convenience functions
-async def measure_scan_throughput(scan_func: Callable, targets: List[str], **kwargs) -> Tuple[BenchmarkResult, List[Any]]:
+async def measure_scan_throughput(
+    scan_func: Callable, targets: List[str], **kwargs
+) -> Tuple[BenchmarkResult, List[Any]]:
     """
     Measure scan throughput (targets per minute).
 
@@ -642,17 +690,24 @@ async def measure_scan_throughput(scan_func: Callable, targets: List[str], **kwa
     )
 
     # Calculate throughput
-    result.throughput = ThroughputMetrics(operations=len(targets), duration_seconds=result.timing.duration_seconds)
+    result.throughput = ThroughputMetrics(
+        operations=len(targets),
+        duration_seconds=result.timing.duration_seconds,
+    )
     result.throughput.calculate()
 
     # Store targets per minute as custom metric
-    result.custom_metrics["targets_per_minute"] = result.throughput.ops_per_minute
+    result.custom_metrics["targets_per_minute"] = (
+        result.throughput.ops_per_minute
+    )
     result.custom_metrics["target_count"] = len(targets)
 
     return result, scan_results
 
 
-async def measure_api_latency(endpoint: str, request_func: Callable, iterations: int = 100, **kwargs) -> BenchmarkResult:
+async def measure_api_latency(
+    endpoint: str, request_func: Callable, iterations: int = 100, **kwargs
+) -> BenchmarkResult:
     """
     Measure API endpoint latency.
 
@@ -679,7 +734,9 @@ async def measure_api_latency(endpoint: str, request_func: Callable, iterations:
 
     # Calculate requests per second
     result.custom_metrics["requests_per_second"] = (
-        iterations / result.timing.duration_seconds if result.timing.duration_seconds > 0 else 0
+        iterations / result.timing.duration_seconds
+        if result.timing.duration_seconds > 0
+        else 0
     )
 
     return result

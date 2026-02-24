@@ -83,11 +83,18 @@ class CloudProviderBase(ABC):
 class AWSProvider(CloudProviderBase):
     """AWS EC2 Provider"""
 
-    def __init__(self, access_key: str, secret_key: str, region: str = "us-east-1"):
+    def __init__(
+        self, access_key: str, secret_key: str, region: str = "us-east-1"
+    ):
         try:
             import boto3
 
-            self.ec2 = boto3.client("ec2", aws_access_key_id=access_key, aws_secret_access_key=secret_key, region_name=region)
+            self.ec2 = boto3.client(
+                "ec2",
+                aws_access_key_id=access_key,
+                aws_secret_access_key=secret_key,
+                region_name=region,
+            )
             logger.info("AWS Provider initialisiert")
         except ImportError:
             raise RuntimeError("boto3 nicht installiert: pip install boto3")
@@ -115,7 +122,11 @@ echo "pentest-user ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
                 MinCount=1,
                 MaxCount=1,
                 KeyName=config.ssh_key_name,
-                SecurityGroupIds=[config.security_group_id] if config.security_group_id else [],
+                SecurityGroupIds=(
+                    [config.security_group_id]
+                    if config.security_group_id
+                    else []
+                ),
                 UserData=user_data,
                 TagSpecifications=[
                     {
@@ -123,8 +134,14 @@ echo "pentest-user ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
                         "Tags": [
                             {"Key": "Name", "Value": name},
                             {"Key": "Project", "Value": "zen-ai-pentest"},
-                            {"Key": "AutoShutdown", "Value": str(config.auto_shutdown_after_hours)},
-                            *[{"Key": k, "Value": v} for k, v in (config.tags or {}).items()],
+                            {
+                                "Key": "AutoShutdown",
+                                "Value": str(config.auto_shutdown_after_hours),
+                            },
+                            *[
+                                {"Key": k, "Value": v}
+                                for k, v in (config.tags or {}).items()
+                            ],
                         ],
                     }
                 ],
@@ -167,7 +184,9 @@ echo "pentest-user ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
     def get_instance_status(self, instance_id: str) -> str:
         try:
             response = self.ec2.describe_instances(InstanceIds=[instance_id])
-            state = response["Reservations"][0]["Instances"][0]["State"]["Name"]
+            state = response["Reservations"][0]["Instances"][0]["State"][
+                "Name"
+            ]
             return state
         except Exception as e:
             logger.error(f"Status Fehler: {e}")
@@ -184,7 +203,9 @@ echo "pentest-user ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
     def list_instances(self) -> List[Dict]:
         try:
-            response = self.ec2.describe_instances(Filters=[{"Name": "tag:Project", "Values": ["zen-ai-pentest"]}])
+            response = self.ec2.describe_instances(
+                Filters=[{"Name": "tag:Project", "Values": ["zen-ai-pentest"]}]
+            )
 
             instances = []
             for reservation in response["Reservations"]:
@@ -195,7 +216,14 @@ echo "pentest-user ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
                             "state": instance["State"]["Name"],
                             "type": instance["InstanceType"],
                             "ip": instance.get("PublicIpAddress"),
-                            "name": next((t["Value"] for t in instance.get("Tags", []) if t["Key"] == "Name"), "unknown"),
+                            "name": next(
+                                (
+                                    t["Value"]
+                                    for t in instance.get("Tags", [])
+                                    if t["Key"] == "Name"
+                                ),
+                                "unknown",
+                            ),
                         }
                     )
             return instances
@@ -207,7 +235,10 @@ echo "pentest-user ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
         """Erstellt AMI Snapshot"""
         try:
             response = self.ec2.create_image(
-                InstanceId=instance_id, Name=name, Description=f"Zen-AI-Pentest Snapshot {name}", NoReboot=True
+                InstanceId=instance_id,
+                Name=name,
+                Description=f"Zen-AI-Pentest Snapshot {name}",
+                NoReboot=True,
             )
             return response["ImageId"]
         except Exception as e:
@@ -230,22 +261,38 @@ echo "pentest-user ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 class AzureProvider(CloudProviderBase):
     """Azure Virtual Machines Provider"""
 
-    def __init__(self, subscription_id: str, tenant_id: str, client_id: str, client_secret: str):
+    def __init__(
+        self,
+        subscription_id: str,
+        tenant_id: str,
+        client_id: str,
+        client_secret: str,
+    ):
         try:
             from azure.identity import ClientSecretCredential
             from azure.mgmt.compute import ComputeManagementClient
             from azure.mgmt.network import NetworkManagementClient
 
-            credentials = ClientSecretCredential(tenant_id=tenant_id, client_id=client_id, client_secret=client_secret)
+            credentials = ClientSecretCredential(
+                tenant_id=tenant_id,
+                client_id=client_id,
+                client_secret=client_secret,
+            )
 
-            self.compute_client = ComputeManagementClient(credentials, subscription_id)
-            self.network_client = NetworkManagementClient(credentials, subscription_id)
+            self.compute_client = ComputeManagementClient(
+                credentials, subscription_id
+            )
+            self.network_client = NetworkManagementClient(
+                credentials, subscription_id
+            )
             self.subscription_id = subscription_id
             self.resource_group = "zen-pentest-rg"  # Default RG
 
             logger.info("Azure Provider initialisiert")
         except ImportError:
-            raise RuntimeError("Azure SDK nicht installiert: pip install azure-mgmt-compute azure-mgmt-network azure-identity")
+            raise RuntimeError(
+                "Azure SDK nicht installiert: pip install azure-mgmt-compute azure-mgmt-network azure-identity"
+            )
 
     def create_instance(self, config: CloudVMConfig, name: str) -> str:
         """Erstellt Azure VM"""
@@ -281,10 +328,16 @@ class AzureProvider(CloudProviderBase):
                         },
                     },
                 ),
-                network_profile=NetworkProfile(network_interfaces=[NetworkInterfaceReference(id=nic.id)]),
+                network_profile=NetworkProfile(
+                    network_interfaces=[NetworkInterfaceReference(id=nic.id)]
+                ),
             )
 
-            operation = self.compute_client.virtual_machines.begin_create_or_update(self.resource_group, name, vm_parameters)
+            operation = (
+                self.compute_client.virtual_machines.begin_create_or_update(
+                    self.resource_group, name, vm_parameters
+                )
+            )
             vm = operation.result()
 
             logger.info(f"Azure VM erstellt: {vm.name}")
@@ -301,7 +354,9 @@ class AzureProvider(CloudProviderBase):
 
     def start_instance(self, instance_id: str) -> bool:
         try:
-            self.compute_client.virtual_machines.begin_start(self.resource_group, instance_id)
+            self.compute_client.virtual_machines.begin_start(
+                self.resource_group, instance_id
+            )
             return True
         except Exception as e:
             logger.error(f"Start Fehler: {e}")
@@ -309,7 +364,9 @@ class AzureProvider(CloudProviderBase):
 
     def stop_instance(self, instance_id: str) -> bool:
         try:
-            self.compute_client.virtual_machines.begin_deallocate(self.resource_group, instance_id)
+            self.compute_client.virtual_machines.begin_deallocate(
+                self.resource_group, instance_id
+            )
             return True
         except Exception as e:
             logger.error(f"Stop Fehler: {e}")
@@ -317,7 +374,9 @@ class AzureProvider(CloudProviderBase):
 
     def terminate_instance(self, instance_id: str) -> bool:
         try:
-            self.compute_client.virtual_machines.begin_delete(self.resource_group, instance_id)
+            self.compute_client.virtual_machines.begin_delete(
+                self.resource_group, instance_id
+            )
             return True
         except Exception as e:
             logger.error(f"Delete Fehler: {e}")
@@ -325,7 +384,9 @@ class AzureProvider(CloudProviderBase):
 
     def get_instance_status(self, instance_id: str) -> str:
         try:
-            vm = self.compute_client.virtual_machines.instance_view(self.resource_group, instance_id)
+            vm = self.compute_client.virtual_machines.instance_view(
+                self.resource_group, instance_id
+            )
             statuses = [s.display_status for s in vm.statuses]
             return statuses[-1] if statuses else "unknown"
         except Exception as e:
@@ -334,7 +395,9 @@ class AzureProvider(CloudProviderBase):
 
     def get_instance_ip(self, instance_id: str) -> Optional[str]:
         try:
-            _vm = self.compute_client.virtual_machines.get(self.resource_group, instance_id)
+            _vm = self.compute_client.virtual_machines.get(
+                self.resource_group, instance_id
+            )
             # IP aus NIC extrahieren
             return "N/A"  # Simplifiziert
         except Exception as e:
@@ -343,7 +406,9 @@ class AzureProvider(CloudProviderBase):
 
     def list_instances(self) -> List[Dict]:
         try:
-            vms = self.compute_client.virtual_machines.list(self.resource_group)
+            vms = self.compute_client.virtual_machines.list(
+                self.resource_group
+            )
             return [
                 {
                     "id": vm.name,
@@ -371,20 +436,33 @@ class AzureProvider(CloudProviderBase):
 class GCPProvider(CloudProviderBase):
     """Google Cloud Platform Provider"""
 
-    def __init__(self, project_id: str, credentials_path: str, zone: str = "us-central1-a"):
+    def __init__(
+        self,
+        project_id: str,
+        credentials_path: str,
+        zone: str = "us-central1-a",
+    ):
         try:
             from google.cloud import compute_v1
             from google.oauth2 import service_account
 
-            credentials = service_account.Credentials.from_service_account_file(credentials_path)
+            credentials = (
+                service_account.Credentials.from_service_account_file(
+                    credentials_path
+                )
+            )
 
-            self.instances_client = compute_v1.InstancesClient(credentials=credentials)
+            self.instances_client = compute_v1.InstancesClient(
+                credentials=credentials
+            )
             self.project = project_id
             self.zone = zone
 
             logger.info("GCP Provider initialisiert")
         except ImportError:
-            raise RuntimeError("GCP SDK nicht installiert: pip install google-cloud-compute")
+            raise RuntimeError(
+                "GCP SDK nicht installiert: pip install google-cloud-compute"
+            )
 
     def create_instance(self, config: CloudVMConfig, name: str) -> str:
         """Erstellt GCP Compute Instance"""
@@ -393,12 +471,16 @@ class GCPProvider(CloudProviderBase):
 
             instance = compute_v1.Instance()
             instance.name = name
-            instance.machine_type = f"zones/{self.zone}/machineTypes/{config.instance_type}"
+            instance.machine_type = (
+                f"zones/{self.zone}/machineTypes/{config.instance_type}"
+            )
 
             # Boot Disk
             disk = compute_v1.AttachedDisk()
             disk.boot = True
-            disk.initialize_params = compute_v1.AttachedDiskInitializeParams(source_image=config.image_id)
+            disk.initialize_params = compute_v1.AttachedDiskInitializeParams(
+                source_image=config.image_id
+            )
             instance.disks = [disk]
 
             # Network
@@ -407,9 +489,19 @@ class GCPProvider(CloudProviderBase):
             instance.network_interfaces = [network_interface]
 
             # Labels
-            instance.labels = {"project": "zen-ai-pentest", **{k.replace("-", "_"): v for k, v in (config.tags or {}).items()}}
+            instance.labels = {
+                "project": "zen-ai-pentest",
+                **{
+                    k.replace("-", "_"): v
+                    for k, v in (config.tags or {}).items()
+                },
+            }
 
-            operation = self.instances_client.insert(project=self.project, zone=self.zone, instance_resource=instance)
+            operation = self.instances_client.insert(
+                project=self.project,
+                zone=self.zone,
+                instance_resource=instance,
+            )
             operation.result()
 
             logger.info(f"GCP Instance erstellt: {name}")
@@ -421,7 +513,9 @@ class GCPProvider(CloudProviderBase):
 
     def start_instance(self, instance_id: str) -> bool:
         try:
-            operation = self.instances_client.start(project=self.project, zone=self.zone, instance=instance_id)
+            operation = self.instances_client.start(
+                project=self.project, zone=self.zone, instance=instance_id
+            )
             operation.result()
             return True
         except Exception as e:
@@ -430,7 +524,9 @@ class GCPProvider(CloudProviderBase):
 
     def stop_instance(self, instance_id: str) -> bool:
         try:
-            operation = self.instances_client.stop(project=self.project, zone=self.zone, instance=instance_id)
+            operation = self.instances_client.stop(
+                project=self.project, zone=self.zone, instance=instance_id
+            )
             operation.result()
             return True
         except Exception as e:
@@ -439,7 +535,9 @@ class GCPProvider(CloudProviderBase):
 
     def terminate_instance(self, instance_id: str) -> bool:
         try:
-            operation = self.instances_client.delete(project=self.project, zone=self.zone, instance=instance_id)
+            operation = self.instances_client.delete(
+                project=self.project, zone=self.zone, instance=instance_id
+            )
             operation.result()
             return True
         except Exception as e:
@@ -448,7 +546,9 @@ class GCPProvider(CloudProviderBase):
 
     def get_instance_status(self, instance_id: str) -> str:
         try:
-            instance = self.instances_client.get(project=self.project, zone=self.zone, instance=instance_id)
+            instance = self.instances_client.get(
+                project=self.project, zone=self.zone, instance=instance_id
+            )
             return instance.status.lower()
         except Exception as e:
             logger.error(f"Status Fehler: {e}")
@@ -456,7 +556,9 @@ class GCPProvider(CloudProviderBase):
 
     def get_instance_ip(self, instance_id: str) -> Optional[str]:
         try:
-            instance = self.instances_client.get(project=self.project, zone=self.zone, instance=instance_id)
+            instance = self.instances_client.get(
+                project=self.project, zone=self.zone, instance=instance_id
+            )
             if instance.network_interfaces:
                 access_configs = instance.network_interfaces[0].access_configs
                 if access_configs:
@@ -468,7 +570,9 @@ class GCPProvider(CloudProviderBase):
 
     def list_instances(self) -> List[Dict]:
         try:
-            instances = self.instances_client.list(project=self.project, zone=self.zone)
+            instances = self.instances_client.list(
+                project=self.project, zone=self.zone
+            )
             return [
                 {
                     "id": instance.name,
@@ -478,7 +582,8 @@ class GCPProvider(CloudProviderBase):
                     "ip": self.get_instance_ip(instance.name),
                 }
                 for instance in instances
-                if instance.labels and instance.labels.get("project") == "zen-ai-pentest"
+                if instance.labels
+                and instance.labels.get("project") == "zen-ai-pentest"
             ]
         except Exception as e:
             logger.error(f"List Fehler: {e}")
@@ -507,7 +612,9 @@ class CloudVMManager:
         self.providers[name] = provider
         logger.info(f"Provider hinzugefügt: {name}")
 
-    def create_instance(self, provider_name: str, config: CloudVMConfig, name: str) -> str:
+    def create_instance(
+        self, provider_name: str, config: CloudVMConfig, name: str
+    ) -> str:
         """Erstellt VM beim angegebenen Provider"""
         if provider_name not in self.providers:
             raise ValueError(f"Provider {provider_name} nicht konfiguriert")
@@ -570,7 +677,13 @@ class CloudVMManager:
 
         return all_instances
 
-    def execute_ssh_command(self, instance_id: str, command: str, ssh_key_path: str, username: str = "ubuntu") -> tuple:
+    def execute_ssh_command(
+        self,
+        instance_id: str,
+        command: str,
+        ssh_key_path: str,
+        username: str = "ubuntu",
+    ) -> tuple:
         """Führt SSH-Befehl auf VM aus"""
         import paramiko
 
@@ -600,10 +713,14 @@ class CloudVMManager:
             age_hours = (current_time - info["created_at"]) / 3600
 
             if age_hours > max_age_hours:
-                logger.warning(f"Auto-cleanup: Terminiere {instance_id} (Alter: {age_hours:.1f}h)")
+                logger.warning(
+                    f"Auto-cleanup: Terminiere {instance_id} (Alter: {age_hours:.1f}h)"
+                )
                 self.terminate_instance(instance_id)
 
-    def create_kali_instance(self, provider_name: str, region: str, name: str = "zen-kali-pentest") -> str:
+    def create_kali_instance(
+        self, provider_name: str, region: str, name: str = "zen-kali-pentest"
+    ) -> str:
         """Erstellt vorkonfigurierte Kali Linux VM"""
 
         # Provider-spezifische Kali Images
@@ -613,7 +730,11 @@ class CloudVMManager:
             "gcp": "projects/kali-linux-cloud/global/images/family/kali-linux-2024",
         }
 
-        instance_types = {"aws": "t3.medium", "azure": "Standard_B2s", "gcp": "e2-medium"}
+        instance_types = {
+            "aws": "t3.medium",
+            "azure": "Standard_B2s",
+            "gcp": "e2-medium",
+        }
 
         config = CloudVMConfig(
             provider=provider_name,
@@ -629,24 +750,35 @@ class CloudVMManager:
 
 
 # Factory-Methoden
-def create_aws_manager(access_key: str, secret_key: str, region: str = "us-east-1") -> CloudVMManager:
+def create_aws_manager(
+    access_key: str, secret_key: str, region: str = "us-east-1"
+) -> CloudVMManager:
     """Erstellt Manager mit AWS Provider"""
     manager = CloudVMManager()
     manager.add_provider("aws", AWSProvider(access_key, secret_key, region))
     return manager
 
 
-def create_azure_manager(subscription_id: str, tenant_id: str, client_id: str, client_secret: str) -> CloudVMManager:
+def create_azure_manager(
+    subscription_id: str, tenant_id: str, client_id: str, client_secret: str
+) -> CloudVMManager:
     """Erstellt Manager mit Azure Provider"""
     manager = CloudVMManager()
-    manager.add_provider("azure", AzureProvider(subscription_id, tenant_id, client_id, client_secret))
+    manager.add_provider(
+        "azure",
+        AzureProvider(subscription_id, tenant_id, client_id, client_secret),
+    )
     return manager
 
 
-def create_gcp_manager(project_id: str, credentials_path: str, zone: str = "us-central1-a") -> CloudVMManager:
+def create_gcp_manager(
+    project_id: str, credentials_path: str, zone: str = "us-central1-a"
+) -> CloudVMManager:
     """Erstellt Manager mit GCP Provider"""
     manager = CloudVMManager()
-    manager.add_provider("gcp", GCPProvider(project_id, credentials_path, zone))
+    manager.add_provider(
+        "gcp", GCPProvider(project_id, credentials_path, zone)
+    )
     return manager
 
 

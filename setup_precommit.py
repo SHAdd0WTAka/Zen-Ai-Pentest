@@ -21,7 +21,9 @@ def run_command(cmd: list[str], description: str) -> bool:
     """Run a shell command and return success status."""
     print(f"\n[>] {description}...")
     try:
-        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+        result = subprocess.run(
+            cmd, capture_output=True, text=True, check=True
+        )
         print(f"[OK] {description}")
         if result.stdout:
             print(result.stdout)
@@ -39,11 +41,16 @@ def install_precommit() -> bool:
     print("=" * 60)
 
     # Check if pre-commit is installed
-    result = subprocess.run(["pre-commit", "--version"], capture_output=True, text=True)
+    result = subprocess.run(
+        ["pre-commit", "--version"], capture_output=True, text=True
+    )
 
     if result.returncode != 0:
         print("pre-commit not found. Installing...")
-        if not run_command([sys.executable, "-m", "pip", "install", "pre-commit"], "Installing pre-commit"):
+        if not run_command(
+            [sys.executable, "-m", "pip", "install", "pre-commit"],
+            "Installing pre-commit",
+        ):
             return False
     else:
         print(f"[OK] pre-commit found: {result.stdout.strip()}")
@@ -57,7 +64,9 @@ def install_precommit() -> bool:
     print("Running pre-commit on all files (first run may take a while)...")
     print("=" * 60)
 
-    result = subprocess.run(["pre-commit", "run", "--all-files"], capture_output=True, text=True)
+    result = subprocess.run(
+        ["pre-commit", "run", "--all-files"], capture_output=True, text=True
+    )
 
     print(result.stdout)
     if result.stderr:

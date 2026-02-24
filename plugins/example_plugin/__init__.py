@@ -53,7 +53,9 @@ class ExamplePlugin(BasePlugin):
             "target": target,
             "plugin": self.NAME,
             "version": self.VERSION,
-            "findings": [{"type": "info", "message": f"Example finding for {target}"}],
+            "findings": [
+                {"type": "info", "message": f"Example finding for {target}"}
+            ],
         }
 
         return result

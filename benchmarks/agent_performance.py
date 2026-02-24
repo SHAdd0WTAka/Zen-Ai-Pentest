@@ -13,7 +13,11 @@ from typing import Any, Callable, Dict, List, Optional
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from modules.benchmark import BenchmarkCategory, BenchmarkResult, BenchmarkRunner
+from modules.benchmark import (
+    BenchmarkCategory,
+    BenchmarkResult,
+    BenchmarkRunner,
+)
 
 
 class AgentTaskType(Enum):
@@ -42,7 +46,9 @@ class AgentPerformanceBenchmark:
         self.runner = BenchmarkRunner(output_dir=output_dir)
         self.config = AgentBenchmarkConfig()
 
-    def _get_test_task(self, task_type: AgentTaskType, complexity: str) -> Dict[str, Any]:
+    def _get_test_task(
+        self, task_type: AgentTaskType, complexity: str
+    ) -> Dict[str, Any]:
         """Generate test tasks for benchmarking."""
         tasks = {
             AgentTaskType.RECONNAISSANCE: {
@@ -57,18 +63,29 @@ class AgentPerformanceBenchmark:
             },
             AgentTaskType.EXPLOIT_SELECTION: {
                 "finding": {"type": "sqli", "severity": "high"},
-                "target_info": {"os": "linux", "services": ["apache", "mysql"]},
+                "target_info": {
+                    "os": "linux",
+                    "services": ["apache", "mysql"],
+                },
                 "description": "Select appropriate exploit",
             },
             AgentTaskType.REPORT_GENERATION: {
-                "findings_count": 10 if complexity == "simple" else 50 if complexity == "medium" else 100,
+                "findings_count": (
+                    10
+                    if complexity == "simple"
+                    else 50 if complexity == "medium" else 100
+                ),
                 "format": "pdf",
                 "description": "Generate security report",
             },
         }
-        return tasks.get(task_type, tasks[AgentTaskType.VULNERABILITY_ANALYSIS])
+        return tasks.get(
+            task_type, tasks[AgentTaskType.VULNERABILITY_ANALYSIS]
+        )
 
-    async def benchmark_decision_time(self, config: Optional[AgentBenchmarkConfig] = None) -> BenchmarkResult:
+    async def benchmark_decision_time(
+        self, config: Optional[AgentBenchmarkConfig] = None
+    ) -> BenchmarkResult:
         """
         Benchmark agent decision-making time.
 
@@ -81,7 +98,11 @@ class AgentPerformanceBenchmark:
         async def make_decision():
             # Simulate agent decision-making process
             # This would integrate with actual agent in production
-            base_delay = 0.5 if cfg.complexity == "simple" else 1.0 if cfg.complexity == "medium" else 2.0
+            base_delay = (
+                0.5
+                if cfg.complexity == "simple"
+                else 1.0 if cfg.complexity == "medium" else 2.0
+            )
             await asyncio.sleep(base_delay + (hash(str(task)) % 100) / 1000)
             return {"decision": "scan", "confidence": 0.85}
 
@@ -97,19 +118,25 @@ class AgentPerformanceBenchmark:
         result.custom_metrics["task_type"] = cfg.task_type.value
         result.custom_metrics["complexity"] = cfg.complexity
         result.custom_metrics["decisions_per_second"] = (
-            cfg.iterations / result.timing.duration_seconds if result.timing.duration_seconds > 0 else 0
+            cfg.iterations / result.timing.duration_seconds
+            if result.timing.duration_seconds > 0
+            else 0
         )
 
         return result
 
-    async def benchmark_react_loop(self, config: Optional[AgentBenchmarkConfig] = None) -> BenchmarkResult:
+    async def benchmark_react_loop(
+        self, config: Optional[AgentBenchmarkConfig] = None
+    ) -> BenchmarkResult:
         """
         Benchmark ReAct loop performance.
 
         Returns:
             BenchmarkResult with ReAct loop metrics
         """
-        cfg = config or AgentBenchmarkConfig(iterations=5, max_react_iterations=5)
+        cfg = config or AgentBenchmarkConfig(
+            iterations=5, max_react_iterations=5
+        )
 
         async def run_react_loop():
             # Simulate ReAct loop iterations
@@ -137,11 +164,15 @@ class AgentPerformanceBenchmark:
 
         result.custom_metrics["max_iterations"] = cfg.max_react_iterations
         result.custom_metrics["ms_per_iteration"] = avg_per_iteration
-        result.custom_metrics["iterations_per_second"] = 1000 / avg_per_iteration if avg_per_iteration > 0 else 0
+        result.custom_metrics["iterations_per_second"] = (
+            1000 / avg_per_iteration if avg_per_iteration > 0 else 0
+        )
 
         return result
 
-    async def benchmark_tool_selection(self, config: Optional[AgentBenchmarkConfig] = None) -> BenchmarkResult:
+    async def benchmark_tool_selection(
+        self, config: Optional[AgentBenchmarkConfig] = None
+    ) -> BenchmarkResult:
         """
         Benchmark tool selection speed.
 
@@ -174,14 +205,17 @@ class AgentPerformanceBenchmark:
 
         result.custom_metrics["scenarios_tested"] = len(test_scenarios)
         result.custom_metrics["selections_per_second"] = (
-            (len(test_scenarios) * cfg.iterations) / result.timing.duration_seconds
+            (len(test_scenarios) * cfg.iterations)
+            / result.timing.duration_seconds
             if result.timing.duration_seconds > 0
             else 0
         )
 
         return result
 
-    async def benchmark_memory_usage(self, config: Optional[AgentBenchmarkConfig] = None) -> BenchmarkResult:
+    async def benchmark_memory_usage(
+        self, config: Optional[AgentBenchmarkConfig] = None
+    ) -> BenchmarkResult:
         """
         Benchmark agent memory usage during operations.
 
@@ -192,7 +226,11 @@ class AgentPerformanceBenchmark:
 
         async def agent_operation():
             # Simulate agent operation that builds context
-            context_size = 100 if cfg.complexity == "simple" else 500 if cfg.complexity == "medium" else 1000
+            context_size = (
+                100
+                if cfg.complexity == "simple"
+                else 500 if cfg.complexity == "medium" else 1000
+            )
 
             context = []
             for i in range(context_size):
@@ -222,12 +260,18 @@ class AgentPerformanceBenchmark:
         result.custom_metrics["memory_per_100_context"] = (
             result.memory.peak_mb / 10
             if cfg.complexity == "complex"
-            else result.memory.peak_mb / 5 if cfg.complexity == "medium" else result.memory.peak_mb
+            else (
+                result.memory.peak_mb / 5
+                if cfg.complexity == "medium"
+                else result.memory.peak_mb
+            )
         )
 
         return result
 
-    async def benchmark_reasoning_quality(self, config: Optional[AgentBenchmarkConfig] = None) -> BenchmarkResult:
+    async def benchmark_reasoning_quality(
+        self, config: Optional[AgentBenchmarkConfig] = None
+    ) -> BenchmarkResult:
         """
         Benchmark reasoning quality vs time tradeoff.
 
@@ -254,7 +298,9 @@ class AgentPerformanceBenchmark:
         )
 
         result.custom_metrics["reasoning_depths"] = reasoning_depths
-        result.custom_metrics["avg_time_per_depth"] = result.timing.avg_ms / len(reasoning_depths)
+        result.custom_metrics["avg_time_per_depth"] = (
+            result.timing.avg_ms / len(reasoning_depths)
+        )
 
         return result
 
@@ -294,7 +340,9 @@ class AgentPerformanceBenchmark:
 
 # Convenience function
 async def measure_agent_decision_time(
-    decision_func: Callable, iterations: int = 10, output_dir: str = "benchmark_results"
+    decision_func: Callable,
+    iterations: int = 10,
+    output_dir: str = "benchmark_results",
 ) -> BenchmarkResult:
     """
     Quick function to measure agent decision time.
@@ -326,15 +374,28 @@ async def measure_agent_decision_time(
 if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser(description="Agent Performance Benchmarks")
-    parser.add_argument("--output", default="benchmark_results", help="Output directory")
-    parser.add_argument("--iterations", type=int, default=10, help="Number of iterations")
-    parser.add_argument("--complexity", default="medium", choices=["simple", "medium", "complex"], help="Task complexity")
+    parser = argparse.ArgumentParser(
+        description="Agent Performance Benchmarks"
+    )
+    parser.add_argument(
+        "--output", default="benchmark_results", help="Output directory"
+    )
+    parser.add_argument(
+        "--iterations", type=int, default=10, help="Number of iterations"
+    )
+    parser.add_argument(
+        "--complexity",
+        default="medium",
+        choices=["simple", "medium", "complex"],
+        help="Task complexity",
+    )
 
     args = parser.parse_args()
 
     async def main():
-        _ = AgentBenchmarkConfig(iterations=args.iterations, complexity=args.complexity)  # TODO: Use config
+        _ = AgentBenchmarkConfig(
+            iterations=args.iterations, complexity=args.complexity
+        )  # TODO: Use config
 
         benchmark = AgentPerformanceBenchmark(output_dir=args.output)
         results = await benchmark.run_all()

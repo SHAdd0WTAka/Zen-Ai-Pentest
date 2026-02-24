@@ -23,7 +23,11 @@ async def mock_task_callback():
 
     async def callback(task_data):
         await asyncio.sleep(0.01)  # Simulate work
-        return {"status": "completed", "results": {"findings": []}, "execution_time": 0.01}
+        return {
+            "status": "completed",
+            "results": {"findings": []},
+            "execution_time": 0.01,
+        }
 
     return callback
 
@@ -55,19 +59,34 @@ def sample_task_data():
 @pytest.fixture
 def sample_cron_schedules():
     """Sample cron schedules for testing"""
-    return {"daily": "0 2 * * *", "hourly": "0 * * * *", "weekly": "0 0 * * 0", "every_5_minutes": "*/5 * * * *"}
+    return {
+        "daily": "0 2 * * *",
+        "hourly": "0 * * * *",
+        "weekly": "0 0 * * 0",
+        "every_5_minutes": "*/5 * * * *",
+    }
 
 
 # Markers
 def pytest_configure(config):
     """Configure pytest markers"""
-    config.addinivalue_line("markers", "integration: mark test as integration test")
+    config.addinivalue_line(
+        "markers", "integration: mark test as integration test"
+    )
     config.addinivalue_line("markers", "e2e: mark test as end-to-end test")
     config.addinivalue_line("markers", "slow: mark test as slow running")
-    config.addinivalue_line("markers", "database: mark test as database integration test")
-    config.addinivalue_line("markers", "tools: mark test as tool integration test")
-    config.addinivalue_line("markers", "api: mark test as API integration test")
-    config.addinivalue_line("markers", "agents: mark test as agent integration test")
+    config.addinivalue_line(
+        "markers", "database: mark test as database integration test"
+    )
+    config.addinivalue_line(
+        "markers", "tools: mark test as tool integration test"
+    )
+    config.addinivalue_line(
+        "markers", "api: mark test as API integration test"
+    )
+    config.addinivalue_line(
+        "markers", "agents: mark test as agent integration test"
+    )
 
 
 def pytest_collection_modifyitems(config, items):

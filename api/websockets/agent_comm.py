@@ -30,14 +30,18 @@ class ConnectionManager:
         self.active_connections: Dict[str, List[Dict]] = {}
         self.agent_sessions: Dict[str, str] = {}  # agent_id -> session_id
 
-    async def connect(self, websocket: WebSocket, session_id: str, agent_id: str):
+    async def connect(
+        self, websocket: WebSocket, session_id: str, agent_id: str
+    ):
         """Accept connection and register agent"""
         await websocket.accept()
 
         if session_id not in self.active_connections:
             self.active_connections[session_id] = []
 
-        self.active_connections[session_id].append({"websocket": websocket, "agent_id": agent_id})
+        self.active_connections[session_id].append(
+            {"websocket": websocket, "agent_id": agent_id}
+        )
         self.agent_sessions[agent_id] = session_id
 
         print(f"Agent {agent_id} connected to session {session_id}")
@@ -46,7 +50,9 @@ class ConnectionManager:
         """Remove connection"""
         if session_id in self.active_connections:
             self.active_connections[session_id] = [
-                conn for conn in self.active_connections[session_id] if conn["websocket"] != websocket
+                conn
+                for conn in self.active_connections[session_id]
+                if conn["websocket"] != websocket
             ]
             if not self.active_connections[session_id]:
                 del self.active_connections[session_id]
@@ -94,7 +100,10 @@ class ConnectionManager:
 
     def get_session_agents(self, session_id: str) -> List[str]:
         """Get list of connected agents in session"""
-        return [conn["agent_id"] for conn in self.active_connections.get(session_id, [])]
+        return [
+            conn["agent_id"]
+            for conn in self.active_connections.get(session_id, [])
+        ]
 
 
 manager = ConnectionManager()
@@ -144,7 +153,10 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
 
                 # Ensure message matches session
                 if msg.session_id != session_id:
-                    error_msg = {"type": "error", "error_message": f"Session mismatch: {msg.session_id} != {session_id}"}
+                    error_msg = {
+                        "type": "error",
+                        "error_message": f"Session mismatch: {msg.session_id} != {session_id}",
+                    }
                     await websocket.send_json(error_msg)
                     continue
 
@@ -155,7 +167,9 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
                 # db.add(AgentCommLog.from_message(msg))
                 # db.commit()
 
-                print(f"[{session_id}] {msg.agent_id} -> {msg.type}: {msg.message_id}")
+                print(
+                    f"[{session_id}] {msg.agent_id} -> {msg.type}: {msg.message_id}"
+                )
 
             except ValidationError as e:
                 # Send validation error back to sender
@@ -177,4 +191,8 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
 async def get_connected_agents(session_id: str):
     """Get list of connected agents in a session"""
     agents = manager.get_session_agents(session_id)
-    return {"session_id": session_id, "connected_agents": agents, "count": len(agents)}
+    return {
+        "session_id": session_id,
+        "connected_agents": agents,
+        "count": len(agents),
+    }

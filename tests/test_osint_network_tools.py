@@ -12,7 +12,11 @@ import pytest
 # Module
 from modules.osint_super import OSINTSuperModule, OSINTSuperResult
 from modules.super_scanner import SuperScanner
-from tools.ignorant_integration import IgnorantCheck, IgnorantIntegration, IgnorantResult
+from tools.ignorant_integration import (
+    IgnorantCheck,
+    IgnorantIntegration,
+    IgnorantResult,
+)
 
 # OSINT Tools
 from tools.sherlock_integration import SherlockIntegration, SherlockResult
@@ -53,7 +57,9 @@ class TestSherlockIntegration:
         mock_process.communicate.return_value = (mock_json.encode(), b"")
         mock_process.returncode = 0
 
-        with patch("asyncio.create_subprocess_exec", return_value=mock_process):
+        with patch(
+            "asyncio.create_subprocess_exec", return_value=mock_process
+        ):
             result = await sherlock.search("testuser")
 
         assert result.success is True
@@ -68,7 +74,9 @@ class TestSherlockIntegration:
         usernames = ["user1", "user2"]
 
         with patch.object(sherlock, "search") as mock_search:
-            mock_search.return_value = SherlockResult(username="test", found_sites=[], success=True)
+            mock_search.return_value = SherlockResult(
+                username="test", found_sites=[], success=True
+            )
 
             results = await sherlock.search_multiple(usernames)
 
@@ -87,8 +95,16 @@ class TestIgnorantIntegration:
             username="test",
             domain="example.com",
             found_platforms=[
-                IgnorantCheck(platform="github", exists=True, url="https://github.com/test"),
-                IgnorantCheck(platform="twitter", exists=True, url="https://twitter.com/test"),
+                IgnorantCheck(
+                    platform="github",
+                    exists=True,
+                    url="https://github.com/test",
+                ),
+                IgnorantCheck(
+                    platform="twitter",
+                    exists=True,
+                    url="https://twitter.com/test",
+                ),
             ],
             total_checked=120,
             success=True,
@@ -116,7 +132,9 @@ class TestIgnorantIntegration:
         mock_process.communicate.return_value = (mock_json.encode(), b"")
         mock_process.returncode = 0
 
-        with patch("asyncio.create_subprocess_exec", return_value=mock_process):
+        with patch(
+            "asyncio.create_subprocess_exec", return_value=mock_process
+        ):
             result = await ignorant.check_email("test@example.com")
 
         assert result.success is True
@@ -130,7 +148,12 @@ class TestTSharkIntegration:
 
     def test_tshark_host_dataclass(self):
         """Test TSharkHost dataclass"""
-        host = TSharkHost(ip="192.168.1.1", mac="00:11:22:33:44:55", hostname="router.local", ports=[80, 443, 22])
+        host = TSharkHost(
+            ip="192.168.1.1",
+            mac="00:11:22:33:44:55",
+            hostname="router.local",
+            ports=[80, 443, 22],
+        )
         assert host.ip == "192.168.1.1"
         assert host.mac == "00:11:22:33:44:55"
         assert len(host.ports) == 3
@@ -168,7 +191,9 @@ class TestTSharkIntegration:
             mock_process.communicate.return_value = (mock_output, b"")
             mock_process.returncode = 0
 
-            with patch("asyncio.create_subprocess_exec", return_value=mock_process):
+            with patch(
+                "asyncio.create_subprocess_exec", return_value=mock_process
+            ):
                 result = await tshark.analyze_pcap(temp_pcap)
 
             # Should succeed (parsing may vary)
@@ -223,7 +248,9 @@ class TestOSINTSuperModule:
         with patch.object(osint.sherlock, "search") as mock_search:
             mock_search.return_value = SherlockResult(
                 username="testuser",
-                found_sites=[{"site": "twitter", "url": "https://twitter.com/testuser"}],
+                found_sites=[
+                    {"site": "twitter", "url": "https://twitter.com/testuser"}
+                ],
                 total_sites=1,
                 success=True,
             )
@@ -239,17 +266,24 @@ class TestOSINTSuperModule:
         """Test email investigation"""
         osint = OSINTSuperModule()
 
-        with patch.object(osint.ignorant, "check_email") as mock_check, patch.object(osint.sherlock, "search") as mock_search:
+        with (
+            patch.object(osint.ignorant, "check_email") as mock_check,
+            patch.object(osint.sherlock, "search") as mock_search,
+        ):
 
             mock_check.return_value = IgnorantResult(
                 email="test@example.com",
                 username="test",
                 domain="example.com",
-                found_platforms=[IgnorantCheck(platform="github", exists=True)],
+                found_platforms=[
+                    IgnorantCheck(platform="github", exists=True)
+                ],
                 total_checked=10,
                 success=True,
             )
-            mock_search.return_value = SherlockResult(username="test", found_sites=[], success=True)
+            mock_search.return_value = SherlockResult(
+                username="test", found_sites=[], success=True
+            )
 
             result = await osint.investigate_email("test@example.com")
 
@@ -268,10 +302,20 @@ class TestOSINTSuperModule:
             patch.object(osint.whatweb, "scan") as mock_whatweb,
         ):
 
-            mock_sub.return_value = MagicMock(subdomains=["www.example.com", "mail.example.com"], success=True)
-            mock_amass.return_value = MagicMock(subdomains=["api.example.com"], success=True)
+            mock_sub.return_value = MagicMock(
+                subdomains=["www.example.com", "mail.example.com"],
+                success=True,
+            )
+            mock_amass.return_value = MagicMock(
+                subdomains=["api.example.com"], success=True
+            )
             mock_whatweb.return_value = MagicMock(
-                technologies=[MagicMock(name="Apache", version="2.4", category="Web Server")], success=True
+                technologies=[
+                    MagicMock(
+                        name="Apache", version="2.4", category="Web Server"
+                    )
+                ],
+                success=True,
             )
 
             result = await osint.investigate_domain("example.com")
@@ -288,7 +332,10 @@ class TestOSINTSuperModule:
             target="testuser",
             target_type="username",
             timestamp="2024-01-01",
-            social_media={"found_accounts": [{"site": "twitter"}, {"site": "github"}], "total_found": 2},
+            social_media={
+                "found_accounts": [{"site": "twitter"}, {"site": "github"}],
+                "total_found": 2,
+            },
         )
 
         summary = osint._generate_username_summary(result)
@@ -326,12 +373,22 @@ class TestSuperScanner:
         ):
 
             # Setup mocks
-            mock_sub.return_value = MagicMock(subdomains=["www.test.com"], success=True)
+            mock_sub.return_value = MagicMock(
+                subdomains=["www.test.com"], success=True
+            )
             mock_amass.return_value = MagicMock(subdomains=[], success=True)
-            mock_httpx.return_value = MagicMock(hosts=[MagicMock(url="http://test.com", status_code=200)])
-            mock_whatweb.return_value = MagicMock(technologies=[], success=True)
-            mock_waf.return_value = MagicMock(firewall_detected=False, wafs=[], success=True)
-            mock_ffuf.return_value = MagicMock(findings=[], total_requests=100, success=True)
+            mock_httpx.return_value = MagicMock(
+                hosts=[MagicMock(url="http://test.com", status_code=200)]
+            )
+            mock_whatweb.return_value = MagicMock(
+                technologies=[], success=True
+            )
+            mock_waf.return_value = MagicMock(
+                firewall_detected=False, wafs=[], success=True
+            )
+            mock_ffuf.return_value = MagicMock(
+                findings=[], total_requests=100, success=True
+            )
             mock_nikto.return_value = MagicMock(findings=[], success=True)
 
             result = await scanner.scan_domain("test.com")
@@ -351,11 +408,21 @@ class TestSuperScanner:
 
         @dataclass
         class MockResult:
-            subdomains: Dict[str, Any] = field(default_factory=lambda: {"count": 100})
-            waf: Dict[str, Any] = field(default_factory=lambda: {"firewall_detected": False})
-            port_scan: Dict[str, Any] = field(default_factory=lambda: {"ports": [80, 443, 22]})
-            directories: Dict[str, Any] = field(default_factory=lambda: {"total_found": 20})
-            vulnerabilities: Dict[str, Any] = field(default_factory=lambda: {"total": 5})
+            subdomains: Dict[str, Any] = field(
+                default_factory=lambda: {"count": 100}
+            )
+            waf: Dict[str, Any] = field(
+                default_factory=lambda: {"firewall_detected": False}
+            )
+            port_scan: Dict[str, Any] = field(
+                default_factory=lambda: {"ports": [80, 443, 22]}
+            )
+            directories: Dict[str, Any] = field(
+                default_factory=lambda: {"total_found": 20}
+            )
+            vulnerabilities: Dict[str, Any] = field(
+                default_factory=lambda: {"total": 5}
+            )
 
         mock_result = MockResult()
         summary = scanner._generate_summary(mock_result)
@@ -376,7 +443,9 @@ class TestIntegrationFlow:
         osint = OSINTSuperModule()
 
         with patch.object(osint.subfinder, "enumerate") as mock_sub:
-            mock_sub.return_value = MagicMock(subdomains=["www.test.com", "api.test.com"], success=True)
+            mock_sub.return_value = MagicMock(
+                subdomains=["www.test.com", "api.test.com"], success=True
+            )
 
             osint_result = await osint.investigate_domain("test.com")
 
@@ -384,17 +453,46 @@ class TestIntegrationFlow:
         scanner = SuperScanner()
 
         with patch.object(scanner.httpx, "probe") as mock_httpx:
-            mock_httpx.return_value = MagicMock(hosts=[MagicMock(url="http://www.test.com", status_code=200)], success=True)
+            mock_httpx.return_value = MagicMock(
+                hosts=[MagicMock(url="http://www.test.com", status_code=200)],
+                success=True,
+            )
 
             # Mock other methods
             with patch.multiple(
                 scanner,
-                subfinder=MagicMock(enumerate=MagicMock(return_value=MagicMock(subdomains=[], success=True))),
-                amass=MagicMock(enumerate=MagicMock(return_value=MagicMock(subdomains=[], success=True))),
-                whatweb=MagicMock(scan=MagicMock(return_value=MagicMock(technologies=[], success=True))),
-                wafw00f=MagicMock(detect=MagicMock(return_value=MagicMock(firewall_detected=False, wafs=[], success=True))),
-                ffuf=MagicMock(directory_bruteforce=MagicMock(return_value=MagicMock(findings=[], success=True))),
-                nikto=MagicMock(scan=MagicMock(return_value=MagicMock(findings=[], success=True))),
+                subfinder=MagicMock(
+                    enumerate=MagicMock(
+                        return_value=MagicMock(subdomains=[], success=True)
+                    )
+                ),
+                amass=MagicMock(
+                    enumerate=MagicMock(
+                        return_value=MagicMock(subdomains=[], success=True)
+                    )
+                ),
+                whatweb=MagicMock(
+                    scan=MagicMock(
+                        return_value=MagicMock(technologies=[], success=True)
+                    )
+                ),
+                wafw00f=MagicMock(
+                    detect=MagicMock(
+                        return_value=MagicMock(
+                            firewall_detected=False, wafs=[], success=True
+                        )
+                    )
+                ),
+                ffuf=MagicMock(
+                    directory_bruteforce=MagicMock(
+                        return_value=MagicMock(findings=[], success=True)
+                    )
+                ),
+                nikto=MagicMock(
+                    scan=MagicMock(
+                        return_value=MagicMock(findings=[], success=True)
+                    )
+                ),
             ):
                 super_result = await scanner.scan_domain("test.com")
 

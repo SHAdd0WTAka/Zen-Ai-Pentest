@@ -12,7 +12,11 @@ from pathlib import Path
 import jwt
 
 APP_ID = "2872904"
-PRIVATE_KEY_PATH = Path.home() / "Downloads" / "zen-ai-pentest-kimi-assistant.2026-02-23.private-key.pem"
+PRIVATE_KEY_PATH = (
+    Path.home()
+    / "Downloads"
+    / "zen-ai-pentest-kimi-assistant.2026-02-23.private-key.pem"
+)
 
 
 def generate_jwt():
@@ -36,7 +40,10 @@ def get_installation_token(jwt_token):
 
     req = urllib.request.Request(
         "https://api.github.com/app/installations",
-        headers={"Authorization": f"Bearer {jwt_token}", "Accept": "application/vnd.github.v3+json"},
+        headers={
+            "Authorization": f"Bearer {jwt_token}",
+            "Accept": "application/vnd.github.v3+json",
+        },
     )
 
     with urllib.request.urlopen(req, timeout=30) as resp:
@@ -49,7 +56,10 @@ def get_installation_token(jwt_token):
 
     req = urllib.request.Request(
         f"https://api.github.com/app/installations/{installation_id}/access_tokens",
-        headers={"Authorization": f"Bearer {jwt_token}", "Accept": "application/vnd.github.v3+json"},
+        headers={
+            "Authorization": f"Bearer {jwt_token}",
+            "Accept": "application/vnd.github.v3+json",
+        },
         method="POST",
     )
 

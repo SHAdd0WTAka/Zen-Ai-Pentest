@@ -20,7 +20,18 @@ def run_tests():
     # Install test dependencies
     print("[1/4] Installing test dependencies...")
     subprocess.run(
-        [sys.executable, "-m", "pip", "install", "-q", "pytest", "pytest-asyncio", "pytest-cov", "pytest-mock"], check=False
+        [
+            sys.executable,
+            "-m",
+            "pip",
+            "install",
+            "-q",
+            "pytest",
+            "pytest-asyncio",
+            "pytest-cov",
+            "pytest-mock",
+        ],
+        check=False,
     )
     print("[OK] Test dependencies installed")
     print()

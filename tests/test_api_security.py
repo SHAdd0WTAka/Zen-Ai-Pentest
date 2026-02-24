@@ -35,7 +35,9 @@ client = TestClient(app)
 @pytest.fixture
 def auth_headers():
     """Get authenticated headers with JWT token"""
-    response = client.post("/auth/login", json={"username": "admin", "password": "admin"})
+    response = client.post(
+        "/auth/login", json={"username": "admin", "password": "admin"}
+    )
     token = response.json()["access_token"]
     return {"Authorization": f"Bearer {token}"}
 
@@ -75,12 +77,18 @@ class TestCSRFProtection:
     def test_csrf_protected_endpoint_without_token(self):
         """Test that POST without CSRF token is rejected"""
         # Login first
-        auth_response = client.post("/auth/login", json={"username": "admin", "password": "admin"})
+        auth_response = client.post(
+            "/auth/login", json={"username": "admin", "password": "admin"}
+        )
         token = auth_response.json()["access_token"]
         headers = {"Authorization": f"Bearer {token}"}
 
         # Try POST without CSRF
-        response = client.post("/scans", json={"name": "test", "target": "localhost"}, headers=headers)
+        response = client.post(
+            "/scans",
+            json={"name": "test", "target": "localhost"},
+            headers=headers,
+        )
 
         assert response.status_code == 403
         assert "CSRF" in response.json()["detail"]
@@ -88,14 +96,19 @@ class TestCSRFProtection:
     def test_csrf_protected_endpoint_with_token(self):
         """Test that POST with valid CSRF token succeeds"""
         # Login
-        auth_response = client.post("/auth/login", json={"username": "admin", "password": "admin"})
+        auth_response = client.post(
+            "/auth/login", json={"username": "admin", "password": "admin"}
+        )
         token = auth_response.json()["access_token"]
 
         # Get CSRF token
         csrf_response = client.get("/csrf-token")
         csrf_token = csrf_response.json()["csrf_token"]
 
-        headers = {"Authorization": f"Bearer {token}", "X-CSRF-Token": csrf_token}
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "X-CSRF-Token": csrf_token,
+        }
 
         # Cookies are automatically handled by TestClient
         # Try POST with CSRF - using a simpler endpoint for testing
@@ -129,7 +142,9 @@ class TestCSRFProtection:
 
         # Create expired token
         expired_token = CSRFToken()
-        expired_token.timestamp = datetime.utcnow() - timedelta(hours=25)  # 25 hours ago
+        expired_token.timestamp = datetime.utcnow() - timedelta(
+            hours=25
+        )  # 25 hours ago
 
         assert not expired_token.is_valid()
 
@@ -149,11 +164,17 @@ class TestRateLimiting:
 
         # Make 5 failed login attempts
         for i in range(5):
-            response = client.post("/auth/login", json={"username": "admin", "password": "wrong_password"})
+            response = client.post(
+                "/auth/login",
+                json={"username": "admin", "password": "wrong_password"},
+            )
             assert response.status_code == 401
 
         # 6th attempt should be rate limited
-        response = client.post("/auth/login", json={"username": "admin", "password": "wrong_password"})
+        response = client.post(
+            "/auth/login",
+            json={"username": "admin", "password": "wrong_password"},
+        )
         assert response.status_code == 429
         assert "Too many" in response.json()["detail"]
 
@@ -164,14 +185,20 @@ class TestRateLimiting:
 
         # Make 3 failed attempts
         for i in range(3):
-            client.post("/auth/login", json={"username": "admin", "password": "wrong"})
+            client.post(
+                "/auth/login", json={"username": "admin", "password": "wrong"}
+            )
 
         # Successful login
-        response = client.post("/auth/login", json={"username": "admin", "password": "admin"})
+        response = client.post(
+            "/auth/login", json={"username": "admin", "password": "admin"}
+        )
         assert response.status_code == 200
 
         # Should be able to fail again (rate limit reset)
-        response = client.post("/auth/login", json={"username": "admin", "password": "wrong"})
+        response = client.post(
+            "/auth/login", json={"username": "admin", "password": "wrong"}
+        )
         # Should be 401, not 429
         assert response.status_code == 401
 
@@ -186,7 +213,9 @@ class TestJWTAuthentication:
 
     def test_login_valid_credentials(self):
         """Test login with valid credentials"""
-        response = client.post("/auth/login", json={"username": "admin", "password": "admin"})
+        response = client.post(
+            "/auth/login", json={"username": "admin", "password": "admin"}
+        )
         assert response.status_code == 200
         data = response.json()
         assert "access_token" in data
@@ -194,7 +223,10 @@ class TestJWTAuthentication:
 
     def test_login_invalid_credentials(self):
         """Test login with invalid credentials"""
-        response = client.post("/auth/login", json={"username": "admin", "password": "wrong_password"})
+        response = client.post(
+            "/auth/login",
+            json={"username": "admin", "password": "wrong_password"},
+        )
         assert response.status_code == 401
 
     def test_protected_endpoint_without_token(self):
@@ -226,14 +258,20 @@ class TestCORS:
     def test_cors_preflight(self):
         """Test CORS preflight request"""
         response = client.options(
-            "/scans", headers={"Origin": "http://localhost:3000", "Access-Control-Request-Method": "POST"}
+            "/scans",
+            headers={
+                "Origin": "http://localhost:3000",
+                "Access-Control-Request-Method": "POST",
+            },
         )
         # Preflight should succeed
         assert response.status_code in [200, 204]
 
     def test_cors_headers_present(self):
         """Test that CORS headers are present"""
-        response = client.get("/health", headers={"Origin": "http://localhost:3000"})
+        response = client.get(
+            "/health", headers={"Origin": "http://localhost:3000"}
+        )
         assert "access-control-allow-origin" in response.headers
 
 
@@ -254,7 +292,14 @@ class TestInputValidation:
         headers["X-CSRF-Token"] = csrf_token
 
         # Try SQL injection in scan name
-        response = client.post("/scans", json={"name": "test'; DROP TABLE scans; --", "target": "localhost"}, headers=headers)
+        response = client.post(
+            "/scans",
+            json={
+                "name": "test'; DROP TABLE scans; --",
+                "target": "localhost",
+            },
+            headers=headers,
+        )
 
         # Should not crash the server
         assert response.status_code in [200, 201, 422]
@@ -269,7 +314,11 @@ class TestInputValidation:
 
         # Try XSS in scan name
         xss_payload = "<script>alert('xss')</script>"
-        response = client.post("/scans", json={"name": xss_payload, "target": "localhost"}, headers=headers)
+        response = client.post(
+            "/scans",
+            json={"name": xss_payload, "target": "localhost"},
+            headers=headers,
+        )
 
         # Should not crash
         assert response.status_code in [200, 201, 422]
@@ -296,4 +345,13 @@ class TestHealth:
 # =============================================================================
 
 if __name__ == "__main__":
-    pytest.main([__file__, "-v", "--cov=api", "--cov-report=term-missing", "--cov-report=html:htmlcov", "--cov-fail-under=80"])
+    pytest.main(
+        [
+            __file__,
+            "-v",
+            "--cov=api",
+            "--cov-report=term-missing",
+            "--cov-report=html:htmlcov",
+            "--cov-fail-under=80",
+        ]
+    )

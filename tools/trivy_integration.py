@@ -103,7 +103,9 @@ class TrivyResult:
     target: str
     scan_type: str
     vulnerabilities: List[TrivyVulnerability] = field(default_factory=list)
-    misconfigurations: List[TrivyMisconfiguration] = field(default_factory=list)
+    misconfigurations: List[TrivyMisconfiguration] = field(
+        default_factory=list
+    )
     secrets: List[TrivySecret] = field(default_factory=list)
     scan_time: float = 0.0
     error: Optional[str] = None
@@ -153,7 +155,13 @@ class TrivyScanner:
         """
         self.trivy_path = self._validate_installation(trivy_path)
         self.cache_dir = cache_dir
-        self.severity = severity or ["UNKNOWN", "LOW", "MEDIUM", "HIGH", "CRITICAL"]
+        self.severity = severity or [
+            "UNKNOWN",
+            "LOW",
+            "MEDIUM",
+            "HIGH",
+            "CRITICAL",
+        ]
         self.scanners = scanners or [TrivyScannerType.VULNERABILITY]
         self.skip_db_update = skip_db_update
         self.offline_scan = offline_scan
@@ -163,7 +171,9 @@ class TrivyScanner:
         """Validate trivy binary exists"""
         trivy_path = shutil.which(path)
         if not trivy_path:
-            raise RuntimeError(f"trivy not found at '{path}'. Install from: https://aquasecurity.github.io/trivy/")
+            raise RuntimeError(
+                f"trivy not found at '{path}'. Install from: https://aquasecurity.github.io/trivy/"
+            )
         return trivy_path
 
     def _get_version(self) -> str:
@@ -175,7 +185,9 @@ class TrivyScanner:
                 text=True,
                 timeout=10,
             )
-            return result.stdout.strip() if result.returncode == 0 else "unknown"
+            return (
+                result.stdout.strip() if result.returncode == 0 else "unknown"
+            )
         except Exception:
             return "unknown"
 
@@ -224,7 +236,9 @@ class TrivyScanner:
 
         return cmd
 
-    def _parse_vulnerabilities(self, results: List[Dict]) -> List[TrivyVulnerability]:
+    def _parse_vulnerabilities(
+        self, results: List[Dict]
+    ) -> List[TrivyVulnerability]:
         """Parse vulnerability findings from Trivy output"""
         vulnerabilities = []
 
@@ -241,7 +255,9 @@ class TrivyScanner:
                     title=vuln_data.get("Title", ""),
                     description=vuln_data.get("Description", ""),
                     references=vuln_data.get("References", []),
-                    cvss_score=self._extract_cvss_score(vuln_data.get("CVSS", {})),
+                    cvss_score=self._extract_cvss_score(
+                        vuln_data.get("CVSS", {})
+                    ),
                     primary_url=vuln_data.get("PrimaryURL", ""),
                     published_date=vuln_data.get("PublishedDate", ""),
                     last_modified_date=vuln_data.get("LastModifiedDate", ""),
@@ -269,7 +285,9 @@ class TrivyScanner:
 
         return None
 
-    def _parse_misconfigurations(self, results: List[Dict]) -> List[TrivyMisconfiguration]:
+    def _parse_misconfigurations(
+        self, results: List[Dict]
+    ) -> List[TrivyMisconfiguration]:
         """Parse misconfiguration findings from Trivy output"""
         misconfigurations = []
 
@@ -419,7 +437,9 @@ class TrivyScanner:
             scan_time = asyncio.get_event_loop().time() - start_time
 
             if result.returncode != 0:
-                error_msg = result.stderr[:500] if result.stderr else "Unknown error"
+                error_msg = (
+                    result.stderr[:500] if result.stderr else "Unknown error"
+                )
                 return TrivyResult(
                     success=False,
                     target=target,
@@ -520,7 +540,9 @@ class TrivyScanner:
 
         try:
             loop = asyncio.get_event_loop()
-            result = await loop.run_in_executor(None, self._run_subprocess, cmd)
+            result = await loop.run_in_executor(
+                None, self._run_subprocess, cmd
+            )
 
             if result.returncode == 0:
                 return result.stdout
@@ -530,7 +552,9 @@ class TrivyScanner:
         except Exception as e:
             return f"SBOM generation error: {e}"
 
-    def parse_output(self, result: TrivyResult) -> Dict[str, List[Dict[str, Any]]]:
+    def parse_output(
+        self, result: TrivyResult
+    ) -> Dict[str, List[Dict[str, Any]]]:
         """
         Parse Trivy result into standardized format.
 
@@ -629,7 +653,11 @@ class TrivyScanner:
                         if vuln.fixed_version
                         else "Check vendor advisory for remediation"
                     ),
-                    "references": [vuln.primary_url] + vuln.references if vuln.primary_url else vuln.references,
+                    "references": (
+                        [vuln.primary_url] + vuln.references
+                        if vuln.primary_url
+                        else vuln.references
+                    ),
                     "cvss_score": vuln.cvss_score,
                 }
             )
@@ -743,7 +771,9 @@ def trivy_scan_image(image: str, severity: str = "HIGH,CRITICAL") -> str:
             lines.append(f"  {sev}: {count}")
 
     # Show top vulnerabilities
-    critical_high = [v for v in result.vulnerabilities if v.severity in ["CRITICAL", "HIGH"]]
+    critical_high = [
+        v for v in result.vulnerabilities if v.severity in ["CRITICAL", "HIGH"]
+    ]
     if critical_high:
         lines.append("\nTop Issues:")
         for vuln in critical_high[:5]:
@@ -768,7 +798,10 @@ def trivy_scan_filesystem(path: str) -> str:
     import asyncio
 
     scanner = TrivyScanner(
-        scanners=[TrivyScannerType.VULNERABILITY, TrivyScannerType.MISCONFIGURATION],
+        scanners=[
+            TrivyScannerType.VULNERABILITY,
+            TrivyScannerType.MISCONFIGURATION,
+        ],
     )
 
     result = asyncio.run(scanner.scan_filesystem(path))

@@ -15,10 +15,21 @@ from unittest.mock import AsyncMock, MagicMock, Mock, patch
 import pytest
 
 # Import performance modules
-from performance.async_optimizer import AsyncOptimizer, CircuitBreaker, CircuitBreakerOpen, RetryHandler, SemaphoreGroup
+from performance.async_optimizer import (
+    AsyncOptimizer,
+    CircuitBreaker,
+    CircuitBreakerOpen,
+    RetryHandler,
+    SemaphoreGroup,
+)
 from performance.cache import CacheConfig, CacheEntry, CacheManager
 from performance.metrics import PerformanceMetrics, RateLimiter, TimingContext
-from performance.pool import ConnectionPool, PoolConfig, PooledConnection, PoolManager
+from performance.pool import (
+    ConnectionPool,
+    PoolConfig,
+    PooledConnection,
+    PoolManager,
+)
 
 # ============================================================================
 # AsyncOptimizer Tests
@@ -176,7 +187,9 @@ class TestCircuitBreaker:
 
     @pytest.fixture
     def circuit_breaker(self):
-        return CircuitBreaker(failure_threshold=3, recovery_timeout=1, half_open_max_calls=2)
+        return CircuitBreaker(
+            failure_threshold=3, recovery_timeout=1, half_open_max_calls=2
+        )
 
     def test_initial_state(self, circuit_breaker):
         """Test initial circuit breaker state"""

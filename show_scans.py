@@ -4,7 +4,9 @@ import requests
 BASE = "http://localhost:8000"
 
 # Login
-login = requests.post(f"{BASE}/auth/login", json={"username": "admin", "password": "admin"})
+login = requests.post(
+    f"{BASE}/auth/login", json={"username": "admin", "password": "admin"}
+)
 token = login.json()["access_token"]
 headers = {"Authorization": f"Bearer {token}"}
 

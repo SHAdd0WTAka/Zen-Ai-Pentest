@@ -27,13 +27,20 @@ def sample_finding():
 @pytest.fixture
 def sample_context():
     """Sample target context."""
-    return {"internet_facing": True, "data_sensitivity": "pii", "compliance": ["gdpr", "pci-dss"], "asset_criticality": "high"}
+    return {
+        "internet_facing": True,
+        "data_sensitivity": "pii",
+        "compliance": ["gdpr", "pci-dss"],
+        "asset_criticality": "high",
+    }
 
 
 class TestRiskScorer:
     """Test risk scoring functionality."""
 
-    def test_calculate_returns_risk_score(self, scorer, sample_finding, sample_context):
+    def test_calculate_returns_risk_score(
+        self, scorer, sample_finding, sample_context
+    ):
         """Test that calculate returns RiskScore object."""
         risk = scorer.calculate(sample_finding, sample_context)
 
@@ -47,7 +54,12 @@ class TestRiskScorer:
             "cvss_score": 10.0,
             "exploit_validated": True,  # Maximum validation score
         }
-        context = {"internet_facing": True, "data_sensitivity": "pii", "compliance": ["gdpr"], "asset_criticality": "critical"}
+        context = {
+            "internet_facing": True,
+            "data_sensitivity": "pii",
+            "compliance": ["gdpr"],
+            "asset_criticality": "critical",
+        }
         risk = scorer.calculate(finding, context)
 
         # With max CVSS (1.0*0.25), default EPSS (0.5*0.25),
@@ -85,13 +97,22 @@ class TestRiskScorer:
         """Test recommendations for critical findings."""
         # Create a finding that will generate critical-level risk
         finding = {"cvss_score": 10.0, "exploit_validated": True}
-        context = {"internet_facing": True, "data_sensitivity": "pii", "asset_criticality": "critical"}
+        context = {
+            "internet_facing": True,
+            "data_sensitivity": "pii",
+            "asset_criticality": "critical",
+        }
         risk = scorer.calculate(finding, context)
 
         assert len(risk.prioritized_actions) > 0
         # Should have high severity recommendations
-        has_critical_rec = any("Isolate" in rec or "emergency" in rec or "72h" in rec for rec in risk.prioritized_actions)
-        has_cvss_rec = any("segmentation" in rec for rec in risk.prioritized_actions)
+        has_critical_rec = any(
+            "Isolate" in rec or "emergency" in rec or "72h" in rec
+            for rec in risk.prioritized_actions
+        )
+        has_cvss_rec = any(
+            "segmentation" in rec for rec in risk.prioritized_actions
+        )
         assert has_critical_rec or has_cvss_rec
 
     def test_recommendations_for_high_epss(self, scorer):
@@ -104,9 +125,14 @@ class TestRiskScorer:
         risk = scorer.calculate(finding, {})
 
         # With default EPSS of 0.5, should get exploit probability recommendation
-        _ = any("EXPLOIT PROBABILITY" in rec or "exploit" in rec.lower() for rec in risk.prioritized_actions)  # has_epss_rec
+        _ = any(
+            "EXPLOIT PROBABILITY" in rec or "exploit" in rec.lower()
+            for rec in risk.prioritized_actions
+        )  # has_epss_rec
         # Or should have high severity recommendations
-        assert len(risk.prioritized_actions) >= 0  # May be empty for medium risk
+        assert (
+            len(risk.prioritized_actions) >= 0
+        )  # May be empty for medium risk
 
 
 class TestSeverityLevels:
@@ -164,7 +190,11 @@ class TestPrioritizeFindings:
 
     def test_findings_sorted_by_risk(self, scorer):
         """Test that findings are sorted by risk score."""
-        findings = [{"cvss_score": 5.0}, {"cvss_score": 9.0}, {"cvss_score": 7.0}]
+        findings = [
+            {"cvss_score": 5.0},
+            {"cvss_score": 9.0},
+            {"cvss_score": 7.0},
+        ]
 
         prioritized = scorer.prioritize_findings(findings)
 
@@ -196,10 +226,21 @@ class TestPrioritizeFindings:
         # CVSS 0.0 -> INFO (but weighted formula gives LOW)
         (0.0, {}, False, SeverityLevel.LOW),
         # High CVSS + high business impact + exploit -> HIGH
-        (9.5, {"internet_facing": True, "data_sensitivity": "pii", "asset_criticality": "critical"}, True, SeverityLevel.HIGH),
+        (
+            9.5,
+            {
+                "internet_facing": True,
+                "data_sensitivity": "pii",
+                "asset_criticality": "critical",
+            },
+            True,
+            SeverityLevel.HIGH,
+        ),
     ],
 )
-def test_severity_classification(scorer, cvss, context, exploit_validated, expected_severity):
+def test_severity_classification(
+    scorer, cvss, context, exploit_validated, expected_severity
+):
     """Test severity classification for various CVSS scores and contexts."""
     finding = {"cvss_score": cvss, "exploit_validated": exploit_validated}
     risk = scorer.calculate(finding, context)

@@ -65,7 +65,9 @@ class EPSSClient:
             if self.api_key:
                 headers["Authorization"] = f"Bearer {self.api_key}"
 
-            response = self.session.get(self.API_BASE, params=params, headers=headers, timeout=10)
+            response = self.session.get(
+                self.API_BASE, params=params, headers=headers, timeout=10
+            )
 
             if response.status_code == 200:
                 data = response.json()
@@ -107,7 +109,9 @@ class EPSSClient:
             cve_param = ",".join(uncached[:100])  # API limit
             params = {"cve": cve_param}
 
-            response = self.session.get(self.API_BASE, params=params, timeout=30)
+            response = self.session.get(
+                self.API_BASE, params=params, timeout=30
+            )
 
             if response.status_code == 200:
                 data = response.json()
@@ -127,7 +131,9 @@ class EPSSClient:
 
         return results
 
-    def estimate_score(self, cvss_score: float, has_exploit: bool = False) -> float:
+    def estimate_score(
+        self, cvss_score: float, has_exploit: bool = False
+    ) -> float:
         """
         Estimate EPSS score when API unavailable
         Rough approximation based on CVSS

@@ -36,7 +36,10 @@ from scoutsuite_integration import (
 )
 
 # Logging Konfiguration
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
 logger = logging.getLogger("cloud_scanner")
 
 
@@ -81,7 +84,9 @@ class CloudAccount:
             "metadata": self.metadata,
             "enabled": self.enabled,
             "created_at": self.created_at.isoformat(),
-            "last_scan": self.last_scan.isoformat() if self.last_scan else None,
+            "last_scan": (
+                self.last_scan.isoformat() if self.last_scan else None
+            ),
         }
 
 
@@ -179,8 +184,14 @@ class CloudAccountManager:
                         provider=CloudProvider(account_data["provider"]),
                         metadata=account_data.get("metadata", {}),
                         enabled=account_data.get("enabled", True),
-                        created_at=datetime.fromisoformat(account_data["created_at"]),
-                        last_scan=datetime.fromisoformat(account_data["last_scan"]) if account_data.get("last_scan") else None,
+                        created_at=datetime.fromisoformat(
+                            account_data["created_at"]
+                        ),
+                        last_scan=(
+                            datetime.fromisoformat(account_data["last_scan"])
+                            if account_data.get("last_scan")
+                            else None
+                        ),
                     )
                     self.accounts[account.id] = account
 
@@ -192,7 +203,9 @@ class CloudAccountManager:
         """Speichert Konten"""
         try:
             data = {
-                "accounts": [account.to_dict() for account in self.accounts.values()],
+                "accounts": [
+                    account.to_dict() for account in self.accounts.values()
+                ],
                 "updated_at": datetime.now().isoformat(),
             }
 
@@ -204,12 +217,24 @@ class CloudAccountManager:
             logger.error(f"Fehler beim Speichern der Konten: {e}")
 
     def add_account(
-        self, name: str, provider: CloudProvider, credentials: Dict[str, str], metadata: Optional[Dict[str, Any]] = None
+        self,
+        name: str,
+        provider: CloudProvider,
+        credentials: Dict[str, str],
+        metadata: Optional[Dict[str, Any]] = None,
     ) -> CloudAccount:
         """Fügt ein neues Cloud-Konto hinzu"""
-        account_id = hashlib.md5(f"{provider.value}:{name}:{datetime.now()}".encode()).hexdigest()[:12]
+        account_id = hashlib.md5(
+            f"{provider.value}:{name}:{datetime.now()}".encode()
+        ).hexdigest()[:12]
 
-        account = CloudAccount(id=account_id, name=name, provider=provider, credentials=credentials, metadata=metadata or {})
+        account = CloudAccount(
+            id=account_id,
+            name=name,
+            provider=provider,
+            credentials=credentials,
+            metadata=metadata or {},
+        )
 
         self.accounts[account_id] = account
         self._save_accounts()
@@ -221,9 +246,15 @@ class CloudAccountManager:
         """Holt ein Konto nach ID"""
         return self.accounts.get(account_id)
 
-    def get_accounts_by_provider(self, provider: CloudProvider) -> List[CloudAccount]:
+    def get_accounts_by_provider(
+        self, provider: CloudProvider
+    ) -> List[CloudAccount]:
         """Holt alle Konten eines Providers"""
-        return [account for account in self.accounts.values() if account.provider == provider and account.enabled]
+        return [
+            account
+            for account in self.accounts.values()
+            if account.provider == provider and account.enabled
+        ]
 
     def update_account(
         self,
@@ -275,15 +306,38 @@ class CloudScanner:
     }
 
     COMPLIANCE_SCAN_SERVICES = {
-        CloudProvider.AWS: ["iam", "s3", "ec2", "rds", "cloudtrail", "config", "kms"],
-        CloudProvider.AZURE: ["aad", "storage", "sql", "keyvault", "securitycenter"],
-        CloudProvider.GCP: ["iam", "storage", "compute", "kms", "logging", "monitoring"],
+        CloudProvider.AWS: [
+            "iam",
+            "s3",
+            "ec2",
+            "rds",
+            "cloudtrail",
+            "config",
+            "kms",
+        ],
+        CloudProvider.AZURE: [
+            "aad",
+            "storage",
+            "sql",
+            "keyvault",
+            "securitycenter",
+        ],
+        CloudProvider.GCP: [
+            "iam",
+            "storage",
+            "compute",
+            "kms",
+            "logging",
+            "monitoring",
+        ],
     }
 
     def __init__(self, config: Optional[Dict[str, Any]] = None):
         self.config = config or {}
         self.scoutsuite = ScoutSuiteIntegration(config)
-        self.account_manager = CloudAccountManager(self.config.get("accounts_file", "./cloud_accounts.json"))
+        self.account_manager = CloudAccountManager(
+            self.config.get("accounts_file", "./cloud_accounts.json")
+        )
 
         # Scan-Verwaltung
         self.scheduled_scans: Dict[str, ScheduledScan] = {}
@@ -301,7 +355,10 @@ class CloudScanner:
         self.executor = ThreadPoolExecutor(max_workers=5)
 
     def create_scan_config(
-        self, account: CloudAccount, scan_type: ScanType = ScanType.FULL, custom_services: Optional[List[str]] = None
+        self,
+        account: CloudAccount,
+        scan_type: ScanType = ScanType.FULL,
+        custom_services: Optional[List[str]] = None,
     ) -> ScoutSuiteConfig:
         """Erstellt eine Scan-Konfiguration basierend auf Scan-Typ"""
 
@@ -340,8 +397,15 @@ class CloudScanner:
             raise ValueError(f"Konto ist deaktiviert: {account_id}")
 
         # Erstelle Scan-Result
-        scan_id = f"scan_{account_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-        result = ScanResult(scan_id=scan_id, account_id=account_id, scan_type=scan_type, start_time=datetime.now())
+        scan_id = (
+            f"scan_{account_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        )
+        result = ScanResult(
+            scan_id=scan_id,
+            account_id=account_id,
+            scan_type=scan_type,
+            start_time=datetime.now(),
+        )
         self.scan_results[scan_id] = result
 
         try:
@@ -349,7 +413,9 @@ class CloudScanner:
             self._setup_credentials(account)
 
             # Erstelle Scan-Konfiguration
-            config = self.create_scan_config(account, scan_type, custom_services)
+            config = self.create_scan_config(
+                account, scan_type, custom_services
+            )
 
             # Führe Scan durch
             report = await self.scoutsuite.scan(config, progress_callback)
@@ -373,7 +439,9 @@ class CloudScanner:
                 except Exception as e:
                     logger.warning(f"Callback-Fehler: {e}")
 
-            logger.info(f"Scan abgeschlossen: {scan_id} - {len(report.findings)} Findings")
+            logger.info(
+                f"Scan abgeschlossen: {scan_id} - {len(report.findings)} Findings"
+            )
 
         except Exception as e:
             logger.error(f"Scan fehlgeschlagen: {e}")
@@ -406,17 +474,26 @@ class CloudScanner:
 
         elif account.provider == CloudProvider.GCP:
             self.scoutsuite.credential_manager.setup_gcp_credentials(
-                service_account_key_path=creds.get("service_account_key_path", ""), project_id=creds.get("project_id")
+                service_account_key_path=creds.get(
+                    "service_account_key_path", ""
+                ),
+                project_id=creds.get("project_id"),
             )
 
     async def scan_multiple_accounts(
-        self, account_ids: List[str], scan_type: ScanType = ScanType.FULL, parallel: bool = True
+        self,
+        account_ids: List[str],
+        scan_type: ScanType = ScanType.FULL,
+        parallel: bool = True,
     ) -> List[ScanResult]:
         """Scannt mehrere Konten"""
 
         if parallel:
             # Parallele Scans
-            tasks = [self.scan_account(account_id, scan_type) for account_id in account_ids]
+            tasks = [
+                self.scan_account(account_id, scan_type)
+                for account_id in account_ids
+            ]
             results = await asyncio.gather(*tasks, return_exceptions=True)
 
             # Filtere erfolgreiche Ergebnisse
@@ -429,7 +506,11 @@ class CloudScanner:
                 results.append(result)
             return results
 
-    def scan_all_accounts(self, provider: Optional[CloudProvider] = None, scan_type: ScanType = ScanType.FULL) -> List[str]:
+    def scan_all_accounts(
+        self,
+        provider: Optional[CloudProvider] = None,
+        scan_type: ScanType = ScanType.FULL,
+    ) -> List[str]:
         """Startet Scans für alle aktivierten Konten"""
 
         accounts = self.account_manager.list_accounts()
@@ -443,12 +524,18 @@ class CloudScanner:
         for account in accounts:
             # Async-Scan starten
             asyncio.create_task(self.scan_account(account.id, scan_type))
-            scan_ids.append(f"scan_{account.id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}")
+            scan_ids.append(
+                f"scan_{account.id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            )
 
         logger.info(f"Scans für {len(accounts)} Konten gestartet")
         return scan_ids
 
-    def calculate_delta(self, current_report: ScoutSuiteReport, previous_report: ScoutSuiteReport) -> FindingDelta:
+    def calculate_delta(
+        self,
+        current_report: ScoutSuiteReport,
+        previous_report: ScoutSuiteReport,
+    ) -> FindingDelta:
         """Berechnet Delta zwischen zwei Reports"""
 
         current_findings = {f.id: f for f in current_report.findings}
@@ -474,11 +561,17 @@ class CloudScanner:
         return delta
 
     def schedule_scan(
-        self, account_id: str, scan_type: ScanType, schedule: ScanSchedule, custom_services: Optional[List[str]] = None
+        self,
+        account_id: str,
+        scan_type: ScanType,
+        schedule: ScanSchedule,
+        custom_services: Optional[List[str]] = None,
     ) -> ScheduledScan:
         """Plant einen wiederkehrenden Scan"""
 
-        scan_id = hashlib.md5(f"{account_id}:{scan_type.value}:{schedule.value}:{datetime.now()}".encode()).hexdigest()[:12]
+        scan_id = hashlib.md5(
+            f"{account_id}:{scan_type.value}:{schedule.value}:{datetime.now()}".encode()
+        ).hexdigest()[:12]
 
         account = self.account_manager.get_account(account_id)
         if not account:
@@ -486,7 +579,13 @@ class CloudScanner:
 
         config = self.create_scan_config(account, scan_type, custom_services)
 
-        scheduled = ScheduledScan(id=scan_id, account_id=account_id, scan_type=scan_type, schedule=schedule, config=config)
+        scheduled = ScheduledScan(
+            id=scan_id,
+            account_id=account_id,
+            scan_type=scan_type,
+            schedule=schedule,
+            config=config,
+        )
 
         self.scheduled_scans[scan_id] = scheduled
 
@@ -528,7 +627,11 @@ class CloudScanner:
 
                     if scheduled.next_run and scheduled.next_run <= now:
                         # Führe Scan durch
-                        asyncio.create_task(self.scan_account(scheduled.account_id, scheduled.scan_type))
+                        asyncio.create_task(
+                            self.scan_account(
+                                scheduled.account_id, scheduled.scan_type
+                            )
+                        )
 
                         scheduled.last_run = now
                         scheduled.run_count += 1
@@ -536,7 +639,9 @@ class CloudScanner:
 
                 time.sleep(60)  # Prüfe jede Minute
 
-        self.monitoring_thread = threading.Thread(target=monitor_loop, daemon=True)
+        self.monitoring_thread = threading.Thread(
+            target=monitor_loop, daemon=True
+        )
         self.monitoring_thread.start()
 
         logger.info("Monitoring gestartet")
@@ -556,7 +661,9 @@ class CloudScanner:
         """Holt ein Scan-Ergebnis"""
         return self.scan_results.get(scan_id)
 
-    def get_scan_history(self, account_id: Optional[str] = None, limit: int = 100) -> List[ScanResult]:
+    def get_scan_history(
+        self, account_id: Optional[str] = None, limit: int = 100
+    ) -> List[ScanResult]:
         """Holt Scan-Historie"""
         results = list(self.scan_results.values())
 
@@ -568,7 +675,9 @@ class CloudScanner:
 
         return results[:limit]
 
-    def export_scan_report(self, scan_id: str, output_path: str, format: str = "json") -> bool:
+    def export_scan_report(
+        self, scan_id: str, output_path: str, format: str = "json"
+    ) -> bool:
         """Exportiert einen Scan-Report"""
         result = self.scan_results.get(scan_id)
         if not result or not result.report:
@@ -580,10 +689,14 @@ class CloudScanner:
                     json.dump(result.report.to_dict(), f, indent=2)
 
             elif format == "csv":
-                self.scoutsuite.export_findings_to_csv(result.report, output_path)
+                self.scoutsuite.export_findings_to_csv(
+                    result.report, output_path
+                )
 
             elif format == "sarif":
-                self.scoutsuite.report_parser.export_to_sarif(result.report, output_path)
+                self.scoutsuite.report_parser.export_to_sarif(
+                    result.report, output_path
+                )
 
             logger.info(f"Report exportiert: {output_path}")
             return True
@@ -592,16 +705,27 @@ class CloudScanner:
             logger.error(f"Fehler beim Export: {e}")
             return False
 
-    def generate_compliance_report(self, scan_id: str, frameworks: List[ComplianceFramework], output_path: str) -> bool:
+    def generate_compliance_report(
+        self,
+        scan_id: str,
+        frameworks: List[ComplianceFramework],
+        output_path: str,
+    ) -> bool:
         """Generiert einen Compliance-Report"""
         result = self.scan_results.get(scan_id)
         if not result or not result.report:
             return False
 
         try:
-            compliance_results = self.scoutsuite.compliance_checker.check_compliance(result.report, frameworks)
+            compliance_results = (
+                self.scoutsuite.compliance_checker.check_compliance(
+                    result.report, frameworks
+                )
+            )
 
-            self.scoutsuite.compliance_checker.generate_compliance_report(compliance_results, output_path)
+            self.scoutsuite.compliance_checker.generate_compliance_report(
+                compliance_results, output_path
+            )
 
             return True
 
@@ -612,24 +736,36 @@ class CloudScanner:
     def get_statistics(self) -> Dict[str, Any]:
         """Gibt Scan-Statistiken zurück"""
         total_scans = len(self.scan_results)
-        successful_scans = sum(1 for r in self.scan_results.values() if r.status == "completed")
-        failed_scans = sum(1 for r in self.scan_results.values() if r.status == "error")
+        successful_scans = sum(
+            1 for r in self.scan_results.values() if r.status == "completed"
+        )
+        failed_scans = sum(
+            1 for r in self.scan_results.values() if r.status == "error"
+        )
 
         findings_by_severity: Dict[str, int] = {}
         for result in self.scan_results.values():
             if result.report:
                 for finding in result.report.findings:
                     severity = finding.severity
-                    findings_by_severity[severity] = findings_by_severity.get(severity, 0) + 1
+                    findings_by_severity[severity] = (
+                        findings_by_severity.get(severity, 0) + 1
+                    )
 
         return {
             "total_scans": total_scans,
             "successful_scans": successful_scans,
             "failed_scans": failed_scans,
-            "success_rate": (successful_scans / total_scans * 100) if total_scans > 0 else 0,
+            "success_rate": (
+                (successful_scans / total_scans * 100)
+                if total_scans > 0
+                else 0
+            ),
             "findings_by_severity": findings_by_severity,
             "total_findings": sum(findings_by_severity.values()),
-            "active_accounts": len([a for a in self.account_manager.list_accounts() if a.enabled]),
+            "active_accounts": len(
+                [a for a in self.account_manager.list_accounts() if a.enabled]
+            ),
             "scheduled_scans": len(self.scheduled_scans),
         }
 
@@ -637,7 +773,11 @@ class CloudScanner:
         """Löscht alte Reports"""
         cutoff = datetime.now() - timedelta(days=days)
 
-        to_remove = [scan_id for scan_id, result in self.scan_results.items() if result.start_time < cutoff]
+        to_remove = [
+            scan_id
+            for scan_id, result in self.scan_results.items()
+            if result.start_time < cutoff
+        ]
 
         for scan_id in to_remove:
             del self.scan_results[scan_id]
@@ -652,7 +792,9 @@ class CloudScannerAPI:
     def __init__(self, scanner: CloudScanner):
         self.scanner = scanner
 
-    async def handle_scan_request(self, request: Dict[str, Any]) -> Dict[str, Any]:
+    async def handle_scan_request(
+        self, request: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Verarbeitet einen Scan-Request"""
         account_id = request.get("account_id")
         scan_type = ScanType(request.get("scan_type", "full"))
@@ -665,7 +807,9 @@ class CloudScannerAPI:
             return {
                 "scan_id": result.scan_id,
                 "status": result.status,
-                "findings_count": len(result.report.findings) if result.report else 0,
+                "findings_count": (
+                    len(result.report.findings) if result.report else 0
+                ),
             }
         except Exception as e:
             return {"error": str(e)}
@@ -698,7 +842,10 @@ class CloudScannerAPI:
         limit = request.get("limit", 100)
 
         results = self.scanner.get_scan_history(account_id, limit)
-        return {"results": [r.to_dict() for r in results], "total": len(results)}
+        return {
+            "results": [r.to_dict() for r in results],
+            "total": len(results),
+        }
 
     def handle_get_statistics(self) -> Dict[str, Any]:
         """Holt Statistiken"""
@@ -714,7 +861,12 @@ async def demo():
     print("=" * 60)
 
     # Initialisiere Scanner
-    scanner = CloudScanner({"output_dir": "./demo_reports", "accounts_file": "./demo_accounts.json"})
+    scanner = CloudScanner(
+        {
+            "output_dir": "./demo_reports",
+            "accounts_file": "./demo_accounts.json",
+        }
+    )
 
     # API initialisieren
     api = CloudScannerAPI(scanner)
@@ -744,7 +896,12 @@ async def demo():
         {
             "name": "Demo Azure Subscription",
             "provider": "azure",
-            "credentials": {"tenant_id": "...", "client_id": "...", "client_secret": "...", "subscription_id": "..."},
+            "credentials": {
+                "tenant_id": "...",
+                "client_id": "...",
+                "client_secret": "...",
+                "subscription_id": "...",
+            },
         }
     )
     print(f"Azure-Konto hinzugefügt: {azure_response}")
@@ -767,7 +924,9 @@ async def demo():
         for scan_type in ScanType:
             config = scanner.create_scan_config(account, scan_type)
             print(f"\n{account.provider.value.upper()} - {scan_type.value}:")
-            print(f"  Services: {config.services if config.services else 'ALL'}")
+            print(
+                f"  Services: {config.services if config.services else 'ALL'}"
+            )
 
     print("\n5. Compliance-Frameworks")
     print("-" * 40)

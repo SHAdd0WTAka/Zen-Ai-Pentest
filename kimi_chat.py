@@ -17,8 +17,15 @@ def ask_kimi(prompt, model="kimi-k2.5"):
         sys.exit(1)
 
     url = "https://api.moonshot.cn/v1/chat/completions"
-    headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
-    data = {"model": model, "messages": [{"role": "user", "content": prompt}], "temperature": 0.7}
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+    }
+    data = {
+        "model": model,
+        "messages": [{"role": "user", "content": prompt}],
+        "temperature": 0.7,
+    }
 
     try:
         response = requests.post(url, headers=headers, json=data, timeout=30)

@@ -9,7 +9,13 @@ import sys
 
 import pytest
 
-from core.asyncio_fix import AsyncIOContext, SafeAsyncioRunner, is_python_313_or_higher, is_windows, safe_asyncio_run
+from core.asyncio_fix import (
+    AsyncIOContext,
+    SafeAsyncioRunner,
+    is_python_313_or_higher,
+    is_windows,
+    safe_asyncio_run,
+)
 
 
 class TestAsyncIOFixUtils:

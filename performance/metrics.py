@@ -37,12 +37,16 @@ class PerformanceMetrics:
         self._metrics: Dict[str, deque] = {}
         self._counters: Dict[str, int] = {}
 
-    def record(self, name: str, value: float, labels: Optional[Dict[str, str]] = None):
+    def record(
+        self, name: str, value: float, labels: Optional[Dict[str, str]] = None
+    ):
         """Record a metric sample"""
         if name not in self._metrics:
             self._metrics[name] = deque(maxlen=self.max_samples)
 
-        sample = MetricSample(timestamp=datetime.utcnow(), value=value, labels=labels or {})
+        sample = MetricSample(
+            timestamp=datetime.utcnow(), value=value, labels=labels or {}
+        )
 
         self._metrics[name].append(sample)
 
@@ -84,7 +88,12 @@ class PerformanceMetrics:
 class TimingContext:
     """Context manager for timing operations"""
 
-    def __init__(self, metrics: PerformanceMetrics, name: str, labels: Optional[Dict[str, str]] = None):
+    def __init__(
+        self,
+        metrics: PerformanceMetrics,
+        name: str,
+        labels: Optional[Dict[str, str]] = None,
+    ):
         self.metrics = metrics
         self.name = name
         self.labels = labels

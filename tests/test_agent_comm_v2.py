@@ -19,11 +19,17 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from agents.v2.secure_message import CRYPTO_AVAILABLE
 
 # Skip all tests if dependencies not available
-pytestmark = pytest.mark.skipif(not CRYPTO_AVAILABLE, reason="cryptography library not installed")
+pytestmark = pytest.mark.skipif(
+    not CRYPTO_AVAILABLE, reason="cryptography library not installed"
+)
 
 if CRYPTO_AVAILABLE:
     from agents.v2 import MessageEncryption, SecureMessage
-    from agents.v2.auth_manager import AgentAuthenticator, AgentPermission, AgentRole
+    from agents.v2.auth_manager import (
+        AgentAuthenticator,
+        AgentPermission,
+        AgentRole,
+    )
     from agents.v2.message_queue import InMemoryMessageQueue
 
 
@@ -76,7 +82,10 @@ class TestSecureMessage:
 
     def test_key_generation(self, encryption):
         """Test keypair generation"""
-        from agents.v2.secure_message import generate_keypair, generate_signing_keypair
+        from agents.v2.secure_message import (
+            generate_keypair,
+            generate_signing_keypair,
+        )
 
         priv, pub = generate_keypair()
         assert len(priv) == 32
@@ -131,7 +140,9 @@ class TestAgentAuthentication:
 
     def test_generate_credentials(self, auth_manager):
         """Test credential generation"""
-        creds = auth_manager.generate_api_key(role=AgentRole.RESEARCHER, name="test-agent", expires_days=30)
+        creds = auth_manager.generate_api_key(
+            role=AgentRole.RESEARCHER, name="test-agent", expires_days=30
+        )
 
         assert creds.agent_id.startswith("agt_")
         assert creds.api_key.startswith("zen_")
@@ -142,7 +153,9 @@ class TestAgentAuthentication:
 
     def test_authenticate_success(self, auth_manager):
         """Test successful authentication"""
-        creds = auth_manager.generate_api_key(role=AgentRole.ANALYST, name="auth-test-agent")
+        creds = auth_manager.generate_api_key(
+            role=AgentRole.ANALYST, name="auth-test-agent"
+        )
 
         identity = auth_manager.authenticate(creds.api_key, creds.api_secret)
 
@@ -153,23 +166,33 @@ class TestAgentAuthentication:
 
     def test_authenticate_wrong_secret(self, auth_manager):
         """Test authentication with wrong secret"""
-        creds = auth_manager.generate_api_key(role=AgentRole.SCANNER, name="auth-fail-agent")
+        creds = auth_manager.generate_api_key(
+            role=AgentRole.SCANNER, name="auth-fail-agent"
+        )
 
         identity = auth_manager.authenticate(creds.api_key, "wrong_secret")
         assert identity is None
 
     def test_check_permission(self, auth_manager):
         """Test permission checking"""
-        creds = auth_manager.generate_api_key(role=AgentRole.RESEARCHER, name="perm-test-agent")
+        creds = auth_manager.generate_api_key(
+            role=AgentRole.RESEARCHER, name="perm-test-agent"
+        )
 
         identity = auth_manager.authenticate(creds.api_key, creds.api_secret)
 
         # Should have researcher permissions
-        assert auth_manager.check_permission(identity, AgentPermission.MESSAGE_SEND)
-        assert auth_manager.check_permission(identity, AgentPermission.TASK_EXECUTE)
+        assert auth_manager.check_permission(
+            identity, AgentPermission.MESSAGE_SEND
+        )
+        assert auth_manager.check_permission(
+            identity, AgentPermission.TASK_EXECUTE
+        )
 
         # Should not have admin permissions
-        assert not auth_manager.check_permission(identity, AgentPermission.AGENT_REGISTER)
+        assert not auth_manager.check_permission(
+            identity, AgentPermission.AGENT_REGISTER
+        )
 
     def test_list_agents(self, auth_manager):
         """Test listing agents"""
@@ -205,7 +228,9 @@ class TestMessageQueue:
                 timestamp=datetime.utcnow().isoformat(),
                 msg_type="task",
             ),
-            payload=EncryptedPayload(ciphertext="encrypted_data", nonce="nonce123", salt="salt456"),
+            payload=EncryptedPayload(
+                ciphertext="encrypted_data", nonce="nonce123", salt="salt456"
+            ),
             signature="sig789",
         )
 
@@ -252,7 +277,9 @@ class TestMessageQueue:
             received_messages.append(msg)
 
         # Subscribe
-        sub_task = asyncio.create_task(self._collect_messages(message_queue, handler))
+        sub_task = asyncio.create_task(
+            self._collect_messages(message_queue, handler)
+        )
 
         # Publish a message
         await asyncio.sleep(0.1)  # Let subscription setup
@@ -305,7 +332,9 @@ class TestIntegration:
         await queue.connect()
 
         # Create agent
-        creds = auth.generate_api_key(AgentRole.RESEARCHER, "integration-agent")
+        creds = auth.generate_api_key(
+            AgentRole.RESEARCHER, "integration-agent"
+        )
 
         # Authenticate
         identity = auth.authenticate(creds.api_key, creds.api_secret)

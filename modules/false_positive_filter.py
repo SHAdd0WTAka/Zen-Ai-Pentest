@@ -46,7 +46,15 @@ class FalsePositiveFilter:
     ]
 
     # Keywords that indicate likely false positive
-    FP_KEYWORDS = ["test", "localhost", "127.0.0.1", "example.com", "documentation", "intentional", "expected behavior"]
+    FP_KEYWORDS = [
+        "test",
+        "localhost",
+        "127.0.0.1",
+        "example.com",
+        "documentation",
+        "intentional",
+        "expected behavior",
+    ]
 
     def __init__(self):
         self.rules_applied = 0
@@ -103,7 +111,9 @@ class FalsePositiveFilter:
 
         return min(fp_score, 1.0)
 
-    def filter_findings(self, findings: List[Finding], fp_threshold: float = 0.7) -> Dict[str, List[Finding]]:
+    def filter_findings(
+        self, findings: List[Finding], fp_threshold: float = 0.7
+    ) -> Dict[str, List[Finding]]:
         """
         Filter findings and separate true positives from false positives
         """
@@ -123,7 +133,11 @@ class FalsePositiveFilter:
                     {
                         "finding": finding,
                         "fp_probability": fp_probability,
-                        "reason": reason if is_fp_rule else f"ML score: {fp_probability:.2f}",
+                        "reason": (
+                            reason
+                            if is_fp_rule
+                            else f"ML score: {fp_probability:.2f}"
+                        ),
                     }
                 )
             else:
@@ -132,7 +146,9 @@ class FalsePositiveFilter:
         return {
             "true_positives": true_positives,
             "false_positives": false_positives,
-            "reduction_rate": len(false_positives) / len(findings) if findings else 0,
+            "reduction_rate": (
+                len(false_positives) / len(findings) if findings else 0
+            ),
         }
 
     def get_info(self) -> Dict:

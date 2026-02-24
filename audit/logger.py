@@ -113,7 +113,9 @@ class AuditLogEntry:
     def sign(self, secret_key: str) -> str:
         """Create HMAC signature for log entry"""
         message = f"{self.id}:{self.hash}:{self.timestamp.isoformat()}"
-        signature = hmac.new(secret_key.encode(), message.encode(), hashlib.sha256).hexdigest()
+        signature = hmac.new(
+            secret_key.encode(), message.encode(), hashlib.sha256
+        ).hexdigest()
         self.signature = signature
         return signature
 
@@ -123,7 +125,9 @@ class AuditLogEntry:
             return False
 
         message = f"{self.id}:{self.hash}:{self.timestamp.isoformat()}"
-        expected = hmac.new(secret_key.encode(), message.encode(), hashlib.sha256).hexdigest()
+        expected = hmac.new(
+            secret_key.encode(), message.encode(), hashlib.sha256
+        ).hexdigest()
 
         return hmac.compare_digest(self.signature, expected)
 
@@ -148,7 +152,9 @@ class AuditLogEntry:
         data = data.copy()
         data["timestamp"] = datetime.fromisoformat(data["timestamp"])
         if data.get("retention_until"):
-            data["retention_until"] = datetime.fromisoformat(data["retention_until"])
+            data["retention_until"] = datetime.fromisoformat(
+                data["retention_until"]
+            )
         return cls(**data)
 
 
@@ -182,7 +188,9 @@ class AuditLogger:
 
     def _generate_key(self) -> str:
         """Generate a signing key"""
-        return hashlib.sha256(f"zen_audit_{datetime.utcnow().isoformat()}".encode()).hexdigest()[:32]
+        return hashlib.sha256(
+            f"zen_audit_{datetime.utcnow().isoformat()}".encode()
+        ).hexdigest()[:32]
 
     async def start(self):
         """Start the audit logger"""
@@ -251,7 +259,12 @@ class AuditLogger:
         pass
 
     def _create_entry(
-        self, level: LogLevel, category: EventCategory, event_type: str, message: str, **kwargs
+        self,
+        level: LogLevel,
+        category: EventCategory,
+        event_type: str,
+        message: str,
+        **kwargs,
     ) -> AuditLogEntry:
         """Create a new audit log entry"""
         entry = AuditLogEntry(
@@ -272,7 +285,14 @@ class AuditLogger:
         self._last_hash = entry.hash
         return entry
 
-    async def log(self, level: LogLevel, category: EventCategory, event_type: str, message: str, **kwargs) -> AuditLogEntry:
+    async def log(
+        self,
+        level: LogLevel,
+        category: EventCategory,
+        event_type: str,
+        message: str,
+        **kwargs,
+    ) -> AuditLogEntry:
         """
         Create and store an audit log entry
 
@@ -286,7 +306,9 @@ class AuditLogger:
         Returns:
             The created AuditLogEntry
         """
-        entry = self._create_entry(level, category, event_type, message, **kwargs)
+        entry = self._create_entry(
+            level, category, event_type, message, **kwargs
+        )
 
         if self.config.async_logging:
             async with self._lock:
@@ -305,30 +327,57 @@ class AuditLogger:
 
     # Convenience methods for different log levels
 
-    async def debug(self, category: EventCategory, event_type: str, message: str, **kwargs) -> AuditLogEntry:
+    async def debug(
+        self, category: EventCategory, event_type: str, message: str, **kwargs
+    ) -> AuditLogEntry:
         """Log debug level event"""
-        return await self.log(LogLevel.DEBUG, category, event_type, message, **kwargs)
+        return await self.log(
+            LogLevel.DEBUG, category, event_type, message, **kwargs
+        )
 
-    async def info(self, category: EventCategory, event_type: str, message: str, **kwargs) -> AuditLogEntry:
+    async def info(
+        self, category: EventCategory, event_type: str, message: str, **kwargs
+    ) -> AuditLogEntry:
         """Log info level event"""
-        return await self.log(LogLevel.INFO, category, event_type, message, **kwargs)
+        return await self.log(
+            LogLevel.INFO, category, event_type, message, **kwargs
+        )
 
-    async def warning(self, category: EventCategory, event_type: str, message: str, **kwargs) -> AuditLogEntry:
+    async def warning(
+        self, category: EventCategory, event_type: str, message: str, **kwargs
+    ) -> AuditLogEntry:
         """Log warning level event"""
-        return await self.log(LogLevel.WARNING, category, event_type, message, **kwargs)
+        return await self.log(
+            LogLevel.WARNING, category, event_type, message, **kwargs
+        )
 
-    async def error(self, category: EventCategory, event_type: str, message: str, **kwargs) -> AuditLogEntry:
+    async def error(
+        self, category: EventCategory, event_type: str, message: str, **kwargs
+    ) -> AuditLogEntry:
         """Log error level event"""
-        return await self.log(LogLevel.ERROR, category, event_type, message, **kwargs)
+        return await self.log(
+            LogLevel.ERROR, category, event_type, message, **kwargs
+        )
 
-    async def critical(self, category: EventCategory, event_type: str, message: str, **kwargs) -> AuditLogEntry:
+    async def critical(
+        self, category: EventCategory, event_type: str, message: str, **kwargs
+    ) -> AuditLogEntry:
         """Log critical level event"""
-        return await self.log(LogLevel.CRITICAL, category, event_type, message, **kwargs)
+        return await self.log(
+            LogLevel.CRITICAL, category, event_type, message, **kwargs
+        )
 
-    async def security(self, event_type: str, message: str, **kwargs) -> AuditLogEntry:
+    async def security(
+        self, event_type: str, message: str, **kwargs
+    ) -> AuditLogEntry:
         """Log security event (always permanent retention)"""
         return await self.log(
-            LogLevel.ALERT, EventCategory.SECURITY, event_type, message, compliance_tags=["security", "permanent"], **kwargs
+            LogLevel.ALERT,
+            EventCategory.SECURITY,
+            event_type,
+            message,
+            compliance_tags=["security", "permanent"],
+            **kwargs,
         )
 
     # Query methods
@@ -381,7 +430,9 @@ class AuditLogger:
                     results["valid_signatures"] += 1
                 else:
                     results["invalid_signatures"] += 1
-                    results["errors"].append({"entry_id": entry.id, "error": "Invalid signature"})
+                    results["errors"].append(
+                        {"entry_id": entry.id, "error": "Invalid signature"}
+                    )
 
             # Verify chain
             if not entry.verify_chain(prev_entry):
@@ -390,7 +441,9 @@ class AuditLogger:
                     {
                         "entry_id": entry.id,
                         "error": "Chain break detected",
-                        "expected_previous": prev_entry.hash if prev_entry else None,
+                        "expected_previous": (
+                            prev_entry.hash if prev_entry else None
+                        ),
                         "actual_previous": entry.previous_hash,
                     }
                 )
@@ -400,10 +453,16 @@ class AuditLogger:
         return results
 
     async def export(
-        self, format: str = "json", start_time: Optional[datetime] = None, end_time: Optional[datetime] = None, **filters
+        self,
+        format: str = "json",
+        start_time: Optional[datetime] = None,
+        end_time: Optional[datetime] = None,
+        **filters,
     ) -> Union[str, bytes]:
         """Export audit logs to various formats"""
-        entries = await self.query(start_time=start_time, end_time=end_time, limit=10000, **filters)
+        entries = await self.query(
+            start_time=start_time, end_time=end_time, limit=10000, **filters
+        )
 
         if format == "json":
             data = [e.to_dict() for e in entries]
@@ -454,7 +513,10 @@ class AuditLogger:
         elif format == "syslog":
             lines = []
             for e in entries:
-                lines.append(f"<{e.level}>{e.timestamp.isoformat()} " f"zen-audit[{e.id}] {e.category}: {e.message}")
+                lines.append(
+                    f"<{e.level}>{e.timestamp.isoformat()} "
+                    f"zen-audit[{e.id}] {e.category}: {e.message}"
+                )
             return "\n".join(lines)
 
         else:

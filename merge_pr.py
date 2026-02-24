@@ -11,13 +11,18 @@ REPO_OWNER = "SHAdd0WTAka"
 REPO_NAME = "Zen-Ai-Pentest"
 BASE_URL = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}"
 
-headers = {"Accept": "application/vnd.github.v3+json", "Authorization": f"token {GITHUB_TOKEN}"}
+headers = {
+    "Accept": "application/vnd.github.v3+json",
+    "Authorization": f"token {GITHUB_TOKEN}",
+}
 
 
 def get_open_prs():
     """Get open pull requests"""
     try:
-        resp = requests.get(f"{BASE_URL}/pulls?state=open", headers=headers, timeout=30)
+        resp = requests.get(
+            f"{BASE_URL}/pulls?state=open", headers=headers, timeout=30
+        )
         resp.raise_for_status()
         return resp.json()
     except Exception as e:
@@ -31,7 +36,10 @@ def approve_pr(pr_number):
         resp = requests.post(
             f"{BASE_URL}/pulls/{pr_number}/reviews",
             headers=headers,
-            json={"event": "APPROVE", "body": "LGTM! All features implemented correctly."},
+            json={
+                "event": "APPROVE",
+                "body": "LGTM! All features implemented correctly.",
+            },
             timeout=30,
         )
         resp.raise_for_status()
@@ -84,7 +92,9 @@ def main():
 
     print(f"\n📋 Found {len(prs)} open PR(s):")
     for pr in prs:
-        print(f"  #{pr['number']}: {pr['title']} ({pr['head']['ref']} → {pr['base']['ref']})")
+        print(
+            f"  #{pr['number']}: {pr['title']} ({pr['head']['ref']} → {pr['base']['ref']})"
+        )
 
     # Find release/v2.0.0 PR
     release_pr = None
@@ -111,7 +121,9 @@ def main():
         if merge_pr(pr_num):
             print("\n🎉 Successfully merged release/v2.0.0 to master!")
         else:
-            print("\n⚠️  Could not merge PR. Check for branch protection rules.")
+            print(
+                "\n⚠️  Could not merge PR. Check for branch protection rules."
+            )
     else:
         print("\n⚠️  Could not approve PR")
 

@@ -33,10 +33,18 @@ class ReportGenerator:
         # Report-Templates
         self.html_template = self._get_html_template()
 
-    def generate_pdf(self, scan_id: int, findings: List[Dict], scan_info: Dict, template: str = "default") -> str:
+    def generate_pdf(
+        self,
+        scan_id: int,
+        findings: List[Dict],
+        scan_info: Dict,
+        template: str = "default",
+    ) -> str:
         """Generiert PDF-Report"""
         if not WEASYPRINT_AVAILABLE:
-            logger.warning("WeasyPrint nicht verfügbar, erstelle HTML stattdessen")
+            logger.warning(
+                "WeasyPrint nicht verfügbar, erstelle HTML stattdessen"
+            )
             return self.generate_html(scan_id, findings, scan_info)
 
         try:
@@ -44,7 +52,10 @@ class ReportGenerator:
             html_content = self._render_html(scan_id, findings, scan_info)
 
             # PDF generieren
-            output_file = self.output_dir / f"report_{scan_id}_{int(datetime.now().timestamp())}.pdf"
+            output_file = (
+                self.output_dir
+                / f"report_{scan_id}_{int(datetime.now().timestamp())}.pdf"
+            )
             HTML(string=html_content).write_pdf(str(output_file))
 
             logger.info(f"PDF Report erstellt: {output_file}")
@@ -55,17 +66,28 @@ class ReportGenerator:
             # Fallback zu HTML
             return self.generate_html(scan_id, findings, scan_info)
 
-    def generate_html(self, scan_id: int, findings: List[Dict], scan_info: Dict, template: str = "default") -> str:
+    def generate_html(
+        self,
+        scan_id: int,
+        findings: List[Dict],
+        scan_info: Dict,
+        template: str = "default",
+    ) -> str:
         """Generiert HTML-Report"""
         html_content = self._render_html(scan_id, findings, scan_info)
 
-        output_file = self.output_dir / f"report_{scan_id}_{int(datetime.now().timestamp())}.html"
+        output_file = (
+            self.output_dir
+            / f"report_{scan_id}_{int(datetime.now().timestamp())}.html"
+        )
         output_file.write_text(html_content, encoding="utf-8")
 
         logger.info(f"HTML Report erstellt: {output_file}")
         return str(output_file)
 
-    def generate_json(self, scan_id: int, findings: List[Dict], scan_info: Dict) -> str:
+    def generate_json(
+        self, scan_id: int, findings: List[Dict], scan_info: Dict
+    ) -> str:
         """Generiert JSON-Report (für API/Integrationen)"""
         report_data = {
             "report_metadata": {
@@ -83,13 +105,20 @@ class ReportGenerator:
             "findings": findings,
         }
 
-        output_file = self.output_dir / f"report_{scan_id}_{int(datetime.now().timestamp())}.json"
-        output_file.write_text(json.dumps(report_data, indent=2), encoding="utf-8")
+        output_file = (
+            self.output_dir
+            / f"report_{scan_id}_{int(datetime.now().timestamp())}.json"
+        )
+        output_file.write_text(
+            json.dumps(report_data, indent=2), encoding="utf-8"
+        )
 
         logger.info(f"JSON Report erstellt: {output_file}")
         return str(output_file)
 
-    def generate_xml(self, scan_id: int, findings: List[Dict], scan_info: Dict) -> str:
+    def generate_xml(
+        self, scan_id: int, findings: List[Dict], scan_info: Dict
+    ) -> str:
         """Generiert XML-Report (für Import in andere Tools)"""
         import xml.etree.ElementTree as ET
 
@@ -110,19 +139,28 @@ class ReportGenerator:
             f_elem = ET.SubElement(findings_elem, "finding")
             f_elem.set("id", str(finding.get("id", "")))
             ET.SubElement(f_elem, "title").text = finding.get("title", "")
-            ET.SubElement(f_elem, "severity").text = finding.get("severity", "")
-            ET.SubElement(f_elem, "description").text = finding.get("description", "")
+            ET.SubElement(f_elem, "severity").text = finding.get(
+                "severity", ""
+            )
+            ET.SubElement(f_elem, "description").text = finding.get(
+                "description", ""
+            )
             ET.SubElement(f_elem, "tool").text = finding.get("tool", "")
 
         # Write to file
-        output_file = self.output_dir / f"report_{scan_id}_{int(datetime.now().timestamp())}.xml"
+        output_file = (
+            self.output_dir
+            / f"report_{scan_id}_{int(datetime.now().timestamp())}.xml"
+        )
         tree = ET.ElementTree(root)
         tree.write(str(output_file), encoding="utf-8", xml_declaration=True)
 
         logger.info(f"XML Report erstellt: {output_file}")
         return str(output_file)
 
-    def generate_markdown(self, scan_id: int, findings: List[Dict], scan_info: Dict) -> str:
+    def generate_markdown(
+        self, scan_id: int, findings: List[Dict], scan_info: Dict
+    ) -> str:
         """Generiert Markdown-Report"""
         md_content = f"""# Pentest Report
 
@@ -148,8 +186,17 @@ class ReportGenerator:
 """
 
         # Sort by severity
-        severity_order = {"critical": 0, "high": 1, "medium": 2, "low": 3, "info": 4}
-        sorted_findings = sorted(findings, key=lambda x: severity_order.get(x.get("severity", "info"), 5))
+        severity_order = {
+            "critical": 0,
+            "high": 1,
+            "medium": 2,
+            "low": 3,
+            "info": 4,
+        }
+        sorted_findings = sorted(
+            findings,
+            key=lambda x: severity_order.get(x.get("severity", "info"), 5),
+        )
 
         for finding in sorted_findings:
             md_content += f"""### {finding.get("title", "Untitled")}
@@ -164,19 +211,33 @@ class ReportGenerator:
 
 """
 
-        output_file = self.output_dir / f"report_{scan_id}_{int(datetime.now().timestamp())}.md"
+        output_file = (
+            self.output_dir
+            / f"report_{scan_id}_{int(datetime.now().timestamp())}.md"
+        )
         output_file.write_text(md_content, encoding="utf-8")
 
         logger.info(f"Markdown Report erstellt: {output_file}")
         return str(output_file)
 
-    def _render_html(self, scan_id: int, findings: List[Dict], scan_info: Dict) -> str:
+    def _render_html(
+        self, scan_id: int, findings: List[Dict], scan_info: Dict
+    ) -> str:
         """Rendert HTML-Template"""
         template = Template(self.html_template)
 
         # Sort findings by severity
-        severity_order = {"critical": 0, "high": 1, "medium": 2, "low": 3, "info": 4}
-        sorted_findings = sorted(findings, key=lambda x: severity_order.get(x.get("severity", "info"), 5))
+        severity_order = {
+            "critical": 0,
+            "high": 1,
+            "medium": 2,
+            "low": 3,
+            "info": 4,
+        }
+        sorted_findings = sorted(
+            findings,
+            key=lambda x: severity_order.get(x.get("severity", "info"), 5),
+        )
 
         # Count by severity
         severity_counts = self._count_by_severity(findings)

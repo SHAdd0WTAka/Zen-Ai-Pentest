@@ -10,7 +10,9 @@ def example_conversation_memory():
     manager = MemoryManager(storage_backend="sqlite")
 
     # Create memory for a session
-    memory = manager.create_conversation_memory(session_id="pentest-session-001", max_history=20)
+    memory = manager.create_conversation_memory(
+        session_id="pentest-session-001", max_history=20
+    )
 
     # Add conversation turns
     memory.add_user_message("Scan target 192.168.1.1")

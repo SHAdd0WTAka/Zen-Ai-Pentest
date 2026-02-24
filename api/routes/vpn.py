@@ -33,7 +33,9 @@ class VPNStatusResponse(BaseModel):
 class VPNConnectRequest(BaseModel):
     """VPN connection request"""
 
-    country: str = Field(default="CH", description="ISO country code (CH, NL, SE, etc.)")
+    country: str = Field(
+        default="CH", description="ISO country code (CH, NL, SE, etc.)"
+    )
     protocol: VPNProtocol = Field(default=VPNProtocol.WIREGUARD)
     security_level: VPNSecurityLevel = Field(default=VPNSecurityLevel.STANDARD)
     p2p: bool = Field(default=False)
@@ -81,7 +83,9 @@ async def connect_vpn(
         )
         return status.to_dict()
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"VPN connection failed: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"VPN connection failed: {str(e)}"
+        )
 
 
 @router.post("/disconnect", response_model=VPNStatusResponse)
@@ -91,21 +95,34 @@ async def disconnect_vpn(current_user: User = Depends(get_current_user)):
         status = await vpn_manager.disconnect()
         return status.to_dict()
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"VPN disconnect failed: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"VPN disconnect failed: {str(e)}"
+        )
 
 
 @router.post("/rotate")
-async def rotate_vpn_ip(country: Optional[str] = None, current_user: User = Depends(get_current_user)):
+async def rotate_vpn_ip(
+    country: Optional[str] = None,
+    current_user: User = Depends(get_current_user),
+):
     """Rotate VPN IP address (disconnect and reconnect)"""
     try:
         status = await vpn_manager.rotate_ip(country=country)
-        return {"message": "IP rotated successfully", "status": status.to_dict()}
+        return {
+            "message": "IP rotated successfully",
+            "status": status.to_dict(),
+        }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"IP rotation failed: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"IP rotation failed: {str(e)}"
+        )
 
 
 @router.get("/servers", response_model=List[ServerInfo])
-async def list_servers(country: Optional[str] = None, current_user: User = Depends(get_current_user)):
+async def list_servers(
+    country: Optional[str] = None,
+    current_user: User = Depends(get_current_user),
+):
     """List available VPN servers"""
     servers = await vpn_manager.get_server_list(country=country)
     return [
@@ -121,7 +138,9 @@ async def list_servers(country: Optional[str] = None, current_user: User = Depen
 
 
 @router.get("/servers/recommended")
-async def get_recommended_server(purpose: str = "general", current_user: User = Depends(get_current_user)):
+async def get_recommended_server(
+    purpose: str = "general", current_user: User = Depends(get_current_user)
+):
     """
     Get recommended server for specific purpose.
 
@@ -159,7 +178,9 @@ async def test_vpn_leaks(current_user: User = Depends(get_current_user)):
 
 
 @router.get("/history")
-async def get_connection_history(limit: int = 50, current_user: User = Depends(get_current_user)):
+async def get_connection_history(
+    limit: int = 50, current_user: User = Depends(get_current_user)
+):
     """Get VPN connection history"""
     history = vpn_manager.get_connection_history()
     return {"history": history[-limit:]}

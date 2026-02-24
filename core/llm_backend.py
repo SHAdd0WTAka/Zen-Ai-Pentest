@@ -23,4 +23,8 @@ class LLMBackend:
 
     async def chat(self, messages: list, **kwargs) -> Dict[str, Any]:
         """Chat completion - stub implementation"""
-        return {"content": "Stub chat response", "model": self.model, "usage": {"prompt_tokens": 10, "completion_tokens": 10}}
+        return {
+            "content": "Stub chat response",
+            "model": self.model,
+            "usage": {"prompt_tokens": 10, "completion_tokens": 10},
+        }

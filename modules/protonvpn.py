@@ -77,7 +77,9 @@ class VPNServer:
     tier: int = 0  # 0=Free, 1=Basic, 2=Plus, 3=Visionary
 
     def __str__(self) -> str:
-        return f"{self.name} ({self.city}, {self.country}) - Load: {self.load}%"
+        return (
+            f"{self.name} ({self.city}, {self.country}) - Load: {self.load}%"
+        )
 
 
 class ProtonVPNManager:
@@ -137,11 +139,17 @@ class ProtonVPNManager:
                         stdout=asyncio.subprocess.PIPE,
                         stderr=asyncio.subprocess.PIPE,
                     )
-                    stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=6)
+                    stdout, _ = await asyncio.wait_for(
+                        proc.communicate(), timeout=6
+                    )
                     ip = stdout.decode().strip()
                     if ip and self._is_valid_ip(ip):
                         return ip
-                except (subprocess.SubprocessError, asyncio.TimeoutError, OSError):
+                except (
+                    subprocess.SubprocessError,
+                    asyncio.TimeoutError,
+                    OSError,
+                ):
                     continue
 
             return "unknown"
@@ -226,13 +234,19 @@ class ProtonVPNManager:
             if kill_switch:
                 subprocess.run(["protonvpn-cli", "ks", "--on"], check=False)
 
-            proc = await asyncio.create_subprocess_exec(*cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+            proc = await asyncio.create_subprocess_exec(
+                *cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+            )
             stdout, stderr = await proc.communicate()
 
             if proc.returncode == 0:
                 self.connected = True
                 self.status.connected = True
-                self.status.server_location = f"{city or 'Auto'}, {country}" if city else country
+                self.status.server_location = (
+                    f"{city or 'Auto'}, {country}" if city else country
+                )
                 self.status.protocol = protocol.value
                 self.status.kill_switch = kill_switch
                 self.status.connection_time = self._get_timestamp()
@@ -299,12 +313,18 @@ class ProtonVPNManager:
 
         # Select different country if not specified
         if not country:
-            available = [c for c in self.RECOMMENDED_COUNTRIES if c != self.status.server_location]
+            available = [
+                c
+                for c in self.RECOMMENDED_COUNTRIES
+                if c != self.status.server_location
+            ]
             country = random.choice(available)
 
         return await self.connect(country=country, protocol=protocol)
 
-    def _get_server_name(self, country: str, city: Optional[str], p2p: bool) -> str:
+    def _get_server_name(
+        self, country: str, city: Optional[str], p2p: bool
+    ) -> str:
         """Generate server name based on parameters"""
         if p2p:
             return f"{country}-P2P"
@@ -312,7 +332,9 @@ class ProtonVPNManager:
             return f"{country}-{city}"
         return country
 
-    async def _mock_connect(self, country: str, protocol: VPNProtocol) -> VPNStatus:
+    async def _mock_connect(
+        self, country: str, protocol: VPNProtocol
+    ) -> VPNStatus:
         """Mock connection for testing without real VPN"""
         logger.info(f"[MOCK] Connecting to {country} via {protocol.value}")
 
@@ -320,7 +342,9 @@ class ProtonVPNManager:
         self.status.connected = True
         self.status.server_location = f"MOCK-{country}"
         self.status.protocol = protocol.value
-        self.status.server_ip = f"10.{random.randint(0, 255)}.{random.randint(0, 255)}.1"
+        self.status.server_ip = (
+            f"10.{random.randint(0, 255)}.{random.randint(0, 255)}.1"
+        )
         self.status.public_ip = f"185.{random.randint(0, 255)}.{random.randint(0, 255)}.{random.randint(0, 255)}"
         self.status.connection_time = self._get_timestamp()
 
@@ -338,20 +362,66 @@ class ProtonVPNManager:
         """Check if VPN is connected"""
         return self.connected
 
-    async def get_server_list(self, country: Optional[str] = None) -> List[VPNServer]:
+    async def get_server_list(
+        self, country: Optional[str] = None
+    ) -> List[VPNServer]:
         """Get list of available VPN servers"""
         servers = []
 
         # Mock server list (in real implementation, fetch from Proton API)
         mock_servers = [
-            VPNServer("CH-01", "CH", "Zurich", "185.159.158.1", 45, ["secure-core"], 2),
-            VPNServer("CH-02", "CH", "Geneva", "185.159.158.2", 30, ["secure-core", "p2p"], 2),
-            VPNServer("NL-01", "NL", "Amsterdam", "185.107.56.1", 60, ["p2p", "tor"], 2),
-            VPNServer("NL-02", "NL", "Amsterdam", "185.107.56.2", 25, ["p2p"], 2),
-            VPNServer("SE-01", "SE", "Stockholm", "185.210.217.1", 40, ["secure-core"], 2),
-            VPNServer("IS-01", "IS", "Reykjavik", "37.235.49.1", 20, ["secure-core"], 2),
+            VPNServer(
+                "CH-01",
+                "CH",
+                "Zurich",
+                "185.159.158.1",
+                45,
+                ["secure-core"],
+                2,
+            ),
+            VPNServer(
+                "CH-02",
+                "CH",
+                "Geneva",
+                "185.159.158.2",
+                30,
+                ["secure-core", "p2p"],
+                2,
+            ),
+            VPNServer(
+                "NL-01",
+                "NL",
+                "Amsterdam",
+                "185.107.56.1",
+                60,
+                ["p2p", "tor"],
+                2,
+            ),
+            VPNServer(
+                "NL-02", "NL", "Amsterdam", "185.107.56.2", 25, ["p2p"], 2
+            ),
+            VPNServer(
+                "SE-01",
+                "SE",
+                "Stockholm",
+                "185.210.217.1",
+                40,
+                ["secure-core"],
+                2,
+            ),
+            VPNServer(
+                "IS-01",
+                "IS",
+                "Reykjavik",
+                "37.235.49.1",
+                20,
+                ["secure-core"],
+                2,
+            ),
             VPNServer("DE-01", "DE", "Frankfurt", "185.104.63.1", 55, [], 1),
-            VPNServer("SG-01", "SG", "Singapore", "103.125.234.1", 70, ["p2p"], 2),
+            VPNServer(
+                "SG-01", "SG", "Singapore", "103.125.234.1", 70, ["p2p"], 2
+            ),
         ]
 
         if country:
@@ -387,7 +457,9 @@ class ProtonVPNManager:
         if purpose == "pentest":
             # Low load, secure core for anonymity
             candidates = [s for s in servers if "secure-core" in s.features]
-            return min(candidates, key=lambda x: x.load) if candidates else None
+            return (
+                min(candidates, key=lambda x: x.load) if candidates else None
+            )
 
         elif purpose == "c2":
             # Stable, low latency
@@ -396,7 +468,9 @@ class ProtonVPNManager:
         elif purpose == "fileshare":
             # P2P optimized
             candidates = [s for s in servers if "p2p" in s.features]
-            return min(candidates, key=lambda x: x.load) if candidates else None
+            return (
+                min(candidates, key=lambda x: x.load) if candidates else None
+            )
 
         # General purpose - lowest load
         return min(servers, key=lambda x: x.load) if servers else None
@@ -492,7 +566,11 @@ async def quick_connect(country: Optional[str] = None) -> VPNStatus:
 async def secure_connect() -> VPNStatus:
     """Connect with maximum security (Secure Core)"""
     vpn = ProtonVPNManager()
-    return await vpn.connect(country="CH", security_level=VPNSecurityLevel.SECURE_CORE, kill_switch=True)
+    return await vpn.connect(
+        country="CH",
+        security_level=VPNSecurityLevel.SECURE_CORE,
+        kill_switch=True,
+    )
 
 
 if __name__ == "__main__":

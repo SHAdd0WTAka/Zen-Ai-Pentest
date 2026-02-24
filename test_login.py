@@ -18,7 +18,11 @@ def test_login():
 
     # Test 2: Login
     try:
-        resp = requests.post(f"{BASE_URL}/auth/login", json={"username": "admin", "password": "admin"}, timeout=5)
+        resp = requests.post(
+            f"{BASE_URL}/auth/login",
+            json={"username": "admin", "password": "admin"},
+            timeout=5,
+        )
         print(f"Login: {resp.status_code}")
 
         if resp.status_code == 200:
@@ -41,11 +45,16 @@ def test_cors():
     try:
         resp = requests.options(
             f"{BASE_URL}/auth/login",
-            headers={"Origin": "http://localhost:3000", "Access-Control-Request-Method": "POST"},
+            headers={
+                "Origin": "http://localhost:3000",
+                "Access-Control-Request-Method": "POST",
+            },
             timeout=5,
         )
         print(f"CORS Preflight: {resp.status_code}")
-        print(f"Allow-Origin: {resp.headers.get('access-control-allow-origin', 'N/A')}")
+        print(
+            f"Allow-Origin: {resp.headers.get('access-control-allow-origin', 'N/A')}"
+        )
         return True
     except Exception as e:
         print(f"CORS Test Failed: {e}")

@@ -97,7 +97,9 @@ def sample_security_event():
 @pytest.fixture
 def mock_session():
     """Create a mock requests session"""
-    with patch("modules.siem_integration.requests.Session") as mock_session_class:
+    with patch(
+        "modules.siem_integration.requests.Session"
+    ) as mock_session_class:
         mock_session = Mock()
         mock_session_class.return_value = mock_session
         yield mock_session
@@ -155,7 +157,9 @@ class TestSecurityEvent:
 
     def test_security_event_creation(self, sample_security_event):
         """Test security event creation"""
-        assert sample_security_event.timestamp == datetime(2024, 1, 15, 10, 30, 0)
+        assert sample_security_event.timestamp == datetime(
+            2024, 1, 15, 10, 30, 0
+        )
         assert sample_security_event.severity == "high"
         assert sample_security_event.event_type == "vulnerability_detected"
         assert sample_security_event.source == "zen-ai-pentest"
@@ -195,7 +199,9 @@ class TestSplunkConnector:
 
     def test_connect_success(self, splunk_config):
         """Test successful connection to Splunk"""
-        with patch("modules.siem_integration.requests.Session") as mock_session_class:
+        with patch(
+            "modules.siem_integration.requests.Session"
+        ) as mock_session_class:
             mock_session = Mock()
             mock_session_class.return_value = mock_session
 
@@ -214,7 +220,9 @@ class TestSplunkConnector:
 
     def test_connect_failure(self, splunk_config):
         """Test failed connection to Splunk"""
-        with patch("modules.siem_integration.requests.Session") as mock_session_class:
+        with patch(
+            "modules.siem_integration.requests.Session"
+        ) as mock_session_class:
             mock_session = Mock()
             mock_session_class.return_value = mock_session
 
@@ -229,7 +237,9 @@ class TestSplunkConnector:
 
     def test_connect_exception(self, splunk_config):
         """Test connection with exception"""
-        with patch("modules.siem_integration.requests.Session") as mock_session_class:
+        with patch(
+            "modules.siem_integration.requests.Session"
+        ) as mock_session_class:
             mock_session = Mock()
             mock_session_class.return_value = mock_session
             mock_session.get.side_effect = Exception("Connection error")
@@ -241,7 +251,9 @@ class TestSplunkConnector:
 
     def test_send_event_success(self, splunk_config, sample_security_event):
         """Test sending event to Splunk"""
-        with patch("modules.siem_integration.requests.Session") as mock_session_class:
+        with patch(
+            "modules.siem_integration.requests.Session"
+        ) as mock_session_class:
             mock_session = Mock()
             mock_session_class.return_value = mock_session
 
@@ -258,11 +270,16 @@ class TestSplunkConnector:
             # Verify payload structure
             call_args = mock_session.post.call_args
             assert "Authorization" in call_args[1]["headers"]
-            assert "Splunk test-api-key-12345" == call_args[1]["headers"]["Authorization"]
+            assert (
+                "Splunk test-api-key-12345"
+                == call_args[1]["headers"]["Authorization"]
+            )
 
     def test_send_event_failure(self, splunk_config, sample_security_event):
         """Test sending event failure"""
-        with patch("modules.siem_integration.requests.Session") as mock_session_class:
+        with patch(
+            "modules.siem_integration.requests.Session"
+        ) as mock_session_class:
             mock_session = Mock()
             mock_session_class.return_value = mock_session
 
@@ -275,9 +292,13 @@ class TestSplunkConnector:
 
             assert result is False
 
-    def test_send_events_batch_success(self, splunk_config, sample_security_event):
+    def test_send_events_batch_success(
+        self, splunk_config, sample_security_event
+    ):
         """Test sending batch events to Splunk"""
-        with patch("modules.siem_integration.requests.Session") as mock_session_class:
+        with patch(
+            "modules.siem_integration.requests.Session"
+        ) as mock_session_class:
             mock_session = Mock()
             mock_session_class.return_value = mock_session
 
@@ -295,13 +316,17 @@ class TestSplunkConnector:
 
     def test_query_threat_intel_success(self, splunk_config):
         """Test querying threat intelligence from Splunk"""
-        with patch("modules.siem_integration.requests.Session") as mock_session_class:
+        with patch(
+            "modules.siem_integration.requests.Session"
+        ) as mock_session_class:
             mock_session = Mock()
             mock_session_class.return_value = mock_session
 
             mock_response = Mock()
             mock_response.status_code = 200
-            mock_response.json.return_value = {"results": [{"indicator": "1.2.3.4"}]}
+            mock_response.json.return_value = {
+                "results": [{"indicator": "1.2.3.4"}]
+            }
             mock_session.post.return_value = mock_response
 
             connector = SplunkConnector(splunk_config)
@@ -312,7 +337,9 @@ class TestSplunkConnector:
 
     def test_query_threat_intel_not_found(self, splunk_config):
         """Test querying threat intel with no results"""
-        with patch("modules.siem_integration.requests.Session") as mock_session_class:
+        with patch(
+            "modules.siem_integration.requests.Session"
+        ) as mock_session_class:
             mock_session = Mock()
             mock_session_class.return_value = mock_session
 
@@ -339,7 +366,9 @@ class TestElasticConnector:
 
     def test_connect_success(self, elastic_config):
         """Test successful connection to Elastic"""
-        with patch("modules.siem_integration.requests.Session") as mock_session_class:
+        with patch(
+            "modules.siem_integration.requests.Session"
+        ) as mock_session_class:
             mock_session = Mock()
             mock_session_class.return_value = mock_session
 
@@ -356,7 +385,9 @@ class TestElasticConnector:
 
     def test_send_event_success(self, elastic_config, sample_security_event):
         """Test sending event to Elastic"""
-        with patch("modules.siem_integration.requests.Session") as mock_session_class:
+        with patch(
+            "modules.siem_integration.requests.Session"
+        ) as mock_session_class:
             mock_session = Mock()
             mock_session_class.return_value = mock_session
 
@@ -374,9 +405,13 @@ class TestElasticConnector:
             assert call_args[1]["json"]["@timestamp"] is not None
             assert call_args[1]["json"]["severity"] == "high"
 
-    def test_send_events_batch_success(self, elastic_config, sample_security_event):
+    def test_send_events_batch_success(
+        self, elastic_config, sample_security_event
+    ):
         """Test sending batch events to Elastic"""
-        with patch("modules.siem_integration.requests.Session") as mock_session_class:
+        with patch(
+            "modules.siem_integration.requests.Session"
+        ) as mock_session_class:
             mock_session = Mock()
             mock_session_class.return_value = mock_session
 
@@ -391,11 +426,16 @@ class TestElasticConnector:
             assert result is True
             call_args = mock_session.post.call_args
             assert "_bulk" in call_args[0][0]
-            assert call_args[1]["headers"]["Content-Type"] == "application/x-ndjson"
+            assert (
+                call_args[1]["headers"]["Content-Type"]
+                == "application/x-ndjson"
+            )
 
     def test_query_threat_intel(self, elastic_config):
         """Test querying threat intelligence from Elastic"""
-        with patch("modules.siem_integration.requests.Session") as mock_session_class:
+        with patch(
+            "modules.siem_integration.requests.Session"
+        ) as mock_session_class:
             mock_session = Mock()
             mock_session_class.return_value = mock_session
 
@@ -425,12 +465,16 @@ class TestAzureSentinelConnector:
 
     def test_connect_success(self, sentinel_config):
         """Test successful connection to Sentinel"""
-        with patch("modules.siem_integration.requests.Session") as mock_session_class:
+        with patch(
+            "modules.siem_integration.requests.Session"
+        ) as mock_session_class:
             mock_session = Mock()
             mock_session_class.return_value = mock_session
 
             mock_response = Mock()
-            mock_response.status_code = 401  # 401 means auth worked but query was invalid
+            mock_response.status_code = (
+                401  # 401 means auth worked but query was invalid
+            )
             mock_session.get.return_value = mock_response
 
             connector = AzureSentinelConnector(sentinel_config)
@@ -452,7 +496,9 @@ class TestAzureSentinelConnector:
 
     def test_send_event_success(self, sentinel_config, sample_security_event):
         """Test sending event to Sentinel"""
-        with patch("modules.siem_integration.requests.Session") as mock_session_class:
+        with patch(
+            "modules.siem_integration.requests.Session"
+        ) as mock_session_class:
             mock_session = Mock()
             mock_session_class.return_value = mock_session
 
@@ -472,7 +518,9 @@ class TestAzureSentinelConnector:
 
     def test_send_events_batch(self, sentinel_config, sample_security_event):
         """Test sending batch events to Sentinel"""
-        with patch("modules.siem_integration.requests.Session") as mock_session_class:
+        with patch(
+            "modules.siem_integration.requests.Session"
+        ) as mock_session_class:
             mock_session = Mock()
             mock_session_class.return_value = mock_session
 
@@ -502,7 +550,9 @@ class TestQRadarConnector:
 
     def test_connect_success(self, qradar_config):
         """Test successful connection to QRadar"""
-        with patch("modules.siem_integration.requests.Session") as mock_session_class:
+        with patch(
+            "modules.siem_integration.requests.Session"
+        ) as mock_session_class:
             mock_session = Mock()
             mock_session_class.return_value = mock_session
 
@@ -542,7 +592,9 @@ class TestQRadarConnector:
 
     def test_send_event_success(self, qradar_config, sample_security_event):
         """Test sending event to QRadar"""
-        with patch("modules.siem_integration.requests.Session") as mock_session_class:
+        with patch(
+            "modules.siem_integration.requests.Session"
+        ) as mock_session_class:
             mock_session = Mock()
             mock_session_class.return_value = mock_session
 
@@ -557,7 +609,9 @@ class TestQRadarConnector:
 
     def test_send_events_batch(self, qradar_config, sample_security_event):
         """Test sending batch events to QRadar"""
-        with patch("modules.siem_integration.requests.Session") as mock_session_class:
+        with patch(
+            "modules.siem_integration.requests.Session"
+        ) as mock_session_class:
             mock_session = Mock()
             mock_session_class.return_value = mock_session
 
@@ -573,9 +627,13 @@ class TestQRadarConnector:
             # QRadar sends events one by one
             assert mock_session.post.call_count == 2
 
-    def test_send_events_batch_partial_failure(self, qradar_config, sample_security_event):
+    def test_send_events_batch_partial_failure(
+        self, qradar_config, sample_security_event
+    ):
         """Test batch with partial failure"""
-        with patch("modules.siem_integration.requests.Session") as mock_session_class:
+        with patch(
+            "modules.siem_integration.requests.Session"
+        ) as mock_session_class:
             mock_session = Mock()
             mock_session_class.return_value = mock_session
 
@@ -608,7 +666,9 @@ class TestSIEMIntegrationManager:
 
     def test_add_siem_splunk(self, splunk_config):
         """Test adding Splunk SIEM"""
-        with patch("modules.siem_integration.requests.Session") as mock_session_class:
+        with patch(
+            "modules.siem_integration.requests.Session"
+        ) as mock_session_class:
             mock_session = Mock()
             mock_session_class.return_value = mock_session
 
@@ -624,7 +684,9 @@ class TestSIEMIntegrationManager:
 
     def test_add_siem_connection_failure(self, splunk_config):
         """Test adding SIEM with connection failure"""
-        with patch("modules.siem_integration.requests.Session") as mock_session_class:
+        with patch(
+            "modules.siem_integration.requests.Session"
+        ) as mock_session_class:
             mock_session = Mock()
             mock_session_class.return_value = mock_session
 
@@ -651,9 +713,13 @@ class TestSIEMIntegrationManager:
 
         assert result is False
 
-    def test_send_to_all(self, splunk_config, elastic_config, sample_security_event):
+    def test_send_to_all(
+        self, splunk_config, elastic_config, sample_security_event
+    ):
         """Test sending event to all SIEMs"""
-        with patch("modules.siem_integration.requests.Session") as mock_session_class:
+        with patch(
+            "modules.siem_integration.requests.Session"
+        ) as mock_session_class:
             mock_session = Mock()
             mock_session_class.return_value = mock_session
 
@@ -675,7 +741,9 @@ class TestSIEMIntegrationManager:
 
     def test_send_batch_to_all(self, splunk_config, sample_security_event):
         """Test sending batch to all SIEMs"""
-        with patch("modules.siem_integration.requests.Session") as mock_session_class:
+        with patch(
+            "modules.siem_integration.requests.Session"
+        ) as mock_session_class:
             mock_session = Mock()
             mock_session_class.return_value = mock_session
 
@@ -695,7 +763,9 @@ class TestSIEMIntegrationManager:
 
     def test_get_status(self, splunk_config):
         """Test getting connection status of all SIEMs"""
-        with patch("modules.siem_integration.requests.Session") as mock_session_class:
+        with patch(
+            "modules.siem_integration.requests.Session"
+        ) as mock_session_class:
             mock_session = Mock()
             mock_session_class.return_value = mock_session
 
@@ -773,9 +843,13 @@ class TestBaseSIEMConnector:
 class TestIntegration:
     """Integration tests for SIEM module"""
 
-    def test_multiple_siem_workflow(self, splunk_config, elastic_config, sample_security_event):
+    def test_multiple_siem_workflow(
+        self, splunk_config, elastic_config, sample_security_event
+    ):
         """Test workflow with multiple SIEMs"""
-        with patch("modules.siem_integration.requests.Session") as mock_session_class:
+        with patch(
+            "modules.siem_integration.requests.Session"
+        ) as mock_session_class:
             mock_session = Mock()
             mock_session_class.return_value = mock_session
 
@@ -799,7 +873,9 @@ class TestIntegration:
 
     def test_event_with_all_severities(self, splunk_config):
         """Test sending events with different severities"""
-        with patch("modules.siem_integration.requests.Session") as mock_session_class:
+        with patch(
+            "modules.siem_integration.requests.Session"
+        ) as mock_session_class:
             mock_session = Mock()
             mock_session_class.return_value = mock_session
 

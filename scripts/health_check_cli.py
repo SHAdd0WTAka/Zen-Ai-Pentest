@@ -33,7 +33,12 @@ from typing import List, Optional
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from core.health_check import HealthCheckConfig, HealthCheckRunner, HealthReport, HealthStatus
+from core.health_check import (
+    HealthCheckConfig,
+    HealthCheckRunner,
+    HealthReport,
+    HealthStatus,
+)
 
 # Configure logging
 logging.basicConfig(
@@ -96,7 +101,9 @@ class HealthCheckCLI:
         """
         print(self.colorize(banner, Colors.INFO))
 
-    def print_status_line(self, name: str, status: HealthStatus, message: str, duration_ms: float):
+    def print_status_line(
+        self, name: str, status: HealthStatus, message: str, duration_ms: float
+    ):
         """Print a formatted status line"""
         color = self.STATUS_COLORS.get(status, Colors.RESET)
         icon = self.STATUS_ICONS.get(status, "?")
@@ -106,7 +113,9 @@ class HealthCheckCLI:
         status_padded = self.colorize(f"{icon} {status_text}", color).ljust(20)
         duration_str = f"({duration_ms:.0f}ms)" if duration_ms > 0 else ""
 
-        print(f"  {name_padded} {status_padded} {message} {Colors.DIM}{duration_str}{Colors.RESET}")
+        print(
+            f"  {name_padded} {status_padded} {message} {Colors.DIM}{duration_str}{Colors.RESET}"
+        )
 
     def print_check_details(self, check, verbose: bool = False):
         """Print detailed check information"""
@@ -116,15 +125,25 @@ class HealthCheckCLI:
         # Print details if available
         if check.details:
             if "error" in check.details:
-                print(f"    {self.colorize('Error:', Colors.ERROR)} {check.details['error']}")
+                print(
+                    f"    {self.colorize('Error:', Colors.ERROR)} {check.details['error']}"
+                )
 
             # Tool check details
             if "required" in check.details and "optional" in check.details:
                 for tool_name, tool_info in check.details["required"].items():
                     status = "✓" if tool_info["available"] else "✗"
-                    tool_color = Colors.OK if tool_info["available"] else Colors.ERROR
-                    version = f"v{tool_info['version']}" if tool_info.get("version") else ""
-                    print(f"      {self.colorize(status, tool_color)} {tool_name} {Colors.DIM}{version}{Colors.RESET}")
+                    tool_color = (
+                        Colors.OK if tool_info["available"] else Colors.ERROR
+                    )
+                    version = (
+                        f"v{tool_info['version']}"
+                        if tool_info.get("version")
+                        else ""
+                    )
+                    print(
+                        f"      {self.colorize(status, tool_color)} {tool_name} {Colors.DIM}{version}{Colors.RESET}"
+                    )
 
             # Resource check details
             if "memory" in check.details:
@@ -147,21 +166,33 @@ class HealthCheckCLI:
             # Security check details
             if check.name == "security":
                 if check.details.get("secrets_found"):
-                    print(f"    {self.colorize('⚠ Secrets found:', Colors.WARNING)}")
-                    for secret in check.details["secrets_found"][:5]:  # Show first 5
+                    print(
+                        f"    {self.colorize('⚠ Secrets found:', Colors.WARNING)}"
+                    )
+                    for secret in check.details["secrets_found"][
+                        :5
+                    ]:  # Show first 5
                         file = secret.get("file", "unknown")
                         line = secret.get("line", 0)
                         secret_type = secret.get("type", "unknown")
                         print(f"      - {file}:{line} ({secret_type})")
 
                 if check.details.get("env_vars"):
-                    missing = [k for k, v in check.details["env_vars"].items() if not v]
+                    missing = [
+                        k
+                        for k, v in check.details["env_vars"].items()
+                        if not v
+                    ]
                     if missing:
-                        print(f"    {self.colorize('Missing env vars:', Colors.WARNING)} {', '.join(missing)}")
+                        print(
+                            f"    {self.colorize('Missing env vars:', Colors.WARNING)} {', '.join(missing)}"
+                        )
 
         # Print remediation if available
         if check.remediation and check.status != HealthStatus.OK:
-            print(f"    {self.colorize('💡 Remediation:', Colors.INFO)} {check.remediation}")
+            print(
+                f"    {self.colorize('💡 Remediation:', Colors.INFO)} {check.remediation}"
+            )
 
         print()
 
@@ -172,19 +203,33 @@ class HealthCheckCLI:
         print("=" * 60)
 
         summary = report.summary
-        status_color = self.STATUS_COLORS.get(report.overall_status, Colors.RESET)
+        status_color = self.STATUS_COLORS.get(
+            report.overall_status, Colors.RESET
+        )
 
-        print(f"\nOverall Status: {self.colorize(report.overall_status.value.upper(), status_color)}")
+        print(
+            f"\nOverall Status: {self.colorize(report.overall_status.value.upper(), status_color)}"
+        )
         print("\nChecks:")
         print(f"  Total:     {summary['total']}")
         print(f"  {self.colorize('OK:', Colors.OK)}        {summary['ok']}")
-        print(f"  {self.colorize('Warning:', Colors.WARNING)}  {summary['warning']}")
-        print(f"  {self.colorize('Error:', Colors.ERROR)}     {summary['error']}")
-        print(f"  {self.colorize('Critical:', Colors.CRITICAL)} {summary['critical']}")
-        print(f"  {self.colorize('Skipped:', Colors.DIM)}   {summary['skipped']}")
+        print(
+            f"  {self.colorize('Warning:', Colors.WARNING)}  {summary['warning']}"
+        )
+        print(
+            f"  {self.colorize('Error:', Colors.ERROR)}     {summary['error']}"
+        )
+        print(
+            f"  {self.colorize('Critical:', Colors.CRITICAL)} {summary['critical']}"
+        )
+        print(
+            f"  {self.colorize('Skipped:', Colors.DIM)}   {summary['skipped']}"
+        )
 
         print(f"\nDuration: {report.duration_ms:.0f}ms")
-        print(f"Generated: {report.generated_at.strftime('%Y-%m-%d %H:%M:%S')}")
+        print(
+            f"Generated: {report.generated_at.strftime('%Y-%m-%d %H:%M:%S')}"
+        )
 
     def print_json(self, report: HealthReport, pretty: bool = True):
         """Print report as JSON"""
@@ -194,7 +239,9 @@ class HealthCheckCLI:
     def print_markdown(self, report: HealthReport):
         """Print report as Markdown"""
         print("# Zen-AI-Pentest Health Check Report\n")
-        print(f"**Generated:** {report.generated_at.strftime('%Y-%m-%d %H:%M:%S')}")
+        print(
+            f"**Generated:** {report.generated_at.strftime('%Y-%m-%d %H:%M:%S')}"
+        )
         print(f"**Overall Status:** {report.overall_status.value.upper()}\n")
 
         print("## Summary\n")
@@ -275,7 +322,12 @@ class HealthCheckCLI:
                 print("=" * 60 + "\n")
 
                 for check in report.checks:
-                    self.print_status_line(check.name, check.status, check.message, check.duration_ms)
+                    self.print_status_line(
+                        check.name,
+                        check.status,
+                        check.message,
+                        check.duration_ms,
+                    )
                     self.print_check_details(check, verbose)
 
                 self.print_summary(report)

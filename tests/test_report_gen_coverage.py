@@ -42,13 +42,24 @@ class TestReportGenerator:
         assert report_gen.executive_summary == ""
 
     @pytest.mark.asyncio
-    async def test_generate_executive_summary(self, report_gen, mock_orchestrator):
+    async def test_generate_executive_summary(
+        self, report_gen, mock_orchestrator
+    ):
         """Test executive summary generation"""
         scan_results = {
             "target": "example.com",
             "date": datetime.now().isoformat(),
-            "vulnerability_summary": {"Critical": 2, "High": 5, "Medium": 10, "Low": 15, "Info": 20},
-            "top_findings": [{"name": "SQL Injection", "severity": "Critical"}, {"name": "XSS", "severity": "High"}],
+            "vulnerability_summary": {
+                "Critical": 2,
+                "High": 5,
+                "Medium": 10,
+                "Low": 15,
+                "Info": 20,
+            },
+            "top_findings": [
+                {"name": "SQL Injection", "severity": "Critical"},
+                {"name": "XSS", "severity": "High"},
+            ],
         }
 
         result = await report_gen.generate_executive_summary(scan_results)
@@ -82,7 +93,9 @@ class TestReportGenerator:
 
         report_gen.executive_summary = "Test summary"
 
-        result = await report_gen.generate_technical_report([vuln1, vuln2], "example.com")
+        result = await report_gen.generate_technical_report(
+            [vuln1, vuln2], "example.com"
+        )
 
         assert "Penetration Test Report" in result
         assert "example.com" in result
@@ -137,10 +150,15 @@ class TestReportGenerator:
     @patch("modules.report_gen.logger")
     def test_export_json(self, mock_logger, report_gen):
         """Test JSON export"""
-        data = {"target": "example.com", "findings": [{"name": "Test", "severity": "High"}]}
+        data = {
+            "target": "example.com",
+            "findings": [{"name": "Test", "severity": "High"}],
+        }
 
         with patch("modules.report_gen.datetime") as mock_datetime:
-            mock_datetime.now.return_value.strftime.return_value = "20240101_120000"
+            mock_datetime.now.return_value.strftime.return_value = (
+                "20240101_120000"
+            )
             result = report_gen.export_json(data, "test_report.json")
 
         assert "test_report.json" in result
@@ -153,7 +171,9 @@ class TestReportGenerator:
         data = {"findings": []}
 
         with patch("modules.report_gen.datetime") as mock_datetime:
-            mock_datetime.now.return_value.strftime.return_value = "20240101_120000"
+            mock_datetime.now.return_value.strftime.return_value = (
+                "20240101_120000"
+            )
             result = report_gen.export_json(data)
 
         assert "report_20240101_120000.json" in result
@@ -173,7 +193,9 @@ class TestReportGenerator:
         )
 
         with patch("modules.report_gen.datetime") as mock_datetime:
-            mock_datetime.now.return_value.strftime.return_value = "20240101_120000"
+            mock_datetime.now.return_value.strftime.return_value = (
+                "20240101_120000"
+            )
             result = report_gen.export_csv([vuln], "test_vulns.csv")
 
         assert "test_vulns.csv" in result
@@ -182,16 +204,22 @@ class TestReportGenerator:
     @patch("builtins.open", mock_open())
     @patch("csv.writer")
     @patch("modules.report_gen.logger")
-    def test_export_csv_auto_filename(self, mock_logger, mock_csv_writer, report_gen):
+    def test_export_csv_auto_filename(
+        self, mock_logger, mock_csv_writer, report_gen
+    ):
         """Test CSV export with auto-generated filename"""
         with patch("modules.report_gen.datetime") as mock_datetime:
-            mock_datetime.now.return_value.strftime.return_value = "20240101_120000"
+            mock_datetime.now.return_value.strftime.return_value = (
+                "20240101_120000"
+            )
             result = report_gen.export_csv([])
 
         assert "vulnerabilities_20240101_120000.csv" in result
 
     @pytest.mark.asyncio
-    async def test_generate_remediation_roadmap(self, report_gen, mock_orchestrator):
+    async def test_generate_remediation_roadmap(
+        self, report_gen, mock_orchestrator
+    ):
         """Test remediation roadmap generation"""
         vulns = [
             Mock(name="SQL Injection", severity="Critical"),
@@ -205,7 +233,9 @@ class TestReportGenerator:
         mock_orchestrator.process.assert_called()
 
     @pytest.mark.asyncio
-    async def test_generate_compliance_mapping(self, report_gen, mock_orchestrator):
+    async def test_generate_compliance_mapping(
+        self, report_gen, mock_orchestrator
+    ):
         """Test compliance mapping generation"""
 
         class MockVuln:
@@ -220,7 +250,9 @@ class TestReportGenerator:
         mock_orchestrator.process.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_generate_compliance_mapping_default_framework(self, report_gen, mock_orchestrator):
+    async def test_generate_compliance_mapping_default_framework(
+        self, report_gen, mock_orchestrator
+    ):
         """Test compliance mapping with default framework"""
 
         class MockVuln:
@@ -241,7 +273,9 @@ class TestReportGenerator:
         assert "example.com" in result
 
     @pytest.mark.asyncio
-    async def test_generate_technical_report_unknown_severity(self, report_gen):
+    async def test_generate_technical_report_unknown_severity(
+        self, report_gen
+    ):
         """Test technical report with unknown severity"""
         vuln = Mock(
             name="Unknown Vuln",
@@ -253,12 +287,16 @@ class TestReportGenerator:
             cvss_score=None,
         )
 
-        result = await report_gen.generate_technical_report([vuln], "example.com")
+        result = await report_gen.generate_technical_report(
+            [vuln], "example.com"
+        )
 
         assert "Unknown Vuln" in result
 
     @pytest.mark.asyncio
-    async def test_generate_technical_report_no_executive_summary(self, report_gen):
+    async def test_generate_technical_report_no_executive_summary(
+        self, report_gen
+    ):
         """Test technical report without executive summary"""
         result = await report_gen.generate_technical_report([], "example.com")
 
@@ -278,7 +316,9 @@ class TestReportGenerator:
         data = {"obj": TestData("test", 42)}
 
         with patch("modules.report_gen.datetime") as mock_datetime:
-            mock_datetime.now.return_value.strftime.return_value = "20240101_120000"
+            mock_datetime.now.return_value.strftime.return_value = (
+                "20240101_120000"
+            )
             with patch("builtins.open", mock_open()):
                 result = report_gen.export_json(data, "test.json")
 
@@ -297,7 +337,9 @@ class TestReportGenerator:
         )
 
         with patch("modules.report_gen.datetime") as mock_datetime:
-            mock_datetime.now.return_value.strftime.return_value = "20240101_120000"
+            mock_datetime.now.return_value.strftime.return_value = (
+                "20240101_120000"
+            )
             with patch("builtins.open", mock_open()):
                 with patch("csv.writer"):
                     result = report_gen.export_csv([vuln])

@@ -95,8 +95,12 @@ class TaskState:
             "name": self.name,
             "status": self.status.name,
             "result": self.result.to_dict() if self.result else None,
-            "started_at": self.started_at.isoformat() if self.started_at else None,
-            "completed_at": self.completed_at.isoformat() if self.completed_at else None,
+            "started_at": (
+                self.started_at.isoformat() if self.started_at else None
+            ),
+            "completed_at": (
+                self.completed_at.isoformat() if self.completed_at else None
+            ),
             "dependencies": self.dependencies,
             "retry_count": self.retry_count,
             "max_retries": self.max_retries,
@@ -125,8 +129,12 @@ class WorkflowState:
             "tasks": {k: v.to_dict() for k, v in self.tasks.items()},
             "context": self.context,
             "created_at": self.created_at.isoformat(),
-            "started_at": self.started_at.isoformat() if self.started_at else None,
-            "completed_at": self.completed_at.isoformat() if self.completed_at else None,
+            "started_at": (
+                self.started_at.isoformat() if self.started_at else None
+            ),
+            "completed_at": (
+                self.completed_at.isoformat() if self.completed_at else None
+            ),
             "error_message": self.error_message,
         }
 
@@ -168,7 +176,9 @@ class Task(ABC):
         try:
             return self.condition(context)
         except Exception as e:
-            logger.warning(f"Condition evaluation failed for task {self.name}: {e}")
+            logger.warning(
+                f"Condition evaluation failed for task {self.name}: {e}"
+            )
             return False
 
     def to_dict(self) -> Dict[str, Any]:
@@ -213,14 +223,21 @@ class FunctionTask(Task):
                 # Sync-Funktion in ThreadPool ausführen
                 loop = asyncio.get_event_loop()
                 with ThreadPoolExecutor() as pool:
-                    result = await loop.run_in_executor(pool, lambda: self.func(*self.args, **merged_kwargs))
+                    result = await loop.run_in_executor(
+                        pool, lambda: self.func(*self.args, **merged_kwargs)
+                    )
 
             execution_time = time.time() - start_time
-            return TaskResult(success=True, data=result, execution_time=execution_time)
+            return TaskResult(
+                success=True, data=result, execution_time=execution_time
+            )
         except Exception as e:
             execution_time = time.time() - start_time
             return TaskResult(
-                success=False, error=str(e), execution_time=execution_time, metadata={"traceback": traceback.format_exc()}
+                success=False,
+                error=str(e),
+                execution_time=execution_time,
+                metadata={"traceback": traceback.format_exc()},
             )
 
 
@@ -245,7 +262,13 @@ class SubWorkflowTask(Task):
 class Workflow:
     """Workflow Definition"""
 
-    def __init__(self, name: str, workflow_id: Optional[str] = None, description: str = "", version: str = "1.0.0"):
+    def __init__(
+        self,
+        name: str,
+        workflow_id: Optional[str] = None,
+        description: str = "",
+        version: str = "1.0.0",
+    ):
         self.name = name
         self.workflow_id = workflow_id or f"workflow_{uuid.uuid4().hex[:8]}"
         self.description = description
@@ -289,13 +312,18 @@ class Workflow:
             ready = []
             for task_id in pending:
                 task = self.tasks[task_id]
-                deps_satisfied = all(dep in executed or dep not in self.tasks for dep in task.dependencies)
+                deps_satisfied = all(
+                    dep in executed or dep not in self.tasks
+                    for dep in task.dependencies
+                )
                 if deps_satisfied:
                     ready.append(task_id)
 
             if not ready:
                 # Zyklische Abhängigkeit oder fehlende Dependencies
-                raise ValueError(f"Cannot resolve dependencies for tasks: {pending}")
+                raise ValueError(
+                    f"Cannot resolve dependencies for tasks: {pending}"
+                )
 
             execution_groups.append(ready)
             executed.update(ready)
@@ -341,7 +369,9 @@ class EventBus:
     def off(self, event: str, callback: Callable):
         """Entfernt einen Event-Listener"""
         if event in self._listeners:
-            self._listeners[event] = [cb for cb in self._listeners[event] if cb != callback]
+            self._listeners[event] = [
+                cb for cb in self._listeners[event] if cb != callback
+            ]
 
     async def emit(self, event: str, data: Any = None):
         """Emitted ein Event"""
@@ -367,7 +397,11 @@ class WorkflowEngine:
     - Error Handling & Retry
     """
 
-    def __init__(self, max_parallel_tasks: int = 10, state_manager: Optional["StateManager"] = None):
+    def __init__(
+        self,
+        max_parallel_tasks: int = 10,
+        state_manager: Optional["StateManager"] = None,
+    ):
         self.max_parallel_tasks = max_parallel_tasks
         self.state_manager = state_manager
         self.event_bus = EventBus()
@@ -380,7 +414,10 @@ class WorkflowEngine:
         return self
 
     async def execute_workflow(
-        self, workflow: Workflow, initial_context: Optional[Dict[str, Any]] = None, workflow_id: Optional[str] = None
+        self,
+        workflow: Workflow,
+        initial_context: Optional[Dict[str, Any]] = None,
+        workflow_id: Optional[str] = None,
     ) -> WorkflowState:
         """
         Führt einen Workflow aus
@@ -393,7 +430,9 @@ class WorkflowEngine:
         Returns:
             Der finale Workflow-State
         """
-        workflow_id = workflow_id or f"{workflow.workflow_id}_{uuid.uuid4().hex[:8]}"
+        workflow_id = (
+            workflow_id or f"{workflow.workflow_id}_{uuid.uuid4().hex[:8]}"
+        )
 
         # State initialisieren oder laden
         if self.state_manager and await self.state_manager.exists(workflow_id):
@@ -442,7 +481,11 @@ class WorkflowEngine:
                     await self.state_manager.save(state)
 
             # Finaler Status
-            failed_tasks = [t for t in state.tasks.values() if t.status == TaskStatus.FAILED]
+            failed_tasks = [
+                t
+                for t in state.tasks.values()
+                if t.status == TaskStatus.FAILED
+            ]
 
             if state.status == WorkflowStatus.CANCELLED:
                 pass  # Bereits gesetzt
@@ -467,7 +510,9 @@ class WorkflowEngine:
 
         return state
 
-    async def _execute_single_task(self, workflow: Workflow, state: WorkflowState, task_id: str):
+    async def _execute_single_task(
+        self, workflow: Workflow, state: WorkflowState, task_id: str
+    ):
         """Führt einen einzelnen Task aus"""
         task = workflow.tasks[task_id]
         task_state = state.tasks[task_id]
@@ -481,7 +526,9 @@ class WorkflowEngine:
         # Führe Task mit Retry-Logik aus
         await self._execute_task_with_retry(task, task_state, state)
 
-    async def _execute_parallel_tasks(self, workflow: Workflow, state: WorkflowState, task_ids: List[str]):
+    async def _execute_parallel_tasks(
+        self, workflow: Workflow, state: WorkflowState, task_ids: List[str]
+    ):
         """Führt mehrere Tasks parallel aus"""
         tasks_to_run = []
 
@@ -490,14 +537,18 @@ class WorkflowEngine:
             task_state = state.tasks[task_id]
 
             if task.should_execute(state.context):
-                tasks_to_run.append(self._execute_task_with_retry(task, task_state, state))
+                tasks_to_run.append(
+                    self._execute_task_with_retry(task, task_state, state)
+                )
             else:
                 task_state.status = TaskStatus.SKIPPED
 
         if tasks_to_run:
             await asyncio.gather(*tasks_to_run, return_exceptions=True)
 
-    async def _execute_task_with_retry(self, task: Task, task_state: TaskState, workflow_state: WorkflowState):
+    async def _execute_task_with_retry(
+        self, task: Task, task_state: TaskState, workflow_state: WorkflowState
+    ):
         """Führt einen Task mit Retry-Logik aus"""
         async with self._semaphore:
             task_state.status = TaskStatus.RUNNING
@@ -509,7 +560,10 @@ class WorkflowEngine:
                 try:
                     # Timeout-Handling
                     if task.timeout:
-                        result = await asyncio.wait_for(task.execute(workflow_state.context), timeout=task.timeout)
+                        result = await asyncio.wait_for(
+                            task.execute(workflow_state.context),
+                            timeout=task.timeout,
+                        )
                     else:
                         result = await task.execute(workflow_state.context)
 
@@ -530,7 +584,10 @@ class WorkflowEngine:
                         raise Exception(result.error or "Task failed")
 
                 except asyncio.TimeoutError:
-                    result = TaskResult(success=False, error=f"Task timeout after {task.timeout}s")
+                    result = TaskResult(
+                        success=False,
+                        error=f"Task timeout after {task.timeout}s",
+                    )
                     task_state.result = result
 
                     if attempt < task.max_retries:
@@ -542,7 +599,11 @@ class WorkflowEngine:
                         await self.event_bus.emit("task.failed", task_state)
 
                 except Exception as e:
-                    result = TaskResult(success=False, error=str(e), metadata={"traceback": traceback.format_exc()})
+                    result = TaskResult(
+                        success=False,
+                        error=str(e),
+                        metadata={"traceback": traceback.format_exc()},
+                    )
                     task_state.result = result
 
                     if attempt < task.max_retries:
@@ -559,7 +620,9 @@ class WorkflowEngine:
         """Bricht einen laufenden Workflow ab"""
         if workflow_id in self._running_workflows:
             self._running_workflows[workflow_id].cancel()
-            await self.event_bus.emit("workflow.cancelled", {"workflow_id": workflow_id})
+            await self.event_bus.emit(
+                "workflow.cancelled", {"workflow_id": workflow_id}
+            )
 
     def create_workflow_from_config(self, config: Dict[str, Any]) -> Workflow:
         """Erstellt einen Workflow aus einer Konfiguration"""
@@ -621,7 +684,9 @@ class StateManager(ABC):
         pass
 
     @abstractmethod
-    async def list_workflows(self, status: Optional[WorkflowStatus] = None) -> List[str]:
+    async def list_workflows(
+        self, status: Optional[WorkflowStatus] = None
+    ) -> List[str]:
         """Listet alle Workflow-IDs auf"""
         pass
 
@@ -651,7 +716,10 @@ def task(
             retry_delay=retry_delay,
             timeout=timeout,
             parallel=parallel,
-            metadata={"save_to_context": save_to_context, "context_key": context_key or task_name},
+            metadata={
+                "save_to_context": save_to_context,
+                "context_key": context_key or task_name,
+            },
         )
 
     return decorator
@@ -731,12 +799,27 @@ if __name__ == "__main__":
     workflow = Workflow("Demo Workflow")
 
     task1 = FunctionTask(
-        name="task1", func=demo_task_1, task_id="t1", metadata={"save_to_context": True, "context_key": "task1"}
+        name="task1",
+        func=demo_task_1,
+        task_id="t1",
+        metadata={"save_to_context": True, "context_key": "task1"},
     )
 
-    task2 = FunctionTask(name="task2", func=demo_task_2, task_id="t2", dependencies=["t1"], parallel=True)
+    task2 = FunctionTask(
+        name="task2",
+        func=demo_task_2,
+        task_id="t2",
+        dependencies=["t1"],
+        parallel=True,
+    )
 
-    task3 = FunctionTask(name="task3", func=demo_task_3, task_id="t3", dependencies=["t1"], parallel=True)
+    task3 = FunctionTask(
+        name="task3",
+        func=demo_task_3,
+        task_id="t3",
+        dependencies=["t1"],
+        parallel=True,
+    )
 
     workflow.add_tasks(task1, task2, task3)
 
@@ -745,11 +828,20 @@ if __name__ == "__main__":
         engine = WorkflowEngine()
 
         # Event-Listener
-        engine.on("workflow.started", lambda s: print(f"Workflow started: {s.name}"))
-        engine.on("workflow.completed", lambda s: print(f"Workflow completed: {s.status}"))
-        engine.on("task.completed", lambda s: print(f"Task completed: {s.name}"))
+        engine.on(
+            "workflow.started", lambda s: print(f"Workflow started: {s.name}")
+        )
+        engine.on(
+            "workflow.completed",
+            lambda s: print(f"Workflow completed: {s.status}"),
+        )
+        engine.on(
+            "task.completed", lambda s: print(f"Task completed: {s.name}")
+        )
 
-        result = await engine.execute_workflow(workflow, {"target": "example.com"})
+        result = await engine.execute_workflow(
+            workflow, {"target": "example.com"}
+        )
         print(f"\nFinal result: {result.to_dict()}")
 
     asyncio.run(main())

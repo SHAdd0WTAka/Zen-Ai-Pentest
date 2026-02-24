@@ -47,7 +47,9 @@ class WhatWebIntegration:
         """
         self.aggression = aggression
 
-    async def scan(self, target: str, user_agent: Optional[str] = None) -> WhatWebResult:
+    async def scan(
+        self, target: str, user_agent: Optional[str] = None
+    ) -> WhatWebResult:
         """
         Scan a target for technologies
 
@@ -76,10 +78,14 @@ class WhatWebIntegration:
 
         try:
             process = await asyncio.create_subprocess_exec(
-                *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+                *cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
             )
 
-            stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=60)
+            stdout, stderr = await asyncio.wait_for(
+                process.communicate(), timeout=60
+            )
 
             if process.returncode != 0:
                 error_msg = stderr.decode().strip()
@@ -108,19 +114,31 @@ class WhatWebIntegration:
                         plugin_name = self._clean_ansi(plugin_name)
 
                         if plugin_name == "Headers":
-                            headers = plugin_info.get("string", [{}])[0] if isinstance(plugin_info.get("string"), list) else {}
+                            headers = (
+                                plugin_info.get("string", [{}])[0]
+                                if isinstance(plugin_info.get("string"), list)
+                                else {}
+                            )
                             continue
 
                         version = ""
                         if isinstance(plugin_info, dict):
                             version_strings = plugin_info.get("version", [])
                             if version_strings:
-                                version = version_strings[0] if isinstance(version_strings, list) else str(version_strings)
+                                version = (
+                                    version_strings[0]
+                                    if isinstance(version_strings, list)
+                                    else str(version_strings)
+                                )
                                 # Clean version from ANSI codes
                                 version = self._clean_ansi(version)
 
                         confidence = plugin_info.get("confidence", [100])
-                        confidence = confidence[0] if isinstance(confidence, list) else confidence
+                        confidence = (
+                            confidence[0]
+                            if isinstance(confidence, list)
+                            else confidence
+                        )
 
                         # Skip lines that are clearly parsing errors
                         if len(plugin_name) > 100 or "\n" in plugin_name:
@@ -141,7 +159,12 @@ class WhatWebIntegration:
                 technologies = self._parse_text_output(output)
 
             return WhatWebResult(
-                success=True, url=target, technologies=technologies, headers=headers, plugins=plugins, raw_output=output
+                success=True,
+                url=target,
+                technologies=technologies,
+                headers=headers,
+                plugins=plugins,
+                raw_output=output,
             )
 
         except asyncio.TimeoutError:

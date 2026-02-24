@@ -44,7 +44,9 @@ celery_app.conf.update(
 
 
 @celery_app.task(bind=True, max_retries=3)
-def run_security_scan(self, target: str, scan_type: str = "full", options: Optional[Dict] = None) -> Dict[str, Any]:
+def run_security_scan(
+    self, target: str, scan_type: str = "full", options: Optional[Dict] = None
+) -> Dict[str, Any]:
     """
     Run a security scan in the background
 
@@ -58,19 +60,30 @@ def run_security_scan(self, target: str, scan_type: str = "full", options: Optio
     """
     try:
         logger.info(f"Starting {scan_type} scan on {target}")
-        self.update_state(state="PROGRESS", meta={"progress": 10, "status": "Initializing"})
+        self.update_state(
+            state="PROGRESS", meta={"progress": 10, "status": "Initializing"}
+        )
 
         # Import here to avoid circular imports
         from core.orchestrator import HybridOrchestrator
 
-        self.update_state(state="PROGRESS", meta={"progress": 30, "status": "Running reconnaissance"})
+        self.update_state(
+            state="PROGRESS",
+            meta={"progress": 30, "status": "Running reconnaissance"},
+        )
 
         # Simulate scan phases
         orchestrator = HybridOrchestrator()
 
-        self.update_state(state="PROGRESS", meta={"progress": 50, "status": "Scanning for vulnerabilities"})
+        self.update_state(
+            state="PROGRESS",
+            meta={"progress": 50, "status": "Scanning for vulnerabilities"},
+        )
 
-        self.update_state(state="PROGRESS", meta={"progress": 80, "status": "Analyzing results"})
+        self.update_state(
+            state="PROGRESS",
+            meta={"progress": 80, "status": "Analyzing results"},
+        )
 
         result = {
             "scan_id": self.request.id,
@@ -88,7 +101,9 @@ def run_security_scan(self, target: str, scan_type: str = "full", options: Optio
             },
         }
 
-        self.update_state(state="PROGRESS", meta={"progress": 100, "status": "Completed"})
+        self.update_state(
+            state="PROGRESS", meta={"progress": 100, "status": "Completed"}
+        )
         logger.info(f"Scan completed for {target}")
 
         return result
@@ -100,7 +115,9 @@ def run_security_scan(self, target: str, scan_type: str = "full", options: Optio
 
 
 @celery_app.task(bind=True, max_retries=2)
-def generate_report(self, scan_id: str, format_type: str = "pdf") -> Dict[str, Any]:
+def generate_report(
+    self, scan_id: str, format_type: str = "pdf"
+) -> Dict[str, Any]:
     """
     Generate a report from scan results
 
@@ -113,12 +130,20 @@ def generate_report(self, scan_id: str, format_type: str = "pdf") -> Dict[str, A
     """
     try:
         logger.info(f"Generating {format_type} report for scan {scan_id}")
-        self.update_state(state="PROGRESS", meta={"progress": 20, "status": "Fetching scan data"})
+        self.update_state(
+            state="PROGRESS",
+            meta={"progress": 20, "status": "Fetching scan data"},
+        )
 
         # Simulate report generation
-        self.update_state(state="PROGRESS", meta={"progress": 50, "status": "Generating report"})
+        self.update_state(
+            state="PROGRESS",
+            meta={"progress": 50, "status": "Generating report"},
+        )
 
-        self.update_state(state="PROGRESS", meta={"progress": 90, "status": "Finalizing"})
+        self.update_state(
+            state="PROGRESS", meta={"progress": 90, "status": "Finalizing"}
+        )
 
         result = {
             "report_id": self.request.id,
@@ -162,7 +187,9 @@ def cleanup_old_scans(days: int = 30) -> Dict[str, Any]:
 
 
 @celery_app.task
-def send_notification(user_id: str, message: str, channel: str = "email") -> bool:
+def send_notification(
+    user_id: str, message: str, channel: str = "email"
+) -> bool:
     """
     Send notification to user
 

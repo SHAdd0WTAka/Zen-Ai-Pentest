@@ -56,7 +56,9 @@ class TestAgentCoordinator:
         coord = AgentCoordinator()
         await coord.register_agent("agent-1", "Test Agent")
 
-        success = await coord._acquire_resource("agent-1", ResourceType.SCANNER, timeout=1.0)
+        success = await coord._acquire_resource(
+            "agent-1", ResourceType.SCANNER, timeout=1.0
+        )
         assert success is True
 
         # Check resource is acquired
@@ -82,7 +84,9 @@ class TestAgentCoordinator:
         coord = AgentCoordinator()
         await coord.register_agent("agent-1", "Test Agent")
 
-        async with coord.acquire_resources("agent-1", [ResourceType.SCANNER, ResourceType.DATABASE]) as resources:
+        async with coord.acquire_resources(
+            "agent-1", [ResourceType.SCANNER, ResourceType.DATABASE]
+        ) as resources:
             assert len(resources) == 2
             agent = coord.agents["agent-1"]
             assert ResourceType.SCANNER in agent.acquired_resources
@@ -103,11 +107,15 @@ class TestAgentCoordinator:
 
         # First 3 should succeed
         for i in range(3):
-            success = await coord._acquire_resource(f"agent-{i}", ResourceType.SCANNER, timeout=0.5)
+            success = await coord._acquire_resource(
+                f"agent-{i}", ResourceType.SCANNER, timeout=0.5
+            )
             assert success is True
 
         # 4th should fail (timeout)
-        success = await coord._acquire_resource("agent-3", ResourceType.SCANNER, timeout=0.5)
+        success = await coord._acquire_resource(
+            "agent-3", ResourceType.SCANNER, timeout=0.5
+        )
         assert success is False
 
     @pytest.mark.asyncio

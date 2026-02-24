@@ -26,7 +26,10 @@ from tools.subfinder_integration import SubfinderIntegration
 from tools.wafw00f_integration import WAFW00FIntegration
 from tools.whatweb_integration import WhatWebIntegration
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
 logger = logging.getLogger(__name__)
 
 
@@ -90,7 +93,9 @@ class SuperScanner:
         print(f"🚀 SUPER SCANNER - {domain}")
         print(f"{'='*70}\n")
 
-        result = SuperScanResult(target=domain, timestamp=datetime.now().isoformat())
+        result = SuperScanResult(
+            target=domain, timestamp=datetime.now().isoformat()
+        )
 
         # Phase 1: Subdomain Enumeration
         print("[1/7] 🔍 Subdomain Enumeration...")
@@ -99,13 +104,18 @@ class SuperScanner:
             amass_result = await self.amass.enumerate(domain, passive=True)
 
             # Combine results
-            all_subdomains = list(set(subfinder_result.subdomains + amass_result.subdomains))
+            all_subdomains = list(
+                set(subfinder_result.subdomains + amass_result.subdomains)
+            )
 
             result.subdomains = {
                 "success": True,
                 "count": len(all_subdomains),
                 "subdomains": all_subdomains[:100],  # Limit for report
-                "sources": {"subfinder": len(subfinder_result.subdomains), "amass": len(amass_result.subdomains)},
+                "sources": {
+                    "subfinder": len(subfinder_result.subdomains),
+                    "amass": len(amass_result.subdomains),
+                },
             }
             print(f"      Found {len(all_subdomains)} subdomains")
         except Exception as e:
@@ -122,7 +132,13 @@ class SuperScanner:
                 "success": True,
                 "live_hosts": len(httpx_result.hosts),
                 "hosts": [
-                    {"url": h.url, "status_code": h.status_code, "title": h.title, "webserver": h.webserver, "ip": h.ip}
+                    {
+                        "url": h.url,
+                        "status_code": h.status_code,
+                        "title": h.title,
+                        "webserver": h.webserver,
+                        "ip": h.ip,
+                    }
                     for h in httpx_result.hosts
                 ],
             }
@@ -139,10 +155,17 @@ class SuperScanner:
             result.technology = {
                 "success": True,
                 "technologies": [
-                    {"name": t.name, "version": t.version, "category": t.category} for t in whatweb_result.technologies[:20]
+                    {
+                        "name": t.name,
+                        "version": t.version,
+                        "category": t.category,
+                    }
+                    for t in whatweb_result.technologies[:20]
                 ],
             }
-            print(f"      Found {len(whatweb_result.technologies)} technologies")
+            print(
+                f"      Found {len(whatweb_result.technologies)} technologies"
+            )
         except Exception as e:
             logger.error(f"Technology detection failed: {e}")
             result.technology = {"success": False, "error": str(e)}
@@ -155,7 +178,10 @@ class SuperScanner:
             result.waf = {
                 "success": True,
                 "firewall_detected": waf_result.firewall_detected,
-                "wafs": [{"name": w.name, "confidence": w.confidence} for w in waf_result.wafs],
+                "wafs": [
+                    {"name": w.name, "confidence": w.confidence}
+                    for w in waf_result.wafs
+                ],
             }
             status = "Yes" if waf_result.firewall_detected else "No"
             print(f"      WAF detected: {status}")
@@ -173,9 +199,13 @@ class SuperScanner:
             # Use subprocess for nmap
             cmd = ["nmap", "-F", "-sV", "--open", ip]
             process = await asyncio.create_subprocess_exec(
-                *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+                *cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
             )
-            stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=120)
+            stdout, stderr = await asyncio.wait_for(
+                process.communicate(), timeout=120
+            )
 
             # Parse output
             ports = []
@@ -185,7 +215,13 @@ class SuperScanner:
                     port_num = int(parts[0].split("/")[0])
                     service = parts[2] if len(parts) > 2 else "unknown"
                     version = " ".join(parts[3:]) if len(parts) > 3 else ""
-                    ports.append({"port": port_num, "service": service, "version": version})
+                    ports.append(
+                        {
+                            "port": port_num,
+                            "service": service,
+                            "version": version,
+                        }
+                    )
 
             result.port_scan = {"success": True, "ip": ip, "ports": ports}
             print(f"      Found {len(ports)} open ports")
@@ -197,13 +233,20 @@ class SuperScanner:
         print("[6/7] 📁 Directory Bruteforce...")
         try:
             ffuf_result = await self.ffuf.directory_bruteforce(
-                f"http://{domain}/FUZZ", extensions=["php", "html", "txt", "js"], threads=20
+                f"http://{domain}/FUZZ",
+                extensions=["php", "html", "txt", "js"],
+                threads=20,
             )
 
             result.directories = {
                 "success": True,
                 "findings": [
-                    {"url": f.url, "status_code": f.status_code, "size": f.content_length} for f in ffuf_result.findings[:50]
+                    {
+                        "url": f.url,
+                        "status_code": f.status_code,
+                        "size": f.content_length,
+                    }
+                    for f in ffuf_result.findings[:50]
                 ],
                 "total_found": len(ffuf_result.findings),
             }
@@ -215,12 +258,19 @@ class SuperScanner:
         # Phase 7: Vulnerability Scanning
         print("[7/7] 🐛 Vulnerability Scanning...")
         try:
-            nikto_result = await self.nikto.scan(f"http://{domain}", max_time=300)
+            nikto_result = await self.nikto.scan(
+                f"http://{domain}", max_time=300
+            )
 
             result.vulnerabilities = {
                 "success": True,
                 "findings": [
-                    {"id": f.id, "severity": f.severity, "description": f.description} for f in nikto_result.findings[:20]
+                    {
+                        "id": f.id,
+                        "severity": f.severity,
+                        "description": f.description,
+                    }
+                    for f in nikto_result.findings[:20]
                 ],
                 "total": len(nikto_result.findings),
             }
@@ -299,7 +349,9 @@ class SuperScanner:
         recommendations = []
 
         if not result.waf.get("firewall_detected"):
-            recommendations.append("Implement a Web Application Firewall (WAF)")
+            recommendations.append(
+                "Implement a Web Application Firewall (WAF)"
+            )
 
         if len(result.port_scan.get("ports", [])) > 3:
             recommendations.append("Close unnecessary ports and services")
@@ -308,18 +360,24 @@ class SuperScanner:
             recommendations.append("Restrict access to sensitive directories")
 
         if result.vulnerabilities.get("total", 0) > 0:
-            recommendations.append("Address identified vulnerabilities immediately")
+            recommendations.append(
+                "Address identified vulnerabilities immediately"
+            )
 
         # Check for outdated software
         for tech in result.technology.get("technologies", []):
             name = tech.get("name", "")
             version = tech.get("version", "")
             if name in ["Apache", "nginx", "PHP", "OpenSSH"] and version:
-                recommendations.append(f"Review {name} version {version} for known vulnerabilities")
+                recommendations.append(
+                    f"Review {name} version {version} for known vulnerabilities"
+                )
 
         return recommendations[:10]  # Limit recommendations
 
-    def save_report(self, result: SuperScanResult, filename: Optional[str] = None):
+    def save_report(
+        self, result: SuperScanResult, filename: Optional[str] = None
+    ):
         """Save report to file"""
         if filename is None:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -382,8 +440,12 @@ Examples:
     )
 
     parser.add_argument("--target", "-t", required=True, help="Target domain")
-    parser.add_argument("--output-dir", "-o", default="reports", help="Output directory")
-    parser.add_argument("--quiet", "-q", action="store_true", help="Minimal output")
+    parser.add_argument(
+        "--output-dir", "-o", default="reports", help="Output directory"
+    )
+    parser.add_argument(
+        "--quiet", "-q", action="store_true", help="Minimal output"
+    )
 
     args = parser.parse_args()
 

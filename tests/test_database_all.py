@@ -5,7 +5,14 @@ Alle Database Model Tests
 import pytest
 
 try:
-    from database.models import Finding, Report, Scan, ScanStatus, Severity, User
+    from database.models import (
+        Finding,
+        Report,
+        Scan,
+        ScanStatus,
+        Severity,
+        User,
+    )
 
     DB_AVAILABLE = True
 except ImportError:

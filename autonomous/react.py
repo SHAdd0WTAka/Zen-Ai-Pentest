@@ -105,7 +105,14 @@ class ReActLoop:
     5. Update state
     """
 
-    def __init__(self, llm_client, tool_executor, memory_manager, max_iterations: int = 50, human_in_the_loop: bool = False):
+    def __init__(
+        self,
+        llm_client,
+        tool_executor,
+        memory_manager,
+        max_iterations: int = 50,
+        human_in_the_loop: bool = False,
+    ):
         self.llm = llm_client
         self.tools = tool_executor
         self.memory = memory_manager
@@ -148,7 +155,10 @@ class ReActLoop:
             # 2. ACT: Decide on action
             action = await self._decide_action(thought)
             self.history.append(action.to_dict())
-            print(f"[Action] {action.type.name}" + (f" ({action.tool_name})" if action.tool_name else ""))
+            print(
+                f"[Action] {action.type.name}"
+                + (f" ({action.tool_name})" if action.tool_name else "")
+            )
 
             # Check for termination
             if action.type == ActionType.TERMINATE:
@@ -160,7 +170,11 @@ class ReActLoop:
             self.history.append(observation.to_dict())
 
             if observation.success:
-                result_str = str(observation.result)[:100] if observation.result else "None"
+                result_str = (
+                    str(observation.result)[:100]
+                    if observation.result
+                    else "None"
+                )
                 print(f"[Observation] Success: {result_str}...")
             else:
                 print(f"[Observation] Failed: {observation.error_message}")
@@ -169,7 +183,10 @@ class ReActLoop:
             await self.memory.add_experience(thought, action, observation)
 
             # Human checkpoint if enabled
-            if self.human_in_the_loop and action.type in [ActionType.TOOL_CALL, ActionType.REPORT]:
+            if self.human_in_the_loop and action.type in [
+                ActionType.TOOL_CALL,
+                ActionType.REPORT,
+            ]:
                 approved = await self._human_approval(action)
                 if not approved:
                     print("[ReAct] Human rejected action, stopping")
@@ -199,7 +216,11 @@ Provide your reasoning:"""
 
         response = await self.llm.generate(prompt)
 
-        return Thought(content=response, context={"goal": self.goal, "step": self.current_step}, step_number=self.current_step)
+        return Thought(
+            content=response,
+            context={"goal": self.goal, "step": self.current_step},
+            step_number=self.current_step,
+        )
 
     async def _decide_action(self, thought: Thought) -> Action:
         """Decide on the next action based on reasoning."""
@@ -246,31 +267,61 @@ Rules:
             )
         except (json.JSONDecodeError, KeyError) as e:
             # Fallback to thinking if parsing fails
-            return Action(type=ActionType.THINK, reasoning=f"Failed to parse action: {str(e)}", step_number=self.current_step)
+            return Action(
+                type=ActionType.THINK,
+                reasoning=f"Failed to parse action: {str(e)}",
+                step_number=self.current_step,
+            )
 
     async def _execute_action(self, action: Action) -> Observation:
         """Execute the decided action."""
         try:
             if action.type == ActionType.TOOL_CALL and action.tool_name:
-                result = await self.tools.execute(action.tool_name, action.parameters)
-                return Observation(action=action, result=result, success=True, step_number=self.current_step)
+                result = await self.tools.execute(
+                    action.tool_name, action.parameters
+                )
+                return Observation(
+                    action=action,
+                    result=result,
+                    success=True,
+                    step_number=self.current_step,
+                )
 
             elif action.type == ActionType.SEARCH_MEMORY:
                 query = action.parameters.get("query", self.goal)
                 results = await self.memory.search(query)
-                return Observation(action=action, result=results, success=True, step_number=self.current_step)
+                return Observation(
+                    action=action,
+                    result=results,
+                    success=True,
+                    step_number=self.current_step,
+                )
 
             elif action.type == ActionType.REPORT:
                 findings = await self.memory.get_findings()
                 return Observation(
-                    action=action, result={"findings": findings, "ready": True}, success=True, step_number=self.current_step
+                    action=action,
+                    result={"findings": findings, "ready": True},
+                    success=True,
+                    step_number=self.current_step,
                 )
 
             else:
-                return Observation(action=action, result=None, success=True, step_number=self.current_step)
+                return Observation(
+                    action=action,
+                    result=None,
+                    success=True,
+                    step_number=self.current_step,
+                )
 
         except Exception as e:
-            return Observation(action=action, result=None, success=False, error_message=str(e), step_number=self.current_step)
+            return Observation(
+                action=action,
+                result=None,
+                success=False,
+                error_message=str(e),
+                step_number=self.current_step,
+            )
 
     async def _human_approval(self, action: Action) -> bool:
         """Request human approval for critical actions."""

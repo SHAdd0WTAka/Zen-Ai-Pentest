@@ -69,7 +69,10 @@ def check_port(port_info):
 
 print("  Scanne Ports... (das kann 10-20 Sekunden dauern)")
 with ThreadPoolExecutor(max_workers=50) as executor:
-    futures = [executor.submit(check_port, (port, svc)) for port, svc in common_ports.items()]
+    futures = [
+        executor.submit(check_port, (port, svc))
+        for port, svc in common_ports.items()
+    ]
     for future in as_completed(futures):
         result = future.result()
         if result:
@@ -95,19 +98,35 @@ for port, svc_name, status in open_ports:
         # Banner grabbing für einige Services
         if port in [22, 25, 80, 110, 143]:
             try:
-                banner = sock.recv(1024).decode("utf-8", errors="ignore").strip()
+                banner = (
+                    sock.recv(1024).decode("utf-8", errors="ignore").strip()
+                )
                 if banner:
                     print(f"  Port {port}: {banner[:80]}")
-                    services.append({"port": port, "service": svc_name, "banner": banner})
+                    services.append(
+                        {"port": port, "service": svc_name, "banner": banner}
+                    )
                 else:
-                    services.append({"port": port, "service": svc_name, "banner": "N/A"})
+                    services.append(
+                        {"port": port, "service": svc_name, "banner": "N/A"}
+                    )
             except Exception:
-                services.append({"port": port, "service": svc_name, "banner": "N/A"})
+                services.append(
+                    {"port": port, "service": svc_name, "banner": "N/A"}
+                )
         else:
-            services.append({"port": port, "service": svc_name, "banner": "N/A"})
+            services.append(
+                {"port": port, "service": svc_name, "banner": "N/A"}
+            )
         sock.close()
     except Exception as e:
-        services.append({"port": port, "service": svc_name, "banner": f"Error: {str(e)[:30]}"})
+        services.append(
+            {
+                "port": port,
+                "service": svc_name,
+                "banner": f"Error: {str(e)[:30]}",
+            }
+        )
 
 # Schwachstellen-Analyse (basierend auf gefundenen Services)
 print("\n[3] Schwachstellen-Analyse...")
@@ -306,9 +325,22 @@ print(f"  Info:     {severity_counts['info']}")
 
 # Risiko-Score
 risk_score = sum(
-    [severity_counts["critical"] * 10, severity_counts["high"] * 7, severity_counts["medium"] * 4, severity_counts["low"] * 1]
+    [
+        severity_counts["critical"] * 10,
+        severity_counts["high"] * 7,
+        severity_counts["medium"] * 4,
+        severity_counts["low"] * 1,
+    ]
 )
-risk_level = "Kritisch" if risk_score > 50 else "Hoch" if risk_score > 30 else "Mittel" if risk_score > 10 else "Niedrig"
+risk_level = (
+    "Kritisch"
+    if risk_score > 50
+    else (
+        "Hoch"
+        if risk_score > 30
+        else "Mittel" if risk_score > 10 else "Niedrig"
+    )
+)
 print(f"\n  Risiko-Score: {risk_score}/100 ({risk_level})")
 
 # Report speichern
@@ -362,7 +394,9 @@ with open(md_file, "w") as f:
     f.write(f"\n## Findings ({len(findings)} total)\n\n")
     for f_item in findings:
         f.write(f"### {f_item['id']}: {f_item['name']}\n\n")
-        f.write(f"- **Severity:** {f_item['severity'].upper()} (CVSS: {f_item['cvss']})\n")
+        f.write(
+            f"- **Severity:** {f_item['severity'].upper()} (CVSS: {f_item['cvss']})\n"
+        )
         f.write(f"- **Port:** {f_item['port']}/{f_item['service']}\n")
         f.write(f"- **Description:** {f_item['description']}\n")
         f.write(f"- **Recommendation:** {f_item['recommendation']}\n")
@@ -396,7 +430,9 @@ print("SCAN ABGESCHLOSSEN!")
 print("=" * 70)
 print("\nEmpfohlene Aktionen:")
 if severity_counts["critical"] > 0:
-    print(f"  ⚠️  SOFORT HANDELN: {severity_counts['critical']} kritische Schwachstellen!")
+    print(
+        f"  ⚠️  SOFORT HANDELN: {severity_counts['critical']} kritische Schwachstellen!"
+    )
 if severity_counts["high"] > 0:
     print(f"  ⚠️  Priorisiere: {severity_counts['high']} hohe Risiken")
 print("  → Reports findest du in: logs/")

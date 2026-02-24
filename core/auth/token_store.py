@@ -23,10 +23,14 @@ class TokenStore:
     def _get_config_dir(self) -> Path:
         """Get OS-specific config directory"""
         if os.name == "nt":  # Windows
-            config_root = Path(os.environ.get("APPDATA", Path.home() / "AppData/Roaming"))
+            config_root = Path(
+                os.environ.get("APPDATA", Path.home() / "AppData/Roaming")
+            )
             config_dir = config_root / "zen-ai-pentest"
         else:  # Linux/macOS
-            config_root = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config"))
+            config_root = Path(
+                os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")
+            )
             config_dir = config_root / "zen-ai-pentest"
 
         return config_dir
@@ -40,7 +44,11 @@ class TokenStore:
             os.chmod(self.config_dir, stat.S_IRWXU)  # 700
 
     def save_credentials(
-        self, access_token: str, refresh_token: Optional[str] = None, expires_in: Optional[int] = None, provider: str = "kimi"
+        self,
+        access_token: str,
+        refresh_token: Optional[str] = None,
+        expires_in: Optional[int] = None,
+        provider: str = "kimi",
     ):
         """
         Save credentials securely
@@ -53,7 +61,9 @@ class TokenStore:
         """
         expires_at = None
         if expires_in:
-            expires_at = (datetime.utcnow() + timedelta(seconds=expires_in)).isoformat()
+            expires_at = (
+                datetime.utcnow() + timedelta(seconds=expires_in)
+            ).isoformat()
 
         credentials = {
             "version": 1,

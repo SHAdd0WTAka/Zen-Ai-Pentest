@@ -60,7 +60,11 @@ class ToolCaller:
         logger.info(f"ToolCaller initialisiert mit {max_workers} workers")
 
     async def call_tool(
-        self, tool_name: str, args: Dict[str, Any], timeout: int = None, validate_result: bool = True
+        self,
+        tool_name: str,
+        args: Dict[str, Any],
+        timeout: int = None,
+        validate_result: bool = True,
     ) -> ToolCallResult:
         """
         Ruft ein Tool asynchron auf
@@ -105,13 +109,18 @@ class ToolCaller:
             if asyncio.iscoroutinefunction(tool.func):
                 # Tool ist async
                 logger.debug(f"[ASYNC] Rufe {tool_name} auf")
-                result = await asyncio.wait_for(tool.ainvoke(args), timeout=timeout)
+                result = await asyncio.wait_for(
+                    tool.ainvoke(args), timeout=timeout
+                )
             else:
                 # Tool ist sync - im Thread Pool ausführen
                 logger.debug(f"[SYNC] Rufe {tool_name} im Thread Pool auf")
                 loop = asyncio.get_event_loop()
                 result = await asyncio.wait_for(
-                    loop.run_in_executor(self.executor, lambda: tool.invoke(args)), timeout=timeout
+                    loop.run_in_executor(
+                        self.executor, lambda: tool.invoke(args)
+                    ),
+                    timeout=timeout,
                 )
 
             execution_time = time.time() - start_time
@@ -162,7 +171,9 @@ class ToolCaller:
                 safety_level=registered.metadata.safety_level.value,
             )
 
-    async def call_tools_parallel(self, tool_calls: List[tuple], timeout: int = None) -> Dict[str, ToolCallResult]:
+    async def call_tools_parallel(
+        self, tool_calls: List[tuple], timeout: int = None
+    ) -> Dict[str, ToolCallResult]:
         """
         Ruft mehrere Tools parallel auf
 
@@ -189,7 +200,11 @@ class ToolCaller:
         for name, result in zip(tool_names, results):
             if isinstance(result, Exception):
                 output[name] = ToolCallResult(
-                    success=False, result=None, execution_time=0, error=f"Unhandled exception: {result}", tool_name=name
+                    success=False,
+                    result=None,
+                    execution_time=0,
+                    error=f"Unhandled exception: {result}",
+                    tool_name=name,
                 )
             else:
                 output[name] = result
@@ -290,7 +305,11 @@ if __name__ == "__main__":
             return f"Hello {name}"
 
         registry = ToolRegistry()
-        registry.register(tool=test_tool, category=ToolCategory.UTILITY, safety_level=ToolSafetyLevel.SAFE)
+        registry.register(
+            tool=test_tool,
+            category=ToolCategory.UTILITY,
+            safety_level=ToolSafetyLevel.SAFE,
+        )
 
         caller = ToolCaller(registry)
         result = await caller.call_tool("test_tool", {"name": "World"})

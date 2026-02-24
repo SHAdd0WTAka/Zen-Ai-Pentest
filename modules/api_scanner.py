@@ -28,7 +28,10 @@ from urllib.parse import urljoin, urlparse
 import aiohttp
 
 # Konfiguriere Logging
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
 logger = logging.getLogger("api_scanner")
 
 
@@ -123,7 +126,10 @@ class APIEndpoint:
 
     def __eq__(self, other):
         if isinstance(other, APIEndpoint):
-            return (self.path.lower(), self.method.upper()) == (other.path.lower(), other.method.upper())
+            return (self.path.lower(), self.method.upper()) == (
+                other.path.lower(),
+                other.method.upper(),
+            )
         return False
 
     def to_dict(self) -> Dict[str, Any]:
@@ -157,7 +163,9 @@ class ScanResult:
         if endpoint not in self.endpoints:
             self.endpoints.append(endpoint)
 
-    def get_vulnerabilities_by_severity(self, severity: VulnerabilitySeverity) -> List[Vulnerability]:
+    def get_vulnerabilities_by_severity(
+        self, severity: VulnerabilitySeverity
+    ) -> List[Vulnerability]:
         return [v for v in self.vulnerabilities if v.severity == severity]
 
     def to_dict(self) -> Dict[str, Any]:
@@ -166,18 +174,40 @@ class ScanResult:
             "scan_type": self.scan_type,
             "start_time": self.start_time,
             "end_time": self.end_time,
-            "duration": self.end_time - self.start_time if self.end_time else None,
+            "duration": (
+                self.end_time - self.start_time if self.end_time else None
+            ),
             "endpoints": [e.to_dict() for e in self.endpoints],
             "vulnerabilities": [v.to_dict() for v in self.vulnerabilities],
             "summary": {
                 "total_endpoints": len(self.endpoints),
                 "total_vulnerabilities": len(self.vulnerabilities),
                 "severity_counts": {
-                    "critical": len(self.get_vulnerabilities_by_severity(VulnerabilitySeverity.CRITICAL)),
-                    "high": len(self.get_vulnerabilities_by_severity(VulnerabilitySeverity.HIGH)),
-                    "medium": len(self.get_vulnerabilities_by_severity(VulnerabilitySeverity.MEDIUM)),
-                    "low": len(self.get_vulnerabilities_by_severity(VulnerabilitySeverity.LOW)),
-                    "info": len(self.get_vulnerabilities_by_severity(VulnerabilitySeverity.INFO)),
+                    "critical": len(
+                        self.get_vulnerabilities_by_severity(
+                            VulnerabilitySeverity.CRITICAL
+                        )
+                    ),
+                    "high": len(
+                        self.get_vulnerabilities_by_severity(
+                            VulnerabilitySeverity.HIGH
+                        )
+                    ),
+                    "medium": len(
+                        self.get_vulnerabilities_by_severity(
+                            VulnerabilitySeverity.MEDIUM
+                        )
+                    ),
+                    "low": len(
+                        self.get_vulnerabilities_by_severity(
+                            VulnerabilitySeverity.LOW
+                        )
+                    ),
+                    "info": len(
+                        self.get_vulnerabilities_by_severity(
+                            VulnerabilitySeverity.INFO
+                        )
+                    ),
                 },
             },
             "metadata": self.metadata,
@@ -323,10 +353,14 @@ class BaseAPIScanner(ABC):
             "timeout": kwargs.get("timeout", 30),
             "max_retries": kwargs.get("max_retries", 3),
             "rate_limit_delay": kwargs.get("rate_limit_delay", 0.5),
-            "max_concurrent_requests": kwargs.get("max_concurrent_requests", 10),
+            "max_concurrent_requests": kwargs.get(
+                "max_concurrent_requests", 10
+            ),
             "follow_redirects": kwargs.get("follow_redirects", True),
             "verify_ssl": kwargs.get("verify_ssl", True),
-            "user_agent": kwargs.get("user_agent", "Zen-Ai-Pentest-Scanner/1.0"),
+            "user_agent": kwargs.get(
+                "user_agent", "Zen-Ai-Pentest-Scanner/1.0"
+            ),
             "headers": kwargs.get("headers", {}),
             "proxy": kwargs.get("proxy", None),
             "authentication": kwargs.get("authentication", None),
@@ -339,14 +373,20 @@ class BaseAPIScanner(ABC):
         self.last_request_time = 0.0
 
         # Ergebnis
-        self.result = ScanResult(target_url=target_url, scan_type=self.__class__.__name__, start_time=time.time())
+        self.result = ScanResult(
+            target_url=target_url,
+            scan_type=self.__class__.__name__,
+            start_time=time.time(),
+        )
 
         # HTTP Client (wird von Unterklassen implementiert)
         self.http_client = None
 
         logger.info(f"Scanner initialisiert für: {target_url}")
 
-    def _get_headers(self, additional_headers: Optional[Dict] = None) -> Dict[str, str]:
+    def _get_headers(
+        self, additional_headers: Optional[Dict] = None
+    ) -> Dict[str, str]:
         """Erstellt HTTP-Header für Requests"""
         headers = {
             "User-Agent": self.config["user_agent"],
@@ -368,7 +408,9 @@ class BaseAPIScanner(ABC):
             elif auth.get("type") == "basic":
                 import base64
 
-                credentials = base64.b64encode(f"{auth.get('username', '')}:{auth.get('password', '')}".encode()).decode()
+                credentials = base64.b64encode(
+                    f"{auth.get('username', '')}:{auth.get('password', '')}".encode()
+                ).decode()
                 headers["Authorization"] = f"Basic {credentials}"
             elif auth.get("type") == "api_key":
                 header_name = auth.get("header_name", "X-API-Key")
@@ -387,7 +429,12 @@ class BaseAPIScanner(ABC):
 
     @abstractmethod
     async def _make_request(
-        self, method: str, url: str, headers: Optional[Dict] = None, data: Optional[Any] = None, params: Optional[Dict] = None
+        self,
+        method: str,
+        url: str,
+        headers: Optional[Dict] = None,
+        data: Optional[Any] = None,
+        params: Optional[Dict] = None,
     ) -> Tuple[int, Dict[str, str], Any]:
         """
         Führt einen HTTP-Request durch
@@ -414,7 +461,10 @@ class BaseAPIScanner(ABC):
 
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
-        for url, result in zip([urljoin(self.target_url, p) for p in self.COMMON_API_PATHS], results):
+        for url, result in zip(
+            [urljoin(self.target_url, p) for p in self.COMMON_API_PATHS],
+            results,
+        ):
             if isinstance(result, Exception):
                 logger.debug(f"Fehler bei {url}: {result}")
                 continue
@@ -444,13 +494,18 @@ class BaseAPIScanner(ABC):
                     return True
 
             # Swagger/OpenAPI Dokumentation
-            if any(x in url.lower() for x in ["swagger", "openapi", "api-docs"]):
+            if any(
+                x in url.lower() for x in ["swagger", "openapi", "api-docs"]
+            ):
                 if status == 200:
                     return True
 
             # GraphQL Endpunkte
             if "graphql" in url.lower():
-                if status in [200, 400]:  # GraphQL gibt oft 400 bei fehlender Query
+                if status in [
+                    200,
+                    400,
+                ]:  # GraphQL gibt oft 400 bei fehlender Query
                     return True
 
             # Prüfe auf API-typische Fehlermeldungen
@@ -498,7 +553,9 @@ class BaseAPIScanner(ABC):
         logger.info(f"{len(endpoints)} Endpunkte gefunden")
         return endpoints
 
-    async def _test_endpoint(self, url: str, method: str) -> Optional[APIEndpoint]:
+    async def _test_endpoint(
+        self, url: str, method: str
+    ) -> Optional[APIEndpoint]:
         """Testet einen einzelnen Endpunkt"""
         try:
             await self._rate_limited_request()
@@ -529,7 +586,9 @@ class BaseAPIScanner(ABC):
             logger.debug(f"Fehler beim Testen von {method} {url}: {e}")
             return None
 
-    def _extract_parameters(self, data: Any, prefix: str = "") -> List[Dict[str, Any]]:
+    def _extract_parameters(
+        self, data: Any, prefix: str = ""
+    ) -> List[Dict[str, Any]]:
         """Extrahiert Parameter aus einer API-Antwort"""
         params = []
 
@@ -539,13 +598,17 @@ class BaseAPIScanner(ABC):
                     "name": f"{prefix}.{key}" if prefix else key,
                     "type": type(value).__name__,
                     "required": False,
-                    "example": value if not isinstance(value, (dict, list)) else None,
+                    "example": (
+                        value if not isinstance(value, (dict, list)) else None
+                    ),
                 }
                 params.append(param_info)
 
                 # Rekursiv für verschachtelte Objekte
                 if isinstance(value, (dict, list)):
-                    params.extend(self._extract_parameters(value, param_info["name"]))
+                    params.extend(
+                        self._extract_parameters(value, param_info["name"])
+                    )
 
         elif isinstance(data, list) and data:
             # Nimm das erste Element als Beispiel
@@ -556,7 +619,12 @@ class BaseAPIScanner(ABC):
     def _infer_schema(self, data: Any) -> Dict[str, Any]:
         """Leitet ein JSON Schema aus Beispieldaten ab"""
         if isinstance(data, dict):
-            return {"type": "object", "properties": {k: self._infer_schema(v) for k, v in data.items()}}
+            return {
+                "type": "object",
+                "properties": {
+                    k: self._infer_schema(v) for k, v in data.items()
+                },
+            }
         elif isinstance(data, list):
             if data:
                 return {"type": "array", "items": self._infer_schema(data[0])}
@@ -572,7 +640,9 @@ class BaseAPIScanner(ABC):
         else:
             return {"type": "null"}
 
-    async def test_authentication(self, endpoint: APIEndpoint) -> List[Vulnerability]:
+    async def test_authentication(
+        self, endpoint: APIEndpoint
+    ) -> List[Vulnerability]:
         """
         Testet Authentifizierungsmechanismen
 
@@ -590,7 +660,9 @@ class BaseAPIScanner(ABC):
             try:
                 await self._rate_limited_request()
                 status, headers, body = await self._make_request(
-                    endpoint.method, endpoint.path, headers={"Authorization": ""}  # Entferne Auth-Header
+                    endpoint.method,
+                    endpoint.path,
+                    headers={"Authorization": ""},  # Entferne Auth-Header
                 )
 
                 if status not in [401, 403]:
@@ -600,7 +672,10 @@ class BaseAPIScanner(ABC):
                         title="Fehlende Authentifizierung",
                         description=f"Endpunkt {endpoint.path} ist ohne Authentifizierung zugänglich",
                         endpoint=endpoint.path,
-                        evidence={"status_code": status, "response": str(body)[:500]},
+                        evidence={
+                            "status_code": status,
+                            "response": str(body)[:500],
+                        },
                         remediation="Implementiere eine starke Authentifizierung für diesen Endpunkt",
                     )
                     vulnerabilities.append(vuln)
@@ -617,15 +692,30 @@ class BaseAPIScanner(ABC):
 
         return vulnerabilities
 
-    async def _test_weak_auth(self, endpoint: APIEndpoint, vulnerabilities: List[Vulnerability]):
+    async def _test_weak_auth(
+        self, endpoint: APIEndpoint, vulnerabilities: List[Vulnerability]
+    ):
         """Testet auf schwache Authentifizierungsmechanismen"""
-        weak_tokens = ["admin", "password", "123456", "token", "secret", "test", "guest", "user", "api", "key"]
+        weak_tokens = [
+            "admin",
+            "password",
+            "123456",
+            "token",
+            "secret",
+            "test",
+            "guest",
+            "user",
+            "api",
+            "key",
+        ]
 
         for token in weak_tokens:
             try:
                 await self._rate_limited_request()
                 headers = {"Authorization": f"Bearer {token}"}
-                status, _, body = await self._make_request(endpoint.method, endpoint.path, headers=headers)
+                status, _, body = await self._make_request(
+                    endpoint.method, endpoint.path, headers=headers
+                )
 
                 if status == 200:
                     vuln = Vulnerability(
@@ -644,7 +734,9 @@ class BaseAPIScanner(ABC):
             except (ConnectionError, TimeoutError, aiohttp.ClientError):
                 pass
 
-    async def _test_jwt_vulnerabilities(self, endpoint: APIEndpoint, vulnerabilities: List[Vulnerability]):
+    async def _test_jwt_vulnerabilities(
+        self, endpoint: APIEndpoint, vulnerabilities: List[Vulnerability]
+    ):
         """Testet auf JWT-spezifische Schwachstellen"""
         # Teste für 'none' Algorithmus
         jwt_none = "eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IlRlc3QiLCJpYXQiOjE1MTYyMzkwMjJ9."
@@ -652,7 +744,9 @@ class BaseAPIScanner(ABC):
         try:
             await self._rate_limited_request()
             headers = {"Authorization": f"Bearer {jwt_none}"}
-            status, _, body = await self._make_request(endpoint.method, endpoint.path, headers=headers)
+            status, _, body = await self._make_request(
+                endpoint.method, endpoint.path, headers=headers
+            )
 
             if status == 200:
                 vuln = Vulnerability(
@@ -670,7 +764,9 @@ class BaseAPIScanner(ABC):
         except (ConnectionError, TimeoutError, aiohttp.ClientError):
             pass
 
-    async def test_rate_limiting(self, endpoint: APIEndpoint, requests: int = 50) -> List[Vulnerability]:
+    async def test_rate_limiting(
+        self, endpoint: APIEndpoint, requests: int = 50
+    ) -> List[Vulnerability]:
         """
         Testet Rate-Limiting
 
@@ -691,13 +787,17 @@ class BaseAPIScanner(ABC):
         try:
             responses = []
             for i in range(requests):
-                status, headers, body = await self._make_request(endpoint.method, endpoint.path)
+                status, headers, body = await self._make_request(
+                    endpoint.method, endpoint.path
+                )
                 responses.append(
                     {
                         "status": status,
                         "retry_after": headers.get("retry-after"),
                         "rate_limit": headers.get("x-rate-limit"),
-                        "rate_limit_remaining": headers.get("x-rate-limit-remaining"),
+                        "rate_limit_remaining": headers.get(
+                            "x-rate-limit-remaining"
+                        ),
                     }
                 )
 
@@ -732,7 +832,10 @@ class BaseAPIScanner(ABC):
                     title="Rate-Limiting umgangen",
                     description="Rate-Limiting konnte teilweise umgangen werden",
                     endpoint=endpoint.path,
-                    evidence={"blocked_requests": blocked_count, "successful_requests": success_count},
+                    evidence={
+                        "blocked_requests": blocked_count,
+                        "successful_requests": success_count,
+                    },
                     remediation="Stärkere Rate-Limiting-Implementierung erforderlich",
                 )
                 vulnerabilities.append(vuln)
@@ -743,7 +846,9 @@ class BaseAPIScanner(ABC):
 
         return vulnerabilities
 
-    async def test_injection(self, endpoint: APIEndpoint) -> List[Vulnerability]:
+    async def test_injection(
+        self, endpoint: APIEndpoint
+    ) -> List[Vulnerability]:
         """
         Testet auf Injection-Schwachstellen
 
@@ -773,7 +878,9 @@ class BaseAPIScanner(ABC):
 
         return vulnerabilities
 
-    async def _test_sql_injection(self, endpoint: APIEndpoint, payload: str) -> List[Vulnerability]:
+    async def _test_sql_injection(
+        self, endpoint: APIEndpoint, payload: str
+    ) -> List[Vulnerability]:
         """Testet auf SQL Injection"""
         vulnerabilities = []
 
@@ -782,7 +889,9 @@ class BaseAPIScanner(ABC):
 
             # Teste als Query-Parameter
             params = {"test": payload}
-            status, headers, body = await self._make_request("GET", endpoint.path, params=params)
+            status, headers, body = await self._make_request(
+                "GET", endpoint.path, params=params
+            )
 
             # SQL-Fehler-Indikatoren
             sql_errors = [
@@ -818,7 +927,9 @@ class BaseAPIScanner(ABC):
 
         return vulnerabilities
 
-    async def _test_nosql_injection(self, endpoint: APIEndpoint, payload: str) -> List[Vulnerability]:
+    async def _test_nosql_injection(
+        self, endpoint: APIEndpoint, payload: str
+    ) -> List[Vulnerability]:
         """Testet auf NoSQL Injection"""
         vulnerabilities = []
 
@@ -829,10 +940,17 @@ class BaseAPIScanner(ABC):
             headers = {"Content-Type": "application/json"}
             data = json.loads(payload)
 
-            status, _, body = await self._make_request("POST", endpoint.path, headers=headers, data=data)
+            status, _, body = await self._make_request(
+                "POST", endpoint.path, headers=headers, data=data
+            )
 
             # NoSQL-Fehler-Indikatoren
-            nosql_errors = ["mongodb", "bson", "mongoerror", "invalid objectid"]
+            nosql_errors = [
+                "mongodb",
+                "bson",
+                "mongoerror",
+                "invalid objectid",
+            ]
 
             body_str = str(body).lower()
             if any(error in body_str for error in nosql_errors):
@@ -855,7 +973,9 @@ class BaseAPIScanner(ABC):
 
         return vulnerabilities
 
-    async def _test_command_injection(self, endpoint: APIEndpoint, payload: str) -> List[Vulnerability]:
+    async def _test_command_injection(
+        self, endpoint: APIEndpoint, payload: str
+    ) -> List[Vulnerability]:
         """Testet auf Command Injection"""
         vulnerabilities = []
 
@@ -863,10 +983,20 @@ class BaseAPIScanner(ABC):
             await self._rate_limited_request()
 
             params = {"test": payload}
-            status, _, body = await self._make_request("GET", endpoint.path, params=params)
+            status, _, body = await self._make_request(
+                "GET", endpoint.path, params=params
+            )
 
             # Command Injection Indikatoren
-            cmd_indicators = ["root:", "daemon:", "bin:", "sys:", "uid=", "gid=", "groups="]  # /etc/passwd Inhalt
+            cmd_indicators = [
+                "root:",
+                "daemon:",
+                "bin:",
+                "sys:",
+                "uid=",
+                "gid=",
+                "groups=",
+            ]  # /etc/passwd Inhalt
 
             body_str = str(body)
             if any(indicator in body_str for indicator in cmd_indicators):
@@ -943,7 +1073,9 @@ class BaseAPIScanner(ABC):
 
         return vulnerabilities
 
-    async def _test_cors(self, url: str, headers: Dict[str, str]) -> List[Vulnerability]:
+    async def _test_cors(
+        self, url: str, headers: Dict[str, str]
+    ) -> List[Vulnerability]:
         """Testet CORS-Konfiguration"""
         vulnerabilities = []
 
@@ -952,12 +1084,20 @@ class BaseAPIScanner(ABC):
             test_headers = {"Origin": "https://evil.com"}
 
             await self._rate_limited_request()
-            status, response_headers, _ = await self._make_request("GET", url, headers=test_headers)
+            status, response_headers, _ = await self._make_request(
+                "GET", url, headers=test_headers
+            )
 
-            response_headers_lower = {k.lower(): v for k, v in response_headers.items()}
+            response_headers_lower = {
+                k.lower(): v for k, v in response_headers.items()
+            }
 
-            allow_origin = response_headers_lower.get("access-control-allow-origin", "")
-            allow_credentials = response_headers_lower.get("access-control-allow-credentials", "")
+            allow_origin = response_headers_lower.get(
+                "access-control-allow-origin", ""
+            )
+            allow_credentials = response_headers_lower.get(
+                "access-control-allow-credentials", ""
+            )
 
             # Gefährliche CORS-Konfiguration
             if allow_origin == "https://evil.com" or allow_origin == "*":
@@ -995,9 +1135,13 @@ class BaseAPIScanner(ABC):
     def finalize_scan(self):
         """Finalisiert den Scan und setzt Endzeit"""
         self.result.end_time = time.time()
-        logger.info(f"Scan abgeschlossen. Dauer: {self.result.end_time - self.result.start_time:.2f}s")
+        logger.info(
+            f"Scan abgeschlossen. Dauer: {self.result.end_time - self.result.start_time:.2f}s"
+        )
         logger.info(f"Gefundene Endpunkte: {len(self.result.endpoints)}")
-        logger.info(f"Gefundene Schwachstellen: {len(self.result.vulnerabilities)}")
+        logger.info(
+            f"Gefundene Schwachstellen: {len(self.result.vulnerabilities)}"
+        )
 
 
 # Beispiel für die Verwendung

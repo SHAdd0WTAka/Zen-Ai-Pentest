@@ -412,7 +412,10 @@ class TestCommandBuilding:
 
     def test_additional_args(self, scanner):
         """Test additional arguments."""
-        scanner.options["additional_args"] = ["--randomize-hosts", "--packet-trace"]
+        scanner.options["additional_args"] = [
+            "--randomize-hosts",
+            "--packet-trace",
+        ]
         cmd = scanner._build_command()
         assert "--randomize-hosts" in cmd
         assert "--packet-trace" in cmd
@@ -525,7 +528,9 @@ class TestXMLParsing:
         """Test fallback parsing for malformed XML."""
         with patch("shutil.which", return_value="/usr/bin/nmap"):
             scanner = NmapScanner("192.168.1.1")
-            malformed = '<host><address addr="192.168.1.1" addrtype="ipv4"/></invalid>'
+            malformed = (
+                '<host><address addr="192.168.1.1" addrtype="ipv4"/></invalid>'
+            )
             # Should not raise exception
             hosts = scanner.parse_xml_output(malformed)
             # May have partial results or empty list
@@ -608,7 +613,9 @@ class TestAsyncScanning:
             mock_result.stdout = SAMPLE_NMAP_XML
             mock_result.stderr = ""
 
-            with patch.object(scanner, "_run_subprocess", return_value=mock_result):
+            with patch.object(
+                scanner, "_run_subprocess", return_value=mock_result
+            ):
                 result = asyncio.run(scanner.scan())
 
                 assert result.success is True
@@ -627,29 +634,42 @@ class TestAsyncScanning:
             mock_result.stdout = ""
             mock_result.stderr = "Error: Invalid target"
 
-            with patch.object(scanner, "_run_subprocess", return_value=mock_result):
+            with patch.object(
+                scanner, "_run_subprocess", return_value=mock_result
+            ):
                 result = asyncio.run(scanner.scan())
 
                 assert result.success is False
-                assert "Error" in result.error or "failed" in result.error.lower()
+                assert (
+                    "Error" in result.error or "failed" in result.error.lower()
+                )
 
     def test_scan_timeout(self):
         """Test scan timeout handling."""
         with patch("shutil.which", return_value="/usr/bin/nmap"):
             scanner = NmapScanner("scanme.nmap.org")
 
-            with patch.object(scanner, "_run_subprocess", side_effect=asyncio.TimeoutError):
+            with patch.object(
+                scanner, "_run_subprocess", side_effect=asyncio.TimeoutError
+            ):
                 result = asyncio.run(scanner.scan(timeout=1))
 
                 assert result.success is False
-                assert "timeout" in result.error.lower() or "timed out" in result.error.lower()
+                assert (
+                    "timeout" in result.error.lower()
+                    or "timed out" in result.error.lower()
+                )
 
     def test_scan_exception(self):
         """Test exception handling during scan."""
         with patch("shutil.which", return_value="/usr/bin/nmap"):
             scanner = NmapScanner("scanme.nmap.org")
 
-            with patch.object(scanner, "_run_subprocess", side_effect=Exception("Network error")):
+            with patch.object(
+                scanner,
+                "_run_subprocess",
+                side_effect=Exception("Network error"),
+            ):
                 result = asyncio.run(scanner.scan())
 
                 assert result.success is False
@@ -674,8 +694,12 @@ class TestConvenienceMethods:
             mock_result.stdout = SAMPLE_NMAP_XML
             mock_result.stderr = ""
 
-            with patch.object(scanner, "_run_subprocess", return_value=mock_result):
-                result = asyncio.run(scanner.scan_ports(ports="80,443", scan_type=ScanType.SYN))
+            with patch.object(
+                scanner, "_run_subprocess", return_value=mock_result
+            ):
+                result = asyncio.run(
+                    scanner.scan_ports(ports="80,443", scan_type=ScanType.SYN)
+                )
 
                 assert result["success"] is True
                 assert "hosts" in result
@@ -691,7 +715,9 @@ class TestConvenienceMethods:
             mock_result.stdout = SAMPLE_NMAP_XML
             mock_result.stderr = ""
 
-            with patch.object(scanner, "_run_subprocess", return_value=mock_result):
+            with patch.object(
+                scanner, "_run_subprocess", return_value=mock_result
+            ):
                 result = asyncio.run(scanner.service_detection(ports="80,443"))
 
                 assert result["success"] is True
@@ -707,7 +733,9 @@ class TestConvenienceMethods:
             mock_result.stdout = SAMPLE_NMAP_XML
             mock_result.stderr = ""
 
-            with patch.object(scanner, "_run_subprocess", return_value=mock_result):
+            with patch.object(
+                scanner, "_run_subprocess", return_value=mock_result
+            ):
                 result = asyncio.run(scanner.os_detection(ports="80,443"))
 
                 assert result["success"] is True
@@ -723,7 +751,9 @@ class TestConvenienceMethods:
             mock_result.stdout = SAMPLE_NMAP_XML
             mock_result.stderr = ""
 
-            with patch.object(scanner, "_run_subprocess", return_value=mock_result):
+            with patch.object(
+                scanner, "_run_subprocess", return_value=mock_result
+            ):
                 result = asyncio.run(
                     scanner.run_script(
                         script_name="http-title",
@@ -804,9 +834,15 @@ class TestHelperFunctions:
             ip="192.168.1.1",
             status="up",
             ports=[
-                NmapPort(port=80, protocol="tcp", state="open", service="http"),
-                NmapPort(port=443, protocol="tcp", state="open", service="https"),
-                NmapPort(port=22, protocol="tcp", state="closed", service="ssh"),
+                NmapPort(
+                    port=80, protocol="tcp", state="open", service="http"
+                ),
+                NmapPort(
+                    port=443, protocol="tcp", state="open", service="https"
+                ),
+                NmapPort(
+                    port=22, protocol="tcp", state="closed", service="ssh"
+                ),
             ],
         )
 
@@ -829,14 +865,18 @@ class TestHelperFunctions:
                 ip="192.168.1.1",
                 status="up",
                 ports=[
-                    NmapPort(port=80, protocol="tcp", state="open", service="http"),
+                    NmapPort(
+                        port=80, protocol="tcp", state="open", service="http"
+                    ),
                 ],
             ),
             NmapHost(
                 ip="192.168.1.2",
                 status="up",
                 ports=[
-                    NmapPort(port=22, protocol="tcp", state="open", service="ssh"),
+                    NmapPort(
+                        port=22, protocol="tcp", state="open", service="ssh"
+                    ),
                 ],
             ),
             NmapHost(ip="192.168.1.3", status="down"),
@@ -1084,7 +1124,9 @@ class TestErrorHandling:
         """Test parsing empty XML."""
         with patch("shutil.which", return_value="/usr/bin/nmap"):
             scanner = NmapScanner("192.168.1.1")
-            hosts = scanner.parse_xml_output('<?xml version="1.0"?><nmaprun></nmaprun>')
+            hosts = scanner.parse_xml_output(
+                '<?xml version="1.0"?><nmaprun></nmaprun>'
+            )
             assert len(hosts) == 0
 
     def test_host_without_address(self):
@@ -1108,7 +1150,9 @@ class TestErrorHandling:
             mock_result.stdout = SAMPLE_NMAP_XML
             mock_result.stderr = ""
 
-            with patch.object(scanner, "_run_subprocess", return_value=mock_result):
+            with patch.object(
+                scanner, "_run_subprocess", return_value=mock_result
+            ):
                 result = asyncio.run(scanner.scan(timeout=1))
                 assert result.success is True
 

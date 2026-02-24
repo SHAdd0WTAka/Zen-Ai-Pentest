@@ -14,7 +14,14 @@ def test_standalone():
     print("=" * 60)
 
     result = subprocess.run(
-        [sys.executable, "standalone_scan.py", "--target", "localhost", "--scan-type", "quick"],
+        [
+            sys.executable,
+            "standalone_scan.py",
+            "--target",
+            "localhost",
+            "--scan-type",
+            "quick",
+        ],
         capture_output=True,
         text=True,
         timeout=30,

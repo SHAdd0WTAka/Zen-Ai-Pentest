@@ -10,7 +10,13 @@ import logging
 from dataclasses import dataclass
 from typing import Annotated, List, Literal, TypedDict
 
-from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage, ToolMessage
+from langchain_core.messages import (
+    AIMessage,
+    BaseMessage,
+    HumanMessage,
+    SystemMessage,
+    ToolMessage,
+)
 from langchain_core.tools import BaseTool, tool
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, START, StateGraph, add_messages
@@ -99,7 +105,9 @@ class ReActAgent:
 
         # Vulnerability Scanning
         @tool
-        def scan_vulnerabilities(target: str, templates: str = "critical,high") -> str:
+        def scan_vulnerabilities(
+            target: str, templates: str = "critical,high"
+        ) -> str:
             """Scannt nach CVEs mit Nuclei"""
             nuclei = NucleiTool()
             result = nuclei.scan(target, severity=templates)
@@ -107,7 +115,9 @@ class ReActAgent:
 
         # Directory Bruteforce
         @tool
-        def enumerate_directories(target: str, wordlist: str = "common.txt") -> str:
+        def enumerate_directories(
+            target: str, wordlist: str = "common.txt"
+        ) -> str:
             """Enumerate directories mit ffuf"""
             ffuf = FfufTool()
             result = ffuf.directory_bruteforce(target, wordlist)
@@ -138,7 +148,13 @@ class ReActAgent:
             # TODO: Implementiere sichere Validierung
             return f"Exploit-Validierung für {cve_id} auf {target}: Noch nicht implementiert"
 
-        tools = [scan_ports, scan_vulnerabilities, enumerate_directories, lookup_cve, validate_exploit]
+        tools = [
+            scan_ports,
+            scan_vulnerabilities,
+            enumerate_directories,
+            lookup_cve,
+            validate_exploit,
+        ]
         return tools
 
     def _build_graph(self) -> StateGraph:
@@ -171,23 +187,37 @@ Wenn du fertig bist, gib eine finale Zusammenfassung aus."""
             if state["iteration"] >= state["max_iterations"]:
                 return {
                     **state,
-                    "messages": state["messages"] + [AIMessage(content="Maximale Iterationen erreicht. Beende Scan.")],
+                    "messages": state["messages"]
+                    + [
+                        AIMessage(
+                            content="Maximale Iterationen erreicht. Beende Scan."
+                        )
+                    ],
                     "status": "completed",
                 }
 
             # Prepare messages
-            messages = [SystemMessage(content=system_prompt)] + state["messages"]
+            messages = [SystemMessage(content=system_prompt)] + state[
+                "messages"
+            ]
 
             # LLM Call
             response = llm_with_tools.invoke(messages)
 
-            return {**state, "messages": [response], "iteration": state["iteration"] + 1}
+            return {
+                **state,
+                "messages": [response],
+                "iteration": state["iteration"] + 1,
+            }
 
         def tools_node(state: AgentState) -> AgentState:
             """Tools Node: Act/Observe"""
             last_message = state["messages"][-1]
 
-            if not hasattr(last_message, "tool_calls") or not last_message.tool_calls:
+            if (
+                not hasattr(last_message, "tool_calls")
+                or not last_message.tool_calls
+            ):
                 return state
 
             tool_messages = []
@@ -201,10 +231,15 @@ Wenn du fertig bist, gib eine finale Zusammenfassung aus."""
                 logger.info(f"Tool-Aufruf: {tool_name} mit Args: {args}")
 
                 # Sicherheits-Check
-                if self._is_dangerous_tool(tool_name) and self.config.use_human_in_the_loop:
+                if (
+                    self._is_dangerous_tool(tool_name)
+                    and self.config.use_human_in_the_loop
+                ):
                     if not self.config.auto_approve_dangerous:
                         result = f"[PENDING APPROVAL] Tool {tool_name} erfordert manuelle Freigabe"
-                        tool_messages.append(ToolMessage(content=result, tool_call_id=tool_id))
+                        tool_messages.append(
+                            ToolMessage(content=result, tool_call_id=tool_id)
+                        )
                         continue
 
                 # Tool ausführen
@@ -214,21 +249,36 @@ Wenn du fertig bist, gib eine finale Zusammenfassung aus."""
                         result = tool_func.invoke(args)
 
                         # Finding speichern
-                        finding = {"tool": tool_name, "args": args, "result": result, "iteration": state["iteration"]}
+                        finding = {
+                            "tool": tool_name,
+                            "args": args,
+                            "result": result,
+                            "iteration": state["iteration"],
+                        }
                         new_findings.append(finding)
                     else:
                         result = f"Tool {tool_name} nicht gefunden"
 
-                    tool_messages.append(ToolMessage(content=result, tool_call_id=tool_id))
+                    tool_messages.append(
+                        ToolMessage(content=result, tool_call_id=tool_id)
+                    )
 
                 except Exception as e:
                     error_msg = f"Fehler bei {tool_name}: {str(e)}"
                     logger.error(error_msg)
-                    tool_messages.append(ToolMessage(content=error_msg, tool_call_id=tool_id))
+                    tool_messages.append(
+                        ToolMessage(content=error_msg, tool_call_id=tool_id)
+                    )
 
-            return {**state, "messages": tool_messages, "findings": state["findings"] + new_findings}
+            return {
+                **state,
+                "messages": tool_messages,
+                "findings": state["findings"] + new_findings,
+            }
 
-        def should_continue(state: AgentState) -> Literal["tools", "agent", "end"]:
+        def should_continue(
+            state: AgentState,
+        ) -> Literal["tools", "agent", "end"]:
             """Conditional Edge: Entscheidet über Loop-Fortsetzung"""
             last_message = state["messages"][-1]
 
@@ -255,9 +305,17 @@ Wenn du fertig bist, gib eine finale Zusammenfassung aus."""
 
         workflow.add_edge(START, "agent")
 
-        workflow.add_conditional_edges("agent", should_continue, {"tools": "tools", "agent": "agent", "end": END})
+        workflow.add_conditional_edges(
+            "agent",
+            should_continue,
+            {"tools": "tools", "agent": "agent", "end": END},
+        )
 
-        workflow.add_conditional_edges("tools", should_continue, {"tools": "tools", "agent": "agent", "end": END})
+        workflow.add_conditional_edges(
+            "tools",
+            should_continue,
+            {"tools": "tools", "agent": "agent", "end": END},
+        )
 
         # Mit Memory für Human-in-the-Loop
         checkpointer = MemorySaver()
@@ -291,13 +349,18 @@ Wenn du fertig bist, gib eine finale Zusammenfassung aus."""
         logger.info(f"Starte ReAct-Agent für {target}")
 
         # Graph ausführen
-        result = self.graph.invoke(initial_state, config={"configurable": {"thread_id": f"pentest_{target}"}})
+        result = self.graph.invoke(
+            initial_state,
+            config={"configurable": {"thread_id": f"pentest_{target}"}},
+        )
 
         logger.info(f"Agent beendet nach {result['iteration']} Iterationen")
 
         return {
             "findings": result["findings"],
-            "final_message": result["messages"][-1].content if result["messages"] else "",
+            "final_message": (
+                result["messages"][-1].content if result["messages"] else ""
+            ),
             "iterations": result["iteration"],
             "status": result["status"],
             "target": target,
@@ -349,9 +412,13 @@ if __name__ == "__main__":
     # Test
     logging.basicConfig(level=logging.INFO)
 
-    config = ReActAgentConfig(max_iterations=5, enable_sandbox=True, auto_approve_dangerous=False)
+    config = ReActAgentConfig(
+        max_iterations=5, enable_sandbox=True, auto_approve_dangerous=False
+    )
 
     agent = ReActAgent(config)
-    result = agent.run("scanme.nmap.org", objective="Port scan and vulnerability assessment")
+    result = agent.run(
+        "scanme.nmap.org", objective="Port scan and vulnerability assessment"
+    )
 
     print(agent.generate_report(result))

@@ -37,7 +37,9 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             self.requests[client_ip] = []
 
         # Remove old requests (older than 1 minute)
-        self.requests[client_ip] = [t for t in self.requests[client_ip] if current_time - t < 60]
+        self.requests[client_ip] = [
+            t for t in self.requests[client_ip] if current_time - t < 60
+        ]
 
         # Check limit
         limit = settings.RATE_LIMIT_ANONYMOUS
@@ -64,10 +66,14 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["X-XSS-Protection"] = "1; mode=block"
-        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+        response.headers["Strict-Transport-Security"] = (
+            "max-age=31536000; includeSubDomains"
+        )
         response.headers["Content-Security-Policy"] = "default-src 'self'"
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-        response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
+        response.headers["Permissions-Policy"] = (
+            "geolocation=(), microphone=(), camera=()"
+        )
 
         return response
 
@@ -88,7 +94,9 @@ class LoggingMiddleware(BaseHTTPMiddleware):
         duration = time.time() - start_time
 
         # Log response
-        logger.info(f"Response: {response.status_code} | Duration: {duration:.3f}s | Path: {request.url.path}")
+        logger.info(
+            f"Response: {response.status_code} | Duration: {duration:.3f}s | Path: {request.url.path}"
+        )
 
         # Add duration header
         response.headers["X-Response-Time"] = f"{duration:.3f}s"

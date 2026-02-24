@@ -47,7 +47,9 @@ class TestSafetyPipeline:
 
     def test_pipeline_initialization_custom_params(self):
         """Test SafetyPipeline initialization with custom parameters"""
-        pipeline = SafetyPipeline(safety_level=SafetyLevel.STRICT, auto_correct=False)
+        pipeline = SafetyPipeline(
+            safety_level=SafetyLevel.STRICT, auto_correct=False
+        )
 
         assert pipeline.auto_correct is False
         assert pipeline.guardrails.safety_level == SafetyLevel.STRICT
@@ -66,9 +68,17 @@ class TestSafetyPipeline:
     def test_check_output_with_schema(self):
         """Test check_output with schema validation"""
         pipeline = SafetyPipeline()
-        output = json.dumps({"cve_id": "CVE-2021-44228", "severity": "critical", "description": "Log4j vulnerability"})
+        output = json.dumps(
+            {
+                "cve_id": "CVE-2021-44228",
+                "severity": "critical",
+                "description": "Log4j vulnerability",
+            }
+        )
 
-        result = pipeline.check_output(output, schema_name="vulnerability_report")
+        result = pipeline.check_output(
+            output, schema_name="vulnerability_report"
+        )
 
         assert result["passed"] is True
         assert pipeline.safety_stats["outputs_checked"] == 1
@@ -78,7 +88,9 @@ class TestSafetyPipeline:
         pipeline = SafetyPipeline()
         output = "not valid json"
 
-        result = pipeline.check_output(output, schema_name="vulnerability_report")
+        result = pipeline.check_output(
+            output, schema_name="vulnerability_report"
+        )
 
         # Should have issues due to JSON error but may still pass if confidence >= 0.6
         assert any("Invalid JSON" in issue for issue in result["issues"])
@@ -87,13 +99,19 @@ class TestSafetyPipeline:
         """Test check_output with guardrail violations"""
         pipeline = SafetyPipeline()
         # Use patterns that will trigger violations - note: patterns use \b word boundaries
-        output = "I think this is probably vulnerable and maybe you should check."
+        output = (
+            "I think this is probably vulnerable and maybe you should check."
+        )
 
         result = pipeline.check_output(output)
 
         assert pipeline.safety_stats["outputs_checked"] == 1
         # Violations may be found and corrected, so check that issues exist or auto-correction was triggered
-        assert len(result["issues"]) > 0 or result.get("auto_corrected", False) or result["passed"]
+        assert (
+            len(result["issues"]) > 0
+            or result.get("auto_corrected", False)
+            or result["passed"]
+        )
 
     def test_get_retry_prompt(self):
         """Test generating retry prompt"""
@@ -101,7 +119,9 @@ class TestSafetyPipeline:
         original_prompt = "Analyze the security of this system."
         check_result = {
             "issues": ["Too many uncertainty indicators", "Invalid format"],
-            "confidence": Mock(breakdown={"guardrails": 0.5, "validation": 0.8}),
+            "confidence": Mock(
+                breakdown={"guardrails": 0.5, "validation": 0.8}
+            ),
         }
 
         retry_prompt = pipeline.get_retry_prompt(original_prompt, check_result)
@@ -169,9 +189,15 @@ class TestConfidenceScorer:
         scorer = ConfidenceScorer()
 
         guardrail_result = Mock(confidence_penalty=0.8)
-        validation_result = Mock(confidence_impact=0.8, errors=["error1", "error2"])
+        validation_result = Mock(
+            confidence_impact=0.8, errors=["error1", "error2"]
+        )
 
-        score = scorer.calculate(guardrail_result=guardrail_result, validation_result=validation_result, consistency_score=0.3)
+        score = scorer.calculate(
+            guardrail_result=guardrail_result,
+            validation_result=validation_result,
+            consistency_score=0.3,
+        )
 
         assert score.score < 0.6
         assert score.level in ["low", "critical"]
@@ -184,7 +210,11 @@ class TestConfidenceScorer:
         guardrail_result = Mock(confidence_penalty=0.3)
         validation_result = Mock(confidence_impact=0.2, errors=[])
 
-        score = scorer.calculate(guardrail_result=guardrail_result, validation_result=validation_result, consistency_score=0.8)
+        score = scorer.calculate(
+            guardrail_result=guardrail_result,
+            validation_result=validation_result,
+            consistency_score=0.8,
+        )
 
         assert 0.5 <= score.score <= 0.9
         assert score.level in ["medium", "low"]
@@ -193,8 +223,12 @@ class TestConfidenceScorer:
         """Test should_retry method"""
         scorer = ConfidenceScorer()
 
-        low_score = ConfidenceScore(score=0.4, level="critical", breakdown={}, recommendations=[])
-        high_score = ConfidenceScore(score=0.9, level="high", breakdown={}, recommendations=[])
+        low_score = ConfidenceScore(
+            score=0.4, level="critical", breakdown={}, recommendations=[]
+        )
+        high_score = ConfidenceScore(
+            score=0.9, level="high", breakdown={}, recommendations=[]
+        )
 
         assert scorer.should_retry(low_score) is True
         assert scorer.should_retry(high_score) is False
@@ -204,9 +238,15 @@ class TestConfidenceScorer:
         """Test should_alert method"""
         scorer = ConfidenceScorer()
 
-        critical_score = ConfidenceScore(score=0.3, level="critical", breakdown={}, recommendations=[])
-        low_score = ConfidenceScore(score=0.5, level="low", breakdown={}, recommendations=[])
-        medium_score = ConfidenceScore(score=0.8, level="medium", breakdown={}, recommendations=[])
+        critical_score = ConfidenceScore(
+            score=0.3, level="critical", breakdown={}, recommendations=[]
+        )
+        low_score = ConfidenceScore(
+            score=0.5, level="low", breakdown={}, recommendations=[]
+        )
+        medium_score = ConfidenceScore(
+            score=0.8, level="medium", breakdown={}, recommendations=[]
+        )
 
         assert scorer.should_alert(critical_score) is True
         assert scorer.should_alert(low_score) is True
@@ -317,7 +357,11 @@ class TestFactChecker:
     def test_verify_port_status_with_context(self):
         """Test port status verification with scan context"""
         checker = FactChecker()
-        context = {"scan_results": {"ports": {"80": {"state": "open"}, "443": {"state": "closed"}}}}
+        context = {
+            "scan_results": {
+                "ports": {"80": {"state": "open"}, "443": {"state": "closed"}}
+            }
+        }
 
         claim = {"type": "port_status", "port": "80", "status": "open"}
         result = checker._verify_port_status(claim, context)
@@ -360,8 +404,20 @@ class TestFactChecker:
         """Test getting fact check statistics"""
         checker = FactChecker()
         checker.check_history = [
-            FactCheckResult(claim="test1", status=FactCheckStatus.VERIFIED, confidence=0.9, evidence=[], source="test"),
-            FactCheckResult(claim="test2", status=FactCheckStatus.CONTRADICTED, confidence=0.8, evidence=[], source="test"),
+            FactCheckResult(
+                claim="test1",
+                status=FactCheckStatus.VERIFIED,
+                confidence=0.9,
+                evidence=[],
+                source="test",
+            ),
+            FactCheckResult(
+                claim="test2",
+                status=FactCheckStatus.CONTRADICTED,
+                confidence=0.8,
+                evidence=[],
+                source="test",
+            ),
         ]
 
         stats = checker.get_stats()
@@ -441,9 +497,15 @@ class TestSelfCorrection:
         corrector = SelfCorrection()
         original_prompt = "Analyze the system."
         issues = ["Too vague", "Format error"]
-        confidence_breakdown = {"guardrails": 0.5, "fact_check": 0.9, "validation": 0.7}
+        confidence_breakdown = {
+            "guardrails": 0.5,
+            "fact_check": 0.9,
+            "validation": 0.7,
+        }
 
-        retry_prompt = corrector.generate_retry_prompt(original_prompt, issues, confidence_breakdown)
+        retry_prompt = corrector.generate_retry_prompt(
+            original_prompt, issues, confidence_breakdown
+        )
 
         assert original_prompt in retry_prompt
         assert "Previous attempt had issues" in retry_prompt
@@ -451,7 +513,11 @@ class TestSelfCorrection:
     def test_get_correction_stats(self):
         """Test getting correction statistics"""
         corrector = SelfCorrection()
-        corrector.correction_history = [{"corrections_made": 2}, {"corrections_made": 0}, {"corrections_made": 1}]
+        corrector.correction_history = [
+            {"corrections_made": 2},
+            {"corrections_made": 0},
+            {"corrections_made": 1},
+        ]
 
         stats = corrector.get_correction_stats()
 
@@ -479,7 +545,13 @@ class TestOutputValidator:
     def test_validate_json_valid(self):
         """Test valid JSON validation"""
         validator = OutputValidator()
-        output = json.dumps({"cve_id": "CVE-2021-44228", "severity": "critical", "description": "Log4j vulnerability"})
+        output = json.dumps(
+            {
+                "cve_id": "CVE-2021-44228",
+                "severity": "critical",
+                "description": "Log4j vulnerability",
+            }
+        )
 
         result = validator.validate_json(output, "vulnerability_report")
 
@@ -553,7 +625,9 @@ class TestOutputValidator:
         validator = OutputValidator()
         output = "Nmap scan report for 192.168.1.1\nPORT   STATE SERVICE\n80/tcp open  http"
 
-        result = validator.validate_command_output(output, expected_tool="nmap")
+        result = validator.validate_command_output(
+            output, expected_tool="nmap"
+        )
 
         assert result.is_valid is True
         assert result.schema_type == "tool:nmap"
@@ -581,9 +655,13 @@ class TestOutputValidator:
         """Test factual consistency validation"""
         validator = OutputValidator()
         new_output = "The system is vulnerable to CVE-2021-44228."
-        memory_context = ["Previous scan found CVE-2021-44228 critical vulnerability."]
+        memory_context = [
+            "Previous scan found CVE-2021-44228 critical vulnerability."
+        ]
 
-        result = validator.validate_factual_consistency(new_output, memory_context)
+        result = validator.validate_factual_consistency(
+            new_output, memory_context
+        )
 
         assert isinstance(result, ValidationResult)
 
@@ -595,7 +673,9 @@ class TestOutputValidator:
         text1 = "CVE-2021-44228 is present."
         text2 = "CVE-2021-44228 is not present."
 
-        has_contradiction = validator._check_contradiction(text1, text2, "CVE-2021-44228")
+        has_contradiction = validator._check_contradiction(
+            text1, text2, "CVE-2021-44228"
+        )
 
         assert has_contradiction is True
 
@@ -657,7 +737,9 @@ class TestOutputGuardrails:
         result = guardrails.check(output)
 
         # Test the count method directly with a clear word match
-        count = guardrails._count_patterns("maybe perhaps possibly i think", "uncertainty")
+        count = guardrails._count_patterns(
+            "maybe perhaps possibly i think", "uncertainty"
+        )
         # We just verify the method doesn't error and returns a number
         assert isinstance(count, int)
 
@@ -669,7 +751,9 @@ class TestOutputGuardrails:
         result = guardrails.check(output)
 
         # Test the count method directly
-        count = guardrails._count_patterns("i remember i recall typically", "fabrication")
+        count = guardrails._count_patterns(
+            "i remember i recall typically", "fabrication"
+        )
         assert isinstance(count, int)  # Method returns a count value
 
     def test_check_security_falsehoods(self):
@@ -684,7 +768,13 @@ class TestOutputGuardrails:
     def test_get_stats(self):
         """Test getting guardrail statistics"""
         guardrails = OutputGuardrails()
-        guardrails.violation_history = [{"output_snippet": "test", "violations": ["v1"], "safety_level": "standard"}]
+        guardrails.violation_history = [
+            {
+                "output_snippet": "test",
+                "violations": ["v1"],
+                "safety_level": "standard",
+            }
+        ]
 
         stats = guardrails.get_stats()
 
@@ -706,7 +796,9 @@ class TestSafetyIntegration:
         pipeline = SafetyPipeline()
 
         # Test with a problematic output
-        output = "This is probably vulnerable. I think maybe you should check it."
+        output = (
+            "This is probably vulnerable. I think maybe you should check it."
+        )
 
         result = pipeline.check_output(output)
 
@@ -719,7 +811,9 @@ class TestSafetyIntegration:
         """Test pipeline with memory context for consistency"""
         pipeline = SafetyPipeline()
         output = "The system has port 80 open."
-        context = {"memory_context": ["Port 80 was found open in previous scan."]}
+        context = {
+            "memory_context": ["Port 80 was found open in previous scan."]
+        }
 
         result = pipeline.check_output(output, context=context)
 

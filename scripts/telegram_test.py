@@ -53,7 +53,12 @@ def test_connection(token, chat_id):
     )
 
     url = f"https://api.telegram.org/bot{token}/sendMessage"
-    payload = {"chat_id": chat_id, "text": message, "parse_mode": "HTML", "disable_web_page_preview": True}
+    payload = {
+        "chat_id": chat_id,
+        "text": message,
+        "parse_mode": "HTML",
+        "disable_web_page_preview": True,
+    }
 
     response = requests.post(url, data=payload)
 
@@ -62,7 +67,9 @@ def test_connection(token, chat_id):
         if data.get("ok"):
             print("[OK] Testnachricht gesendet!")
             print(f"     Message ID: {data['result'].get('message_id')}")
-            print(f"     Chat: {data['result']['chat'].get('title', data['result']['chat'].get('first_name'))}")
+            print(
+                f"     Chat: {data['result']['chat'].get('title', data['result']['chat'].get('first_name'))}"
+            )
         else:
             print(f"[ERROR] Senden fehlgeschlagen: {data.get('description')}")
             return False
@@ -95,7 +102,9 @@ def get_chat_id(token):
                     chat = update["message"]["chat"]
                     chat_id = chat["id"]
                     chat_type = chat["type"]
-                    chat_name = chat.get("title", chat.get("first_name", "Unknown"))
+                    chat_name = chat.get(
+                        "title", chat.get("first_name", "Unknown")
+                    )
                     print(f"\n[FOUND] Chat ID: {chat_id}")
                     print(f"        Type: {chat_type}")
                     print(f"        Name: {chat_name}")
@@ -119,7 +128,9 @@ def main():
         print("Nutze: $env:TELEGRAM_BOT_TOKEN='dein-token'")
         print()
         print("ODER starte den GitHub Actions Workflow:")
-        print("https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/actions/workflows/telegram-notifications.yml")
+        print(
+            "https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/actions/workflows/telegram-notifications.yml"
+        )
         return
 
     chat_id = os.getenv("TELEGRAM_CHAT_ID")

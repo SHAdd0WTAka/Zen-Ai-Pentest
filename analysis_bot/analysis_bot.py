@@ -25,15 +25,38 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
-from .engines.exploitability_checker import ExploitabilityAssessment, get_exploitability_checker
-from .engines.recommendation_engine import ComplianceFramework, Recommendation, RemediationPriority, get_recommendation_engine
-from .engines.risk_scorer import AssetCriticality, RiskFactors, RiskScore, ThreatActor, get_risk_scorer
+from .engines.exploitability_checker import (
+    ExploitabilityAssessment,
+    get_exploitability_checker,
+)
+from .engines.recommendation_engine import (
+    ComplianceFramework,
+    Recommendation,
+    RemediationPriority,
+    get_recommendation_engine,
+)
+from .engines.risk_scorer import (
+    AssetCriticality,
+    RiskFactors,
+    RiskScore,
+    ThreatActor,
+    get_risk_scorer,
+)
 
 # Lokale Module
-from .engines.vulnerability_analyzer import CVSSVector, Vulnerability, VulnerabilityCategory, VulnerabilitySource, get_analyzer
+from .engines.vulnerability_analyzer import (
+    CVSSVector,
+    Vulnerability,
+    VulnerabilityCategory,
+    VulnerabilitySource,
+    get_analyzer,
+)
 
 # Logging konfigurieren
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
 logger = logging.getLogger(__name__)
 
 
@@ -52,7 +75,9 @@ class AnalysisResult:
     """Ergebnis einer vollstÃ¤ndigen Analyse"""
 
     # Identifikation
-    analysis_id: str = field(default_factory=lambda: f"ANALYSIS-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}")
+    analysis_id: str = field(
+        default_factory=lambda: f"ANALYSIS-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}"
+    )
     target: str = ""
 
     # Status
@@ -61,7 +86,9 @@ class AnalysisResult:
     # Komponenten
     vulnerabilities: List[Vulnerability] = field(default_factory=list)
     risk_scores: List[RiskScore] = field(default_factory=list)
-    exploitability_assessments: List[ExploitabilityAssessment] = field(default_factory=list)
+    exploitability_assessments: List[ExploitabilityAssessment] = field(
+        default_factory=list
+    )
     recommendations: List[Recommendation] = field(default_factory=list)
 
     # Aggregierte Ergebnisse
@@ -81,12 +108,18 @@ class AnalysisResult:
             "status": self.status.value,
             "vulnerabilities": [v.to_dict() for v in self.vulnerabilities],
             "risk_scores": [r.to_dict() for r in self.risk_scores],
-            "exploitability_assessments": [e.to_dict() for e in self.exploitability_assessments],
+            "exploitability_assessments": [
+                e.to_dict() for e in self.exploitability_assessments
+            ],
             "recommendations": [r.to_dict() for r in self.recommendations],
             "summary": self.summary,
             "statistics": self.statistics,
-            "started_at": self.started_at.isoformat() if self.started_at else None,
-            "completed_at": self.completed_at.isoformat() if self.completed_at else None,
+            "started_at": (
+                self.started_at.isoformat() if self.started_at else None
+            ),
+            "completed_at": (
+                self.completed_at.isoformat() if self.completed_at else None
+            ),
             "duration_seconds": self.duration_seconds,
             "analysis_version": self.analysis_version,
         }
@@ -103,9 +136,17 @@ class AnalysisConfig:
     enable_recommendations: bool = True
 
     # Scoring-Methoden
-    scoring_methods: List[str] = field(default_factory=lambda: ["cvss", "fair", "dread", "owasp", "context"])
+    scoring_methods: List[str] = field(
+        default_factory=lambda: ["cvss", "fair", "dread", "owasp", "context"]
+    )
     scoring_weights: Dict[str, float] = field(
-        default_factory=lambda: {"cvss": 0.30, "fair": 0.25, "dread": 0.20, "owasp": 0.15, "context": 0.10}
+        default_factory=lambda: {
+            "cvss": 0.30,
+            "fair": 0.25,
+            "dread": 0.20,
+            "owasp": 0.15,
+            "context": 0.10,
+        }
     )
 
     # Risk Factors
@@ -118,13 +159,17 @@ class AnalysisConfig:
     max_results: int = 1000
 
     # Compliance
-    compliance_frameworks: List[ComplianceFramework] = field(default_factory=list)
+    compliance_frameworks: List[ComplianceFramework] = field(
+        default_factory=list
+    )
 
     def to_dict(self) -> Dict[str, Any]:
         data = asdict(self)
         data["asset_criticality"] = self.asset_criticality.value
         data["threat_actor"] = self.threat_actor.value
-        data["compliance_frameworks"] = [cf.value for cf in self.compliance_frameworks]
+        data["compliance_frameworks"] = [
+            cf.value for cf in self.compliance_frameworks
+        ]
         if self.risk_factors:
             data["risk_factors"] = self.risk_factors.to_dict()
         return data
@@ -159,7 +204,11 @@ class AnalysisBot:
 
         logger.info("AnalysisBot initialisiert")
 
-    def analyze(self, vulnerabilities: List[Dict[str, Any]], config: Optional[AnalysisConfig] = None) -> AnalysisResult:
+    def analyze(
+        self,
+        vulnerabilities: List[Dict[str, Any]],
+        config: Optional[AnalysisConfig] = None,
+    ) -> AnalysisResult:
         """
         FÃ¼hrt eine vollstÃ¤ndige Analyse durch.
 
@@ -175,34 +224,52 @@ class AnalysisBot:
         result.started_at = datetime.utcnow()
         result.status = AnalysisStatus.RUNNING
 
-        logger.info(f"Starte Analyse von {len(vulnerabilities)} Schwachstellen")
+        logger.info(
+            f"Starte Analyse von {len(vulnerabilities)} Schwachstellen"
+        )
 
         try:
             # 1. Vulnerability Analysis
             if config.enable_vulnerability_analysis:
                 logger.info("FÃ¼hre Schwachstellen-Analyse durch...")
-                result.vulnerabilities = self._analyze_vulnerabilities(vulnerabilities)
-                self.metrics["vulnerabilities_analyzed"] += len(result.vulnerabilities)
+                result.vulnerabilities = self._analyze_vulnerabilities(
+                    vulnerabilities
+                )
+                self.metrics["vulnerabilities_analyzed"] += len(
+                    result.vulnerabilities
+                )
 
             # 2. Risk Scoring
             if config.enable_risk_scoring:
                 logger.info("Berechne Risiko-Scores...")
-                result.risk_scores = self._calculate_risk_scores(result.vulnerabilities, config)
-                self.metrics["risk_scores_calculated"] += len(result.risk_scores)
+                result.risk_scores = self._calculate_risk_scores(
+                    result.vulnerabilities, config
+                )
+                self.metrics["risk_scores_calculated"] += len(
+                    result.risk_scores
+                )
 
             # 3. Exploitability Assessment
             if config.enable_exploitability_check:
                 logger.info("Bewerte Exploitierbarkeit...")
-                result.exploitability_assessments = self._assess_exploitability(result.vulnerabilities)
-                self.metrics["exploitability_assessed"] += len(result.exploitability_assessments)
+                result.exploitability_assessments = (
+                    self._assess_exploitability(result.vulnerabilities)
+                )
+                self.metrics["exploitability_assessed"] += len(
+                    result.exploitability_assessments
+                )
 
             # 4. Generate Recommendations
             if config.enable_recommendations:
                 logger.info("Generiere Empfehlungen...")
                 result.recommendations = self._generate_recommendations(
-                    result.vulnerabilities, result.risk_scores, result.exploitability_assessments
+                    result.vulnerabilities,
+                    result.risk_scores,
+                    result.exploitability_assessments,
                 )
-                self.metrics["recommendations_generated"] += len(result.recommendations)
+                self.metrics["recommendations_generated"] += len(
+                    result.recommendations
+                )
 
             # 5. Generate Summary
             result.summary = self._generate_summary(result)
@@ -218,7 +285,9 @@ class AnalysisBot:
         finally:
             result.completed_at = datetime.utcnow()
             if result.started_at:
-                result.duration_seconds = (result.completed_at - result.started_at).total_seconds()
+                result.duration_seconds = (
+                    result.completed_at - result.started_at
+                ).total_seconds()
 
             self.analysis_history.append(result)
 
@@ -226,14 +295,20 @@ class AnalysisBot:
         return result
 
     async def analyze_async(
-        self, vulnerabilities: List[Dict[str, Any]], config: Optional[AnalysisConfig] = None
+        self,
+        vulnerabilities: List[Dict[str, Any]],
+        config: Optional[AnalysisConfig] = None,
     ) -> AnalysisResult:
         """Asynchrone Version der Analyse"""
         # FÃ¼hre Analyse in Thread-Pool aus
         loop = asyncio.get_event_loop()
-        return await loop.run_in_executor(None, self.analyze, vulnerabilities, config)
+        return await loop.run_in_executor(
+            None, self.analyze, vulnerabilities, config
+        )
 
-    def analyze_code(self, code: str, filename: str = "", language: str = "auto") -> List[Vulnerability]:
+    def analyze_code(
+        self, code: str, filename: str = "", language: str = "auto"
+    ) -> List[Vulnerability]:
         """
         Analysiert Code auf Schwachstellen.
 
@@ -245,9 +320,13 @@ class AnalysisBot:
         Returns:
             Liste gefundener Schwachstellen
         """
-        return self.vulnerability_analyzer.analyze_code(code, filename, language)
+        return self.vulnerability_analyzer.analyze_code(
+            code, filename, language
+        )
 
-    def analyze_http_response(self, response: Dict[str, Any], target: str) -> List[Vulnerability]:
+    def analyze_http_response(
+        self, response: Dict[str, Any], target: str
+    ) -> List[Vulnerability]:
         """
         Analysiert HTTP-Response auf Schwachstellen.
 
@@ -258,9 +337,15 @@ class AnalysisBot:
         Returns:
             Liste gefundener Schwachstellen
         """
-        return self.vulnerability_analyzer.analyze_http_response(response, target)
+        return self.vulnerability_analyzer.analyze_http_response(
+            response, target
+        )
 
-    def calculate_risk(self, vulnerability: Dict[str, Any], config: Optional[AnalysisConfig] = None) -> RiskScore:
+    def calculate_risk(
+        self,
+        vulnerability: Dict[str, Any],
+        config: Optional[AnalysisConfig] = None,
+    ) -> RiskScore:
         """
         Berechnet Risiko-Score fÃ¼r eine Schwachstelle.
 
@@ -282,7 +367,9 @@ class AnalysisBot:
             custom_weights=config.scoring_weights,
         )
 
-    def assess_exploitability(self, vulnerability: Dict[str, Any]) -> ExploitabilityAssessment:
+    def assess_exploitability(
+        self, vulnerability: Dict[str, Any]
+    ) -> ExploitabilityAssessment:
         """
         Bewertet Exploitierbarkeit einer Schwachstelle.
 
@@ -295,7 +382,10 @@ class AnalysisBot:
         return self.exploitability_checker.assess_vulnerability(vulnerability)
 
     def generate_recommendation(
-        self, vulnerability: Dict[str, Any], risk_score: Dict[str, Any], exploitability: Dict[str, Any]
+        self,
+        vulnerability: Dict[str, Any],
+        risk_score: Dict[str, Any],
+        exploitability: Dict[str, Any],
     ) -> Recommendation:
         """
         Generiert Empfehlung fÃ¼r eine Schwachstelle.
@@ -308,10 +398,14 @@ class AnalysisBot:
         Returns:
             Recommendation
         """
-        return self.recommendation_engine.generate_recommendation(vulnerability, risk_score, exploitability)
+        return self.recommendation_engine.generate_recommendation(
+            vulnerability, risk_score, exploitability
+        )
 
     def prioritize_vulnerabilities(
-        self, vulnerabilities: List[Dict[str, Any]], config: Optional[AnalysisConfig] = None
+        self,
+        vulnerabilities: List[Dict[str, Any]],
+        config: Optional[AnalysisConfig] = None,
     ) -> List[Dict[str, Any]]:
         """
         Priorisiert Schwachstellen nach Risiko.
@@ -331,7 +425,9 @@ class AnalysisBot:
             exploitability = self.assess_exploitability(vuln)
 
             # Berechne Gesamt-Score
-            total_score = risk_score.final_score * 0.6 + exploitability.score * 0.4
+            total_score = (
+                risk_score.final_score * 0.6 + exploitability.score * 0.4
+            )
 
             prioritized.append(
                 {
@@ -351,7 +447,9 @@ class AnalysisBot:
 
         return prioritized
 
-    def generate_report(self, result: AnalysisResult, format: str = "json") -> Union[str, Dict]:
+    def generate_report(
+        self, result: AnalysisResult, format: str = "json"
+    ) -> Union[str, Dict]:
         """
         Generiert einen Bericht aus Analyse-Ergebnissen.
 
@@ -377,7 +475,9 @@ class AnalysisBot:
         else:
             raise ValueError(f"Nicht unterstÃ¼tztes Format: {format}")
 
-    def generate_remediation_plan(self, result: AnalysisResult, team_capacity: Optional[Dict] = None) -> Dict[str, Any]:
+    def generate_remediation_plan(
+        self, result: AnalysisResult, team_capacity: Optional[Dict] = None
+    ) -> Dict[str, Any]:
         """
         Generiert einen Remediation-Plan.
 
@@ -391,9 +491,13 @@ class AnalysisBot:
         vuln_data = [v.to_dict() for v in result.vulnerabilities]
         risk_data = [r.to_dict() for r in result.risk_scores]
 
-        return self.recommendation_engine.generate_remediation_plan(vuln_data, risk_data, team_capacity)
+        return self.recommendation_engine.generate_remediation_plan(
+            vuln_data, risk_data, team_capacity
+        )
 
-    def get_compliance_report(self, result: AnalysisResult, framework: ComplianceFramework) -> Dict[str, Any]:
+    def get_compliance_report(
+        self, result: AnalysisResult, framework: ComplianceFramework
+    ) -> Dict[str, Any]:
         """
         Generiert Compliance-Bericht.
 
@@ -407,7 +511,9 @@ class AnalysisBot:
         findings = []
 
         for vuln in result.vulnerabilities:
-            controls = self.recommendation_engine.get_compliance_mapping(vuln.category.value, framework)
+            controls = self.recommendation_engine.get_compliance_mapping(
+                vuln.category.value, framework
+            )
 
             if controls:
                 findings.append(
@@ -432,7 +538,11 @@ class AnalysisBot:
         return {
             "total_analyses": len(self.analysis_history),
             "metrics": dict(self.metrics),
-            "last_analysis": self.analysis_history[-1].to_dict() if self.analysis_history else None,
+            "last_analysis": (
+                self.analysis_history[-1].to_dict()
+                if self.analysis_history
+                else None
+            ),
         }
 
     def export_results(self, result: AnalysisResult, filepath: str) -> None:
@@ -441,7 +551,9 @@ class AnalysisBot:
             json.dump(result.to_dict(), f, indent=2, default=str)
         logger.info(f"Ergebnisse exportiert nach {filepath}")
 
-    def _analyze_vulnerabilities(self, vulnerabilities: List[Dict[str, Any]]) -> List[Vulnerability]:
+    def _analyze_vulnerabilities(
+        self, vulnerabilities: List[Dict[str, Any]]
+    ) -> List[Vulnerability]:
         """Analysiert Schwachstellen"""
         analyzed = []
         for vuln_data in vulnerabilities:
@@ -451,25 +563,37 @@ class AnalysisBot:
                 cwe_id=vuln_data.get("cwe_id"),
                 name=vuln_data.get("name", ""),
                 description=vuln_data.get("description", ""),
-                category=VulnerabilityCategory(vuln_data.get("category", "unknown")),
+                category=VulnerabilityCategory(
+                    vuln_data.get("category", "unknown")
+                ),
                 target=vuln_data.get("target", ""),
                 location=vuln_data.get("location", ""),
                 severity=vuln_data.get("severity", "info"),
                 cvss_score=vuln_data.get("cvss_score", 0.0),
-                cvss_vector=CVSSVector.from_vector_string(vuln_data.get("cvss_vector", "")),
-                source=VulnerabilitySource(vuln_data.get("source", "automated_scanner")),
+                cvss_vector=CVSSVector.from_vector_string(
+                    vuln_data.get("cvss_vector", "")
+                ),
+                source=VulnerabilitySource(
+                    vuln_data.get("source", "automated_scanner")
+                ),
                 evidence=vuln_data.get("evidence", {}),
                 references=vuln_data.get("references", []),
             )
             analyzed.append(vuln)
         return analyzed
 
-    def _calculate_risk_scores(self, vulnerabilities: List[Vulnerability], config: AnalysisConfig) -> List[RiskScore]:
+    def _calculate_risk_scores(
+        self, vulnerabilities: List[Vulnerability], config: AnalysisConfig
+    ) -> List[RiskScore]:
         """Berechnet Risiko-Scores"""
         scores = []
         for vuln in vulnerabilities:
             score = self.risk_scorer.calculate_comprehensive_risk(
-                cvss_vector=vuln.cvss_vector.to_vector_string() if vuln.cvss_vector else None,
+                cvss_vector=(
+                    vuln.cvss_vector.to_vector_string()
+                    if vuln.cvss_vector
+                    else None
+                ),
                 cvss_score=vuln.cvss_score,
                 factors=config.risk_factors,
                 asset_criticality=config.asset_criticality,
@@ -479,12 +603,16 @@ class AnalysisBot:
             scores.append(score)
         return scores
 
-    def _assess_exploitability(self, vulnerabilities: List[Vulnerability]) -> List[ExploitabilityAssessment]:
+    def _assess_exploitability(
+        self, vulnerabilities: List[Vulnerability]
+    ) -> List[ExploitabilityAssessment]:
         """Bewertet Exploitierbarkeit"""
         assessments = []
         for vuln in vulnerabilities:
             vuln_dict = vuln.to_dict()
-            assessment = self.exploitability_checker.assess_vulnerability(vuln_dict)
+            assessment = self.exploitability_checker.assess_vulnerability(
+                vuln_dict
+            )
             assessments.append(assessment)
         return assessments
 
@@ -496,8 +624,12 @@ class AnalysisBot:
     ) -> List[Recommendation]:
         """Generiert Empfehlungen"""
         recommendations = []
-        for vuln, risk, exploit in zip(vulnerabilities, risk_scores, exploitability):
-            rec = self.recommendation_engine.generate_recommendation(vuln.to_dict(), risk.to_dict(), exploit.to_dict())
+        for vuln, risk, exploit in zip(
+            vulnerabilities, risk_scores, exploitability
+        ):
+            rec = self.recommendation_engine.generate_recommendation(
+                vuln.to_dict(), risk.to_dict(), exploit.to_dict()
+            )
             recommendations.append(rec)
         return recommendations
 
@@ -522,7 +654,8 @@ class AnalysisBot:
             "by_exploitability": dict(exploitability_levels),
             "critical_count": severity_counts.get("critical", 0),
             "high_count": severity_counts.get("high", 0),
-            "requires_immediate_action": severity_counts.get("critical", 0) > 0,
+            "requires_immediate_action": severity_counts.get("critical", 0)
+            > 0,
         }
 
     def _generate_statistics(self, result: AnalysisResult) -> Dict[str, Any]:
@@ -544,7 +677,9 @@ class AnalysisBot:
                 [
                     r
                     for r in result.recommendations
-                    if r.recommended_option and r.recommended_option.priority == RemediationPriority.IMMEDIATE
+                    if r.recommended_option
+                    and r.recommended_option.priority
+                    == RemediationPriority.IMMEDIATE
                 ]
             ),
         }
@@ -667,7 +802,10 @@ def get_analysis_bot() -> AnalysisBot:
 
 
 # Convenience-Funktionen
-def analyze_vulnerabilities(vulnerabilities: List[Dict[str, Any]], config: Optional[AnalysisConfig] = None) -> AnalysisResult:
+def analyze_vulnerabilities(
+    vulnerabilities: List[Dict[str, Any]],
+    config: Optional[AnalysisConfig] = None,
+) -> AnalysisResult:
     """Kurzform fÃ¼r Analyse"""
     bot = get_analysis_bot()
     return bot.analyze(vulnerabilities, config)
@@ -680,10 +818,24 @@ def quick_analyze(vulnerability: Dict[str, Any]) -> Dict[str, Any]:
     result = bot.analyze([vulnerability])
 
     return {
-        "vulnerability": result.vulnerabilities[0].to_dict() if result.vulnerabilities else None,
-        "risk_score": result.risk_scores[0].to_dict() if result.risk_scores else None,
-        "exploitability": result.exploitability_assessments[0].to_dict() if result.exploitability_assessments else None,
-        "recommendation": result.recommendations[0].to_dict() if result.recommendations else None,
+        "vulnerability": (
+            result.vulnerabilities[0].to_dict()
+            if result.vulnerabilities
+            else None
+        ),
+        "risk_score": (
+            result.risk_scores[0].to_dict() if result.risk_scores else None
+        ),
+        "exploitability": (
+            result.exploitability_assessments[0].to_dict()
+            if result.exploitability_assessments
+            else None
+        ),
+        "recommendation": (
+            result.recommendations[0].to_dict()
+            if result.recommendations
+            else None
+        ),
     }
 
 
@@ -736,7 +888,10 @@ if __name__ == "__main__":
         enable_recommendations=True,
         asset_criticality=AssetCriticality.HIGH,
         threat_actor=ThreatActor.CYBERCRIMINAL,
-        compliance_frameworks=[ComplianceFramework.OWASP_ASVS, ComplianceFramework.PCI_DSS],
+        compliance_frameworks=[
+            ComplianceFramework.OWASP_ASVS,
+            ComplianceFramework.PCI_DSS,
+        ],
     )
 
     # Analyse durchfÃ¼hren
@@ -791,7 +946,9 @@ if __name__ == "__main__":
     print(f"\nRemediation Plan: {plan['estimated_weeks']} weeks estimated")
 
     # Compliance Report
-    compliance = bot.get_compliance_report(result, ComplianceFramework.OWASP_ASVS)
+    compliance = bot.get_compliance_report(
+        result, ComplianceFramework.OWASP_ASVS
+    )
     print(f"Compliance Findings: {compliance['total_findings']}")
 
     print("\n" + "=" * 60)

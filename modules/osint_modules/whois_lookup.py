@@ -196,7 +196,10 @@ class WhoisLookup:
             if hasattr(w, "registrant_name") and w.registrant_name:
                 record.registrant_name = w.registrant_name
 
-            if hasattr(w, "registrant_organization") and w.registrant_organization:
+            if (
+                hasattr(w, "registrant_organization")
+                and w.registrant_organization
+            ):
                 record.registrant_organization = w.registrant_organization
 
             if hasattr(w, "registrant_email") and w.registrant_email:
@@ -219,10 +222,15 @@ class WhoisLookup:
 
         try:
             proc = await asyncio.create_subprocess_exec(
-                "whois", domain, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+                "whois",
+                domain,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
             )
 
-            stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=self.timeout)
+            stdout, stderr = await asyncio.wait_for(
+                proc.communicate(), timeout=self.timeout
+            )
 
             if stdout:
                 raw_output = stdout.decode("utf-8", errors="ignore")
@@ -238,7 +246,9 @@ class WhoisLookup:
 
         return record
 
-    def _parse_whois_output(self, output: str, record: WhoisRecord) -> WhoisRecord:
+    def _parse_whois_output(
+        self, output: str, record: WhoisRecord
+    ) -> WhoisRecord:
         """Parst WHOIS-Output"""
         lines = output.split("\n")
 
@@ -246,15 +256,34 @@ class WhoisLookup:
         field_mapping = {
             "registrar": ["Registrar:", "registrar:", "Registrar Name:"],
             "registrar_url": ["Registrar URL:", "Registrar Website:"],
-            "creation_date": ["Creation Date:", "Created:", "Domain Registration Date:"],
-            "expiration_date": ["Registry Expiry Date:", "Expiration Date:", "Expires:"],
+            "creation_date": [
+                "Creation Date:",
+                "Created:",
+                "Domain Registration Date:",
+            ],
+            "expiration_date": [
+                "Registry Expiry Date:",
+                "Expiration Date:",
+                "Expires:",
+            ],
             "updated_date": ["Updated Date:", "Last Updated:", "Modified:"],
             "dnssec": ["DNSSEC:", "Dnssec:"],
             "registrant_name": ["Registrant Name:", "Registrant:"],
-            "registrant_organization": ["Registrant Organization:", "Registrant Org:"],
+            "registrant_organization": [
+                "Registrant Organization:",
+                "Registrant Org:",
+            ],
             "registrant_email": ["Registrant Email:", "Registrant E-mail:"],
-            "admin_email": ["Admin Email:", "Admin E-mail:", "Administrative Contact Email:"],
-            "tech_email": ["Tech Email:", "Tech E-mail:", "Technical Contact Email:"],
+            "admin_email": [
+                "Admin Email:",
+                "Admin E-mail:",
+                "Administrative Contact Email:",
+            ],
+            "tech_email": [
+                "Tech Email:",
+                "Tech E-mail:",
+                "Technical Contact Email:",
+            ],
         }
 
         name_servers = set()
@@ -268,7 +297,12 @@ class WhoisLookup:
                 continue
 
             # Parse Name-Server
-            for ns_prefix in ["Name Server:", "Nameserver:", "nserver:", "Nameserver:"]:
+            for ns_prefix in [
+                "Name Server:",
+                "Nameserver:",
+                "nserver:",
+                "Nameserver:",
+            ]:
                 if line.startswith(ns_prefix):
                     ns = line.split(":", 1)[1].strip().lower()
                     if ns:
@@ -288,7 +322,11 @@ class WhoisLookup:
                 for prefix in prefixes:
                     if line.startswith(prefix):
                         value = line.split(":", 1)[1].strip()
-                        if value and value not in ["", "REDACTED", "NOT DISCLOSED"]:
+                        if value and value not in [
+                            "",
+                            "REDACTED",
+                            "NOT DISCLOSED",
+                        ]:
                             setattr(record, field_name, value)
                         break
 
@@ -336,7 +374,9 @@ class WhoisLookup:
             return None
 
         try:
-            creation = datetime.fromisoformat(record.creation_date.replace("Z", "+00:00"))
+            creation = datetime.fromisoformat(
+                record.creation_date.replace("Z", "+00:00")
+            )
             age = (datetime.now() - creation).days
             return age
         except (ValueError, TypeError):
@@ -352,7 +392,9 @@ class WhoisLookup:
             return False
 
         try:
-            expiration = datetime.fromisoformat(record.expiration_date.replace("Z", "+00:00"))
+            expiration = datetime.fromisoformat(
+                record.expiration_date.replace("Z", "+00:00")
+            )
             return datetime.now() > expiration
         except (ValueError, TypeError):
             return False

@@ -17,7 +17,14 @@ import logging
 from datetime import datetime
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect, status
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException,
+    WebSocket,
+    WebSocketDisconnect,
+    status,
+)
 from fastapi.security import HTTPBearer
 from sqlalchemy.orm import Session
 
@@ -83,23 +90,36 @@ async def register_agent(
     rate_limit = request.get("rate_limit", 1000)
 
     if not name:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Agent name is required")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Agent name is required",
+        )
 
     # Validate role
     try:
         role = AgentRole(role_str)
     except ValueError:
         valid_roles = [r.value for r in AgentRole]
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Invalid role. Valid roles: {valid_roles}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid role. Valid roles: {valid_roles}",
+        )
 
     # Generate credentials
     try:
         creds = authenticator.generate_api_key(
-            role=role, name=name, description=description, expires_days=expires_days, rate_limit=rate_limit
+            role=role,
+            name=name,
+            description=description,
+            expires_days=expires_days,
+            rate_limit=rate_limit,
         )
     except Exception as e:
         logger.error(f"Failed to generate credentials: {e}")
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to generate agent credentials")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to generate agent credentials",
+        )
 
     logger.info(f"Registered agent {creds.agent_id} with role {role.value}")
 
@@ -110,7 +130,9 @@ async def register_agent(
         "role": creds.role.value,
         "permissions": [p.value for p in creds.permissions],
         "created_at": creds.created_at.isoformat(),
-        "expires_at": creds.expires_at.isoformat() if creds.expires_at else None,
+        "expires_at": (
+            creds.expires_at.isoformat() if creds.expires_at else None
+        ),
         "warning": "Store the api_secret securely - it will not be shown again!",
     }
 
@@ -127,16 +149,24 @@ async def revoke_agent(
 
     Requires: agent:unregister permission
     """
-    reason = request.get("reason", "admin_action") if request else "admin_action"
+    reason = (
+        request.get("reason", "admin_action") if request else "admin_action"
+    )
 
     success = authenticator.revoke_key(agent_id, reason)
 
     if not success:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Agent {agent_id} not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Agent {agent_id} not found",
+        )
 
     logger.info(f"Revoked agent {agent_id}: {reason}")
 
-    return {"message": f"Agent {agent_id} revoked successfully", "reason": reason}
+    return {
+        "message": f"Agent {agent_id} revoked successfully",
+        "reason": reason,
+    }
 
 
 @router.post("/{agent_id}/rotate")
@@ -155,7 +185,10 @@ async def rotate_agent_key(
     new_creds = authenticator.rotate_key(agent_id)
 
     if not new_creds:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Agent {agent_id} not found or already revoked")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Agent {agent_id} not found or already revoked",
+        )
 
     logger.info(f"Rotated key for agent {agent_id}")
 
@@ -164,7 +197,9 @@ async def rotate_agent_key(
         "api_key": new_creds.api_key,
         "api_secret": new_creds.api_secret,  # ONLY SHOWN ONCE
         "role": new_creds.role.value,
-        "expires_at": new_creds.expires_at.isoformat() if new_creds.expires_at else None,
+        "expires_at": (
+            new_creds.expires_at.isoformat() if new_creds.expires_at else None
+        ),
         "warning": "Store the api_secret securely - it will not be shown again!",
     }
 
@@ -212,7 +247,10 @@ async def get_agent(
     agent = next((a for a in agents if a.agent_id == agent_id), None)
 
     if not agent:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Agent {agent_id} not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Agent {agent_id} not found",
+        )
 
     return {
         "agent_id": agent.agent_id,
@@ -235,7 +273,9 @@ class AgentConnectionManager:
         self.active_connections: dict[str, WebSocket] = {}
         self.authenticator: Optional[AgentAuthenticator] = None
 
-    async def connect(self, websocket: WebSocket, authenticator: AgentAuthenticator):
+    async def connect(
+        self, websocket: WebSocket, authenticator: AgentAuthenticator
+    ):
         """Accept connection and wait for authentication"""
         self.authenticator = authenticator
         await websocket.accept()
@@ -245,15 +285,21 @@ class AgentConnectionManager:
             auth_data = await websocket.receive_json()
 
             if auth_data.get("type") != "auth":
-                await websocket.send_json({"type": "auth_failed", "error": "Expected auth message"})
+                await websocket.send_json(
+                    {"type": "auth_failed", "error": "Expected auth message"}
+                )
                 await websocket.close()
                 return None
 
             # Authenticate
-            identity = authenticator.authenticate(auth_data.get("api_key"), auth_data.get("api_secret"))
+            identity = authenticator.authenticate(
+                auth_data.get("api_key"), auth_data.get("api_secret")
+            )
 
             if not identity:
-                await websocket.send_json({"type": "auth_failed", "error": "Invalid credentials"})
+                await websocket.send_json(
+                    {"type": "auth_failed", "error": "Invalid credentials"}
+                )
                 await websocket.close()
                 return None
 
@@ -304,7 +350,10 @@ agent_manager = AgentConnectionManager()
 
 
 @router.websocket("/stream")
-async def agent_websocket(websocket: WebSocket, authenticator: AgentAuthenticator = Depends(get_authenticator)):
+async def agent_websocket(
+    websocket: WebSocket,
+    authenticator: AgentAuthenticator = Depends(get_authenticator),
+):
     """
     WebSocket endpoint for agent communication
 
@@ -358,16 +407,31 @@ async def agent_websocket(websocket: WebSocket, authenticator: AgentAuthenticato
                 # Route message
                 if recipient == "broadcast":
                     await agent_manager.broadcast(
-                        {"type": "message", "sender": identity.agent_id, "payload": payload}, exclude=identity.agent_id
+                        {
+                            "type": "message",
+                            "sender": identity.agent_id,
+                            "payload": payload,
+                        },
+                        exclude=identity.agent_id,
                     )
                 elif recipient in agent_manager.active_connections:
                     await agent_manager.send_message(
-                        recipient, {"type": "message", "sender": identity.agent_id, "payload": payload}
+                        recipient,
+                        {
+                            "type": "message",
+                            "sender": identity.agent_id,
+                            "payload": payload,
+                        },
                     )
 
             elif msg_type == "heartbeat":
                 # Respond to heartbeat
-                await websocket.send_json({"type": "heartbeat_ack", "timestamp": datetime.utcnow().isoformat()})
+                await websocket.send_json(
+                    {
+                        "type": "heartbeat_ack",
+                        "timestamp": datetime.utcnow().isoformat(),
+                    }
+                )
 
             elif msg_type == "disconnect":
                 break
@@ -386,7 +450,10 @@ async def agent_websocket(websocket: WebSocket, authenticator: AgentAuthenticato
 
 
 @router.post("/legacy-auth")
-async def legacy_agent_auth(request: dict, authenticator: AgentAuthenticator = Depends(get_authenticator)):
+async def legacy_agent_auth(
+    request: dict,
+    authenticator: AgentAuthenticator = Depends(get_authenticator),
+):
     """
     Legacy authentication endpoint for backward compatibility
 
@@ -394,4 +461,7 @@ async def legacy_agent_auth(request: dict, authenticator: AgentAuthenticator = D
     """
     # This would handle migration from old auth system
     # For now, just return error directing to new endpoint
-    raise HTTPException(status_code=status.HTTP_410_GONE, detail="Legacy auth deprecated. Use /register endpoint instead.")
+    raise HTTPException(
+        status_code=status.HTTP_410_GONE,
+        detail="Legacy auth deprecated. Use /register endpoint instead.",
+    )

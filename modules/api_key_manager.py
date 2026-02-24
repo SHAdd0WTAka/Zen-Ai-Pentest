@@ -92,7 +92,9 @@ class APIKeyManager:
     def __init__(self, storage_path: str = "data/api_keys.json"):
         self.storage_path = Path(storage_path)
         self.storage_path.parent.mkdir(parents=True, exist_ok=True)
-        self.audit_log_path = Path(storage_path.replace(".json", "_audit.json"))
+        self.audit_log_path = Path(
+            storage_path.replace(".json", "_audit.json")
+        )
         self._encryption_key: Optional[bytes] = None
         self._fernet: Optional["Fernet"] = None
 
@@ -103,13 +105,19 @@ class APIKeyManager:
         """Initialize encryption"""
         # Try to get encryption key from keyring
         if KEYRING_AVAILABLE:
-            self._encryption_key = keyring.get_password("zen-ai-pentest", "api_key_encryption")
+            self._encryption_key = keyring.get_password(
+                "zen-ai-pentest", "api_key_encryption"
+            )
 
         # Generate new key if not exists
         if not self._encryption_key:
             self._encryption_key = Fernet.generate_key().decode()
             if KEYRING_AVAILABLE:
-                keyring.set_password("zen-ai-pentest", "api_key_encryption", self._encryption_key)
+                keyring.set_password(
+                    "zen-ai-pentest",
+                    "api_key_encryption",
+                    self._encryption_key,
+                )
             else:
                 # Fallback: store in file (less secure)
                 key_file = self.storage_path.parent / ".encryption_key"
@@ -158,9 +166,13 @@ class APIKeyManager:
         # Calculate expiration
         created_at = datetime.utcnow()
         if expires_days is not None:
-            expires_at = (created_at + timedelta(days=expires_days)).isoformat()
+            expires_at = (
+                created_at + timedelta(days=expires_days)
+            ).isoformat()
         else:
-            expires_at = (created_at + timedelta(days=self.DEFAULT_EXPIRY_DAYS)).isoformat()
+            expires_at = (
+                created_at + timedelta(days=self.DEFAULT_EXPIRY_DAYS)
+            ).isoformat()
 
         # Create key record
         api_key = APIKey(
@@ -190,7 +202,9 @@ class APIKeyManager:
 
         return key_id, plain_key
 
-    def validate_key(self, plain_key: str, required_permission: Optional[str] = None) -> Optional[APIKey]:
+    def validate_key(
+        self, plain_key: str, required_permission: Optional[str] = None
+    ) -> Optional[APIKey]:
         """
         Validate API key and check permissions
         """
@@ -219,12 +233,19 @@ class APIKeyManager:
                         key.status = KeyStatus.EXPIRED.value
                         self._save_key(key)
                         self._log_audit(
-                            action="key_expired", key_id=key.key_id, user="system", success=False, details="Key expired"
+                            action="key_expired",
+                            key_id=key.key_id,
+                            user="system",
+                            success=False,
+                            details="Key expired",
                         )
                         return None
 
                 # Check permission
-                if required_permission and required_permission not in key.permissions:
+                if (
+                    required_permission
+                    and required_permission not in key.permissions
+                ):
                     self._log_audit(
                         action="key_permission_denied",
                         key_id=key.key_id,
@@ -259,11 +280,19 @@ class APIKeyManager:
         key.status = KeyStatus.REVOKED.value
         self._save_key(key)
 
-        self._log_audit(action="key_revoked", key_id=key_id, user=revoked_by, success=True, details="Key revoked")
+        self._log_audit(
+            action="key_revoked",
+            key_id=key_id,
+            user=revoked_by,
+            success=True,
+            details="Key revoked",
+        )
 
         return True
 
-    def rotate_key(self, key_id: str, rotated_by: str) -> Optional[tuple[str, str]]:
+    def rotate_key(
+        self, key_id: str, rotated_by: str
+    ) -> Optional[tuple[str, str]]:
         """
         Rotate API key (create new, invalidate old)
         Returns: (new_key_id, new_plain_key) or None
@@ -292,7 +321,11 @@ class APIKeyManager:
         self._save_key(old_key)
 
         self._log_audit(
-            action="key_rotated", key_id=key_id, user=rotated_by, success=True, details=f"Rotated to: {new_key_id}"
+            action="key_rotated",
+            key_id=key_id,
+            user=rotated_by,
+            success=True,
+            details=f"Rotated to: {new_key_id}",
         )
 
         return new_key_id, new_plain_key
@@ -308,7 +341,9 @@ class APIKeyManager:
 
         return result
 
-    def get_audit_log(self, key_id: Optional[str] = None, limit: int = 100) -> List[AuditEntry]:
+    def get_audit_log(
+        self, key_id: Optional[str] = None, limit: int = 100
+    ) -> List[AuditEntry]:
         """Get audit log entries"""
         logs = self._load_audit_log()
 
@@ -369,7 +404,9 @@ class APIKeyManager:
             return APIKey(**keys[key_id])
         return None
 
-    def _log_audit(self, action: str, key_id: str, user: str, success: bool, details: str):
+    def _log_audit(
+        self, action: str, key_id: str, user: str, success: bool, details: str
+    ):
         """Add audit log entry"""
         entry = AuditEntry(
             timestamp=datetime.utcnow().isoformat(),
@@ -411,7 +448,9 @@ class APIKeyManager:
         return {
             "name": self.name,
             "version": self.version,
-            "encryption": "Fernet (AES-128)" if CRYPTO_AVAILABLE else "Base64 (fallback)",
+            "encryption": (
+                "Fernet (AES-128)" if CRYPTO_AVAILABLE else "Base64 (fallback)"
+            ),
             "storage": str(self.storage_path),
             "keyring_available": KEYRING_AVAILABLE,
             "crypto_available": CRYPTO_AVAILABLE,
@@ -423,9 +462,14 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(description="API Key Management")
-    parser.add_argument("action", choices=["create", "list", "revoke", "rotate", "audit", "cleanup"])
+    parser.add_argument(
+        "action",
+        choices=["create", "list", "revoke", "rotate", "audit", "cleanup"],
+    )
     parser.add_argument("--name", help="Key name")
-    parser.add_argument("--permissions", nargs="+", default=["read"], help="Permissions")
+    parser.add_argument(
+        "--permissions", nargs="+", default=["read"], help="Permissions"
+    )
     parser.add_argument("--key-id", help="Key ID for operations")
     parser.add_argument("--user", default="cli", help="User performing action")
 
@@ -437,7 +481,9 @@ if __name__ == "__main__":
         if not args.name:
             print("Error: --name required")
             exit(1)
-        key_id, plain_key = manager.generate_key(name=args.name, permissions=args.permissions, created_by=args.user)
+        key_id, plain_key = manager.generate_key(
+            name=args.name, permissions=args.permissions, created_by=args.user
+        )
         print(f"Key ID: {key_id}")
         print(f"API Key: {plain_key}")
         print("WARNING: Save this key now - it won't be shown again!")
@@ -476,7 +522,9 @@ if __name__ == "__main__":
         print("-" * 70)
         for log in logs[:20]:
             status = "✓" if log.success else "✗"
-            print(f"{log.timestamp:<25} {log.action:<20} {log.key_id:<15} {status}")
+            print(
+                f"{log.timestamp:<25} {log.action:<20} {log.key_id:<15} {status}"
+            )
 
     elif args.action == "cleanup":
         removed = manager.cleanup_expired_keys()

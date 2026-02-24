@@ -87,13 +87,18 @@ class OutputGuardrails:
 
         # Configure strictness based on level
         self.thresholds = {
-            SafetyLevel.PERMISSIVE: {"max_uncertainty": 5, "max_fabrication": 3},
+            SafetyLevel.PERMISSIVE: {
+                "max_uncertainty": 5,
+                "max_fabrication": 3,
+            },
             SafetyLevel.STANDARD: {"max_uncertainty": 3, "max_fabrication": 1},
             SafetyLevel.STRICT: {"max_uncertainty": 1, "max_fabrication": 0},
             SafetyLevel.PARANOID: {"max_uncertainty": 0, "max_fabrication": 0},
         }[safety_level]
 
-    def check(self, output: str, context: Optional[Dict] = None) -> GuardrailResult:
+    def check(
+        self, output: str, context: Optional[Dict] = None
+    ) -> GuardrailResult:
         """
         Run output through all guardrails
         """
@@ -105,11 +110,15 @@ class OutputGuardrails:
         fabrication_count = self._count_patterns(output, "fabrication")
 
         if uncertainty_count > self.thresholds["max_uncertainty"]:
-            violations.append(f"Too many uncertainty indicators ({uncertainty_count})")
+            violations.append(
+                f"Too many uncertainty indicators ({uncertainty_count})"
+            )
             confidence_penalty += 0.2 * uncertainty_count
 
         if fabrication_count > self.thresholds["max_fabrication"]:
-            violations.append(f"Fabrication indicators detected ({fabrication_count})")
+            violations.append(
+                f"Fabrication indicators detected ({fabrication_count})"
+            )
             confidence_penalty += 0.3 * fabrication_count
 
         # Check 2: Security falsehoods (always flag)
@@ -134,7 +143,11 @@ class OutputGuardrails:
         # Record violations
         if violations:
             self.violation_history.append(
-                {"output_snippet": output[:200], "violations": violations, "safety_level": self.safety_level.value}
+                {
+                    "output_snippet": output[:200],
+                    "violations": violations,
+                    "safety_level": self.safety_level.value,
+                }
             )
 
         passed = len(violations) == 0 or confidence_penalty < 0.5

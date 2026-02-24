@@ -14,7 +14,9 @@ from PIL import Image, ImageDraw, ImageFont
 def run_git_command(cmd):
     """Run git command and return output"""
     try:
-        result = subprocess.run(cmd, shell=True, capture_output=True, text=True, cwd=os.getcwd())
+        result = subprocess.run(
+            cmd, shell=True, capture_output=True, text=True, cwd=os.getcwd()
+        )
         return result.stdout.strip()
     except Exception as e:
         print(f"Error running command: {e}")
@@ -41,7 +43,9 @@ def get_repo_stats():
 
     # Lines of code
     try:
-        loc_result = run_git_command("git ls-files | xargs wc -l 2>/dev/null | tail -1 | awk '{print $1}'")
+        loc_result = run_git_command(
+            "git ls-files | xargs wc -l 2>/dev/null | tail -1 | awk '{print $1}'"
+        )
         stats["lines_of_code"] = loc_result
     except Exception:
         stats["lines_of_code"] = "N/A"
@@ -50,7 +54,9 @@ def get_repo_stats():
     stats["branch"] = run_git_command("git branch --show-current")
 
     # Repository age (days since first commit)
-    first_commit_date = run_git_command("git log --reverse --format='%cd' --date=short | head -1")
+    first_commit_date = run_git_command(
+        "git log --reverse --format='%cd' --date=short | head -1"
+    )
     if first_commit_date != "N/A":
         try:
             first_date = datetime.strptime(first_commit_date, "%Y-%m-%d")
@@ -58,7 +64,9 @@ def get_repo_stats():
             age_days = (today - first_date).days
             stats["repo_age_days"] = str(age_days)
             stats["repo_age_display"] = (
-                f"{age_days} days" if age_days < 365 else f"{age_days // 365}y {(age_days % 365) // 30}m"
+                f"{age_days} days"
+                if age_days < 365
+                else f"{age_days // 365}y {(age_days % 365) // 30}m"
             )
         except Exception:
             stats["repo_age_days"] = "N/A"
@@ -68,7 +76,9 @@ def get_repo_stats():
         stats["repo_age_display"] = "N/A"
 
     # Recent commits (last 7 days)
-    recent_commits = run_git_command("git log --since='7 days ago' --oneline | wc -l")
+    recent_commits = run_git_command(
+        "git log --since='7 days ago' --oneline | wc -l"
+    )
     stats["recent_commits"] = recent_commits
 
     return stats
@@ -137,10 +147,18 @@ def generate_status_card():
 
     # Try to load fonts (fallback to default if not available)
     try:
-        font_title = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 28)
-        font_header = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 18)
-        font_text = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 14)
-        font_small = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 12)
+        font_title = ImageFont.truetype(
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 28
+        )
+        font_header = ImageFont.truetype(
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 18
+        )
+        font_text = ImageFont.truetype(
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 14
+        )
+        font_small = ImageFont.truetype(
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 12
+        )
     except Exception:
         font_title = ImageFont.load_default()
         font_header = ImageFont.load_default()
@@ -148,22 +166,40 @@ def generate_status_card():
         font_small = ImageFont.load_default()
 
     # Draw border
-    draw.rectangle([(10, 10), (width - 10, height - 10)], outline=border_color, width=2)
+    draw.rectangle(
+        [(10, 10), (width - 10, height - 10)], outline=border_color, width=2
+    )
 
     # Header background
-    draw.rectangle([(10, 10), (width - 10, 80)], fill=header_color, outline=border_color)
+    draw.rectangle(
+        [(10, 10), (width - 10, 80)], fill=header_color, outline=border_color
+    )
 
     # Title
     title = "Zen-AI-Pentest Repository Status"
-    draw.text((width // 2, 30), title, fill=accent_color, font=font_title, anchor="mm")
+    draw.text(
+        (width // 2, 30),
+        title,
+        fill=accent_color,
+        font=font_title,
+        anchor="mm",
+    )
 
     # Last updated
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M UTC")
-    draw.text((width // 2, 60), f"Last Updated: {timestamp}", fill=secondary_text, font=font_small, anchor="mm")
+    draw.text(
+        (width // 2, 60),
+        f"Last Updated: {timestamp}",
+        fill=secondary_text,
+        font=font_small,
+        anchor="mm",
+    )
 
     # Current Evolution Phase
     y_pos = 100
-    draw.text((30, y_pos), evolution_phase, fill=success_color, font=font_header)
+    draw.text(
+        (30, y_pos), evolution_phase, fill=success_color, font=font_header
+    )
     y_pos += 35
 
     # Separator line
@@ -171,7 +207,12 @@ def generate_status_card():
     y_pos += 20
 
     # Statistics Section
-    draw.text((30, y_pos), "📊 Repository Statistics", fill=accent_color, font=font_header)
+    draw.text(
+        (30, y_pos),
+        "📊 Repository Statistics",
+        fill=accent_color,
+        font=font_header,
+    )
     y_pos += 30
 
     # Stats grid
@@ -206,7 +247,9 @@ def generate_status_card():
     y_pos += 20
 
     # Recent Activity
-    draw.text((30, y_pos), "📈 Recent Activity", fill=accent_color, font=font_header)
+    draw.text(
+        (30, y_pos), "📈 Recent Activity", fill=accent_color, font=font_header
+    )
     y_pos += 30
 
     recent = stats.get("recent_commits", "0")
@@ -230,7 +273,12 @@ def generate_status_card():
             activity_status = "⏸️ Dormant"
             status_color = secondary_text
 
-        draw.text((50, y_pos), f"Status: {activity_status}", fill=status_color, font=font_text)
+        draw.text(
+            (50, y_pos),
+            f"Status: {activity_status}",
+            fill=status_color,
+            font=font_text,
+        )
     except Exception:
         pass
 
@@ -241,7 +289,12 @@ def generate_status_card():
     y_pos += 20
 
     # Legal Notice for AI Agents
-    draw.text((30, y_pos), "⚖️ Legal Notice for AI Agents", fill=(255, 100, 100), font=font_header)
+    draw.text(
+        (30, y_pos),
+        "⚖️ Legal Notice for AI Agents",
+        fill=(255, 100, 100),
+        font=font_header,
+    )
     y_pos += 30
 
     legal_lines = [

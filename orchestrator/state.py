@@ -103,7 +103,12 @@ class StateManager:
     VALID_TRANSITIONS = {
         TaskState.PENDING: [TaskState.QUEUED, TaskState.CANCELLED],
         TaskState.QUEUED: [TaskState.RUNNING, TaskState.CANCELLED],
-        TaskState.RUNNING: [TaskState.PAUSED, TaskState.COMPLETED, TaskState.FAILED, TaskState.TIMEOUT],
+        TaskState.RUNNING: [
+            TaskState.PAUSED,
+            TaskState.COMPLETED,
+            TaskState.FAILED,
+            TaskState.TIMEOUT,
+        ],
         TaskState.PAUSED: [TaskState.RUNNING, TaskState.CANCELLED],
         TaskState.FAILED: [TaskState.RETRYING, TaskState.CANCELLED],
         TaskState.RETRYING: [TaskState.QUEUED, TaskState.FAILED],
@@ -137,7 +142,11 @@ class StateManager:
     # ==================== Task State Management ====================
 
     async def set_task_state(
-        self, task_id: str, new_state: TaskState, metadata: Optional[Dict[str, Any]] = None, force: bool = False
+        self,
+        task_id: str,
+        new_state: TaskState,
+        metadata: Optional[Dict[str, Any]] = None,
+        force: bool = False,
     ) -> bool:
         """
         Set task state with transition validation
@@ -159,7 +168,9 @@ class StateManager:
                 valid_next = self.VALID_TRANSITIONS.get(current_state, [])
                 if new_state not in valid_next:
                     self._transition_errors += 1
-                    raise ValueError(f"Invalid state transition: {current_state.value} -> {new_state.value}")
+                    raise ValueError(
+                        f"Invalid state transition: {current_state.value} -> {new_state.value}"
+                    )
 
             # Update state
             old_state = current_state
@@ -170,7 +181,9 @@ class StateManager:
                 if task_id not in self._task_data:
                     self._task_data[task_id] = {}
                 self._task_data[task_id]["state_metadata"] = metadata
-                self._task_data[task_id]["last_updated"] = datetime.utcnow().isoformat()
+                self._task_data[task_id][
+                    "last_updated"
+                ] = datetime.utcnow().isoformat()
 
             # Record history
             self._record_state_change(task_id, old_state, new_state)
@@ -188,7 +201,9 @@ class StateManager:
         async with self._lock:
             return self._task_data.get(task_id)
 
-    async def update_task_data(self, task_id: str, data: Dict[str, Any], merge: bool = True) -> None:
+    async def update_task_data(
+        self, task_id: str, data: Dict[str, Any], merge: bool = True
+    ) -> None:
         """Update task data"""
         async with self._lock:
             if task_id not in self._task_data:
@@ -199,7 +214,9 @@ class StateManager:
             else:
                 self._task_data[task_id] = data
 
-            self._task_data[task_id]["last_updated"] = datetime.utcnow().isoformat()
+            self._task_data[task_id][
+                "last_updated"
+            ] = datetime.utcnow().isoformat()
 
     async def get_all_task_states(self) -> Dict[str, TaskState]:
         """Get all task states"""
@@ -209,7 +226,11 @@ class StateManager:
     async def get_tasks_by_state(self, state: TaskState) -> List[str]:
         """Get all task IDs in a specific state"""
         async with self._lock:
-            return [task_id for task_id, task_state in self._task_states.items() if task_state == state]
+            return [
+                task_id
+                for task_id, task_state in self._task_states.items()
+                if task_state == state
+            ]
 
     async def remove_task(self, task_id: str) -> bool:
         """Remove a task from state management"""
@@ -223,7 +244,9 @@ class StateManager:
 
     # ==================== System State ====================
 
-    async def set_system_state(self, state: SystemState, metadata: Optional[Dict[str, Any]] = None) -> None:
+    async def set_system_state(
+        self, state: SystemState, metadata: Optional[Dict[str, Any]] = None
+    ) -> None:
         """Set overall system state"""
         async with self._lock:
             old_state = self._system_state
@@ -246,7 +269,9 @@ class StateManager:
 
     # ==================== State History ====================
 
-    def _record_state_change(self, entity_id: str, old_state: Optional[Enum], new_state: Enum) -> None:
+    def _record_state_change(
+        self, entity_id: str, old_state: Optional[Enum], new_state: Enum
+    ) -> None:
         """Record a state change in history"""
         entry = {
             "timestamp": datetime.utcnow().isoformat(),
@@ -261,7 +286,9 @@ class StateManager:
         if len(self._state_history) > self._max_history:
             self._state_history = self._state_history[-self._max_history :]
 
-    async def get_state_history(self, entity_id: Optional[str] = None, limit: int = 100) -> List[Dict[str, Any]]:
+    async def get_state_history(
+        self, entity_id: Optional[str] = None, limit: int = 100
+    ) -> List[Dict[str, Any]]:
         """Get state change history"""
         async with self._lock:
             history = self._state_history
@@ -279,7 +306,10 @@ class StateManager:
             snapshot = StateSnapshot(
                 id=f"snap-{datetime.utcnow().strftime('%Y%m%d-%H%M%S-%f')}",
                 timestamp=datetime.utcnow(),
-                task_states={tid: state.value for tid, state in self._task_states.items()},
+                task_states={
+                    tid: state.value
+                    for tid, state in self._task_states.items()
+                },
                 system_state=self._system_state.value,
                 metadata=self._system_metadata.copy(),
             )
@@ -309,7 +339,10 @@ class StateManager:
                 raise ValueError("Snapshot integrity check failed")
 
             # Restore state
-            self._task_states = {tid: TaskState(state) for tid, state in snapshot.task_states.items()}
+            self._task_states = {
+                tid: TaskState(state)
+                for tid, state in snapshot.task_states.items()
+            }
             self._system_state = SystemState(snapshot.system_state)
             self._system_metadata = snapshot.metadata.copy()
 
@@ -336,7 +369,9 @@ class StateManager:
         async with self._lock:
             state_counts = {}
             for state in TaskState:
-                count = sum(1 for s in self._task_states.values() if s == state)
+                count = sum(
+                    1 for s in self._task_states.values() if s == state
+                )
                 state_counts[state.value] = count
 
             return {
@@ -360,7 +395,10 @@ class StateManager:
                     "saved_at": datetime.utcnow().isoformat(),
                     "system_state": self._system_state.value,
                     "system_metadata": self._system_metadata,
-                    "task_states": {tid: state.value for tid, state in self._task_states.items()},
+                    "task_states": {
+                        tid: state.value
+                        for tid, state in self._task_states.items()
+                    },
                     "task_data": self._task_data,
                 }
 
@@ -381,7 +419,10 @@ class StateManager:
             async with self._lock:
                 self._system_state = SystemState(data["system_state"])
                 self._system_metadata = data.get("system_metadata", {})
-                self._task_states = {tid: TaskState(state) for tid, state in data.get("task_states", {}).items()}
+                self._task_states = {
+                    tid: TaskState(state)
+                    for tid, state in data.get("task_states", {}).items()
+                }
                 self._task_data = data.get("task_data", {})
 
             return True

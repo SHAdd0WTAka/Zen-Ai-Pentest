@@ -18,11 +18,21 @@ class ConnectionManagerV2:
 
     def __init__(self):
         # Active connections by room
-        self.rooms: Dict[str, Set[WebSocket]] = {"dashboard": set(), "scans": set(), "findings": set(), "notifications": set()}
+        self.rooms: Dict[str, Set[WebSocket]] = {
+            "dashboard": set(),
+            "scans": set(),
+            "findings": set(),
+            "notifications": set(),
+        }
         # User connections
         self.user_connections: Dict[str, WebSocket] = {}
 
-    async def connect(self, websocket: WebSocket, room: str = "dashboard", user_id: str = None):
+    async def connect(
+        self,
+        websocket: WebSocket,
+        room: str = "dashboard",
+        user_id: str = None,
+    ):
         """Connect client to room"""
         await websocket.accept()
 
@@ -36,7 +46,12 @@ class ConnectionManagerV2:
 
         # Send welcome message
         await websocket.send_json(
-            {"type": "connection", "status": "connected", "room": room, "timestamp": datetime.utcnow().isoformat()}
+            {
+                "type": "connection",
+                "status": "connected",
+                "room": room,
+                "timestamp": datetime.utcnow().isoformat(),
+            }
         )
 
     def disconnect(self, websocket: WebSocket, room: str = None):
@@ -79,7 +94,9 @@ class ConnectionManagerV2:
             except Exception:
                 del self.user_connections[user_id]
 
-    async def broadcast_scan_update(self, scan_id: str, status: str, progress: int = None):
+    async def broadcast_scan_update(
+        self, scan_id: str, status: str, progress: int = None
+    ):
         """Broadcast scan progress update"""
         await self.broadcast_to_room(
             "scans",
@@ -95,10 +112,17 @@ class ConnectionManagerV2:
     async def broadcast_finding(self, finding: dict):
         """Broadcast new finding discovery"""
         await self.broadcast_to_room(
-            "findings", {"type": "new_finding", "finding": finding, "timestamp": datetime.utcnow().isoformat()}
+            "findings",
+            {
+                "type": "new_finding",
+                "finding": finding,
+                "timestamp": datetime.utcnow().isoformat(),
+            },
         )
 
-    async def broadcast_notification(self, title: str, message: str, severity: str = "info"):
+    async def broadcast_notification(
+        self, title: str, message: str, severity: str = "info"
+    ):
         """Broadcast system notification"""
         await self.broadcast_to_room(
             "notifications",
@@ -113,7 +137,9 @@ class ConnectionManagerV2:
 
     def get_room_stats(self) -> dict:
         """Get connection statistics"""
-        return {room: len(connections) for room, connections in self.rooms.items()}
+        return {
+            room: len(connections) for room, connections in self.rooms.items()
+        }
 
 
 # Global manager instance
@@ -130,7 +156,12 @@ async def websocket_dashboard_endpoint(websocket: WebSocket):
             message = json.loads(data)
 
             if message.get("action") == "ping":
-                await websocket.send_json({"type": "pong", "timestamp": datetime.utcnow().isoformat()})
+                await websocket.send_json(
+                    {
+                        "type": "pong",
+                        "timestamp": datetime.utcnow().isoformat(),
+                    }
+                )
 
     except WebSocketDisconnect:
         manager_v2.disconnect(websocket, room="dashboard")
@@ -148,14 +179,20 @@ async def websocket_scans_endpoint(websocket: WebSocket):
             if message.get("action") == "subscribe_scan":
                 scan_id = message.get("scan_id")
                 await websocket.send_json(
-                    {"type": "subscribed", "scan_id": scan_id, "message": f"Subscribed to scan {scan_id} updates"}
+                    {
+                        "type": "subscribed",
+                        "scan_id": scan_id,
+                        "message": f"Subscribed to scan {scan_id} updates",
+                    }
                 )
 
     except WebSocketDisconnect:
         manager_v2.disconnect(websocket, room="scans")
 
 
-async def websocket_notifications_endpoint(websocket: WebSocket, user_id: str = None):
+async def websocket_notifications_endpoint(
+    websocket: WebSocket, user_id: str = None
+):
     """User-specific notifications"""
     await manager_v2.connect(websocket, room="notifications", user_id=user_id)
     try:

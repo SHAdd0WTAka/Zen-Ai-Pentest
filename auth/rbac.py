@@ -103,7 +103,9 @@ class RoleHierarchy:
     inherits_from: List[Role] = field(default_factory=list)
     permissions: Set[Permission] = field(default_factory=set)
 
-    def get_all_permissions(self, hierarchy_map: Dict[Role, "RoleHierarchy"]) -> Set[Permission]:
+    def get_all_permissions(
+        self, hierarchy_map: Dict[Role, "RoleHierarchy"]
+    ) -> Set[Permission]:
         """Get all permissions including inherited ones"""
         all_perms = set(self.permissions)
 
@@ -126,7 +128,9 @@ class RBACManager:
     # Default role definitions
     DEFAULT_ROLES: Dict[Role, RoleHierarchy] = {
         Role.SUPER_ADMIN: RoleHierarchy(
-            role=Role.SUPER_ADMIN, inherits_from=[], permissions=set(Permission)  # All permissions
+            role=Role.SUPER_ADMIN,
+            inherits_from=[],
+            permissions=set(Permission),  # All permissions
         ),
         Role.ADMIN: RoleHierarchy(
             role=Role.ADMIN,
@@ -204,7 +208,9 @@ class RBACManager:
         ),
     }
 
-    def __init__(self, custom_roles: Optional[Dict[Role, RoleHierarchy]] = None):
+    def __init__(
+        self, custom_roles: Optional[Dict[Role, RoleHierarchy]] = None
+    ):
         """
         Initialize RBAC Manager
 
@@ -213,8 +219,12 @@ class RBACManager:
         """
         self._roles = custom_roles or self.DEFAULT_ROLES.copy()
         self._user_roles: Dict[str, Set[Role]] = {}  # user_id -> roles
-        self._user_permissions: Dict[str, Set[Permission]] = {}  # user_id -> direct permissions
-        self._resource_permissions: Dict[str, Dict[str, Set[Permission]]] = {}  # resource -> user_id -> permissions
+        self._user_permissions: Dict[str, Set[Permission]] = (
+            {}
+        )  # user_id -> direct permissions
+        self._resource_permissions: Dict[str, Dict[str, Set[Permission]]] = (
+            {}
+        )  # resource -> user_id -> permissions
 
     def get_role_permissions(self, role: Role) -> Set[Permission]:
         """
@@ -342,7 +352,9 @@ class RBACManager:
         """
         return permission in self.get_user_permissions(user_id)
 
-    def has_any_permission(self, user_id: str, permissions: List[Permission]) -> bool:
+    def has_any_permission(
+        self, user_id: str, permissions: List[Permission]
+    ) -> bool:
         """
         Check if user has any of the specified permissions
 
@@ -356,7 +368,9 @@ class RBACManager:
         user_perms = self.get_user_permissions(user_id)
         return any(perm in user_perms for perm in permissions)
 
-    def has_all_permissions(self, user_id: str, permissions: List[Permission]) -> bool:
+    def has_all_permissions(
+        self, user_id: str, permissions: List[Permission]
+    ) -> bool:
         """
         Check if user has all specified permissions
 
@@ -370,7 +384,13 @@ class RBACManager:
         user_perms = self.get_user_permissions(user_id)
         return all(perm in user_perms for perm in permissions)
 
-    def check_resource_access(self, user_id: str, resource_type: str, resource_id: str, permission: Permission) -> bool:
+    def check_resource_access(
+        self,
+        user_id: str,
+        resource_type: str,
+        resource_id: str,
+        permission: Permission,
+    ) -> bool:
         """
         Check if user has permission to access a specific resource
 
@@ -391,12 +411,21 @@ class RBACManager:
         resource_key = f"{resource_type}:{resource_id}"
         if resource_key in self._resource_permissions:
             if user_id in self._resource_permissions[resource_key]:
-                if permission in self._resource_permissions[resource_key][user_id]:
+                if (
+                    permission
+                    in self._resource_permissions[resource_key][user_id]
+                ):
                     return True
 
         return False
 
-    def grant_resource_permission(self, user_id: str, resource_type: str, resource_id: str, permission: Permission) -> None:
+    def grant_resource_permission(
+        self,
+        user_id: str,
+        resource_type: str,
+        resource_id: str,
+        permission: Permission,
+    ) -> None:
         """
         Grant a user permission on a specific resource
 
@@ -416,7 +445,13 @@ class RBACManager:
 
         self._resource_permissions[resource_key][user_id].add(permission)
 
-    def revoke_resource_permission(self, user_id: str, resource_type: str, resource_id: str, permission: Permission) -> None:
+    def revoke_resource_permission(
+        self,
+        user_id: str,
+        resource_type: str,
+        resource_id: str,
+        permission: Permission,
+    ) -> None:
         """
         Revoke a user's permission on a specific resource
 
@@ -430,9 +465,13 @@ class RBACManager:
 
         if resource_key in self._resource_permissions:
             if user_id in self._resource_permissions[resource_key]:
-                self._resource_permissions[resource_key][user_id].discard(permission)
+                self._resource_permissions[resource_key][user_id].discard(
+                    permission
+                )
 
-    def add_direct_permission(self, user_id: str, permission: Permission) -> None:
+    def add_direct_permission(
+        self, user_id: str, permission: Permission
+    ) -> None:
         """
         Add a direct permission to a user (not via role)
 
@@ -444,7 +483,9 @@ class RBACManager:
             self._user_permissions[user_id] = set()
         self._user_permissions[user_id].add(permission)
 
-    def remove_direct_permission(self, user_id: str, permission: Permission) -> None:
+    def remove_direct_permission(
+        self, user_id: str, permission: Permission
+    ) -> None:
         """
         Remove a direct permission from a user
 
@@ -484,7 +525,9 @@ class RBACManager:
             "role": role.value,
             "inherits_from": [r.value for r in hierarchy.inherits_from],
             "direct_permissions": [p.value for p in hierarchy.permissions],
-            "all_permissions": [p.value for p in self.get_role_permissions(role)],
+            "all_permissions": [
+                p.value for p in self.get_role_permissions(role)
+            ],
         }
 
     @staticmethod
@@ -543,7 +586,11 @@ def require_permission(permission: Permission):
             return func(*args, **kwargs)
 
         # Store required permission
-        wrapper = async_wrapper if hasattr(func, "__code__") and func.__code__.co_flags & 0x80 else sync_wrapper
+        wrapper = (
+            async_wrapper
+            if hasattr(func, "__code__") and func.__code__.co_flags & 0x80
+            else sync_wrapper
+        )
         wrapper._required_permission = permission
         return wrapper
 
@@ -569,7 +616,11 @@ def require_role(role: Role):
         def sync_wrapper(*args, **kwargs):
             return func(*args, **kwargs)
 
-        wrapper = async_wrapper if hasattr(func, "__code__") and func.__code__.co_flags & 0x80 else sync_wrapper
+        wrapper = (
+            async_wrapper
+            if hasattr(func, "__code__") and func.__code__.co_flags & 0x80
+            else sync_wrapper
+        )
         wrapper._required_role = role
         return wrapper
 

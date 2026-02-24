@@ -110,7 +110,10 @@ class ExponentialBackoff:
 
     def next_delay(self) -> float:
         """Calculate next delay with exponential backoff"""
-        delay = min(self.base_delay * (self.exponential_base**self.attempt), self.max_delay)
+        delay = min(
+            self.base_delay * (self.exponential_base**self.attempt),
+            self.max_delay,
+        )
 
         if self.jitter:
             # Add random jitter (±25%)
@@ -148,13 +151,17 @@ class CircuitBreaker:
                 if self._should_attempt_reset():
                     self.state = CircuitState.HALF_OPEN
                     self.half_open_calls = 0
-                    logger.info(f"Circuit {self.name}: Entering HALF_OPEN state")
+                    logger.info(
+                        f"Circuit {self.name}: Entering HALF_OPEN state"
+                    )
                 else:
                     raise CircuitBreakerOpen(f"Circuit {self.name} is OPEN")
 
             if self.state == CircuitState.HALF_OPEN:
                 if self.half_open_calls >= self.config.half_open_max_calls:
-                    raise CircuitBreakerOpen(f"Circuit {self.name} HALF_OPEN limit reached")
+                    raise CircuitBreakerOpen(
+                        f"Circuit {self.name} HALF_OPEN limit reached"
+                    )
                 self.half_open_calls += 1
 
         # Execute outside lock
@@ -170,7 +177,9 @@ class CircuitBreaker:
         """Check if enough time passed to try recovery"""
         if self.last_failure_time is None:
             return True
-        return (time.monotonic() - self.last_failure_time) >= self.config.recovery_timeout
+        return (
+            time.monotonic() - self.last_failure_time
+        ) >= self.config.recovery_timeout
 
     async def _on_success(self):
         """Handle successful call"""
@@ -192,7 +201,9 @@ class CircuitBreaker:
                 logger.warning(f"Circuit {self.name}: OPEN (recovery failed)")
             elif self.failures >= self.config.failure_threshold:
                 self.state = CircuitState.OPEN
-                logger.warning(f"Circuit {self.name}: OPEN ({self.failures} failures)")
+                logger.warning(
+                    f"Circuit {self.name}: OPEN ({self.failures} failures)"
+                )
 
     def get_state(self) -> CircuitState:
         """Get current circuit state"""
@@ -236,12 +247,17 @@ class RateLimitedClient:
 
         self._session: Optional[Any] = None
 
-    async def request(self, method: str, url: str, retries: int = None, **kwargs) -> Any:
+    async def request(
+        self, method: str, url: str, retries: int = None, **kwargs
+    ) -> Any:
         """
         Make rate-limited request with circuit breaker.
         """
         retries = retries or self.rate_config.max_retries
-        backoff = ExponentialBackoff(base_delay=self.rate_config.base_delay, max_delay=self.rate_config.max_delay)
+        backoff = ExponentialBackoff(
+            base_delay=self.rate_config.base_delay,
+            max_delay=self.rate_config.max_delay,
+        )
 
         last_error = None
 
@@ -250,12 +266,16 @@ class RateLimitedClient:
             await self.bucket.wait()
 
             try:
-                return await self.circuit.call(self._do_request, method, url, **kwargs)
+                return await self.circuit.call(
+                    self._do_request, method, url, **kwargs
+                )
             except CircuitBreakerOpen:
                 raise
             except Exception as e:
                 last_error = e
-                logger.warning(f"{self.name} request failed (attempt {attempt + 1}): {e}")
+                logger.warning(
+                    f"{self.name} request failed (attempt {attempt + 1}): {e}"
+                )
 
                 if attempt < retries:
                     delay = backoff.next_delay()
@@ -292,16 +312,24 @@ class SmartRouter:
         circuit_config: CircuitBreakerConfig = None,
     ):
         """Register a backend with circuit breaker"""
-        self.backends[name] = {"instance": backend, "priority": priority, "name": name}
+        self.backends[name] = {
+            "instance": backend,
+            "priority": priority,
+            "name": name,
+        }
         self.circuit_breakers[name] = CircuitBreaker(name, circuit_config)
         self.health_status[name] = True
 
-    async def get_healthy_backend(self, min_priority: int = 0) -> Optional[Any]:
+    async def get_healthy_backend(
+        self, min_priority: int = 0
+    ) -> Optional[Any]:
         """
         Get a healthy backend based on priority and circuit state.
         """
         # Sort by priority (highest first)
-        candidates = sorted(self.backends.values(), key=lambda b: b["priority"], reverse=True)
+        candidates = sorted(
+            self.backends.values(), key=lambda b: b["priority"], reverse=True
+        )
 
         for backend_info in candidates:
             name = backend_info["name"]
@@ -349,7 +377,9 @@ class SmartRouter:
         }
 
 
-def rate_limited(requests_per_second: float = 1.0, burst_size: int = 5, max_retries: int = 3):
+def rate_limited(
+    requests_per_second: float = 1.0, burst_size: int = 5, max_retries: int = 3
+):
     """
     Decorator for rate limiting async functions.
     """

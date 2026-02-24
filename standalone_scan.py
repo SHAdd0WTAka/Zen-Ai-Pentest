@@ -31,7 +31,10 @@ from modules.report_gen import ReportGenerator
 from modules.vuln_scanner import VulnScannerModule
 
 # Apply Windows/asyncio fixes
-from utils.async_fixes import apply_windows_async_fixes, silence_asyncio_warnings
+from utils.async_fixes import (
+    apply_windows_async_fixes,
+    silence_asyncio_warnings,
+)
 from utils.helpers import colorize, get_severity_color
 
 apply_windows_async_fixes()
@@ -61,7 +64,13 @@ class StandaloneScanner:
         timestamp = datetime.now().strftime("%H:%M:%S")
         self.scan_log.append(f"[{timestamp}] {message}")
 
-        colors = {"info": "cyan", "success": "green", "warning": "yellow", "error": "red", "bold": "bold"}
+        colors = {
+            "info": "cyan",
+            "success": "green",
+            "warning": "yellow",
+            "error": "red",
+            "bold": "bold",
+        }
         print(colorize(f"[{timestamp}] {message}", colors.get(level, "white")))
 
     async def initialize(self):
@@ -91,7 +100,9 @@ class StandaloneScanner:
 
         self.log(f"Total backends: {len(self.orchestrator.backends)}", "info")
 
-    async def scan_target(self, target: str, scan_type: str = "full") -> Dict[str, Any]:
+    async def scan_target(
+        self, target: str, scan_type: str = "full"
+    ) -> Dict[str, Any]:
         """
         Run complete scan on target
 
@@ -121,7 +132,9 @@ class StandaloneScanner:
                 "technologies": recon_result.get("technologies", []),
             }
             self.log(f"IP: {results['recon']['ip']}", "info")
-            self.log(f"Attack vectors: {results['recon']['attack_vectors']}", "info")
+            self.log(
+                f"Attack vectors: {results['recon']['attack_vectors']}", "info"
+            )
 
             # Phase 2: Vulnerability Analysis
             self.log("Phase 2: Vulnerability Analysis", "bold")
@@ -146,7 +159,13 @@ class StandaloneScanner:
             ]
 
             # Summary
-            severity_counts = {"critical": 0, "high": 0, "medium": 0, "low": 0, "info": 0}
+            severity_counts = {
+                "critical": 0,
+                "high": 0,
+                "medium": 0,
+                "low": 0,
+                "info": 0,
+            }
             for f in vulns:
                 sev = f.severity.lower()
                 if sev in severity_counts:
@@ -165,7 +184,9 @@ class StandaloneScanner:
             self.log(f"Total findings: {len(vulns)}", "success")
             for sev, count in severity_counts.items():
                 if count > 0:
-                    self.log(f"  {sev.upper()}: {count}", get_severity_color(sev))
+                    self.log(
+                        f"  {sev.upper()}: {count}", get_severity_color(sev)
+                    )
 
         except Exception as e:
             results["status"] = "error"
@@ -174,7 +195,9 @@ class StandaloneScanner:
 
         return results
 
-    async def _analyze_common_vulns(self, target: str, recon_result: Dict) -> List:
+    async def _analyze_common_vulns(
+        self, target: str, recon_result: Dict
+    ) -> List:
         """Analyze target for common vulnerabilities"""
         vulns = []
 
@@ -212,7 +235,9 @@ class StandaloneScanner:
             llm_result = None
             if self.orchestrator.backends:
                 try:
-                    llm_result = await self.orchestrator.backends[0].query(prompt)
+                    llm_result = await self.orchestrator.backends[0].query(
+                        prompt
+                    )
                 except Exception as e:
                     self.log(f"LLM query failed: {e}", "warning")
 
@@ -274,7 +299,11 @@ class StandaloneScanner:
             self._generate_csv_report(csv_file)
             self.log(f"CSV report: {csv_file}", "success")
 
-        return {"json": json_file, "markdown": md_file, "csv": csv_file if self.findings else None}
+        return {
+            "json": json_file,
+            "markdown": md_file,
+            "csv": csv_file if self.findings else None,
+        }
 
     def _generate_markdown_report(self, results: Dict, filename: str):
         """Generate Markdown report"""
@@ -287,13 +316,19 @@ class StandaloneScanner:
 
             if "summary" in results:
                 f.write("## Summary\n\n")
-                f.write(f"- **Duration:** {results['summary']['duration_seconds']:.1f}s\n")
-                f.write(f"- **Total Findings:** {results['summary']['total_findings']}\n\n")
+                f.write(
+                    f"- **Duration:** {results['summary']['duration_seconds']:.1f}s\n"
+                )
+                f.write(
+                    f"- **Total Findings:** {results['summary']['total_findings']}\n\n"
+                )
 
                 f.write("### Severity Breakdown\n\n")
                 f.write("| Severity | Count |\n")
                 f.write("|----------|-------|\n")
-                for sev, count in results["summary"]["severity_counts"].items():
+                for sev, count in results["summary"][
+                    "severity_counts"
+                ].items():
                     if count > 0:
                         f.write(f"| {sev.upper()} | {count} |\n")
                 f.write("\n")
@@ -305,7 +340,9 @@ class StandaloneScanner:
                     f.write(f"- **Severity:** {finding['severity']}\n")
                     f.write(f"- **Type:** {finding['vuln_type']}\n")
                     f.write(f"- **Description:** {finding['description']}\n")
-                    f.write(f"- **Recommendation:** {finding['recommendation']}\n\n")
+                    f.write(
+                        f"- **Recommendation:** {finding['recommendation']}\n\n"
+                    )
 
             f.write("## Scan Log\n\n")
             f.write("```\n")
@@ -319,10 +356,18 @@ class StandaloneScanner:
 
         with open(filename, "w", newline="") as f:
             writer = csv.writer(f)
-            writer.writerow(["Name", "Severity", "Type", "Description", "Recommendation"])
+            writer.writerow(
+                ["Name", "Severity", "Type", "Description", "Recommendation"]
+            )
             for finding in self.findings:
                 writer.writerow(
-                    [finding.name, finding.severity, finding.vuln_type, finding.description, finding.recommendation]
+                    [
+                        finding.name,
+                        finding.severity,
+                        finding.vuln_type,
+                        finding.description,
+                        finding.recommendation,
+                    ]
                 )
 
 
@@ -338,9 +383,22 @@ Examples:
         """,
     )
 
-    parser.add_argument("--target", "-t", required=True, help="Target domain or IP")
-    parser.add_argument("--scan-type", "-s", default="full", choices=["quick", "full", "deep"], help="Scan intensity")
-    parser.add_argument("--output-dir", "-o", default="reports", help="Output directory for reports")
+    parser.add_argument(
+        "--target", "-t", required=True, help="Target domain or IP"
+    )
+    parser.add_argument(
+        "--scan-type",
+        "-s",
+        default="full",
+        choices=["quick", "full", "deep"],
+        help="Scan intensity",
+    )
+    parser.add_argument(
+        "--output-dir",
+        "-o",
+        default="reports",
+        help="Output directory for reports",
+    )
 
     args = parser.parse_args()
 

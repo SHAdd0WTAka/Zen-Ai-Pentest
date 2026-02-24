@@ -15,7 +15,13 @@ from unittest.mock import AsyncMock, MagicMock, Mock
 
 import pytest
 
-from autonomous.react import Action, ActionType, Observation, ReActLoop, Thought
+from autonomous.react import (
+    Action,
+    ActionType,
+    Observation,
+    ReActLoop,
+    Thought,
+)
 
 # ============================================================================
 # Fixtures
@@ -41,7 +47,9 @@ def mock_tools():
             {"name": "sqlmap", "description": "SQL injection scanner"},
         ]
     )
-    tools.execute = AsyncMock(return_value={"result": "success", "data": "test"})
+    tools.execute = AsyncMock(
+        return_value={"result": "success", "data": "test"}
+    )
     return tools
 
 
@@ -51,7 +59,9 @@ def mock_memory():
     memory = MagicMock()
     memory.add_goal = AsyncMock()
     memory.add_experience = AsyncMock()
-    memory.get_relevant_context = AsyncMock(return_value={"goal": "test", "history": []})
+    memory.get_relevant_context = AsyncMock(
+        return_value={"goal": "test", "history": []}
+    )
     memory.search = AsyncMock(return_value=[])
     memory.get_findings = AsyncMock(return_value=[{"type": "vuln"}])
     return memory
@@ -135,7 +145,10 @@ class TestAction:
 
         assert action.type == ActionType.TOOL_CALL
         assert action.tool_name == "nmap"
-        assert action.parameters == {"target": "example.com", "ports": "80,443"}
+        assert action.parameters == {
+            "target": "example.com",
+            "ports": "80,443",
+        }
         assert action.reasoning == "Need to scan for open ports"
         assert action.step_number == 2
 
@@ -291,7 +304,9 @@ class TestReasoning:
     @pytest.mark.asyncio
     async def test_reason_generates_thought(self, react_loop, mock_memory):
         """Test that _reason generates a Thought."""
-        react_loop.llm.generate = AsyncMock(return_value="I should scan the target")
+        react_loop.llm.generate = AsyncMock(
+            return_value="I should scan the target"
+        )
         react_loop.goal = "Find vulnerabilities"
         react_loop.current_step = 1
 
@@ -449,7 +464,9 @@ class TestActionSelection:
     @pytest.mark.asyncio
     async def test_decide_action_includes_tools_list(self, react_loop):
         """Test that action decision includes available tools."""
-        react_loop.llm.generate = AsyncMock(return_value='{"action_type": "TERMINATE"}')
+        react_loop.llm.generate = AsyncMock(
+            return_value='{"action_type": "TERMINATE"}'
+        )
         thought = Thought(content="Test")
 
         await react_loop._decide_action(thought)
@@ -487,9 +504,13 @@ class TestActionSelection:
         assert "Failed to parse" in action.reasoning
 
     @pytest.mark.asyncio
-    async def test_decide_action_invalid_action_type_fallback(self, react_loop):
+    async def test_decide_action_invalid_action_type_fallback(
+        self, react_loop
+    ):
         """Test fallback to THINK on invalid action type."""
-        react_loop.llm.generate = AsyncMock(return_value='{"action_type": "INVALID_TYPE"}')
+        react_loop.llm.generate = AsyncMock(
+            return_value='{"action_type": "INVALID_TYPE"}'
+        )
 
         thought = Thought(content="Test")
         action = await react_loop._decide_action(thought)
@@ -521,7 +542,9 @@ class TestActionExecution:
         assert observation.action == action
         assert observation.success is True
         assert observation.result == {"result": "success", "data": "test"}
-        mock_tools.execute.assert_called_once_with("nmap", {"target": "example.com"})
+        mock_tools.execute.assert_called_once_with(
+            "nmap", {"target": "example.com"}
+        )
 
     @pytest.mark.asyncio
     async def test_execute_search_memory(self, react_loop, mock_memory):
@@ -530,7 +553,9 @@ class TestActionExecution:
             type=ActionType.SEARCH_MEMORY,
             parameters={"query": "vulnerabilities"},
         )
-        mock_memory.search = AsyncMock(return_value=[{"content": "Found SQLi"}])
+        mock_memory.search = AsyncMock(
+            return_value=[{"content": "Found SQLi"}]
+        )
 
         observation = await react_loop._execute_action(action)
 
@@ -661,7 +686,9 @@ class TestRunMethod:
     @pytest.mark.asyncio
     async def test_run_with_context(self, react_loop, mock_memory):
         """Test run with additional context."""
-        react_loop.llm.generate = AsyncMock(return_value='{"action_type": "TERMINATE"}')
+        react_loop.llm.generate = AsyncMock(
+            return_value='{"action_type": "TERMINATE"}'
+        )
 
         context = {"target": "example.com", "scope": "limited"}
         result = await react_loop.run(goal="Test goal", context=context)
@@ -672,7 +699,9 @@ class TestRunMethod:
     @pytest.mark.asyncio
     async def test_run_history_tracking(self, react_loop):
         """Test that history is properly tracked."""
-        react_loop.llm.generate = AsyncMock(return_value='{"action_type": "TERMINATE"}')
+        react_loop.llm.generate = AsyncMock(
+            return_value='{"action_type": "TERMINATE"}'
+        )
 
         await react_loop.run(goal="Test")
 
@@ -768,7 +797,9 @@ class TestIntegration:
         memory.get_relevant_context = AsyncMock(return_value={})
 
         loop = ReActLoop(llm, tools, memory, max_iterations=10)
-        result = await loop.run(goal="Scan target", context={"target": "test.com"})
+        result = await loop.run(
+            goal="Scan target", context={"target": "test.com"}
+        )
 
         assert result["goal"] == "Scan target"
         assert result["steps_taken"] == 2
@@ -797,7 +828,9 @@ class TestIntegration:
         memory.add_experience = AsyncMock()
         memory.get_relevant_context = AsyncMock(return_value={})
 
-        loop = ReActLoop(llm, tools, memory, max_iterations=5, human_in_the_loop=True)
+        loop = ReActLoop(
+            llm, tools, memory, max_iterations=5, human_in_the_loop=True
+        )
         result = await loop.run(goal="Test")
 
         assert result["completed"] is True
@@ -814,7 +847,9 @@ class TestEdgeCases:
     @pytest.mark.asyncio
     async def test_empty_goal(self, react_loop):
         """Test with empty goal."""
-        react_loop.llm.generate = AsyncMock(return_value='{"action_type": "TERMINATE"}')
+        react_loop.llm.generate = AsyncMock(
+            return_value='{"action_type": "TERMINATE"}'
+        )
 
         result = await react_loop.run(goal="")
 
@@ -823,7 +858,9 @@ class TestEdgeCases:
     @pytest.mark.asyncio
     async def test_none_context(self, react_loop):
         """Test with None context."""
-        react_loop.llm.generate = AsyncMock(return_value='{"action_type": "TERMINATE"}')
+        react_loop.llm.generate = AsyncMock(
+            return_value='{"action_type": "TERMINATE"}'
+        )
 
         result = await react_loop.run(goal="Test", context=None)
 

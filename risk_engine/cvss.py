@@ -97,13 +97,22 @@ class CVSSCalculator:
         score = 5.0  # Default
 
         # Critical indicators
-        if any(kw in description_lower for kw in ["rce", "remote code execution", "arbitrary code"]):
+        if any(
+            kw in description_lower
+            for kw in ["rce", "remote code execution", "arbitrary code"]
+        ):
             score = 9.8
         elif "sql injection" in description_lower:
             score = 8.6
-        elif "xss" in description_lower or "cross-site scripting" in description_lower:
+        elif (
+            "xss" in description_lower
+            or "cross-site scripting" in description_lower
+        ):
             score = 6.1
-        elif "denial of service" in description_lower or "dos" in description_lower:
+        elif (
+            "denial of service" in description_lower
+            or "dos" in description_lower
+        ):
             score = 7.5
         elif "information disclosure" in description_lower:
             score = 5.3
@@ -115,7 +124,10 @@ class CVSSCalculator:
             score = min(score + 0.5, 10.0)
 
         # Adjust for no auth required
-        if "unauthenticated" in description_lower or "without authentication" in description_lower:
+        if (
+            "unauthenticated" in description_lower
+            or "without authentication" in description_lower
+        ):
             score = min(score + 0.3, 10.0)
 
         return round(score, 1)

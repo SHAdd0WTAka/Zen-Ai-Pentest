@@ -130,7 +130,9 @@ class CompetitorTool(ABC):
         self.metadata = metadata
 
     @abstractmethod
-    async def run_scan(self, target: str, scenario_config: Dict[str, Any]) -> ToolBenchmarkResult:
+    async def run_scan(
+        self, target: str, scenario_config: Dict[str, Any]
+    ) -> ToolBenchmarkResult:
         """Run a scan and return results."""
         pass
 
@@ -180,10 +182,15 @@ class PentestGPTCompetitor(CompetitorTool):
         # In real implementation, check for pentestgpt command
         return False  # Placeholder
 
-    async def run_scan(self, target: str, scenario_config: Dict[str, Any]) -> ToolBenchmarkResult:
+    async def run_scan(
+        self, target: str, scenario_config: Dict[str, Any]
+    ) -> ToolBenchmarkResult:
         """Run PentestGPT scan."""
         # Placeholder implementation
-        return ToolBenchmarkResult(tool_metadata=self.metadata, scenario_id=scenario_config.get("scenario_id", "unknown"))
+        return ToolBenchmarkResult(
+            tool_metadata=self.metadata,
+            scenario_id=scenario_config.get("scenario_id", "unknown"),
+        )
 
 
 # =============================================================================
@@ -219,9 +226,14 @@ class AutoPentestDRLCompetitor(CompetitorTool):
         """Check if AutoPentest-DRL is available."""
         return False  # Placeholder
 
-    async def run_scan(self, target: str, scenario_config: Dict[str, Any]) -> ToolBenchmarkResult:
+    async def run_scan(
+        self, target: str, scenario_config: Dict[str, Any]
+    ) -> ToolBenchmarkResult:
         """Run AutoPentest-DRL scan."""
-        return ToolBenchmarkResult(tool_metadata=self.metadata, scenario_id=scenario_config.get("scenario_id", "unknown"))
+        return ToolBenchmarkResult(
+            tool_metadata=self.metadata,
+            scenario_id=scenario_config.get("scenario_id", "unknown"),
+        )
 
 
 # =============================================================================
@@ -331,7 +343,10 @@ NIKTO_METADATA = ToolMetadata(
     website="https://cirt.net/Nikto2",
     github_url="https://github.com/sullo/nikto",
     capabilities=ToolCapabilities(
-        supports_web_scanning=True, supports_json_output=True, supports_xml_output=True, supports_cicd_integration=True
+        supports_web_scanning=True,
+        supports_json_output=True,
+        supports_xml_output=True,
+        supports_cicd_integration=True,
     ),
     avg_scan_time_web=15,
     requires_internet=False,
@@ -399,7 +414,9 @@ class ComparisonResult:
     timestamp: datetime = field(default_factory=datetime.utcnow)
 
     # Comparison metrics
-    metric_improvements: Dict[str, Dict[str, float]] = field(default_factory=dict)
+    metric_improvements: Dict[str, Dict[str, float]] = field(
+        default_factory=dict
+    )
     rankings: Dict[str, List[str]] = field(default_factory=dict)
 
     # Summary
@@ -408,7 +425,14 @@ class ComparisonResult:
 
     def calculate_improvements(self) -> None:
         """Calculate improvement percentages over competitors."""
-        metrics_to_compare = ["precision", "recall", "f1_score", "accuracy", "vulnerabilities_found", "scan_duration_seconds"]
+        metrics_to_compare = [
+            "precision",
+            "recall",
+            "f1_score",
+            "accuracy",
+            "vulnerabilities_found",
+            "scan_duration_seconds",
+        ]
 
         for metric in metrics_to_compare:
             zen_value = getattr(self.zen_result, metric, 0)
@@ -419,13 +443,17 @@ class ComparisonResult:
                 if metric == "scan_duration_seconds":
                     # Lower is better for duration
                     if comp_value > 0:
-                        improvement = ((comp_value - zen_value) / comp_value) * 100
+                        improvement = (
+                            (comp_value - zen_value) / comp_value
+                        ) * 100
                     else:
                         improvement = 0
                 else:
                     # Higher is better for other metrics
                     if comp_value > 0:
-                        improvement = ((zen_value - comp_value) / comp_value) * 100
+                        improvement = (
+                            (zen_value - comp_value) / comp_value
+                        ) * 100
                     else:
                         improvement = 100 if zen_value > 0 else 0
 
@@ -447,8 +475,14 @@ class ComparisonResult:
         ]
 
         for metric, higher_is_better in metrics_to_rank:
-            sorted_results = sorted(all_results, key=lambda r: getattr(r, metric, 0), reverse=higher_is_better)
-            self.rankings[metric] = [r.tool_metadata.name for r in sorted_results]
+            sorted_results = sorted(
+                all_results,
+                key=lambda r: getattr(r, metric, 0),
+                reverse=higher_is_better,
+            )
+            self.rankings[metric] = [
+                r.tool_metadata.name for r in sorted_results
+            ]
 
     def determine_winner(self) -> None:
         """Determine overall winner based on F1 score."""
@@ -536,7 +570,14 @@ class ComparisonResult:
             lines.append("")
 
         if self.winner:
-            lines.extend(["## Winner", "", f"🏆 **{self.winner}** achieved the best overall performance.", ""])
+            lines.extend(
+                [
+                    "## Winner",
+                    "",
+                    f"🏆 **{self.winner}** achieved the best overall performance.",
+                    "",
+                ]
+            )
 
         return "\n".join(lines)
 
@@ -559,10 +600,17 @@ class ComparisonFramework:
 
     def get_available_competitors(self) -> List[str]:
         """Get list of available competitor tools."""
-        return [name for name, tool in self.competitors.items() if tool.is_available()]
+        return [
+            name
+            for name, tool in self.competitors.items()
+            if tool.is_available()
+        ]
 
     async def run_comparison(
-        self, zen_result: ToolBenchmarkResult, scenario_config: Dict[str, Any], competitors: Optional[List[str]] = None
+        self,
+        zen_result: ToolBenchmarkResult,
+        scenario_config: Dict[str, Any],
+        competitors: Optional[List[str]] = None,
     ) -> ComparisonResult:
         """Run comparison between Zen-AI-Pentest and competitors."""
 
@@ -571,7 +619,9 @@ class ComparisonFramework:
             competitors = self.get_available_competitors()
 
         competitor_results = []
-        target = scenario_config.get("target_url") or scenario_config.get("target_host")
+        target = scenario_config.get("target_url") or scenario_config.get(
+            "target_host"
+        )
 
         for comp_name in competitors:
             if comp_name in self.competitors:
@@ -613,7 +663,12 @@ class ComparisonFramework:
 
     def compare_capabilities(self, tools: List[str]) -> Dict[str, Any]:
         """Compare capabilities of multiple tools."""
-        result = {"tools": [], "capability_matrix": {}, "unique_capabilities": {}, "common_capabilities": []}
+        result = {
+            "tools": [],
+            "capability_matrix": {},
+            "unique_capabilities": {},
+            "common_capabilities": [],
+        }
 
         all_capabilities = set()
         tool_capabilities = {}
@@ -622,7 +677,11 @@ class ComparisonFramework:
             metadata = self.get_tool_metadata(tool_name)
             if metadata:
                 caps = metadata.capabilities
-                caps_dict = {k: v for k, v in vars(caps).items() if not k.startswith("_")}
+                caps_dict = {
+                    k: v
+                    for k, v in vars(caps).items()
+                    if not k.startswith("_")
+                }
                 tool_capabilities[tool_name] = caps_dict
                 result["tools"].append(
                     {
@@ -636,7 +695,10 @@ class ComparisonFramework:
 
         # Build capability matrix
         for cap in all_capabilities:
-            result["capability_matrix"][cap] = {tool: tool_capabilities.get(tool, {}).get(cap, False) for tool in tools}
+            result["capability_matrix"][cap] = {
+                tool: tool_capabilities.get(tool, {}).get(cap, False)
+                for tool in tools
+            }
 
         return result
 
@@ -660,7 +722,9 @@ def calculate_cohen_d(group1: List[float], group2: List[float]) -> float:
 
     # Pooled standard deviation
     n1, n2 = len(group1), len(group2)
-    pooled_std = math.sqrt(((n1 - 1) * std1**2 + (n2 - 1) * std2**2) / (n1 + n2 - 2))
+    pooled_std = math.sqrt(
+        ((n1 - 1) * std1**2 + (n2 - 1) * std2**2) / (n1 + n2 - 2)
+    )
 
     if pooled_std == 0:
         return 0.0

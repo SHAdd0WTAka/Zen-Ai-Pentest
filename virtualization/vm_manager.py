@@ -43,7 +43,9 @@ class VirtualBoxManager:
     def __init__(self):
         self.vbox_manage = self._find_vbox_manage()
         if not self.vbox_manage:
-            raise RuntimeError("VBoxManage nicht gefunden. Ist VirtualBox installiert?")
+            raise RuntimeError(
+                "VBoxManage nicht gefunden. Ist VirtualBox installiert?"
+            )
 
         self.system = platform.system().lower()
         logger.info(f"VirtualBoxManager initialisiert (OS: {self.system})")
@@ -64,9 +66,16 @@ class VirtualBoxManager:
 
         for path in possible_paths:
             try:
-                result = subprocess.run([path, "--version"], capture_output=True, text=True, timeout=5)
+                result = subprocess.run(
+                    [path, "--version"],
+                    capture_output=True,
+                    text=True,
+                    timeout=5,
+                )
                 if result.returncode == 0:
-                    logger.info(f"VBoxManage gefunden: {path} (Version: {result.stdout.strip()})")
+                    logger.info(
+                        f"VBoxManage gefunden: {path} (Version: {result.stdout.strip()})"
+                    )
                     return path
             except (FileNotFoundError, subprocess.TimeoutExpired):
                 continue
@@ -79,7 +88,9 @@ class VirtualBoxManager:
         logger.debug(f"VBoxManage Befehl: {' '.join(cmd)}")
 
         try:
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
+            result = subprocess.run(
+                cmd, capture_output=True, text=True, timeout=timeout
+            )
             return result.returncode, result.stdout, result.stderr
         except subprocess.TimeoutExpired:
             logger.error(f"VBoxManage Timeout nach {timeout}s")
@@ -126,7 +137,9 @@ class VirtualBoxManager:
             return True
 
         mode = "headless" if headless else "gui"
-        returncode, stdout, stderr = self._run_vbox_command(["startvm", vm_name, "--type", mode], timeout=120)
+        returncode, stdout, stderr = self._run_vbox_command(
+            ["startvm", vm_name, "--type", mode], timeout=120
+        )
 
         if returncode == 0:
             logger.info(f"VM {vm_name} gestartet ({mode})")
@@ -144,7 +157,9 @@ class VirtualBoxManager:
             return True
 
         method = "poweroff" if force else "acpipowerbutton"
-        returncode, stdout, stderr = self._run_vbox_command(["controlvm", vm_name, method], timeout=30)
+        returncode, stdout, stderr = self._run_vbox_command(
+            ["controlvm", vm_name, method], timeout=30
+        )
 
         if returncode == 0:
             logger.info(f"VM {vm_name} gestoppt ({method})")
@@ -155,13 +170,24 @@ class VirtualBoxManager:
 
     def reset_vm(self, vm_name: str) -> bool:
         """Resetet eine VM (hard reset)"""
-        returncode, stdout, stderr = self._run_vbox_command(["controlvm", vm_name, "reset"], timeout=30)
+        returncode, stdout, stderr = self._run_vbox_command(
+            ["controlvm", vm_name, "reset"], timeout=30
+        )
         return returncode == 0
 
-    def create_snapshot(self, vm_name: str, snapshot_name: str, description: str = "") -> bool:
+    def create_snapshot(
+        self, vm_name: str, snapshot_name: str, description: str = ""
+    ) -> bool:
         """Erstellt Snapshot"""
         returncode, stdout, stderr = self._run_vbox_command(
-            ["snapshot", vm_name, "take", snapshot_name, "--description", description or f"Snapshot {snapshot_name}"],
+            [
+                "snapshot",
+                vm_name,
+                "take",
+                snapshot_name,
+                "--description",
+                description or f"Snapshot {snapshot_name}",
+            ],
             timeout=120,
         )
 
@@ -180,10 +206,14 @@ class VirtualBoxManager:
             self.stop_vm(vm_name, force=True)
             time.sleep(3)
 
-        returncode, stdout, stderr = self._run_vbox_command(["snapshot", vm_name, "restore", snapshot_name], timeout=120)
+        returncode, stdout, stderr = self._run_vbox_command(
+            ["snapshot", vm_name, "restore", snapshot_name], timeout=120
+        )
 
         if returncode == 0:
-            logger.info(f"Snapshot {snapshot_name} für {vm_name} wiederhergestellt")
+            logger.info(
+                f"Snapshot {snapshot_name} für {vm_name} wiederhergestellt"
+            )
             return True
         else:
             logger.error(f"Restore-Fehler: {stderr}")
@@ -191,7 +221,9 @@ class VirtualBoxManager:
 
     def list_snapshots(self, vm_name: str) -> List[Dict]:
         """Listet Snapshots einer VM"""
-        returncode, stdout, stderr = self._run_vbox_command(["snapshot", vm_name, "list", "--machinereadable"])
+        returncode, stdout, stderr = self._run_vbox_command(
+            ["snapshot", vm_name, "list", "--machinereadable"]
+        )
 
         snapshots = []
         if returncode == 0:
@@ -213,7 +245,12 @@ class VirtualBoxManager:
         return snapshots
 
     def execute_in_vm(
-        self, vm_name: str, command: str, username: str = "user", password: str = "user", timeout: int = 60
+        self,
+        vm_name: str,
+        command: str,
+        username: str = "user",
+        password: str = "user",
+        timeout: int = 60,
     ) -> tuple:
         """
         Führt Befehl in VM aus (via Guest Control).
@@ -243,12 +280,22 @@ class VirtualBoxManager:
         return returncode, stdout, stderr
 
     def configure_network(
-        self, vm_name: str, mode: Literal["nat", "bridged", "host_only", "internal"] = "nat", adapter: int = 1
+        self,
+        vm_name: str,
+        mode: Literal["nat", "bridged", "host_only", "internal"] = "nat",
+        adapter: int = 1,
     ) -> bool:
         """Konfiguriert Netzwerk-Adapter"""
-        nic_type = {"nat": "nat", "bridged": "bridged", "host_only": "hostonly", "internal": "intnet"}.get(mode, "nat")
+        nic_type = {
+            "nat": "nat",
+            "bridged": "bridged",
+            "host_only": "hostonly",
+            "internal": "intnet",
+        }.get(mode, "nat")
 
-        returncode, stdout, stderr = self._run_vbox_command(["modifyvm", vm_name, f"--nic{adapter}", nic_type])
+        returncode, stdout, stderr = self._run_vbox_command(
+            ["modifyvm", vm_name, f"--nic{adapter}", nic_type]
+        )
 
         if returncode == 0:
             logger.info(f"Netzwerk für {vm_name} auf {mode} gesetzt")
@@ -259,7 +306,9 @@ class VirtualBoxManager:
 
     def get_vm_info(self, vm_name: str) -> Dict:
         """Gibt VM-Informationen"""
-        returncode, stdout, stderr = self._run_vbox_command(["showvminfo", vm_name, "--machinereadable"])
+        returncode, stdout, stderr = self._run_vbox_command(
+            ["showvminfo", vm_name, "--machinereadable"]
+        )
 
         info = {}
         if returncode == 0:
@@ -270,7 +319,13 @@ class VirtualBoxManager:
 
         return info
 
-    def clone_vm(self, source_vm: str, new_name: str, linked: bool = True, snapshot: Optional[str] = None) -> bool:
+    def clone_vm(
+        self,
+        source_vm: str,
+        new_name: str,
+        linked: bool = True,
+        snapshot: Optional[str] = None,
+    ) -> bool:
         """Klont eine VM"""
         args = ["clonevm", source_vm, "--name", new_name, "--register"]
         if linked:
@@ -318,7 +373,9 @@ class PentestSandbox:
         self.vm = vm_manager
         self.active_sessions = {}
 
-    def create_session(self, session_id: str, target_vm: str = "kali-pentest") -> bool:
+    def create_session(
+        self, session_id: str, target_vm: str = "kali-pentest"
+    ) -> bool:
         """Erstellt neue Pentest-Session"""
         if not self.vm.vm_exists(target_vm):
             logger.error(f"VM {target_vm} nicht gefunden")
@@ -326,19 +383,32 @@ class PentestSandbox:
 
         # Restore clean state
         if not self.vm.restore_snapshot(target_vm, "clean_state"):
-            logger.warning("Konnte clean_state nicht wiederherstellen, erstelle neuen...")
+            logger.warning(
+                "Konnte clean_state nicht wiederherstellen, erstelle neuen..."
+            )
             self.vm.create_snapshot(target_vm, f"session_{session_id}")
 
         # Start VM
         if not self.vm.start_vm(target_vm, headless=False):
             return False
 
-        self.active_sessions[session_id] = {"vm_name": target_vm, "start_time": time.time(), "findings": []}
+        self.active_sessions[session_id] = {
+            "vm_name": target_vm,
+            "start_time": time.time(),
+            "findings": [],
+        }
 
         logger.info(f"Session {session_id} gestartet auf {target_vm}")
         return True
 
-    def execute_tool(self, session_id: str, tool: str, args: str, username: str = "kali", password: str = "kali") -> tuple:
+    def execute_tool(
+        self,
+        session_id: str,
+        tool: str,
+        args: str,
+        username: str = "kali",
+        password: str = "kali",
+    ) -> tuple:
         """Führt Tool in Session aus"""
         if session_id not in self.active_sessions:
             return -1, "", "Session nicht gefunden"
@@ -359,7 +429,9 @@ class PentestSandbox:
 
         return self.vm.execute_in_vm(vm_name, command, username, password)
 
-    def end_session(self, session_id: str, save_snapshot: bool = False) -> bool:
+    def end_session(
+        self, session_id: str, save_snapshot: bool = False
+    ) -> bool:
         """Beendet Session"""
         if session_id not in self.active_sessions:
             return False
@@ -391,7 +463,9 @@ if __name__ == "__main__":
 
         print("Verfügbare VMs:")
         for vm in vbox.list_vms():
-            running = "[RUNNING]" if vbox.is_running(vm["name"]) else "[STOPPED]"
+            running = (
+                "[RUNNING]" if vbox.is_running(vm["name"]) else "[STOPPED]"
+            )
             print(f"  {running} {vm['name']}")
 
     except RuntimeError as e:

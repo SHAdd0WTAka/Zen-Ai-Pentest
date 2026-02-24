@@ -24,7 +24,10 @@ from ffuf_integration_enhanced import FFuFIntegration
 from wafw00f_integration import WAFW00FIntegration
 from whatweb_integration import WhatWebIntegration
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
 logger = logging.getLogger(__name__)
 
 
@@ -56,7 +59,9 @@ class UnifiedReconScanner:
         """Run complete reconnaissance scan"""
         logger.info(f"Starting unified reconnaissance on {target}")
 
-        result = ReconResult(target=target, timestamp=datetime.now().isoformat())
+        result = ReconResult(
+            target=target, timestamp=datetime.now().isoformat()
+        )
 
         # 1. Technology Detection
         logger.info("[1/3] Running technology detection...")
@@ -65,7 +70,12 @@ class UnifiedReconScanner:
             result.technology_scan = {
                 "success": tech_result.success,
                 "technologies": [
-                    {"name": t.name, "version": t.version, "confidence": t.confidence, "category": t.category}
+                    {
+                        "name": t.name,
+                        "version": t.version,
+                        "confidence": t.confidence,
+                        "category": t.category,
+                    }
                     for t in tech_result.technologies
                 ],
                 "headers": tech_result.headers,
@@ -82,7 +92,10 @@ class UnifiedReconScanner:
             result.waf_detection = {
                 "success": waf_result.success,
                 "firewall_detected": waf_result.firewall_detected,
-                "wafs": [{"name": w.name, "confidence": w.confidence} for w in waf_result.wafs],
+                "wafs": [
+                    {"name": w.name, "confidence": w.confidence}
+                    for w in waf_result.wafs
+                ],
                 "error": waf_result.error,
             }
         except Exception as e:
@@ -94,12 +107,18 @@ class UnifiedReconScanner:
         try:
             # Use smaller wordlist for quick scan
             ffuf_result = await self.ffuf.directory_bruteforce(
-                target=f"http://{target}/FUZZ", extensions=["php", "html", "txt"], threads=20
+                target=f"http://{target}/FUZZ",
+                extensions=["php", "html", "txt"],
+                threads=20,
             )
             result.directory_bruteforce = {
                 "success": ffuf_result.success,
                 "findings": [
-                    {"url": f.url, "status_code": f.status_code, "content_length": f.content_length}
+                    {
+                        "url": f.url,
+                        "status_code": f.status_code,
+                        "content_length": f.content_length,
+                    }
                     for f in ffuf_result.findings
                 ],
                 "total_requests": ffuf_result.total_requests,
@@ -142,15 +161,21 @@ class UnifiedReconScanner:
 
         # WAF recommendations
         if not result.waf_detection.get("firewall_detected"):
-            recommendations.append("Consider implementing a Web Application Firewall (WAF)")
+            recommendations.append(
+                "Consider implementing a Web Application Firewall (WAF)"
+            )
 
         # Technology recommendations
         outdated_tech = ["Apache/2.4.7", "OpenSSH 6.6.1"]
         for tech in result.technology_scan.get("technologies", []):
-            tech_str = f"{tech.get('name', '')} {tech.get('version', '')}".strip()
+            tech_str = (
+                f"{tech.get('name', '')} {tech.get('version', '')}".strip()
+            )
             for outdated in outdated_tech:
                 if outdated in tech_str:
-                    recommendations.append(f"Update outdated software: {tech_str}")
+                    recommendations.append(
+                        f"Update outdated software: {tech_str}"
+                    )
 
         # Directory recommendations
         if len(result.directory_bruteforce.get("findings", [])) > 5:
@@ -189,7 +214,9 @@ class UnifiedReconScanner:
             techs = tech_scan.get("technologies", [])
             print(f"Found {len(techs)} technologies:")
             for tech in techs:
-                version = f" ({tech.get('version')})" if tech.get("version") else ""
+                version = (
+                    f" ({tech.get('version')})" if tech.get("version") else ""
+                )
                 print(f"  • {tech['name']}{version} [{tech['confidence']}%]")
         else:
             print(f"Failed: {tech_scan.get('error', 'Unknown error')}")
@@ -203,7 +230,9 @@ class UnifiedReconScanner:
             if waf_scan.get("firewall_detected"):
                 print("⚠️  Web Application Firewall detected:")
                 for waf in waf_scan.get("wafs", []):
-                    print(f"  • {waf['name']} ({waf['confidence']} confidence)")
+                    print(
+                        f"  • {waf['name']} ({waf['confidence']} confidence)"
+                    )
             else:
                 print("✅ No WAF detected")
         else:
@@ -218,7 +247,9 @@ class UnifiedReconScanner:
             findings = dir_scan.get("findings", [])
             print(f"Found {len(findings)} accessible paths:")
             for finding in findings[:10]:  # Show top 10
-                print(f"  [{finding['status_code']}] {finding['url']} ({finding['content_length']} bytes)")
+                print(
+                    f"  [{finding['status_code']}] {finding['url']} ({finding['content_length']} bytes)"
+                )
             if len(findings) > 10:
                 print(f"  ... and {len(findings) - 10} more")
             print(f"\nDuration: {dir_scan.get('duration', 0):.2f}s")
@@ -252,11 +283,20 @@ Examples:
         """,
     )
 
-    parser.add_argument("--target", "-t", required=True, help="Target domain or URL")
+    parser.add_argument(
+        "--target", "-t", required=True, help="Target domain or URL"
+    )
 
-    parser.add_argument("--output-dir", "-o", default="reports", help="Output directory for reports (default: reports)")
+    parser.add_argument(
+        "--output-dir",
+        "-o",
+        default="reports",
+        help="Output directory for reports (default: reports)",
+    )
 
-    parser.add_argument("--quiet", "-q", action="store_true", help="Minimal output")
+    parser.add_argument(
+        "--quiet", "-q", action="store_true", help="Minimal output"
+    )
 
     args = parser.parse_args()
 

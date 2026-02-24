@@ -50,7 +50,9 @@ class TestZenOrchestrator:
     @pytest.mark.asyncio
     async def test_orchestrator_start_stop(self):
         """Test orchestrator lifecycle"""
-        config = OrchestratorConfig(enable_analysis_bot=False, enable_audit_logging=False)
+        config = OrchestratorConfig(
+            enable_analysis_bot=False, enable_audit_logging=False
+        )
 
         orch = ZenOrchestrator(config)
 
@@ -86,7 +88,9 @@ class TestZenOrchestrator:
     @pytest.mark.asyncio
     async def test_submit_task(self, orchestrator):
         """Test task submission"""
-        task_id = await orchestrator.submit_task({"type": "test_task", "target": "example.com"})
+        task_id = await orchestrator.submit_task(
+            {"type": "test_task", "target": "example.com"}
+        )
 
         assert task_id is not None
         assert len(task_id) > 0
@@ -99,7 +103,10 @@ class TestZenOrchestrator:
     @pytest.mark.asyncio
     async def test_submit_task_with_priority(self, orchestrator):
         """Test task submission with priority"""
-        task_id = await orchestrator.submit_task({"type": "test_task", "target": "example.com"}, priority=TaskPriority.HIGH)
+        task_id = await orchestrator.submit_task(
+            {"type": "test_task", "target": "example.com"},
+            priority=TaskPriority.HIGH,
+        )
 
         status = await orchestrator.get_task_status(task_id)
         assert status["priority"] == "high"
@@ -110,7 +117,9 @@ class TestZenOrchestrator:
         # Submit multiple tasks
         task_ids = []
         for i in range(3):
-            task_id = await orchestrator.submit_task({"type": "test_task", "target": f"target{i}.com"})
+            task_id = await orchestrator.submit_task(
+                {"type": "test_task", "target": f"target{i}.com"}
+            )
             task_ids.append(task_id)
 
         # List all tasks
@@ -124,7 +133,9 @@ class TestZenOrchestrator:
     async def test_cancel_task(self, orchestrator):
         """Test task cancellation"""
         # Submit task
-        task_id = await orchestrator.submit_task({"type": "slow_task", "target": "example.com"})
+        task_id = await orchestrator.submit_task(
+            {"type": "slow_task", "target": "example.com"}
+        )
 
         # Cancel
         success = await orchestrator.cancel_task(task_id)
@@ -146,7 +157,9 @@ class TestZenOrchestrator:
         await orchestrator.subscribe(EventType.TASK_SUBMITTED, handler)
 
         # Submit task (should trigger event)
-        await orchestrator.submit_task({"type": "test_task", "target": "example.com"})
+        await orchestrator.submit_task(
+            {"type": "test_task", "target": "example.com"}
+        )
 
         # Give time for event processing
         await asyncio.sleep(0.1)
@@ -218,9 +231,15 @@ class TestTaskManager:
         task_manager.register_handler("priority_test", tracking_handler)
 
         # Submit in reverse priority order
-        task_low = Task(id="low", type="priority_test", priority=TaskPriority.LOW)
-        task_high = Task(id="high", type="priority_test", priority=TaskPriority.HIGH)
-        task_normal = Task(id="normal", type="priority_test", priority=TaskPriority.NORMAL)
+        task_low = Task(
+            id="low", type="priority_test", priority=TaskPriority.LOW
+        )
+        task_high = Task(
+            id="high", type="priority_test", priority=TaskPriority.HIGH
+        )
+        task_normal = Task(
+            id="normal", type="priority_test", priority=TaskPriority.NORMAL
+        )
 
         await task_manager.submit(task_low)
         await task_manager.submit(task_high)
@@ -242,7 +261,9 @@ class TestTaskManager:
 
         task_manager.register_handler("slow_task", slow_handler)
 
-        task = Task(id="timeout-test", type="slow_task", timeout=0.1)  # 100ms timeout
+        task = Task(
+            id="timeout-test", type="slow_task", timeout=0.1
+        )  # 100ms timeout
 
         await task_manager.submit(task)
 
@@ -305,7 +326,11 @@ class TestEventBus:
         assert sub_id is not None
 
         # Publish
-        event = Event(type=EventType.TASK_COMPLETED, source="test", data={"task_id": "123"})
+        event = Event(
+            type=EventType.TASK_COMPLETED,
+            source="test",
+            data={"task_id": "123"},
+        )
 
         success = await event_bus.publish(event)
         assert success
@@ -327,14 +352,28 @@ class TestEventBus:
         # Subscribe only to critical priority
         from orchestrator.events import EventPriority
 
-        await event_bus.subscribe(EventType.SECURITY_ALERT, handler, priority_filter=[EventPriority.CRITICAL])
+        await event_bus.subscribe(
+            EventType.SECURITY_ALERT,
+            handler,
+            priority_filter=[EventPriority.CRITICAL],
+        )
 
         # Publish high priority event (should not be received)
-        event = Event(type=EventType.SECURITY_ALERT, source="test", priority=EventPriority.HIGH, data={})
+        event = Event(
+            type=EventType.SECURITY_ALERT,
+            source="test",
+            priority=EventPriority.HIGH,
+            data={},
+        )
         await event_bus.publish(event)
 
         # Publish critical priority event (should be received)
-        critical_event = Event(type=EventType.SECURITY_ALERT, source="test", priority=EventPriority.CRITICAL, data={})
+        critical_event = Event(
+            type=EventType.SECURITY_ALERT,
+            source="test",
+            priority=EventPriority.CRITICAL,
+            data={},
+        )
         await event_bus.publish(critical_event)
 
         await asyncio.sleep(0.1)
@@ -350,12 +389,20 @@ class TestEventBus:
         # Start publishing event after delay
         async def delayed_publish():
             await asyncio.sleep(0.1)
-            await event_bus.publish(Event(type=EventType.TASK_COMPLETED, source="test", data={"task_id": "123"}))
+            await event_bus.publish(
+                Event(
+                    type=EventType.TASK_COMPLETED,
+                    source="test",
+                    data={"task_id": "123"},
+                )
+            )
 
         asyncio.create_task(delayed_publish())
 
         # Wait for event
-        event = await event_bus.wait_for_event(EventType.TASK_COMPLETED, timeout=1.0)
+        event = await event_bus.wait_for_event(
+            EventType.TASK_COMPLETED, timeout=1.0
+        )
 
         assert event is not None
         assert event.data["task_id"] == "123"

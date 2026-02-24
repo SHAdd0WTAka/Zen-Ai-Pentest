@@ -28,7 +28,12 @@ class ConversationMemory(BaseMemory):
             id=entry_id,
             content=f"{role}: {content}",
             memory_type=MemoryType.CONVERSATION,
-            metadata={"session_id": self.session_id, "role": role, "turn": self._turn_count, **metadata},
+            metadata={
+                "session_id": self.session_id,
+                "role": role,
+                "turn": self._turn_count,
+                **metadata,
+            },
         )
 
         self._cache.append(entry)
@@ -71,7 +76,11 @@ class ConversationMemory(BaseMemory):
     def search(self, query: str, limit: int = 5) -> List[MemoryEntry]:
         """Simple keyword search (can be enhanced with embeddings)"""
         query_lower = query.lower()
-        matches = [entry for entry in self._cache if query_lower in entry.content.lower()]
+        matches = [
+            entry
+            for entry in self._cache
+            if query_lower in entry.content.lower()
+        ]
         return matches[-limit:]
 
     def get_messages_for_langgraph(self) -> List[Dict[str, str]]:
@@ -87,7 +96,13 @@ class ConversationMemory(BaseMemory):
             if ": " in content:
                 content = content.split(": ", 1)[1]
 
-            messages.append({"role": role, "content": content, "timestamp": entry.timestamp.isoformat()})
+            messages.append(
+                {
+                    "role": role,
+                    "content": content,
+                    "timestamp": entry.timestamp.isoformat(),
+                }
+            )
 
         return messages
 

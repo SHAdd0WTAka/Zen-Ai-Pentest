@@ -3,11 +3,19 @@
 
 import os
 import sys
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from github_app_auth import get_installation_token, get_headers, REPO_OWNER, REPO_NAME
-import requests
 import time
+
+import requests
+from github_app_auth import (
+    REPO_NAME,
+    REPO_OWNER,
+    get_headers,
+    get_installation_token,
+)
+
 
 def check_workflow_status(workflow_name="coverage"):
     """Check latest workflow run status"""
@@ -22,32 +30,32 @@ def check_workflow_status(workflow_name="coverage"):
     response = requests.get(url, headers=headers, params=params)
 
     if response.status_code == 200:
-        runs = response.json().get('workflow_runs', [])
+        runs = response.json().get("workflow_runs", [])
 
         print("\n" + "=" * 60)
         print(" RECENT WORKFLOW RUNS")
         print("=" * 60)
 
         for run in runs:
-            wf_name = run.get('name', 'Unknown')
-            status = run.get('status', 'unknown')
-            conclusion = run.get('conclusion') or 'N/A'
+            wf_name = run.get("name", "Unknown")
+            status = run.get("status", "unknown")
+            conclusion = run.get("conclusion") or "N/A"
 
             # Status text
-            if conclusion == 'success':
+            if conclusion == "success":
                 icon = "[OK]"
-            elif conclusion == 'failure':
+            elif conclusion == "failure":
                 icon = "[FAIL]"
-            elif status == 'in_progress':
+            elif status == "in_progress":
                 icon = "[RUNNING]"
-            elif status == 'queued':
+            elif status == "queued":
                 icon = "[QUEUED]"
             else:
                 icon = "[?]"
 
             print(f"\n{icon} {wf_name}")
             print(f"   Status: {status}")
-            if conclusion != 'N/A':
+            if conclusion != "N/A":
                 print(f"   Result: {conclusion}")
             print(f"   Branch: {run.get('head_branch', 'N/A')}")
             print(f"   Started: {run.get('created_at', 'N/A')}")
@@ -56,6 +64,7 @@ def check_workflow_status(workflow_name="coverage"):
         print("\n" + "=" * 60)
     else:
         print(f"Failed to get workflow runs: {response.status_code}")
+
 
 if __name__ == "__main__":
     check_workflow_status()

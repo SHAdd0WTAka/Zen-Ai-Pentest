@@ -14,7 +14,9 @@ class ResponderPoisoner:
         self.responder_path = responder_path
         self.process = None
 
-    def start_poisoning(self, interface: str = "eth0", analyze: bool = False) -> str:
+    def start_poisoning(
+        self, interface: str = "eth0", analyze: bool = False
+    ) -> str:
         """
         Startet Responder Poisoning.
 
@@ -33,7 +35,9 @@ class ResponderPoisoner:
             cmd.extend(["-r", "-f", "-v"])  # Full poison mode
 
         try:
-            self.process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            self.process = subprocess.Popen(
+                cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            )
             return f"Responder started on {interface}"
         except Exception as e:
             return f"Error: {str(e)}"

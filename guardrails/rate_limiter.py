@@ -94,14 +94,17 @@ class RateLimiter:
                         "allowed": False,
                         "wait_seconds": wait_time,
                         "reason": f"Cooldown period active. Wait {wait_time:.1f} seconds",
-                        "remaining": self.config.max_requests - len(state.requests),
+                        "remaining": self.config.max_requests
+                        - len(state.requests),
                     }
 
             # Check request count
             if len(state.requests) >= self.config.max_requests:
                 # Block for remaining window time
                 oldest_request = min(state.requests)
-                block_duration = self.config.window_seconds - (now - oldest_request)
+                block_duration = self.config.window_seconds - (
+                    now - oldest_request
+                )
                 state.blocked_until = now + block_duration
 
                 return {
@@ -118,7 +121,8 @@ class RateLimiter:
                     "allowed": False,
                     "wait_seconds": 1.0,
                     "reason": "Burst limit exceeded. Slow down requests",
-                    "remaining": self.config.max_requests - len(state.requests),
+                    "remaining": self.config.max_requests
+                    - len(state.requests),
                 }
 
             # Allow request
@@ -187,7 +191,11 @@ class RateLimiter:
         if key:
             state = self._states.get(key)
             if not state:
-                return {"key": key, "requests_in_window": 0, "remaining": self.config.max_requests}
+                return {
+                    "key": key,
+                    "requests_in_window": 0,
+                    "remaining": self.config.max_requests,
+                }
 
             cutoff = now - self.config.window_seconds
             active_requests = len([t for t in state.requests if t > cutoff])
@@ -195,14 +203,21 @@ class RateLimiter:
             return {
                 "key": key,
                 "requests_in_window": active_requests,
-                "remaining": max(0, self.config.max_requests - active_requests),
-                "blocked": state.blocked_until is not None and now < state.blocked_until,
+                "remaining": max(
+                    0, self.config.max_requests - active_requests
+                ),
+                "blocked": state.blocked_until is not None
+                and now < state.blocked_until,
                 "blocked_until": state.blocked_until,
             }
 
         # All stats
         total_keys = len(self._states)
-        total_blocked = sum(1 for s in self._states.values() if s.blocked_until and now < s.blocked_until)
+        total_blocked = sum(
+            1
+            for s in self._states.values()
+            if s.blocked_until and now < s.blocked_until
+        )
 
         return {
             "total_keys": total_keys,
@@ -304,7 +319,11 @@ class ToolRateLimiter:
                     "allowed": False,
                     "reason": check["reason"],
                     "wait_seconds": check["wait_seconds"],
-                    "limiter": "global" if check == checks[0] else ("target" if check == checks[1] else "tool"),
+                    "limiter": (
+                        "global"
+                        if check == checks[0]
+                        else ("target" if check == checks[1] else "tool")
+                    ),
                 }
 
         return {
@@ -349,4 +368,6 @@ async def check_tool_execution(
     user_id: Optional[str] = None,
 ) -> Dict:
     """Check if tool execution is allowed"""
-    return await get_rate_limiter().check_tool_execution(tool_name, target, user_id)
+    return await get_rate_limiter().check_tool_execution(
+        tool_name, target, user_id
+    )

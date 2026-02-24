@@ -151,7 +151,12 @@ class TestStateManagement:
 
     def test_multiple_transitions(self, agent):
         """Test multiple state transitions."""
-        states = [AgentState.PLANNING, AgentState.EXECUTING, AgentState.OBSERVING, AgentState.REFLECTING]
+        states = [
+            AgentState.PLANNING,
+            AgentState.EXECUTING,
+            AgentState.OBSERVING,
+            AgentState.REFLECTING,
+        ]
 
         for state in states:
             agent._transition_to(state)
@@ -241,11 +246,19 @@ class TestRunMethod:
     @pytest.mark.asyncio
     async def test_run_successful_execution(self, agent, sample_plan):
         """Test successful execution of run()."""
-        mock_result = ToolResult(tool_name="NmapScanner", success=True, data={"open_ports": []})
+        mock_result = ToolResult(
+            tool_name="NmapScanner", success=True, data={"open_ports": []}
+        )
 
         with patch.object(agent, "plan", AsyncMock(return_value=sample_plan)):
-            with patch.object(agent, "_execute_with_retry", AsyncMock(return_value=mock_result)):
-                result = await agent.run(goal="Scan ports", target="example.com")
+            with patch.object(
+                agent,
+                "_execute_with_retry",
+                AsyncMock(return_value=mock_result),
+            ):
+                result = await agent.run(
+                    goal="Scan ports", target="example.com"
+                )
 
         assert result["success"] is True
         assert result["state"] == "COMPLETED"
@@ -256,7 +269,9 @@ class TestRunMethod:
     @pytest.mark.asyncio
     async def test_run_with_error(self, agent):
         """Test run() handling execution errors."""
-        with patch.object(agent, "plan", side_effect=Exception("Planning failed")):
+        with patch.object(
+            agent, "plan", side_effect=Exception("Planning failed")
+        ):
             result = await agent.run(goal="Test", target="example.com")
 
         assert result["success"] is False
@@ -269,8 +284,16 @@ class TestRunMethod:
         mock_result = ToolResult(tool_name="Test", success=True, data={})
 
         with patch.object(agent, "plan", AsyncMock(return_value=sample_plan)):
-            with patch.object(agent, "_execute_with_retry", AsyncMock(return_value=mock_result)):
-                await agent.run(goal="Test goal", target="test.com", scope={"depth": "full"})
+            with patch.object(
+                agent,
+                "_execute_with_retry",
+                AsyncMock(return_value=mock_result),
+            ):
+                await agent.run(
+                    goal="Test goal",
+                    target="test.com",
+                    scope={"depth": "full"},
+                )
 
         assert agent.memory is not None
         assert agent.memory.goal == "Test goal"
@@ -283,7 +306,11 @@ class TestRunMethod:
         mock_result = ToolResult(tool_name="Test", success=True, data={})
 
         with patch.object(agent, "plan", AsyncMock(return_value=sample_plan)):
-            with patch.object(agent, "_execute_with_retry", AsyncMock(return_value=mock_result)):
+            with patch.object(
+                agent,
+                "_execute_with_retry",
+                AsyncMock(return_value=mock_result),
+            ):
                 result = await agent.run(goal="Test", target="example.com")
 
         assert result["execution"]["steps_completed"] == len(sample_plan)
@@ -300,7 +327,9 @@ class TestPlanning:
     @pytest.mark.asyncio
     async def test_plan_port_scan_goal(self, agent):
         """Test planning for port scan goal."""
-        agent.memory = AgentMemory(goal="Find open ports", target="example.com")
+        agent.memory = AgentMemory(
+            goal="Find open ports", target="example.com"
+        )
 
         plan = await agent.plan()
 
@@ -310,7 +339,9 @@ class TestPlanning:
     @pytest.mark.asyncio
     async def test_plan_vulnerability_scan_goal(self, agent):
         """Test planning for vulnerability scan goal."""
-        agent.memory = AgentMemory(goal="Scan for vulnerabilities", target="example.com")
+        agent.memory = AgentMemory(
+            goal="Scan for vulnerabilities", target="example.com"
+        )
 
         plan = await agent.plan()
 
@@ -319,20 +350,28 @@ class TestPlanning:
     @pytest.mark.asyncio
     async def test_plan_subdomain_enumeration_goal(self, agent):
         """Test planning for subdomain enumeration goal."""
-        agent.memory = AgentMemory(goal="Enumerate subdomains", target="example.com")
+        agent.memory = AgentMemory(
+            goal="Enumerate subdomains", target="example.com"
+        )
 
         plan = await agent.plan()
 
-        assert any(step.tool_type == ToolType.SUBDOMAIN_ENUMERATOR for step in plan)
+        assert any(
+            step.tool_type == ToolType.SUBDOMAIN_ENUMERATOR for step in plan
+        )
 
     @pytest.mark.asyncio
     async def test_plan_exploit_validation_goal(self, agent):
         """Test planning for exploit validation goal."""
-        agent.memory = AgentMemory(goal="Validate exploits", target="example.com")
+        agent.memory = AgentMemory(
+            goal="Validate exploits", target="example.com"
+        )
 
         plan = await agent.plan()
 
-        assert any(step.tool_type == ToolType.EXPLOIT_VALIDATOR for step in plan)
+        assert any(
+            step.tool_type == ToolType.EXPLOIT_VALIDATOR for step in plan
+        )
 
     @pytest.mark.asyncio
     async def test_plan_default_plan(self, agent):
@@ -343,7 +382,9 @@ class TestPlanning:
 
         # Default plan only has REPORT_GENERATOR when no keywords match
         assert len(plan) >= 1
-        assert any(step.tool_type == ToolType.REPORT_GENERATOR for step in plan)
+        assert any(
+            step.tool_type == ToolType.REPORT_GENERATOR for step in plan
+        )
 
     @pytest.mark.asyncio
     async def test_plan_stored_in_memory(self, agent):
@@ -353,7 +394,10 @@ class TestPlanning:
         plan = await agent.plan()
 
         assert len(agent.memory.short_term) > 0
-        assert any(entry.get("type") == "plan_step" for entry in agent.memory.short_term)
+        assert any(
+            entry.get("type") == "plan_step"
+            for entry in agent.memory.short_term
+        )
 
 
 # ============================================================================
@@ -367,9 +411,15 @@ class TestToolExecution:
     @pytest.mark.asyncio
     async def test_execute_action_success(self, agent):
         """Test successful action execution."""
-        mock_result = ToolResult(tool_name="NmapScanner", success=True, data={"ports": [80]})
+        mock_result = ToolResult(
+            tool_name="NmapScanner", success=True, data={"ports": [80]}
+        )
 
-        with patch.object(agent.tool_registry.get_tool(ToolType.NMAP_SCANNER), "execute", AsyncMock(return_value=mock_result)):
+        with patch.object(
+            agent.tool_registry.get_tool(ToolType.NMAP_SCANNER),
+            "execute",
+            AsyncMock(return_value=mock_result),
+        ):
             result = await agent.execute_action(
                 {
                     "tool_type": "nmap_scanner",
@@ -413,9 +463,15 @@ class TestToolExecution:
             action="Test scan",
             parameters={"target": "example.com"},
         )
-        mock_result = ToolResult(tool_name="NmapScanner", success=True, data={})
+        mock_result = ToolResult(
+            tool_name="NmapScanner", success=True, data={}
+        )
 
-        with patch.object(agent.tool_registry.get_tool(ToolType.NMAP_SCANNER), "execute", AsyncMock(return_value=mock_result)):
+        with patch.object(
+            agent.tool_registry.get_tool(ToolType.NMAP_SCANNER),
+            "execute",
+            AsyncMock(return_value=mock_result),
+        ):
             result = await agent._execute_with_retry(step)
 
         assert result.success is True
@@ -428,8 +484,12 @@ class TestToolExecution:
             action="Test scan",
             parameters={"target": "example.com"},
         )
-        fail_result = ToolResult(tool_name="NmapScanner", success=False, error_message="Temp error")
-        success_result = ToolResult(tool_name="NmapScanner", success=True, data={})
+        fail_result = ToolResult(
+            tool_name="NmapScanner", success=False, error_message="Temp error"
+        )
+        success_result = ToolResult(
+            tool_name="NmapScanner", success=True, data={}
+        )
 
         with patch.object(
             agent.tool_registry.get_tool(ToolType.NMAP_SCANNER),
@@ -448,9 +508,17 @@ class TestToolExecution:
             action="Test scan",
             parameters={"target": "example.com"},
         )
-        fail_result = ToolResult(tool_name="NmapScanner", success=False, error_message="Persistent error")
+        fail_result = ToolResult(
+            tool_name="NmapScanner",
+            success=False,
+            error_message="Persistent error",
+        )
 
-        with patch.object(agent.tool_registry.get_tool(ToolType.NMAP_SCANNER), "execute", AsyncMock(return_value=fail_result)):
+        with patch.object(
+            agent.tool_registry.get_tool(ToolType.NMAP_SCANNER),
+            "execute",
+            AsyncMock(return_value=fail_result),
+        ):
             result = await agent._execute_with_retry(step)
 
         assert result.success is False
@@ -503,7 +571,9 @@ class TestObservation:
         result = ToolResult(
             tool_name="NucleiScanner",
             success=True,
-            data={"findings": [{"severity": "high"}, {"severity": "critical"}]},
+            data={
+                "findings": [{"severity": "high"}, {"severity": "critical"}]
+            },
         )
 
         observation = await agent.observe(result)
@@ -571,7 +641,12 @@ class TestMemoryIntegration:
         result = ToolResult(
             tool_name="NmapScanner",
             success=True,
-            data={"open_ports": [{"port": 22, "service": "ssh"}, {"port": 80, "service": "http"}]},
+            data={
+                "open_ports": [
+                    {"port": 22, "service": "ssh"},
+                    {"port": 80, "service": "http"},
+                ]
+            },
         )
 
         await agent._extract_findings(result)

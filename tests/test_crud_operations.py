@@ -8,7 +8,9 @@ from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
-sys.path.insert(0, "C:\\Users\\Ataka\\source\\repos\\SHAdd0WTAka\\Zen-Ai-Pentest")
+sys.path.insert(
+    0, "C:\\Users\\Ataka\\source\\repos\\SHAdd0WTAka\\Zen-Ai-Pentest"
+)
 
 os.environ["DATABASE_URL"] = "sqlite:///./test_crud.db"
 
@@ -24,7 +26,9 @@ class TestCRUDBase:
         mock_user = Mock()
         mock_user.id = 1
         mock_user.username = "testuser"
-        mock_db.query.return_value.filter.return_value.first.return_value = mock_user
+        mock_db.query.return_value.filter.return_value.first.return_value = (
+            mock_user
+        )
 
         result = crud.get_user(mock_db, user_id=1)
 
@@ -35,7 +39,9 @@ class TestCRUDBase:
         mock_db = MagicMock()
         mock_user = Mock()
         mock_user.username = "testuser"
-        mock_db.query.return_value.filter.return_value.first.return_value = mock_user
+        mock_db.query.return_value.filter.return_value.first.return_value = (
+            mock_user
+        )
 
         result = crud.get_user_by_username(mock_db, username="testuser")
 
@@ -45,7 +51,9 @@ class TestCRUDBase:
     def test_get_users(self, mock_session_class):
         mock_db = MagicMock()
         mock_users = [Mock(), Mock(), Mock()]
-        mock_db.query.return_value.offset.return_value.limit.return_value.all.return_value = mock_users
+        mock_db.query.return_value.offset.return_value.limit.return_value.all.return_value = (
+            mock_users
+        )
 
         result = crud.get_users(mock_db, skip=0, limit=10)
 
@@ -74,7 +82,9 @@ class TestScanCRUD:
         mock_scan = Mock()
         mock_scan.id = 1
         mock_scan.name = "Test Scan"
-        mock_db.query.return_value.filter.return_value.first.return_value = mock_scan
+        mock_db.query.return_value.filter.return_value.first.return_value = (
+            mock_scan
+        )
 
         result = crud.get_scan(mock_db, scan_id=1)
 
@@ -84,7 +94,9 @@ class TestScanCRUD:
     def test_get_scans(self, mock_session_class):
         mock_db = MagicMock()
         mock_scans = [Mock(), Mock()]
-        mock_db.query.return_value.offset.return_value.limit.return_value.all.return_value = mock_scans
+        mock_db.query.return_value.offset.return_value.limit.return_value.all.return_value = (
+            mock_scans
+        )
 
         result = crud.get_scans(mock_db, skip=0, limit=10)
 
@@ -113,7 +125,9 @@ class TestFindingCRUD:
         mock_finding = Mock()
         mock_finding.id = 1
         mock_finding.title = "SQL Injection"
-        mock_db.query.return_value.filter.return_value.first.return_value = mock_finding
+        mock_db.query.return_value.filter.return_value.first.return_value = (
+            mock_finding
+        )
 
         result = crud.get_finding(mock_db, finding_id=1)
 
@@ -123,7 +137,9 @@ class TestFindingCRUD:
     def test_get_findings_by_scan(self, mock_session_class):
         mock_db = MagicMock()
         mock_findings = [Mock(), Mock(), Mock()]
-        mock_db.query.return_value.filter.return_value.all.return_value = mock_findings
+        mock_db.query.return_value.filter.return_value.all.return_value = (
+            mock_findings
+        )
 
         result = crud.get_findings_by_scan(mock_db, scan_id=1)
 
@@ -139,7 +155,9 @@ class TestReportCRUD:
         mock_report = Mock()
         mock_report.id = 1
         mock_report.format = "pdf"
-        mock_db.query.return_value.filter.return_value.first.return_value = mock_report
+        mock_db.query.return_value.filter.return_value.first.return_value = (
+            mock_report
+        )
 
         result = crud.get_report(mock_db, report_id=1)
 
@@ -149,7 +167,9 @@ class TestReportCRUD:
     def test_get_reports_by_scan(self, mock_session_class):
         mock_db = MagicMock()
         mock_reports = [Mock()]
-        mock_db.query.return_value.filter.return_value.all.return_value = mock_reports
+        mock_db.query.return_value.filter.return_value.all.return_value = (
+            mock_reports
+        )
 
         result = crud.get_reports_by_scan(mock_db, scan_id=1)
 
@@ -163,7 +183,13 @@ class TestAuditLogCRUD:
     def test_create_audit_log(self, mock_session_class):
         mock_db = MagicMock()
 
-        _ = crud.create_audit_log(mock_db, user_id=1, action="login", resource="auth", details={"ip": "192.168.1.1"})
+        _ = crud.create_audit_log(
+            mock_db,
+            user_id=1,
+            action="login",
+            resource="auth",
+            details={"ip": "192.168.1.1"},
+        )
 
         mock_db.add.assert_called_once()
         mock_db.commit.assert_called_once()
@@ -172,7 +198,9 @@ class TestAuditLogCRUD:
     def test_get_audit_logs(self, mock_session_class):
         mock_db = MagicMock()
         mock_logs = [Mock(), Mock(), Mock(), Mock()]
-        mock_db.query.return_value.order_by.return_value.offset.return_value.limit.return_value.all.return_value = mock_logs
+        mock_db.query.return_value.order_by.return_value.offset.return_value.limit.return_value.all.return_value = (
+            mock_logs
+        )
 
         result = crud.get_audit_logs(mock_db, skip=0, limit=10)
 

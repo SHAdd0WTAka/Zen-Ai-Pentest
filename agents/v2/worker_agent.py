@@ -25,7 +25,10 @@ except ImportError:
 
 from .agent_task_processor import get_task_processor
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
 logger = logging.getLogger("zen.agents.worker")
 
 
@@ -51,7 +54,9 @@ class WorkerAgent:
         reconnect_delay: float = 10.0,
     ):
         if not WEBSOCKETS_AVAILABLE:
-            raise ImportError("websockets required. Install with: pip install websockets")
+            raise ImportError(
+                "websockets required. Install with: pip install websockets"
+            )
 
         self.agent_id = agent_id
         self.api_key = api_key
@@ -97,12 +102,19 @@ class WorkerAgent:
             self.websocket = await websockets.connect(self.server_url)
 
             # Authenticate with API Key
-            auth_msg = {"type": "auth", "agent_id": self.agent_id, "api_key": self.api_key, "api_secret": self.api_secret}
+            auth_msg = {
+                "type": "auth",
+                "agent_id": self.agent_id,
+                "api_key": self.api_key,
+                "api_secret": self.api_secret,
+            }
 
             await self.websocket.send(json.dumps(auth_msg))
 
             # Wait for auth response
-            response = await asyncio.wait_for(self.websocket.recv(), timeout=10.0)
+            response = await asyncio.wait_for(
+                self.websocket.recv(), timeout=10.0
+            )
 
             data = json.loads(response)
 
@@ -126,7 +138,9 @@ class WorkerAgent:
             while self.connected and not self._shutdown:
                 try:
                     # Receive message
-                    message = await asyncio.wait_for(self.websocket.recv(), timeout=30.0)
+                    message = await asyncio.wait_for(
+                        self.websocket.recv(), timeout=30.0
+                    )
 
                     await self._handle_message(message)
 
@@ -180,7 +194,12 @@ class WorkerAgent:
             # Send acknowledgment
             await self.websocket.send(
                 json.dumps(
-                    {"type": "task_ack", "task_id": task_id, "status": "accepted", "timestamp": datetime.utcnow().isoformat()}
+                    {
+                        "type": "task_ack",
+                        "task_id": task_id,
+                        "status": "accepted",
+                        "timestamp": datetime.utcnow().isoformat(),
+                    }
                 )
             )
 
@@ -188,7 +207,15 @@ class WorkerAgent:
             result = await self.processor.process_task(task)
 
             # Send result
-            await self.websocket.send(json.dumps({"type": "task_result", "task_id": task_id, "result": result.to_dict()}))
+            await self.websocket.send(
+                json.dumps(
+                    {
+                        "type": "task_result",
+                        "task_id": task_id,
+                        "result": result.to_dict(),
+                    }
+                )
+            )
 
             logger.info(f"✅ Task {task_id} completed: {result.status}")
 
@@ -246,7 +273,9 @@ class WorkerAgent:
 
         # Wait for tasks to complete
         if self._tasks_processing > 0:
-            logger.info(f"⏳ Waiting for {self._tasks_processing} tasks to complete...")
+            logger.info(
+                f"⏳ Waiting for {self._tasks_processing} tasks to complete..."
+            )
             while self._tasks_processing > 0:
                 await asyncio.sleep(0.5)
 
@@ -257,8 +286,15 @@ def main():
     parser.add_argument("--agent-id", required=True, help="Agent ID")
     parser.add_argument("--api-key", required=True, help="API Key")
     parser.add_argument("--api-secret", required=True, help="API Secret")
-    parser.add_argument("--server", default="ws://localhost:8000/agents/ws", help="Server URL")
-    parser.add_argument("--reconnect-delay", type=float, default=10.0, help="Reconnect delay (seconds)")
+    parser.add_argument(
+        "--server", default="ws://localhost:8000/agents/ws", help="Server URL"
+    )
+    parser.add_argument(
+        "--reconnect-delay",
+        type=float,
+        default=10.0,
+        help="Reconnect delay (seconds)",
+    )
 
     args = parser.parse_args()
 

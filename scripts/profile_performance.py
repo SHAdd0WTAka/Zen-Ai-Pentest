@@ -73,7 +73,9 @@ def profile_imports():
     return results
 
 
-def profile_function(target: str, sort_by: str = "cumulative", lines: int = 50):
+def profile_function(
+    target: str, sort_by: str = "cumulative", lines: int = 50
+):
     """Profile a specific function or module"""
     print("=" * 70)
     print(f"FUNCTION PROFILING: {target}")
@@ -217,7 +219,11 @@ def analyze_hotspots(module_name: str, function_name: str = None):
     # Get all functions
     import inspect
 
-    functions = [(name, obj) for name, obj in inspect.getmembers(module, inspect.isfunction) if not name.startswith("_")]
+    functions = [
+        (name, obj)
+        for name, obj in inspect.getmembers(module, inspect.isfunction)
+        if not name.startswith("_")
+    ]
 
     if function_name:
         functions = [(n, f) for n, f in functions if n == function_name]
@@ -237,7 +243,10 @@ def analyze_hotspots(module_name: str, function_name: str = None):
                 sig = inspect.signature(func)
                 if len(sig.parameters) == 0:
                     func()
-                elif all(p.default != inspect.Parameter.empty for p in sig.parameters.values()):
+                elif all(
+                    p.default != inspect.Parameter.empty
+                    for p in sig.parameters.values()
+                ):
                     func()
         except Exception as e:
             results.append((name, 0, f"Error: {e}"))
@@ -264,18 +273,42 @@ def analyze_hotspots(module_name: str, function_name: str = None):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Performance Profiling Tool for Zen-AI-Pentest")
-    parser.add_argument("--target", help="Target module/function to profile (e.g., core.cache.MemoryCache)")
-    parser.add_argument("--importtime", action="store_true", help="Profile import times")
-    parser.add_argument("--memory", action="store_true", help="Profile memory usage")
-    parser.add_argument("--hotspots", help="Analyze hotspots in a module (e.g., core.cache)")
+    parser = argparse.ArgumentParser(
+        description="Performance Profiling Tool for Zen-AI-Pentest"
+    )
+    parser.add_argument(
+        "--target",
+        help="Target module/function to profile (e.g., core.cache.MemoryCache)",
+    )
+    parser.add_argument(
+        "--importtime", action="store_true", help="Profile import times"
+    )
+    parser.add_argument(
+        "--memory", action="store_true", help="Profile memory usage"
+    )
+    parser.add_argument(
+        "--hotspots", help="Analyze hotspots in a module (e.g., core.cache)"
+    )
     parser.add_argument(
         "--sort",
         default="cumulative",
-        choices=["calls", "cumulative", "file", "module", "pcalls", "time", "tottime"],
+        choices=[
+            "calls",
+            "cumulative",
+            "file",
+            "module",
+            "pcalls",
+            "time",
+            "tottime",
+        ],
         help="Sort key for profiler output",
     )
-    parser.add_argument("--lines", type=int, default=50, help="Number of lines to show in profiler output")
+    parser.add_argument(
+        "--lines",
+        type=int,
+        default=50,
+        help="Number of lines to show in profiler output",
+    )
     parser.add_argument("--save", help="Save profile to file")
 
     args = parser.parse_args()

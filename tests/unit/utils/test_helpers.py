@@ -10,7 +10,13 @@ import tempfile
 
 import pytest
 
-from utils.helpers import load_config, load_session, save_config, save_session, validate_target
+from utils.helpers import (
+    load_config,
+    load_session,
+    save_config,
+    save_session,
+    validate_target,
+)
 
 pytestmark = pytest.mark.unit
 
@@ -20,9 +26,14 @@ class TestLoadConfig:
 
     def test_load_existing_config(self):
         """Test loading existing config file"""
-        test_config = {"backends": {"openrouter_api_key": "test_key"}, "custom_key": "custom_value"}
+        test_config = {
+            "backends": {"openrouter_api_key": "test_key"},
+            "custom_key": "custom_value",
+        }
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".json", delete=False
+        ) as f:
             json.dump(test_config, f)
             temp_path = f.name
 
@@ -47,7 +58,9 @@ class TestLoadConfig:
 
     def test_load_invalid_json(self):
         """Test loading invalid JSON"""
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".json", delete=False
+        ) as f:
             f.write("invalid json")
             temp_path = f.name
 
@@ -60,9 +73,14 @@ class TestLoadConfig:
 
     def test_config_merge_deep(self):
         """Test deep merging of nested config"""
-        test_config = {"backends": {"openrouter_api_key": "test"}, "rate_limits": {"requests_per_minute": 20}}
+        test_config = {
+            "backends": {"openrouter_api_key": "test"},
+            "rate_limits": {"requests_per_minute": 20},
+        }
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".json", delete=False
+        ) as f:
             json.dump(test_config, f)
             temp_path = f.name
 

@@ -179,7 +179,12 @@ def __getattr__(name: str) -> Any:
     """Lazy load heavy modules on first access"""
 
     # Orchestrator exports
-    if name in ("ZenOrchestrator", "BaseBackend", "QualityLevel", "LLMResponse"):
+    if name in (
+        "ZenOrchestrator",
+        "BaseBackend",
+        "QualityLevel",
+        "LLMResponse",
+    ):
         mod = _get_orchestrator_module()
         return getattr(mod, name)
 

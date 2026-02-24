@@ -30,7 +30,9 @@ class TestUserCRUD:
         """Test get user by ID"""
         # Mock the database query
         mock_user = User(id="1", username="testuser", email="test@test.com")
-        mock_db.query.return_value.filter.return_value.first.return_value = mock_user
+        mock_db.query.return_value.filter.return_value.first.return_value = (
+            mock_user
+        )
 
         # Call the function (if it exists)
         if hasattr(crud, "get_user"):
@@ -41,7 +43,9 @@ class TestUserCRUD:
     def test_get_user_by_username(self, mock_db):
         """Test get user by username"""
         mock_user = User(username="testuser", email="test@test.com")
-        mock_db.query.return_value.filter.return_value.first.return_value = mock_user
+        mock_db.query.return_value.filter.return_value.first.return_value = (
+            mock_user
+        )
 
         if hasattr(crud, "get_user_by_username"):
             user = crud.get_user_by_username(mock_db, username="testuser")
@@ -54,7 +58,9 @@ class TestUserCRUD:
             User(id="1", username="user1"),
             User(id="2", username="user2"),
         ]
-        mock_db.query.return_value.offset.return_value.limit.return_value.all.return_value = mock_users
+        mock_db.query.return_value.offset.return_value.limit.return_value.all.return_value = (
+            mock_users
+        )
 
         if hasattr(crud, "get_users"):
             users = crud.get_users(mock_db, skip=0, limit=10)
@@ -63,7 +69,12 @@ class TestUserCRUD:
     def test_create_user(self, mock_db):
         """Test create new user"""
         if hasattr(crud, "create_user"):
-            crud.create_user(mock_db, username="newuser", email="new@test.com", password="password123")
+            crud.create_user(
+                mock_db,
+                username="newuser",
+                email="new@test.com",
+                password="password123",
+            )
 
             mock_db.add.assert_called_once()
             mock_db.commit.assert_called_once()
@@ -72,7 +83,9 @@ class TestUserCRUD:
     def test_update_user(self, mock_db):
         """Test update user"""
         mock_user = User(id="1", username="testuser")
-        mock_db.query.return_value.filter.return_value.first.return_value = mock_user
+        mock_db.query.return_value.filter.return_value.first.return_value = (
+            mock_user
+        )
 
         if hasattr(crud, "update_user"):
             crud.update_user(mock_db, user_id="1", username="updated")
@@ -81,7 +94,9 @@ class TestUserCRUD:
     def test_delete_user(self, mock_db):
         """Test delete user"""
         mock_user = User(id="1", username="testuser")
-        mock_db.query.return_value.filter.return_value.first.return_value = mock_user
+        mock_db.query.return_value.filter.return_value.first.return_value = (
+            mock_user
+        )
 
         if hasattr(crud, "delete_user"):
             crud.delete_user(mock_db, user_id="1")
@@ -101,7 +116,9 @@ class TestScanCRUD:
     def test_get_scan_by_id(self, mock_db):
         """Test get scan by ID"""
         mock_scan = Scan(id="1", target="example.com", status="pending")
-        mock_db.query.return_value.filter.return_value.first.return_value = mock_scan
+        mock_db.query.return_value.filter.return_value.first.return_value = (
+            mock_scan
+        )
 
         if hasattr(crud, "get_scan"):
             scan = crud.get_scan(mock_db, scan_id="1")
@@ -114,7 +131,9 @@ class TestScanCRUD:
             Scan(id="1", target="example.com"),
             Scan(id="2", target="test.com"),
         ]
-        mock_db.query.return_value.offset.return_value.limit.return_value.all.return_value = mock_scans
+        mock_db.query.return_value.offset.return_value.limit.return_value.all.return_value = (
+            mock_scans
+        )
 
         if hasattr(crud, "get_scans"):
             scans = crud.get_scans(mock_db, skip=0, limit=10)
@@ -123,7 +142,9 @@ class TestScanCRUD:
     def test_create_scan(self, mock_db):
         """Test create new scan"""
         if hasattr(crud, "create_scan"):
-            crud.create_scan(mock_db, target="example.com", type="full", user_id="1")
+            crud.create_scan(
+                mock_db, target="example.com", type="full", user_id="1"
+            )
 
             mock_db.add.assert_called_once()
             mock_db.commit.assert_called_once()
@@ -131,7 +152,9 @@ class TestScanCRUD:
     def test_update_scan_status(self, mock_db):
         """Test update scan status"""
         mock_scan = Scan(id="1", target="example.com", status="pending")
-        mock_db.query.return_value.filter.return_value.first.return_value = mock_scan
+        mock_db.query.return_value.filter.return_value.first.return_value = (
+            mock_scan
+        )
 
         if hasattr(crud, "update_scan"):
             crud.update_scan(mock_db, scan_id="1", status="running")
@@ -140,7 +163,9 @@ class TestScanCRUD:
     def test_delete_scan(self, mock_db):
         """Test delete scan"""
         mock_scan = Scan(id="1", target="example.com")
-        mock_db.query.return_value.filter.return_value.first.return_value = mock_scan
+        mock_db.query.return_value.filter.return_value.first.return_value = (
+            mock_scan
+        )
 
         if hasattr(crud, "delete_scan"):
             crud.delete_scan(mock_db, scan_id="1")
@@ -160,7 +185,9 @@ class TestFindingCRUD:
     def test_get_finding_by_id(self, mock_db):
         """Test get finding by ID"""
         mock_finding = Finding(id="1", title="SQL Injection", severity="high")
-        mock_db.query.return_value.filter.return_value.first.return_value = mock_finding
+        mock_db.query.return_value.filter.return_value.first.return_value = (
+            mock_finding
+        )
 
         if hasattr(crud, "get_finding"):
             finding = crud.get_finding(mock_db, finding_id="1")
@@ -173,7 +200,9 @@ class TestFindingCRUD:
             Finding(id="1", title="Finding 1", scan_id="1"),
             Finding(id="2", title="Finding 2", scan_id="1"),
         ]
-        mock_db.query.return_value.filter.return_value.all.return_value = mock_findings
+        mock_db.query.return_value.filter.return_value.all.return_value = (
+            mock_findings
+        )
 
         if hasattr(crud, "get_findings_by_scan"):
             findings = crud.get_findings_by_scan(mock_db, scan_id="1")
@@ -182,7 +211,13 @@ class TestFindingCRUD:
     def test_create_finding(self, mock_db):
         """Test create new finding"""
         if hasattr(crud, "create_finding"):
-            crud.create_finding(mock_db, scan_id="1", title="New Finding", severity="medium", description="Test description")
+            crud.create_finding(
+                mock_db,
+                scan_id="1",
+                title="New Finding",
+                severity="medium",
+                description="Test description",
+            )
 
             mock_db.add.assert_called_once()
             mock_db.commit.assert_called_once()
@@ -190,7 +225,9 @@ class TestFindingCRUD:
     def test_update_finding(self, mock_db):
         """Test update finding"""
         mock_finding = Finding(id="1", title="Old Title", severity="low")
-        mock_db.query.return_value.filter.return_value.first.return_value = mock_finding
+        mock_db.query.return_value.filter.return_value.first.return_value = (
+            mock_finding
+        )
 
         if hasattr(crud, "update_finding"):
             crud.update_finding(mock_db, finding_id="1", severity="high")

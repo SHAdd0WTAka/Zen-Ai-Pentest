@@ -33,7 +33,9 @@ from benchmarks.comparison.common_benchmarks import (
 )
 
 # Setup logging
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 logger = logging.getLogger(__name__)
 
 
@@ -59,7 +61,10 @@ class CompetitorSimulator:
                 "web_01_crawl_depth": {"detection": 0.75, "duration": 300},
                 "net_01_port_scan": {"detection": 0.50, "duration": 180},
                 "cloud_01_s3_check": {"detection": 0.70, "duration": 150},
-                "container_01_docker_scan": {"detection": 0.60, "duration": 200},
+                "container_01_docker_scan": {
+                    "detection": 0.60,
+                    "duration": 200,
+                },
                 "report_01_pdf_gen": {"detection": 0.85, "duration": 60},
             },
         },
@@ -80,7 +85,10 @@ class CompetitorSimulator:
                 "web_01_crawl_depth": {"detection": 0.35, "duration": 180},
                 "net_01_port_scan": {"detection": 0.90, "duration": 120},
                 "cloud_01_s3_check": {"detection": 0.10, "duration": 60},
-                "container_01_docker_scan": {"detection": 0.20, "duration": 120},
+                "container_01_docker_scan": {
+                    "detection": 0.20,
+                    "duration": 120,
+                },
                 "report_01_pdf_gen": {"detection": 0.40, "duration": 45},
             },
         },
@@ -118,7 +126,9 @@ class CompetitorSimulator:
 
         # Generate simulated findings
         findings = []
-        for i, expected in enumerate(test_case.expected_findings[:found_count]):
+        for i, expected in enumerate(
+            test_case.expected_findings[:found_count]
+        ):
             finding = FindingResult(
                 vuln_type=expected.vuln_type,
                 severity=expected.severity,
@@ -154,7 +164,11 @@ class CompetitorSimulator:
             end_time=datetime.utcnow(),
             scan_duration_seconds=actual_duration,
             findings=findings,
-            tokens_used=int(random.uniform(10000, 50000)) if self.competitor == "pentestgpt" else 0,
+            tokens_used=(
+                int(random.uniform(10000, 50000))
+                if self.competitor == "pentestgpt"
+                else 0
+            ),
             cost_usd=self.profile["cost_per_test"] * random.uniform(0.8, 1.2),
         )
 
@@ -207,11 +221,15 @@ class ComparisonAnalyzer:
             if not results:
                 continue
 
-            avg_detection = sum(r.detection_rate for r in results) / len(results)
+            avg_detection = sum(r.detection_rate for r in results) / len(
+                results
+            )
             avg_precision = sum(r.precision for r in results) / len(results)
             avg_recall = sum(r.recall for r in results) / len(results)
             avg_f1 = sum(r.f1_score for r in results) / len(results)
-            avg_duration = sum(r.duration_seconds for r in results) / len(results)
+            avg_duration = sum(r.duration_seconds for r in results) / len(
+                results
+            )
 
             comparison["summary"][tool_name] = {
                 "tests_run": len(results),
@@ -233,13 +251,21 @@ class ComparisonAnalyzer:
 
         # Determine winner
         if comparison["summary"]:
-            winner = max(comparison["summary"].items(), key=lambda x: x[1]["overall_score"])
-            comparison["winner"] = {"tool": winner[0], "score": winner[1]["overall_score"]}
+            winner = max(
+                comparison["summary"].items(),
+                key=lambda x: x[1]["overall_score"],
+            )
+            comparison["winner"] = {
+                "tool": winner[0],
+                "score": winner[1]["overall_score"],
+            }
 
         return comparison
 
     def generate_markdown_report(
-        self, template_path: Optional[Path] = None, output_path: Path = Path("comparison_report.md")
+        self,
+        template_path: Optional[Path] = None,
+        output_path: Path = Path("comparison_report.md"),
     ) -> str:
         """Generate markdown comparison report."""
         comparison = self.compare_tools()
@@ -286,7 +312,12 @@ class ComparisonAnalyzer:
             )
 
         if "winner" in comparison:
-            lines.extend(["", f"### 🏆 Winner: {comparison['winner']['tool']} (Score: {comparison['winner']['score']:.3f})"])
+            lines.extend(
+                [
+                    "",
+                    f"### 🏆 Winner: {comparison['winner']['tool']} (Score: {comparison['winner']['score']:.3f})",
+                ]
+            )
 
         lines.extend(["", "## Detailed Results", ""])
 
@@ -326,9 +357,18 @@ class ComparisonAnalyzer:
         report = template
 
         # Replace basic placeholders
-        report = report.replace("{{report_id}}", f"RPT-{datetime.utcnow().strftime('%Y%m%d-%H%M%S')}")
-        report = report.replace("{{generation_date}}", datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
-        report = report.replace("{{total_test_cases}}", str(max(len(results) for results in self.results.values())))
+        report = report.replace(
+            "{{report_id}}",
+            f"RPT-{datetime.utcnow().strftime('%Y%m%d-%H%M%S')}",
+        )
+        report = report.replace(
+            "{{generation_date}}",
+            datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
+        )
+        report = report.replace(
+            "{{total_test_cases}}",
+            str(max(len(results) for results in self.results.values())),
+        )
 
         # Replace summary metrics
         if comparison["summary"]:
@@ -343,7 +383,9 @@ class ComparisonAnalyzer:
 
         # Replace winner
         if "winner" in comparison:
-            report = report.replace("{{overall_winner}}", comparison["winner"]["tool"])
+            report = report.replace(
+                "{{overall_winner}}", comparison["winner"]["tool"]
+            )
 
         return report
 
@@ -367,7 +409,10 @@ class ComparisonAnalyzer:
             "Overall Score Comparison",
             "Tool",
             "Score",
-            {tool: data["overall_score"] for tool, data in comparison["summary"].items()},
+            {
+                tool: data["overall_score"]
+                for tool, data in comparison["summary"].items()
+            },
         )
 
         # 2. Detection Rate by Category
@@ -381,14 +426,22 @@ class ComparisonAnalyzer:
                     category_data[category] = {}
                 if tool_name not in category_data[category]:
                     category_data[category][tool_name] = []
-                category_data[category][tool_name].append(result.detection_rate)
+                category_data[category][tool_name].append(
+                    result.detection_rate
+                )
 
         # Average by category
         for category, tools in category_data.items():
-            category_data[category] = {tool: sum(rates) / len(rates) for tool, rates in tools.items()}
+            category_data[category] = {
+                tool: sum(rates) / len(rates) for tool, rates in tools.items()
+            }
 
         self._create_grouped_bar_chart(
-            output_dir / "detection_by_category.png", "Detection Rate by Category", "Category", "Detection Rate", category_data
+            output_dir / "detection_by_category.png",
+            "Detection Rate by Category",
+            "Category",
+            "Detection Rate",
+            category_data,
         )
 
         # 3. Precision vs Recall Scatter
@@ -397,12 +450,22 @@ class ComparisonAnalyzer:
             "Precision vs Recall",
             "Recall",
             "Precision",
-            {tool: (data["avg_recall"], data["avg_precision"]) for tool, data in comparison["summary"].items()},
+            {
+                tool: (data["avg_recall"], data["avg_precision"])
+                for tool, data in comparison["summary"].items()
+            },
         )
 
         logger.info(f"Visualizations saved to {output_dir}")
 
-    def _create_bar_chart(self, output_path: Path, title: str, xlabel: str, ylabel: str, data: Dict[str, float]) -> None:
+    def _create_bar_chart(
+        self,
+        output_path: Path,
+        title: str,
+        xlabel: str,
+        ylabel: str,
+        data: Dict[str, float],
+    ) -> None:
         """Create a simple bar chart."""
         import matplotlib.pyplot as plt
 
@@ -429,7 +492,12 @@ class ComparisonAnalyzer:
         plt.close()
 
     def _create_grouped_bar_chart(
-        self, output_path: Path, title: str, xlabel: str, ylabel: str, data: Dict[str, Dict[str, float]]
+        self,
+        output_path: Path,
+        title: str,
+        xlabel: str,
+        ylabel: str,
+        data: Dict[str, Dict[str, float]],
     ) -> None:
         """Create a grouped bar chart."""
         import matplotlib.pyplot as plt
@@ -460,7 +528,12 @@ class ComparisonAnalyzer:
         plt.close()
 
     def _create_scatter_plot(
-        self, output_path: Path, title: str, xlabel: str, ylabel: str, data: Dict[str, Tuple[float, float]]
+        self,
+        output_path: Path,
+        title: str,
+        xlabel: str,
+        ylabel: str,
+        data: Dict[str, Tuple[float, float]],
     ) -> None:
         """Create a scatter plot."""
         import matplotlib.pyplot as plt
@@ -471,7 +544,9 @@ class ComparisonAnalyzer:
 
         for (tool, (x, y)), color in zip(data.items(), colors):
             ax.scatter(x, y, s=200, label=tool, color=color, alpha=0.7)
-            ax.annotate(tool, (x, y), xytext=(5, 5), textcoords="offset points")
+            ax.annotate(
+                tool, (x, y), xytext=(5, 5), textcoords="offset points"
+            )
 
         ax.set_xlabel(xlabel)
         ax.set_ylabel(ylabel)
@@ -488,13 +563,28 @@ class ComparisonAnalyzer:
 
 def main():
     """Main entry point."""
-    parser = argparse.ArgumentParser(description="Analyze competitor benchmark results")
-    parser.add_argument("--mode", choices=["simulate", "compare", "visualize", "badge"], required=True, help="Analysis mode")
-    parser.add_argument("--competitor", choices=["pentestgpt", "autopentest"], help="Competitor name (for simulate mode)")
+    parser = argparse.ArgumentParser(
+        description="Analyze competitor benchmark results"
+    )
+    parser.add_argument(
+        "--mode",
+        choices=["simulate", "compare", "visualize", "badge"],
+        required=True,
+        help="Analysis mode",
+    )
+    parser.add_argument(
+        "--competitor",
+        choices=["pentestgpt", "autopentest"],
+        help="Competitor name (for simulate mode)",
+    )
     parser.add_argument("--test-case", help="Test case ID (for simulate mode)")
-    parser.add_argument("--results-dir", type=Path, help="Directory containing result files")
+    parser.add_argument(
+        "--results-dir", type=Path, help="Directory containing result files"
+    )
     parser.add_argument("--output", type=Path, help="Output file path")
-    parser.add_argument("--output-dir", type=Path, help="Output directory for visualizations")
+    parser.add_argument(
+        "--output-dir", type=Path, help="Output directory for visualizations"
+    )
     parser.add_argument("--template", type=Path, help="Report template file")
 
     args = parser.parse_args()
@@ -504,7 +594,9 @@ def main():
             parser.error("simulate mode requires --competitor and --test-case")
 
         # Load test case
-        test_case_path = Path(f"benchmarks/scenarios/test_cases/{args.test_case}.yml")
+        test_case_path = Path(
+            f"benchmarks/scenarios/test_cases/{args.test_case}.yml"
+        )
         if not test_case_path.exists():
             # Create dummy test case for testing
             test_case = BenchmarkTestCase(
@@ -550,7 +642,9 @@ def main():
         analyzer.load_results()
 
         output_path = args.output or Path("comparison_report.md")
-        _ = analyzer.generate_markdown_report(template_path=args.template, output_path=output_path)
+        _ = analyzer.generate_markdown_report(
+            template_path=args.template, output_path=output_path
+        )
 
         print(f"Report generated: {output_path}")
 

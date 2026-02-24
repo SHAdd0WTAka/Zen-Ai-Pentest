@@ -17,7 +17,11 @@ async def get_tools_status():
 
         return report
     except Exception as e:
-        return {"ready": False, "error": str(e), "message": "Tool checker not available"}
+        return {
+            "ready": False,
+            "error": str(e),
+            "message": "Tool checker not available",
+        }
 
 
 @router.post("/tools/install")
@@ -29,7 +33,15 @@ async def install_tools(background_tasks: BackgroundTasks):
     def run_installer():
         try:
             if sys.platform == "win32":
-                subprocess.Popen(["powershell", "-ExecutionPolicy", "Bypass", "-File", "scripts/install-tools.ps1"])
+                subprocess.Popen(
+                    [
+                        "powershell",
+                        "-ExecutionPolicy",
+                        "Bypass",
+                        "-File",
+                        "scripts/install-tools.ps1",
+                    ]
+                )
             else:
                 subprocess.Popen(["bash", "scripts/install-tools.sh", "--all"])
         except Exception as e:
@@ -153,9 +165,13 @@ async def get_system_info(
         "processor": platform.processor(),
         "hostname": platform.node(),
         "cpu_count": psutil.cpu_count(),
-        "cpu_freq_mhz": psutil.cpu_freq().current if psutil.cpu_freq() else None,
+        "cpu_freq_mhz": (
+            psutil.cpu_freq().current if psutil.cpu_freq() else None
+        ),
         "boot_time": datetime.fromtimestamp(psutil.boot_time()).isoformat(),
-        "load_average": psutil.getloadavg() if hasattr(psutil, "getloadavg") else None,
+        "load_average": (
+            psutil.getloadavg() if hasattr(psutil, "getloadavg") else None
+        ),
     }
 
 
@@ -175,7 +191,10 @@ async def get_api_stats(
 
 
 @router.get("/logs")
-async def get_system_logs(lines: int = 100, current_user: User = Depends(require_permissions(UserRole.ADMIN))):
+async def get_system_logs(
+    lines: int = 100,
+    current_user: User = Depends(require_permissions(UserRole.ADMIN)),
+):
     """Get recent system logs (admin only)"""
     try:
         with open("logs/zen_ai.log", "r") as f:
@@ -186,7 +205,10 @@ async def get_system_logs(lines: int = 100, current_user: User = Depends(require
 
 
 @router.post("/maintenance")
-async def toggle_maintenance_mode(enabled: bool, current_user: User = Depends(require_permissions(UserRole.ADMIN))):
+async def toggle_maintenance_mode(
+    enabled: bool,
+    current_user: User = Depends(require_permissions(UserRole.ADMIN)),
+):
     """Toggle maintenance mode (admin only)"""
     # TODO: Implement maintenance mode
     return {

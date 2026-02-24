@@ -262,7 +262,9 @@ class SubdomainScanner:
         "2026",
     ]
 
-    def __init__(self, orchestrator=None, max_workers: int = 50, timeout: int = 10):
+    def __init__(
+        self, orchestrator=None, max_workers: int = 50, timeout: int = 10
+    ):
         self.orchestrator = orchestrator
         self.max_workers = max_workers
         self.timeout = timeout
@@ -308,25 +310,33 @@ class SubdomainScanner:
         if "dns" in techniques:
             dns_results = await self._dns_enumeration(domain)
             discovered.update(dns_results)
-            logger.info(f"[SubdomainScanner] DNS enumeration found {len(dns_results)} subdomains")
+            logger.info(
+                f"[SubdomainScanner] DNS enumeration found {len(dns_results)} subdomains"
+            )
 
         # Technique 2: Wordlist Brute-force
         if "wordlist" in techniques:
             wordlist_results = await self._wordlist_bruteforce(domain)
             discovered.update(wordlist_results)
-            logger.info(f"[SubdomainScanner] Wordlist found {len(wordlist_results)} subdomains")
+            logger.info(
+                f"[SubdomainScanner] Wordlist found {len(wordlist_results)} subdomains"
+            )
 
         # Technique 3: Certificate Transparency Logs
         if "crt" in techniques:
             crt_results = await self._crt_sh_enum(domain)
             discovered.update(crt_results)
-            logger.info(f"[SubdomainScanner] CRT.sh found {len(crt_results)} subdomains")
+            logger.info(
+                f"[SubdomainScanner] CRT.sh found {len(crt_results)} subdomains"
+            )
 
         # Technique 4: OSINT via LLM (if orchestrator available)
         if "osint" in techniques and self.orchestrator:
             osint_results = await self._llm_assisted_enum(domain)
             discovered.update(osint_results)
-            logger.info(f"[SubdomainScanner] OSINT found {len(osint_results)} subdomains")
+            logger.info(
+                f"[SubdomainScanner] OSINT found {len(osint_results)} subdomains"
+            )
 
         # Remove wildcards and validate
         discovered = self._filter_wildcards(discovered, domain)
@@ -341,7 +351,9 @@ class SubdomainScanner:
                 self.results[subdomain] = SubdomainResult(subdomain=subdomain)
 
         duration = (datetime.now() - start_time).total_seconds()
-        logger.info(f"[SubdomainScanner] Scan completed in {duration:.2f}s - Found {len(self.results)} subdomains")
+        logger.info(
+            f"[SubdomainScanner] Scan completed in {duration:.2f}s - Found {len(self.results)} subdomains"
+        )
 
         return self.results
 
@@ -349,7 +361,19 @@ class SubdomainScanner:
         """Enumerate subdomains using DNS queries"""
         discovered = set()
         # Common prefixes for DNS enumeration
-        prefixes = ["www", "mail", "ftp", "ns", "ns1", "ns2", "mx", "mx1", "mx2", "blog", "shop"]
+        prefixes = [
+            "www",
+            "mail",
+            "ftp",
+            "ns",
+            "ns1",
+            "ns2",
+            "mx",
+            "mx1",
+            "mx2",
+            "blog",
+            "shop",
+        ]
 
         tasks = []
         for prefix in prefixes:
@@ -365,7 +389,9 @@ class SubdomainScanner:
 
         return discovered
 
-    async def _dns_query(self, subdomain: str, record_type: str) -> Optional[str]:
+    async def _dns_query(
+        self, subdomain: str, record_type: str
+    ) -> Optional[str]:
         """Perform single DNS query"""
         try:
             resolver = dns.resolver.Resolver()
@@ -375,7 +401,12 @@ class SubdomainScanner:
             answers = resolver.resolve(subdomain, record_type)
             if answers:
                 return subdomain
-        except (dns.resolver.NXDOMAIN, dns.resolver.NoAnswer, dns.resolver.Timeout, dns.exception.DNSException):
+        except (
+            dns.resolver.NXDOMAIN,
+            dns.resolver.NoAnswer,
+            dns.resolver.Timeout,
+            dns.exception.DNSException,
+        ):
             pass
         return None
 
@@ -392,10 +423,18 @@ class SubdomainScanner:
                     loop = asyncio.get_event_loop()
                     with ThreadPoolExecutor(max_workers=1) as executor:
                         await asyncio.wait_for(
-                            loop.run_in_executor(executor, socket.gethostbyname, subdomain), timeout=self.timeout
+                            loop.run_in_executor(
+                                executor, socket.gethostbyname, subdomain
+                            ),
+                            timeout=self.timeout,
                         )
                     return subdomain
-                except (socket.gaierror, socket.herror, asyncio.TimeoutError, OSError):
+                except (
+                    socket.gaierror,
+                    socket.herror,
+                    asyncio.TimeoutError,
+                    OSError,
+                ):
                     return None
 
         # Create tasks for all wordlist entries
@@ -470,7 +509,9 @@ Example: admin,api,dev,staging,us-west,cdn
             for candidate in candidates:
                 candidate = candidate.strip()
                 # Clean up common prefixes/suffixes
-                candidate = candidate.replace("*.", "").replace(f".{domain}", "")
+                candidate = candidate.replace("*.", "").replace(
+                    f".{domain}", ""
+                )
                 if candidate and "." not in candidate and len(candidate) > 1:
                     discovered.add(f"{candidate}.{domain}")
 
@@ -485,7 +526,11 @@ Example: admin,api,dev,staging,us-west,cdn
         wildcards = set()
 
         # Test for wildcards by checking random subdomains
-        test_subdomains = [f"test12345.{domain}", f"random98765.{domain}", f"wildcard-check.{domain}"]
+        test_subdomains = [
+            f"test12345.{domain}",
+            f"random98765.{domain}",
+            f"wildcard-check.{domain}",
+        ]
 
         wildcard_ips = set()
         for test_sub in test_subdomains:
@@ -518,20 +563,30 @@ Example: admin,api,dev,staging,us-west,cdn
                 url = f"{protocol}://{subdomain}"
                 try:
                     timeout = aiohttp.ClientTimeout(total=self.timeout)
-                    async with aiohttp.ClientSession(timeout=timeout) as session:
-                        async with session.get(url, allow_redirects=True, ssl=False) as response:
+                    async with aiohttp.ClientSession(
+                        timeout=timeout
+                    ) as session:
+                        async with session.get(
+                            url, allow_redirects=True, ssl=False
+                        ) as response:
                             if subdomain not in self.results:
-                                self.results[subdomain] = SubdomainResult(subdomain=subdomain)
+                                self.results[subdomain] = SubdomainResult(
+                                    subdomain=subdomain
+                                )
 
                             result = self.results[subdomain]
                             result.is_alive = True
                             result.status_code = response.status
 
                             # Get server header
-                            result.server_header = response.headers.get("Server", "Unknown")
+                            result.server_header = response.headers.get(
+                                "Server", "Unknown"
+                            )
 
                             # Detect technologies
-                            result.technologies = self._detect_technologies(response.headers, await response.text())
+                            result.technologies = self._detect_technologies(
+                                response.headers, await response.text()
+                            )
 
                 except (aiohttp.ClientError, asyncio.TimeoutError, OSError):
                     pass
@@ -612,7 +667,10 @@ Example: admin,api,dev,staging,us-west,cdn
             return json.dumps(data, indent=2)
 
         elif format_type == "txt":
-            lines = [f"# Subdomain Scan Results - {datetime.now().isoformat()}", ""]
+            lines = [
+                f"# Subdomain Scan Results - {datetime.now().isoformat()}",
+                "",
+            ]
             for subdomain in sorted(self.results.keys()):
                 result = self.results[subdomain]
                 lines.append(f"{subdomain}")
@@ -626,10 +684,20 @@ Example: admin,api,dev,staging,us-west,cdn
             return "\n".join(lines)
 
         elif format_type == "csv":
-            lines = ["subdomain,ip_addresses,status_code,server,technologies,is_alive"]
+            lines = [
+                "subdomain,ip_addresses,status_code,server,technologies,is_alive"
+            ]
             for subdomain, result in self.results.items():
-                ips = "|".join(result.ip_addresses) if result.ip_addresses else ""
-                techs = "|".join(result.technologies) if result.technologies else ""
+                ips = (
+                    "|".join(result.ip_addresses)
+                    if result.ip_addresses
+                    else ""
+                )
+                techs = (
+                    "|".join(result.technologies)
+                    if result.technologies
+                    else ""
+                )
                 lines.append(
                     f'"{subdomain}","{ips}",{result.status_code or ""},'
                     f'"{result.server_header or ""}","{techs}",{result.is_alive}'
@@ -667,7 +735,10 @@ if __name__ == "__main__":
     # Demo usage
     import sys
 
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    )
 
     if len(sys.argv) < 2:
         print("Usage: python subdomain_scanner.py <domain>")
@@ -686,5 +757,9 @@ if __name__ == "__main__":
     for subdomain in sorted(results.keys()):
         result = results[subdomain]
         status = str(result.status_code) if result.status_code else "N/A"
-        techs = ", ".join(result.technologies[:3]) if result.technologies else "N/A"
+        techs = (
+            ", ".join(result.technologies[:3])
+            if result.technologies
+            else "N/A"
+        )
         print(f"{subdomain:<40} {status:<8} {techs}")

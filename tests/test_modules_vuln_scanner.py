@@ -102,7 +102,9 @@ class TestAnalyzeNmapOutput:
     """Test nmap output analysis"""
 
     @pytest.mark.asyncio
-    async def test_analyze_nmap_output_success(self, vuln_scanner, mock_orchestrator):
+    async def test_analyze_nmap_output_success(
+        self, vuln_scanner, mock_orchestrator
+    ):
         """Test successful nmap output analysis"""
         mock_orchestrator.process.return_value = MockResponse(
             content="""
@@ -137,17 +139,25 @@ CVE: CVE-2021-44790
         mock_orchestrator.process.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_analyze_nmap_output_empty(self, vuln_scanner, mock_orchestrator):
+    async def test_analyze_nmap_output_empty(
+        self, vuln_scanner, mock_orchestrator
+    ):
         """Test nmap output analysis with no vulnerabilities"""
-        mock_orchestrator.process.return_value = MockResponse(content="No vulnerabilities found")
+        mock_orchestrator.process.return_value = MockResponse(
+            content="No vulnerabilities found"
+        )
 
         result = await vuln_scanner.analyze_nmap_output("Nothing interesting")
         assert result == []
 
     @pytest.mark.asyncio
-    async def test_analyze_nmap_output_long_truncation(self, vuln_scanner, mock_orchestrator):
+    async def test_analyze_nmap_output_long_truncation(
+        self, vuln_scanner, mock_orchestrator
+    ):
         """Test that long nmap output is truncated"""
-        mock_orchestrator.process.return_value = MockResponse(content="Analysis complete")
+        mock_orchestrator.process.return_value = MockResponse(
+            content="Analysis complete"
+        )
 
         long_output = "A" * 5000
         await vuln_scanner.analyze_nmap_output(long_output)
@@ -161,7 +171,9 @@ class TestAnalyzeWebHeaders:
     """Test web header analysis"""
 
     @pytest.mark.asyncio
-    async def test_analyze_web_headers_success(self, vuln_scanner, mock_orchestrator):
+    async def test_analyze_web_headers_success(
+        self, vuln_scanner, mock_orchestrator
+    ):
         """Test successful header analysis"""
         mock_orchestrator.process.return_value = MockResponse(
             content="""
@@ -187,18 +199,26 @@ Remediation: Add X-Frame-Options: DENY or SAMEORIGIN
             "Server": "nginx/1.18.0",
             "Content-Type": "text/html",
         }
-        result = await vuln_scanner.analyze_web_headers(headers, "https://example.com")
+        result = await vuln_scanner.analyze_web_headers(
+            headers, "https://example.com"
+        )
 
         assert len(result) == 2
         assert result[0].name == "Missing HSTS Header"
         assert result[1].name == "X-Frame-Options Missing"
 
     @pytest.mark.asyncio
-    async def test_analyze_web_headers_empty(self, vuln_scanner, mock_orchestrator):
+    async def test_analyze_web_headers_empty(
+        self, vuln_scanner, mock_orchestrator
+    ):
         """Test header analysis with empty headers"""
-        mock_orchestrator.process.return_value = MockResponse(content="No issues found")
+        mock_orchestrator.process.return_value = MockResponse(
+            content="No issues found"
+        )
 
-        result = await vuln_scanner.analyze_web_headers({}, "https://example.com")
+        result = await vuln_scanner.analyze_web_headers(
+            {}, "https://example.com"
+        )
         assert result == []
 
 
@@ -206,7 +226,9 @@ class TestAnalyzeWebPage:
     """Test web page content analysis"""
 
     @pytest.mark.asyncio
-    async def test_analyze_web_page_success(self, vuln_scanner, mock_orchestrator):
+    async def test_analyze_web_page_success(
+        self, vuln_scanner, mock_orchestrator
+    ):
         """Test successful web page analysis"""
         mock_orchestrator.process.return_value = MockResponse(
             content="""
@@ -232,19 +254,27 @@ Remediation: Add CSRF tokens to all forms
 </body>
 </html>
 """
-        result = await vuln_scanner.analyze_web_page(html, "https://example.com")
+        result = await vuln_scanner.analyze_web_page(
+            html, "https://example.com"
+        )
 
         assert len(result) == 1
         assert result[0].name == "Missing CSRF Token"
         assert result[0].severity == "High"
 
     @pytest.mark.asyncio
-    async def test_analyze_web_page_no_forms(self, vuln_scanner, mock_orchestrator):
+    async def test_analyze_web_page_no_forms(
+        self, vuln_scanner, mock_orchestrator
+    ):
         """Test web page analysis with no forms"""
-        mock_orchestrator.process.return_value = MockResponse(content="No vulnerabilities found")
+        mock_orchestrator.process.return_value = MockResponse(
+            content="No vulnerabilities found"
+        )
 
         html = "<html><body><h1>Hello World</h1></body></html>"
-        result = await vuln_scanner.analyze_web_page(html, "https://example.com")
+        result = await vuln_scanner.analyze_web_page(
+            html, "https://example.com"
+        )
         assert result == []
 
 
@@ -252,7 +282,9 @@ class TestCheckCVEDatabase:
     """Test CVE database checks"""
 
     @pytest.mark.asyncio
-    async def test_check_cve_database_success(self, vuln_scanner, mock_orchestrator):
+    async def test_check_cve_database_success(
+        self, vuln_scanner, mock_orchestrator
+    ):
         """Test successful CVE lookup"""
         mock_orchestrator.process.return_value = MockResponse(
             content="""
@@ -269,17 +301,27 @@ CVE-2021-41773: Apache HTTP Server path traversal
         assert all(vuln.cve_ids for vuln in result)
 
     @pytest.mark.asyncio
-    async def test_check_cve_database_no_cves(self, vuln_scanner, mock_orchestrator):
+    async def test_check_cve_database_no_cves(
+        self, vuln_scanner, mock_orchestrator
+    ):
         """Test CVE lookup with no results"""
-        mock_orchestrator.process.return_value = MockResponse(content="No known CVEs")
+        mock_orchestrator.process.return_value = MockResponse(
+            content="No known CVEs"
+        )
 
-        result = await vuln_scanner.check_cve_database("unknown-service", "1.0")
+        result = await vuln_scanner.check_cve_database(
+            "unknown-service", "1.0"
+        )
         assert result == []
 
     @pytest.mark.asyncio
-    async def test_check_cve_database_limit(self, vuln_scanner, mock_orchestrator):
+    async def test_check_cve_database_limit(
+        self, vuln_scanner, mock_orchestrator
+    ):
         """Test that CVE results are limited to 5"""
-        mock_orchestrator.process.return_value = MockResponse(content="\n".join([f"CVE-2021-{1000 + i}" for i in range(10)]))
+        mock_orchestrator.process.return_value = MockResponse(
+            content="\n".join([f"CVE-2021-{1000 + i}" for i in range(10)])
+        )
 
         result = await vuln_scanner.check_cve_database("apache", "2.4.49")
         assert len(result) == 5  # Should be limited to 5
@@ -289,7 +331,9 @@ class TestSSLTLSAnalysis:
     """Test SSL/TLS analysis"""
 
     @pytest.mark.asyncio
-    async def test_ssl_tls_analysis_success(self, vuln_scanner, mock_orchestrator):
+    async def test_ssl_tls_analysis_success(
+        self, vuln_scanner, mock_orchestrator
+    ):
         """Test successful SSL/TLS analysis"""
         mock_orchestrator.process.return_value = MockResponse(
             content="""
@@ -311,7 +355,9 @@ Remediation: Renew certificate immediately
 """
         )
 
-        cert_info = "Certificate chain\nTLS 1.2 enabled\nTLS_RSA_WITH_AES_128_CBC_SHA"
+        cert_info = (
+            "Certificate chain\nTLS 1.2 enabled\nTLS_RSA_WITH_AES_128_CBC_SHA"
+        )
         result = await vuln_scanner.ssl_tls_analysis(cert_info)
 
         assert len(result) == 2
@@ -418,12 +464,48 @@ class TestSeveritySummary:
     def test_get_severity_summary(self, vuln_scanner):
         """Test getting severity summary"""
         vulnerabilities = [
-            Vulnerability(name="Vuln1", severity="Critical", description="D", evidence="E", remediation="R"),
-            Vulnerability(name="Vuln2", severity="Critical", description="D", evidence="E", remediation="R"),
-            Vulnerability(name="Vuln3", severity="High", description="D", evidence="E", remediation="R"),
-            Vulnerability(name="Vuln4", severity="Medium", description="D", evidence="E", remediation="R"),
-            Vulnerability(name="Vuln5", severity="Low", description="D", evidence="E", remediation="R"),
-            Vulnerability(name="Vuln6", severity="Info", description="D", evidence="E", remediation="R"),
+            Vulnerability(
+                name="Vuln1",
+                severity="Critical",
+                description="D",
+                evidence="E",
+                remediation="R",
+            ),
+            Vulnerability(
+                name="Vuln2",
+                severity="Critical",
+                description="D",
+                evidence="E",
+                remediation="R",
+            ),
+            Vulnerability(
+                name="Vuln3",
+                severity="High",
+                description="D",
+                evidence="E",
+                remediation="R",
+            ),
+            Vulnerability(
+                name="Vuln4",
+                severity="Medium",
+                description="D",
+                evidence="E",
+                remediation="R",
+            ),
+            Vulnerability(
+                name="Vuln5",
+                severity="Low",
+                description="D",
+                evidence="E",
+                remediation="R",
+            ),
+            Vulnerability(
+                name="Vuln6",
+                severity="Info",
+                description="D",
+                evidence="E",
+                remediation="R",
+            ),
         ]
 
         summary = vuln_scanner.get_severity_summary(vulnerabilities)
@@ -447,11 +529,41 @@ class TestSortBySeverity:
     def test_sort_by_severity(self, vuln_scanner):
         """Test sorting vulnerabilities by severity"""
         vulnerabilities = [
-            Vulnerability(name="Low1", severity="Low", description="D", evidence="E", remediation="R"),
-            Vulnerability(name="Critical1", severity="Critical", description="D", evidence="E", remediation="R"),
-            Vulnerability(name="High1", severity="High", description="D", evidence="E", remediation="R"),
-            Vulnerability(name="Info1", severity="Info", description="D", evidence="E", remediation="R"),
-            Vulnerability(name="Medium1", severity="Medium", description="D", evidence="E", remediation="R"),
+            Vulnerability(
+                name="Low1",
+                severity="Low",
+                description="D",
+                evidence="E",
+                remediation="R",
+            ),
+            Vulnerability(
+                name="Critical1",
+                severity="Critical",
+                description="D",
+                evidence="E",
+                remediation="R",
+            ),
+            Vulnerability(
+                name="High1",
+                severity="High",
+                description="D",
+                evidence="E",
+                remediation="R",
+            ),
+            Vulnerability(
+                name="Info1",
+                severity="Info",
+                description="D",
+                evidence="E",
+                remediation="R",
+            ),
+            Vulnerability(
+                name="Medium1",
+                severity="Medium",
+                description="D",
+                evidence="E",
+                remediation="R",
+            ),
         ]
 
         sorted_vulns = vuln_scanner.sort_by_severity(vulnerabilities)
@@ -465,8 +577,20 @@ class TestSortBySeverity:
     def test_sort_by_severity_unknown(self, vuln_scanner):
         """Test sorting with unknown severity"""
         vulnerabilities = [
-            Vulnerability(name="Unknown", severity="Unknown", description="D", evidence="E", remediation="R"),
-            Vulnerability(name="Critical", severity="Critical", description="D", evidence="E", remediation="R"),
+            Vulnerability(
+                name="Unknown",
+                severity="Unknown",
+                description="D",
+                evidence="E",
+                remediation="R",
+            ),
+            Vulnerability(
+                name="Critical",
+                severity="Critical",
+                description="D",
+                evidence="E",
+                remediation="R",
+            ),
         ]
 
         sorted_vulns = vuln_scanner.sort_by_severity(vulnerabilities)
@@ -484,7 +608,9 @@ class TestEdgeCases:
         result = vuln_scanner._parse_vulnerabilities("")
         assert result == []
 
-    def test_parse_vulnerabilities_case_insensitive_severity(self, vuln_scanner):
+    def test_parse_vulnerabilities_case_insensitive_severity(
+        self, vuln_scanner
+    ):
         """Test case insensitive severity parsing"""
         content = """
 [VULN]

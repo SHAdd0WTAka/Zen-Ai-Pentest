@@ -16,7 +16,9 @@ class DeviceCodeFlow:
     """OAuth2 Device Authorization Grant implementation"""
 
     # Kimi AI OAuth endpoints (placeholder - update with actual endpoints when available)
-    DEVICE_AUTHORIZATION_ENDPOINT = "https://api.moonshot.cn/v1/oauth/device/code"
+    DEVICE_AUTHORIZATION_ENDPOINT = (
+        "https://api.moonshot.cn/v1/oauth/device/code"
+    )
     TOKEN_ENDPOINT = "https://api.moonshot.cn/v1/oauth/token"
 
     def __init__(self, client_id: str = "zen-ai-pentest-cli"):
@@ -38,21 +40,30 @@ class DeviceCodeFlow:
         Returns:
             Dict containing device_code, user_code, verification_uri, etc.
         """
-        payload = {"client_id": self.client_id, "scope": "api offline_access"}  # offline_access for refresh token
+        payload = {
+            "client_id": self.client_id,
+            "scope": "api offline_access",
+        }  # offline_access for refresh token
 
         try:
             async with self.session.post(
-                self.DEVICE_AUTHORIZATION_ENDPOINT, data=payload, headers={"Content-Type": "application/x-www-form-urlencoded"}
+                self.DEVICE_AUTHORIZATION_ENDPOINT,
+                data=payload,
+                headers={"Content-Type": "application/x-www-form-urlencoded"},
             ) as response:
                 if response.status == 200:
                     return await response.json()
                 else:
                     error_text = await response.text()
-                    raise AuthenticationError(f"Device code request failed: {response.status} - {error_text}")
+                    raise AuthenticationError(
+                        f"Device code request failed: {response.status} - {error_text}"
+                    )
         except aiohttp.ClientError as e:
             raise AuthenticationError(f"Network error: {e}")
 
-    async def poll_for_token(self, device_code: str, interval: int = 5, timeout: int = 600) -> Dict[str, Any]:
+    async def poll_for_token(
+        self, device_code: str, interval: int = 5, timeout: int = 600
+    ) -> Dict[str, Any]:
         """
         Step 2: Poll token endpoint until user authorizes
 
@@ -75,7 +86,11 @@ class DeviceCodeFlow:
         while time.time() - start_time < timeout:
             try:
                 async with self.session.post(
-                    self.TOKEN_ENDPOINT, data=payload, headers={"Content-Type": "application/x-www-form-urlencoded"}
+                    self.TOKEN_ENDPOINT,
+                    data=payload,
+                    headers={
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    },
                 ) as response:
                     data = await response.json()
 
@@ -94,16 +109,22 @@ class DeviceCodeFlow:
                         await asyncio.sleep(interval)
                         continue
                     elif error == "expired_token":
-                        raise AuthenticationError("Device code expired. Please run 'zen auth login' again.")
+                        raise AuthenticationError(
+                            "Device code expired. Please run 'zen auth login' again."
+                        )
                     elif error == "access_denied":
                         raise AuthenticationError("Access denied by user.")
                     else:
-                        raise AuthenticationError(f"Token request failed: {error}")
+                        raise AuthenticationError(
+                            f"Token request failed: {error}"
+                        )
 
             except aiohttp.ClientError as e:
                 raise AuthenticationError(f"Network error during polling: {e}")
 
-        raise AuthenticationError("Authentication timed out. Please try again.")
+        raise AuthenticationError(
+            "Authentication timed out. Please try again."
+        )
 
     async def refresh_access_token(self, refresh_token: str) -> Dict[str, Any]:
         """
@@ -115,17 +136,25 @@ class DeviceCodeFlow:
         Returns:
             Dict containing new access_token and refresh_token
         """
-        payload = {"grant_type": "refresh_token", "refresh_token": refresh_token, "client_id": self.client_id}
+        payload = {
+            "grant_type": "refresh_token",
+            "refresh_token": refresh_token,
+            "client_id": self.client_id,
+        }
 
         try:
             async with self.session.post(
-                self.TOKEN_ENDPOINT, data=payload, headers={"Content-Type": "application/x-www-form-urlencoded"}
+                self.TOKEN_ENDPOINT,
+                data=payload,
+                headers={"Content-Type": "application/x-www-form-urlencoded"},
             ) as response:
                 if response.status == 200:
                     return await response.json()
                 else:
                     error_text = await response.text()
-                    raise AuthenticationError(f"Token refresh failed: {response.status} - {error_text}")
+                    raise AuthenticationError(
+                        f"Token refresh failed: {response.status} - {error_text}"
+                    )
         except aiohttp.ClientError as e:
             raise AuthenticationError(f"Network error during refresh: {e}")
 

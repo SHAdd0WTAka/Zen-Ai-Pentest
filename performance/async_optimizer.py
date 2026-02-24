@@ -33,9 +33,13 @@ class AsyncOptimizer:
     async def run_in_thread(self, func: Callable, *args, **kwargs) -> Any:
         """Run sync function in thread pool"""
         loop = asyncio.get_event_loop()
-        return await loop.run_in_executor(self._thread_pool, functools.partial(func, *args, **kwargs))
+        return await loop.run_in_executor(
+            self._thread_pool, functools.partial(func, *args, **kwargs)
+        )
 
-    async def gather_limit(self, coroutines: List[Coroutine], limit: Optional[int] = None) -> List[Any]:
+    async def gather_limit(
+        self, coroutines: List[Coroutine], limit: Optional[int] = None
+    ) -> List[Any]:
         """
         Gather coroutines with concurrency limit
 
@@ -52,7 +56,10 @@ class AsyncOptimizer:
         return await asyncio.gather(*[sem_task(c) for c in coroutines])
 
     async def batch_process(
-        self, items: List[Any], processor: Callable[[Any], Coroutine], batch_size: Optional[int] = None
+        self,
+        items: List[Any],
+        processor: Callable[[Any], Coroutine],
+        batch_size: Optional[int] = None,
     ) -> List[Any]:
         """
         Process items in batches
@@ -70,12 +77,16 @@ class AsyncOptimizer:
 
         for i in range(0, len(items), batch_size):
             batch = items[i : i + batch_size]
-            batch_results = await asyncio.gather(*[processor(item) for item in batch])
+            batch_results = await asyncio.gather(
+                *[processor(item) for item in batch]
+            )
             results.extend(batch_results)
 
         return results
 
-    async def rate_limit(self, coroutines: List[Coroutine], rate: int = 10, burst: int = 5) -> List[Any]:  # per second
+    async def rate_limit(
+        self, coroutines: List[Coroutine], rate: int = 10, burst: int = 5
+    ) -> List[Any]:  # per second
         """
         Execute coroutines with rate limiting
 
@@ -109,7 +120,9 @@ class AsyncOptimizer:
 
                 return await coro
 
-        return await asyncio.gather(*[rate_limited_task(c) for c in coroutines])
+        return await asyncio.gather(
+            *[rate_limited_task(c) for c in coroutines]
+        )
 
     def shutdown(self):
         """Shutdown thread pool"""
@@ -150,7 +163,12 @@ class CircuitBreaker:
     a service is experiencing problems.
     """
 
-    def __init__(self, failure_threshold: int = 5, recovery_timeout: int = 60, half_open_max_calls: int = 3):
+    def __init__(
+        self,
+        failure_threshold: int = 5,
+        recovery_timeout: int = 60,
+        half_open_max_calls: int = 3,
+    ):
         self.failure_threshold = failure_threshold
         self.recovery_timeout = recovery_timeout
         self.half_open_max_calls = half_open_max_calls
@@ -174,7 +192,9 @@ class CircuitBreaker:
 
             if self._state == "half-open":
                 if self._half_open_calls >= self.half_open_max_calls:
-                    raise CircuitBreakerOpen("Circuit breaker half-open limit reached")
+                    raise CircuitBreakerOpen(
+                        "Circuit breaker half-open limit reached"
+                    )
                 self._half_open_calls += 1
 
         try:
@@ -213,7 +233,9 @@ class CircuitBreaker:
                 logger.warning("Circuit breaker opened (half-open failure)")
             elif self._failures >= self.failure_threshold:
                 self._state = "open"
-                logger.warning(f"Circuit breaker opened ({self._failures} failures)")
+                logger.warning(
+                    f"Circuit breaker opened ({self._failures} failures)"
+                )
 
     def get_state(self) -> str:
         return self._state
@@ -230,7 +252,13 @@ class RetryHandler:
     Retry logic with exponential backoff
     """
 
-    def __init__(self, max_retries: int = 3, base_delay: float = 1.0, max_delay: float = 60.0, exponential_base: float = 2.0):
+    def __init__(
+        self,
+        max_retries: int = 3,
+        base_delay: float = 1.0,
+        max_delay: float = 60.0,
+        exponential_base: float = 2.0,
+    ):
         self.max_retries = max_retries
         self.base_delay = base_delay
         self.max_delay = max_delay
@@ -250,8 +278,13 @@ class RetryHandler:
                 last_exception = e
 
                 if attempt < self.max_retries:
-                    delay = min(self.base_delay * (self.exponential_base**attempt), self.max_delay)
-                    logger.warning(f"Attempt {attempt + 1} failed, retrying in {delay}s: {e}")
+                    delay = min(
+                        self.base_delay * (self.exponential_base**attempt),
+                        self.max_delay,
+                    )
+                    logger.warning(
+                        f"Attempt {attempt + 1} failed, retrying in {delay}s: {e}"
+                    )
                     await asyncio.sleep(delay)
 
         raise last_exception

@@ -92,7 +92,9 @@ class MFAHandler:
 
         return str(code).zfill(self.digits)
 
-    def generate_totp(self, secret: str, timestamp: Optional[float] = None) -> str:
+    def generate_totp(
+        self, secret: str, timestamp: Optional[float] = None
+    ) -> str:
         """
         Generate TOTP code
 
@@ -131,7 +133,9 @@ class MFAHandler:
 
         return False
 
-    def get_qr_code_uri(self, secret: str, username: str, issuer: str = "ZenAI") -> str:
+    def get_qr_code_uri(
+        self, secret: str, username: str, issuer: str = "ZenAI"
+    ) -> str:
         """
         Generate otpauth URI for QR code
 
@@ -167,7 +171,10 @@ class MFAHandler:
         codes = []
         for _ in range(count):
             # Generate 8-character alphanumeric code
-            code = "".join(secrets.choice("ABCDEFGHJKLMNPQRSTUVWXYZ23456789") for _ in range(8))
+            code = "".join(
+                secrets.choice("ABCDEFGHJKLMNPQRSTUVWXYZ23456789")
+                for _ in range(8)
+            )
             codes.append(code)
         return codes
 

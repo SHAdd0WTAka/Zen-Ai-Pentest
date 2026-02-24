@@ -136,7 +136,9 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         # Clean old entries
         if client_ip in self.requests:
             self.requests[client_ip] = [
-                (ts, count) for ts, count in self.requests[client_ip] if current_time - ts < self.window_seconds
+                (ts, count)
+                for ts, count in self.requests[client_ip]
+                if current_time - ts < self.window_seconds
             ]
         else:
             self.requests[client_ip] = []
@@ -159,7 +161,9 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
 
         # Add rate limit headers
         response.headers["X-RateLimit-Limit"] = str(self.max_requests)
-        response.headers["X-RateLimit-Remaining"] = str(max(0, self.max_requests - total_requests - 1))
+        response.headers["X-RateLimit-Remaining"] = str(
+            max(0, self.max_requests - total_requests - 1)
+        )
 
         return response
 

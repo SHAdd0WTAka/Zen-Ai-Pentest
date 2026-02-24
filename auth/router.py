@@ -49,7 +49,9 @@ class UserRegisterRequest(BaseModel):
     @validator("username")
     def validate_username(cls, v):
         if not v.isalnum() and "_" not in v and "-" not in v:
-            raise ValueError("Username must be alphanumeric with optional underscores and hyphens")
+            raise ValueError(
+                "Username must be alphanumeric with optional underscores and hyphens"
+            )
         return v
 
 
@@ -168,7 +170,9 @@ class UserStore:
         self._users: dict = {}
         self._user_id_counter = 0
 
-    def create_user(self, username: str, email: str, password_hash: str) -> dict:
+    def create_user(
+        self, username: str, email: str, password_hash: str
+    ) -> dict:
         """Create a new user"""
         self._user_id_counter += 1
         user_id = str(self._user_id_counter)
@@ -251,7 +255,11 @@ def get_user_permissions(user: dict) -> List[str]:
 # ============== Endpoints ==============
 
 
-@router.post("/register", response_model=MessageResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/register",
+    response_model=MessageResponse,
+    status_code=status.HTTP_201_CREATED,
+)
 async def register(request: Request, data: UserRegisterRequest):
     """
     Register a new user
@@ -262,33 +270,50 @@ async def register(request: Request, data: UserRegisterRequest):
 
     # Check if registration is allowed
     if not config.allow_registration:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Registration is disabled")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Registration is disabled",
+        )
 
     # Rate limiting
     ip, _ = get_client_info(request)
     rate_limiter = get_rate_limiter()
-    rate_result = rate_limiter.check_rate_limit(ip or "unknown", RateLimitType.REGISTRATION)
+    rate_result = rate_limiter.check_rate_limit(
+        ip or "unknown", RateLimitType.REGISTRATION
+    )
 
     if not rate_result.allowed:
-        raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail=rate_result.message)
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=rate_result.message,
+        )
 
     # Check if username exists
     if user_store.get_by_username(data.username):
-        rate_limiter.record_attempt(ip or "unknown", RateLimitType.REGISTRATION)
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Username already exists")
+        rate_limiter.record_attempt(
+            ip or "unknown", RateLimitType.REGISTRATION
+        )
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Username already exists",
+        )
 
     # Validate password strength
     password_hasher = get_password_hasher()
     try:
         password_hasher.validate_password_or_raise(data.password)
     except PasswordStrengthError as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
+        )
 
     # Hash password
     password_hash = password_hasher.hash_password(data.password)
 
     # Create user
-    user = user_store.create_user(username=data.username, email=data.email, password_hash=password_hash)
+    user = user_store.create_user(
+        username=data.username, email=data.email, password_hash=password_hash
+    )
 
     # Assign default role in RBAC
     rbac = get_rbac_manager()
@@ -320,13 +345,20 @@ async def login(request: Request, data: UserLoginRequest):
 
     # Rate limiting
     rate_limiter = get_rate_limiter()
-    rate_result = rate_limiter.check_rate_limit(identifier, RateLimitType.LOGIN)
+    rate_result = rate_limiter.check_rate_limit(
+        identifier, RateLimitType.LOGIN
+    )
 
     if not rate_result.allowed:
         # Log rate limit
         audit_logger = get_audit_logger()
-        audit_logger.log_rate_limit_exceeded(identifier=identifier, limit_type="login", ip_address=ip)
-        raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail=rate_result.message)
+        audit_logger.log_rate_limit_exceeded(
+            identifier=identifier, limit_type="login", ip_address=ip
+        )
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=rate_result.message,
+        )
 
     # Get user
     user = user_store.get_by_username(data.username)
@@ -334,18 +366,36 @@ async def login(request: Request, data: UserLoginRequest):
     if not user:
         rate_limiter.record_attempt(identifier, RateLimitType.LOGIN)
         audit_logger = get_audit_logger()
-        audit_logger.log_login_failure(username=data.username, ip_address=ip, user_agent=user_agent, reason="user_not_found")
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
+        audit_logger.log_login_failure(
+            username=data.username,
+            ip_address=ip,
+            user_agent=user_agent,
+            reason="user_not_found",
+        )
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid credentials",
+        )
 
     # Verify password
     password_hasher = get_password_hasher()
-    if not password_hasher.verify_password(data.password, user["password_hash"]):
+    if not password_hasher.verify_password(
+        data.password, user["password_hash"]
+    ):
         rate_limiter.record_attempt(identifier, RateLimitType.LOGIN)
         user_store.increment_failed_login(data.username)
 
         audit_logger = get_audit_logger()
-        audit_logger.log_login_failure(username=data.username, ip_address=ip, user_agent=user_agent, reason="invalid_password")
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
+        audit_logger.log_login_failure(
+            username=data.username,
+            ip_address=ip,
+            user_agent=user_agent,
+            reason="invalid_password",
+        )
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid credentials",
+        )
 
     # Check MFA
     mfa_manager = get_mfa_manager()
@@ -354,7 +404,13 @@ async def login(request: Request, data: UserLoginRequest):
     if mfa_enabled:
         if not data.mfa_code:
             # MFA required but no code provided
-            return TokenResponse(access_token="", refresh_token="", token_type="bearer", expires_in=0, mfa_required=True)
+            return TokenResponse(
+                access_token="",
+                refresh_token="",
+                token_type="bearer",
+                expires_in=0,
+                mfa_required=True,
+            )
 
         # Verify MFA code
         mfa_result = mfa_manager.verify(user["id"], data.mfa_code)
@@ -369,12 +425,18 @@ async def login(request: Request, data: UserLoginRequest):
                 ip_address=ip,
                 severity=AuditSeverity.WARNING,
             )
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid MFA code")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid MFA code",
+            )
 
     # Create session
     session_manager = get_session_manager()
     session = session_manager.create_session(
-        user_id=user["id"], ip_address=ip, user_agent=user_agent, mfa_verified=mfa_enabled
+        user_id=user["id"],
+        ip_address=ip,
+        user_agent=user_agent,
+        mfa_verified=mfa_enabled,
     )
 
     # Get user permissions
@@ -401,7 +463,11 @@ async def login(request: Request, data: UserLoginRequest):
     # Log event
     audit_logger = get_audit_logger()
     audit_logger.log_login_success(
-        user_id=user["id"], session_id=session.id, ip_address=ip, user_agent=user_agent, mfa_used=mfa_enabled
+        user_id=user["id"],
+        session_id=session.id,
+        ip_address=ip,
+        user_agent=user_agent,
+        mfa_used=mfa_enabled,
     )
 
     return TokenResponse(
@@ -430,7 +496,10 @@ async def refresh_token(request: Request, data: RefreshTokenRequest):
         user = user_store.get_by_id(payload.sub)
 
         if not user:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid refresh token",
+            )
 
         permissions = get_user_permissions(user)
 
@@ -446,7 +515,10 @@ async def refresh_token(request: Request, data: RefreshTokenRequest):
         # Log event
         audit_logger = get_audit_logger()
         audit_logger.log_event(
-            event_type=AuditEventType.TOKEN_REFRESH, message="Token refreshed", user_id=user["id"], ip_address=ip
+            event_type=AuditEventType.TOKEN_REFRESH,
+            message="Token refreshed",
+            user_id=user["id"],
+            ip_address=ip,
         )
 
         return TokenResponse(
@@ -458,11 +530,18 @@ async def refresh_token(request: Request, data: RefreshTokenRequest):
         )
 
     except Exception:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid refresh token",
+        )
 
 
 @router.post("/logout", response_model=MessageResponse)
-async def logout(request: Request, data: LogoutRequest, auth: AuthContext = Depends(require_auth)):
+async def logout(
+    request: Request,
+    data: LogoutRequest,
+    auth: AuthContext = Depends(require_auth),
+):
     """
     Logout user
 
@@ -487,7 +566,9 @@ async def logout(request: Request, data: LogoutRequest, auth: AuthContext = Depe
     # Terminate all sessions if requested
     if data.all_sessions:
         session_manager = get_session_manager()
-        session_manager.terminate_all_user_sessions(auth.user_id, exclude_session_id=auth.session_id)
+        session_manager.terminate_all_user_sessions(
+            auth.user_id, exclude_session_id=auth.session_id
+        )
 
         # Blacklist all tokens
         jwt_handler = JWTHandler()
@@ -495,7 +576,9 @@ async def logout(request: Request, data: LogoutRequest, auth: AuthContext = Depe
 
     # Log event
     audit_logger = get_audit_logger()
-    audit_logger.log_logout(user_id=auth.user_id, session_id=auth.session_id or "", ip_address=ip)
+    audit_logger.log_logout(
+        user_id=auth.user_id, session_id=auth.session_id or "", ip_address=ip
+    )
 
     return MessageResponse(message="Logged out successfully")
 
@@ -510,7 +593,9 @@ async def get_current_user(auth: AuthContext = Depends(require_auth)):
     user = user_store.get_by_id(auth.user_id)
 
     if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+        )
 
     mfa_manager = get_mfa_manager()
 
@@ -530,7 +615,11 @@ async def get_current_user(auth: AuthContext = Depends(require_auth)):
 
 
 @router.post("/mfa/setup", response_model=MFASetupResponse)
-async def setup_mfa(request: Request, data: MFASetupRequest, auth: AuthContext = Depends(require_auth)):
+async def setup_mfa(
+    request: Request,
+    data: MFASetupRequest,
+    auth: AuthContext = Depends(require_auth),
+):
     """
     Setup MFA for user
 
@@ -539,12 +628,18 @@ async def setup_mfa(request: Request, data: MFASetupRequest, auth: AuthContext =
     user = user_store.get_by_id(auth.user_id)
 
     if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+        )
 
     # Verify password
     password_hasher = get_password_hasher()
-    if not password_hasher.verify_password(data.password, user["password_hash"]):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid password")
+    if not password_hasher.verify_password(
+        data.password, user["password_hash"]
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid password"
+        )
 
     # Setup MFA
     mfa_manager = get_mfa_manager()
@@ -552,13 +647,23 @@ async def setup_mfa(request: Request, data: MFASetupRequest, auth: AuthContext =
     try:
         result = mfa_manager.setup_mfa(auth.user_id, user["username"])
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
+        )
 
-    return MFASetupResponse(secret=result.secret, qr_code_uri=result.qr_code_uri, backup_codes=result.backup_codes)
+    return MFASetupResponse(
+        secret=result.secret,
+        qr_code_uri=result.qr_code_uri,
+        backup_codes=result.backup_codes,
+    )
 
 
 @router.post("/mfa/verify", response_model=MFAVerifyResponse)
-async def verify_mfa_setup(request: Request, data: MFAVerifyRequest, auth: AuthContext = Depends(require_auth)):
+async def verify_mfa_setup(
+    request: Request,
+    data: MFAVerifyRequest,
+    auth: AuthContext = Depends(require_auth),
+):
     """
     Verify MFA setup
 
@@ -569,7 +674,9 @@ async def verify_mfa_setup(request: Request, data: MFAVerifyRequest, auth: AuthC
     result = mfa_manager.verify_setup(auth.user_id, data.code)
 
     if not result:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid MFA code")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid MFA code"
+        )
 
     # Log event
     ip, _ = get_client_info(request)
@@ -577,12 +684,20 @@ async def verify_mfa_setup(request: Request, data: MFAVerifyRequest, auth: AuthC
     audit_logger.log_mfa_enabled(user_id=auth.user_id, ip_address=ip)
 
     return MFAVerifyResponse(
-        success=True, method="totp", remaining_backup_codes=mfa_manager.get_remaining_backup_codes(auth.user_id)
+        success=True,
+        method="totp",
+        remaining_backup_codes=mfa_manager.get_remaining_backup_codes(
+            auth.user_id
+        ),
     )
 
 
 @router.post("/mfa/disable", response_model=MessageResponse)
-async def disable_mfa(request: Request, data: MFASetupRequest, auth: AuthContext = Depends(require_auth)):
+async def disable_mfa(
+    request: Request,
+    data: MFASetupRequest,
+    auth: AuthContext = Depends(require_auth),
+):
     """
     Disable MFA for user
 
@@ -591,24 +706,35 @@ async def disable_mfa(request: Request, data: MFASetupRequest, auth: AuthContext
     user = user_store.get_by_id(auth.user_id)
 
     if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+        )
 
     # Verify password
     password_hasher = get_password_hasher()
-    if not password_hasher.verify_password(data.password, user["password_hash"]):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid password")
+    if not password_hasher.verify_password(
+        data.password, user["password_hash"]
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid password"
+        )
 
     # Disable MFA
     mfa_manager = get_mfa_manager()
     result = mfa_manager.disable_mfa(auth.user_id)
 
     if not result:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="MFA is not enabled")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="MFA is not enabled",
+        )
 
     # Log event
     ip, _ = get_client_info(request)
     audit_logger = get_audit_logger()
-    audit_logger.log_mfa_disabled(user_id=auth.user_id, ip_address=ip, reason="user_request")
+    audit_logger.log_mfa_disabled(
+        user_id=auth.user_id, ip_address=ip, reason="user_request"
+    )
 
     return MessageResponse(message="MFA disabled successfully")
 
@@ -616,8 +742,16 @@ async def disable_mfa(request: Request, data: MFASetupRequest, auth: AuthContext
 # ============== API Key Endpoints ==============
 
 
-@router.post("/api-keys", response_model=APIKeyCreateResponse, status_code=status.HTTP_201_CREATED)
-async def create_api_key(request: Request, data: APIKeyCreateRequest, auth: AuthContext = Depends(require_auth)):
+@router.post(
+    "/api-keys",
+    response_model=APIKeyCreateResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_api_key(
+    request: Request,
+    data: APIKeyCreateRequest,
+    auth: AuthContext = Depends(require_auth),
+):
     """
     Create API key
 
@@ -629,14 +763,21 @@ async def create_api_key(request: Request, data: APIKeyCreateRequest, auth: Auth
 
     try:
         result = api_key_manager.create_api_key(
-            user_id=auth.user_id, name=data.name, expires_in_days=data.expires_in_days, permissions=data.permissions
+            user_id=auth.user_id,
+            name=data.name,
+            expires_in_days=data.expires_in_days,
+            permissions=data.permissions,
         )
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
+        )
 
     # Log event
     audit_logger = get_audit_logger()
-    audit_logger.log_api_key_created(user_id=auth.user_id, key_id=result.api_key.id, ip_address=ip)
+    audit_logger.log_api_key_created(
+        user_id=auth.user_id, key_id=result.api_key.id, ip_address=ip
+    )
 
     return APIKeyCreateResponse(
         id=result.api_key.id,
@@ -677,7 +818,9 @@ async def list_api_keys(auth: AuthContext = Depends(require_auth)):
 
 
 @router.delete("/api-keys/{key_id}", response_model=MessageResponse)
-async def revoke_api_key(request: Request, key_id: str, auth: AuthContext = Depends(require_auth)):
+async def revoke_api_key(
+    request: Request, key_id: str, auth: AuthContext = Depends(require_auth)
+):
     """
     Revoke API key
 
@@ -689,10 +832,17 @@ async def revoke_api_key(request: Request, key_id: str, auth: AuthContext = Depe
     result = api_key_manager.revoke_api_key(auth.user_id, key_id)
 
     if not result:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="API key not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="API key not found"
+        )
 
     # Log event
     audit_logger = get_audit_logger()
-    audit_logger.log_api_key_revoked(user_id=auth.user_id, key_id=key_id, ip_address=ip, reason="user_request")
+    audit_logger.log_api_key_revoked(
+        user_id=auth.user_id,
+        key_id=key_id,
+        ip_address=ip,
+        reason="user_request",
+    )
 
     return MessageResponse(message="API key revoked successfully")

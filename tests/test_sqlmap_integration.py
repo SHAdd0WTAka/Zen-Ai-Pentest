@@ -11,7 +11,11 @@ from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
 
-from autonomous.sqlmap_integration import SQLMapResult, SQLMapScanner, SQLMapTool
+from autonomous.sqlmap_integration import (
+    SQLMapResult,
+    SQLMapScanner,
+    SQLMapTool,
+)
 
 # ============================================================================
 # Fixtures
@@ -126,10 +130,14 @@ class TestSQLMapScanner:
         """
 
         mock_process = AsyncMock()
-        mock_process.communicate = AsyncMock(return_value=(mock_output.encode(), b""))
+        mock_process.communicate = AsyncMock(
+            return_value=(mock_output.encode(), b"")
+        )
         mock_process.returncode = 0
 
-        with patch("asyncio.create_subprocess_exec", return_value=mock_process):
+        with patch(
+            "asyncio.create_subprocess_exec", return_value=mock_process
+        ):
             result = await sqlmap_scanner.scan_target(
                 "http://testphp.vulnweb.com/artists.php?artist=1",
                 method="GET",
@@ -146,13 +154,19 @@ class TestSQLMapScanner:
     @pytest.mark.asyncio
     async def test_scan_target_post_method(self, sqlmap_scanner):
         """Test SQLMap scan with POST method."""
-        mock_output = "GET parameter 'id' is vulnerable\nback-end DBMS: PostgreSQL"
+        mock_output = (
+            "GET parameter 'id' is vulnerable\nback-end DBMS: PostgreSQL"
+        )
 
         mock_process = AsyncMock()
-        mock_process.communicate = AsyncMock(return_value=(mock_output.encode(), b""))
+        mock_process.communicate = AsyncMock(
+            return_value=(mock_output.encode(), b"")
+        )
         mock_process.returncode = 0
 
-        with patch("asyncio.create_subprocess_exec", return_value=mock_process):
+        with patch(
+            "asyncio.create_subprocess_exec", return_value=mock_process
+        ):
             result = await sqlmap_scanner.scan_target(
                 "http://example.com/login",
                 method="POST",
@@ -169,10 +183,14 @@ class TestSQLMapScanner:
         mock_output = "[INFO] testing started"
 
         mock_process = AsyncMock()
-        mock_process.communicate = AsyncMock(return_value=(mock_output.encode(), b""))
+        mock_process.communicate = AsyncMock(
+            return_value=(mock_output.encode(), b"")
+        )
         mock_process.returncode = 0
 
-        with patch("asyncio.create_subprocess_exec", return_value=mock_process):
+        with patch(
+            "asyncio.create_subprocess_exec", return_value=mock_process
+        ):
             result = await sqlmap_scanner.scan_target(
                 "http://example.com/page.php?id=1",
                 cookies="session=abc123; auth=xyz",
@@ -186,12 +204,16 @@ class TestSQLMapScanner:
         mock_output = "[INFO] testing started"
 
         mock_process = AsyncMock()
-        mock_process.communicate = AsyncMock(return_value=(mock_output.encode(), b""))
+        mock_process.communicate = AsyncMock(
+            return_value=(mock_output.encode(), b"")
+        )
         mock_process.returncode = 0
 
         headers = {"User-Agent": "CustomAgent", "X-Custom": "Value"}
 
-        with patch("asyncio.create_subprocess_exec", return_value=mock_process):
+        with patch(
+            "asyncio.create_subprocess_exec", return_value=mock_process
+        ):
             result = await sqlmap_scanner.scan_target(
                 "http://example.com/page.php?id=1",
                 headers=headers,
@@ -203,12 +225,18 @@ class TestSQLMapScanner:
     async def test_scan_target_timeout(self, sqlmap_scanner):
         """Test SQLMap scan timeout handling."""
         mock_process = AsyncMock()
-        mock_process.communicate = AsyncMock(side_effect=asyncio.TimeoutError())
+        mock_process.communicate = AsyncMock(
+            side_effect=asyncio.TimeoutError()
+        )
         mock_process.kill = Mock()
         mock_process.wait = AsyncMock()
 
-        with patch("asyncio.create_subprocess_exec", return_value=mock_process):
-            result = await sqlmap_scanner.scan_target("http://example.com/test.php?id=1")
+        with patch(
+            "asyncio.create_subprocess_exec", return_value=mock_process
+        ):
+            result = await sqlmap_scanner.scan_target(
+                "http://example.com/test.php?id=1"
+            )
 
         assert result.success is False
         assert result.vulnerable is False
@@ -217,8 +245,12 @@ class TestSQLMapScanner:
     @pytest.mark.asyncio
     async def test_scan_target_not_found(self, sqlmap_scanner):
         """Test SQLMap not found error."""
-        with patch("asyncio.create_subprocess_exec", side_effect=FileNotFoundError()):
-            result = await sqlmap_scanner.scan_target("http://example.com/test.php?id=1")
+        with patch(
+            "asyncio.create_subprocess_exec", side_effect=FileNotFoundError()
+        ):
+            result = await sqlmap_scanner.scan_target(
+                "http://example.com/test.php?id=1"
+            )
 
         assert result.success is False
         assert "not found" in result.error_message.lower()
@@ -226,8 +258,13 @@ class TestSQLMapScanner:
     @pytest.mark.asyncio
     async def test_scan_target_generic_exception(self, sqlmap_scanner):
         """Test generic exception handling."""
-        with patch("asyncio.create_subprocess_exec", side_effect=Exception("Unexpected error")):
-            result = await sqlmap_scanner.scan_target("http://example.com/test.php?id=1")
+        with patch(
+            "asyncio.create_subprocess_exec",
+            side_effect=Exception("Unexpected error"),
+        ):
+            result = await sqlmap_scanner.scan_target(
+                "http://example.com/test.php?id=1"
+            )
 
         assert result.success is False
         assert "Unexpected error" in result.error_message
@@ -250,11 +287,17 @@ class TestSQLMapScanner:
         """
 
         mock_process = AsyncMock()
-        mock_process.communicate = AsyncMock(return_value=(mock_output.encode(), b""))
+        mock_process.communicate = AsyncMock(
+            return_value=(mock_output.encode(), b"")
+        )
         mock_process.returncode = 0
 
-        with patch("asyncio.create_subprocess_exec", return_value=mock_process):
-            result = await sqlmap_scanner.scan_target("http://example.com/page.php?id=1")
+        with patch(
+            "asyncio.create_subprocess_exec", return_value=mock_process
+        ):
+            result = await sqlmap_scanner.scan_target(
+                "http://example.com/page.php?id=1"
+            )
 
         assert result.success is True
         assert result.vulnerable is False
@@ -271,34 +314,44 @@ class TestSafetyControls:
 
     def test_validate_target_valid(self, sqlmap_scanner):
         """Test validation of valid targets."""
-        valid, error = sqlmap_scanner._validate_target("http://example.com/page.php?id=1")
+        valid, error = sqlmap_scanner._validate_target(
+            "http://example.com/page.php?id=1"
+        )
 
         assert valid is True
         assert error == ""
 
     def test_validate_target_no_protocol(self, sqlmap_scanner):
         """Test validation rejects URLs without protocol."""
-        valid, error = sqlmap_scanner._validate_target("example.com/page.php?id=1")
+        valid, error = sqlmap_scanner._validate_target(
+            "example.com/page.php?id=1"
+        )
 
         assert valid is False
         assert "http:// or https://" in error
 
     def test_validate_target_private_ip_blocked(self, sqlmap_scanner):
         """Test validation blocks private IPs."""
-        valid, error = sqlmap_scanner._validate_target("http://192.168.1.1/page.php?id=1")
+        valid, error = sqlmap_scanner._validate_target(
+            "http://192.168.1.1/page.php?id=1"
+        )
 
         assert valid is False
         assert "blocked" in error.lower()
 
     def test_validate_target_loopback_allowed(self, sqlmap_scanner):
         """Test validation allows loopback for testing."""
-        valid, error = sqlmap_scanner._validate_target("http://127.0.0.1/page.php?id=1")
+        valid, error = sqlmap_scanner._validate_target(
+            "http://127.0.0.1/page.php?id=1"
+        )
 
         assert valid is True  # Loopback allowed for testing
 
     def test_validate_target_dangerous_chars(self, sqlmap_scanner):
         """Test validation blocks dangerous characters."""
-        valid, error = sqlmap_scanner._validate_target("http://example.com; rm -rf /")
+        valid, error = sqlmap_scanner._validate_target(
+            "http://example.com; rm -rf /"
+        )
 
         assert valid is False
         assert "Invalid characters" in error
@@ -311,12 +364,16 @@ class TestSafetyControls:
 
     def test_validate_target_10_x_private(self, sqlmap_scanner):
         """Test blocking 10.x.x.x private range."""
-        valid, error = sqlmap_scanner._validate_target("http://10.0.0.1/test.php?id=1")
+        valid, error = sqlmap_scanner._validate_target(
+            "http://10.0.0.1/test.php?id=1"
+        )
         assert valid is False
 
     def test_validate_target_172_private(self, sqlmap_scanner):
         """Test blocking 172.16-31.x.x private range."""
-        valid, error = sqlmap_scanner._validate_target("http://172.16.0.1/test.php?id=1")
+        valid, error = sqlmap_scanner._validate_target(
+            "http://172.16.0.1/test.php?id=1"
+        )
         assert valid is False
 
 
@@ -338,7 +395,9 @@ class TestOutputParsing:
         POST parameter 'username' is dynamic
         """
 
-        vulnerable, dbms, payload, params = sqlmap_scanner._parse_sqlmap_output(output)
+        vulnerable, dbms, payload, params = (
+            sqlmap_scanner._parse_sqlmap_output(output)
+        )
 
         assert vulnerable is True
         assert dbms == "MySQL >= 5.0.12"
@@ -353,7 +412,9 @@ class TestOutputParsing:
         [INFO] tested 100 parameters
         """
 
-        vulnerable, dbms, payload, params = sqlmap_scanner._parse_sqlmap_output(output)
+        vulnerable, dbms, payload, params = (
+            sqlmap_scanner._parse_sqlmap_output(output)
+        )
 
         assert vulnerable is False
         assert dbms is None
@@ -363,7 +424,10 @@ class TestOutputParsing:
         """Test parsing different DBMS outputs."""
         dbms_variants = [
             ("back-end DBMS: PostgreSQL", "PostgreSQL"),
-            ("back-end DBMS: Microsoft SQL Server 2019", "Microsoft SQL Server 2019"),
+            (
+                "back-end DBMS: Microsoft SQL Server 2019",
+                "Microsoft SQL Server 2019",
+            ),
             ("back-end DBMS: Oracle 12c", "Oracle 12c"),
             ("back-end DBMS: SQLite 3.x", "SQLite 3.x"),
         ]
@@ -402,7 +466,9 @@ class TestOutputParsing:
 
     def test_parse_sqlmap_output_empty(self, sqlmap_scanner):
         """Test parsing empty output."""
-        vulnerable, dbms, payload, params = sqlmap_scanner._parse_sqlmap_output("")
+        vulnerable, dbms, payload, params = (
+            sqlmap_scanner._parse_sqlmap_output("")
+        )
 
         assert vulnerable is False
         assert dbms is None
@@ -447,7 +513,9 @@ class TestSQLMapTool:
             metadata={"target": "http://example.com"},
         )
 
-        with patch.object(tool.scanner, "scan_target", AsyncMock(return_value=mock_result)):
+        with patch.object(
+            tool.scanner, "scan_target", AsyncMock(return_value=mock_result)
+        ):
             result = await tool.execute(
                 {
                     "target": "http://example.com/page.php?id=1",
@@ -473,7 +541,9 @@ class TestSQLMapTool:
             execution_time=3.0,
         )
 
-        with patch.object(tool.scanner, "scan_target", AsyncMock(return_value=mock_result)):
+        with patch.object(
+            tool.scanner, "scan_target", AsyncMock(return_value=mock_result)
+        ):
             result = await tool.execute(
                 {
                     "target": "http://example.com/login",
@@ -497,7 +567,9 @@ class TestSQLMapTool:
             execution_time=0,
         )
 
-        with patch.object(tool.scanner, "scan_target", AsyncMock(return_value=mock_result)):
+        with patch.object(
+            tool.scanner, "scan_target", AsyncMock(return_value=mock_result)
+        ):
             result = await tool.execute(
                 {
                     "target": "http://example.com/page.php?id=1",
@@ -553,11 +625,17 @@ class TestEdgeCases:
         mock_stderr = "[WARNING] using unescaped version"
 
         mock_process = AsyncMock()
-        mock_process.communicate = AsyncMock(return_value=(mock_output.encode(), mock_stderr.encode()))
+        mock_process.communicate = AsyncMock(
+            return_value=(mock_output.encode(), mock_stderr.encode())
+        )
         mock_process.returncode = 0
 
-        with patch("asyncio.create_subprocess_exec", return_value=mock_process):
-            result = await sqlmap_scanner.scan_target("http://example.com/test.php?id=1")
+        with patch(
+            "asyncio.create_subprocess_exec", return_value=mock_process
+        ):
+            result = await sqlmap_scanner.scan_target(
+                "http://example.com/test.php?id=1"
+            )
 
         assert result.success is True
         assert result.error_message == mock_stderr
@@ -568,12 +646,16 @@ class TestEdgeCases:
         mock_output = "GET parameter 'id' is vulnerable"
 
         mock_process = AsyncMock()
-        mock_process.communicate = AsyncMock(return_value=(mock_output.encode(), b""))
+        mock_process.communicate = AsyncMock(
+            return_value=(mock_output.encode(), b"")
+        )
         mock_process.returncode = 0
 
         complex_url = "http://example.com/page.php?id=1&cat=2&view=3"
 
-        with patch("asyncio.create_subprocess_exec", return_value=mock_process):
+        with patch(
+            "asyncio.create_subprocess_exec", return_value=mock_process
+        ):
             result = await sqlmap_scanner.scan_target(complex_url)
 
         assert result.success is True

@@ -22,7 +22,12 @@ class RiskReportGenerator:
             "remediation": self._generate_remediation_plan,
         }
 
-    def generate(self, risk_scores: List[RiskScore], report_type: str = "executive", **kwargs) -> Dict[str, Any]:
+    def generate(
+        self,
+        risk_scores: List[RiskScore],
+        report_type: str = "executive",
+        **kwargs,
+    ) -> Dict[str, Any]:
         """
         Generate risk report
         """
@@ -31,7 +36,9 @@ class RiskReportGenerator:
 
         return self._generate_full_report(risk_scores)
 
-    def _generate_executive_summary(self, risk_scores: List[RiskScore], organization: str = "Organization") -> Dict:
+    def _generate_executive_summary(
+        self, risk_scores: List[RiskScore], organization: str = "Organization"
+    ) -> Dict:
         """Generate executive summary"""
 
         # Calculate statistics
@@ -40,11 +47,19 @@ class RiskReportGenerator:
         high = sum(1 for r in risk_scores if r.risk_priority == "High")
         medium = sum(1 for r in risk_scores if r.risk_priority == "Medium")
 
-        avg_cvss = sum(r.cvss_score for r in risk_scores) / total if total > 0 else 0
-        avg_epss = sum(r.epss_probability for r in risk_scores) / total if total > 0 else 0
+        avg_cvss = (
+            sum(r.cvss_score for r in risk_scores) / total if total > 0 else 0
+        )
+        avg_epss = (
+            sum(r.epss_probability for r in risk_scores) / total
+            if total > 0
+            else 0
+        )
 
         # Top risks
-        top_risks = sorted(risk_scores, key=lambda x: x.overall_risk_score, reverse=True)[:5]
+        top_risks = sorted(
+            risk_scores, key=lambda x: x.overall_risk_score, reverse=True
+        )[:5]
 
         return {
             "report_type": "Executive Summary",
@@ -74,10 +89,14 @@ class RiskReportGenerator:
                 }
                 for r in top_risks
             ],
-            "recommendations": self._generate_executive_recommendations(critical, high, medium),
+            "recommendations": self._generate_executive_recommendations(
+                critical, high, medium
+            ),
         }
 
-    def _generate_technical_report(self, risk_scores: List[RiskScore], include_details: bool = True) -> Dict:
+    def _generate_technical_report(
+        self, risk_scores: List[RiskScore], include_details: bool = True
+    ) -> Dict:
         """Generate detailed technical report"""
 
         return {
@@ -108,16 +127,26 @@ class RiskReportGenerator:
                     "data_quality": r.data_quality,
                     "timestamp": r.timestamp,
                 }
-                for r in sorted(risk_scores, key=lambda x: x.overall_risk_score, reverse=True)
+                for r in sorted(
+                    risk_scores,
+                    key=lambda x: x.overall_risk_score,
+                    reverse=True,
+                )
             ],
             "statistics": self._calculate_statistics(risk_scores),
         }
 
-    def _generate_remediation_plan(self, risk_scores: List[RiskScore], max_items: int = 20) -> Dict:
+    def _generate_remediation_plan(
+        self, risk_scores: List[RiskScore], max_items: int = 20
+    ) -> Dict:
         """Generate prioritized remediation plan"""
 
         # Sort by overall risk
-        sorted_scores = sorted(risk_scores, key=lambda x: (x.overall_risk_score, x.epss_probability), reverse=True)
+        sorted_scores = sorted(
+            risk_scores,
+            key=lambda x: (x.overall_risk_score, x.epss_probability),
+            reverse=True,
+        )
 
         remediation_items = []
         for i, score in enumerate(sorted_scores[:max_items], 1):
@@ -167,33 +196,50 @@ class RiskReportGenerator:
             "cvss": {
                 "min": min(r.cvss_score for r in risk_scores),
                 "max": max(r.cvss_score for r in risk_scores),
-                "avg": round(sum(r.cvss_score for r in risk_scores) / total, 1),
+                "avg": round(
+                    sum(r.cvss_score for r in risk_scores) / total, 1
+                ),
             },
             "epss": {
                 "min": round(min(r.epss_probability for r in risk_scores), 1),
                 "max": round(max(r.epss_probability for r in risk_scores), 1),
-                "avg": round(sum(r.epss_probability for r in risk_scores) / total, 1),
+                "avg": round(
+                    sum(r.epss_probability for r in risk_scores) / total, 1
+                ),
             },
             "business_impact": {
-                "avg": round(sum(r.business_impact_score for r in risk_scores) / total, 1),
+                "avg": round(
+                    sum(r.business_impact_score for r in risk_scores) / total,
+                    1,
+                ),
             },
         }
 
-    def _generate_executive_recommendations(self, critical: int, high: int, medium: int) -> List[str]:
+    def _generate_executive_recommendations(
+        self, critical: int, high: int, medium: int
+    ) -> List[str]:
         """Generate executive recommendations"""
         recommendations = []
 
         if critical > 0:
-            recommendations.append(f"IMMEDIATE ACTION: Address {critical} critical vulnerabilities within 24-48 hours")
+            recommendations.append(
+                f"IMMEDIATE ACTION: Address {critical} critical vulnerabilities within 24-48 hours"
+            )
 
         if high > 0:
-            recommendations.append(f"Urgent: Plan remediation for {high} high-risk vulnerabilities within 1 week")
+            recommendations.append(
+                f"Urgent: Plan remediation for {high} high-risk vulnerabilities within 1 week"
+            )
 
         if medium > 5:
-            recommendations.append(f"Schedule {medium} medium-risk items for next maintenance window")
+            recommendations.append(
+                f"Schedule {medium} medium-risk items for next maintenance window"
+            )
 
         if critical == 0 and high == 0:
-            recommendations.append("Risk posture is manageable. Continue regular patching cycle.")
+            recommendations.append(
+                "Risk posture is manageable. Continue regular patching cycle."
+            )
 
         return recommendations
 
@@ -205,7 +251,9 @@ class RiskReportGenerator:
             "Medium": {"timeline": "30 days", "effort": "Medium"},
             "Low": {"timeline": "90 days", "effort": "Low"},
         }
-        return timelines.get(priority, {"timeline": "As scheduled", "effort": "Low"})
+        return timelines.get(
+            priority, {"timeline": "As scheduled", "effort": "Low"}
+        )
 
     def _get_action_description(self, score: RiskScore) -> str:
         """Get specific action description"""

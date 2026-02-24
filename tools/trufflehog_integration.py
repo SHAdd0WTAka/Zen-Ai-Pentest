@@ -187,7 +187,8 @@ class TruffleHogScanner:
         trufflehog_path = shutil.which(path)
         if not trufflehog_path:
             raise RuntimeError(
-                f"trufflehog not found at '{path}'. Install from: " "https://github.com/trufflesecurity/trufflehog"
+                f"trufflehog not found at '{path}'. Install from: "
+                "https://github.com/trufflesecurity/trufflehog"
             )
         return trufflehog_path
 
@@ -200,11 +201,15 @@ class TruffleHogScanner:
                 text=True,
                 timeout=10,
             )
-            return result.stdout.strip() if result.returncode == 0 else "unknown"
+            return (
+                result.stdout.strip() if result.returncode == 0 else "unknown"
+            )
         except Exception:
             return "unknown"
 
-    def _build_git_command(self, repo_url: str, output_file: Optional[str] = None) -> List[str]:
+    def _build_git_command(
+        self, repo_url: str, output_file: Optional[str] = None
+    ) -> List[str]:
         """Build trufflehog git scan command"""
         cmd = [
             self.trufflehog_path,
@@ -230,7 +235,9 @@ class TruffleHogScanner:
 
         return cmd
 
-    def _build_filesystem_command(self, path: str, output_file: Optional[str] = None) -> List[str]:
+    def _build_filesystem_command(
+        self, path: str, output_file: Optional[str] = None
+    ) -> List[str]:
         """Build trufflehog filesystem scan command"""
         cmd = [
             self.trufflehog_path,
@@ -249,11 +256,15 @@ class TruffleHogScanner:
         if self.custom_regexes:
             # TruffleHog v3 supports custom detectors via config
             # For now, we'll note this in the scan
-            logger.info(f"Custom regexes configured: {list(self.custom_regexes.keys())}")
+            logger.info(
+                f"Custom regexes configured: {list(self.custom_regexes.keys())}"
+            )
 
         return cmd
 
-    def _parse_json_output(self, json_lines: str, source: str) -> List[TruffleHogFinding]:
+    def _parse_json_output(
+        self, json_lines: str, source: str
+    ) -> List[TruffleHogFinding]:
         """
         Parse TruffleHog JSON output.
 
@@ -447,7 +458,9 @@ class TruffleHogScanner:
 
         except asyncio.TimeoutError:
             scan_time = asyncio.get_event_loop().time() - start_time
-            logger.error(f"TruffleHog filesystem scan timed out after {timeout}s")
+            logger.error(
+                f"TruffleHog filesystem scan timed out after {timeout}s"
+            )
             return TruffleHogResult(
                 success=False,
                 target=path,
@@ -495,15 +508,33 @@ class TruffleHogScanner:
                 "source": finding.source,
                 "source_metadata": finding.source_metadata,
                 "redacted_secret": finding.redacted,
-                "file": finding.source_metadata.get("File", "") if finding.source_metadata else "",
-                "commit": finding.source_metadata.get("Commit", "") if finding.source_metadata else "",
-                "email": finding.source_metadata.get("Email", "") if finding.source_metadata else "",
-                "timestamp": finding.source_metadata.get("Timestamp", "") if finding.source_metadata else "",
+                "file": (
+                    finding.source_metadata.get("File", "")
+                    if finding.source_metadata
+                    else ""
+                ),
+                "commit": (
+                    finding.source_metadata.get("Commit", "")
+                    if finding.source_metadata
+                    else ""
+                ),
+                "email": (
+                    finding.source_metadata.get("Email", "")
+                    if finding.source_metadata
+                    else ""
+                ),
+                "timestamp": (
+                    finding.source_metadata.get("Timestamp", "")
+                    if finding.source_metadata
+                    else ""
+                ),
             }
             findings.append(parsed)
         return findings
 
-    def normalize_findings(self, findings: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    def normalize_findings(
+        self, findings: List[Dict[str, Any]]
+    ) -> List[Dict[str, Any]]:
         """
         Normalize findings to standard format.
 
@@ -517,7 +548,9 @@ class TruffleHogScanner:
 
         for finding in findings:
             # Build description
-            description = f"Detected {finding.get('detector', 'Unknown')} secret"
+            description = (
+                f"Detected {finding.get('detector', 'Unknown')} secret"
+            )
             if finding.get("verified"):
                 description += " (VERIFIED)"
 
@@ -626,7 +659,9 @@ def trufflehog_scan_git(
 
     for severity in ["critical", "high", "medium"]:
         if severity_groups[severity]:
-            lines.append(f"\n{severity.upper()} Severity ({len(severity_groups[severity])}):")
+            lines.append(
+                f"\n{severity.upper()} Severity ({len(severity_groups[severity])}):"
+            )
             for finding in severity_groups[severity][:10]:  # Limit output
                 verified_mark = "✓ VERIFIED" if finding.verified else ""
                 lines.append(f"  - {finding.detector_name} {verified_mark}")
@@ -697,7 +732,9 @@ def trufflehog_scan_local_repo(
     if not result.success:
         return f"Local repo scan failed: {result.error}"
 
-    high_count = sum(1 for f in result.findings if f.severity in ["critical", "high"])
+    high_count = sum(
+        1 for f in result.findings if f.severity in ["critical", "high"]
+    )
 
     return (
         f"Local Repository Scan Complete:\n"

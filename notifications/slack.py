@@ -53,15 +53,27 @@ class SlackNotifier:
             payload["channel"] = channel
 
         try:
-            response = requests.post(self.webhook_url, json=payload, timeout=10)
+            response = requests.post(
+                self.webhook_url, json=payload, timeout=10
+            )
             return response.status_code == 200
         except Exception as e:
             logger.error(f"Slack send error: {e}")
             return False
 
-    def send_scan_completed(self, scan_id: int, target: str, findings_count: int, critical_count: int) -> bool:
+    def send_scan_completed(
+        self,
+        scan_id: int,
+        target: str,
+        findings_count: int,
+        critical_count: int,
+    ) -> bool:
         """Sendet Scan-Completion Benachrichtigung"""
-        color = "danger" if critical_count > 0 else "warning" if findings_count > 0 else "good"
+        color = (
+            "danger"
+            if critical_count > 0
+            else "warning" if findings_count > 0 else "good"
+        )
 
         payload = {
             "attachments": [
@@ -69,10 +81,22 @@ class SlackNotifier:
                     "color": color,
                     "title": "Pentest Scan Completed",
                     "fields": [
-                        {"title": "Scan ID", "value": str(scan_id), "short": True},
+                        {
+                            "title": "Scan ID",
+                            "value": str(scan_id),
+                            "short": True,
+                        },
                         {"title": "Target", "value": target, "short": True},
-                        {"title": "Total Findings", "value": findings_count, "short": True},
-                        {"title": "Critical", "value": critical_count, "short": True},
+                        {
+                            "title": "Total Findings",
+                            "value": findings_count,
+                            "short": True,
+                        },
+                        {
+                            "title": "Critical",
+                            "value": critical_count,
+                            "short": True,
+                        },
                     ],
                     "footer": "Zen-AI-Pentest",
                     "ts": int(datetime.now().timestamp()),
@@ -81,7 +105,9 @@ class SlackNotifier:
         }
 
         try:
-            response = requests.post(self.webhook_url, json=payload, timeout=10)
+            response = requests.post(
+                self.webhook_url, json=payload, timeout=10
+            )
             return response.status_code == 200
         except Exception as e:
             logger.error(f"Slack send error: {e}")
@@ -96,24 +122,44 @@ class SlackNotifier:
                     "title": f"CRITICAL: {finding.get('title', 'Unknown')}",
                     "text": finding.get("description", "")[:500],
                     "fields": [
-                        {"title": "Severity", "value": "CRITICAL", "short": True},
-                        {"title": "Target", "value": finding.get("target", "N/A"), "short": True},
-                        {"title": "Tool", "value": finding.get("tool", "Unknown"), "short": True},
-                        {"title": "CVSS", "value": str(finding.get("cvss_score", "N/A")), "short": True},
+                        {
+                            "title": "Severity",
+                            "value": "CRITICAL",
+                            "short": True,
+                        },
+                        {
+                            "title": "Target",
+                            "value": finding.get("target", "N/A"),
+                            "short": True,
+                        },
+                        {
+                            "title": "Tool",
+                            "value": finding.get("tool", "Unknown"),
+                            "short": True,
+                        },
+                        {
+                            "title": "CVSS",
+                            "value": str(finding.get("cvss_score", "N/A")),
+                            "short": True,
+                        },
                     ],
                 }
             ]
         }
 
         try:
-            response = requests.post(self.webhook_url, json=payload, timeout=10)
+            response = requests.post(
+                self.webhook_url, json=payload, timeout=10
+            )
             return response.status_code == 200
         except Exception as e:
             logger.error(f"Slack send error: {e}")
             return False
 
 
-def slack_notify_scan_complete(scan_id: int, target: str, findings_count: int, critical_count: int) -> str:
+def slack_notify_scan_complete(
+    scan_id: int, target: str, findings_count: int, critical_count: int
+) -> str:
     """Sendet Slack-Benachrichtigung bei Scan-Abschluss"""
     import os
 
@@ -128,5 +174,7 @@ def slack_notify_scan_complete(scan_id: int, target: str, findings_count: int, c
         return "Invalid Slack webhook configuration"
 
     notifier = SlackNotifier(safe_webhook)
-    success = notifier.send_scan_completed(scan_id, target, findings_count, critical_count)
+    success = notifier.send_scan_completed(
+        scan_id, target, findings_count, critical_count
+    )
     return "Notification sent" if success else "Failed to send notification"

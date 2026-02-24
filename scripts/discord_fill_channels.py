@@ -410,7 +410,10 @@ Fehler-Log hier
 def get_channels(guild_id, token):
     """Holt alle Channels vom Server"""
     url = f"{API_BASE}/guilds/{guild_id}/channels"
-    headers = {"Authorization": f"Bot {token}", "Content-Type": "application/json"}
+    headers = {
+        "Authorization": f"Bot {token}",
+        "Content-Type": "application/json",
+    }
     response = requests.get(url, headers=headers)
     if response.status_code == 200:
         return response.json()
@@ -423,7 +426,10 @@ def get_channels(guild_id, token):
 def send_message(channel_id, content, token):
     """Sendet eine Nachricht in einen Channel"""
     url = f"{API_BASE}/channels/{channel_id}/messages"
-    headers = {"Authorization": f"Bot {token}", "Content-Type": "application/json"}
+    headers = {
+        "Authorization": f"Bot {token}",
+        "Content-Type": "application/json",
+    }
 
     # Discord hat ein Limit von 2000 Zeichen pro Nachricht
     # Lange Nachrichten müssen aufgeteilt werden
@@ -436,7 +442,9 @@ def send_message(channel_id, content, token):
             print("[OK] Nachricht gesendet")
             return True
         else:
-            print(f"[ERROR] Konnte Nachricht nicht senden: {response.status_code}")
+            print(
+                f"[ERROR] Konnte Nachricht nicht senden: {response.status_code}"
+            )
             print(response.text)
             return False
     else:
@@ -458,7 +466,9 @@ def send_message(channel_id, content, token):
             if response.status_code == 200:
                 print(f"[OK] Nachricht Teil {i+1}/{len(parts)} gesendet")
             else:
-                print(f"[ERROR] Teil {i+1} fehlgeschlagen: {response.status_code}")
+                print(
+                    f"[ERROR] Teil {i+1} fehlgeschlagen: {response.status_code}"
+                )
                 return False
         return True
 
@@ -467,8 +477,13 @@ def find_channel_by_name(channels, name_part):
     """Findet einen Channel anhand eines Namensteils"""
     for channel in channels:
         # Entferne Emojis und suche nach Namensteil
-        clean_name = "".join(c for c in channel["name"] if c.isalnum() or c in "-_").lower()
-        if name_part.lower() in clean_name or name_part.lower() in channel["name"].lower():
+        clean_name = "".join(
+            c for c in channel["name"] if c.isalnum() or c in "-_"
+        ).lower()
+        if (
+            name_part.lower() in clean_name
+            or name_part.lower() in channel["name"].lower()
+        ):
             return channel["id"]
     return None
 

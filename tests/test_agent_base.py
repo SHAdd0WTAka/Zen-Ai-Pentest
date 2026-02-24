@@ -158,7 +158,9 @@ class TestBaseAgentInitialization:
     def test_initialization_with_orchestrator(self):
         """Test initialization with orchestrator"""
         mock_orchestrator = Mock()
-        agent = ConcreteTestAgent("TestAgent", AgentRole.ANALYST, orchestrator=mock_orchestrator)
+        agent = ConcreteTestAgent(
+            "TestAgent", AgentRole.ANALYST, orchestrator=mock_orchestrator
+        )
 
         assert agent.orchestrator is mock_orchestrator
 
@@ -213,9 +215,13 @@ class TestBaseAgentMessaging:
     async def test_send_message_with_orchestrator(self):
         """Test sending message through orchestrator"""
         mock_orchestrator = AsyncMock()
-        agent = ConcreteTestAgent("TestAgent", AgentRole.RESEARCHER, orchestrator=mock_orchestrator)
+        agent = ConcreteTestAgent(
+            "TestAgent", AgentRole.RESEARCHER, orchestrator=mock_orchestrator
+        )
 
-        msg_id = await agent.send_message("Hello", recipient="Agent2", msg_type="chat")
+        msg_id = await agent.send_message(
+            "Hello", recipient="Agent2", msg_type="chat"
+        )
 
         mock_orchestrator.route_message.assert_called_once()
         assert len(msg_id) == 8
@@ -224,7 +230,9 @@ class TestBaseAgentMessaging:
     async def test_send_message_broadcast(self):
         """Test broadcasting message to all"""
         mock_orchestrator = AsyncMock()
-        agent = ConcreteTestAgent("TestAgent", AgentRole.RESEARCHER, orchestrator=mock_orchestrator)
+        agent = ConcreteTestAgent(
+            "TestAgent", AgentRole.RESEARCHER, orchestrator=mock_orchestrator
+        )
 
         await agent.send_message("Broadcast", recipient="all")
 
@@ -235,7 +243,9 @@ class TestBaseAgentMessaging:
     async def test_send_message_with_context(self):
         """Test sending message with context"""
         mock_orchestrator = AsyncMock()
-        agent = ConcreteTestAgent("TestAgent", AgentRole.RESEARCHER, orchestrator=mock_orchestrator)
+        agent = ConcreteTestAgent(
+            "TestAgent", AgentRole.RESEARCHER, orchestrator=mock_orchestrator
+        )
 
         context = {"key": "value", "number": 42}
         await agent.send_message("Message", context=context)
@@ -443,16 +453,22 @@ class TestBaseAgentContext:
     async def test_update_context_with_share(self):
         """Test updating context with sharing"""
         mock_orchestrator = AsyncMock()
-        agent = ConcreteTestAgent("TestAgent", AgentRole.RESEARCHER, orchestrator=mock_orchestrator)
+        agent = ConcreteTestAgent(
+            "TestAgent", AgentRole.RESEARCHER, orchestrator=mock_orchestrator
+        )
 
         agent.update_context("shared_key", "shared_value", share=True)
 
-        mock_orchestrator.update_shared_context.assert_called_once_with("shared_key", "shared_value", agent.id)
+        mock_orchestrator.update_shared_context.assert_called_once_with(
+            "shared_key", "shared_value", agent.id
+        )
 
     def test_update_context_without_share(self):
         """Test updating context without sharing"""
         mock_orchestrator = Mock()
-        agent = ConcreteTestAgent("TestAgent", AgentRole.RESEARCHER, orchestrator=mock_orchestrator)
+        agent = ConcreteTestAgent(
+            "TestAgent", AgentRole.RESEARCHER, orchestrator=mock_orchestrator
+        )
 
         agent.update_context("local_key", "local_value", share=False)
 
@@ -503,7 +519,9 @@ class TestBaseAgentShareFindings:
     async def test_share_findings(self):
         """Test sharing findings"""
         mock_orchestrator = AsyncMock()
-        agent = ConcreteTestAgent("TestAgent", AgentRole.RESEARCHER, orchestrator=mock_orchestrator)
+        agent = ConcreteTestAgent(
+            "TestAgent", AgentRole.RESEARCHER, orchestrator=mock_orchestrator
+        )
 
         findings = {"vulnerability": "CVE-2021-44228", "severity": "critical"}
         agent.share_findings(findings)
@@ -533,7 +551,12 @@ class TestBaseAgentHandleMessage:
         mock_orchestrator = AsyncMock()
         agent.orchestrator = mock_orchestrator
 
-        msg = AgentMessage(sender="Other", content="Hello", msg_type="chat", requires_response=True)
+        msg = AgentMessage(
+            sender="Other",
+            content="Hello",
+            msg_type="chat",
+            requires_response=True,
+        )
         await agent.handle_message(msg)
 
         # Should send acknowledgment
@@ -546,7 +569,12 @@ class TestBaseAgentHandleMessage:
         mock_orchestrator = AsyncMock()
         agent.orchestrator = mock_orchestrator
 
-        msg = AgentMessage(sender="Other", content="Hello", msg_type="chat", requires_response=False)
+        msg = AgentMessage(
+            sender="Other",
+            content="Hello",
+            msg_type="chat",
+            requires_response=False,
+        )
         await agent.handle_message(msg)
 
         # Should not send response
@@ -597,7 +625,9 @@ class TestBaseAgentEdgeCases:
     async def test_send_message_priority_bounds(self):
         """Test sending messages with boundary priorities"""
         mock_orchestrator = AsyncMock()
-        agent = ConcreteTestAgent("TestAgent", AgentRole.RESEARCHER, orchestrator=mock_orchestrator)
+        agent = ConcreteTestAgent(
+            "TestAgent", AgentRole.RESEARCHER, orchestrator=mock_orchestrator
+        )
 
         # Test various priority levels
         await agent.send_message("Low", priority=0)

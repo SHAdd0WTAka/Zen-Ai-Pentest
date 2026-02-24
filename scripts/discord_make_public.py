@@ -19,7 +19,10 @@ API_BASE = "https://discord.com/api/v10"
 def update_server_settings(token):
     """Aktualisiert die Server-Einstellungen fuer oeffentliche Sichtbarkeit"""
 
-    headers = {"Authorization": f"Bot {token}", "Content-Type": "application/json"}
+    headers = {
+        "Authorization": f"Bot {token}",
+        "Content-Type": "application/json",
+    }
 
     print("[INFO] Aktualisiere Server-Einstellungen...")
 
@@ -52,7 +55,9 @@ def update_server_settings(token):
         "preferred_locale": "en-US",
     }
 
-    response = requests.put(community_url, headers=headers, json=community_payload)
+    response = requests.put(
+        community_url, headers=headers, json=community_payload
+    )
 
     if response.status_code == 200:
         print("[OK] Community-Status aktiviert")
@@ -70,7 +75,9 @@ def update_server_settings(token):
         current_code = data.get("code", "N/A")
         print(f"[OK] Vanity URL: discord.gg/{current_code}")
     else:
-        print(f"[WARN] Vanity URL konnte nicht geprueft werden: {response.status_code}")
+        print(
+            f"[WARN] Vanity URL konnte nicht geprueft werden: {response.status_code}"
+        )
 
     return True
 
@@ -78,14 +85,19 @@ def update_server_settings(token):
 def create_invite(token, max_age=0, max_uses=0):
     """Erstellt einen permanenten Einladungslink"""
 
-    headers = {"Authorization": f"Bot {token}", "Content-Type": "application/json"}
+    headers = {
+        "Authorization": f"Bot {token}",
+        "Content-Type": "application/json",
+    }
 
     # Ersten Text-Channel finden
     channels_url = f"{API_BASE}/guilds/{GUILD_ID}/channels"
     response = requests.get(channels_url, headers=headers)
 
     if response.status_code != 200:
-        print(f"[ERROR] Fehler beim Abrufen der Channels: {response.status_code}")
+        print(
+            f"[ERROR] Fehler beim Abrufen der Channels: {response.status_code}"
+        )
         return None
 
     channels = response.json()
@@ -115,10 +127,14 @@ def create_invite(token, max_age=0, max_uses=0):
     if response.status_code == 200:
         data = response.json()
         invite_code = data["code"]
-        print(f"[OK] Einladungslink erstellt: https://discord.gg/{invite_code}")
+        print(
+            f"[OK] Einladungslink erstellt: https://discord.gg/{invite_code}"
+        )
         return invite_code
     else:
-        print(f"[ERROR] Fehler beim Erstellen der Einladung: {response.status_code}")
+        print(
+            f"[ERROR] Fehler beim Erstellen der Einladung: {response.status_code}"
+        )
         print(response.text)
         return None
 
@@ -157,7 +173,9 @@ def main():
         print()
 
         if invite_code:
-            print(f"[INFO] Neuer Einladungslink: https://discord.gg/{invite_code}")
+            print(
+                f"[INFO] Neuer Einladungslink: https://discord.gg/{invite_code}"
+            )
 
         print()
         print("[WARN] WICHTIG - Manuelle Schritte erforderlich:")

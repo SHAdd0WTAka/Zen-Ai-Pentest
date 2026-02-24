@@ -25,7 +25,9 @@ def create_scan(db: Session, scan_data=None, **kwargs):
     if scan_data is not None:
         name = getattr(scan_data, "name", None) or kwargs.get("name")
         target = getattr(scan_data, "target", None) or kwargs.get("target")
-        scan_type = getattr(scan_data, "scan_type", None) or kwargs.get("scan_type")
+        scan_type = getattr(scan_data, "scan_type", None) or kwargs.get(
+            "scan_type"
+        )
         config = getattr(scan_data, "config", None) or kwargs.get("config", {})
         user_id = getattr(scan_data, "user_id", None) or kwargs.get("user_id")
     else:
@@ -35,7 +37,13 @@ def create_scan(db: Session, scan_data=None, **kwargs):
         config = kwargs.get("config", {})
         user_id = kwargs.get("user_id")
 
-    db_scan = models.Scan(name=name, target=target, scan_type=scan_type, config=config, user_id=user_id)
+    db_scan = models.Scan(
+        name=name,
+        target=target,
+        scan_type=scan_type,
+        config=config,
+        user_id=user_id,
+    )
     db.add(db_scan)
     db.commit()
     db.refresh(db_scan)
@@ -47,7 +55,9 @@ def get_scan(db: Session, scan_id: int):
     return db.query(models.Scan).filter(models.Scan.id == scan_id).first()
 
 
-def get_scans(db: Session, skip: int = 0, limit: int = 100, status: str = None):
+def get_scans(
+    db: Session, skip: int = 0, limit: int = 100, status: str = None
+):
     """Gibt eine Liste von Scans zurück"""
     query = db.query(models.Scan)
     if status:
@@ -55,7 +65,9 @@ def get_scans(db: Session, skip: int = 0, limit: int = 100, status: str = None):
     return query.offset(skip).limit(limit).all()
 
 
-def update_scan_status(db: Session, scan_id: int, status: str, result: dict = None):
+def update_scan_status(
+    db: Session, scan_id: int, status: str, result: dict = None
+):
     """Aktualisiert den Status eines Scans"""
     db_scan = get_scan(db, scan_id)
     if db_scan:
@@ -95,7 +107,9 @@ def create_finding(db: Session, finding_data):
     return db_finding
 
 
-def get_findings(db: Session, scan_id: int = None, skip: int = 0, limit: int = 100):
+def get_findings(
+    db: Session, scan_id: int = None, skip: int = 0, limit: int = 100
+):
     """Gibt Befunde zurück (optional für einen Scan gefiltert)"""
     query = db.query(models.Finding)
     if scan_id:
@@ -112,7 +126,9 @@ def create_report(db: Session, report_data):
     """Erstellt einen neuen Report-Eintrag"""
     db_report = models.Report(
         scan_id=report_data.scan_id,
-        user_id=report_data.user_id if hasattr(report_data, "user_id") else None,
+        user_id=(
+            report_data.user_id if hasattr(report_data, "user_id") else None
+        ),
         format=report_data.format,
         status="pending",
     )

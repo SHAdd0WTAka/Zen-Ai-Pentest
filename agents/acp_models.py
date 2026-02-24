@@ -19,7 +19,13 @@ from datetime import datetime, timezone
 from enum import Enum, IntEnum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    field_validator,
+    model_validator,
+)
 
 # =============================================================================
 # Enums und Konstanten
@@ -150,17 +156,30 @@ class TimestampMixin(BaseModel):
     """Mixin für Zeitstempel-Felder"""
 
     created_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc), description="Erstellungszeitpunkt der Nachricht"
+        default_factory=lambda: datetime.now(timezone.utc),
+        description="Erstellungszeitpunkt der Nachricht",
     )
-    updated_at: Optional[datetime] = Field(default=None, description="Letzter Aktualisierungszeitpunkt")
-    expires_at: Optional[datetime] = Field(default=None, description="Ablaufzeitpunkt der Nachricht")
+    updated_at: Optional[datetime] = Field(
+        default=None, description="Letzter Aktualisierungszeitpunkt"
+    )
+    expires_at: Optional[datetime] = Field(
+        default=None, description="Ablaufzeitpunkt der Nachricht"
+    )
 
 
 class MetadataMixin(BaseModel):
     """Mixin für Metadaten-Felder"""
 
-    metadata: Dict[str, Any] = Field(default_factory=dict, description="Zusätzliche Metadaten", max_length=1000)
-    tags: List[str] = Field(default_factory=list, description="Tags für Kategorisierung", max_length=50)
+    metadata: Dict[str, Any] = Field(
+        default_factory=dict,
+        description="Zusätzliche Metadaten",
+        max_length=1000,
+    )
+    tags: List[str] = Field(
+        default_factory=list,
+        description="Tags für Kategorisierung",
+        max_length=50,
+    )
 
 
 # =============================================================================
@@ -171,39 +190,78 @@ class MetadataMixin(BaseModel):
 class AgentIdentity(ACPBaseModel):
     """Identifiziert einen Agenten eindeutig"""
 
-    agent_id: str = Field(..., description="Eindeutige Agent-ID", min_length=1, max_length=128)
+    agent_id: str = Field(
+        ..., description="Eindeutige Agent-ID", min_length=1, max_length=128
+    )
     role: AgentRole = Field(..., description="Rolle des Agenten")
-    name: str = Field(..., description="Anzeigename des Agenten", min_length=1, max_length=256)
-    version: str = Field(default="1.0.0", description="Agent-Version", pattern=r"^\d+\.\d+\.\d+")
-    capabilities: List[str] = Field(default_factory=list, description="Fähigkeiten des Agenten")
+    name: str = Field(
+        ...,
+        description="Anzeigename des Agenten",
+        min_length=1,
+        max_length=256,
+    )
+    version: str = Field(
+        default="1.0.0", description="Agent-Version", pattern=r"^\d+\.\d+\.\d+"
+    )
+    capabilities: List[str] = Field(
+        default_factory=list, description="Fähigkeiten des Agenten"
+    )
 
     @field_validator("agent_id")
     @classmethod
     def validate_agent_id(cls, v: str) -> str:
         """Validiert die Agent-ID Format"""
         if not v.replace("-", "").replace("_", "").isalnum():
-            raise ValueError("Agent-ID darf nur alphanumerische Zeichen, Bindestriche und Unterstriche enthalten")
+            raise ValueError(
+                "Agent-ID darf nur alphanumerische Zeichen, Bindestriche und Unterstriche enthalten"
+            )
         return v
 
 
 class MessageHeader(ACPBaseModel):
     """Header für alle ACP-Nachrichten"""
 
-    message_id: str = Field(default_factory=lambda: str(uuid.uuid4()), description="Eindeutige Message-ID")
-    correlation_id: Optional[str] = Field(default=None, description="Korrelations-ID für Request-Response-Paare")
+    message_id: str = Field(
+        default_factory=lambda: str(uuid.uuid4()),
+        description="Eindeutige Message-ID",
+    )
+    correlation_id: Optional[str] = Field(
+        default=None, description="Korrelations-ID für Request-Response-Paare"
+    )
     message_type: MessageType = Field(..., description="Typ der Nachricht")
-    version: str = Field(default="1.1.0", description="ACP-Protokollversion", pattern=r"^\d+\.\d+\.\d+$")
-    priority: MessagePriority = Field(default=MessagePriority.NORMAL, description="Priorität der Nachricht")
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), description="Zeitstempel der Nachricht")
-    ttl: int = Field(default=300, description="Time-to-Live in Sekunden", ge=0, le=86400)
+    version: str = Field(
+        default="1.1.0",
+        description="ACP-Protokollversion",
+        pattern=r"^\d+\.\d+\.\d+$",
+    )
+    priority: MessagePriority = Field(
+        default=MessagePriority.NORMAL, description="Priorität der Nachricht"
+    )
+    timestamp: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        description="Zeitstempel der Nachricht",
+    )
+    ttl: int = Field(
+        default=300, description="Time-to-Live in Sekunden", ge=0, le=86400
+    )
 
 
 class MessagePayload(ACPBaseModel):
     """Basis-Payload für alle Nachrichten"""
 
-    data: Dict[str, Any] = Field(default_factory=dict, description="Payload-Daten")
-    encoding: str = Field(default="json", description="Encoding der Daten", pattern=r"^(json|base64|binary|encrypted)$")
-    compression: Optional[str] = Field(default=None, description="Kompressionsalgorithmus", pattern=r"^(gzip|zlib|lz4|none)$")
+    data: Dict[str, Any] = Field(
+        default_factory=dict, description="Payload-Daten"
+    )
+    encoding: str = Field(
+        default="json",
+        description="Encoding der Daten",
+        pattern=r"^(json|base64|binary|encrypted)$",
+    )
+    compression: Optional[str] = Field(
+        default=None,
+        description="Kompressionsalgorithmus",
+        pattern=r"^(gzip|zlib|lz4|none)$",
+    )
 
     @field_validator("data")
     @classmethod
@@ -218,10 +276,19 @@ class MessagePayload(ACPBaseModel):
 class MessageSecurity(ACPBaseModel):
     """Sicherheitsinformationen für Nachrichten"""
 
-    encryption: EncryptionAlgorithm = Field(default=EncryptionAlgorithm.NONE, description="Verwendete Verschlüsselung")
-    signature: Optional[str] = Field(default=None, description="Digitale Signatur der Nachricht")
-    auth_token: Optional[str] = Field(default=None, description="Authentifizierungs-Token")
-    key_id: Optional[str] = Field(default=None, description="ID des verwendeten Schlüssels")
+    encryption: EncryptionAlgorithm = Field(
+        default=EncryptionAlgorithm.NONE,
+        description="Verwendete Verschlüsselung",
+    )
+    signature: Optional[str] = Field(
+        default=None, description="Digitale Signatur der Nachricht"
+    )
+    auth_token: Optional[str] = Field(
+        default=None, description="Authentifizierungs-Token"
+    )
+    key_id: Optional[str] = Field(
+        default=None, description="ID des verwendeten Schlüssels"
+    )
 
 
 # =============================================================================
@@ -237,15 +304,28 @@ class ACPMessage(ACPBaseModel, TimestampMixin, MetadataMixin):
     zwischen Agenten im Zen-Ai-Pentest Framework ermöglicht.
     """
 
-    header: MessageHeader = Field(..., description="Message-Header mit Metadaten")
+    header: MessageHeader = Field(
+        ..., description="Message-Header mit Metadaten"
+    )
     sender: AgentIdentity = Field(..., description="Absender der Nachricht")
-    recipient: Optional[AgentIdentity] = Field(default=None, description="Empfänger der Nachricht (None für Broadcast)")
-    payload: MessagePayload = Field(..., description="Nutzerdaten der Nachricht")
-    security: MessageSecurity = Field(default_factory=MessageSecurity, description="Sicherheitsinformationen")
+    recipient: Optional[AgentIdentity] = Field(
+        default=None,
+        description="Empfänger der Nachricht (None für Broadcast)",
+    )
+    payload: MessagePayload = Field(
+        ..., description="Nutzerdaten der Nachricht"
+    )
+    security: MessageSecurity = Field(
+        default_factory=MessageSecurity, description="Sicherheitsinformationen"
+    )
 
     # Tracking-Felder
-    delivery_attempts: int = Field(default=0, description="Anzahl der Zustellungsversuche", ge=0)
-    last_error: Optional[str] = Field(default=None, description="Letzter Fehler bei der Zustellung")
+    delivery_attempts: int = Field(
+        default=0, description="Anzahl der Zustellungsversuche", ge=0
+    )
+    last_error: Optional[str] = Field(
+        default=None, description="Letzter Fehler bei der Zustellung"
+    )
 
     @model_validator(mode="after")
     def validate_message(self) -> "ACPMessage":
@@ -264,7 +344,9 @@ class ACPMessage(ACPBaseModel, TimestampMixin, MetadataMixin):
         """Prüft ob die Nachricht abgelaufen ist"""
         if self.expires_at:
             return self.expires_at < datetime.now(timezone.utc)
-        age = (datetime.now(timezone.utc) - self.header.timestamp).total_seconds()
+        age = (
+            datetime.now(timezone.utc) - self.header.timestamp
+        ).total_seconds()
         return age > self.header.ttl
 
     def to_json(self, indent: Optional[int] = None) -> str:
@@ -274,7 +356,9 @@ class ACPMessage(ACPBaseModel, TimestampMixin, MetadataMixin):
     def compute_hash(self) -> str:
         """Berechnet einen Hash der Nachricht für Deduplizierung"""
         data = self.model_dump(exclude={"header": {"message_id"}})
-        return hashlib.sha256(json.dumps(data, sort_keys=True).encode()).hexdigest()
+        return hashlib.sha256(
+            json.dumps(data, sort_keys=True).encode()
+        ).hexdigest()
 
 
 # =============================================================================
@@ -285,104 +369,207 @@ class ACPMessage(ACPBaseModel, TimestampMixin, MetadataMixin):
 class TaskPayload(ACPBaseModel):
     """Payload für Task-bezogene Nachrichten"""
 
-    task_id: str = Field(default_factory=lambda: str(uuid.uuid4()), description="Eindeutige Task-ID")
-    title: str = Field(..., description="Task-Titel", min_length=1, max_length=512)
-    description: str = Field(default="", description="Task-Beschreibung", max_length=10000)
-    status: TaskStatus = Field(default=TaskStatus.PENDING, description="Aktueller Task-Status")
-    assigned_to: Optional[str] = Field(default=None, description="Zugewiesener Agent")
-    parent_task_id: Optional[str] = Field(default=None, description="ID der übergeordneten Task")
-    dependencies: List[str] = Field(default_factory=list, description="Abhängige Task-IDs")
-    instructions: str = Field(default="", description="Ausführungsanweisungen", max_length=50000)
-    expected_result: Optional[str] = Field(default=None, description="Erwartetes Ergebnis")
-    deadline: Optional[datetime] = Field(default=None, description="Deadline für die Task")
-    progress: int = Field(default=0, description="Fortschritt in Prozent", ge=0, le=100)
-    result: Optional[Dict[str, Any]] = Field(default=None, description="Task-Ergebnis")
-    error_message: Optional[str] = Field(default=None, description="Fehlermeldung bei Fehlschlag")
+    task_id: str = Field(
+        default_factory=lambda: str(uuid.uuid4()),
+        description="Eindeutige Task-ID",
+    )
+    title: str = Field(
+        ..., description="Task-Titel", min_length=1, max_length=512
+    )
+    description: str = Field(
+        default="", description="Task-Beschreibung", max_length=10000
+    )
+    status: TaskStatus = Field(
+        default=TaskStatus.PENDING, description="Aktueller Task-Status"
+    )
+    assigned_to: Optional[str] = Field(
+        default=None, description="Zugewiesener Agent"
+    )
+    parent_task_id: Optional[str] = Field(
+        default=None, description="ID der übergeordneten Task"
+    )
+    dependencies: List[str] = Field(
+        default_factory=list, description="Abhängige Task-IDs"
+    )
+    instructions: str = Field(
+        default="", description="Ausführungsanweisungen", max_length=50000
+    )
+    expected_result: Optional[str] = Field(
+        default=None, description="Erwartetes Ergebnis"
+    )
+    deadline: Optional[datetime] = Field(
+        default=None, description="Deadline für die Task"
+    )
+    progress: int = Field(
+        default=0, description="Fortschritt in Prozent", ge=0, le=100
+    )
+    result: Optional[Dict[str, Any]] = Field(
+        default=None, description="Task-Ergebnis"
+    )
+    error_message: Optional[str] = Field(
+        default=None, description="Fehlermeldung bei Fehlschlag"
+    )
 
 
 class StatusPayload(ACPBaseModel):
     """Payload für Status-Updates"""
 
     agent_status: AgentStatus = Field(..., description="Status des Agenten")
-    current_task_id: Optional[str] = Field(default=None, description="ID der aktuellen Task")
-    queue_size: int = Field(default=0, description="Größe der Message-Queue", ge=0)
-    memory_usage: Optional[float] = Field(default=None, description="Speichernutzung in MB", ge=0)
-    cpu_usage: Optional[float] = Field(default=None, description="CPU-Nutzung in Prozent", ge=0, le=100)
-    active_connections: int = Field(default=0, description="Anzahl aktiver Verbindungen", ge=0)
-    last_activity: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc), description="Zeitpunkt der letzten Aktivität"
+    current_task_id: Optional[str] = Field(
+        default=None, description="ID der aktuellen Task"
     )
-    capabilities_available: List[str] = Field(default_factory=list, description="Verfügbare Fähigkeiten")
+    queue_size: int = Field(
+        default=0, description="Größe der Message-Queue", ge=0
+    )
+    memory_usage: Optional[float] = Field(
+        default=None, description="Speichernutzung in MB", ge=0
+    )
+    cpu_usage: Optional[float] = Field(
+        default=None, description="CPU-Nutzung in Prozent", ge=0, le=100
+    )
+    active_connections: int = Field(
+        default=0, description="Anzahl aktiver Verbindungen", ge=0
+    )
+    last_activity: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        description="Zeitpunkt der letzten Aktivität",
+    )
+    capabilities_available: List[str] = Field(
+        default_factory=list, description="Verfügbare Fähigkeiten"
+    )
 
 
 class ErrorPayload(ACPBaseModel):
     """Payload für Fehlernachrichten"""
 
-    error_code: str = Field(..., description="Fehlercode", min_length=1, max_length=64)
-    severity: ErrorSeverity = Field(default=ErrorSeverity.ERROR, description="Schweregrad des Fehlers")
+    error_code: str = Field(
+        ..., description="Fehlercode", min_length=1, max_length=64
+    )
+    severity: ErrorSeverity = Field(
+        default=ErrorSeverity.ERROR, description="Schweregrad des Fehlers"
+    )
     message: str = Field(..., description="Fehlermeldung", max_length=10000)
-    details: Optional[Dict[str, Any]] = Field(default=None, description="Zusätzliche Fehlerdetails")
-    stack_trace: Optional[str] = Field(default=None, description="Stack-Trace (nur bei internen Fehlern)")
-    recoverable: bool = Field(default=True, description="Ob der Fehler behebbar ist")
-    retry_count: int = Field(default=0, description="Anzahl der Wiederholungsversuche", ge=0)
-    max_retries: int = Field(default=3, description="Maximale Anzahl der Wiederholungsversuche", ge=0)
+    details: Optional[Dict[str, Any]] = Field(
+        default=None, description="Zusätzliche Fehlerdetails"
+    )
+    stack_trace: Optional[str] = Field(
+        default=None, description="Stack-Trace (nur bei internen Fehlern)"
+    )
+    recoverable: bool = Field(
+        default=True, description="Ob der Fehler behebbar ist"
+    )
+    retry_count: int = Field(
+        default=0, description="Anzahl der Wiederholungsversuche", ge=0
+    )
+    max_retries: int = Field(
+        default=3,
+        description="Maximale Anzahl der Wiederholungsversuche",
+        ge=0,
+    )
 
 
 class FileTransferPayload(ACPBaseModel):
     """Payload für Dateiübertragungen"""
 
-    file_id: str = Field(default_factory=lambda: str(uuid.uuid4()), description="Eindeutige Datei-ID")
+    file_id: str = Field(
+        default_factory=lambda: str(uuid.uuid4()),
+        description="Eindeutige Datei-ID",
+    )
     filename: str = Field(..., description="Dateiname", max_length=512)
     file_size: int = Field(..., description="Dateigröße in Bytes", ge=0)
     mime_type: str = Field(..., description="MIME-Typ der Datei")
     checksum: str = Field(..., description="SHA-256 Prüfsumme der Datei")
-    chunk_index: int = Field(default=0, description="Index des aktuellen Chunks", ge=0)
-    total_chunks: int = Field(default=1, description="Gesamtanzahl der Chunks", ge=1)
-    chunk_data: Optional[str] = Field(default=None, description="Base64-kodierte Chunk-Daten")
-    compression: Optional[str] = Field(default=None, description="Kompressionsalgorithmus")
+    chunk_index: int = Field(
+        default=0, description="Index des aktuellen Chunks", ge=0
+    )
+    total_chunks: int = Field(
+        default=1, description="Gesamtanzahl der Chunks", ge=1
+    )
+    chunk_data: Optional[str] = Field(
+        default=None, description="Base64-kodierte Chunk-Daten"
+    )
+    compression: Optional[str] = Field(
+        default=None, description="Kompressionsalgorithmus"
+    )
 
 
 class DataRequestPayload(ACPBaseModel):
     """Payload für Datenanfragen"""
 
-    query: str = Field(..., description="Suchanfrage", min_length=1, max_length=10000)
+    query: str = Field(
+        ..., description="Suchanfrage", min_length=1, max_length=10000
+    )
     data_type: str = Field(..., description="Typ der angeforderten Daten")
-    filters: Dict[str, Any] = Field(default_factory=dict, description="Filterkriterien")
-    limit: int = Field(default=100, description="Maximale Anzahl der Ergebnisse", ge=1, le=10000)
+    filters: Dict[str, Any] = Field(
+        default_factory=dict, description="Filterkriterien"
+    )
+    limit: int = Field(
+        default=100,
+        description="Maximale Anzahl der Ergebnisse",
+        ge=1,
+        le=10000,
+    )
     offset: int = Field(default=0, description="Offset für Paginierung", ge=0)
     sort_by: Optional[str] = Field(default=None, description="Sortierfeld")
-    sort_order: str = Field(default="asc", description="Sortierreihenfolge", pattern=r"^(asc|desc)$")
+    sort_order: str = Field(
+        default="asc",
+        description="Sortierreihenfolge",
+        pattern=r"^(asc|desc)$",
+    )
 
 
 class DataResponsePayload(ACPBaseModel):
     """Payload für Datenantworten"""
 
     request_id: str = Field(..., description="ID der ursprünglichen Anfrage")
-    total_count: int = Field(default=0, description="Gesamtanzahl der verfügbaren Ergebnisse", ge=0)
-    returned_count: int = Field(default=0, description="Anzahl der zurückgegebenen Ergebnisse", ge=0)
-    data: List[Dict[str, Any]] = Field(default_factory=list, description="Ergebnisdaten")
-    has_more: bool = Field(default=False, description="Ob weitere Ergebnisse verfügbar sind")
+    total_count: int = Field(
+        default=0, description="Gesamtanzahl der verfügbaren Ergebnisse", ge=0
+    )
+    returned_count: int = Field(
+        default=0, description="Anzahl der zurückgegebenen Ergebnisse", ge=0
+    )
+    data: List[Dict[str, Any]] = Field(
+        default_factory=list, description="Ergebnisdaten"
+    )
+    has_more: bool = Field(
+        default=False, description="Ob weitere Ergebnisse verfügbar sind"
+    )
 
 
 class KeyExchangePayload(ACPBaseModel):
     """Payload für Schlüsselaustausch"""
 
     public_key: str = Field(..., description="Öffentlicher Schlüssel (Base64)")
-    key_algorithm: str = Field(default="ECDH", description="Schlüsselaustausch-Algorithmus")
+    key_algorithm: str = Field(
+        default="ECDH", description="Schlüsselaustausch-Algorithmus"
+    )
     key_id: str = Field(..., description="Eindeutige Schlüssel-ID")
-    expires_at: datetime = Field(..., description="Ablaufzeitpunkt des Schlüssels")
+    expires_at: datetime = Field(
+        ..., description="Ablaufzeitpunkt des Schlüssels"
+    )
 
 
 class AuthPayload(ACPBaseModel):
     """Payload für Authentifizierung"""
 
-    credentials: Dict[str, str] = Field(..., description="Authentifizierungsdaten")
-    auth_method: str = Field(
-        default="token", description="Authentifizierungsmethode", pattern=r"^(token|certificate|oauth|api_key)$"
+    credentials: Dict[str, str] = Field(
+        ..., description="Authentifizierungsdaten"
     )
-    session_id: Optional[str] = Field(default=None, description="Session-ID bei erfolgreicher Authentifizierung")
-    permissions: List[str] = Field(default_factory=list, description="Gewährte Berechtigungen")
-    expires_at: Optional[datetime] = Field(default=None, description="Ablaufzeitpunkt der Session")
+    auth_method: str = Field(
+        default="token",
+        description="Authentifizierungsmethode",
+        pattern=r"^(token|certificate|oauth|api_key)$",
+    )
+    session_id: Optional[str] = Field(
+        default=None,
+        description="Session-ID bei erfolgreicher Authentifizierung",
+    )
+    permissions: List[str] = Field(
+        default_factory=list, description="Gewährte Berechtigungen"
+    )
+    expires_at: Optional[datetime] = Field(
+        default=None, description="Ablaufzeitpunkt der Session"
+    )
 
 
 # =============================================================================
@@ -394,9 +581,14 @@ class MessageAcknowledgment(ACPBaseModel):
     """Bestätigung für empfangene Nachrichten"""
 
     message_id: str = Field(..., description="ID der bestätigten Nachricht")
-    received_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), description="Empfangszeitpunkt")
+    received_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        description="Empfangszeitpunkt",
+    )
     status: str = Field(
-        default="received", description="Status der Bestätigung", pattern=r"^(received|processing|completed|failed)$"
+        default="received",
+        description="Status der Bestätigung",
+        pattern=r"^(received|processing|completed|failed)$",
     )
     error: Optional[str] = Field(default=None, description="Fehlermeldung")
 
@@ -405,9 +597,13 @@ class ValidationResult(ACPBaseModel):
     """Ergebnis einer Nachrichtenvalidierung"""
 
     is_valid: bool = Field(..., description="Ob die Nachricht gültig ist")
-    errors: List[str] = Field(default_factory=list, description="Validierungsfehler")
+    errors: List[str] = Field(
+        default_factory=list, description="Validierungsfehler"
+    )
     warnings: List[str] = Field(default_factory=list, description="Warnungen")
-    message_hash: Optional[str] = Field(default=None, description="Hash der Nachricht")
+    message_hash: Optional[str] = Field(
+        default=None, description="Hash der Nachricht"
+    )
 
 
 # =============================================================================
@@ -430,13 +626,26 @@ class LegacyMessageConverter:
         """Parst eine ACP v1.0 Nachricht"""
         import re
 
-        result = {"sender": None, "recipient": None, "message_type": MessageType.MESSAGE, "content": {}}
+        result = {
+            "sender": None,
+            "recipient": None,
+            "message_type": MessageType.MESSAGE,
+            "content": {},
+        }
 
         # Parse Header: ## [FROM] → [TO]
-        header_match = re.search(r"##\s*\[([^\]]+)\]\s*→\s*\[([^\]]+)\]", content)
+        header_match = re.search(
+            r"##\s*\[([^\]]+)\]\s*→\s*\[([^\]]+)\]", content
+        )
         if header_match:
-            result["sender"] = {"name": header_match.group(1), "role": AgentRole.WORKER}
-            result["recipient"] = {"name": header_match.group(2), "role": AgentRole.WORKER}
+            result["sender"] = {
+                "name": header_match.group(1),
+                "role": AgentRole.WORKER,
+            }
+            result["recipient"] = {
+                "name": header_match.group(2),
+                "role": AgentRole.WORKER,
+            }
 
         # Parse Status-Emojis
         if "🆕" in content:
@@ -460,7 +669,8 @@ class LegacyMessageConverter:
         code_blocks = re.findall(code_pattern, content, re.DOTALL)
         if code_blocks:
             result["content"]["code_blocks"] = [
-                {"language": lang or "text", "code": code.strip()} for lang, code in code_blocks
+                {"language": lang or "text", "code": code.strip()}
+                for lang, code in code_blocks
             ]
 
         return result
@@ -471,7 +681,10 @@ class LegacyMessageConverter:
         parsed = LegacyMessageConverter.parse_legacy_message(legacy_content)
 
         sender = AgentIdentity(
-            agent_id=parsed.get("sender", {}).get("name", "unknown").lower().replace(" ", "_"),
+            agent_id=parsed.get("sender", {})
+            .get("name", "unknown")
+            .lower()
+            .replace(" ", "_"),
             role=parsed.get("sender", {}).get("role", AgentRole.WORKER),
             name=parsed.get("sender", {}).get("name", "Unknown"),
         )
@@ -484,11 +697,15 @@ class LegacyMessageConverter:
                 name=parsed["recipient"]["name"],
             )
 
-        header = MessageHeader(message_type=parsed.get("message_type", MessageType.MESSAGE))
+        header = MessageHeader(
+            message_type=parsed.get("message_type", MessageType.MESSAGE)
+        )
 
         payload = MessagePayload(data=parsed.get("content", {}))
 
-        return ACPMessage(header=header, sender=sender, recipient=recipient, payload=payload)
+        return ACPMessage(
+            header=header, sender=sender, recipient=recipient, payload=payload
+        )
 
 
 # =============================================================================
@@ -532,7 +749,10 @@ def export_json_schemas(output_dir: str = ".") -> Dict[str, str]:
 if __name__ == "__main__":
     # Beispiel: Erstelle eine Task-Message
     sender = AgentIdentity(
-        agent_id="cli_kimi_001", role=AgentRole.CLI_KIMI, name="CLI-Kimi", capabilities=["analysis", "planning", "review"]
+        agent_id="cli_kimi_001",
+        role=AgentRole.CLI_KIMI,
+        name="CLI-Kimi",
+        capabilities=["analysis", "planning", "review"],
     )
 
     recipient = AgentIdentity(
@@ -554,7 +774,9 @@ if __name__ == "__main__":
     )
 
     message = ACPMessage(
-        header=MessageHeader(message_type=MessageType.TASK_CREATE, priority=MessagePriority.HIGH),
+        header=MessageHeader(
+            message_type=MessageType.TASK_CREATE, priority=MessagePriority.HIGH
+        ),
         sender=sender,
         recipient=recipient,
         payload=MessagePayload(data=task_payload.model_dump()),

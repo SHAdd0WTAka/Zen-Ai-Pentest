@@ -125,7 +125,9 @@ class ScoutSuiteScanner:
             thread_config: Number of threads to use
         """
         self.scout_path = self._validate_installation(scout_path)
-        self.provider = provider.value if isinstance(provider, CloudProvider) else provider
+        self.provider = (
+            provider.value if isinstance(provider, CloudProvider) else provider
+        )
         self.profile = profile
         self.regions = regions or []
         self.services = services or []
@@ -148,7 +150,9 @@ class ScoutSuiteScanner:
                     break
 
         if not scout_path:
-            raise RuntimeError("ScoutSuite not found. Install with: pip install scoutsuite")
+            raise RuntimeError(
+                "ScoutSuite not found. Install with: pip install scoutsuite"
+            )
         return scout_path
 
     def _get_version(self) -> str:
@@ -160,7 +164,9 @@ class ScoutSuiteScanner:
                 text=True,
                 timeout=10,
             )
-            return result.stdout.strip() if result.returncode == 0 else "unknown"
+            return (
+                result.stdout.strip() if result.returncode == 0 else "unknown"
+            )
         except Exception:
             return "unknown"
 
@@ -224,7 +230,9 @@ class ScoutSuiteScanner:
             logger.error(f"Failed to parse report: {e}")
             return {}
 
-    def _extract_findings(self, report_data: Dict[str, Any]) -> List[ScoutFinding]:
+    def _extract_findings(
+        self, report_data: Dict[str, Any]
+    ) -> List[ScoutFinding]:
         """
         Extract findings from parsed report.
 
@@ -281,9 +289,17 @@ class ScoutSuiteScanner:
 
         return findings
 
-    def _generate_summary(self, findings: List[ScoutFinding]) -> Dict[str, Any]:
+    def _generate_summary(
+        self, findings: List[ScoutFinding]
+    ) -> Dict[str, Any]:
         """Generate summary statistics"""
-        severity_counts = {"critical": 0, "high": 0, "medium": 0, "low": 0, "info": 0}
+        severity_counts = {
+            "critical": 0,
+            "high": 0,
+            "medium": 0,
+            "low": 0,
+            "info": 0,
+        }
         service_counts = {}
         total_flagged = 0
         total_checked = 0
@@ -409,7 +425,9 @@ class ScoutSuiteScanner:
     def _check_aws_credentials(self) -> bool:
         """Check AWS credentials"""
         # Check environment variables
-        if os.environ.get("AWS_ACCESS_KEY_ID") and os.environ.get("AWS_SECRET_ACCESS_KEY"):
+        if os.environ.get("AWS_ACCESS_KEY_ID") and os.environ.get(
+            "AWS_SECRET_ACCESS_KEY"
+        ):
             return True
         if os.environ.get("AWS_PROFILE"):
             return True
@@ -437,7 +455,9 @@ class ScoutSuiteScanner:
     def _check_azure_credentials(self) -> bool:
         """Check Azure credentials"""
         # Check environment variables
-        if os.environ.get("AZURE_CLIENT_ID") and os.environ.get("AZURE_CLIENT_SECRET"):
+        if os.environ.get("AZURE_CLIENT_ID") and os.environ.get(
+            "AZURE_CLIENT_SECRET"
+        ):
             return True
         if os.environ.get("AZURE_TENANT_ID"):
             return True
@@ -467,7 +487,12 @@ class ScoutSuiteScanner:
             return True
 
         # Check application_default_credentials
-        adc_path = Path.home() / ".config" / "gcloud" / "application_default_credentials.json"
+        adc_path = (
+            Path.home()
+            / ".config"
+            / "gcloud"
+            / "application_default_credentials.json"
+        )
         if adc_path.exists():
             return True
 
@@ -506,7 +531,9 @@ class ScoutSuiteScanner:
             findings.append(parsed)
         return findings
 
-    def normalize_findings(self, findings: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    def normalize_findings(
+        self, findings: List[Dict[str, Any]]
+    ) -> List[Dict[str, Any]]:
         """
         Normalize findings to standard format.
 
@@ -523,7 +550,9 @@ class ScoutSuiteScanner:
                 "tool": "scoutsuite",
                 "target": f"{finding.get('provider', 'cloud')}:{finding.get('service', 'unknown')}",
                 "severity": finding.get("severity", "medium").lower(),
-                "title": finding.get("rule_id", "Unknown Issue").replace("-", " ").title(),
+                "title": finding.get("rule_id", "Unknown Issue")
+                .replace("-", " ")
+                .title(),
                 "description": finding.get("description", ""),
                 "evidence": {
                     "provider": finding.get("provider"),
@@ -579,7 +608,9 @@ def scoutsuite_scan_aws(
     import asyncio
 
     regions_list = [r.strip() for r in regions.split(",")] if regions else []
-    services_list = [s.strip() for s in services.split(",")] if services else []
+    services_list = (
+        [s.strip() for s in services.split(",")] if services else []
+    )
 
     scanner = ScoutSuiteScanner(
         provider=CloudProvider.AWS,
@@ -629,7 +660,11 @@ def scoutsuite_scan_azure() -> str:
     if not result.success:
         return f"ScoutSuite Azure scan failed: {result.error}"
 
-    return f"Azure Scan Complete:\n" f"  Findings: {len(result.findings)}\n" f"  Report: {result.report_path}"
+    return (
+        f"Azure Scan Complete:\n"
+        f"  Findings: {len(result.findings)}\n"
+        f"  Report: {result.report_path}"
+    )
 
 
 @tool
@@ -695,7 +730,9 @@ def scoutsuite_quick_scan(provider: str) -> str:
     if not result.success:
         return f"Scan failed: {result.error}"
 
-    high_critical = sum(1 for f in result.findings if f.severity in ["critical", "high"])
+    high_critical = sum(
+        1 for f in result.findings if f.severity in ["critical", "high"]
+    )
 
     return (
         f"{provider.upper()} Quick Scan Results:\n"

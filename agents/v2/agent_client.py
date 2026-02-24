@@ -94,7 +94,9 @@ class AgentClient:
         heartbeat_interval: float = 30.0,
     ):
         if not WEBSOCKETS_AVAILABLE:
-            raise ImportError("websockets library required. Install with: pip install websockets")
+            raise ImportError(
+                "websockets library required. Install with: pip install websockets"
+            )
 
         self.agent_id = agent_id
         self.api_key = api_key
@@ -128,7 +130,10 @@ class AgentClient:
     @property
     def is_connected(self) -> bool:
         """Check if connected"""
-        return self.state == ConnectionState.CONNECTED and self.websocket is not None
+        return (
+            self.state == ConnectionState.CONNECTED
+            and self.websocket is not None
+        )
 
     @property
     def identity(self) -> Optional[AgentIdentity]:
@@ -196,7 +201,12 @@ class AgentClient:
         logger.info("Disconnected")
 
     async def send_message(
-        self, recipient: str, payload: Dict[str, Any], msg_type: str = "task", require_ack: bool = True, timeout: float = 30.0
+        self,
+        recipient: str,
+        payload: Dict[str, Any],
+        msg_type: str = "task",
+        require_ack: bool = True,
+        timeout: float = 30.0,
     ) -> Optional[MessageAck]:
         """
         Send encrypted message to another agent
@@ -226,7 +236,9 @@ class AgentClient:
         # Serialize and send
         try:
             await self.websocket.send(message.to_json())
-            logger.debug(f"Sent message {message.header.message_id} to {recipient}")
+            logger.debug(
+                f"Sent message {message.header.message_id} to {recipient}"
+            )
 
             if require_ack:
                 # Wait for acknowledgment
@@ -237,7 +249,9 @@ class AgentClient:
                     ack = await asyncio.wait_for(ack_future, timeout=timeout)
                     return ack
                 except asyncio.TimeoutError:
-                    logger.warning(f"Ack timeout for message {message.header.message_id}")
+                    logger.warning(
+                        f"Ack timeout for message {message.header.message_id}"
+                    )
                     return MessageAck(
                         message_id=message.header.message_id,
                         status="timeout",
@@ -280,20 +294,29 @@ class AgentClient:
         """
         while self.is_connected:
             try:
-                message = await asyncio.wait_for(self._incoming_queue.get(), timeout=1.0)
+                message = await asyncio.wait_for(
+                    self._incoming_queue.get(), timeout=1.0
+                )
                 yield message
             except asyncio.TimeoutError:
                 continue
 
     async def _authenticate(self) -> bool:
         """Authenticate with server"""
-        auth_message = {"type": "auth", "api_key": self.api_key, "api_secret": self.api_secret, "agent_id": self.agent_id}
+        auth_message = {
+            "type": "auth",
+            "api_key": self.api_key,
+            "api_secret": self.api_secret,
+            "agent_id": self.agent_id,
+        }
 
         await self.websocket.send(json.dumps(auth_message))
 
         # Wait for auth response
         try:
-            response = await asyncio.wait_for(self.websocket.recv(), timeout=10.0)
+            response = await asyncio.wait_for(
+                self.websocket.recv(), timeout=10.0
+            )
             data = json.loads(response)
 
             if data.get("type") == "auth_success":
@@ -365,7 +388,10 @@ class AgentClient:
                 await self._incoming_queue.put(message)
 
                 # Call handler
-                handler = self._message_handlers.get(message.header.msg_type, self._message_handlers.get("default"))
+                handler = self._message_handlers.get(
+                    message.header.msg_type,
+                    self._message_handlers.get("default"),
+                )
 
                 if handler:
                     try:
@@ -407,7 +433,12 @@ class AgentClient:
                 if self.is_connected:
                     try:
                         await self.websocket.send(
-                            json.dumps({"type": "heartbeat", "timestamp": datetime.utcnow().isoformat()})
+                            json.dumps(
+                                {
+                                    "type": "heartbeat",
+                                    "timestamp": datetime.utcnow().isoformat(),
+                                }
+                            )
                         )
                     except Exception as e:
                         logger.warning(f"Heartbeat failed: {e}")
@@ -450,9 +481,15 @@ class SimpleAgentClient:
     Use AgentClient for production with encryption.
     """
 
-    def __init__(self, agent_id: str, server_url: str = "ws://localhost:8000/agents/stream"):
+    def __init__(
+        self,
+        agent_id: str,
+        server_url: str = "ws://localhost:8000/agents/stream",
+    ):
         if not WEBSOCKETS_AVAILABLE:
-            raise ImportError("websockets library required. Install with: pip install websockets")
+            raise ImportError(
+                "websockets library required. Install with: pip install websockets"
+            )
 
         self.agent_id = agent_id
         self.server_url = server_url
@@ -462,11 +499,17 @@ class SimpleAgentClient:
         """Connect to server"""
         self.ws = await websockets.connect(self.server_url)
         # Send simple auth
-        await self.ws.send(json.dumps({"type": "auth_simple", "agent_id": self.agent_id}))
+        await self.ws.send(
+            json.dumps({"type": "auth_simple", "agent_id": self.agent_id})
+        )
 
     async def send(self, recipient: str, payload: dict):
         """Send message"""
-        await self.ws.send(json.dumps({"type": "message", "recipient": recipient, "payload": payload}))
+        await self.ws.send(
+            json.dumps(
+                {"type": "message", "recipient": recipient, "payload": payload}
+            )
+        )
 
     async def receive(self) -> dict:
         """Receive message"""

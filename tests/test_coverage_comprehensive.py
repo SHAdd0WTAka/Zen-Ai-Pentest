@@ -47,8 +47,14 @@ class TestToolBaseFunctionality:
         for tool in tools:
             # Check that tool has async methods
             methods = [m for m in dir(tool) if not m.startswith("_")]
-            async_methods = [m for m in methods if asyncio.iscoroutinefunction(getattr(tool, m, None))]
-            assert len(async_methods) > 0, f"{tool.__class__.__name__} should have async methods"
+            async_methods = [
+                m
+                for m in methods
+                if asyncio.iscoroutinefunction(getattr(tool, m, None))
+            ]
+            assert (
+                len(async_methods) > 0
+            ), f"{tool.__class__.__name__} should have async methods"
 
 
 class TestFFuFComprehensive:
@@ -69,7 +75,13 @@ class TestFFuFComprehensive:
         """Test FFuFFinding dataclass with defaults"""
         from tools.ffuf_integration_enhanced import FFuFFinding
 
-        finding = FFuFFinding(url="http://test.com", status_code=200, content_length=0, content_words=0, content_lines=0)
+        finding = FFuFFinding(
+            url="http://test.com",
+            status_code=200,
+            content_length=0,
+            content_words=0,
+            content_lines=0,
+        )
         assert finding.content_length == 0
         assert finding.content_words == 0
         assert finding.redirect_location == ""
@@ -92,7 +104,11 @@ class TestWhatWebComprehensive:
         from tools.whatweb_integration import Technology
 
         tech = Technology(
-            name="Apache", version="2.4.7", confidence=100, category="Web Server", description="Apache HTTP Server"
+            name="Apache",
+            version="2.4.7",
+            confidence=100,
+            category="Web Server",
+            description="Apache HTTP Server",
         )
         assert tech.name == "Apache"
         assert tech.confidence == 100
@@ -114,7 +130,9 @@ class TestWhatWebComprehensive:
 
         for tech, expected_category in known_techs.items():
             category = whatweb._categorize(tech)
-            assert category == expected_category, f"{tech} should be categorized as {expected_category}"
+            assert (
+                category == expected_category
+            ), f"{tech} should be categorized as {expected_category}"
 
     def test_clean_ansi_with_various_codes(self):
         """Test ANSI cleaning with various escape codes"""
@@ -155,7 +173,11 @@ class TestWAFW00FComprehensive:
         assert result1.firewall_detected is False
 
         # WAF detected
-        result2 = WAFW00FResult(success=True, firewall_detected=True, wafs=[WAFFinding(name="Cloudflare")])
+        result2 = WAFW00FResult(
+            success=True,
+            firewall_detected=True,
+            wafs=[WAFFinding(name="Cloudflare")],
+        )
         assert result2.firewall_detected is True
 
 
@@ -174,7 +196,9 @@ class TestOSINTToolsComprehensive:
         """Test IgnorantCheck dataclass"""
         from tools.ignorant_integration import IgnorantCheck
 
-        check = IgnorantCheck(platform="github", exists=True, url="https://github.com/test")
+        check = IgnorantCheck(
+            platform="github", exists=True, url="https://github.com/test"
+        )
         assert check.platform == "github"
         assert check.exists is True
 
@@ -207,7 +231,9 @@ class TestNetworkToolsComprehensive:
         """Test TSharkHost dataclass"""
         from tools.tshark_integration import TSharkHost
 
-        host = TSharkHost(ip="192.168.1.1", mac="00:11:22:33:44:55", hostname="router.local")
+        host = TSharkHost(
+            ip="192.168.1.1", mac="00:11:22:33:44:55", hostname="router.local"
+        )
         assert host.ip == "192.168.1.1"
         assert host.ports == []
 
@@ -252,7 +278,9 @@ class TestEnhancedReconModuleComprehensive:
     def test_technology_detection_returns_expected_structure(self, recon):
         """Test technology_detection returns correct structure"""
         with patch.object(recon.whatweb, "scan") as mock_scan:
-            mock_scan.return_value = MagicMock(success=True, technologies=[], headers={}, error=None)
+            mock_scan.return_value = MagicMock(
+                success=True, technologies=[], headers={}, error=None
+            )
 
             result = recon.technology_detection("test.com")
 
@@ -283,7 +311,10 @@ class TestOSINTSuperModuleComprehensive:
         from modules.osint_super import OSINTSuperResult
 
         result = OSINTSuperResult(
-            target="testuser", target_type="username", timestamp="2024-01-01", social_media={"total_found": 10}
+            target="testuser",
+            target_type="username",
+            timestamp="2024-01-01",
+            social_media={"total_found": 10},
         )
 
         summary = osint._generate_username_summary(result)
@@ -314,7 +345,12 @@ class TestOSINTSuperModuleComprehensive:
         """Test domain summary generation"""
         from modules.osint_super import OSINTSuperResult
 
-        result = OSINTSuperResult(target="test.com", target_type="domain", timestamp="2024-01-01", subdomains={"total": 50})
+        result = OSINTSuperResult(
+            target="test.com",
+            target_type="domain",
+            timestamp="2024-01-01",
+            subdomains={"total": 50},
+        )
 
         summary = osint._generate_domain_summary(result)
 
@@ -427,7 +463,12 @@ class TestToolIntegrations:
         from tools.subfinder_integration import SubfinderResult
 
         # Subfinder finds subdomains
-        subdomains = SubfinderResult(success=True, domain="test.com", subdomains=["www.test.com", "api.test.com"], count=2)
+        subdomains = SubfinderResult(
+            success=True,
+            domain="test.com",
+            subdomains=["www.test.com", "api.test.com"],
+            count=2,
+        )
 
         # These would be passed to HTTPX
         targets = subdomains.subdomains

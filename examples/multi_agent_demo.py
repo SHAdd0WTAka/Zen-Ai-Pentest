@@ -34,7 +34,9 @@ class ResearcherAgent(BaseAgent):
         target = task.get("target")
         task_type = task.get("type", "recon")
 
-        self.logger.info(f"[{self.name}] Starting reconnaissance on {target} (type: {task_type})")
+        self.logger.info(
+            f"[{self.name}] Starting reconnaissance on {target} (type: {task_type})"
+        )
 
         # Simulate reconnaissance (in production, this would run real tools)
         await asyncio.sleep(2)  # Simulate work
@@ -51,9 +53,13 @@ class ResearcherAgent(BaseAgent):
         self.open_ports = findings["open_ports"]
 
         # Share findings with other agents
-        await self.share_findings({"type": "recon_complete", "target": target, "data": findings})
+        await self.share_findings(
+            {"type": "recon_complete", "target": target, "data": findings}
+        )
 
-        self.logger.info(f"[{self.name}] Reconnaissance complete. Found {findings['findings_count']} hosts")
+        self.logger.info(
+            f"[{self.name}] Reconnaissance complete. Found {findings['findings_count']} hosts"
+        )
 
         return findings
 
@@ -72,7 +78,9 @@ class AnalystAgent(BaseAgent):
         """Execute analysis task."""
         data = task.get("data")
 
-        self.logger.info(f"[{self.name}] Starting analysis of {len(data.get('hosts', []))} hosts")
+        self.logger.info(
+            f"[{self.name}] Starting analysis of {len(data.get('hosts', []))} hosts"
+        )
 
         # Simulate analysis
         await asyncio.sleep(1.5)
@@ -80,14 +88,22 @@ class AnalystAgent(BaseAgent):
         analysis = {
             "risk_level": "medium",
             "identified_vulnerabilities": [
-                {"type": "information_disclosure", "severity": "low", "description": "Server version exposed"},
+                {
+                    "type": "information_disclosure",
+                    "severity": "low",
+                    "description": "Server version exposed",
+                },
                 {
                     "type": "potential_sqli",
                     "severity": "medium",
                     "description": "PHP app with MySQL backend - SQL injection possible",
                 },
             ],
-            "recommendations": ["Implement WAF", "Update Apache version", "Review input validation"],
+            "recommendations": [
+                "Implement WAF",
+                "Update Apache version",
+                "Review input validation",
+            ],
         }
 
         self.vulnerabilities = analysis["identified_vulnerabilities"]
@@ -101,7 +117,9 @@ class AnalystAgent(BaseAgent):
             }
         )
 
-        self.logger.info(f"[{self.name}] Analysis complete. Risk: {analysis['risk_level']}")
+        self.logger.info(
+            f"[{self.name}] Analysis complete. Risk: {analysis['risk_level']}"
+        )
 
         return analysis
 
@@ -112,7 +130,9 @@ class AnalystAgent(BaseAgent):
         if msg.msg_type == "findings":
             findings = msg.context.get("findings", {})
             if findings.get("type") == "recon_complete":
-                self.logger.info(f"[{self.name}] Received recon data from {msg.sender}")
+                self.logger.info(
+                    f"[{self.name}] Received recon data from {msg.sender}"
+                )
                 # Trigger analysis
                 await self.execute_task({"data": findings.get("data", {})})
 
@@ -163,7 +183,9 @@ class SimpleOrchestrator:
             await agent.start()
 
         # Assign task to Researcher
-        researcher = next(a for a in self.agents.values() if a.role == AgentRole.RESEARCHER)
+        researcher = next(
+            a for a in self.agents.values() if a.role == AgentRole.RESEARCHER
+        )
 
         print(f"[Demo] Assigning reconnaissance task to {researcher.name}...")
         recon_task = {"type": "recon", "target": target, "scope": "full"}
@@ -175,7 +197,9 @@ class SimpleOrchestrator:
         await asyncio.sleep(1)
 
         # Analyst automatically processes findings via message handler
-        analyst = next(a for a in self.agents.values() if a.role == AgentRole.ANALYST)
+        analyst = next(
+            a for a in self.agents.values() if a.role == AgentRole.ANALYST
+        )
 
         # Wait for analysis
         await asyncio.sleep(2)
@@ -189,7 +213,9 @@ class SimpleOrchestrator:
         print(f"  - Open ports: {recon_result.get('open_ports', [])}")
         print("\nAnalysis:")
         print(f"  - Vulnerabilities: {len(analyst.vulnerabilities)}")
-        print(f"  - Risk level: {analyst.vulnerabilities[0]['severity'] if analyst.vulnerabilities else 'unknown'}")
+        print(
+            f"  - Risk level: {analyst.vulnerabilities[0]['severity'] if analyst.vulnerabilities else 'unknown'}"
+        )
         print(f"\nMessages exchanged: {len(self.message_log)}")
         print("=" * 70)
 

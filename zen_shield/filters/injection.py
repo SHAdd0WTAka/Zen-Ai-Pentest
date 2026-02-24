@@ -54,12 +54,16 @@ class PromptInjectionDetector:
             "description": "Role-playing attack",
         },
         "jailbreak_dan": {
-            "pattern": re.compile(r"(?i)(DAN|do\s+anything\s+now|jailbreak|)\s*:?", re.IGNORECASE),
+            "pattern": re.compile(
+                r"(?i)(DAN|do\s+anything\s+now|jailbreak|)\s*:?", re.IGNORECASE
+            ),
             "severity": "high",
             "description": "Known jailbreak pattern",
         },
         "delimiter_manipulation": {
-            "pattern": re.compile(r'["\']\s*\n\s*(?:user|assistant|system)\s*:', re.IGNORECASE),
+            "pattern": re.compile(
+                r'["\']\s*\n\s*(?:user|assistant|system)\s*:', re.IGNORECASE
+            ),
             "severity": "critical",
             "description": "Delimiter manipulation to inject roles",
         },
@@ -88,7 +92,10 @@ class PromptInjectionDetector:
             "description": "Instruction override attempt",
         },
         "xml_tag_injection": {
-            "pattern": re.compile(r"<\s*(?:system|user|assistant|instructions?)\s*>", re.IGNORECASE),
+            "pattern": re.compile(
+                r"<\s*(?:system|user|assistant|instructions?)\s*>",
+                re.IGNORECASE,
+            ),
             "severity": "critical",
             "description": "XML tag injection",
         },
@@ -191,9 +198,13 @@ class PromptInjectionDetector:
         for match in matches:
             if match.severity in ("high", "critical"):
                 # Replace with warning
-                pattern = self.patterns.get(match.pattern_name, {}).get("pattern")
+                pattern = self.patterns.get(match.pattern_name, {}).get(
+                    "pattern"
+                )
                 if pattern:
-                    sanitized = pattern.sub("[REMOVED_INJECTION_ATTEMPT]", sanitized)
+                    sanitized = pattern.sub(
+                        "[REMOVED_INJECTION_ATTEMPT]", sanitized
+                    )
 
         # Remove suspicious sequences
         for seq in self.SUSPICIOUS_SEQUENCES:
@@ -201,7 +212,9 @@ class PromptInjectionDetector:
 
         return sanitized
 
-    def _has_excessive_repetition(self, text: str, threshold: int = 10) -> bool:
+    def _has_excessive_repetition(
+        self, text: str, threshold: int = 10
+    ) -> bool:
         """Check for excessive character repetition (obfuscation)"""
         if len(text) < threshold:
             return False
@@ -221,7 +234,12 @@ class PromptInjectionDetector:
         Returns:
             Risk score 0-100
         """
-        severity_scores = {"low": 10, "medium": 25, "high": 50, "critical": 100}
+        severity_scores = {
+            "low": 10,
+            "medium": 25,
+            "high": 50,
+            "critical": 100,
+        }
 
         total = sum(severity_scores.get(m.severity, 10) for m in matches)
         return min(total, 100)  # Cap at 100

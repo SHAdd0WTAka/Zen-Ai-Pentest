@@ -34,7 +34,9 @@ async def scan_target_com():
     print("[*] Techniques: DNS, Wordlist, Certificate Transparency")
     print("[*] This may take a few moments...\n")
 
-    results = await scanner.scan(domain=target, techniques=["dns", "wordlist", "crt"], check_http=True)
+    results = await scanner.scan(
+        domain=target, techniques=["dns", "wordlist", "crt"], check_http=True
+    )
 
     # Display results
     print(f"\n[+] Discovery complete! Found {len(results)} subdomains\n")
@@ -53,7 +55,9 @@ async def scan_target_com():
                 print(f"    Status Code: {result.status_code}")
                 print(f"    Server: {result.server_header or 'Unknown'}")
                 if result.technologies:
-                    print(f"    Technologies: {', '.join(result.technologies)}")
+                    print(
+                        f"    Technologies: {', '.join(result.technologies)}"
+                    )
 
         if dns_only:
             print(f"\n{'=' * 70}")
@@ -69,7 +73,11 @@ async def scan_target_com():
 
         json_output = scanner.export_results("json")
         print(f"\nJSON format ({len(json_output)} chars):")
-        print(json_output[:500] + "..." if len(json_output) > 500 else json_output)
+        print(
+            json_output[:500] + "..."
+            if len(json_output) > 500
+            else json_output
+        )
 
         print("\n\nTXT format sample:")
         txt_output = scanner.export_results("txt")

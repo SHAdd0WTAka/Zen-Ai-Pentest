@@ -97,7 +97,9 @@ class TestToolsDataclasses:
     def test_ffuf_finding_creation(self):
         from tools.ffuf_integration_enhanced import FFuFFinding
 
-        f = FFuFFinding(url="http://test.com/admin", status_code=200, length=1234, words=42)
+        f = FFuFFinding(
+            url="http://test.com/admin", status_code=200, length=1234, words=42
+        )
         assert f.url == "http://test.com/admin"
         assert f.status_code == 200
 
@@ -134,7 +136,11 @@ class TestToolsDataclasses:
     def test_sherlock_result_creation(self):
         from tools.sherlock_integration import SherlockResult
 
-        s = SherlockResult(username="testuser", site="GitHub", url="https://github.com/testuser")
+        s = SherlockResult(
+            username="testuser",
+            site="GitHub",
+            url="https://github.com/testuser",
+        )
         assert s.username == "testuser"
 
     def test_ignorant_result_creation(self):

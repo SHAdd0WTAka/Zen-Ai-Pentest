@@ -17,7 +17,12 @@ class SafetyPipeline:
     Integrates with agent outputs.
     """
 
-    def __init__(self, safety_level: SafetyLevel = SafetyLevel.STANDARD, cve_db=None, auto_correct: bool = True):
+    def __init__(
+        self,
+        safety_level: SafetyLevel = SafetyLevel.STANDARD,
+        cve_db=None,
+        auto_correct: bool = True,
+    ):
         self.guardrails = OutputGuardrails(safety_level)
         self.validator = OutputValidator()
         self.fact_checker = FactChecker(cve_db=cve_db)
@@ -25,9 +30,19 @@ class SafetyPipeline:
         self.self_correction = SelfCorrection()
 
         self.auto_correct = auto_correct
-        self.safety_stats = {"outputs_checked": 0, "violations_found": 0, "auto_corrected": 0, "rejected": 0}
+        self.safety_stats = {
+            "outputs_checked": 0,
+            "violations_found": 0,
+            "auto_corrected": 0,
+            "rejected": 0,
+        }
 
-    def check_output(self, output: str, context: Optional[Dict] = None, schema_name: Optional[str] = None) -> Dict[str, Any]:
+    def check_output(
+        self,
+        output: str,
+        context: Optional[Dict] = None,
+        schema_name: Optional[str] = None,
+    ) -> Dict[str, Any]:
         """
         Run complete safety pipeline on output
 
@@ -53,7 +68,9 @@ class SafetyPipeline:
         # Layer 2: Validation
         validation_result = None
         if schema_name:
-            validation_result = self.validator.validate_json(output, schema_name)
+            validation_result = self.validator.validate_json(
+                output, schema_name
+            )
         else:
             validation_result = self.validator.validate_command_output(output)
 
@@ -66,14 +83,18 @@ class SafetyPipeline:
         fact_results = self.fact_checker.check_output(output, context)
         for result in fact_results:
             if result.status.value in ["contradicted", "unknown"]:
-                issues.append(f"Fact check: {result.claim} - {result.status.value}")
+                issues.append(
+                    f"Fact check: {result.claim} - {result.status.value}"
+                )
                 if result.correction:
                     fact_corrections.append(result.correction)
 
         # Layer 4: Consistency Check
         consistency_score = 1.0
         if context and "memory_context" in context:
-            consistency = self.validator.validate_factual_consistency(output, context["memory_context"])
+            consistency = self.validator.validate_factual_consistency(
+                output, context["memory_context"]
+            )
             consistency_score = 1.0 - consistency.confidence_impact
 
         # Calculate Confidence
@@ -95,7 +116,9 @@ class SafetyPipeline:
 
         # Auto-correction
         if issues and self.auto_correct:
-            correction = self.self_correction.attempt_correction(output, issues, fact_corrections)
+            correction = self.self_correction.attempt_correction(
+                output, issues, fact_corrections
+            )
             if correction["success"]:
                 result["corrected_output"] = correction["corrected"]
                 result["auto_corrected"] = True
@@ -118,10 +141,14 @@ class SafetyPipeline:
 
         return result
 
-    def get_retry_prompt(self, original_prompt: str, check_result: Dict) -> str:
+    def get_retry_prompt(
+        self, original_prompt: str, check_result: Dict
+    ) -> str:
         """Generate improved prompt for retry"""
         return self.self_correction.generate_retry_prompt(
-            original_prompt, check_result["issues"], check_result["confidence"].breakdown
+            original_prompt,
+            check_result["issues"],
+            check_result["confidence"].breakdown,
         )
 
     def get_stats(self) -> Dict[str, Any]:

@@ -44,7 +44,12 @@ class TestEnums:
     def test_severity_comparison(self):
         """Test severity ordering"""
         severities = [Severity.LOW, Severity.HIGH, Severity.CRITICAL]
-        assert sorted(severities, key=lambda x: ["info", "low", "medium", "high", "critical"].index(x.value)) == [
+        assert sorted(
+            severities,
+            key=lambda x: ["info", "low", "medium", "high", "critical"].index(
+                x.value
+            ),
+        ) == [
             Severity.LOW,
             Severity.HIGH,
             Severity.CRITICAL,
@@ -111,7 +116,9 @@ class TestAPIKeyConfig:
 
     def test_valid_openrouter_key(self):
         """Test valid OpenRouter API key"""
-        config = APIKeyConfig(openrouter_key="sk-or-abcdefghijklmnopqrstuvwxyz")
+        config = APIKeyConfig(
+            openrouter_key="sk-or-abcdefghijklmnopqrstuvwxyz"
+        )
         assert config.openrouter_key == "sk-or-abcdefghijklmnopqrstuvwxyz"
 
     def test_invalid_openrouter_key(self):
@@ -131,7 +138,9 @@ class TestAPIKeyConfig:
 
     def test_valid_anthropic_key(self):
         """Test valid Anthropic API key"""
-        config = APIKeyConfig(anthropic_key="sk-ant-abcdefghijklmnopqrstuvwxyz")
+        config = APIKeyConfig(
+            anthropic_key="sk-ant-abcdefghijklmnopqrstuvwxyz"
+        )
         assert config.anthropic_key == "sk-ant-abcdefghijklmnopqrstuvwxyz"
 
     def test_invalid_anthropic_key(self):
@@ -146,18 +155,31 @@ class TestAPIKeyConfig:
 
     def test_get_key_openrouter(self):
         """Test getting OpenRouter key"""
-        config = APIKeyConfig(openrouter_key="sk-or-abcdefghijklmnopqrstuvwxyz")
-        assert config.get_key(BackendType.OPENROUTER) == "sk-or-abcdefghijklmnopqrstuvwxyz"
+        config = APIKeyConfig(
+            openrouter_key="sk-or-abcdefghijklmnopqrstuvwxyz"
+        )
+        assert (
+            config.get_key(BackendType.OPENROUTER)
+            == "sk-or-abcdefghijklmnopqrstuvwxyz"
+        )
 
     def test_get_key_openai(self):
         """Test getting OpenAI key"""
         config = APIKeyConfig(openai_key="sk-abcdefghijklmnopqrstuvwxyz")
-        assert config.get_key(BackendType.OPENAI) == "sk-abcdefghijklmnopqrstuvwxyz"
+        assert (
+            config.get_key(BackendType.OPENAI)
+            == "sk-abcdefghijklmnopqrstuvwxyz"
+        )
 
     def test_get_key_anthropic(self):
         """Test getting Anthropic key"""
-        config = APIKeyConfig(anthropic_key="sk-ant-abcdefghijklmnopqrstuvwxyz")
-        assert config.get_key(BackendType.ANTHROPIC) == "sk-ant-abcdefghijklmnopqrstuvwxyz"
+        config = APIKeyConfig(
+            anthropic_key="sk-ant-abcdefghijklmnopqrstuvwxyz"
+        )
+        assert (
+            config.get_key(BackendType.ANTHROPIC)
+            == "sk-ant-abcdefghijklmnopqrstuvwxyz"
+        )
 
     def test_get_key_duckduckgo(self):
         """Test getting DuckDuckGo key (should be None)"""
@@ -190,7 +212,12 @@ class TestScanConfig:
     def test_custom_values(self):
         """Test custom scan configuration"""
         config = ScanConfig(
-            target="192.168.1.1", scan_type="full", ports=[22, 80, 443], timeout=600, concurrent=10, follow_redirects=False
+            target="192.168.1.1",
+            scan_type="full",
+            ports=[22, 80, 443],
+            timeout=600,
+            concurrent=10,
+            follow_redirects=False,
         )
         assert config.target == "192.168.1.1"
         assert config.scan_type == "full"
@@ -288,7 +315,12 @@ class TestFinding:
 
     def test_minimal_creation(self):
         """Test creating a finding with minimal fields"""
-        finding = Finding(title="Test Finding", description="Test description", severity=Severity.HIGH, host="example.com")
+        finding = Finding(
+            title="Test Finding",
+            description="Test description",
+            severity=Severity.HIGH,
+            host="example.com",
+        )
         assert finding.title == "Test Finding"
         assert finding.description == "Test description"
         assert finding.severity == Severity.HIGH
@@ -321,7 +353,12 @@ class TestFinding:
 
     def test_default_values(self):
         """Test finding default values"""
-        finding = Finding(title="Test", description="Test desc", severity=Severity.LOW, host="test.com")
+        finding = Finding(
+            title="Test",
+            description="Test desc",
+            severity=Severity.LOW,
+            host="test.com",
+        )
         assert finding.cve_ids == []
         assert finding.tags == []
         assert finding.references == []
@@ -341,34 +378,67 @@ class TestFinding:
     def test_cve_validation_invalid(self):
         """Test CVE ID validation with invalid CVE format"""
         with pytest.raises(ValueError, match="Invalid CVE format"):
-            Finding(title="Test", description="Test desc", severity=Severity.HIGH, host="test.com", cve_ids=["INVALID-CVE"])
+            Finding(
+                title="Test",
+                description="Test desc",
+                severity=Severity.HIGH,
+                host="test.com",
+                cve_ids=["INVALID-CVE"],
+            )
 
     def test_cve_validation_case_insensitive(self):
         """Test CVE ID validation is case insensitive"""
         finding = Finding(
-            title="Test", description="Test desc", severity=Severity.HIGH, host="test.com", cve_ids=["cve-2023-1234"]
+            title="Test",
+            description="Test desc",
+            severity=Severity.HIGH,
+            host="test.com",
+            cve_ids=["cve-2023-1234"],
         )
         assert finding.cve_ids == ["CVE-2023-1234"]
 
     def test_cvss_score_validation(self):
         """Test CVSS score validation"""
         with pytest.raises(ValueError):
-            Finding(title="Test", description="Test desc", severity=Severity.HIGH, host="test.com", cvss_score=11.0)
+            Finding(
+                title="Test",
+                description="Test desc",
+                severity=Severity.HIGH,
+                host="test.com",
+                cvss_score=11.0,
+            )
 
     def test_port_validation(self):
         """Test port validation"""
         with pytest.raises(ValueError):
-            Finding(title="Test", description="Test desc", severity=Severity.HIGH, host="test.com", port=70000)
+            Finding(
+                title="Test",
+                description="Test desc",
+                severity=Severity.HIGH,
+                host="test.com",
+                port=70000,
+            )
 
     def test_title_validation(self):
         """Test title length validation"""
         with pytest.raises(ValueError):
-            Finding(title="", description="Test desc", severity=Severity.HIGH, host="test.com")
+            Finding(
+                title="",
+                description="Test desc",
+                severity=Severity.HIGH,
+                host="test.com",
+            )
 
     def test_confidence_validation(self):
         """Test confidence level validation"""
         with pytest.raises(ValueError):
-            Finding(title="Test", description="Test desc", severity=Severity.HIGH, host="test.com", confidence="invalid")
+            Finding(
+                title="Test",
+                description="Test desc",
+                severity=Severity.HIGH,
+                host="test.com",
+                confidence="invalid",
+            )
 
 
 # ==================== ScanResult Tests ====================
@@ -380,7 +450,12 @@ class TestScanResult:
     def test_minimal_creation(self):
         """Test creating scan result with minimal fields"""
         started = datetime.utcnow()
-        result = ScanResult(scan_id="SCAN-001", target="example.com", status=ScanStatus.RUNNING, started_at=started)
+        result = ScanResult(
+            scan_id="SCAN-001",
+            target="example.com",
+            status=ScanStatus.RUNNING,
+            started_at=started,
+        )
         assert result.scan_id == "SCAN-001"
         assert result.target == "example.com"
         assert result.status == ScanStatus.RUNNING
@@ -390,7 +465,12 @@ class TestScanResult:
 
     def test_with_findings(self):
         """Test scan result with findings"""
-        finding = Finding(title="Test Finding", description="Test", severity=Severity.HIGH, host="example.com")
+        finding = Finding(
+            title="Test Finding",
+            description="Test",
+            severity=Severity.HIGH,
+            host="example.com",
+        )
         started = datetime.utcnow()
         completed = started + timedelta(minutes=5)
         result = ScanResult(
@@ -410,27 +490,60 @@ class TestScanResult:
         started = datetime.utcnow()
         completed = started + timedelta(minutes=5, seconds=30)
         result = ScanResult(
-            scan_id="SCAN-001", target="example.com", status=ScanStatus.COMPLETED, started_at=started, completed_at=completed
+            scan_id="SCAN-001",
+            target="example.com",
+            status=ScanStatus.COMPLETED,
+            started_at=started,
+            completed_at=completed,
         )
         assert result.duration_seconds == 330.0
 
     def test_duration_seconds_running(self):
         """Test duration_seconds returns None for running scan"""
         started = datetime.utcnow()
-        result = ScanResult(scan_id="SCAN-001", target="example.com", status=ScanStatus.RUNNING, started_at=started)
+        result = ScanResult(
+            scan_id="SCAN-001",
+            target="example.com",
+            status=ScanStatus.RUNNING,
+            started_at=started,
+        )
         assert result.duration_seconds is None
 
     def test_severity_counts_property(self):
         """Test severity_counts property"""
         findings = [
-            Finding(title="Critical", description="Test", severity=Severity.CRITICAL, host="test.com"),
-            Finding(title="High1", description="Test", severity=Severity.HIGH, host="test.com"),
-            Finding(title="High2", description="Test", severity=Severity.HIGH, host="test.com"),
-            Finding(title="Medium", description="Test", severity=Severity.MEDIUM, host="test.com"),
+            Finding(
+                title="Critical",
+                description="Test",
+                severity=Severity.CRITICAL,
+                host="test.com",
+            ),
+            Finding(
+                title="High1",
+                description="Test",
+                severity=Severity.HIGH,
+                host="test.com",
+            ),
+            Finding(
+                title="High2",
+                description="Test",
+                severity=Severity.HIGH,
+                host="test.com",
+            ),
+            Finding(
+                title="Medium",
+                description="Test",
+                severity=Severity.MEDIUM,
+                host="test.com",
+            ),
         ]
         started = datetime.utcnow()
         result = ScanResult(
-            scan_id="SCAN-001", target="example.com", status=ScanStatus.COMPLETED, started_at=started, findings=findings
+            scan_id="SCAN-001",
+            target="example.com",
+            status=ScanStatus.COMPLETED,
+            started_at=started,
+            findings=findings,
         )
         counts = result.severity_counts
         assert counts["critical"] == 1
@@ -442,7 +555,12 @@ class TestScanResult:
     def test_serialization(self):
         """Test serialization to dict"""
         started = datetime.utcnow()
-        result = ScanResult(scan_id="SCAN-001", target="example.com", status=ScanStatus.COMPLETED, started_at=started)
+        result = ScanResult(
+            scan_id="SCAN-001",
+            target="example.com",
+            status=ScanStatus.COMPLETED,
+            started_at=started,
+        )
         data = result.model_dump()
         assert data["scan_id"] == "SCAN-001"
         assert data["target"] == "example.com"
@@ -572,7 +690,11 @@ class TestLLMResponse:
 
     def test_success_property_false(self):
         """Test success property when error present"""
-        response = LLMResponse(content="", backend=BackendType.OPENAI, error="API rate limit exceeded")
+        response = LLMResponse(
+            content="",
+            backend=BackendType.OPENAI,
+            error="API rate limit exceeded",
+        )
         assert response.success is False
 
 
@@ -623,7 +745,9 @@ class TestDomainRecon:
 
     def test_full_creation(self):
         """Test creating domain recon with all fields"""
-        subdomain = SubdomainInfo(name="www.example.com", ip_addresses=["192.168.1.1"], is_alive=True)
+        subdomain = SubdomainInfo(
+            name="www.example.com", ip_addresses=["192.168.1.1"], is_alive=True
+        )
         recon = DomainRecon(
             domain="example.com",
             registrar="GoDaddy",
@@ -663,7 +787,9 @@ class TestHealthStatus:
 
     def test_default_checks(self):
         """Test default empty checks dict"""
-        status = HealthStatus(status="healthy", version="1.0.0", uptime_seconds=0.0)
+        status = HealthStatus(
+            status="healthy", version="1.0.0", uptime_seconds=0.0
+        )
         assert status.checks == {}
         assert status.backends == {}
 
@@ -676,7 +802,13 @@ class TestPaginatedResponse:
 
     def test_creation(self):
         """Test creating paginated response"""
-        response = PaginatedResponse(items=["item1", "item2", "item3"], total=100, page=1, per_page=10, pages=10)
+        response = PaginatedResponse(
+            items=["item1", "item2", "item3"],
+            total=100,
+            page=1,
+            per_page=10,
+            pages=10,
+        )
         assert len(response.items) == 3
         assert response.total == 100
         assert response.page == 1
@@ -685,22 +817,30 @@ class TestPaginatedResponse:
 
     def test_has_next_true(self):
         """Test has_next when there are more pages"""
-        response = PaginatedResponse(items=[], total=100, page=1, per_page=10, pages=10)
+        response = PaginatedResponse(
+            items=[], total=100, page=1, per_page=10, pages=10
+        )
         assert response.has_next is True
 
     def test_has_next_false(self):
         """Test has_next when on last page"""
-        response = PaginatedResponse(items=[], total=100, page=10, per_page=10, pages=10)
+        response = PaginatedResponse(
+            items=[], total=100, page=10, per_page=10, pages=10
+        )
         assert response.has_next is False
 
     def test_has_prev_true(self):
         """Test has_prev when not on first page"""
-        response = PaginatedResponse(items=[], total=100, page=2, per_page=10, pages=10)
+        response = PaginatedResponse(
+            items=[], total=100, page=2, per_page=10, pages=10
+        )
         assert response.has_prev is True
 
     def test_has_prev_false(self):
         """Test has_prev when on first page"""
-        response = PaginatedResponse(items=[], total=100, page=1, per_page=10, pages=10)
+        response = PaginatedResponse(
+            items=[], total=100, page=1, per_page=10, pages=10
+        )
         assert response.has_prev is False
 
 
@@ -712,7 +852,9 @@ class TestReportConfig:
 
     def test_default_values(self):
         """Test default report configuration"""
-        config = ReportConfig(title="Security Assessment Report", client_name="Example Corp")
+        config = ReportConfig(
+            title="Security Assessment Report", client_name="Example Corp"
+        )
         assert config.title == "Security Assessment Report"
         assert config.client_name == "Example Corp"
         assert config.format == "markdown"
@@ -745,7 +887,9 @@ class TestReportConfig:
     def test_template_validation_valid(self):
         """Test template validation with valid templates"""
         for template in ["executive", "technical", "detailed"]:
-            config = ReportConfig(title="Test", client_name="Test", template=template)
+            config = ReportConfig(
+                title="Test", client_name="Test", template=template
+            )
             assert config.template == template
 
     def test_template_validation_invalid(self):
@@ -771,7 +915,9 @@ class TestReportConfig:
     def test_extra_fields_forbidden(self):
         """Test that extra fields are forbidden"""
         with pytest.raises(ValueError):
-            ReportConfig(title="Test", client_name="Test", invalid_field="value")
+            ReportConfig(
+                title="Test", client_name="Test", invalid_field="value"
+            )
 
 
 # ==================== Serialization Tests ====================
@@ -795,7 +941,12 @@ class TestSerialization:
 
     def test_finding_deserialization(self):
         """Test finding deserialization from dict"""
-        data = {"title": "Test Finding", "description": "Test description", "severity": "high", "host": "example.com"}
+        data = {
+            "title": "Test Finding",
+            "description": "Test description",
+            "severity": "high",
+            "host": "example.com",
+        }
         finding = Finding.model_validate(data)
         assert finding.title == "Test Finding"
         assert finding.severity == Severity.HIGH
@@ -803,17 +954,31 @@ class TestSerialization:
     def test_scan_result_serialization(self):
         """Test scan result serialization"""
         started = datetime.utcnow()
-        result = ScanResult(scan_id="SCAN-001", target="example.com", status=ScanStatus.COMPLETED, started_at=started)
+        result = ScanResult(
+            scan_id="SCAN-001",
+            target="example.com",
+            status=ScanStatus.COMPLETED,
+            started_at=started,
+        )
         data = result.model_dump()
         assert data["scan_id"] == "SCAN-001"
         assert data["status"] == "completed"
 
     def test_complex_nested_serialization(self):
         """Test serialization of nested models"""
-        finding = Finding(title="Test", description="Test", severity=Severity.CRITICAL, host="example.com")
+        finding = Finding(
+            title="Test",
+            description="Test",
+            severity=Severity.CRITICAL,
+            host="example.com",
+        )
         started = datetime.utcnow()
         result = ScanResult(
-            scan_id="SCAN-001", target="example.com", status=ScanStatus.COMPLETED, started_at=started, findings=[finding]
+            scan_id="SCAN-001",
+            target="example.com",
+            status=ScanStatus.COMPLETED,
+            started_at=started,
+            findings=[finding],
         )
         data = result.model_dump()
         assert len(data["findings"]) == 1
@@ -829,32 +994,57 @@ class TestEdgeCases:
     def test_unicode_in_fields(self):
         """Test handling of unicode characters"""
         finding = Finding(
-            title="Unicode Test: 日本語", description="Description with emoji: 🚀", severity=Severity.INFO, host="例子.com"
+            title="Unicode Test: 日本語",
+            description="Description with emoji: 🚀",
+            severity=Severity.INFO,
+            host="例子.com",
         )
         assert finding.title == "Unicode Test: 日本語"
         assert "🚀" in finding.description
 
     def test_special_chars_in_description(self):
         """Test handling of special characters"""
-        finding = Finding(title="Special Chars", description="Special: <>&\"'", severity=Severity.LOW, host="test.com")
+        finding = Finding(
+            title="Special Chars",
+            description="Special: <>&\"'",
+            severity=Severity.LOW,
+            host="test.com",
+        )
         assert "<>&\"'" in finding.description
 
     def test_very_long_description(self):
         """Test handling of very long description"""
         long_desc = "A" * 10000
-        finding = Finding(title="Long Description Test", description=long_desc, severity=Severity.MEDIUM, host="test.com")
+        finding = Finding(
+            title="Long Description Test",
+            description=long_desc,
+            severity=Severity.MEDIUM,
+            host="test.com",
+        )
         assert len(finding.description) == 10000
 
     def test_multiple_cve_ids(self):
         """Test handling of multiple CVE IDs"""
         cves = [f"CVE-2023-{i:04d}" for i in range(1, 11)]
-        finding = Finding(title="Multiple CVEs", description="Test", severity=Severity.HIGH, host="test.com", cve_ids=cves)
+        finding = Finding(
+            title="Multiple CVEs",
+            description="Test",
+            severity=Severity.HIGH,
+            host="test.com",
+            cve_ids=cves,
+        )
         assert len(finding.cve_ids) == 10
 
     def test_empty_lists(self):
         """Test handling of explicitly empty lists"""
         finding = Finding(
-            title="Empty Lists", description="Test", severity=Severity.LOW, host="test.com", cve_ids=[], tags=[], references=[]
+            title="Empty Lists",
+            description="Test",
+            severity=Severity.LOW,
+            host="test.com",
+            cve_ids=[],
+            tags=[],
+            references=[],
         )
         assert finding.cve_ids == []
         assert finding.tags == []

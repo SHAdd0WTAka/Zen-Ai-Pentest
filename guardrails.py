@@ -51,7 +51,12 @@ class OutputValidator:
         self.validators["cvss_range"] = self._validate_cvss_range
         self.validators["port_range"] = self._validate_port_range
 
-    def validate(self, output: str, schema: Optional[Dict] = None, validators: Optional[List[str]] = None) -> GuardrailResult:
+    def validate(
+        self,
+        output: str,
+        schema: Optional[Dict] = None,
+        validators: Optional[List[str]] = None,
+    ) -> GuardrailResult:
         """
         Validate output against schema and validators.
 
@@ -67,7 +72,9 @@ class OutputValidator:
 
         # JSON validation
         if schema:
-            json_valid, json_issues = self._validate_json_schema(output, schema)
+            json_valid, json_issues = self._validate_json_schema(
+                output, schema
+            )
             if not json_valid:
                 issues.extend(json_issues)
 
@@ -83,7 +90,11 @@ class OutputValidator:
 
         return GuardrailResult(
             is_valid=is_valid,
-            validation_result=ValidationResult.VALID if is_valid else ValidationResult.INVALID,
+            validation_result=(
+                ValidationResult.VALID
+                if is_valid
+                else ValidationResult.INVALID
+            ),
             confidence=1.0 if is_valid else 0.5,
             issues=issues,
         )
@@ -104,9 +115,13 @@ class OutputValidator:
             # For now, basic type checking
             if "type" in schema:
                 if schema["type"] == "object" and not isinstance(data, dict):
-                    return False, [f"Expected object, got {type(data).__name__}"]
+                    return False, [
+                        f"Expected object, got {type(data).__name__}"
+                    ]
                 if schema["type"] == "array" and not isinstance(data, list):
-                    return False, [f"Expected array, got {type(data).__name__}"]
+                    return False, [
+                        f"Expected array, got {type(data).__name__}"
+                    ]
             return True, []
         except json.JSONDecodeError as e:
             return False, [f"Invalid JSON: {str(e)}"]
@@ -154,7 +169,9 @@ class MultiLLMVoting:
     def __init__(self, llm_clients: List[Any]):
         self.llms = llm_clients
 
-    async def vote(self, prompt: str, aggregation: str = "majority") -> Dict[str, Any]:
+    async def vote(
+        self, prompt: str, aggregation: str = "majority"
+    ) -> Dict[str, Any]:
         """
         Get consensus from multiple LLMs.
 
@@ -178,7 +195,11 @@ class MultiLLMVoting:
         valid_responses = [r for r in responses if r is not None]
 
         if not valid_responses:
-            return {"consensus": None, "confidence": 0.0, "all_responses": responses}
+            return {
+                "consensus": None,
+                "confidence": 0.0,
+                "all_responses": responses,
+            }
 
         # Simple majority voting (for classification tasks)
         if aggregation == "majority":
@@ -199,7 +220,11 @@ class MultiLLMVoting:
         counts = Counter(responses)
         most_common = counts.most_common(1)[0]
 
-        return {"consensus": most_common[0], "confidence": most_common[1] / len(responses), "all_responses": responses}
+        return {
+            "consensus": most_common[0],
+            "confidence": most_common[1] / len(responses),
+            "all_responses": responses,
+        }
 
 
 class SelfCorrection:
@@ -209,7 +234,9 @@ class SelfCorrection:
         self.llm = llm_client
         self.max_retries = max_retries
 
-    async def attempt_with_correction(self, task: Callable, validator: Callable, context: Dict) -> Any:
+    async def attempt_with_correction(
+        self, task: Callable, validator: Callable, context: Dict
+    ) -> Any:
         """
         Attempt task with automatic correction on failure.
 
@@ -229,7 +256,11 @@ class SelfCorrection:
                 is_valid, error_msg = validator(result)
 
                 if is_valid:
-                    return {"success": True, "result": result, "attempts": attempt + 1}
+                    return {
+                        "success": True,
+                        "result": result,
+                        "attempts": attempt + 1,
+                    }
 
                 # If invalid and not last attempt, correct
                 if attempt < self.max_retries - 1:
@@ -251,9 +282,17 @@ class SelfCorrection:
 
             except Exception as e:
                 if attempt == self.max_retries - 1:
-                    return {"success": False, "error": str(e), "attempts": attempt + 1}
+                    return {
+                        "success": False,
+                        "error": str(e),
+                        "attempts": attempt + 1,
+                    }
 
-        return {"success": False, "error": "Max retries exceeded", "attempts": self.max_retries}
+        return {
+            "success": False,
+            "error": "Max retries exceeded",
+            "attempts": self.max_retries,
+        }
 
 
 class HumanInTheLoop:
@@ -263,7 +302,9 @@ class HumanInTheLoop:
         self.approval_callback = approval_callback or self._default_approval
         self.approval_history: List[Dict] = []
 
-    async def request_approval(self, action: str, details: Dict, auto_approve: bool = False) -> bool:
+    async def request_approval(
+        self, action: str, details: Dict, auto_approve: bool = False
+    ) -> bool:
         """
         Request human approval for an action.
 
@@ -281,7 +322,12 @@ class HumanInTheLoop:
         approved = await self.approval_callback(action, details)
 
         self.approval_history.append(
-            {"action": action, "details": details, "approved": approved, "timestamp": datetime.now().isoformat()}
+            {
+                "action": action,
+                "details": details,
+                "approved": approved,
+                "timestamp": datetime.now().isoformat(),
+            }
         )
 
         return approved
@@ -309,15 +355,25 @@ class Guardrails:
     ):
         self.llm = llm_client
         self.validator = OutputValidator()
-        self.voting = MultiLLMVoting([llm_client] + (backup_llms or [])) if enable_voting else None
-        self.correction = SelfCorrection(llm_client) if enable_correction else None
+        self.voting = (
+            MultiLLMVoting([llm_client] + (backup_llms or []))
+            if enable_voting
+            else None
+        )
+        self.correction = (
+            SelfCorrection(llm_client) if enable_correction else None
+        )
         self.human_gate = HumanInTheLoop(human_callback)
 
         # Confidence threshold for automatic approval
         self.confidence_threshold = 0.8
 
     async def generate_with_guardrails(
-        self, prompt: str, schema: Optional[Dict] = None, validators: Optional[List[str]] = None, require_human: bool = False
+        self,
+        prompt: str,
+        schema: Optional[Dict] = None,
+        validators: Optional[List[str]] = None,
+        require_human: bool = False,
     ) -> GuardrailResult:
         """
         Generate content with full guardrail protection.
@@ -347,8 +403,13 @@ class Guardrails:
         # Self-correction if invalid
         if not validation.is_valid and self.correction:
             correction_result = await self.correction.attempt_with_correction(
-                task=lambda: self.llm.generate(prompt + "\n\nPlease provide valid JSON."),
-                validator=lambda r: (self.validator.validate(r, schema, validators).is_valid, ""),
+                task=lambda: self.llm.generate(
+                    prompt + "\n\nPlease provide valid JSON."
+                ),
+                validator=lambda r: (
+                    self.validator.validate(r, schema, validators).is_valid,
+                    "",
+                ),
                 context={"original_prompt": prompt},
             )
 
@@ -377,7 +438,11 @@ class Guardrails:
 
 
 # Convenience decorator
-def guardrail(schema: Optional[Dict] = None, validators: Optional[List[str]] = None, on_fail: str = "retry"):
+def guardrail(
+    schema: Optional[Dict] = None,
+    validators: Optional[List[str]] = None,
+    on_fail: str = "retry",
+):
     """
     Decorator to apply guardrails to a function.
 

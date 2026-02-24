@@ -43,7 +43,9 @@ async def demo_basic_connection():
         print(f"    Location: {status.server_location}")
         print(f"    Protocol: {status.protocol}")
         print(f"    New IP: {status.public_ip}")
-        print(f"    Kill Switch: {'Enabled' if status.kill_switch else 'Disabled'}")
+        print(
+            f"    Kill Switch: {'Enabled' if status.kill_switch else 'Disabled'}"
+        )
 
         # Verify IP change
         if status.public_ip != original_ip:
@@ -57,7 +59,9 @@ async def demo_basic_connection():
     print("\n[3] Connection History:")
     history = vpn.get_connection_history()
     for conn in history:
-        print(f"    - {conn['timestamp']}: {conn['server']} ({conn['public_ip']})")
+        print(
+            f"    - {conn['timestamp']}: {conn['server']} ({conn['public_ip']})"
+        )
 
     # Disconnect
     print("\n[4] Disconnecting...")
@@ -91,7 +95,10 @@ async def demo_secure_core():
 
     print("[1] Connecting via Secure Core...")
     status = await vpn.connect(
-        country="CH", security_level=VPNSecurityLevel.SECURE_CORE, protocol=VPNProtocol.WIREGUARD, kill_switch=True
+        country="CH",
+        security_level=VPNSecurityLevel.SECURE_CORE,
+        protocol=VPNProtocol.WIREGUARD,
+        kill_switch=True,
     )
 
     if status.connected:
@@ -152,7 +159,9 @@ async def demo_server_selection():
     print("[1] Available Servers:")
     servers = await vpn.get_server_list()
     for server in servers:
-        features = ", ".join(server.features) if server.features else "Standard"
+        features = (
+            ", ".join(server.features) if server.features else "Standard"
+        )
         print(f"    {server.name}: {server.city}, {server.country}")
         print(f"      Load: {server.load}% | Features: {features}")
 
@@ -161,10 +170,14 @@ async def demo_server_selection():
     purposes = ["pentest", "c2", "fileshare", "general"]
     for purpose in purposes:
         server = await vpn.recommend_server(
-            purpose=purpose, require_p2p=(purpose == "fileshare"), require_secure_core=(purpose == "pentest")
+            purpose=purpose,
+            require_p2p=(purpose == "fileshare"),
+            require_secure_core=(purpose == "pentest"),
         )
         if server:
-            print(f"    {purpose:12} → {server.name} ({server.city}, Load: {server.load}%)")
+            print(
+                f"    {purpose:12} → {server.name} ({server.city}, Load: {server.load}%)"
+            )
 
     print("\n[3] P2P-Optimized Servers:")
     p2p_servers = await vpn.get_server_list()
@@ -196,7 +209,11 @@ async def demo_pentest_workflow():
     # Phase 1: Initial Setup
     print("[Phase 1] Initial Setup with VPN")
     print("    Connecting to secure server...")
-    status = await vpn.connect(country="CH", security_level=VPNSecurityLevel.SECURE_CORE, kill_switch=True)
+    status = await vpn.connect(
+        country="CH",
+        security_level=VPNSecurityLevel.SECURE_CORE,
+        kill_switch=True,
+    )
 
     if status.connected:
         print("    ✅ VPN tunnel established")
@@ -249,7 +266,9 @@ async def demo_leak_protection():
     vpn = ProtonVPNManager()
 
     print("[Connecting with maximum protection...]")
-    await vpn.connect(country="CH", protocol=VPNProtocol.WIREGUARD, kill_switch=True)
+    await vpn.connect(
+        country="CH", protocol=VPNProtocol.WIREGUARD, kill_switch=True
+    )
 
     print("\n[Running leak tests...]")
     results = vpn.check_ip_leak()

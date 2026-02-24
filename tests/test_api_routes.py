@@ -32,7 +32,9 @@ sys.modules["integrations.jira_client"] = MagicMock()
 # Set environment variables
 os.environ["ADMIN_PASSWORD"] = "test123"
 os.environ["SECRET_KEY"] = "test-secret-key"
-os.environ["CORS_ORIGINS"] = '["http://localhost:3000", "http://localhost:8000"]'
+os.environ["CORS_ORIGINS"] = (
+    '["http://localhost:3000", "http://localhost:8000"]'
+)
 
 # Import after mocking
 from api.schemas import (
@@ -73,7 +75,12 @@ class TestSchemas:
 
     def test_scan_create_schema(self):
         """Test ScanCreate schema"""
-        data = {"name": "Test Scan", "target": "example.com", "scan_type": "full", "config": {"ports": "80,443"}}
+        data = {
+            "name": "Test Scan",
+            "target": "example.com",
+            "scan_type": "full",
+            "config": {"ports": "80,443"},
+        }
         scan = ScanCreate(**data)
         assert scan.name == "Test Scan"
         assert scan.target == "example.com"
@@ -105,7 +112,12 @@ class TestSchemas:
 
     def test_finding_create_schema(self):
         """Test FindingCreate schema"""
-        data = {"title": "SQL Injection", "description": "SQLi vulnerability", "severity": Severity.HIGH, "cvss_score": 7.5}
+        data = {
+            "title": "SQL Injection",
+            "description": "SQLi vulnerability",
+            "severity": Severity.HIGH,
+            "cvss_score": 7.5,
+        }
         finding = FindingCreate(**data)
         assert finding.title == "SQL Injection"
         assert finding.severity == Severity.HIGH
@@ -113,7 +125,13 @@ class TestSchemas:
     def test_finding_response_schema(self):
         """Test FindingResponse schema"""
         now = datetime.utcnow()
-        data = {"id": 1, "scan_id": 1, "title": "Test Finding", "severity": Severity.MEDIUM, "created_at": now}
+        data = {
+            "id": 1,
+            "scan_id": 1,
+            "title": "Test Finding",
+            "severity": Severity.MEDIUM,
+            "created_at": now,
+        }
         finding = FindingResponse(**data)
         assert finding.id == 1
         assert finding.verified == 0  # default
@@ -142,14 +160,24 @@ class TestSchemas:
 
     def test_tool_execute_request_schema(self):
         """Test ToolExecuteRequest schema"""
-        data = {"tool_name": "nmap", "target": "example.com", "parameters": {"ports": "80,443"}, "timeout": 300}
+        data = {
+            "tool_name": "nmap",
+            "target": "example.com",
+            "parameters": {"ports": "80,443"},
+            "timeout": 300,
+        }
         req = ToolExecuteRequest(**data)
         assert req.tool_name == "nmap"
         assert req.timeout == 300
 
     def test_tool_execute_response_schema(self):
         """Test ToolExecuteResponse schema"""
-        data = {"scan_id": 1, "status": "started", "message": "Tool execution started", "estimated_duration": 300}
+        data = {
+            "scan_id": 1,
+            "status": "started",
+            "message": "Tool execution started",
+            "estimated_duration": 300,
+        }
         resp = ToolExecuteResponse(**data)
         assert resp.scan_id == 1
         assert resp.status == "started"
@@ -232,7 +260,13 @@ class TestSchemaSerialization:
     def test_finding_response_serialization(self):
         """Test FindingResponse serialization"""
         now = datetime.utcnow()
-        finding = FindingResponse(id=1, scan_id=1, title="Test Finding", severity=Severity.HIGH, created_at=now)
+        finding = FindingResponse(
+            id=1,
+            scan_id=1,
+            title="Test Finding",
+            severity=Severity.HIGH,
+            created_at=now,
+        )
         data = finding.model_dump()
         assert data["title"] == "Test Finding"
         assert data["severity"] == "high"
@@ -260,24 +294,33 @@ class TestSchemaEdgeCases:
 
     def test_unicode_in_schemas(self):
         """Test unicode support"""
-        scan = ScanCreate(name="日本語スキャン", target="例え.com", scan_type="full")
+        scan = ScanCreate(
+            name="日本語スキャン", target="例え.com", scan_type="full"
+        )
         assert scan.name == "日本語スキャン"
         assert scan.target == "例え.com"
 
     def test_special_characters_in_schemas(self):
         """Test special characters"""
-        finding = FindingCreate(title="Test <script>alert(1)</script>", description="Test with 'quotes' and \"double quotes\"")
+        finding = FindingCreate(
+            title="Test <script>alert(1)</script>",
+            description="Test with 'quotes' and \"double quotes\"",
+        )
         assert "<script>" in finding.title
 
     def test_none_values_in_schemas(self):
         """Test None values"""
-        finding = FindingCreate(title="Test", description=None, cvss_score=None)
+        finding = FindingCreate(
+            title="Test", description=None, cvss_score=None
+        )
         assert finding.description is None
         assert finding.cvss_score is None
 
     def test_empty_config(self):
         """Test empty config dict"""
-        scan = ScanCreate(name="Test", target="example.com", scan_type="full", config={})
+        scan = ScanCreate(
+            name="Test", target="example.com", scan_type="full", config={}
+        )
         assert scan.config == {}
 
     def test_nested_config(self):

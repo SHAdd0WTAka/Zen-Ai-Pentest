@@ -113,19 +113,25 @@ class OSINTModule:
         if self.session:
             await self.session.close()
 
-    async def _fetch(self, url: str, headers: Optional[Dict] = None) -> Optional[str]:
+    async def _fetch(
+        self, url: str, headers: Optional[Dict] = None
+    ) -> Optional[str]:
         """Make HTTP request with rate limiting"""
         async with self.semaphore:
             try:
                 default_headers = {
-                    "User-Agent": self.user_agents[hash(url) % len(self.user_agents)],
+                    "User-Agent": self.user_agents[
+                        hash(url) % len(self.user_agents)
+                    ],
                     "Accept": "text/html,application/json",
                     "Accept-Language": "en-US,en;q=0.9",
                 }
                 if headers:
                     default_headers.update(headers)
 
-                async with self.session.get(url, headers=default_headers, ssl=False) as resp:
+                async with self.session.get(
+                    url, headers=default_headers, ssl=False
+                ) as resp:
                     if resp.status == 200:
                         return await resp.text()
             except Exception as e:
@@ -136,7 +142,9 @@ class OSINTModule:
     # Email Harvesting
     # =================================================================
 
-    async def harvest_emails(self, domain: str, sources: Optional[List[str]] = None) -> List[OSINTResult]:
+    async def harvest_emails(
+        self, domain: str, sources: Optional[List[str]] = None
+    ) -> List[OSINTResult]:
         """
         Harvest email addresses from multiple sources
 
@@ -171,7 +179,11 @@ class OSINTModule:
                         self.results.append(item)
 
         logger.info(f"Found {len(emails)} unique emails for {domain}")
-        return [r for r in self.results if r.data_type == "email" and domain in r.value]
+        return [
+            r
+            for r in self.results
+            if r.data_type == "email" and domain in r.value
+        ]
 
     async def _google_email_search(self, domain: str) -> List[OSINTResult]:
         """Search for emails using Google Dorks"""
@@ -181,7 +193,14 @@ class OSINTModule:
         # This is a simplified implementation
 
         # Simulate finding emails (in production, actual scraping)
-        common_names = ["admin", "info", "support", "contact", "sales", "webmaster"]
+        common_names = [
+            "admin",
+            "info",
+            "support",
+            "contact",
+            "sales",
+            "webmaster",
+        ]
         for name in common_names:
             email = f"{name}@{domain}"
             results.append(
@@ -216,7 +235,9 @@ class OSINTModule:
             content = await self._fetch(server)
             if content:
                 # Extract emails from PGP key data
-                emails = re.findall(rf"[a-zA-Z0-9._%+-]+@{re.escape(domain)}", content)
+                emails = re.findall(
+                    rf"[a-zA-Z0-9._%+-]+@{re.escape(domain)}", content
+                )
                 for email in set(emails):
                     results.append(
                         OSINTResult(
@@ -237,7 +258,9 @@ class OSINTModule:
         # GitHub API search
         github_api = f"https://api.github.com/search/code?q=@{domain}+in:email"
 
-        content = await self._fetch(github_api, headers={"Accept": "application/vnd.github.v3+json"})
+        content = await self._fetch(
+            github_api, headers={"Accept": "application/vnd.github.v3+json"}
+        )
         if content:
             try:
                 data = json.loads(content)
@@ -292,7 +315,9 @@ class OSINTModule:
         if isinstance(results[3], list):
             info.technologies = results[3]
 
-        logger.info(f"Domain recon complete: {len(info.subdomains)} subdomains found")
+        logger.info(
+            f"Domain recon complete: {len(info.subdomains)} subdomains found"
+        )
         return info
 
     async def _get_whois_info(self, domain: str) -> Dict:
@@ -306,7 +331,9 @@ class OSINTModule:
             "name_servers": ["ns1.example.com", "ns2.example.com"],
         }
 
-    async def _enumerate_subdomains(self, domain: str, wordlist: Optional[List[str]] = None) -> List[str]:
+    async def _enumerate_subdomains(
+        self, domain: str, wordlist: Optional[List[str]] = None
+    ) -> List[str]:
         """
         Enumerate subdomains using wordlist and certificate transparency
         """
@@ -424,7 +451,9 @@ class OSINTModule:
                 "profile_data": {},  # Would contain scraped data
             }
 
-        await asyncio.gather(*[check_platform(name, url) for name, url in platforms.items()])
+        await asyncio.gather(
+            *[check_platform(name, url) for name, url in platforms.items()]
+        )
 
         return results
 
@@ -483,9 +512,7 @@ class OSINTModule:
         # In production: Use VirusTotal, AbuseIPDB, etc.
 
         # Geolocation (use ip-api.com - free tier)
-        geo_url = (
-            f"http://ip-api.com/json/{ip}?fields=status,message,country,regionName,city,zip,lat,lon,isp,org,as,proxy,hosting"
-        )
+        geo_url = f"http://ip-api.com/json/{ip}?fields=status,message,country,regionName,city,zip,lat,lon,isp,org,as,proxy,hosting"
 
         content = await self._fetch(geo_url)
         if content:
@@ -522,7 +549,11 @@ class OSINTModule:
         """Generate OSINT report for target"""
 
         # Filter results for target
-        target_results = [r for r in self.results if target in r.value or target in str(r.metadata)]
+        target_results = [
+            r
+            for r in self.results
+            if target in r.value or target in str(r.metadata)
+        ]
 
         report = {
             "target": target,
@@ -535,7 +566,9 @@ class OSINTModule:
         # Count by type
         for result in target_results:
             data_type = result.data_type
-            report["summary"]["by_type"][data_type] = report["summary"]["by_type"].get(data_type, 0) + 1
+            report["summary"]["by_type"][data_type] = (
+                report["summary"]["by_type"].get(data_type, 0) + 1
+            )
 
         return report
 

@@ -73,7 +73,13 @@ class PerformanceBenchmarks:
         elapsed.append(time.perf_counter() - start)
 
     def _run_benchmark(
-        self, name: str, component: str, func: Callable, iterations: int = 100, warmup: int = 10, metadata: Dict = None
+        self,
+        name: str,
+        component: str,
+        func: Callable,
+        iterations: int = 100,
+        warmup: int = 10,
+        metadata: Dict = None,
     ) -> BenchmarkResult:
         """Run a single benchmark with warmup and multiple iterations."""
         print(f"  Running {name} ({iterations} iterations)...", end=" ")
@@ -161,7 +167,11 @@ class PerformanceBenchmarks:
 
         results.append(
             self._run_benchmark(
-                "Cache Key Generation", "cache", cache_key_gen, iterations=1000, metadata={"operation": "key_generation"}
+                "Cache Key Generation",
+                "cache",
+                cache_key_gen,
+                iterations=1000,
+                metadata={"operation": "key_generation"},
             )
         )
 
@@ -183,7 +193,12 @@ class PerformanceBenchmarks:
 
         def model_instantiation():
             for i in range(100):
-                Scan(name=f"Test Scan {i}", target=f"192.168.1.{i}", scan_type="network", status="pending")
+                Scan(
+                    name=f"Test Scan {i}",
+                    target=f"192.168.1.{i}",
+                    scan_type="network",
+                    status="pending",
+                )
 
         results.append(
             self._run_benchmark(
@@ -198,7 +213,13 @@ class PerformanceBenchmarks:
         # Finding model benchmark
         def finding_model_ops():
             for i in range(100):
-                Finding(scan_id=i, title=f"Vulnerability {i}", description="Test description", severity="high", cvss_score=7.5)
+                Finding(
+                    scan_id=i,
+                    title=f"Vulnerability {i}",
+                    description="Test description",
+                    severity="high",
+                    cvss_score=7.5,
+                )
 
         results.append(
             self._run_benchmark(
@@ -236,7 +257,10 @@ class PerformanceBenchmarks:
                 "cve_database",
                 cve_lookup,
                 iterations=1000,
-                metadata={"operation": "single_lookup", "cve": "CVE-2021-44228"},
+                metadata={
+                    "operation": "single_lookup",
+                    "cve": "CVE-2021-44228",
+                },
             )
         )
 
@@ -266,7 +290,10 @@ class PerformanceBenchmarks:
                 "cve_database",
                 severity_lookup,
                 iterations=100,
-                metadata={"operation": "severity_lookup", "severity": "Critical"},
+                metadata={
+                    "operation": "severity_lookup",
+                    "severity": "Critical",
+                },
             )
         )
 
@@ -295,7 +322,11 @@ class PerformanceBenchmarks:
         print("\n🔧 Tool Execution Performance Benchmarks")
         print("-" * 50)
 
-        from autonomous.tool_executor import ToolExecutionCache, ToolExecutor, ToolRegistry
+        from autonomous.tool_executor import (
+            ToolExecutionCache,
+            ToolExecutor,
+            ToolRegistry,
+        )
 
         results = []
 
@@ -329,7 +360,10 @@ class PerformanceBenchmarks:
                 category="recon",
             )
             for i in range(100):
-                executor._build_command(tool, {"target": f"192.168.1.{i}", "options": "-sS -p80,443"})
+                executor._build_command(
+                    tool,
+                    {"target": f"192.168.1.{i}", "options": "-sS -p80,443"},
+                )
 
         results.append(
             self._run_benchmark(
@@ -347,7 +381,11 @@ class PerformanceBenchmarks:
 
             # Simulate cache operations
             for i in range(50):
-                await cache.set(f"nmap_{i}", {"target": f"host_{i}"}, {"result": "open_ports: [80, 443]"})
+                await cache.set(
+                    f"nmap_{i}",
+                    {"target": f"host_{i}"},
+                    {"result": "open_ports: [80, 443]"},
+                )
 
             for i in range(50):
                 await cache.get("nmap", {"target": f"host_{i}"})
@@ -390,7 +428,11 @@ class PerformanceBenchmarks:
 
         results.append(
             self._run_benchmark(
-                "Context Window Management", "agent", context_window_ops, iterations=200, metadata={"messages": 100}
+                "Context Window Management",
+                "agent",
+                context_window_ops,
+                iterations=200,
+                metadata={"messages": 100},
             )
         )
 
@@ -409,7 +451,11 @@ class PerformanceBenchmarks:
 
         results.append(
             self._run_benchmark(
-                "LLM Response Cache", "agent", llm_cache_ops, iterations=200, metadata={"cache_operations": 100}
+                "LLM Response Cache",
+                "agent",
+                llm_cache_ops,
+                iterations=200,
+                metadata={"cache_operations": 100},
             )
         )
 
@@ -445,7 +491,11 @@ class PerformanceBenchmarks:
 
         results.append(
             self._run_benchmark(
-                "CVE DB Initialization", "memory", cve_db_memory, iterations=10, metadata={"component": "CVEDatabase"}
+                "CVE DB Initialization",
+                "memory",
+                cve_db_memory,
+                iterations=10,
+                metadata={"component": "CVEDatabase"},
             )
         )
 
@@ -528,7 +578,9 @@ class PerformanceBenchmarks:
     # Run All Benchmarks
     # ========================================================================
 
-    def run_all(self, components: List[str] = None) -> Dict[str, List[BenchmarkResult]]:
+    def run_all(
+        self, components: List[str] = None
+    ) -> Dict[str, List[BenchmarkResult]]:
         """Run all or selected benchmarks."""
         print("=" * 70)
         print("ZEN-AI-PENTEST PERFORMANCE BENCHMARKS")
@@ -577,7 +629,9 @@ class PerformanceBenchmarks:
 
         for result in self.results:
             avg_ms = result.avg_time * 1000
-            report_lines.append(f"| {result.component} | {result.name} | {avg_ms:.3f} | {result.ops_per_second:.1f} |")
+            report_lines.append(
+                f"| {result.component} | {result.name} | {avg_ms:.3f} | {result.ops_per_second:.1f} |"
+            )
 
         report_lines.extend(
             [
@@ -626,13 +680,17 @@ class PerformanceBenchmarks:
 
         print(f"📊 JSON results saved to: {output_file}")
 
-    def compare_with_baseline(self, baseline_file: str) -> List[ComparisonResult]:
+    def compare_with_baseline(
+        self, baseline_file: str
+    ) -> List[ComparisonResult]:
         """Compare current results with a baseline."""
         try:
             with open(baseline_file, "r") as f:
                 baseline = json.load(f)
 
-            baseline_by_name = {b["name"]: b for b in baseline.get("benchmarks", [])}
+            baseline_by_name = {
+                b["name"]: b for b in baseline.get("benchmarks", [])
+            }
 
             comparisons = []
             for result in self.results:
@@ -663,15 +721,29 @@ class PerformanceBenchmarks:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Zen-AI-Pentest Performance Benchmarks")
+    parser = argparse.ArgumentParser(
+        description="Zen-AI-Pentest Performance Benchmarks"
+    )
     parser.add_argument(
         "--component",
-        choices=["cache", "database", "cve_database", "tool_execution", "agent", "memory", "async"],
+        choices=[
+            "cache",
+            "database",
+            "cve_database",
+            "tool_execution",
+            "agent",
+            "memory",
+            "async",
+        ],
         help="Run benchmarks for specific component only",
     )
-    parser.add_argument("--output", "-o", help="Output file for report (markdown)")
+    parser.add_argument(
+        "--output", "-o", help="Output file for report (markdown)"
+    )
     parser.add_argument("--json", "-j", help="Output file for JSON results")
-    parser.add_argument("--compare", "-c", help="Compare with baseline JSON file")
+    parser.add_argument(
+        "--compare", "-c", help="Compare with baseline JSON file"
+    )
     parser.add_argument("--baseline", "-b", help="Save results as baseline")
 
     args = parser.parse_args()
@@ -700,7 +772,9 @@ def main():
 
         print("\n📊 Comparison with Baseline")
         print("-" * 70)
-        print(f"{'Benchmark':<40} {'Before':>10} {'After':>10} {'Improvement':>12} {'Speedup':>8}")
+        print(
+            f"{'Benchmark':<40} {'Before':>10} {'After':>10} {'Improvement':>12} {'Speedup':>8}"
+        )
         print("-" * 70)
 
         for comp in comparisons:
@@ -709,11 +783,15 @@ def main():
             improvement = f"{comp.improvement_pct:+.1f}%"
             speedup = f"{comp.speedup_factor:.2f}x"
 
-            print(f"{comp.benchmark_name:<40} {before_ms:>8.2f}ms {after_ms:>8.2f}ms {improvement:>12} {speedup:>8}")
+            print(
+                f"{comp.benchmark_name:<40} {before_ms:>8.2f}ms {after_ms:>8.2f}ms {improvement:>12} {speedup:>8}"
+            )
 
         # Overall improvement
         if comparisons:
-            avg_improvement = sum(c.improvement_pct for c in comparisons) / len(comparisons)
+            avg_improvement = sum(
+                c.improvement_pct for c in comparisons
+            ) / len(comparisons)
             print("-" * 70)
             print(f"Average improvement: {avg_improvement:+.1f}%")
 

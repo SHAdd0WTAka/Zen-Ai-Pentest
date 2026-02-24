@@ -22,11 +22,15 @@ logger = logging.getLogger(__name__)
 # =============================================================================
 
 # Rate limits from environment variables
-RATE_LIMIT_REQUESTS_PER_MINUTE = int(os.getenv("RATE_LIMIT_REQUESTS_PER_MINUTE", "60"))
+RATE_LIMIT_REQUESTS_PER_MINUTE = int(
+    os.getenv("RATE_LIMIT_REQUESTS_PER_MINUTE", "60")
+)
 RATE_LIMIT_BURST_SIZE = int(os.getenv("RATE_LIMIT_BURST_SIZE", "10"))
 
 # Stricter limits for auth endpoints
-AUTH_RATE_LIMIT = int(os.getenv("AUTH_RATE_LIMIT", "5"))  # 5 attempts per minute
+AUTH_RATE_LIMIT = int(
+    os.getenv("AUTH_RATE_LIMIT", "5")
+)  # 5 attempts per minute
 
 
 # =============================================================================
@@ -114,7 +118,11 @@ class RateLimitStorage:
     def cleanup_old_buckets(self, max_age: float = 3600):
         """Entfernt alte Buckets (Housekeeping)"""
         now = time.time()
-        to_remove = [key for key, last in self.last_access.items() if now - last > max_age]
+        to_remove = [
+            key
+            for key, last in self.last_access.items()
+            if now - last > max_age
+        ]
         for key in to_remove:
             del self.buckets[key]
             del self.last_access[key]
@@ -193,7 +201,9 @@ class RateLimitMiddleware:
         app.add_middleware(RateLimitMiddleware)
     """
 
-    def __init__(self, app, requests_per_minute: int = None, burst_size: int = None):
+    def __init__(
+        self, app, requests_per_minute: int = None, burst_size: int = None
+    ):
         self.app = app
         self.rpm = requests_per_minute or RATE_LIMIT_REQUESTS_PER_MINUTE
         self.burst = burst_size or RATE_LIMIT_BURST_SIZE
@@ -219,7 +229,10 @@ class RateLimitMiddleware:
                 {
                     "type": "http.response.start",
                     "status": 429,
-                    "headers": [[b"content-type", b"application/json"], [b"retry-after", str(int(wait_time)).encode()]],
+                    "headers": [
+                        [b"content-type", b"application/json"],
+                        [b"retry-after", str(int(wait_time)).encode()],
+                    ],
                 }
             )
             await send(
@@ -261,7 +274,9 @@ class AuthRateLimiter:
 
         # Alte Einträge entfernen (älter als 1 Minute)
         if client_ip in self.failed_attempts:
-            self.failed_attempts[client_ip] = [t for t in self.failed_attempts[client_ip] if now - t < 60]
+            self.failed_attempts[client_ip] = [
+                t for t in self.failed_attempts[client_ip] if now - t < 60
+            ]
 
         attempts = len(self.failed_attempts.get(client_ip, []))
 

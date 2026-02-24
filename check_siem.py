@@ -7,4 +7,6 @@ d = r.json()
 print("SIEM Events gesamt:", d["total"])
 print("\nLetzte 3 Events:")
 for e in d["events"][-3:]:
-    print(f"  [{e['severity'].upper()}] {e['event_type']}: {e['description'][:50]}...")
+    print(
+        f"  [{e['severity'].upper()}] {e['event_type']}: {e['description'][:50]}..."
+    )

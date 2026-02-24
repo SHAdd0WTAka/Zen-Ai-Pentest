@@ -13,7 +13,11 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 # Import from new auth module
 try:
-    from auth.jwt_handler import JWTHandler, TokenExpiredError, TokenInvalidError
+    from auth.jwt_handler import (
+        JWTHandler,
+        TokenExpiredError,
+        TokenInvalidError,
+    )
     from auth.middleware import AuthMiddleware
     from auth.rbac import Permission, RBACManager, Role
 
@@ -49,7 +53,9 @@ def get_rbac_manager() -> RBACManager:
     return _rbac_manager
 
 
-async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> dict:
+async def get_current_user(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+) -> dict:
     """
     Dependency to get current authenticated user from JWT token
 
@@ -132,7 +138,9 @@ async def require_permission(permission: Permission):
             return {"message": "Scan created"}
     """
 
-    async def permission_checker(user: dict = Depends(get_current_user)) -> dict:
+    async def permission_checker(
+        user: dict = Depends(get_current_user),
+    ) -> dict:
         if not AUTH_AVAILABLE:
             return user
 
@@ -158,7 +166,9 @@ class AuthIntegration:
     def init_app(app):
         """Initialize auth for FastAPI app"""
         if not AUTH_AVAILABLE:
-            print("Warning: Auth system not available, running without authentication")
+            print(
+                "Warning: Auth system not available, running without authentication"
+            )
             return
 
         # Add auth middleware
@@ -195,13 +205,27 @@ class AuthIntegration:
             jwt_handler = get_jwt_handler()
 
             # TODO: Implement actual credential verification
-            if credentials.get("username") == "admin" and credentials.get("password") == "admin":
-                access_token = jwt_handler.create_access_token(user_id="admin", roles=["admin"], permissions=["*"])
-                refresh_token = jwt_handler.create_refresh_token(user_id="admin", session_id="session_1")
+            if (
+                credentials.get("username") == "admin"
+                and credentials.get("password") == "admin"
+            ):
+                access_token = jwt_handler.create_access_token(
+                    user_id="admin", roles=["admin"], permissions=["*"]
+                )
+                refresh_token = jwt_handler.create_refresh_token(
+                    user_id="admin", session_id="session_1"
+                )
 
-                return {"access_token": access_token, "refresh_token": refresh_token, "token_type": "bearer"}
+                return {
+                    "access_token": access_token,
+                    "refresh_token": refresh_token,
+                    "token_type": "bearer",
+                }
 
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid credentials",
+            )
 
         @app.post("/auth/refresh", tags=["Authentication"])
         async def refresh_token(refresh_token: str):
@@ -213,12 +237,20 @@ class AuthIntegration:
 
                 # Create new access token
                 new_access_token = jwt_handler.create_access_token(
-                    user_id=payload.sub, roles=payload.roles, permissions=payload.permissions
+                    user_id=payload.sub,
+                    roles=payload.roles,
+                    permissions=payload.permissions,
                 )
 
-                return {"access_token": new_access_token, "token_type": "bearer"}
+                return {
+                    "access_token": new_access_token,
+                    "token_type": "bearer",
+                }
             except (TokenExpiredError, TokenInvalidError):
-                raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired refresh token")
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Invalid or expired refresh token",
+                )
 
         @app.post("/auth/logout", tags=["Authentication"])
         async def logout(user: dict = Depends(get_current_user)):

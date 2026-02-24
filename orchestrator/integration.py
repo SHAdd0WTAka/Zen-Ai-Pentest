@@ -56,7 +56,12 @@ class ComponentRegistry:
     def __init__(self):
         self._components: Dict[str, ComponentInfo] = {}
         self._dependencies: Dict[str, List[str]] = {}
-        self._hooks: Dict[str, List[Callable]] = {"before_start": [], "after_start": [], "before_stop": [], "after_stop": []}
+        self._hooks: Dict[str, List[Callable]] = {
+            "before_start": [],
+            "after_start": [],
+            "before_stop": [],
+            "after_stop": [],
+        }
 
     # ==================== Registration ====================
 
@@ -129,7 +134,11 @@ class ComponentRegistry:
 
     def list_by_type(self, component_type: str) -> List[ComponentInfo]:
         """List components by type"""
-        return [info for info in self._components.values() if info.component_type == component_type]
+        return [
+            info
+            for info in self._components.values()
+            if info.component_type == component_type
+        ]
 
     # ==================== Dependency Management ====================
 
@@ -202,7 +211,11 @@ class ComponentRegistry:
                     healthy = True  # Assume healthy if no check
 
                 info.status = "healthy" if healthy else "unhealthy"
-                results[name] = {"healthy": healthy, "type": info.component_type, "version": info.version}
+                results[name] = {
+                    "healthy": healthy,
+                    "type": info.component_type,
+                    "version": info.version,
+                }
 
             except Exception as e:
                 info.status = "error"
@@ -223,9 +236,15 @@ class ComponentRegistry:
 
         return {
             "total": len(self._components),
-            "healthy": sum(1 for s in statuses.values() if s["status"] == "healthy"),
-            "unhealthy": sum(1 for s in statuses.values() if s["status"] == "unhealthy"),
-            "unknown": sum(1 for s in statuses.values() if s["status"] == "unknown"),
+            "healthy": sum(
+                1 for s in statuses.values() if s["status"] == "healthy"
+            ),
+            "unhealthy": sum(
+                1 for s in statuses.values() if s["status"] == "unhealthy"
+            ),
+            "unknown": sum(
+                1 for s in statuses.values() if s["status"] == "unknown"
+            ),
             "components": statuses,
         }
 
@@ -277,7 +296,9 @@ class ComponentInitializer:
             if not self.registry.are_dependencies_satisfied(name):
                 deps = self.registry.check_dependencies(name)
                 missing = [d for d, ok in deps.items() if not ok]
-                print(f"Cannot initialize {name}: missing dependencies {missing}")
+                print(
+                    f"Cannot initialize {name}: missing dependencies {missing}"
+                )
                 return False
 
             # Initialize

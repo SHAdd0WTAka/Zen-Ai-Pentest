@@ -90,7 +90,10 @@ class SplunkBackend(SIEMBackend):
 
         data = "\n".join(events)
 
-        headers = {"Authorization": f"Splunk {self.config.api_key}", "Content-Type": "application/json"}
+        headers = {
+            "Authorization": f"Splunk {self.config.api_key}",
+            "Content-Type": "application/json",
+        }
 
         async with aiohttp.ClientSession() as session:
             try:
@@ -143,7 +146,12 @@ class ElasticsearchBackend(SIEMBackend):
             # Action line
             bulk_data.append(
                 json.dumps(
-                    {"index": {"_index": f"{self.config.index}-{entry.timestamp.strftime('%Y.%m.%d')}", "_id": entry.id}}
+                    {
+                        "index": {
+                            "_index": f"{self.config.index}-{entry.timestamp.strftime('%Y.%m.%d')}",
+                            "_id": entry.id,
+                        }
+                    }
                 )
             )
             # Document line
@@ -157,7 +165,9 @@ class ElasticsearchBackend(SIEMBackend):
 
         auth = None
         if self.config.username and self.config.password:
-            auth = aiohttp.BasicAuth(self.config.username, self.config.password)
+            auth = aiohttp.BasicAuth(
+                self.config.username, self.config.password
+            )
         elif self.config.api_key:
             headers["Authorization"] = f"ApiKey {self.config.api_key}"
 
@@ -178,7 +188,11 @@ class ElasticsearchBackend(SIEMBackend):
                         errors = result.get("errors", False)
                         if errors:
                             items = result.get("items", [])
-                            error_count = sum(1 for item in items if "error" in item.get("index", {}))
+                            error_count = sum(
+                                1
+                                for item in items
+                                if "error" in item.get("index", {})
+                            )
                             print(f"Elasticsearch bulk errors: {error_count}")
                         return not errors
                     else:
@@ -194,7 +208,9 @@ class ElasticsearchBackend(SIEMBackend):
             try:
                 auth = None
                 if self.config.username and self.config.password:
-                    auth = aiohttp.BasicAuth(self.config.username, self.config.password)
+                    auth = aiohttp.BasicAuth(
+                        self.config.username, self.config.password
+                    )
 
                 async with session.get(
                     f"{self.config.url}/_cluster/health",
@@ -252,7 +268,16 @@ class QRadarBackend(SIEMBackend):
 
     def _level_to_severity(self, level: str) -> int:
         """Convert log level to QRadar severity (0-10)"""
-        mapping = {"debug": 1, "info": 2, "notice": 3, "warning": 5, "error": 7, "critical": 9, "alert": 10, "emergency": 10}
+        mapping = {
+            "debug": 1,
+            "info": 2,
+            "notice": 3,
+            "warning": 5,
+            "error": 7,
+            "critical": 9,
+            "alert": 10,
+            "emergency": 10,
+        }
         return mapping.get(level, 5)
 
     async def health_check(self) -> bool:
@@ -309,7 +334,9 @@ class GenericHTTPBackend(SIEMBackend):
         async with aiohttp.ClientSession() as session:
             try:
                 async with session.get(
-                    self.config.url, ssl=self.config.ssl_verify, timeout=aiohttp.ClientTimeout(total=self.config.timeout)
+                    self.config.url,
+                    ssl=self.config.ssl_verify,
+                    timeout=aiohttp.ClientTimeout(total=self.config.timeout),
                 ) as response:
                     return response.status < 500
             except Exception:

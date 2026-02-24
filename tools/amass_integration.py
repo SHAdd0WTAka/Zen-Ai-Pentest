@@ -30,7 +30,9 @@ class AmassIntegration:
     def __init__(self, timeout: int = 600):
         self.timeout = timeout
 
-    async def enumerate(self, domain: str, passive: bool = True, brute: bool = False) -> AmassResult:
+    async def enumerate(
+        self, domain: str, passive: bool = True, brute: bool = False
+    ) -> AmassResult:
         """
         Enumerate subdomains with Amass
 
@@ -57,10 +59,14 @@ class AmassIntegration:
 
         try:
             process = await asyncio.create_subprocess_exec(
-                *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+                *cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
             )
 
-            stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=self.timeout)
+            stdout, stderr = await asyncio.wait_for(
+                process.communicate(), timeout=self.timeout
+            )
 
             subdomains = []
 
@@ -84,7 +90,13 @@ class AmassIntegration:
             subdomains = sorted(set(subdomains))
             duration = time.time() - start_time
 
-            return AmassResult(success=True, domain=domain, subdomains=subdomains, count=len(subdomains), duration=duration)
+            return AmassResult(
+                success=True,
+                domain=domain,
+                subdomains=subdomains,
+                count=len(subdomains),
+                duration=duration,
+            )
 
         except asyncio.TimeoutError:
             logger.error("Amass timed out")
@@ -109,14 +121,23 @@ class AmassIntegration:
 
         try:
             process = await asyncio.create_subprocess_exec(
-                *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+                *cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
             )
 
-            stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=300)
+            stdout, stderr = await asyncio.wait_for(
+                process.communicate(), timeout=300
+            )
 
             results = stdout.decode().strip().split("\n")
 
-            return {"success": True, "domain": domain, "related_domains": results, "count": len(results)}
+            return {
+                "success": True,
+                "domain": domain,
+                "related_domains": results,
+                "count": len(results),
+            }
 
         except Exception as e:
             logger.error(f"Amass intel error: {e}")

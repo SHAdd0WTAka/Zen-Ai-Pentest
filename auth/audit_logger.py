@@ -148,7 +148,9 @@ class AuditLogger:
         # File handler with rotation
         if self.config.log_file_path:
             # Ensure directory exists
-            os.makedirs(os.path.dirname(self.config.log_file_path), exist_ok=True)
+            os.makedirs(
+                os.path.dirname(self.config.log_file_path), exist_ok=True
+            )
 
             file_handler = logging.handlers.RotatingFileHandler(
                 self.config.log_file_path,
@@ -180,7 +182,10 @@ class AuditLogger:
 
         for key, value in data.items():
             # Check if field is sensitive
-            is_sensitive = any(sensitive in key.lower() for sensitive in self.config.sensitive_fields)
+            is_sensitive = any(
+                sensitive in key.lower()
+                for sensitive in self.config.sensitive_fields
+            )
 
             if is_sensitive:
                 if isinstance(value, str):
@@ -193,7 +198,14 @@ class AuditLogger:
             elif isinstance(value, dict):
                 masked[key] = self._mask_sensitive_data(value)
             elif isinstance(value, list):
-                masked[key] = [self._mask_sensitive_data(item) if isinstance(item, dict) else item for item in value]
+                masked[key] = [
+                    (
+                        self._mask_sensitive_data(item)
+                        if isinstance(item, dict)
+                        else item
+                    )
+                    for item in value
+                ]
             else:
                 masked[key] = value
 
@@ -467,7 +479,11 @@ class AuditLogger:
         ip_address: Optional[str] = None,
     ) -> AuditEvent:
         """Log role change"""
-        event_type = AuditEventType.ROLE_ASSIGNED if action == "assigned" else AuditEventType.ROLE_REVOKED
+        event_type = (
+            AuditEventType.ROLE_ASSIGNED
+            if action == "assigned"
+            else AuditEventType.ROLE_REVOKED
+        )
 
         return self.log_event(
             event_type=event_type,
@@ -496,7 +512,9 @@ class AuditLogger:
             details={"reason": reason},
         )
 
-    def verify_log_integrity(self, log_file_path: Optional[str] = None) -> Dict[str, Any]:
+    def verify_log_integrity(
+        self, log_file_path: Optional[str] = None
+    ) -> Dict[str, Any]:
         """
         Verify log file integrity using chain hashing
 
@@ -529,7 +547,9 @@ class AuditLogger:
                         "previous_hash": previous_hash,
                     }
                     hash_string = json.dumps(hash_data, sort_keys=True)
-                    calculated_hash = hashlib.sha256(hash_string.encode()).hexdigest()
+                    calculated_hash = hashlib.sha256(
+                        hash_string.encode()
+                    ).hexdigest()
 
                     if calculated_hash != stored_hash:
                         invalid_entries.append(
@@ -543,7 +563,9 @@ class AuditLogger:
                     previous_hash = stored_hash
 
                 except json.JSONDecodeError:
-                    invalid_entries.append({"line": i + 1, "error": "Invalid JSON"})
+                    invalid_entries.append(
+                        {"line": i + 1, "error": "Invalid JSON"}
+                    )
 
             return {
                 "valid": len(invalid_entries) == 0,

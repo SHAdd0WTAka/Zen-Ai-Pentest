@@ -75,7 +75,9 @@ class SecureConfigManager:
     """
 
     def __init__(self, config_dir: Optional[Path] = None):
-        self.config_dir = config_dir or Path.home() / ".config" / "zen-ai-pentest"
+        self.config_dir = (
+            config_dir or Path.home() / ".config" / "zen-ai-pentest"
+        )
         self.config_dir.mkdir(parents=True, exist_ok=True)
 
         self.config_file = self.config_dir / "config.json"
@@ -103,7 +105,9 @@ class SecureConfigManager:
     def _set_keyring_password(self, key_name: str, password: str) -> bool:
         """Store password in system keyring"""
         if not KEYRING_AVAILABLE:
-            logger.warning("Keyring not available, install with: pip install keyring")
+            logger.warning(
+                "Keyring not available, install with: pip install keyring"
+            )
             return False
         try:
             keyring.set_password(KEYRING_SERVICE, key_name, password)
@@ -112,7 +116,9 @@ class SecureConfigManager:
             logger.error(f"Failed to store {key_name} in keyring: {e}")
             return False
 
-    def get_api_key(self, provider: str, prefer_keyring: bool = True) -> Optional[str]:
+    def get_api_key(
+        self, provider: str, prefer_keyring: bool = True
+    ) -> Optional[str]:
         """
         Get API key with priority:
         1. Environment variable (ZEN_{PROVIDER}_KEY)
@@ -161,7 +167,9 @@ class SecureConfigManager:
 
         elif storage == "encrypted":
             if not CRYPTO_AVAILABLE:
-                logger.error("cryptography library required for encrypted storage")
+                logger.error(
+                    "cryptography library required for encrypted storage"
+                )
                 return False
             config = self._load_encrypted_config() or {}
             config[provider] = key
@@ -312,13 +320,17 @@ def migrate_plain_config(config_path: Path) -> bool:
 
         for old_key, provider in key_mapping.items():
             if old_key in old_config and old_config[old_key]:
-                manager.set_api_key(provider, old_config[old_key], storage="keyring")
+                manager.set_api_key(
+                    provider, old_config[old_key], storage="keyring"
+                )
 
         # Backup old config
         backup_path = config_path.with_suffix(".json.backup")
         config_path.rename(backup_path)
 
-        logger.info(f"Config migrated to secure storage. Old config backed up to {backup_path}")
+        logger.info(
+            f"Config migrated to secure storage. Old config backed up to {backup_path}"
+        )
         return True
 
     except Exception as e:

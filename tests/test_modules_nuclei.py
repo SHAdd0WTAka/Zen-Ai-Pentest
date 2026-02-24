@@ -22,7 +22,11 @@ from unittest.mock import AsyncMock, MagicMock, mock_open, patch
 
 import pytest
 
-from modules.nuclei_integration import NucleiFinding, NucleiIntegration, NucleiTemplateManager
+from modules.nuclei_integration import (
+    NucleiFinding,
+    NucleiIntegration,
+    NucleiTemplateManager,
+)
 
 
 @dataclass
@@ -43,7 +47,9 @@ def mock_orchestrator():
 @pytest.fixture
 def nuclei_integration(mock_orchestrator):
     """Create a NucleiIntegration instance with mock orchestrator"""
-    return NucleiIntegration(orchestrator=mock_orchestrator, nuclei_path="nuclei")
+    return NucleiIntegration(
+        orchestrator=mock_orchestrator, nuclei_path="nuclei"
+    )
 
 
 @pytest.fixture
@@ -57,7 +63,9 @@ class TestNucleiIntegrationInit:
 
     def test_init_with_orchestrator(self, mock_orchestrator):
         """Test initialization with orchestrator"""
-        integration = NucleiIntegration(orchestrator=mock_orchestrator, nuclei_path="/usr/bin/nuclei")
+        integration = NucleiIntegration(
+            orchestrator=mock_orchestrator, nuclei_path="/usr/bin/nuclei"
+        )
         assert integration.orchestrator == mock_orchestrator
         assert integration.nuclei_path == "/usr/bin/nuclei"
         assert integration.templates_dir == "data/nuclei_templates"
@@ -82,7 +90,9 @@ class TestNucleiIntegrationInit:
     def test_init_creates_directory(self, mock_makedirs):
         """Test that initialization creates templates directory"""
         NucleiIntegration()
-        mock_makedirs.assert_called_once_with("data/nuclei_templates", exist_ok=True)
+        mock_makedirs.assert_called_once_with(
+            "data/nuclei_templates", exist_ok=True
+        )
 
 
 class TestCheckNucleiInstalled:
@@ -122,7 +132,10 @@ class TestCheckNucleiInstalled:
     @pytest.mark.asyncio
     async def test_check_nuclei_installed_timeout(self, nuclei_integration):
         """Test installation check timeout"""
-        with patch("subprocess.run", side_effect=subprocess.TimeoutExpired("nuclei", 10)):
+        with patch(
+            "subprocess.run",
+            side_effect=subprocess.TimeoutExpired("nuclei", 10),
+        ):
             result = await nuclei_integration.check_nuclei_installed()
 
         assert result is False
@@ -158,7 +171,9 @@ class TestUpdateTemplates:
     @pytest.mark.asyncio
     async def test_update_templates_exception(self, nuclei_integration):
         """Test template update with exception"""
-        with patch("subprocess.run", side_effect=Exception("Unexpected error")):
+        with patch(
+            "subprocess.run", side_effect=Exception("Unexpected error")
+        ):
             result = await nuclei_integration.update_templates()
 
         assert result is False
@@ -192,7 +207,9 @@ class TestGetTemplateCategories:
         """Test getting categories from nuclei command"""
         mock_result = MagicMock()
         mock_result.returncode = 0
-        mock_result.stdout = "http/cves/2021/CVE-2021-1234.yaml\nhttp/vulnerabilities/xss.yaml"
+        mock_result.stdout = (
+            "http/cves/2021/CVE-2021-1234.yaml\nhttp/vulnerabilities/xss.yaml"
+        )
 
         with patch("subprocess.run", return_value=mock_result):
             categories = nuclei_integration.get_template_categories()
@@ -207,7 +224,9 @@ class TestScanTarget:
     @pytest.mark.asyncio
     async def test_scan_target_not_installed(self, nuclei_integration):
         """Test scanning when nuclei is not installed"""
-        with patch.object(nuclei_integration, "check_nuclei_installed", return_value=False):
+        with patch.object(
+            nuclei_integration, "check_nuclei_installed", return_value=False
+        ):
             result = await nuclei_integration.scan_target("example.com")
 
         assert result == []
@@ -217,7 +236,11 @@ class TestScanTarget:
         """Test successful scan"""
         json_output = json.dumps(
             {
-                "info": {"id": "test-template", "name": "Test Finding", "severity": "high"},
+                "info": {
+                    "id": "test-template",
+                    "name": "Test Finding",
+                    "severity": "high",
+                },
                 "host": "https://example.com",
                 "matched-at": "https://example.com/path",
                 "extracted-results": ["result1"],
@@ -226,11 +249,17 @@ class TestScanTarget:
 
         mock_process = AsyncMock()
         mock_process.stdout = MagicMock()
-        mock_process.stdout.readline = AsyncMock(side_effect=[json_output.encode(), b""])
+        mock_process.stdout.readline = AsyncMock(
+            side_effect=[json_output.encode(), b""]
+        )
         mock_process.wait = AsyncMock(return_value=0)
 
-        with patch.object(nuclei_integration, "check_nuclei_installed", return_value=True):
-            with patch("asyncio.create_subprocess_exec", return_value=mock_process):
+        with patch.object(
+            nuclei_integration, "check_nuclei_installed", return_value=True
+        ):
+            with patch(
+                "asyncio.create_subprocess_exec", return_value=mock_process
+            ):
                 result = await nuclei_integration.scan_target("example.com")
 
         assert len(result) == 1
@@ -240,13 +269,17 @@ class TestScanTarget:
     @pytest.mark.asyncio
     async def test_scan_target_with_filters(self, nuclei_integration):
         """Test scanning with severity and tag filters"""
-        with patch.object(nuclei_integration, "check_nuclei_installed", return_value=True):
+        with patch.object(
+            nuclei_integration, "check_nuclei_installed", return_value=True
+        ):
             mock_process = AsyncMock()
             mock_process.stdout = MagicMock()
             mock_process.stdout.readline = AsyncMock(return_value=b"")
             mock_process.wait = AsyncMock(return_value=0)
 
-            with patch("asyncio.create_subprocess_exec", return_value=mock_process) as mock_exec:
+            with patch(
+                "asyncio.create_subprocess_exec", return_value=mock_process
+            ) as mock_exec:
                 await nuclei_integration.scan_target(
                     "example.com",
                     severity=["critical", "high"],
@@ -271,11 +304,17 @@ class TestScanTarget:
         """Test handling invalid JSON output"""
         mock_process = AsyncMock()
         mock_process.stdout = MagicMock()
-        mock_process.stdout.readline = AsyncMock(side_effect=[b"invalid json", b""])
+        mock_process.stdout.readline = AsyncMock(
+            side_effect=[b"invalid json", b""]
+        )
         mock_process.wait = AsyncMock(return_value=0)
 
-        with patch.object(nuclei_integration, "check_nuclei_installed", return_value=True):
-            with patch("asyncio.create_subprocess_exec", return_value=mock_process):
+        with patch.object(
+            nuclei_integration, "check_nuclei_installed", return_value=True
+        ):
+            with patch(
+                "asyncio.create_subprocess_exec", return_value=mock_process
+            ):
                 result = await nuclei_integration.scan_target("example.com")
 
         assert result == []
@@ -287,7 +326,11 @@ class TestParseNucleiOutput:
     def test_parse_nuclei_output_success(self, nuclei_integration):
         """Test successful JSON parsing"""
         data = {
-            "info": {"id": "cve-2021-1234", "name": "Test CVE", "severity": "critical"},
+            "info": {
+                "id": "cve-2021-1234",
+                "name": "Test CVE",
+                "severity": "critical",
+            },
             "host": "https://example.com",
             "matched-at": "https://example.com/api",
             "extracted-results": ["admin:password"],
@@ -326,7 +369,9 @@ class TestScanWithAIAnalysis:
     """Test scan with AI analysis"""
 
     @pytest.mark.asyncio
-    async def test_scan_with_ai_analysis_success(self, nuclei_integration, mock_orchestrator):
+    async def test_scan_with_ai_analysis_success(
+        self, nuclei_integration, mock_orchestrator
+    ):
         """Test successful scan with AI analysis"""
         mock_finding = NucleiFinding(
             template_id="test-1",
@@ -338,10 +383,16 @@ class TestScanWithAIAnalysis:
             timestamp=datetime.now().isoformat(),
         )
 
-        mock_orchestrator.process.return_value = MockResponse(content="Risk assessment: Critical SQL injection found")
+        mock_orchestrator.process.return_value = MockResponse(
+            content="Risk assessment: Critical SQL injection found"
+        )
 
-        with patch.object(nuclei_integration, "scan_target", return_value=[mock_finding]):
-            result = await nuclei_integration.scan_with_ai_analysis("example.com")
+        with patch.object(
+            nuclei_integration, "scan_target", return_value=[mock_finding]
+        ):
+            result = await nuclei_integration.scan_with_ai_analysis(
+                "example.com"
+            )
 
         assert "findings" in result
         assert "analysis" in result
@@ -353,13 +404,17 @@ class TestScanWithAIAnalysis:
     async def test_scan_with_ai_analysis_no_findings(self, nuclei_integration):
         """Test scan with no findings"""
         with patch.object(nuclei_integration, "scan_target", return_value=[]):
-            result = await nuclei_integration.scan_with_ai_analysis("example.com")
+            result = await nuclei_integration.scan_with_ai_analysis(
+                "example.com"
+            )
 
         assert result["findings"] == []
         assert result["analysis"] == "No vulnerabilities found"
 
     @pytest.mark.asyncio
-    async def test_scan_with_ai_analysis_no_orchestrator(self, nuclei_integration_no_orchestrator):
+    async def test_scan_with_ai_analysis_no_orchestrator(
+        self, nuclei_integration_no_orchestrator
+    ):
         """Test scan without orchestrator"""
         mock_finding = NucleiFinding(
             template_id="test-1",
@@ -371,8 +426,16 @@ class TestScanWithAIAnalysis:
             timestamp=datetime.now().isoformat(),
         )
 
-        with patch.object(nuclei_integration_no_orchestrator, "scan_target", return_value=[mock_finding]):
-            result = await nuclei_integration_no_orchestrator.scan_with_ai_analysis("example.com")
+        with patch.object(
+            nuclei_integration_no_orchestrator,
+            "scan_target",
+            return_value=[mock_finding],
+        ):
+            result = (
+                await nuclei_integration_no_orchestrator.scan_with_ai_analysis(
+                    "example.com"
+                )
+            )
 
         assert "LLM analysis not available" in result["analysis"]
 
@@ -407,7 +470,15 @@ class TestExportResults:
     def test_export_results_default_filename(self, nuclei_integration):
         """Test export with default filename"""
         findings = [
-            NucleiFinding("1", "Test", "high", "example.com", "/path", ["data"], "2024-01-01T00:00:00"),
+            NucleiFinding(
+                "1",
+                "Test",
+                "high",
+                "example.com",
+                "/path",
+                ["data"],
+                "2024-01-01T00:00:00",
+            ),
         ]
 
         with patch("builtins.open", mock_open()) as mock_file:
@@ -424,7 +495,9 @@ class TestExportResults:
 
         with patch("builtins.open", mock_open()) as mock_file:
             with patch("json.dump") as mock_json_dump:
-                result = nuclei_integration.export_results(findings, "custom.json")
+                result = nuclei_integration.export_results(
+                    findings, "custom.json"
+                )
 
         assert result == "custom.json"
         mock_file.assert_called_once_with("custom.json", "w")
@@ -468,7 +541,9 @@ class TestNucleiTemplateManager:
         """Test that initialization creates templates directory"""
         with patch("os.makedirs") as mock_makedirs:
             manager = NucleiTemplateManager("/custom/templates")
-            mock_makedirs.assert_called_once_with("/custom/templates", exist_ok=True)
+            mock_makedirs.assert_called_once_with(
+                "/custom/templates", exist_ok=True
+            )
 
     @patch("yaml.dump")
     @patch("builtins.open", mock_open())
@@ -496,7 +571,10 @@ class TestNucleiTemplateManager:
         """Test listing templates"""
         manager = NucleiTemplateManager("/tmp/templates")
 
-        with patch("os.listdir", return_value=["template1.yaml", "template2.yml", "other.txt"]):
+        with patch(
+            "os.listdir",
+            return_value=["template1.yaml", "template2.yml", "other.txt"],
+        ):
             result = manager.list_templates()
 
         assert len(result) == 2
@@ -519,8 +597,13 @@ class TestEdgeCases:
     @pytest.mark.asyncio
     async def test_scan_target_exception(self, nuclei_integration):
         """Test scan with exception"""
-        with patch.object(nuclei_integration, "check_nuclei_installed", return_value=True):
-            with patch("asyncio.create_subprocess_exec", side_effect=Exception("Process error")):
+        with patch.object(
+            nuclei_integration, "check_nuclei_installed", return_value=True
+        ):
+            with patch(
+                "asyncio.create_subprocess_exec",
+                side_effect=Exception("Process error"),
+            ):
                 result = await nuclei_integration.scan_target("example.com")
 
         assert result == []
@@ -534,7 +617,10 @@ class TestEdgeCases:
     @pytest.mark.asyncio
     async def test_update_templates_timeout(self, nuclei_integration):
         """Test template update timeout"""
-        with patch("subprocess.run", side_effect=subprocess.TimeoutExpired("nuclei", 300)):
+        with patch(
+            "subprocess.run",
+            side_effect=subprocess.TimeoutExpired("nuclei", 300),
+        ):
             result = await nuclei_integration.update_templates()
 
         assert result is False

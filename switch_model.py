@@ -12,13 +12,26 @@ console = Console()
 
 # Bekannte Backends und ihre Keys
 BACKENDS = {
-    "kimi": {"name": "🌙 Kimi", "key_var": "KIMI_API_KEY", "models": ["kimi-k2.5", "kimi-k1.5", "kimi-latest"]},
+    "kimi": {
+        "name": "🌙 Kimi",
+        "key_var": "KIMI_API_KEY",
+        "models": ["kimi-k2.5", "kimi-k1.5", "kimi-latest"],
+    },
     "openrouter": {
         "name": "🔀 OpenRouter",
         "key_var": "OPENROUTER_API_KEY",
-        "models": ["openrouter/auto", "anthropic/claude-3.5-sonnet", "openai/gpt-4o", "google/gemini-pro"],
+        "models": [
+            "openrouter/auto",
+            "anthropic/claude-3.5-sonnet",
+            "openai/gpt-4o",
+            "google/gemini-pro",
+        ],
     },
-    "openai": {"name": "🤖 OpenAI", "key_var": "OPENAI_API_KEY", "models": ["gpt-4o", "gpt-4o-mini", "gpt-3.5-turbo"]},
+    "openai": {
+        "name": "🤖 OpenAI",
+        "key_var": "OPENAI_API_KEY",
+        "models": ["gpt-4o", "gpt-4o-mini", "gpt-3.5-turbo"],
+    },
 }
 
 
@@ -52,7 +65,11 @@ def parse_env(env_path):
 
 def show_status(config):
     """Zeigt aktuelle Konfiguration"""
-    table = Table(title="🧠 Zen-AI Aktuelle Konfiguration", show_header=True, header_style="bold cyan")
+    table = Table(
+        title="🧠 Zen-AI Aktuelle Konfiguration",
+        show_header=True,
+        header_style="bold cyan",
+    )
     table.add_column("Einstellung", style="dim")
     table.add_column("Wert", style="green")
 
@@ -61,7 +78,9 @@ def show_status(config):
 
     table.add_row("Backend", current_backend)
     table.add_row("Modell", current_model)
-    table.add_row("Verfügbare Keys", ", ".join(config["available"].keys()) or "Keine")
+    table.add_row(
+        "Verfügbare Keys", ", ".join(config["available"].keys()) or "Keine"
+    )
 
     console.print(table)
 
@@ -71,18 +90,26 @@ def switch_backend(config, env_path):
     available = config["available"]
 
     if not available:
-        console.print("[red]❌ Keine Backends konfiguriert. Führe zuerst setup_wizard.py aus![/red]")
+        console.print(
+            "[red]❌ Keine Backends konfiguriert. Führe zuerst setup_wizard.py aus![/red]"
+        )
         return
 
     choices = []
     for key in available.keys():
         backend_info = BACKENDS[key]
         is_active = "✓ " if config["current_backend"] == key else "  "
-        choices.append(questionary.Choice(title=f"{is_active}{backend_info['name']}", value=key))
+        choices.append(
+            questionary.Choice(
+                title=f"{is_active}{backend_info['name']}", value=key
+            )
+        )
 
     choices.append(questionary.Choice(title="❌ Abbrechen", value=None))
 
-    new_backend = questionary.select("Wähle Backend:", choices=choices, instruction="(✓ = Aktiv)").ask()
+    new_backend = questionary.select(
+        "Wähle Backend:", choices=choices, instruction="(✓ = Aktiv)"
+    ).ask()
 
     if not new_backend:
         return
@@ -98,11 +125,15 @@ def switch_backend(config, env_path):
         default_model = backend_data["models"][0]
 
     new_model = questionary.select(
-        f"Modell für {backend_data['name']}:", choices=backend_data["models"], default=default_model
+        f"Modell für {backend_data['name']}:",
+        choices=backend_data["models"],
+        default=default_model,
     ).ask()
 
     update_env(env_path, new_backend, new_model)
-    console.print(f"[green]✅ Gewechselt zu:[/green] {backend_data['name']} mit {new_model}")
+    console.print(
+        f"[green]✅ Gewechselt zu:[/green] {backend_data['name']} mit {new_model}"
+    )
 
 
 def update_env(env_path, backend, model):
@@ -132,7 +163,9 @@ def quick_switch(config, env_path):
     available = list(config["available"].keys())
 
     if len(available) < 2:
-        console.print("[yellow]⚠️  Nur ein Backend konfiguriert. Nutze 'Modell wechseln' für Details.[/yellow]")
+        console.print(
+            "[yellow]⚠️  Nur ein Backend konfiguriert. Nutze 'Modell wechseln' für Details.[/yellow]"
+        )
         return
 
     # Zeige nur Optionen mit aktivem Marker
@@ -141,7 +174,9 @@ def quick_switch(config, env_path):
         console.print(f"{marker}{BACKENDS[key]['name']}")
 
     choice = questionary.select(
-        "Schnellwechsel:", choices=[(BACKENDS[k]["name"], k) for k in available] + [("❌ Abbrechen", None)]
+        "Schnellwechsel:",
+        choices=[(BACKENDS[k]["name"], k) for k in available]
+        + [("❌ Abbrechen", None)],
     ).ask()
 
     if choice:
@@ -160,7 +195,9 @@ def main():
     if not config["available"]:
         console.print(
             Panel.fit(
-                "[red]Keine API Keys gefunden![/red]\n\n" "Führe zuerst aus:\n" "[cyan]python3 setup_wizard.py[/cyan]",
+                "[red]Keine API Keys gefunden![/red]\n\n"
+                "Führe zuerst aus:\n"
+                "[cyan]python3 setup_wizard.py[/cyan]",
                 title="Zen-AI Switch",
                 border_style="red",
             )
@@ -173,7 +210,9 @@ def main():
         "Was möchtest du tun?",
         choices=[
             questionary.Choice("🔄 Backend & Modell wechseln", value="full"),
-            questionary.Choice("⚡ Schnellwechsel (nur Backend)", value="quick"),
+            questionary.Choice(
+                "⚡ Schnellwechsel (nur Backend)", value="quick"
+            ),
             questionary.Choice("❌ Beenden", value="exit"),
         ],
     ).ask()

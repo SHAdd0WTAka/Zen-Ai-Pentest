@@ -70,7 +70,12 @@ class ConnectionPool:
             await conn.execute("SELECT * FROM table")
     """
 
-    def __init__(self, factory: Callable, config: Optional[PoolConfig] = None, name: str = "default"):
+    def __init__(
+        self,
+        factory: Callable,
+        config: Optional[PoolConfig] = None,
+        name: str = "default",
+    ):
         self.factory = factory
         self.config = config or PoolConfig()
         self.name = name
@@ -98,7 +103,9 @@ class ConnectionPool:
             if conn:
                 self._pool.append(conn)
 
-        logger.info(f"Pool '{self.name}' started with {len(self._pool)} connections")
+        logger.info(
+            f"Pool '{self.name}' started with {len(self._pool)} connections"
+        )
 
     async def stop(self):
         """Close all connections"""
@@ -185,7 +192,11 @@ class ConnectionPool:
     async def cleanup(self):
         """Remove expired/idle connections"""
         async with self._lock:
-            to_remove = [p for p in self._pool if not p.in_use and (p.is_expired() or p.is_idle_too_long())]
+            to_remove = [
+                p
+                for p in self._pool
+                if not p.in_use and (p.is_expired() or p.is_idle_too_long())
+            ]
 
             for pooled in to_remove:
                 await self._destroy_connection(pooled)

@@ -44,7 +44,9 @@ def apply_windows_asyncio_fix():
     try:
         if is_python_313_or_higher():
             # Nutze SelectorEventLoop als Workaround
-            asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+            asyncio.set_event_loop_policy(
+                asyncio.WindowsSelectorEventLoopPolicy()
+            )
             logger.info("Set WindowsSelectorEventLoopPolicy")
     except Exception as e:
         logger.warning(f"Could not set SelectorEventLoopPolicy: {e}")
@@ -103,7 +105,9 @@ class SafeAsyncioRunner:
 
             # Führe coroutine aus
             if self.timeout:
-                return loop.run_until_complete(asyncio.wait_for(coro, timeout=self.timeout))
+                return loop.run_until_complete(
+                    asyncio.wait_for(coro, timeout=self.timeout)
+                )
             else:
                 return loop.run_until_complete(coro)
 
@@ -117,7 +121,9 @@ class SafeAsyncioRunner:
                         task.cancel()
 
                     # Wait for cancellation
-                    loop.run_until_complete(asyncio.gather(*pending, return_exceptions=True))
+                    loop.run_until_complete(
+                        asyncio.gather(*pending, return_exceptions=True)
+                    )
 
                 loop.run_until_complete(loop.shutdown_asyncgens())
                 loop.close()

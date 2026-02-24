@@ -79,7 +79,10 @@ class ComplianceReporter:
             standard=ComplianceStandard.ISO27001,
             description="User registration and de-registration",
             requirement="A formal user registration and de-registration process shall be implemented.",
-            evidence_required=["user_registration_logs", "user_deactivation_logs"],
+            evidence_required=[
+                "user_registration_logs",
+                "user_deactivation_logs",
+            ],
             verification_method="review_logs",
         ),
         "A.9.4.1": ComplianceControl(
@@ -163,7 +166,10 @@ class ComplianceReporter:
                 "Information security events shall be assessed and decisions made "
                 "on how they should be classified and handled."
             ),
-            evidence_required=["security_event_logs", "incident_classification"],
+            evidence_required=[
+                "security_event_logs",
+                "incident_classification",
+            ],
             verification_method="review_logs",
         ),
     }
@@ -191,7 +197,11 @@ class ComplianceReporter:
             standard=ComplianceStandard.GDPR,
             description="Security of processing",
             requirement="Appropriate technical and organizational measures to ensure security.",
-            evidence_required=["security_logs", "access_controls", "encryption_logs"],
+            evidence_required=[
+                "security_logs",
+                "access_controls",
+                "encryption_logs",
+            ],
             verification_method="review_evidence",
         ),
         "Art.33": ComplianceControl(
@@ -277,7 +287,9 @@ class ComplianceReporter:
         controls = self._get_controls_for_standard(standard)
 
         # Get audit logs for period
-        logs = await self.audit_logger.query(start_time=start_date, end_time=end_date, limit=10000)
+        logs = await self.audit_logger.query(
+            start_time=start_date, end_time=end_date, limit=10000
+        )
 
         # Evaluate each control
         findings = []
@@ -296,7 +308,10 @@ class ComplianceReporter:
             "report_id": f"COMPLIANCE-{datetime.utcnow().strftime('%Y%m%d-%H%M%S')}",
             "standard": standard.value,
             "generated_at": datetime.utcnow().isoformat(),
-            "period": {"start": start_date.isoformat(), "end": end_date.isoformat()},
+            "period": {
+                "start": start_date.isoformat(),
+                "end": end_date.isoformat(),
+            },
             "summary": {
                 "total_controls": total,
                 "passed": passed,
@@ -305,16 +320,26 @@ class ComplianceReporter:
                 "compliance_rate": (passed / total * 100) if total > 0 else 0,
             },
             "findings": [self._finding_to_dict(f) for f in findings],
-            "evidence_package": await self._generate_evidence_package(standard, logs, findings),
+            "evidence_package": await self._generate_evidence_package(
+                standard, logs, findings
+            ),
         }
 
         return report
 
-    def _get_controls_for_standard(self, standard: ComplianceStandard) -> List[ComplianceControl]:
+    def _get_controls_for_standard(
+        self, standard: ComplianceStandard
+    ) -> List[ComplianceControl]:
         """Get all controls for a compliance standard"""
-        return [control for control in self.all_controls.values() if control.standard == standard]
+        return [
+            control
+            for control in self.all_controls.values()
+            if control.standard == standard
+        ]
 
-    async def _evaluate_control(self, control: ComplianceControl, logs: List[AuditLogEntry]) -> ComplianceFinding:
+    async def _evaluate_control(
+        self, control: ComplianceControl, logs: List[AuditLogEntry]
+    ) -> ComplianceFinding:
         """Evaluate a single control against audit logs"""
 
         # Filter logs for this control's evidence
@@ -336,7 +361,9 @@ class ComplianceReporter:
             recommendations=["Configure verification method"],
         )
 
-    def _filter_logs_for_control(self, control: ComplianceControl, logs: List[AuditLogEntry]) -> List[AuditLogEntry]:
+    def _filter_logs_for_control(
+        self, control: ComplianceControl, logs: List[AuditLogEntry]
+    ) -> List[AuditLogEntry]:
         """Filter logs relevant to a control"""
         relevant = []
 
@@ -360,7 +387,9 @@ class ComplianceReporter:
 
         return relevant
 
-    def _evaluate_log_review(self, control: ComplianceControl, logs: List[AuditLogEntry]) -> ComplianceFinding:
+    def _evaluate_log_review(
+        self, control: ComplianceControl, logs: List[AuditLogEntry]
+    ) -> ComplianceFinding:
         """Evaluate control based on log review"""
         findings = []
         recommendations = []
@@ -408,7 +437,9 @@ class ComplianceReporter:
             severity="medium" if status == "fail" else None,
         )
 
-    async def _evaluate_integrity(self, control: ComplianceControl, logs: List[AuditLogEntry]) -> ComplianceFinding:
+    async def _evaluate_integrity(
+        self, control: ComplianceControl, logs: List[AuditLogEntry]
+    ) -> ComplianceFinding:
         """Evaluate log integrity"""
         findings = []
         recommendations = []
@@ -432,11 +463,15 @@ class ComplianceReporter:
         # Verify chain integrity
         integrity_result = await self.audit_logger.verify_integrity()
         if integrity_result.get("chain_breaks", 0) > 0:
-            findings.append(f"{integrity_result['chain_breaks']} chain breaks detected")
+            findings.append(
+                f"{integrity_result['chain_breaks']} chain breaks detected"
+            )
             recommendations.append("Investigate log tampering")
 
         if integrity_result.get("invalid_signatures", 0) > 0:
-            findings.append(f"{integrity_result['invalid_signatures']} invalid signatures")
+            findings.append(
+                f"{integrity_result['invalid_signatures']} invalid signatures"
+            )
             recommendations.append("Review signing keys and process")
 
         status = "pass" if not findings else "fail"
@@ -450,12 +485,18 @@ class ComplianceReporter:
             severity="critical" if status == "fail" else None,
         )
 
-    def _evaluate_evidence(self, control: ComplianceControl, logs: List[AuditLogEntry]) -> ComplianceFinding:
+    def _evaluate_evidence(
+        self, control: ComplianceControl, logs: List[AuditLogEntry]
+    ) -> ComplianceFinding:
         """Evaluate control based on evidence"""
         # Simplified evidence evaluation
         if logs:
             return ComplianceFinding(
-                control_id=control.control_id, status="pass", evidence_count=len(logs), findings=[], recommendations=[]
+                control_id=control.control_id,
+                status="pass",
+                evidence_count=len(logs),
+                findings=[],
+                recommendations=[],
             )
         else:
             return ComplianceFinding(
@@ -479,7 +520,10 @@ class ComplianceReporter:
         }
 
     async def _generate_evidence_package(
-        self, standard: ComplianceStandard, logs: List[AuditLogEntry], findings: List[ComplianceFinding]
+        self,
+        standard: ComplianceStandard,
+        logs: List[AuditLogEntry],
+        findings: List[ComplianceFinding],
     ) -> Dict[str, Any]:
         """Generate evidence package for auditors"""
         return {
@@ -490,10 +534,18 @@ class ComplianceReporter:
             },
             "integrity_verification": await self.audit_logger.verify_integrity(),
             "sample_logs": [log.to_dict() for log in logs[:10]],
-            "control_mapping": {f.control_id: {"status": f.status, "evidence_count": f.evidence_count} for f in findings},
+            "control_mapping": {
+                f.control_id: {
+                    "status": f.status,
+                    "evidence_count": f.evidence_count,
+                }
+                for f in findings
+            },
         }
 
-    def _summarize_by_category(self, logs: List[AuditLogEntry]) -> Dict[str, int]:
+    def _summarize_by_category(
+        self, logs: List[AuditLogEntry]
+    ) -> Dict[str, int]:
         """Summarize logs by category"""
         summary = {}
         for log in logs:
@@ -507,7 +559,9 @@ class ComplianceReporter:
             summary[log.level] = summary.get(log.level, 0) + 1
         return summary
 
-    async def export_report(self, report: Dict[str, Any], format: str = "json") -> str:
+    async def export_report(
+        self, report: Dict[str, Any], format: str = "json"
+    ) -> str:
         """Export report to various formats"""
         if format == "json":
             return json.dumps(report, indent=2, default=str)
@@ -545,7 +599,11 @@ class ComplianceReporter:
 |---------|--------|----------|----------|
 """
         for finding in report["findings"]:
-            status_icon = "✅" if finding["status"] == "pass" else "❌" if finding["status"] == "fail" else "⚠️"
+            status_icon = (
+                "✅"
+                if finding["status"] == "pass"
+                else "❌" if finding["status"] == "fail" else "⚠️"
+            )
             md += (
                 f"| {finding['control_id']} | {status_icon} {finding['status']} | "
                 f"{finding['evidence_count']} | {len(finding['findings'])} |\n"
@@ -575,7 +633,16 @@ class ComplianceReporter:
         writer = csv.writer(output)
 
         # Header
-        writer.writerow(["control_id", "status", "evidence_count", "findings", "recommendations", "severity"])
+        writer.writerow(
+            [
+                "control_id",
+                "status",
+                "evidence_count",
+                "findings",
+                "recommendations",
+                "severity",
+            ]
+        )
 
         # Data
         for finding in report["findings"]:

@@ -65,7 +65,9 @@ async def demo_plugin_system():
     all_plugins = manager.get_all_plugins()
     for name, info in all_plugins.items():
         status_icon = "✓" if info.status.value == "loaded" else "✗"
-        print(f"    {status_icon} {name} v{info.version} - {info.status.value}")
+        print(
+            f"    {status_icon} {name} v{info.version} - {info.status.value}"
+        )
 
     # =================================================================
     # 4. Execute Plugin
@@ -75,7 +77,9 @@ async def demo_plugin_system():
     for name, plugin in manager.plugins.items():
         print(f"    Executing {name}...")
         try:
-            result = await manager.execute_plugin(name, target="example.com", options={"aggressive": False})
+            result = await manager.execute_plugin(
+                name, target="example.com", options={"aggressive": False}
+            )
             print(f"    Result: {result}")
         except Exception as e:
             print(f"    Error: {e}")
@@ -92,7 +96,11 @@ async def demo_plugin_system():
 
     async def on_scan_complete(scan_id: str, findings: int):
         print(f"    [Hook] Scan completed: {scan_id} with {findings} findings")
-        return {"hook": "scan_complete", "scan_id": scan_id, "findings": findings}
+        return {
+            "hook": "scan_complete",
+            "scan_id": scan_id,
+            "findings": findings,
+        }
 
     # Register hooks
     manager.hooks.register_hook("scan_start", on_scan_start, priority=1)

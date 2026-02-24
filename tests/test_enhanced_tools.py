@@ -8,7 +8,11 @@ from unittest.mock import AsyncMock, patch
 import pytest
 
 # Import tools
-from tools.ffuf_integration_enhanced import FFuFFinding, FFuFIntegration, FFuFResult
+from tools.ffuf_integration_enhanced import (
+    FFuFFinding,
+    FFuFIntegration,
+    FFuFResult,
+)
 from tools.httpx_integration import HTTPXHost, HTTPXIntegration
 from tools.nikto_integration import NiktoFinding, NiktoIntegration
 from tools.subfinder_integration import SubfinderIntegration, SubfinderResult
@@ -28,7 +32,11 @@ class TestFFuFIntegration:
     def test_ffuf_finding_dataclass(self):
         """Test FFuFFinding dataclass"""
         finding = FFuFFinding(
-            url="http://example.com/admin", status_code=200, content_length=1234, content_words=50, content_lines=20
+            url="http://example.com/admin",
+            status_code=200,
+            content_length=1234,
+            content_words=50,
+            content_lines=20,
         )
         assert finding.url == "http://example.com/admin"
         assert finding.status_code == 200
@@ -36,7 +44,9 @@ class TestFFuFIntegration:
 
     def test_ffuf_result_dataclass(self):
         """Test FFuFResult dataclass"""
-        result = FFuFResult(success=True, findings=[], command="ffuf -u target")
+        result = FFuFResult(
+            success=True, findings=[], command="ffuf -u target"
+        )
         assert result.success is True
         assert result.findings == []
         assert result.command == "ffuf -u target"
@@ -49,12 +59,15 @@ class TestFFuFIntegration:
         # Mock subprocess
         mock_process = AsyncMock()
         mock_process.communicate.return_value = (
-            b'{"type":"result","url":"http://test.com/admin","status":200,"length":1234}\n' b'{"type":"summary","total":2}',
+            b'{"type":"result","url":"http://test.com/admin","status":200,"length":1234}\n'
+            b'{"type":"summary","total":2}',
             b"",
         )
         mock_process.returncode = 0
 
-        with patch("asyncio.create_subprocess_exec", return_value=mock_process):
+        with patch(
+            "asyncio.create_subprocess_exec", return_value=mock_process
+        ):
             result = await ffuf.directory_bruteforce("http://test.com/FUZZ")
 
         assert result.success is True
@@ -73,7 +86,12 @@ class TestWhatWebIntegration:
 
     def test_technology_dataclass(self):
         """Test Technology dataclass"""
-        tech = Technology(name="Apache", version="2.4.7", confidence=100, category="Web Server")
+        tech = Technology(
+            name="Apache",
+            version="2.4.7",
+            confidence=100,
+            category="Web Server",
+        )
         assert tech.name == "Apache"
         assert tech.version == "2.4.7"
         assert tech.confidence == 100
@@ -106,7 +124,9 @@ class TestWhatWebIntegration:
         mock_process.communicate.return_value = (mock_json.encode(), b"")
         mock_process.returncode = 0
 
-        with patch("asyncio.create_subprocess_exec", return_value=mock_process):
+        with patch(
+            "asyncio.create_subprocess_exec", return_value=mock_process
+        ):
             result = await whatweb.scan("http://test.com")
 
         assert result.success is True
@@ -118,7 +138,12 @@ class TestWAFW00FIntegration:
 
     def test_waf_finding_dataclass(self):
         """Test WAFFinding dataclass"""
-        waf = WAFFinding(name="Cloudflare", manufacturer="Cloudflare Inc.", detected=True, confidence="high")
+        waf = WAFFinding(
+            name="Cloudflare",
+            manufacturer="Cloudflare Inc.",
+            detected=True,
+            confidence="high",
+        )
         assert waf.name == "Cloudflare"
         assert waf.confidence == "high"
 
@@ -133,7 +158,9 @@ class TestWAFW00FIntegration:
         mock_process.communicate.return_value = (mock_json.encode(), b"")
         mock_process.returncode = 0
 
-        with patch("asyncio.create_subprocess_exec", return_value=mock_process):
+        with patch(
+            "asyncio.create_subprocess_exec", return_value=mock_process
+        ):
             result = await wafw00f.detect("http://test.com")
 
         assert result.success is True
@@ -146,7 +173,10 @@ class TestSubfinderIntegration:
     def test_subfinder_result_dataclass(self):
         """Test SubfinderResult dataclass"""
         result = SubfinderResult(
-            success=True, domain="example.com", subdomains=["www.example.com", "mail.example.com"], count=2
+            success=True,
+            domain="example.com",
+            subdomains=["www.example.com", "mail.example.com"],
+            count=2,
         )
         assert result.success is True
         assert result.count == 2
@@ -163,7 +193,9 @@ class TestSubfinderIntegration:
         mock_process.communicate.return_value = (mock_json.encode(), b"")
         mock_process.returncode = 0
 
-        with patch("asyncio.create_subprocess_exec", return_value=mock_process):
+        with patch(
+            "asyncio.create_subprocess_exec", return_value=mock_process
+        ):
             result = await subfinder.enumerate("test.com")
 
         assert result.success is True
@@ -177,7 +209,13 @@ class TestHTTPXIntegration:
 
     def test_httpx_host_dataclass(self):
         """Test HTTPXHost dataclass"""
-        host = HTTPXHost(url="http://test.com", status_code=200, title="Test Page", webserver="Apache", ip="192.168.1.1")
+        host = HTTPXHost(
+            url="http://test.com",
+            status_code=200,
+            title="Test Page",
+            webserver="Apache",
+            ip="192.168.1.1",
+        )
         assert host.url == "http://test.com"
         assert host.status_code == 200
         assert host.title == "Test Page"
@@ -187,13 +225,17 @@ class TestHTTPXIntegration:
         """Test HTTP probing with mocked subprocess"""
         httpx = HTTPXIntegration()
 
-        mock_json = '{"url":"http://test.com","status_code":200,"title":"Test"}\n'
+        mock_json = (
+            '{"url":"http://test.com","status_code":200,"title":"Test"}\n'
+        )
 
         mock_process = AsyncMock()
         mock_process.communicate.return_value = (mock_json.encode(), b"")
         mock_process.returncode = 0
 
-        with patch("asyncio.create_subprocess_exec", return_value=mock_process):
+        with patch(
+            "asyncio.create_subprocess_exec", return_value=mock_process
+        ):
             result = await httpx.probe(["test.com"])
 
         assert result.success is True
@@ -207,7 +249,11 @@ class TestNiktoIntegration:
     def test_nikto_finding_dataclass(self):
         """Test NiktoFinding dataclass"""
         finding = NiktoFinding(
-            id="OSVDB-1234", method="GET", path="/admin", description="Admin interface found", severity="medium"
+            id="OSVDB-1234",
+            method="GET",
+            path="/admin",
+            description="Admin interface found",
+            severity="medium",
         )
         assert finding.id == "OSVDB-1234"
         assert finding.severity == "medium"
@@ -216,8 +262,13 @@ class TestNiktoIntegration:
         """Test severity classification"""
         nikto = NiktoIntegration()
 
-        assert nikto._classify_severity("", "SQL Injection vulnerability") == "high"
-        assert nikto._classify_severity("", "Information disclosure") == "medium"
+        assert (
+            nikto._classify_severity("", "SQL Injection vulnerability")
+            == "high"
+        )
+        assert (
+            nikto._classify_severity("", "Information disclosure") == "medium"
+        )
         assert nikto._classify_severity("", "Server header present") == "info"
 
 
@@ -229,13 +280,20 @@ class TestEnhancedReconModule:
         from modules.enhanced_recon import EnhancedReconModule
 
         with (
-            patch.object(EnhancedReconModule, "technology_detection") as mock_tech,
+            patch.object(
+                EnhancedReconModule, "technology_detection"
+            ) as mock_tech,
             patch.object(EnhancedReconModule, "waf_detection") as mock_waf,
-            patch.object(EnhancedReconModule, "directory_bruteforce") as mock_dir,
+            patch.object(
+                EnhancedReconModule, "directory_bruteforce"
+            ) as mock_dir,
         ):
 
             mock_tech.return_value = {"technologies": [], "success": True}
-            mock_waf.return_value = {"firewall_detected": False, "success": True}
+            mock_waf.return_value = {
+                "firewall_detected": False,
+                "success": True,
+            }
             mock_dir.return_value = {"findings": [], "success": True}
 
             recon = EnhancedReconModule()

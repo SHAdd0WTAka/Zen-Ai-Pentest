@@ -22,7 +22,12 @@ if not CRYPTO_AVAILABLE:
 
 from agents.v2 import MessageEncryption, SecureMessage
 from agents.v2.message_queue import InMemoryMessageQueue
-from agents.v2.secure_message import EncryptedPayload, MessageHeader, generate_keypair, generate_signing_keypair
+from agents.v2.secure_message import (
+    EncryptedPayload,
+    MessageHeader,
+    generate_keypair,
+    generate_signing_keypair,
+)
 
 # ============================================================================
 # Secure Message Tests
@@ -153,7 +158,9 @@ class TestMessageQueue:
                 timestamp=datetime.utcnow().isoformat(),
                 msg_type="task",
             ),
-            payload=EncryptedPayload(ciphertext="encrypted_data", nonce="nonce123", salt="salt456"),
+            payload=EncryptedPayload(
+                ciphertext="encrypted_data", nonce="nonce123", salt="salt456"
+            ),
             signature="sig789",
         )
 

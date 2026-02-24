@@ -75,7 +75,9 @@ def build_payload(event_name: str, env: dict) -> dict:
         if env.get("SUSPICIOUS") == "1":
             security_warning = "\n\n🔒 **Security Notice:** Potential sensitive data detected and masked."
 
-        commit_preview = commit_msg.split("\n")[0] if commit_msg else "No message"
+        commit_preview = (
+            commit_msg.split("\n")[0] if commit_msg else "No message"
+        )
         description = f"**Branch:** `{branch}`\n**Author:** {actor}\n**Commit:** `{commit_preview}`{security_warning}"
         url = env.get("COMMIT_URL", url)
 
@@ -118,7 +120,9 @@ def build_payload(event_name: str, env: dict) -> dict:
             color = 3447003  # Blue
             title = f"📝 Issue {action}"
 
-        description = f"**#{issue_number}:** {issue_title}\n**Author:** {actor}"
+        description = (
+            f"**#{issue_number}:** {issue_title}\n**Author:** {actor}"
+        )
         url = env.get("ISSUE_URL", url)
 
     elif event_name == "workflow_run":
@@ -159,13 +163,18 @@ def build_payload(event_name: str, env: dict) -> dict:
                 "color": color,
                 "timestamp": timestamp,
                 "footer": {"text": repo},
-                "author": {"name": actor, "icon_url": f"https://github.com/{actor}.png"},
+                "author": {
+                    "name": actor,
+                    "icon_url": f"https://github.com/{actor}.png",
+                },
             }
         ]
     }
 
 
-def send_notification(webhook_url: str, payload: dict, max_retries: int = 3) -> bool:
+def send_notification(
+    webhook_url: str, payload: dict, max_retries: int = 3
+) -> bool:
     """Send notification to Discord with retry logic."""
     import time
 
@@ -173,7 +182,12 @@ def send_notification(webhook_url: str, payload: dict, max_retries: int = 3) -> 
 
     for attempt in range(max_retries):
         try:
-            req = urllib.request.Request(webhook_url, data=data, headers={"Content-Type": "application/json"}, method="POST")
+            req = urllib.request.Request(
+                webhook_url,
+                data=data,
+                headers={"Content-Type": "application/json"},
+                method="POST",
+            )
 
             with urllib.request.urlopen(req, timeout=30) as response:
                 status_code = response.getcode()
@@ -188,14 +202,18 @@ def send_notification(webhook_url: str, payload: dict, max_retries: int = 3) -> 
         except urllib.error.HTTPError as e:
             if e.code == 429:
                 if attempt < max_retries - 1:
-                    print(f"⚠️ Rate limited (429). Retrying in 5 seconds... (attempt {attempt + 1}/{max_retries})")
+                    print(
+                        f"⚠️ Rate limited (429). Retrying in 5 seconds... (attempt {attempt + 1}/{max_retries})"
+                    )
                     time.sleep(5)
                     continue
                 else:
                     print("⚠️ Discord rate limit hit. Max retries reached.")
                     return True  # Don't fail on rate limit
             elif e.code == 404:
-                print("❌ Discord webhook not found (404). Check your DISCORD_WEBHOOK_URL secret.")
+                print(
+                    "❌ Discord webhook not found (404). Check your DISCORD_WEBHOOK_URL secret."
+                )
                 return True  # Don't fail on 404
             elif e.code == 400:
                 print("❌ Bad request (400). Check the payload format.")
@@ -210,7 +228,9 @@ def send_notification(webhook_url: str, payload: dict, max_retries: int = 3) -> 
         except Exception as e:
             print(f"⚠️ Error sending notification: {e}")
             if attempt < max_retries - 1:
-                print(f"Retrying in 3 seconds... (attempt {attempt + 1}/{max_retries})")
+                print(
+                    f"Retrying in 3 seconds... (attempt {attempt + 1}/{max_retries})"
+                )
                 time.sleep(3)
                 continue
             else:
@@ -226,7 +246,9 @@ def main():
 
     if not webhook_url:
         print("⚠️ DISCORD_WEBHOOK not set. Skipping notification.")
-        print("   To enable notifications, add DISCORD_WEBHOOK_URL to GitHub Secrets.")
+        print(
+            "   To enable notifications, add DISCORD_WEBHOOK_URL to GitHub Secrets."
+        )
         return 0
 
     event_name = os.environ.get("GITHUB_EVENT_NAME", "unknown")

@@ -127,12 +127,20 @@ class HealthCheckConfig(BaseModel):
     model_config = {"extra": "forbid"}
 
     # Database checks
-    check_database: bool = Field(default=True, description="Enable database health checks")
-    database_url: Optional[str] = Field(default=None, description="Database URL override")
-    database_timeout: int = Field(default=5, ge=1, le=60, description="Database connection timeout")
+    check_database: bool = Field(
+        default=True, description="Enable database health checks"
+    )
+    database_url: Optional[str] = Field(
+        default=None, description="Database URL override"
+    )
+    database_timeout: int = Field(
+        default=5, ge=1, le=60, description="Database connection timeout"
+    )
 
     # Tool checks
-    check_tools: bool = Field(default=True, description="Enable tool availability checks")
+    check_tools: bool = Field(
+        default=True, description="Enable tool availability checks"
+    )
     required_tools: List[str] = Field(
         default_factory=lambda: ["nmap", "sqlmap", "nuclei"],
         description="List of required security tools",
@@ -152,22 +160,46 @@ class HealthCheckConfig(BaseModel):
     )
 
     # API checks
-    check_api: bool = Field(default=True, description="Enable API health checks")
-    api_base_url: str = Field(default="http://localhost:8000", description="API base URL")
-    api_timeout: int = Field(default=10, ge=1, le=60, description="API request timeout")
-    api_auth_token: Optional[str] = Field(default=None, description="API authentication token")
+    check_api: bool = Field(
+        default=True, description="Enable API health checks"
+    )
+    api_base_url: str = Field(
+        default="http://localhost:8000", description="API base URL"
+    )
+    api_timeout: int = Field(
+        default=10, ge=1, le=60, description="API request timeout"
+    )
+    api_auth_token: Optional[str] = Field(
+        default=None, description="API authentication token"
+    )
 
     # Resource checks
-    check_resources: bool = Field(default=True, description="Enable resource checks")
-    memory_warning_threshold: float = Field(default=80.0, ge=0, le=100, description="Memory warning threshold %")
-    memory_critical_threshold: float = Field(default=95.0, ge=0, le=100, description="Memory critical threshold %")
-    disk_warning_threshold: float = Field(default=85.0, ge=0, le=100, description="Disk warning threshold %")
-    disk_critical_threshold: float = Field(default=95.0, ge=0, le=100, description="Disk critical threshold %")
-    cpu_warning_threshold: float = Field(default=80.0, ge=0, le=100, description="CPU warning threshold %")
-    cpu_critical_threshold: float = Field(default=95.0, ge=0, le=100, description="CPU critical threshold %")
+    check_resources: bool = Field(
+        default=True, description="Enable resource checks"
+    )
+    memory_warning_threshold: float = Field(
+        default=80.0, ge=0, le=100, description="Memory warning threshold %"
+    )
+    memory_critical_threshold: float = Field(
+        default=95.0, ge=0, le=100, description="Memory critical threshold %"
+    )
+    disk_warning_threshold: float = Field(
+        default=85.0, ge=0, le=100, description="Disk warning threshold %"
+    )
+    disk_critical_threshold: float = Field(
+        default=95.0, ge=0, le=100, description="Disk critical threshold %"
+    )
+    cpu_warning_threshold: float = Field(
+        default=80.0, ge=0, le=100, description="CPU warning threshold %"
+    )
+    cpu_critical_threshold: float = Field(
+        default=95.0, ge=0, le=100, description="CPU critical threshold %"
+    )
 
     # Security checks
-    check_security: bool = Field(default=True, description="Enable security checks")
+    check_security: bool = Field(
+        default=True, description="Enable security checks"
+    )
     ssl_check_hosts: List[str] = Field(
         default_factory=lambda: ["localhost:8000"],
         description="Hosts to check SSL certificates",
@@ -186,9 +218,15 @@ class HealthCheckConfig(BaseModel):
     )
 
     # General settings
-    parallel_checks: bool = Field(default=True, description="Run checks in parallel")
-    max_concurrent_checks: int = Field(default=5, ge=1, le=20, description="Max concurrent checks")
-    timeout_per_check: int = Field(default=30, ge=5, le=300, description="Timeout per check in seconds")
+    parallel_checks: bool = Field(
+        default=True, description="Run checks in parallel"
+    )
+    max_concurrent_checks: int = Field(
+        default=5, ge=1, le=20, description="Max concurrent checks"
+    )
+    timeout_per_check: int = Field(
+        default=30, ge=5, le=300, description="Timeout per check in seconds"
+    )
 
     @field_validator("required_tools", "optional_tools", mode="before")
     @classmethod
@@ -246,11 +284,15 @@ class BaseHealthCheck:
         try:
             loop = asyncio.get_event_loop()
             return await asyncio.wait_for(
-                loop.run_in_executor(None, functools.partial(func, *args, **kwargs)),
+                loop.run_in_executor(
+                    None, functools.partial(func, *args, **kwargs)
+                ),
                 timeout=self.config.timeout_per_check,
             )
         except asyncio.TimeoutError:
-            raise TimeoutError(f"Check {self.name} timed out after {self.config.timeout_per_check}s")
+            raise TimeoutError(
+                f"Check {self.name} timed out after {self.config.timeout_per_check}s"
+            )
         except Exception as e:
             self.logger.error(f"Error in {self.name}: {e}")
             raise
@@ -269,7 +311,9 @@ class DatabaseHealthCheck(BaseHealthCheck):
 
         if not self.config.check_database:
             return self._create_result(
-                HealthStatus.SKIPPED, "Database checks disabled", duration_ms=(time.time() - start_time) * 1000
+                HealthStatus.SKIPPED,
+                "Database checks disabled",
+                duration_ms=(time.time() - start_time) * 1000,
             )
 
         try:
@@ -295,7 +339,9 @@ class DatabaseHealthCheck(BaseHealthCheck):
                     remediation="Consider optimizing queries or scaling database resources",
                 )
 
-            return self._create_result(HealthStatus.OK, "Database is healthy", results, duration_ms)
+            return self._create_result(
+                HealthStatus.OK, "Database is healthy", results, duration_ms
+            )
 
         except Exception as e:
             duration_ms = (time.time() - start_time) * 1000
@@ -318,14 +364,20 @@ class DatabaseHealthCheck(BaseHealthCheck):
         }
 
         # Get database URL
-        db_url = self.config.database_url or os.getenv("DATABASE_URL", "sqlite:///./zen_pentest.db")
-        results["type"] = "postgresql" if "postgresql" in db_url.lower() else "sqlite"
+        db_url = self.config.database_url or os.getenv(
+            "DATABASE_URL", "sqlite:///./zen_pentest.db"
+        )
+        results["type"] = (
+            "postgresql" if "postgresql" in db_url.lower() else "sqlite"
+        )
 
         try:
             if results["type"] == "postgresql":
                 import psycopg2
 
-                conn = psycopg2.connect(db_url, connect_timeout=self.config.database_timeout)
+                conn = psycopg2.connect(
+                    db_url, connect_timeout=self.config.database_timeout
+                )
                 cursor = conn.cursor()
 
                 # Test connection
@@ -335,17 +387,25 @@ class DatabaseHealthCheck(BaseHealthCheck):
 
                 # Check query performance
                 perf_start = time.time()
-                cursor.execute("SELECT COUNT(*) FROM information_schema.tables")
+                cursor.execute(
+                    "SELECT COUNT(*) FROM information_schema.tables"
+                )
                 perf_duration = (time.time() - perf_start) * 1000
-                results["query_performance"] = "slow" if perf_duration > 1000 else "ok"
+                results["query_performance"] = (
+                    "slow" if perf_duration > 1000 else "ok"
+                )
                 results["query_time_ms"] = round(perf_duration, 2)
 
                 # Get database size
-                cursor.execute("SELECT pg_database_size(current_database()) / 1024 / 1024")
+                cursor.execute(
+                    "SELECT pg_database_size(current_database()) / 1024 / 1024"
+                )
                 results["size_mb"] = cursor.fetchone()[0]
 
                 # Get table list
-                cursor.execute("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'")
+                cursor.execute(
+                    "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'"
+                )
                 results["tables"] = [row[0] for row in cursor.fetchall()]
 
                 conn.close()
@@ -354,8 +414,12 @@ class DatabaseHealthCheck(BaseHealthCheck):
                 import sqlite3
 
                 # Extract database path from URL
-                db_path = db_url.replace("sqlite:///", "").replace("sqlite://", "")
-                conn = sqlite3.connect(db_path, timeout=self.config.database_timeout)
+                db_path = db_url.replace("sqlite:///", "").replace(
+                    "sqlite://", ""
+                )
+                conn = sqlite3.connect(
+                    db_path, timeout=self.config.database_timeout
+                )
                 cursor = conn.cursor()
 
                 # Test connection
@@ -365,14 +429,20 @@ class DatabaseHealthCheck(BaseHealthCheck):
 
                 # Check query performance
                 perf_start = time.time()
-                cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
+                cursor.execute(
+                    "SELECT name FROM sqlite_master WHERE type='table'"
+                )
                 perf_duration = (time.time() - perf_start) * 1000
-                results["query_performance"] = "slow" if perf_duration > 1000 else "ok"
+                results["query_performance"] = (
+                    "slow" if perf_duration > 1000 else "ok"
+                )
                 results["query_time_ms"] = round(perf_duration, 2)
 
                 # Get database size
                 if os.path.exists(db_path):
-                    results["size_mb"] = round(os.path.getsize(db_path) / (1024 * 1024), 2)
+                    results["size_mb"] = round(
+                        os.path.getsize(db_path) / (1024 * 1024), 2
+                    )
 
                 results["tables"] = [row[0] for row in cursor.fetchall()]
 
@@ -416,7 +486,9 @@ class ToolsHealthCheck(BaseHealthCheck):
 
         if not self.config.check_tools:
             return self._create_result(
-                HealthStatus.SKIPPED, "Tool checks disabled", duration_ms=(time.time() - start_time) * 1000
+                HealthStatus.SKIPPED,
+                "Tool checks disabled",
+                duration_ms=(time.time() - start_time) * 1000,
             )
 
         try:
@@ -424,8 +496,16 @@ class ToolsHealthCheck(BaseHealthCheck):
             duration_ms = (time.time() - start_time) * 1000
 
             # Determine overall status
-            required_missing = [t for t in results["required"] if not results["required"][t]["available"]]
-            optional_missing = [t for t in results["optional"] if not results["optional"][t]["available"]]
+            required_missing = [
+                t
+                for t in results["required"]
+                if not results["required"][t]["available"]
+            ]
+            optional_missing = [
+                t
+                for t in results["optional"]
+                if not results["optional"][t]["available"]
+            ]
 
             if required_missing:
                 return self._create_result(
@@ -445,7 +525,12 @@ class ToolsHealthCheck(BaseHealthCheck):
                     remediation="Consider installing optional tools for full functionality",
                 )
 
-            return self._create_result(HealthStatus.OK, "All required tools available", results, duration_ms)
+            return self._create_result(
+                HealthStatus.OK,
+                "All required tools available",
+                results,
+                duration_ms,
+            )
 
         except Exception as e:
             duration_ms = (time.time() - start_time) * 1000
@@ -459,7 +544,12 @@ class ToolsHealthCheck(BaseHealthCheck):
 
     def _check_tools(self) -> Dict[str, Any]:
         """Check tool availability"""
-        results = {"required": {}, "optional": {}, "total_available": 0, "total_missing": 0}
+        results = {
+            "required": {},
+            "optional": {},
+            "total_available": 0,
+            "total_missing": 0,
+        }
 
         for tool in self.config.required_tools:
             tool_info = self._check_tool(tool)
@@ -520,7 +610,9 @@ class APIHealthCheck(BaseHealthCheck):
 
         if not self.config.check_api:
             return self._create_result(
-                HealthStatus.SKIPPED, "API checks disabled", duration_ms=(time.time() - start_time) * 1000
+                HealthStatus.SKIPPED,
+                "API checks disabled",
+                duration_ms=(time.time() - start_time) * 1000,
             )
 
         try:
@@ -555,7 +647,9 @@ class APIHealthCheck(BaseHealthCheck):
                     remediation="Check API authentication configuration",
                 )
 
-            return self._create_result(HealthStatus.OK, "API is healthy", results, duration_ms)
+            return self._create_result(
+                HealthStatus.OK, "API is healthy", results, duration_ms
+            )
 
         except Exception as e:
             duration_ms = (time.time() - start_time) * 1000
@@ -585,10 +679,14 @@ class APIHealthCheck(BaseHealthCheck):
             req = urllib.request.Request(health_url, method="GET")
             req.add_header("Accept", "application/json")
 
-            with urllib.request.urlopen(req, timeout=self.config.api_timeout) as response:
+            with urllib.request.urlopen(
+                req, timeout=self.config.api_timeout
+            ) as response:
                 response_time = (time.time() - start_time) * 1000
                 results["health_endpoint"]["status"] = "ok"
-                results["health_endpoint"]["response_time_ms"] = round(response_time, 2)
+                results["health_endpoint"]["response_time_ms"] = round(
+                    response_time, 2
+                )
                 results["health_endpoint"]["status_code"] = response.getcode()
 
                 try:
@@ -612,10 +710,14 @@ class APIHealthCheck(BaseHealthCheck):
             me_url = f"{self.config.api_base_url}/auth/me"
             try:
                 req = urllib.request.Request(me_url, method="GET")
-                req.add_header("Authorization", f"Bearer {self.config.api_auth_token}")
+                req.add_header(
+                    "Authorization", f"Bearer {self.config.api_auth_token}"
+                )
                 req.add_header("Accept", "application/json")
 
-                with urllib.request.urlopen(req, timeout=self.config.api_timeout) as response:
+                with urllib.request.urlopen(
+                    req, timeout=self.config.api_timeout
+                ) as response:
                     results["auth_status"] = "ok"
                     results["auth_status_code"] = response.getcode()
 
@@ -645,7 +747,9 @@ class ResourcesHealthCheck(BaseHealthCheck):
 
         if not self.config.check_resources:
             return self._create_result(
-                HealthStatus.SKIPPED, "Resource checks disabled", duration_ms=(time.time() - start_time) * 1000
+                HealthStatus.SKIPPED,
+                "Resource checks disabled",
+                duration_ms=(time.time() - start_time) * 1000,
             )
 
         try:
@@ -657,23 +761,43 @@ class ResourcesHealthCheck(BaseHealthCheck):
             warning_issues = []
 
             # Memory check
-            if results["memory"]["percent"] >= self.config.memory_critical_threshold:
-                critical_issues.append(f"Memory usage at {results['memory']['percent']:.1f}%")
-            elif results["memory"]["percent"] >= self.config.memory_warning_threshold:
-                warning_issues.append(f"Memory usage at {results['memory']['percent']:.1f}%")
+            if (
+                results["memory"]["percent"]
+                >= self.config.memory_critical_threshold
+            ):
+                critical_issues.append(
+                    f"Memory usage at {results['memory']['percent']:.1f}%"
+                )
+            elif (
+                results["memory"]["percent"]
+                >= self.config.memory_warning_threshold
+            ):
+                warning_issues.append(
+                    f"Memory usage at {results['memory']['percent']:.1f}%"
+                )
 
             # Disk check
             for disk in results["disks"]:
                 if disk["percent"] >= self.config.disk_critical_threshold:
-                    critical_issues.append(f"Disk {disk['mountpoint']} at {disk['percent']:.1f}%")
+                    critical_issues.append(
+                        f"Disk {disk['mountpoint']} at {disk['percent']:.1f}%"
+                    )
                 elif disk["percent"] >= self.config.disk_warning_threshold:
-                    warning_issues.append(f"Disk {disk['mountpoint']} at {disk['percent']:.1f}%")
+                    warning_issues.append(
+                        f"Disk {disk['mountpoint']} at {disk['percent']:.1f}%"
+                    )
 
             # CPU check
             if results["cpu"]["percent"] >= self.config.cpu_critical_threshold:
-                critical_issues.append(f"CPU usage at {results['cpu']['percent']:.1f}%")
-            elif results["cpu"]["percent"] >= self.config.cpu_warning_threshold:
-                warning_issues.append(f"CPU usage at {results['cpu']['percent']:.1f}%")
+                critical_issues.append(
+                    f"CPU usage at {results['cpu']['percent']:.1f}%"
+                )
+            elif (
+                results["cpu"]["percent"] >= self.config.cpu_warning_threshold
+            ):
+                warning_issues.append(
+                    f"CPU usage at {results['cpu']['percent']:.1f}%"
+                )
 
             if critical_issues:
                 return self._create_result(
@@ -693,7 +817,12 @@ class ResourcesHealthCheck(BaseHealthCheck):
                     remediation="Monitor resource usage and consider optimization",
                 )
 
-            return self._create_result(HealthStatus.OK, "System resources are healthy", results, duration_ms)
+            return self._create_result(
+                HealthStatus.OK,
+                "System resources are healthy",
+                results,
+                duration_ms,
+            )
 
         except Exception as e:
             duration_ms = (time.time() - start_time) * 1000
@@ -727,7 +856,9 @@ class ResourcesHealthCheck(BaseHealthCheck):
         results["cpu"] = {
             "percent": psutil.cpu_percent(interval=1),
             "count": psutil.cpu_count(),
-            "frequency_mhz": psutil.cpu_freq().current if psutil.cpu_freq() else None,
+            "frequency_mhz": (
+                psutil.cpu_freq().current if psutil.cpu_freq() else None
+            ),
         }
 
         # Disk
@@ -769,11 +900,23 @@ class SecurityHealthCheck(BaseHealthCheck):
 
     # Patterns to detect potential secrets
     SECRET_PATTERNS = {
-        "api_key": re.compile(r"api[_-]?key\s*[=:]\s*['\"][a-zA-Z0-9_-]{16,}['\"]", re.IGNORECASE),
-        "secret_key": re.compile(r"secret[_-]?key\s*[=:]\s*['\"][a-zA-Z0-9_-]{16,}['\"]", re.IGNORECASE),
-        "password": re.compile(r"password\s*[=:]\s*['\"][^'\"\s]{8,}['\"]", re.IGNORECASE),
-        "token": re.compile(r"token\s*[=:]\s*['\"][a-zA-Z0-9_-]{16,}['\"]", re.IGNORECASE),
-        "private_key": re.compile(r"-----BEGIN (RSA |DSA |EC |OPENSSH )?PRIVATE KEY-----", re.IGNORECASE),
+        "api_key": re.compile(
+            r"api[_-]?key\s*[=:]\s*['\"][a-zA-Z0-9_-]{16,}['\"]", re.IGNORECASE
+        ),
+        "secret_key": re.compile(
+            r"secret[_-]?key\s*[=:]\s*['\"][a-zA-Z0-9_-]{16,}['\"]",
+            re.IGNORECASE,
+        ),
+        "password": re.compile(
+            r"password\s*[=:]\s*['\"][^'\"\s]{8,}['\"]", re.IGNORECASE
+        ),
+        "token": re.compile(
+            r"token\s*[=:]\s*['\"][a-zA-Z0-9_-]{16,}['\"]", re.IGNORECASE
+        ),
+        "private_key": re.compile(
+            r"-----BEGIN (RSA |DSA |EC |OPENSSH )?PRIVATE KEY-----",
+            re.IGNORECASE,
+        ),
         "aws_key": re.compile(r"AKIA[0-9A-Z]{16}"),
         "github_token": re.compile(r"gh[pousr]_[A-Za-z0-9_]{36,}"),
         "slack_token": re.compile(r"xox[baprs]-[0-9a-zA-Z-]+"),
@@ -785,7 +928,9 @@ class SecurityHealthCheck(BaseHealthCheck):
 
         if not self.config.check_security:
             return self._create_result(
-                HealthStatus.SKIPPED, "Security checks disabled", duration_ms=(time.time() - start_time) * 1000
+                HealthStatus.SKIPPED,
+                "Security checks disabled",
+                duration_ms=(time.time() - start_time) * 1000,
             )
 
         try:
@@ -802,7 +947,11 @@ class SecurityHealthCheck(BaseHealthCheck):
                     remediation="Remove hardcoded secrets and use environment variables or secure vaults",
                 )
 
-            missing_env_vars = [v for v in self.config.required_env_vars if not results["env_vars"].get(v, False)]
+            missing_env_vars = [
+                v
+                for v in self.config.required_env_vars
+                if not results["env_vars"].get(v, False)
+            ]
             if missing_env_vars:
                 return self._create_result(
                     HealthStatus.WARNING,
@@ -812,7 +961,9 @@ class SecurityHealthCheck(BaseHealthCheck):
                     remediation=f"Set the following environment variables: {', '.join(missing_env_vars)}",
                 )
 
-            expired_certs = [h for h in results["ssl_certs"] if h.get("expired", False)]
+            expired_certs = [
+                h for h in results["ssl_certs"] if h.get("expired", False)
+            ]
             if expired_certs:
                 return self._create_result(
                     HealthStatus.CRITICAL,
@@ -822,7 +973,12 @@ class SecurityHealthCheck(BaseHealthCheck):
                     remediation="Renew SSL certificates immediately",
                 )
 
-            return self._create_result(HealthStatus.OK, "Security configuration is healthy", results, duration_ms)
+            return self._create_result(
+                HealthStatus.OK,
+                "Security configuration is healthy",
+                results,
+                duration_ms,
+            )
 
         except Exception as e:
             duration_ms = (time.time() - start_time) * 1000
@@ -872,7 +1028,9 @@ class SecurityHealthCheck(BaseHealthCheck):
                 port = 443
 
             context = ssl.create_default_context()
-            with context.wrap_socket(ssl.socket(), server_hostname=hostname) as sock:
+            with context.wrap_socket(
+                ssl.socket(), server_hostname=hostname
+            ) as sock:
                 sock.settimeout(10)
                 sock.connect((hostname, port))
                 cert = sock.getpeercert()
@@ -909,11 +1067,16 @@ class SecurityHealthCheck(BaseHealthCheck):
 
         for file_path in base_path.rglob("*.py"):
             # Skip excluded patterns
-            if any(pattern in str(file_path) for pattern in self.config.secrets_exclude_patterns):
+            if any(
+                pattern in str(file_path)
+                for pattern in self.config.secrets_exclude_patterns
+            ):
                 continue
 
             try:
-                content = file_path.read_text(encoding="utf-8", errors="ignore")
+                content = file_path.read_text(
+                    encoding="utf-8", errors="ignore"
+                )
 
                 for secret_type, pattern in self.SECRET_PATTERNS.items():
                     for match in pattern.finditer(content):
@@ -925,7 +1088,11 @@ class SecurityHealthCheck(BaseHealthCheck):
                                 "file": str(file_path),
                                 "line": line_num,
                                 "type": secret_type,
-                                "snippet": match.group()[:50] + "..." if len(match.group()) > 50 else match.group(),
+                                "snippet": (
+                                    match.group()[:50] + "..."
+                                    if len(match.group()) > 50
+                                    else match.group()
+                                ),
                             }
                         )
 
@@ -951,13 +1118,19 @@ class HealthCheckRunner:
         self.config = config or HealthCheckConfig()
         self.logger = logging.getLogger(self.__class__.__name__)
 
-    async def run_all_checks(self, check_names: Optional[List[str]] = None) -> HealthReport:
+    async def run_all_checks(
+        self, check_names: Optional[List[str]] = None
+    ) -> HealthReport:
         """Run all or selected health checks"""
         start_time = time.time()
 
         # Determine which checks to run
         checks_to_run = check_names or list(self.CHECKS.keys())
-        check_classes = {name: self.CHECKS[name] for name in checks_to_run if name in self.CHECKS}
+        check_classes = {
+            name: self.CHECKS[name]
+            for name in checks_to_run
+            if name in self.CHECKS
+        }
 
         # Run checks
         results = []
@@ -967,7 +1140,14 @@ class HealthCheckRunner:
             results = await self._run_sequential(check_classes)
 
         # Calculate summary
-        summary = {"total": len(results), "ok": 0, "warning": 0, "error": 0, "critical": 0, "skipped": 0}
+        summary = {
+            "total": len(results),
+            "ok": 0,
+            "warning": 0,
+            "error": 0,
+            "critical": 0,
+            "skipped": 0,
+        }
 
         for result in results:
             summary[result.status.value] += 1
@@ -1007,19 +1187,27 @@ class HealthCheckRunner:
             duration_ms=duration_ms,
         )
 
-    async def _run_parallel(self, check_classes: Dict[str, Any]) -> List[HealthCheckResult]:
+    async def _run_parallel(
+        self, check_classes: Dict[str, Any]
+    ) -> List[HealthCheckResult]:
         """Run checks in parallel with concurrency limit"""
         semaphore = asyncio.Semaphore(self.config.max_concurrent_checks)
 
-        async def run_with_limit(name: str, check_class: Any) -> HealthCheckResult:
+        async def run_with_limit(
+            name: str, check_class: Any
+        ) -> HealthCheckResult:
             async with semaphore:
                 check = check_class(self.config)
                 return await check.run()
 
-        tasks = [run_with_limit(name, cls) for name, cls in check_classes.items()]
+        tasks = [
+            run_with_limit(name, cls) for name, cls in check_classes.items()
+        ]
         return await asyncio.gather(*tasks, return_exceptions=True)
 
-    async def _run_sequential(self, check_classes: Dict[str, Any]) -> List[HealthCheckResult]:
+    async def _run_sequential(
+        self, check_classes: Dict[str, Any]
+    ) -> List[HealthCheckResult]:
         """Run checks sequentially"""
         results = []
         for name, check_class in check_classes.items():
@@ -1073,7 +1261,9 @@ def run_health_check(
     return report
 
 
-def check_database(database_url: Optional[str] = None, timeout: int = 5) -> HealthCheckResult:
+def check_database(
+    database_url: Optional[str] = None, timeout: int = 5
+) -> HealthCheckResult:
     """Quick database health check"""
     config = HealthCheckConfig(
         check_database=True,
@@ -1088,7 +1278,9 @@ def check_database(database_url: Optional[str] = None, timeout: int = 5) -> Heal
     return runner.run_check("database")
 
 
-def check_tools(required_tools: Optional[List[str]] = None) -> HealthCheckResult:
+def check_tools(
+    required_tools: Optional[List[str]] = None,
+) -> HealthCheckResult:
     """Quick tools health check"""
     config = HealthCheckConfig(
         check_database=False,
@@ -1102,7 +1294,9 @@ def check_tools(required_tools: Optional[List[str]] = None) -> HealthCheckResult
     return runner.run_check("tools")
 
 
-def check_api_health(base_url: str = "http://localhost:8000", timeout: int = 10) -> HealthCheckResult:
+def check_api_health(
+    base_url: str = "http://localhost:8000", timeout: int = 10
+) -> HealthCheckResult:
     """Quick API health check"""
     config = HealthCheckConfig(
         check_database=False,

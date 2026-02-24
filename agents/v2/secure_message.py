@@ -34,8 +34,14 @@ from typing import Any, Dict, Union
 try:
     from cryptography.exceptions import InvalidSignature, InvalidTag
     from cryptography.hazmat.primitives import hashes, serialization
-    from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey, Ed25519PublicKey
-    from cryptography.hazmat.primitives.asymmetric.x25519 import X25519PrivateKey, X25519PublicKey
+    from cryptography.hazmat.primitives.asymmetric.ed25519 import (
+        Ed25519PrivateKey,
+        Ed25519PublicKey,
+    )
+    from cryptography.hazmat.primitives.asymmetric.x25519 import (
+        X25519PrivateKey,
+        X25519PublicKey,
+    )
     from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
     CRYPTO_AVAILABLE = True
@@ -72,7 +78,11 @@ class EncryptedPayload:
     salt: str  # base64 encoded (for key derivation)
 
     def to_dict(self) -> Dict[str, str]:
-        return {"ciphertext": self.ciphertext, "nonce": self.nonce, "salt": self.salt}
+        return {
+            "ciphertext": self.ciphertext,
+            "nonce": self.nonce,
+            "salt": self.salt,
+        }
 
     @classmethod
     def from_dict(cls, data: Dict[str, str]) -> "EncryptedPayload":
@@ -96,7 +106,13 @@ class SecureMessage:
 
     def to_json(self) -> str:
         """Serialize to JSON string"""
-        return json.dumps({"header": self.header.to_dict(), "payload": self.payload.to_dict(), "signature": self.signature})
+        return json.dumps(
+            {
+                "header": self.header.to_dict(),
+                "payload": self.payload.to_dict(),
+                "signature": self.signature,
+            }
+        )
 
     @classmethod
     def from_json(cls, json_str: str) -> "SecureMessage":
@@ -128,7 +144,10 @@ class MessageEncryption:
 
     def __init__(self):
         if not CRYPTO_AVAILABLE:
-            raise ImportError("cryptography library required. " "Install with: pip install cryptography")
+            raise ImportError(
+                "cryptography library required. "
+                "Install with: pip install cryptography"
+            )
 
         # Generate long-term identity key for signing
         self._signing_key = Ed25519PrivateKey.generate()
@@ -137,9 +156,14 @@ class MessageEncryption:
     @property
     def public_key_bytes(self) -> bytes:
         """Get public key for sharing"""
-        return self._verify_key.public_bytes(encoding=serialization.Encoding.Raw, format=serialization.PublicFormat.Raw)
+        return self._verify_key.public_bytes(
+            encoding=serialization.Encoding.Raw,
+            format=serialization.PublicFormat.Raw,
+        )
 
-    def encrypt(self, plaintext: Union[str, bytes, dict], recipient_public_key: bytes) -> EncryptedPayload:
+    def encrypt(
+        self, plaintext: Union[str, bytes, dict], recipient_public_key: bytes
+    ) -> EncryptedPayload:
         """
         Encrypt message for recipient
 
@@ -170,7 +194,12 @@ class MessageEncryption:
         salt = secrets.token_bytes(32)
         from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 
-        encryption_key = HKDF(algorithm=hashes.SHA256(), length=32, salt=salt, info=b"zen-agent-message").derive(shared_secret)
+        encryption_key = HKDF(
+            algorithm=hashes.SHA256(),
+            length=32,
+            salt=salt,
+            info=b"zen-agent-message",
+        ).derive(shared_secret)
 
         # Encrypt with AES-256-GCM
         aesgcm = AESGCM(encryption_key)
@@ -179,7 +208,10 @@ class MessageEncryption:
 
         # Include ephemeral public key with ciphertext for recipient
         full_ciphertext = (
-            ephemeral_public.public_bytes(encoding=serialization.Encoding.Raw, format=serialization.PublicFormat.Raw)
+            ephemeral_public.public_bytes(
+                encoding=serialization.Encoding.Raw,
+                format=serialization.PublicFormat.Raw,
+            )
             + ciphertext
         )
 
@@ -209,7 +241,9 @@ class MessageEncryption:
         ephemeral_public_bytes = full_ciphertext[:32]
         ciphertext = full_ciphertext[32:]
 
-        ephemeral_public = X25519PublicKey.from_public_bytes(ephemeral_public_bytes)
+        ephemeral_public = X25519PublicKey.from_public_bytes(
+            ephemeral_public_bytes
+        )
 
         # Use provided key or raise error
         if private_key is None:
@@ -221,14 +255,21 @@ class MessageEncryption:
         # Derive encryption key
         from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 
-        encryption_key = HKDF(algorithm=hashes.SHA256(), length=32, salt=salt, info=b"zen-agent-message").derive(shared_secret)
+        encryption_key = HKDF(
+            algorithm=hashes.SHA256(),
+            length=32,
+            salt=salt,
+            info=b"zen-agent-message",
+        ).derive(shared_secret)
 
         # Decrypt
         aesgcm = AESGCM(encryption_key)
         try:
             plaintext = aesgcm.decrypt(nonce, ciphertext, None)
         except InvalidTag:
-            raise ValueError("Decryption failed - invalid ciphertext or tampering detected")
+            raise ValueError(
+                "Decryption failed - invalid ciphertext or tampering detected"
+            )
 
         return plaintext
 
@@ -264,7 +305,12 @@ class MessageEncryption:
             return False
 
     def create_message(
-        self, sender_id: str, recipient_id: str, msg_type: str, payload: Union[str, bytes, dict], recipient_public_key: bytes
+        self,
+        sender_id: str,
+        recipient_id: str,
+        msg_type: str,
+        payload: Union[str, bytes, dict],
+        recipient_public_key: bytes,
     ) -> SecureMessage:
         """
         Create a complete secure message
@@ -294,12 +340,18 @@ class MessageEncryption:
         encrypted_payload = self.encrypt(payload, recipient_public_key)
 
         # Create signature over header + payload
-        data_to_sign = json.dumps(header.to_dict(), sort_keys=True).encode("utf-8") + json.dumps(
-            encrypted_payload.to_dict(), sort_keys=True
-        ).encode("utf-8")
+        data_to_sign = json.dumps(header.to_dict(), sort_keys=True).encode(
+            "utf-8"
+        ) + json.dumps(encrypted_payload.to_dict(), sort_keys=True).encode(
+            "utf-8"
+        )
         signature = self.sign(data_to_sign)
 
-        return SecureMessage(header=header, payload=encrypted_payload, signature=base64.b64encode(signature).decode("ascii"))
+        return SecureMessage(
+            header=header,
+            payload=encrypted_payload,
+            signature=base64.b64encode(signature).decode("ascii"),
+        )
 
 
 class SecureMessageCodec:
@@ -310,15 +362,24 @@ class SecureMessageCodec:
     def __init__(self, encryption: MessageEncryption, private_key: bytes):
         self.encryption = encryption
         if CRYPTO_AVAILABLE:
-            self._private_key = X25519PrivateKey.from_private_bytes(private_key)
+            self._private_key = X25519PrivateKey.from_private_bytes(
+                private_key
+            )
         else:
             self._private_key = None
 
     def encode(
-        self, sender_id: str, recipient_id: str, msg_type: str, payload: dict, recipient_public_key: bytes
+        self,
+        sender_id: str,
+        recipient_id: str,
+        msg_type: str,
+        payload: dict,
+        recipient_public_key: bytes,
     ) -> SecureMessage:
         """Encode a message for sending"""
-        return self.encryption.create_message(sender_id, recipient_id, msg_type, payload, recipient_public_key)
+        return self.encryption.create_message(
+            sender_id, recipient_id, msg_type, payload, recipient_public_key
+        )
 
     def decode(self, message: SecureMessage) -> dict:
         """Decode a received message"""
@@ -353,7 +414,10 @@ def generate_keypair() -> tuple[bytes, bytes]:
             format=serialization.PrivateFormat.Raw,
             encryption_algorithm=serialization.NoEncryption(),
         ),
-        public_key.public_bytes(encoding=serialization.Encoding.Raw, format=serialization.PublicFormat.Raw),
+        public_key.public_bytes(
+            encoding=serialization.Encoding.Raw,
+            format=serialization.PublicFormat.Raw,
+        ),
     )
 
 
@@ -376,7 +440,10 @@ def generate_signing_keypair() -> tuple[bytes, bytes]:
             format=serialization.PrivateFormat.Raw,
             encryption_algorithm=serialization.NoEncryption(),
         ),
-        public_key.public_bytes(encoding=serialization.Encoding.Raw, format=serialization.PublicFormat.Raw),
+        public_key.public_bytes(
+            encoding=serialization.Encoding.Raw,
+            format=serialization.PublicFormat.Raw,
+        ),
     )
 
 
@@ -402,7 +469,9 @@ def test_encryption_roundtrip():
 
     # Bob decrypts
     bob_codec = SecureMessageCodec(encryption, bob_private)
-    decrypted = bob_codec.encryption.decrypt(encrypted, X25519PrivateKey.from_private_bytes(bob_private))
+    decrypted = bob_codec.encryption.decrypt(
+        encrypted, X25519PrivateKey.from_private_bytes(bob_private)
+    )
 
     result = json.loads(decrypted.decode("utf-8"))
     assert result["message"] == "Hello, Bob!"

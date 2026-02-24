@@ -121,7 +121,13 @@ class RiskScorer:
     """
 
     # Gewichtungen fÃ¼r verschiedene Scoring-Methoden
-    DEFAULT_WEIGHTS = {"cvss": 0.30, "fair": 0.25, "dread": 0.20, "owasp": 0.15, "context": 0.10}
+    DEFAULT_WEIGHTS = {
+        "cvss": 0.30,
+        "fair": 0.25,
+        "dread": 0.20,
+        "owasp": 0.15,
+        "context": 0.10,
+    }
 
     # Threat Actor Capability Scores
     THREAT_ACTOR_CAPABILITIES = {
@@ -225,7 +231,12 @@ class RiskScorer:
 
         except Exception as e:
             logger.error(f"CVSS Berechnungsfehler: {e}")
-            return {"base_score": 0, "temporal_score": 0, "impact": 0, "exploitability": 0}
+            return {
+                "base_score": 0,
+                "temporal_score": 0,
+                "impact": 0,
+                "exploitability": 0,
+            }
 
     def calculate_fair_score(self, factors: RiskFactors) -> Dict[str, float]:
         """
@@ -247,8 +258,12 @@ class RiskScorer:
         lef = tef * vulnerability
 
         # Loss Magnitude
-        primary_loss = (factors.data_sensitivity + factors.business_impact) / 20
-        secondary_loss = (factors.compliance_relevance + factors.asset_value) / 20
+        primary_loss = (
+            factors.data_sensitivity + factors.business_impact
+        ) / 20
+        secondary_loss = (
+            factors.compliance_relevance + factors.asset_value
+        ) / 20
         lm = primary_loss + secondary_loss
 
         # Risk
@@ -263,7 +278,12 @@ class RiskScorer:
         }
 
     def calculate_dread_score(
-        self, damage: float, reproducibility: float, exploitability: float, affected_users: float, discoverability: float
+        self,
+        damage: float,
+        reproducibility: float,
+        exploitability: float,
+        affected_users: float,
+        discoverability: float,
     ) -> Dict[str, float]:
         """
         Berechnet DREAD Score.
@@ -272,7 +292,13 @@ class RiskScorer:
         Score = (D + R + E + A + D) / 5
         """
         # Alle Werte sollten 0-10 sein
-        dread_score = (damage + reproducibility + exploitability + affected_users + discoverability) / 5
+        dread_score = (
+            damage
+            + reproducibility
+            + exploitability
+            + affected_users
+            + discoverability
+        ) / 5
 
         return {
             "damage": damage,
@@ -284,7 +310,11 @@ class RiskScorer:
         }
 
     def calculate_owasp_risk(
-        self, threat_agent: float, vulnerability: float, technical_impact: float, business_impact: float
+        self,
+        threat_agent: float,
+        vulnerability: float,
+        technical_impact: float,
+        business_impact: float,
     ) -> Dict[str, float]:
         """
         Berechnet OWASP Risk Rating.
@@ -304,7 +334,10 @@ class RiskScorer:
         }
 
     def calculate_context_score(
-        self, factors: RiskFactors, asset_criticality: AssetCriticality, threat_actor: ThreatActor
+        self,
+        factors: RiskFactors,
+        asset_criticality: AssetCriticality,
+        threat_actor: ThreatActor,
     ) -> Dict[str, float]:
         """
         Berechnet kontext-basierten Risk Score.
@@ -421,14 +454,19 @@ class RiskScorer:
 
         # Context Score
         if factors:
-            context_result = self.calculate_context_score(factors, asset_criticality, threat_actor)
+            context_result = self.calculate_context_score(
+                factors, asset_criticality, threat_actor
+            )
             scores["context"] = context_result["context_score"]
             factors_applied.append("context")
         else:
             scores["context"] = scores["cvss"] * 1.1
 
         # Gewichteter Durchschnitt
-        final_score = sum(scores[method] * weights.get(method, 0.2) for method in scores.keys())
+        final_score = sum(
+            scores[method] * weights.get(method, 0.2)
+            for method in scores.keys()
+        )
 
         # Normalisierung auf 0-10
         final_score = min(10, max(0, final_score))
@@ -465,7 +503,9 @@ class RiskScorer:
 
         return risk_score
 
-    def calculate_risk_trend(self, vulnerability_id: str, scores: List[Tuple[datetime, float]]) -> Dict[str, Any]:
+    def calculate_risk_trend(
+        self, vulnerability_id: str, scores: List[Tuple[datetime, float]]
+    ) -> Dict[str, Any]:
         """
         Analysiert den Risiko-Trend Ã¼ber Zeit.
 
@@ -499,7 +539,9 @@ class RiskScorer:
         # VolatilitÃ¤t
         score_values = [s[1] for s in sorted_scores]
         mean = sum(score_values) / len(score_values)
-        variance = sum((x - mean) ** 2 for x in score_values) / len(score_values)
+        variance = sum((x - mean) ** 2 for x in score_values) / len(
+            score_values
+        )
         volatility = math.sqrt(variance)
 
         return {
@@ -514,7 +556,9 @@ class RiskScorer:
         }
 
     def prioritize_vulnerabilities(
-        self, vulnerabilities: List[Dict[str, Any]], asset_criticalities: Optional[Dict[str, AssetCriticality]] = None
+        self,
+        vulnerabilities: List[Dict[str, Any]],
+        asset_criticalities: Optional[Dict[str, AssetCriticality]] = None,
     ) -> List[Dict[str, Any]]:
         """
         Priorisiert eine Liste von Schwachstellen.
@@ -531,7 +575,9 @@ class RiskScorer:
 
         for vuln in vulnerabilities:
             asset = vuln.get("target", "unknown")
-            criticality = asset_criticalities.get(asset, AssetCriticality.MEDIUM)
+            criticality = asset_criticalities.get(
+                asset, AssetCriticality.MEDIUM
+            )
 
             # Berechne Risk Score
             risk_score = self.calculate_comprehensive_risk(
@@ -544,7 +590,9 @@ class RiskScorer:
                 {
                     **vuln,
                     "risk_score": risk_score.to_dict(),
-                    "priority_score": self._calculate_priority_score(risk_score, vuln),
+                    "priority_score": self._calculate_priority_score(
+                        risk_score, vuln
+                    ),
                 }
             )
 
@@ -560,8 +608,20 @@ class RiskScorer:
         Returns:
             Risk Matrix als Dictionary
         """
-        likelihood_levels = ["Sehr unwahrscheinlich", "Unwahrscheinlich", "MÃ¶glich", "Wahrscheinlich", "Sehr wahrscheinlich"]
-        impact_levels = ["Sehr gering", "Gering", "Mittel", "Hoch", "Sehr hoch"]
+        likelihood_levels = [
+            "Sehr unwahrscheinlich",
+            "Unwahrscheinlich",
+            "MÃ¶glich",
+            "Wahrscheinlich",
+            "Sehr wahrscheinlich",
+        ]
+        impact_levels = [
+            "Sehr gering",
+            "Gering",
+            "Mittel",
+            "Hoch",
+            "Sehr hoch",
+        ]
 
         matrix = {}
         for i, likelihood in enumerate(likelihood_levels):
@@ -596,7 +656,11 @@ class RiskScorer:
             "score_distribution": self._calculate_distribution(scores),
             "risk_level_distribution": self._calculate_level_distribution(),
             "scoring_methods_used": list(
-                set(method for entry in self.scoring_history for method in entry.get("scores", {}).keys())
+                set(
+                    method
+                    for entry in self.scoring_history
+                    for method in entry.get("scores", {}).keys()
+                )
             ),
         }
 
@@ -607,25 +671,35 @@ class RiskScorer:
                 return level
         return RiskLevel.LOW
 
-    def _calculate_likelihood(self, scores: Dict[str, float], factors: Optional[RiskFactors]) -> float:
+    def _calculate_likelihood(
+        self, scores: Dict[str, float], factors: Optional[RiskFactors]
+    ) -> float:
         """Berechnet die Eintrittswahrscheinlichkeit"""
         base_likelihood = scores.get("cvss", 5) / 10
 
         if factors:
             exploitability_factor = factors.exploitability / 10
             prevalence_factor = factors.prevalence / 10
-            return base_likelihood * 0.4 + exploitability_factor * 0.4 + prevalence_factor * 0.2
+            return (
+                base_likelihood * 0.4
+                + exploitability_factor * 0.4
+                + prevalence_factor * 0.2
+            )
 
         return base_likelihood
 
-    def _calculate_impact(self, scores: Dict[str, float], factors: Optional[RiskFactors]) -> float:
+    def _calculate_impact(
+        self, scores: Dict[str, float], factors: Optional[RiskFactors]
+    ) -> float:
         """Berechnet den Impact"""
         base_impact = scores.get("cvss", 5) / 10
 
         if factors:
             data_impact = factors.data_sensitivity / 10
             business_impact = factors.business_impact / 10
-            return base_impact * 0.3 + data_impact * 0.35 + business_impact * 0.35
+            return (
+                base_impact * 0.3 + data_impact * 0.35 + business_impact * 0.35
+            )
 
         return base_impact
 
@@ -635,12 +709,18 @@ class RiskScorer:
         confidence_boost = len(factors_applied) * 0.1
         return min(1.0, base_confidence + confidence_boost)
 
-    def _calculate_priority_score(self, risk_score: RiskScore, vuln: Dict) -> float:
+    def _calculate_priority_score(
+        self, risk_score: RiskScore, vuln: Dict
+    ) -> float:
         """Berechnet einen PrioritÃ¤ts-Score fÃ¼r die Sortierung"""
         base_priority = risk_score.final_score
 
         # Boost fÃ¼r kritische Schwachstellen
-        if vuln.get("category") in ["sql_injection", "code_execution", "insecure_deserialization"]:
+        if vuln.get("category") in [
+            "sql_injection",
+            "code_execution",
+            "insecure_deserialization",
+        ]:
             base_priority *= 1.2
 
         # Boost fÃ¼r Ã¶ffentlich bekannte CVEs

@@ -43,7 +43,11 @@ class ModuleStats:
 class QualityReport:
     """Complete code quality report"""
 
-    generated_at: str = field(default_factory=lambda: __import__("datetime").datetime.now().isoformat())
+    generated_at: str = field(
+        default_factory=lambda: __import__("datetime")
+        .datetime.now()
+        .isoformat()
+    )
     total_files: int = 0
     total_lines: int = 0
     total_code_lines: int = 0
@@ -101,7 +105,11 @@ def analyze_module(module_path: Path, module_name: str) -> ModuleStats:
         return stats
 
     for py_file in module_path.rglob("*.py"):
-        if ".venv" in str(py_file) or "venv" in str(py_file) or "__pycache__" in str(py_file):
+        if (
+            ".venv" in str(py_file)
+            or "venv" in str(py_file)
+            or "__pycache__" in str(py_file)
+        ):
             continue
 
         total, code, blank, comment = count_lines_in_file(py_file)
@@ -153,7 +161,11 @@ def run_bandit_check(module_path: Path) -> int:
             timeout=120,
         )
         # Count issue lines (lines starting with >>)
-        issues = [line for line in result.stdout.split("\n") if line.strip().startswith(">>")]
+        issues = [
+            line
+            for line in result.stdout.split("\n")
+            if line.strip().startswith(">>")
+        ]
         return len(issues)
     except (subprocess.TimeoutExpired, FileNotFoundError):
         return 0
@@ -182,13 +194,21 @@ def get_coverage_data() -> dict[str, Any]:
                 "missing_lines": totals.get("missing_lines", 0),
                 "num_statements": totals.get("num_statements", 0),
             }
-    except (subprocess.TimeoutExpired, FileNotFoundError, json.JSONDecodeError):
+    except (
+        subprocess.TimeoutExpired,
+        FileNotFoundError,
+        json.JSONDecodeError,
+    ):
         pass
 
     return {"available": False}
 
 
-def generate_report(project_root: Path, include_linting: bool = True, include_security: bool = True) -> QualityReport:
+def generate_report(
+    project_root: Path,
+    include_linting: bool = True,
+    include_security: bool = True,
+) -> QualityReport:
     """Generate complete quality report.
 
     Args:
@@ -273,10 +293,14 @@ def print_report(report: QualityReport) -> None:
     print("-" * 80)
     print("MODULE BREAKDOWN")
     print("-" * 80)
-    print(f"{'Module':<15} {'Files':>8} {'Total':>10} {'Code':>10} {'Blank':>8} {'Comments':>10}")
+    print(
+        f"{'Module':<15} {'Files':>8} {'Total':>10} {'Code':>10} {'Blank':>8} {'Comments':>10}"
+    )
     print("-" * 80)
 
-    for module in sorted(report.total_modules, key=lambda x: x.total_lines, reverse=True):
+    for module in sorted(
+        report.total_modules, key=lambda x: x.total_lines, reverse=True
+    ):
         num_files = len(list(Path(module.path).rglob("*.py")))
         print(
             f"{module.name:<15} {num_files:>8} {module.total_lines:>10,} "
@@ -293,7 +317,9 @@ def print_report(report: QualityReport) -> None:
         total_linting = sum(report.linting_summary.values())
         print(f"Total Issues: {total_linting}")
         print()
-        for module, issues in sorted(report.linting_summary.items(), key=lambda x: x[1], reverse=True):
+        for module, issues in sorted(
+            report.linting_summary.items(), key=lambda x: x[1], reverse=True
+        ):
             if issues > 0:
                 print(f"  {module:<15} {issues:>6} issues")
         print()
@@ -306,7 +332,9 @@ def print_report(report: QualityReport) -> None:
         total_security = sum(report.security_summary.values())
         print(f"Total Issues: {total_security}")
         print()
-        for module, issues in sorted(report.security_summary.items(), key=lambda x: x[1], reverse=True):
+        for module, issues in sorted(
+            report.security_summary.items(), key=lambda x: x[1], reverse=True
+        ):
             if issues > 0:
                 print(f"  {module:<15} {issues:>6} issues")
         print()
@@ -330,10 +358,16 @@ def main() -> int:
     Returns:
         Exit code
     """
-    parser = argparse.ArgumentParser(description="Generate code quality report")
+    parser = argparse.ArgumentParser(
+        description="Generate code quality report"
+    )
     parser.add_argument("--output", "-o", type=str, help="Output file (JSON)")
-    parser.add_argument("--no-linting", action="store_true", help="Skip linting checks")
-    parser.add_argument("--no-security", action="store_true", help="Skip security checks")
+    parser.add_argument(
+        "--no-linting", action="store_true", help="Skip linting checks"
+    )
+    parser.add_argument(
+        "--no-security", action="store_true", help="Skip security checks"
+    )
 
     args = parser.parse_args()
 

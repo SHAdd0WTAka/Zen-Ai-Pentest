@@ -164,25 +164,35 @@ class CSRFProtection:
         if not cookie_token:
             logger.warning(f"CSRF Cookie fehlt: {path}")
             raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN, detail="CSRF token missing. Get a token from /csrf-token first."
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="CSRF token missing. Get a token from /csrf-token first.",
             )
 
         # Token parsen und validieren
         csrf_token = CSRFToken.from_cookie_value(cookie_token)
         if not csrf_token or not csrf_token.is_valid():
             logger.warning(f"CSRF Token abgelaufen oder ungültig: {path}")
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="CSRF token expired or invalid.")
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="CSRF token expired or invalid.",
+            )
 
         # Token aus Header holen
         header_token = request.headers.get(CSRF_HEADER_NAME)
         if not header_token:
             logger.warning(f"CSRF Header fehlt: {path}")
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"CSRF header '{CSRF_HEADER_NAME}' required.")
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"CSRF header '{CSRF_HEADER_NAME}' required.",
+            )
 
         # Tokens vergleichen (timing-safe)
         if not hmac.compare_digest(csrf_token.token, header_token):
             logger.warning(f"CSRF Token mismatch: {path}")
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="CSRF token mismatch.")
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="CSRF token mismatch.",
+            )
 
         logger.debug(f"CSRF Token validiert: {path}")
         return True
@@ -261,9 +271,18 @@ class CSRFMiddleware:
         except HTTPException as e:
             # Fehler direkt zurückgeben
             await send(
-                {"type": "http.response.start", "status": e.status_code, "headers": [[b"content-type", b"application/json"]]}
+                {
+                    "type": "http.response.start",
+                    "status": e.status_code,
+                    "headers": [[b"content-type", b"application/json"]],
+                }
             )
-            await send({"type": "http.response.body", "body": f'"{e.detail}"'.encode()})
+            await send(
+                {
+                    "type": "http.response.body",
+                    "body": f'"{e.detail}"'.encode(),
+                }
+            )
             return
 
         await self.app(scope, receive, send)

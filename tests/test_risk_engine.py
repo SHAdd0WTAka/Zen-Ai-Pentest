@@ -243,7 +243,9 @@ class TestEPSSClient:
     def test_get_score_success(self, mock_get):
         """Successfully fetch EPSS score"""
         mock_response = Mock()
-        mock_response.json.return_value = {"data": [{"cve": "CVE-2021-44228", "epss": 0.95}]}
+        mock_response.json.return_value = {
+            "data": [{"cve": "CVE-2021-44228", "epss": 0.95}]
+        }
         mock_response.raise_for_status = Mock()
         mock_get.return_value = mock_response
 
@@ -257,7 +259,9 @@ class TestEPSSClient:
     def test_get_score_caching(self, mock_get):
         """Cache EPSS scores"""
         mock_response = Mock()
-        mock_response.json.return_value = {"data": [{"cve": "CVE-2021-44228", "epss": 0.95}]}
+        mock_response.json.return_value = {
+            "data": [{"cve": "CVE-2021-44228", "epss": 0.95}]
+        }
         mock_response.raise_for_status = Mock()
         mock_get.return_value = mock_response
 
@@ -319,7 +323,9 @@ class TestEPSSClient:
     def test_get_batch_scores_missing_cve(self, mock_get):
         """Handle missing CVEs in batch response"""
         mock_response = Mock()
-        mock_response.json.return_value = {"data": [{"cve": "CVE-2021-44228", "epss": 0.95}]}
+        mock_response.json.return_value = {
+            "data": [{"cve": "CVE-2021-44228", "epss": 0.95}]
+        }
         mock_response.raise_for_status = Mock()
         mock_get.return_value = mock_response
 
@@ -340,7 +346,11 @@ class TestEPSSClient:
     def test_get_percentile(self, mock_get):
         """Fetch EPSS percentile"""
         mock_response = Mock()
-        mock_response.json.return_value = {"data": [{"cve": "CVE-2021-44228", "epss": 0.95, "percentile": 0.99}]}
+        mock_response.json.return_value = {
+            "data": [
+                {"cve": "CVE-2021-44228", "epss": 0.95, "percentile": 0.99}
+            ]
+        }
         mock_response.raise_for_status = Mock()
         mock_get.return_value = mock_response
 
@@ -398,12 +408,16 @@ class TestEPSSClient:
     def test_should_prioritize_true(self, mock_get):
         """Check if CVE should be prioritized"""
         mock_response = Mock()
-        mock_response.json.return_value = {"data": [{"cve": "CVE-2021-44228", "epss": 0.5}]}
+        mock_response.json.return_value = {
+            "data": [{"cve": "CVE-2021-44228", "epss": 0.5}]
+        }
         mock_response.raise_for_status = Mock()
         mock_get.return_value = mock_response
 
         client = EPSSClient()
-        should_prioritize = client.should_prioritize("CVE-2021-44228", threshold=0.2)
+        should_prioritize = client.should_prioritize(
+            "CVE-2021-44228", threshold=0.2
+        )
 
         assert should_prioritize is True
 
@@ -411,12 +425,16 @@ class TestEPSSClient:
     def test_should_prioritize_false(self, mock_get):
         """Check if CVE should not be prioritized"""
         mock_response = Mock()
-        mock_response.json.return_value = {"data": [{"cve": "CVE-2021-44228", "epss": 0.1}]}
+        mock_response.json.return_value = {
+            "data": [{"cve": "CVE-2021-44228", "epss": 0.1}]
+        }
         mock_response.raise_for_status = Mock()
         mock_get.return_value = mock_response
 
         client = EPSSClient()
-        should_prioritize = client.should_prioritize("CVE-2021-44228", threshold=0.2)
+        should_prioritize = client.should_prioritize(
+            "CVE-2021-44228", threshold=0.2
+        )
 
         assert should_prioritize is False
 
@@ -453,8 +471,14 @@ class TestBusinessImpactCalculator:
         """Calculate impact for PCI-DSS scope"""
         calc = BusinessImpactCalculator()
 
-        finding = {"description": "Unencrypted card data storage with SSL unencrypted"}
-        context = {"compliance": ["pci-dss"], "network_exposure": "internal", "data_sensitivity": "financial"}
+        finding = {
+            "description": "Unencrypted card data storage with SSL unencrypted"
+        }
+        context = {
+            "compliance": ["pci-dss"],
+            "network_exposure": "internal",
+            "data_sensitivity": "financial",
+        }
 
         score = calc.calculate(finding, context)
 
@@ -466,7 +490,10 @@ class TestBusinessImpactCalculator:
         calc = BusinessImpactCalculator()
 
         finding = {"description": "Test vulnerability"}
-        context = {"asset_criticality": "critical", "network_exposure": "internal"}
+        context = {
+            "asset_criticality": "critical",
+            "network_exposure": "internal",
+        }
 
         score = calc.calculate(finding, context)
 
@@ -635,7 +662,10 @@ class TestRiskScorer:
         """Calculate risk with CVE ID"""
         scorer = RiskScorer(enable_epss=False, enable_business_context=False)
 
-        finding = {"cve_id": "CVE-2021-44228", "description": "Test vulnerability"}
+        finding = {
+            "cve_id": "CVE-2021-44228",
+            "description": "Test vulnerability",
+        }
         risk = scorer.calculate(finding)
 
         assert isinstance(risk, RiskScore)
@@ -692,16 +722,22 @@ class TestRiskScorer:
         scorer = RiskScorer()
 
         finding = {}
-        recommendations = scorer._generate_recommendations(finding, SeverityLevel.CRITICAL, 0.9, 0.8)
+        recommendations = scorer._generate_recommendations(
+            finding, SeverityLevel.CRITICAL, 0.9, 0.8
+        )
 
-        assert any("immediate" in r.lower() or "24h" in r for r in recommendations)
+        assert any(
+            "immediate" in r.lower() or "24h" in r for r in recommendations
+        )
 
     def test_generate_recommendations_high(self):
         """Generate recommendations for high severity"""
         scorer = RiskScorer()
 
         finding = {}
-        recommendations = scorer._generate_recommendations(finding, SeverityLevel.HIGH, 0.8, 0.3)
+        recommendations = scorer._generate_recommendations(
+            finding, SeverityLevel.HIGH, 0.8, 0.3
+        )
 
         assert any("72h" in r for r in recommendations)
 
@@ -710,7 +746,9 @@ class TestRiskScorer:
         scorer = RiskScorer()
 
         finding = {}
-        recommendations = scorer._generate_recommendations(finding, SeverityLevel.MEDIUM, 0.5, 0.6)
+        recommendations = scorer._generate_recommendations(
+            finding, SeverityLevel.MEDIUM, 0.5, 0.6
+        )
 
         assert any("EXPLOIT PROBABILITY" in r for r in recommendations)
 
@@ -719,7 +757,9 @@ class TestRiskScorer:
         scorer = RiskScorer()
 
         finding = {}
-        recommendations = scorer._generate_recommendations(finding, SeverityLevel.HIGH, 0.85, 0.1)
+        recommendations = scorer._generate_recommendations(
+            finding, SeverityLevel.HIGH, 0.85, 0.1
+        )
 
         assert any("Network segmentation" in r for r in recommendations)
 

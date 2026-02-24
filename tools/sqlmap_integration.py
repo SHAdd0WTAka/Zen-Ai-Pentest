@@ -17,12 +17,23 @@ class SQLMapScanner:
     def check_installation(self):
         """Prüft ob sqlmap installiert ist"""
         try:
-            result = subprocess.run([self.sqlmap_path, "--version"], capture_output=True, text=True)
+            result = subprocess.run(
+                [self.sqlmap_path, "--version"], capture_output=True, text=True
+            )
             logger.info(f"SQLMap verfügbar: {result.stdout.strip()}")
         except FileNotFoundError:
-            raise RuntimeError("sqlmap nicht gefunden. Installieren: pip install sqlmap")
+            raise RuntimeError(
+                "sqlmap nicht gefunden. Installieren: pip install sqlmap"
+            )
 
-    def scan_url(self, url: str, risk: int = 1, level: int = 1, batch: bool = True, dump: bool = False) -> Dict:
+    def scan_url(
+        self,
+        url: str,
+        risk: int = 1,
+        level: int = 1,
+        batch: bool = True,
+        dump: bool = False,
+    ) -> Dict:
         """
         Scannt URL auf SQL Injection.
 
@@ -54,13 +65,19 @@ class SQLMapScanner:
 
         try:
             logger.info(f"Starte SQLMap Scan: {url}")
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+            result = subprocess.run(
+                cmd, capture_output=True, text=True, timeout=300
+            )
 
             # Parse Output
             output = {
                 "url": url,
                 "vulnerable": "sqlmap identified" in result.stdout.lower(),
-                "stdout": result.stdout[-5000:] if len(result.stdout) > 5000 else result.stdout,
+                "stdout": (
+                    result.stdout[-5000:]
+                    if len(result.stdout) > 5000
+                    else result.stdout
+                ),
                 "stderr": result.stderr,
             }
 
@@ -71,13 +88,32 @@ class SQLMapScanner:
         except Exception as e:
             return {"url": url, "error": str(e)}
 
-    def scan_form(self, url: str, data: str, risk: int = 1, level: int = 1) -> Dict:
+    def scan_form(
+        self, url: str, data: str, risk: int = 1, level: int = 1
+    ) -> Dict:
         """Scannt POST Form auf SQL Injection"""
-        cmd = [self.sqlmap_path, "-u", url, "--data", data, "--risk", str(risk), "--level", str(level), "--batch"]
+        cmd = [
+            self.sqlmap_path,
+            "-u",
+            url,
+            "--data",
+            data,
+            "--risk",
+            str(risk),
+            "--level",
+            str(level),
+            "--batch",
+        ]
 
         try:
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
-            return {"url": url, "vulnerable": "sqlmap identified" in result.stdout.lower(), "output": result.stdout[-3000:]}
+            result = subprocess.run(
+                cmd, capture_output=True, text=True, timeout=300
+            )
+            return {
+                "url": url,
+                "vulnerable": "sqlmap identified" in result.stdout.lower(),
+                "output": result.stdout[-3000:],
+            }
         except Exception as e:
             return {"url": url, "error": str(e)}
 
@@ -86,7 +122,9 @@ class SQLMapScanner:
         cmd = [self.sqlmap_path, "-u", url, "--dbs", "--batch"]
 
         try:
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+            result = subprocess.run(
+                cmd, capture_output=True, text=True, timeout=300
+            )
             # Parse databases from output
             databases = []
             for line in result.stdout.split("\n"):

@@ -12,7 +12,11 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from modules.false_positive_filter import ConfidenceLevel, FalsePositiveFilter, Finding
+from modules.false_positive_filter import (
+    ConfidenceLevel,
+    FalsePositiveFilter,
+    Finding,
+)
 
 
 class TestConfidenceLevel:
@@ -403,7 +407,12 @@ class TestMLFilter:
             description="SQLi confirmed with multiple payloads",
             severity="critical",
             cvss_score=9.0,
-            evidence=["payload1.txt", "payload2.txt", "payload3.txt", "screenshot.png"],
+            evidence=[
+                "payload1.txt",
+                "payload2.txt",
+                "payload3.txt",
+                "screenshot.png",
+            ],
             tool="sql_scanner",
         )
         score = fpf.apply_ml_filter(finding)
@@ -691,7 +700,9 @@ class TestFilterFindings:
         result = fpf.filter_findings(findings)
 
         # Check that we have reasonable split between TPs and FPs
-        assert len(result["true_positives"]) + len(result["false_positives"]) == 4
+        assert (
+            len(result["true_positives"]) + len(result["false_positives"]) == 4
+        )
         # At least 1 TP and 1 FP
         assert len(result["true_positives"]) >= 1
         assert len(result["false_positives"]) >= 1

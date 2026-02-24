@@ -21,7 +21,11 @@ def load_config(config_path: str = "config.json") -> Dict:
         },
         "rate_limits": {"requests_per_minute": 10, "backoff_seconds": 60},
         "stealth": {"delay_min": 1, "delay_max": 3, "random_user_agent": True},
-        "output": {"save_logs": True, "log_level": "INFO", "report_format": "markdown"},
+        "output": {
+            "save_logs": True,
+            "log_level": "INFO",
+            "report_format": "markdown",
+        },
     }
 
     if os.path.exists(config_path):
@@ -49,7 +53,9 @@ def save_config(config: Dict, config_path: str = "config.json"):
         json.dump(config, f, indent=2)
 
 
-def save_session(backend_name: str, session_data: Dict, session_dir: str = "sessions"):
+def save_session(
+    backend_name: str, session_data: Dict, session_dir: str = "sessions"
+):
     """Save session data for a backend"""
     os.makedirs(session_dir, exist_ok=True)
     filepath = os.path.join(session_dir, f"{backend_name}_session.json")
@@ -60,7 +66,9 @@ def save_session(backend_name: str, session_data: Dict, session_dir: str = "sess
     print(f"[Session] Saved {backend_name} session")
 
 
-def load_session(backend_name: str, session_dir: str = "sessions") -> Optional[Dict]:
+def load_session(
+    backend_name: str, session_dir: str = "sessions"
+) -> Optional[Dict]:
     """Load session data for a backend"""
     filepath = os.path.join(session_dir, f"{backend_name}_session.json")
 

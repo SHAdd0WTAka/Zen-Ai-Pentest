@@ -17,9 +17,16 @@ class BusinessImpactCalculator:
     """
 
     # Weight factors
-    WEIGHTS = {"internet_facing": 0.40, "data_sensitivity": 0.30, "compliance": 0.20, "asset_criticality": 0.10}
+    WEIGHTS = {
+        "internet_facing": 0.40,
+        "data_sensitivity": 0.30,
+        "compliance": 0.20,
+        "asset_criticality": 0.10,
+    }
 
-    def calculate(self, finding: Dict[str, Any], context: Dict[str, Any]) -> float:
+    def calculate(
+        self, finding: Dict[str, Any], context: Dict[str, Any]
+    ) -> float:
         """
         Calculate business impact score (0-1).
 
@@ -155,11 +162,21 @@ class BusinessImpactCalculator:
         """
         criticality = context.get("asset_criticality", "medium")
 
-        scores = {"critical": 1.0, "high": 0.8, "important": 0.6, "medium": 0.4, "standard": 0.3, "low": 0.1, "minimal": 0.05}
+        scores = {
+            "critical": 1.0,
+            "high": 0.8,
+            "important": 0.6,
+            "medium": 0.4,
+            "standard": 0.3,
+            "low": 0.1,
+            "minimal": 0.05,
+        }
 
         return scores.get(criticality.lower(), 0.4)
 
-    def _is_compliance_violation(self, finding: Dict, compliance: List[str]) -> bool:
+    def _is_compliance_violation(
+        self, finding: Dict, compliance: List[str]
+    ) -> bool:
         """Check if finding violates specific compliance requirements."""
         # This would check against compliance-specific rules
         # Simplified implementation
@@ -168,7 +185,10 @@ class BusinessImpactCalculator:
 
         # PCI-DSS violations
         if "pci" in str(compliance).lower():
-            if any(kw in description for kw in ["unencrypted", "ssl", "tls", "card"]):
+            if any(
+                kw in description
+                for kw in ["unencrypted", "ssl", "tls", "card"]
+            ):
                 return True
 
         # GDPR violations
@@ -189,7 +209,12 @@ class BusinessImpactCalculator:
             {
                 "key": "network_exposure",
                 "question": "Where is the system deployed?",
-                "options": ["Internet/Public", "DMZ", "Internal Network", "Air-gapped"],
+                "options": [
+                    "Internet/Public",
+                    "DMZ",
+                    "Internal Network",
+                    "Air-gapped",
+                ],
                 "type": "single_choice",
             },
             {
@@ -208,7 +233,15 @@ class BusinessImpactCalculator:
             {
                 "key": "compliance",
                 "question": "Which compliance frameworks apply?",
-                "options": ["PCI-DSS", "HIPAA", "GDPR", "SOX", "ISO 27001", "SOC 2", "None"],
+                "options": [
+                    "PCI-DSS",
+                    "HIPAA",
+                    "GDPR",
+                    "SOX",
+                    "ISO 27001",
+                    "SOC 2",
+                    "None",
+                ],
                 "type": "multi_choice",
             },
             {

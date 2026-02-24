@@ -25,7 +25,10 @@ class WorkingMemory(BaseMemory):
         entry_id = key or str(uuid.uuid4())
 
         entry = MemoryEntry(
-            id=entry_id, content=content, memory_type=MemoryType.WORKING, metadata={"added_to_scratchpad": True, **metadata}
+            id=entry_id,
+            content=content,
+            memory_type=MemoryType.WORKING,
+            metadata={"added_to_scratchpad": True, **metadata},
         )
 
         self._cache.append(entry)
@@ -40,7 +43,10 @@ class WorkingMemory(BaseMemory):
 
     def set_scratchpad(self, key: str, value: Any):
         """Set a scratchpad value"""
-        self._scratchpad[key] = {"value": value, "timestamp": datetime.now().isoformat()}
+        self._scratchpad[key] = {
+            "value": value,
+            "timestamp": datetime.now().isoformat(),
+        }
 
     def get_scratchpad(self, key: str) -> Optional[Any]:
         """Get scratchpad value"""
@@ -59,7 +65,9 @@ class WorkingMemory(BaseMemory):
 
     def search(self, query: str, limit: int = 5) -> List[MemoryEntry]:
         query_lower = query.lower()
-        return [e for e in self._cache if query_lower in e.content.lower()][-limit:]
+        return [e for e in self._cache if query_lower in e.content.lower()][
+            -limit:
+        ]
 
     def get_current_context(self) -> str:
         """Get current working context for LLM"""

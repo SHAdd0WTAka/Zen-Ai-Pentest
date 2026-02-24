@@ -127,7 +127,9 @@ class DockerSandbox:
             # Add volume mounts for input files
             if input_files:
                 for host_path, container_path in input_files.items():
-                    docker_cmd.extend(["-v", f"{host_path}:{container_path}:ro"])
+                    docker_cmd.extend(
+                        ["-v", f"{host_path}:{container_path}:ro"]
+                    )
 
             # Add volume mounts for output directories
             temp_output_dirs = []
@@ -150,11 +152,15 @@ class DockerSandbox:
 
             # Execute
             proc = await asyncio.create_subprocess_exec(
-                *docker_cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+                *docker_cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
             )
 
             try:
-                stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=self.timeout)
+                stdout, stderr = await asyncio.wait_for(
+                    proc.communicate(), timeout=self.timeout
+                )
             except asyncio.TimeoutError:
                 # Kill container
                 await self._kill_container(container_name)
@@ -163,7 +169,9 @@ class DockerSandbox:
                     stdout="",
                     stderr="",
                     return_code=-1,
-                    execution_time=(datetime.now() - start_time).total_seconds(),
+                    execution_time=(
+                        datetime.now() - start_time
+                    ).total_seconds(),
                     container_id=container_name,
                     error_message=f"Timeout after {self.timeout}s",
                 )
@@ -211,7 +219,11 @@ class DockerSandbox:
         """Kill a running container."""
         try:
             proc = await asyncio.create_subprocess_exec(
-                "docker", "kill", container_name, stdout=asyncio.subprocess.DEVNULL, stderr=asyncio.subprocess.DEVNULL
+                "docker",
+                "kill",
+                container_name,
+                stdout=asyncio.subprocess.DEVNULL,
+                stderr=asyncio.subprocess.DEVNULL,
             )
             await proc.wait()
             self.logger.warning(f"[SANDBOX] Killed container {container_name}")
@@ -222,7 +234,10 @@ class DockerSandbox:
         """Check if Docker is available."""
         try:
             proc = await asyncio.create_subprocess_exec(
-                "docker", "version", stdout=asyncio.subprocess.DEVNULL, stderr=asyncio.subprocess.DEVNULL
+                "docker",
+                "version",
+                stdout=asyncio.subprocess.DEVNULL,
+                stderr=asyncio.subprocess.DEVNULL,
             )
             await asyncio.wait_for(proc.wait(), timeout=5)
             return proc.returncode == 0
@@ -241,7 +256,9 @@ class SandboxedToolExecutor:
         self.sandbox = DockerSandbox()
         self.logger = logging.getLogger(__name__)
 
-    async def execute_tool(self, tool_name: str, tool_args: List[str], target: str, **kwargs) -> SandboxResult:
+    async def execute_tool(
+        self, tool_name: str, tool_args: List[str], target: str, **kwargs
+    ) -> SandboxResult:
         """
         Execute a security tool in sandbox.
 
@@ -263,7 +280,9 @@ class SandboxedToolExecutor:
         else:
             command = [tool_name] + tool_args
 
-        self.logger.info(f"[EXECUTOR] Running {tool_name} against {target} in sandbox")
+        self.logger.info(
+            f"[EXECUTOR] Running {tool_name} against {target} in sandbox"
+        )
 
         return await self.sandbox.execute(command=command, **kwargs)
 

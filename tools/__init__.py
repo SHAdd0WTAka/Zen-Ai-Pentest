@@ -127,7 +127,9 @@ def get_all_tools():
         tools = []
         for name, func in TOOL_REGISTRY.items():
             if func:
-                tools.append(Tool(name=name, func=func, description=func.__doc__))
+                tools.append(
+                    Tool(name=name, func=func, description=func.__doc__)
+                )
 
         return tools
     except ImportError:

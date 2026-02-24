@@ -31,14 +31,20 @@ class InputValidator:
 
     # Domain regex (RFC compliant)
     DOMAIN_PATTERN = re.compile(
-        r"^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)*" r"[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?$"
+        r"^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)*"
+        r"[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?$"
     )
 
     # IP address regex
-    IP_PATTERN = re.compile(r"^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}" r"(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$")
+    IP_PATTERN = re.compile(
+        r"^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}"
+        r"(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
+    )
 
     # Email regex (simplified)
-    EMAIL_PATTERN = re.compile(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
+    EMAIL_PATTERN = re.compile(
+        r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+    )
 
     # Safe filename regex
     FILENAME_PATTERN = re.compile(r"^[\w\-. ]+$")
@@ -128,7 +134,9 @@ class InputValidator:
 
         return email
 
-    def validate_url(self, url: str, allowed_schemes: List[str] = None) -> Optional[str]:
+    def validate_url(
+        self, url: str, allowed_schemes: List[str] = None
+    ) -> Optional[str]:
         """Validate and sanitize URL"""
         if not url:
             return None
@@ -221,7 +229,9 @@ class InputValidator:
         """Escape HTML entities to prevent XSS"""
         return html.escape(str(text), quote=True)
 
-    def sanitize_llm_output(self, output: str, allowed_tags: List[str] = None) -> str:
+    def sanitize_llm_output(
+        self, output: str, allowed_tags: List[str] = None
+    ) -> str:
         """
         Sanitize LLM output before storage/display.
         Removes potentially dangerous content.
@@ -233,7 +243,13 @@ class InputValidator:
         output = output.replace("\x00", "")
 
         # Remove control characters except newlines and tabs
-        output = "".join(char for char in output if char == "\n" or char == "\t" or (ord(char) >= 32 and ord(char) < 127))
+        output = "".join(
+            char
+            for char in output
+            if char == "\n"
+            or char == "\t"
+            or (ord(char) >= 32 and ord(char) < 127)
+        )
 
         # Escape HTML
         output = self.escape_html(output)

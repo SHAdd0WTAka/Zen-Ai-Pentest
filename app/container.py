@@ -49,7 +49,9 @@ class DependencyContainer:
         self._singletons[name] = instance
         logger.debug(f"Registered instance: {name}")
 
-    def register_factory(self, name: str, factory: Callable[[], T], singleton: bool = True) -> None:
+    def register_factory(
+        self, name: str, factory: Callable[[], T], singleton: bool = True
+    ) -> None:
         """
         Register a factory function
 
@@ -61,7 +63,9 @@ class DependencyContainer:
         self._factories[name] = {"factory": factory, "singleton": singleton}
         logger.debug(f"Registered factory: {name} (singleton={singleton})")
 
-    def register_class(self, name: str, cls: Type[T], singleton: bool = True, **kwargs) -> None:
+    def register_class(
+        self, name: str, cls: Type[T], singleton: bool = True, **kwargs
+    ) -> None:
         """
         Register a class for automatic instantiation
 

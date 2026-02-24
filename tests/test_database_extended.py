@@ -5,7 +5,15 @@ Extended Database Tests
 import pytest
 
 try:
-    from database.models import Base, Finding, Report, Scan, ScanStatus, Severity, User
+    from database.models import (
+        Base,
+        Finding,
+        Report,
+        Scan,
+        ScanStatus,
+        Severity,
+        User,
+    )
 
     DB_AVAILABLE = True
 except ImportError:
@@ -17,7 +25,13 @@ class TestUserExtended:
     """Erweiterte User Tests"""
 
     def test_user_creation_all_fields(self):
-        user = User(username="testuser", email="test@test.com", hashed_password="hash123", role="admin", is_active=True)
+        user = User(
+            username="testuser",
+            email="test@test.com",
+            hashed_password="hash123",
+            role="admin",
+            is_active=True,
+        )
         assert user.username == "testuser"
         assert user.email == "test@test.com"
         assert user.role == "admin"
@@ -39,7 +53,11 @@ class TestScanExtended:
 
     def test_scan_all_fields(self):
         scan = Scan(
-            target="example.com", scan_type="network", name="Test Scan", config={"ports": "80,443"}, status=ScanStatus.PENDING
+            target="example.com",
+            scan_type="network",
+            name="Test Scan",
+            config={"ports": "80,443"},
+            status=ScanStatus.PENDING,
         )
         assert scan.target == "example.com"
         assert scan.name == "Test Scan"
@@ -85,7 +103,9 @@ class TestReportExtended:
     """Erweiterte Report Tests"""
 
     def test_report_all_fields(self):
-        report = Report(format="pdf", status="completed", file_path="/tmp/report.pdf")
+        report = Report(
+            format="pdf", status="completed", file_path="/tmp/report.pdf"
+        )
         assert report.format == "pdf"
         assert report.file_path == "/tmp/report.pdf"
 

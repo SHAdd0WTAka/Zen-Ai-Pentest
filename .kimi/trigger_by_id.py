@@ -3,10 +3,17 @@
 
 import os
 import sys
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from github_app_auth import get_installation_token, get_headers, REPO_OWNER, REPO_NAME
 import requests
+from github_app_auth import (
+    REPO_NAME,
+    REPO_OWNER,
+    get_headers,
+    get_installation_token,
+)
+
 
 def trigger_by_id(workflow_id, branch="main"):
     """Trigger workflow using ID"""
@@ -25,6 +32,7 @@ def trigger_by_id(workflow_id, branch="main"):
         print(f"[OK] Workflow {workflow_id} triggered!")
     else:
         print(f"Response: {response.text}")
+
 
 if __name__ == "__main__":
     # Coverage workflow ID from earlier

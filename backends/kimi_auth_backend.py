@@ -68,7 +68,9 @@ class KimiAuthBackend:
 
                 self.token_store.save_credentials(
                     access_token=new_tokens["access_token"],
-                    refresh_token=new_tokens.get("refresh_token", refresh_token),
+                    refresh_token=new_tokens.get(
+                        "refresh_token", refresh_token
+                    ),
                     expires_in=new_tokens.get("expires_in"),
                     provider="kimi",
                 )
@@ -78,7 +80,9 @@ class KimiAuthBackend:
             logger.warning(f"Token refresh failed: {e}")
             return False
 
-    async def chat(self, message: str, model: str = "kimi-k2-07132k-preview") -> str:
+    async def chat(
+        self, message: str, model: str = "kimi-k2-07132k-preview"
+    ) -> str:
         """
         Send chat message to Kimi AI
 
@@ -92,21 +96,37 @@ class KimiAuthBackend:
         token = self._get_auth_token()
 
         if not token:
-            raise AuthenticationRequiredError("Not authenticated. Please run 'zen auth login' or set KIMI_API_KEY")
+            raise AuthenticationRequiredError(
+                "Not authenticated. Please run 'zen auth login' or set KIMI_API_KEY"
+            )
 
-        headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json",
+        }
 
-        payload = {"model": model, "messages": [{"role": "user", "content": message}], "temperature": 0.7, "max_tokens": 4096}
+        payload = {
+            "model": model,
+            "messages": [{"role": "user", "content": message}],
+            "temperature": 0.7,
+            "max_tokens": 4096,
+        }
 
         try:
-            async with self.session.post(f"{self.API_BASE}/chat/completions", headers=headers, json=payload) as response:
+            async with self.session.post(
+                f"{self.API_BASE}/chat/completions",
+                headers=headers,
+                json=payload,
+            ) as response:
                 if response.status == 401:
                     # Token expired, try refresh
                     if await self._refresh_token_if_needed():
                         # Retry with new token
                         return await self.chat(message, model)
                     else:
-                        raise AuthenticationRequiredError("Token expired. Please run 'zen auth login' again.")
+                        raise AuthenticationRequiredError(
+                            "Token expired. Please run 'zen auth login' again."
+                        )
 
                 response.raise_for_status()
                 data = await response.json()
@@ -116,19 +136,35 @@ class KimiAuthBackend:
             logger.error(f"Kimi API error: {e}")
             raise
 
-    async def chat_stream(self, message: str, model: str = "kimi-k2-07132k-preview") -> AsyncGenerator[str, None]:
+    async def chat_stream(
+        self, message: str, model: str = "kimi-k2-07132k-preview"
+    ) -> AsyncGenerator[str, None]:
         """Stream chat response from Kimi AI"""
         token = self._get_auth_token()
 
         if not token:
-            raise AuthenticationRequiredError("Not authenticated. Please run 'zen auth login'")
+            raise AuthenticationRequiredError(
+                "Not authenticated. Please run 'zen auth login'"
+            )
 
-        headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json",
+        }
 
-        payload = {"model": model, "messages": [{"role": "user", "content": message}], "stream": True, "temperature": 0.7}
+        payload = {
+            "model": model,
+            "messages": [{"role": "user", "content": message}],
+            "stream": True,
+            "temperature": 0.7,
+        }
 
         try:
-            async with self.session.post(f"{self.API_BASE}/chat/completions", headers=headers, json=payload) as response:
+            async with self.session.post(
+                f"{self.API_BASE}/chat/completions",
+                headers=headers,
+                json=payload,
+            ) as response:
                 if response.status == 401:
                     if await self._refresh_token_if_needed():
                         async for chunk in self.chat_stream(message, model):
@@ -149,7 +185,9 @@ class KimiAuthBackend:
                             import json
 
                             chunk = json.loads(data)
-                            delta = chunk["choices"][0]["delta"].get("content", "")
+                            delta = chunk["choices"][0]["delta"].get(
+                                "content", ""
+                            )
                             if delta:
                                 yield delta
                         except (json.JSONDecodeError, KeyError):

@@ -112,7 +112,9 @@ class RateLimiter:
         """Generate storage key"""
         return f"{limit_type.value}:{identifier}"
 
-    def _get_or_create_entry(self, identifier: str, limit_type: RateLimitType) -> RateLimitEntry:
+    def _get_or_create_entry(
+        self, identifier: str, limit_type: RateLimitType
+    ) -> RateLimitEntry:
         """Get or create rate limit entry"""
         key = self._get_key(identifier, limit_type)
 
@@ -126,7 +128,10 @@ class RateLimiter:
         return self._entries[key]
 
     def check_rate_limit(
-        self, identifier: str, limit_type: RateLimitType, custom_limits: Optional[Dict] = None
+        self,
+        identifier: str,
+        limit_type: RateLimitType,
+        custom_limits: Optional[Dict] = None,
     ) -> RateLimitResult:
         """
         Check if request is within rate limit
@@ -197,7 +202,9 @@ class RateLimiter:
                 reset_time=reset_time,
             )
 
-    def record_attempt(self, identifier: str, limit_type: RateLimitType, success: bool = False) -> None:
+    def record_attempt(
+        self, identifier: str, limit_type: RateLimitType, success: bool = False
+    ) -> None:
         """
         Record an attempt
 
@@ -230,7 +237,9 @@ class RateLimiter:
         result = self.check_rate_limit(identifier, limit_type)
         return result.allowed
 
-    def check_and_record(self, identifier: str, limit_type: RateLimitType, success: bool = False) -> RateLimitResult:
+    def check_and_record(
+        self, identifier: str, limit_type: RateLimitType, success: bool = False
+    ) -> RateLimitResult:
         """
         Check rate limit and record attempt
 
@@ -293,7 +302,9 @@ class RateLimiter:
 
             return count
 
-    def get_limit_status(self, identifier: str, limit_type: RateLimitType) -> Optional[Dict]:
+    def get_limit_status(
+        self, identifier: str, limit_type: RateLimitType
+    ) -> Optional[Dict]:
         """
         Get current rate limit status
 
@@ -330,7 +341,8 @@ class RateLimiter:
             return {
                 "attempts": len(entry.attempts),
                 "remaining": max(0, max_attempts - len(entry.attempts)),
-                "locked": entry.locked_until is not None and entry.locked_until > now,
+                "locked": entry.locked_until is not None
+                and entry.locked_until > now,
                 "locked_until": entry.locked_until,
             }
 
@@ -356,7 +368,9 @@ class RateLimiter:
 
             return len(keys_to_remove)
 
-    def set_custom_limit(self, limit_type: RateLimitType, max_attempts: int, window_seconds: int) -> None:
+    def set_custom_limit(
+        self, limit_type: RateLimitType, max_attempts: int, window_seconds: int
+    ) -> None:
         """
         Set custom rate limit
 
@@ -370,7 +384,9 @@ class RateLimiter:
             "window_seconds": window_seconds,
         }
 
-    def lock_identifier(self, identifier: str, limit_type: RateLimitType, duration_seconds: int) -> None:
+    def lock_identifier(
+        self, identifier: str, limit_type: RateLimitType, duration_seconds: int
+    ) -> None:
         """
         Manually lock an identifier
 
@@ -383,7 +399,9 @@ class RateLimiter:
             entry = self._get_or_create_entry(identifier, limit_type)
             entry.locked_until = time.time() + duration_seconds
 
-    def unlock_identifier(self, identifier: str, limit_type: RateLimitType) -> bool:
+    def unlock_identifier(
+        self, identifier: str, limit_type: RateLimitType
+    ) -> bool:
         """
         Manually unlock an identifier
 

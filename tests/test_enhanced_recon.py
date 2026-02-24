@@ -73,7 +73,9 @@ class TestTechnologyDetection:
         mock_result.technologies = [mock_tech]
         mock_result.headers = {"Server": "Apache/2.4.41"}
 
-        with patch("modules.enhanced_recon.scan_sync", return_value=mock_result):
+        with patch(
+            "modules.enhanced_recon.scan_sync", return_value=mock_result
+        ):
             result = recon.technology_detection("http://example.com")
 
             assert result["success"] is True
@@ -87,7 +89,9 @@ class TestTechnologyDetection:
         mock_result.success = False
         mock_result.error = "Connection refused"
 
-        with patch("modules.enhanced_recon.scan_sync", return_value=mock_result):
+        with patch(
+            "modules.enhanced_recon.scan_sync", return_value=mock_result
+        ):
             result = recon.technology_detection("http://example.com")
 
             assert result["success"] is False
@@ -123,7 +127,9 @@ class TestTechnologyDetection:
         mock_result.technologies = mock_techs
         mock_result.headers = {}
 
-        with patch("modules.enhanced_recon.scan_sync", return_value=mock_result):
+        with patch(
+            "modules.enhanced_recon.scan_sync", return_value=mock_result
+        ):
             result = recon.technology_detection("http://example.com")
 
             assert len(result["technologies"]) == 3
@@ -158,7 +164,9 @@ class TestWAFDetection:
         mock_result.firewall_detected = True
         mock_result.wafs = [mock_waf]
 
-        with patch("modules.enhanced_recon.detect_sync", return_value=mock_result):
+        with patch(
+            "modules.enhanced_recon.detect_sync", return_value=mock_result
+        ):
             result = recon.waf_detection("http://example.com")
 
             assert result["success"] is True
@@ -174,7 +182,9 @@ class TestWAFDetection:
         mock_result.firewall_detected = False
         mock_result.wafs = []
 
-        with patch("modules.enhanced_recon.detect_sync", return_value=mock_result):
+        with patch(
+            "modules.enhanced_recon.detect_sync", return_value=mock_result
+        ):
             result = recon.waf_detection("http://example.com")
 
             assert result["success"] is True
@@ -188,7 +198,9 @@ class TestWAFDetection:
         mock_result.error = "Connection timeout"
         mock_result.wafs = []
 
-        with patch("modules.enhanced_recon.detect_sync", return_value=mock_result):
+        with patch(
+            "modules.enhanced_recon.detect_sync", return_value=mock_result
+        ):
             result = recon.waf_detection("http://example.com")
 
             assert result["success"] is False
@@ -212,7 +224,9 @@ class TestWAFDetection:
         mock_result.firewall_detected = True
         mock_result.wafs = mock_wafs
 
-        with patch("modules.enhanced_recon.detect_sync", return_value=mock_result):
+        with patch(
+            "modules.enhanced_recon.detect_sync", return_value=mock_result
+        ):
             result = recon.waf_detection("http://example.com")
 
             assert len(result["wafs"]) == 2
@@ -248,7 +262,10 @@ class TestDirectoryBruteforce:
         mock_result.total_requests = 1000
         mock_result.duration = 5.5
 
-        with patch("modules.enhanced_recon.directory_bruteforce_sync", return_value=mock_result):
+        with patch(
+            "modules.enhanced_recon.directory_bruteforce_sync",
+            return_value=mock_result,
+        ):
             result = recon.directory_bruteforce("http://example.com")
 
             assert result["success"] is True
@@ -265,7 +282,10 @@ class TestDirectoryBruteforce:
         mock_result.total_requests = 100
         mock_result.duration = 2.0
 
-        with patch("modules.enhanced_recon.directory_bruteforce_sync", return_value=mock_result) as mock_bruteforce:
+        with patch(
+            "modules.enhanced_recon.directory_bruteforce_sync",
+            return_value=mock_result,
+        ) as mock_bruteforce:
             recon.directory_bruteforce("http://example.com/FUZZ")
 
             # Should pass URL as-is
@@ -279,7 +299,10 @@ class TestDirectoryBruteforce:
         mock_result.total_requests = 100
         mock_result.duration = 2.0
 
-        with patch("modules.enhanced_recon.directory_bruteforce_sync", return_value=mock_result) as mock_bruteforce:
+        with patch(
+            "modules.enhanced_recon.directory_bruteforce_sync",
+            return_value=mock_result,
+        ) as mock_bruteforce:
             recon.directory_bruteforce("http://example.com")
 
             # Should add /FUZZ
@@ -294,8 +317,13 @@ class TestDirectoryBruteforce:
         mock_result.total_requests = 500
         mock_result.duration = 3.0
 
-        with patch("modules.enhanced_recon.directory_bruteforce_sync", return_value=mock_result) as mock_bruteforce:
-            recon.directory_bruteforce("http://example.com", extensions=["php", "html"])
+        with patch(
+            "modules.enhanced_recon.directory_bruteforce_sync",
+            return_value=mock_result,
+        ) as mock_bruteforce:
+            recon.directory_bruteforce(
+                "http://example.com", extensions=["php", "html"]
+            )
 
             call_kwargs = mock_bruteforce.call_args[1]
             assert call_kwargs["extensions"] == ["php", "html"]
@@ -308,8 +336,13 @@ class TestDirectoryBruteforce:
         mock_result.total_requests = 50
         mock_result.duration = 1.0
 
-        with patch("modules.enhanced_recon.directory_bruteforce_sync", return_value=mock_result) as mock_bruteforce:
-            recon.directory_bruteforce("http://example.com", wordlist="/path/to/wordlist.txt")
+        with patch(
+            "modules.enhanced_recon.directory_bruteforce_sync",
+            return_value=mock_result,
+        ) as mock_bruteforce:
+            recon.directory_bruteforce(
+                "http://example.com", wordlist="/path/to/wordlist.txt"
+            )
 
             call_kwargs = mock_bruteforce.call_args[1]
             assert call_kwargs["wordlist"] == "/path/to/wordlist.txt"
@@ -323,7 +356,10 @@ class TestDirectoryBruteforce:
         mock_result.duration = 0
         mock_result.error = "Connection refused"
 
-        with patch("modules.enhanced_recon.directory_bruteforce_sync", return_value=mock_result):
+        with patch(
+            "modules.enhanced_recon.directory_bruteforce_sync",
+            return_value=mock_result,
+        ):
             result = recon.directory_bruteforce("http://example.com")
 
             assert result["success"] is False
@@ -381,7 +417,10 @@ class TestFullRecon:
         ):
 
             mock_tech.return_value = {"success": True, "technologies": []}
-            mock_waf.return_value = {"success": True, "firewall_detected": False}
+            mock_waf.return_value = {
+                "success": True,
+                "firewall_detected": False,
+            }
             mock_dir.return_value = {"success": True, "findings": []}
 
             result = recon.full_recon("example.com")
@@ -414,7 +453,9 @@ class TestFullRecon:
                 }
                 mock_dir.return_value = {
                     "success": True,
-                    "findings": [{"url": f"/path{i}"} for i in range(num_findings)],
+                    "findings": [
+                        {"url": f"/path{i}"} for i in range(num_findings)
+                    ],
                 }
 
                 result = recon.full_recon("http://example.com")
@@ -431,13 +472,18 @@ class TestFullRecon:
         ):
 
             mock_tech.return_value = {"success": True, "technologies": []}
-            mock_waf.return_value = {"success": True, "firewall_detected": False}
+            mock_waf.return_value = {
+                "success": True,
+                "firewall_detected": False,
+            }
             mock_dir.return_value = {"success": True, "findings": []}
 
             result = recon.full_recon("http://example.com")
 
             # Should recommend WAF implementation
-            assert any("WAF" in r for r in result["summary"]["recommendations"])
+            assert any(
+                "WAF" in r for r in result["summary"]["recommendations"]
+            )
 
     def test_full_recon_recommendations_outdated_software(self, recon):
         """Test recommendations for outdated software"""
@@ -453,13 +499,19 @@ class TestFullRecon:
                     {"name": "Apache", "version": "2.4.7"},
                 ],
             }
-            mock_waf.return_value = {"success": True, "firewall_detected": True}
+            mock_waf.return_value = {
+                "success": True,
+                "firewall_detected": True,
+            }
             mock_dir.return_value = {"success": True, "findings": []}
 
             result = recon.full_recon("http://example.com")
 
             # Should recommend updating Apache
-            assert any("Apache" in r and "Update" in r for r in result["summary"]["recommendations"])
+            assert any(
+                "Apache" in r and "Update" in r
+                for r in result["summary"]["recommendations"]
+            )
 
     def test_full_recon_recommendations_sensitive_dirs(self, recon):
         """Test recommendations for sensitive directories"""
@@ -470,7 +522,10 @@ class TestFullRecon:
         ):
 
             mock_tech.return_value = {"success": True, "technologies": []}
-            mock_waf.return_value = {"success": True, "firewall_detected": True}
+            mock_waf.return_value = {
+                "success": True,
+                "firewall_detected": True,
+            }
             mock_dir.return_value = {
                 "success": True,
                 "findings": [{}, {}, {}, {}, {}, {}],  # 6 findings
@@ -480,7 +535,9 @@ class TestFullRecon:
 
             # Should recommend restricting directories
             recs = result["summary"]["recommendations"]
-            assert any("directory" in r.lower() or "access" in r.lower() for r in recs)
+            assert any(
+                "directory" in r.lower() or "access" in r.lower() for r in recs
+            )
 
     def test_full_recon_summary_counts(self, recon):
         """Test summary counts"""
@@ -494,7 +551,10 @@ class TestFullRecon:
                 "success": True,
                 "technologies": [{"name": "Apache"}, {"name": "PHP"}],
             }
-            mock_waf.return_value = {"success": True, "firewall_detected": True}
+            mock_waf.return_value = {
+                "success": True,
+                "firewall_detected": True,
+            }
             mock_dir.return_value = {
                 "success": True,
                 "findings": [{"url": "/admin"}],
@@ -526,7 +586,12 @@ class TestEnhancedReconIntegration:
         mock_tech_result.success = True
         mock_tech_result.url = "http://example.com"
         mock_tech_result.technologies = [
-            MagicMock(name="Apache", version="2.4.41", confidence=100, category="Web Server"),
+            MagicMock(
+                name="Apache",
+                version="2.4.41",
+                confidence=100,
+                category="Web Server",
+            ),
         ]
         mock_tech_result.headers = {"Server": "Apache"}
 
@@ -538,15 +603,29 @@ class TestEnhancedReconIntegration:
         mock_dir_result = MagicMock()
         mock_dir_result.success = True
         mock_dir_result.findings = [
-            MagicMock(url="/admin", status_code=200, content_length=1000, content_words=50),
+            MagicMock(
+                url="/admin",
+                status_code=200,
+                content_length=1000,
+                content_words=50,
+            ),
         ]
         mock_dir_result.total_requests = 1000
         mock_dir_result.duration = 5.0
 
         with (
-            patch("modules.enhanced_recon.scan_sync", return_value=mock_tech_result),
-            patch("modules.enhanced_recon.detect_sync", return_value=mock_waf_result),
-            patch("modules.enhanced_recon.directory_bruteforce_sync", return_value=mock_dir_result),
+            patch(
+                "modules.enhanced_recon.scan_sync",
+                return_value=mock_tech_result,
+            ),
+            patch(
+                "modules.enhanced_recon.detect_sync",
+                return_value=mock_waf_result,
+            ),
+            patch(
+                "modules.enhanced_recon.directory_bruteforce_sync",
+                return_value=mock_dir_result,
+            ),
         ):
 
             result = recon.full_recon("http://example.com")
@@ -565,7 +644,10 @@ class TestEnhancedReconIntegration:
         ):
 
             mock_tech.return_value = {"success": True, "technologies": []}
-            mock_waf.return_value = {"success": True, "firewall_detected": False}
+            mock_waf.return_value = {
+                "success": True,
+                "firewall_detected": False,
+            }
             mock_dir.return_value = {"success": True, "findings": []}
 
             result = recon.full_recon("http://example.com")
@@ -582,7 +664,10 @@ class TestEnhancedReconIntegration:
             patch.object(recon, "directory_bruteforce") as mock_dir,
         ):
 
-            mock_tech.return_value = {"success": False, "error": "Connection failed"}
+            mock_tech.return_value = {
+                "success": False,
+                "error": "Connection failed",
+            }
             mock_waf.return_value = {"success": False, "error": "Timeout"}
             mock_dir.return_value = {"success": False, "error": "DNS error"}
 

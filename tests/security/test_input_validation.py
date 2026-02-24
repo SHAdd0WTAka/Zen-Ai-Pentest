@@ -178,7 +178,10 @@ class TestXSSPrevention:
     @pytest.mark.parametrize(
         "input_value,expected_sanitized",
         [
-            ("<script>alert('xss')</script>", "&lt;script&gt;alert(&#x27;xss&#x27;)&lt;/script&gt;"),
+            (
+                "<script>alert('xss')</script>",
+                "&lt;script&gt;alert(&#x27;xss&#x27;)&lt;/script&gt;",
+            ),
             ('"double quotes"', "&quot;double quotes&quot;"),
             ("'single quotes'", "&#x27;single quotes&#x27;"),
             ("&ampersand&", "&amp;ampersand&amp;"),
@@ -256,7 +259,9 @@ class TestCommandInjectionPrevention:
             ("192.168.1.1", False),
         ],
     )
-    def test_command_injection_detection(self, input_value: str, expected_detection: bool):
+    def test_command_injection_detection(
+        self, input_value: str, expected_detection: bool
+    ):
         """Test command injection pattern detection."""
         result = InputValidator.detect_command_injection(input_value)
         assert result == expected_detection, f"Failed for input: {input_value}"
@@ -294,7 +299,9 @@ class TestPathTraversalPrevention:
             ("safe_filename_123.txt", False),
         ],
     )
-    def test_path_traversal_detection(self, input_value: str, expected_detection: bool):
+    def test_path_traversal_detection(
+        self, input_value: str, expected_detection: bool
+    ):
         """Test path traversal pattern detection."""
         result = InputValidator.detect_path_traversal(input_value)
         assert result == expected_detection, f"Failed for input: {input_value}"
@@ -308,7 +315,9 @@ class TestPathTraversalPrevention:
             ("file\x00.txt", "file.txt"),  # Null byte removal
         ],
     )
-    def test_filename_sanitization(self, input_value: str, expected_sanitized: str):
+    def test_filename_sanitization(
+        self, input_value: str, expected_sanitized: str
+    ):
         """Test filename sanitization."""
         result = InputValidator.sanitize_filename(input_value)
         assert result == expected_sanitized
@@ -326,7 +335,9 @@ class TestPathTraversalPrevention:
 
         # Normalize path separator for Windows compatibility
         # Just verify the path joining works (OS-specific path handling)
-        assert base_path in real_path.replace("\\", "/") or os.path.isabs(real_path)
+        assert base_path in real_path.replace("\\", "/") or os.path.isabs(
+            real_path
+        )
 
 
 # ============== SSRF Tests ==============
@@ -399,7 +410,9 @@ class TestInputValidationIntegration:
         results = {
             "xss": InputValidator.detect_xss(api_input["username"]),
             "sqli": InputValidator.detect_sqli(api_input["email"]),
-            "path_traversal": InputValidator.detect_path_traversal(api_input["filename"]),
+            "path_traversal": InputValidator.detect_path_traversal(
+                api_input["filename"]
+            ),
             "ssrf": InputValidator.detect_ssrf(api_input["callback_url"]),
         }
 
@@ -417,11 +430,15 @@ class TestInputValidationIntegration:
         results = {
             "xss": InputValidator.detect_xss(safe_input["username"]),
             "sqli": InputValidator.detect_sqli(safe_input["email"]),
-            "path_traversal": InputValidator.detect_path_traversal(safe_input["filename"]),
+            "path_traversal": InputValidator.detect_path_traversal(
+                safe_input["filename"]
+            ),
             "ssrf": InputValidator.detect_ssrf(safe_input["website"]),
         }
 
-        assert not any(results.values()), "Safe inputs should not trigger detections"
+        assert not any(
+            results.values()
+        ), "Safe inputs should not trigger detections"
 
 
 if __name__ == "__main__":

@@ -14,7 +14,13 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from tools.tool_caller import ToolCaller, ToolCallResult, call_tool, call_tools_batch, get_tool_caller
+from tools.tool_caller import (
+    ToolCaller,
+    ToolCallResult,
+    call_tool,
+    call_tools_batch,
+    get_tool_caller,
+)
 from tools.tool_registry import ToolRegistry
 
 # Try to import LangChain tools
@@ -80,7 +86,9 @@ class TestToolCallResult:
 
     def test_result_defaults(self):
         """Test ToolCallResult default values"""
-        result = ToolCallResult(success=True, result="test", execution_time=1.5)
+        result = ToolCallResult(
+            success=True, result="test", execution_time=1.5
+        )
 
         assert result.success is True
         assert result.result == "test"
@@ -248,7 +256,10 @@ class TestCallToolErrors:
         result = await tool_caller.call_tool("nonexistent", {})
 
         assert result.success is False
-        assert "nicht in Registry gefunden" in result.error or "not found" in result.error.lower()
+        assert (
+            "nicht in Registry gefunden" in result.error
+            or "not found" in result.error.lower()
+        )
         assert result.tool_name == "nonexistent"
 
     @pytest.mark.asyncio
@@ -263,7 +274,9 @@ class TestCallToolErrors:
         result = await tool_caller.call_tool("disabled_tool", {})
 
         assert result.success is False
-        assert "deaktiviert" in result.error or "disabled" in result.error.lower()
+        assert (
+            "deaktiviert" in result.error or "disabled" in result.error.lower()
+        )
 
     @pytest.mark.asyncio
     async def test_call_tool_timeout(self, tool_caller):
@@ -334,10 +347,15 @@ class TestResultValidation:
         result = await tool_caller.call_tool("sync_tool", {})
 
         assert result.success is False
-        assert "Validierung" in result.error or "validation" in result.error.lower()
+        assert (
+            "Validierung" in result.error
+            or "validation" in result.error.lower()
+        )
 
     @pytest.mark.asyncio
-    async def test_validate_result_empty_string(self, tool_caller, mock_sync_tool):
+    async def test_validate_result_empty_string(
+        self, tool_caller, mock_sync_tool
+    ):
         """Test validation fails for empty string"""
         mock_sync_tool.invoke = MagicMock(return_value="")
 
@@ -353,7 +371,9 @@ class TestResultValidation:
         assert result.success is False
 
     @pytest.mark.asyncio
-    async def test_validate_result_empty_list(self, tool_caller, mock_sync_tool):
+    async def test_validate_result_empty_list(
+        self, tool_caller, mock_sync_tool
+    ):
         """Test validation fails for empty list"""
         mock_sync_tool.invoke = MagicMock(return_value=[])
 
@@ -369,7 +389,9 @@ class TestResultValidation:
         assert result.success is False
 
     @pytest.mark.asyncio
-    async def test_validate_result_empty_dict(self, tool_caller, mock_sync_tool):
+    async def test_validate_result_empty_dict(
+        self, tool_caller, mock_sync_tool
+    ):
         """Test validation fails for empty dict"""
         mock_sync_tool.invoke = MagicMock(return_value={})
 
@@ -396,7 +418,9 @@ class TestResultValidation:
 
         tool_caller.registry.get.return_value = registered
 
-        result = await tool_caller.call_tool("sync_tool", {}, validate_result=False)
+        result = await tool_caller.call_tool(
+            "sync_tool", {}, validate_result=False
+        )
 
         assert result.success is True
 
@@ -431,7 +455,9 @@ class TestParallelToolCalls:
         assert all(r.success for r in results.values())
 
     @pytest.mark.asyncio
-    async def test_call_tools_parallel_with_exception(self, tool_caller, mock_sync_tool):
+    async def test_call_tools_parallel_with_exception(
+        self, tool_caller, mock_sync_tool
+    ):
         """Test parallel calls with one failing"""
 
         def side_effect(*args, **kwargs):
@@ -546,7 +572,9 @@ class TestConvenienceFunctions:
     async def test_call_tool_convenience(self, MockCaller):
         """Test call_tool convenience function"""
         mock_instance = MagicMock()
-        mock_result = ToolCallResult(success=True, result="test", execution_time=1.0)
+        mock_result = ToolCallResult(
+            success=True, result="test", execution_time=1.0
+        )
         mock_instance.call_tool = AsyncMock(return_value=mock_result)
         MockCaller.return_value = mock_instance
 
@@ -560,7 +588,11 @@ class TestConvenienceFunctions:
     async def test_call_tools_batch_convenience(self, MockCaller):
         """Test call_tools_batch convenience function"""
         mock_instance = MagicMock()
-        mock_result = {"tool1": ToolCallResult(success=True, result="test", execution_time=1.0)}
+        mock_result = {
+            "tool1": ToolCallResult(
+                success=True, result="test", execution_time=1.0
+            )
+        }
         mock_instance.call_tools_parallel = AsyncMock(return_value=mock_result)
         MockCaller.return_value = mock_instance
 

@@ -25,12 +25,24 @@ def test_slack_webhook(webhook_url):
     payload = {
         "text": "🧪 Test notification from Zen-AI-Pentest",
         "blocks": [
-            {"type": "header", "text": {"type": "plain_text", "text": "🔔 Zen-AI-Pentest Notification Test"}},
+            {
+                "type": "header",
+                "text": {
+                    "type": "plain_text",
+                    "text": "🔔 Zen-AI-Pentest Notification Test",
+                },
+            },
             {
                 "type": "section",
                 "fields": [
-                    {"type": "mrkdwn", "text": f"*Time:*\n{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"},
-                    {"type": "mrkdwn", "text": "*Status:*\n✅ Webhook working"},
+                    {
+                        "type": "mrkdwn",
+                        "text": f"*Time:*\n{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+                    },
+                    {
+                        "type": "mrkdwn",
+                        "text": "*Status:*\n✅ Webhook working",
+                    },
                 ],
             },
             {
@@ -45,7 +57,12 @@ def test_slack_webhook(webhook_url):
 
     try:
         data = json.dumps(payload).encode("utf-8")
-        req = urllib.request.Request(webhook_url, data=data, headers={"Content-Type": "application/json"}, method="POST")
+        req = urllib.request.Request(
+            webhook_url,
+            data=data,
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
 
         with urllib.request.urlopen(req, timeout=10) as response:
             print(f"Status: {response.status}")
@@ -78,8 +95,16 @@ def test_discord_webhook(webhook_url):
                 "description": "This is a test message from the Zen-AI-Pentest repository health check system.",
                 "color": 3447003,
                 "fields": [
-                    {"name": "Time", "value": datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "inline": True},
-                    {"name": "Status", "value": "✅ Webhook working", "inline": True},
+                    {
+                        "name": "Time",
+                        "value": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        "inline": True,
+                    },
+                    {
+                        "name": "Status",
+                        "value": "✅ Webhook working",
+                        "inline": True,
+                    },
                 ],
                 "footer": {"text": "Zen-AI-Pentest Health Check"},
             }
@@ -88,7 +113,12 @@ def test_discord_webhook(webhook_url):
 
     try:
         data = json.dumps(payload).encode("utf-8")
-        req = urllib.request.Request(webhook_url, data=data, headers={"Content-Type": "application/json"}, method="POST")
+        req = urllib.request.Request(
+            webhook_url,
+            data=data,
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
 
         with urllib.request.urlopen(req, timeout=10) as response:
             print(f"Status: {response.status}")
@@ -146,7 +176,9 @@ def main():
     if not results:
         print("\nNo webhooks tested. Set environment variables:")
         print("  $env:SLACK_WEBHOOK_URL = 'https://hooks.slack.com/...'")
-        print("  $env:DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/...'")
+        print(
+            "  $env:DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/...'"
+        )
         print("\nOr pass URL as argument:")
         print("  python test_webhooks.py slack https://hooks.slack.com/...")
 

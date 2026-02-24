@@ -67,11 +67,15 @@ class PerformanceTimer:
         self._enabled = True
         self._initialized = True
 
-    def record(self, name: str, duration_ms: float, metadata: Optional[Dict] = None):
+    def record(
+        self, name: str, duration_ms: float, metadata: Optional[Dict] = None
+    ):
         """Record a timing result"""
         if not self._enabled:
             return
-        result = TimingResult(name=name, duration_ms=duration_ms, metadata=metadata or {})
+        result = TimingResult(
+            name=name, duration_ms=duration_ms, metadata=metadata or {}
+        )
         self._timings[name].append(result)
 
     def get_stats(self, name: str) -> Dict[str, float]:
@@ -219,7 +223,9 @@ class MemoryProfiler:
         """Take a memory snapshot"""
         if self._tracing:
             current, peak = tracemalloc.get_traced_memory()
-            snapshot = MemorySnapshot(current_mb=current / 1024 / 1024, peak_mb=peak / 1024 / 1024)
+            snapshot = MemorySnapshot(
+                current_mb=current / 1024 / 1024, peak_mb=peak / 1024 / 1024
+            )
         else:
             gc.collect()
             import psutil
@@ -240,7 +246,11 @@ class MemoryProfiler:
         snapshot = tracemalloc.take_snapshot()
         top_stats = snapshot.statistics("lineno")[:limit]
         return [
-            {"file": str(stat.traceback.format()[-1]), "size_mb": stat.size / 1024 / 1024, "count": stat.count}
+            {
+                "file": str(stat.traceback.format()[-1]),
+                "size_mb": stat.size / 1024 / 1024,
+                "count": stat.count,
+            }
             for stat in top_stats
         ]
 
@@ -403,8 +413,14 @@ def memoize(maxsize: int = 128, typed: bool = False):
                 return result
 
             # Attach cache management
-            async_wrapper.cache_clear = lambda: (cache.clear(), cache_order.clear())
-            async_wrapper.cache_info = lambda: {"size": len(cache), "maxsize": maxsize}
+            async_wrapper.cache_clear = lambda: (
+                cache.clear(),
+                cache_order.clear(),
+            )
+            async_wrapper.cache_info = lambda: {
+                "size": len(cache),
+                "maxsize": maxsize,
+            }
 
             return async_wrapper
         else:
@@ -472,7 +488,12 @@ def ttl_cache(ttl: float, maxsize: int = 128):
             with lock:
                 now = time.time()
                 valid = sum(1 for _, expiry in cache.values() if now < expiry)
-                return {"size": len(cache), "valid": valid, "maxsize": maxsize, "ttl": ttl}
+                return {
+                    "size": len(cache),
+                    "valid": valid,
+                    "maxsize": maxsize,
+                    "ttl": ttl,
+                }
 
         wrapper.cache_clear = cache_clear
         wrapper.cache_info = cache_info
@@ -487,7 +508,9 @@ def ttl_cache(ttl: float, maxsize: int = 128):
 # =============================================================================
 
 
-async def gather_with_concurrency(limit: int, *tasks, return_exceptions: bool = False):
+async def gather_with_concurrency(
+    limit: int, *tasks, return_exceptions: bool = False
+):
     """
     Run tasks with limited concurrency.
 
@@ -503,7 +526,10 @@ async def gather_with_concurrency(limit: int, *tasks, return_exceptions: bool = 
         async with semaphore:
             return await task
 
-    return await asyncio.gather(*[sem_task(task) for task in tasks], return_exceptions=return_exceptions)
+    return await asyncio.gather(
+        *[sem_task(task) for task in tasks],
+        return_exceptions=return_exceptions,
+    )
 
 
 async def run_in_thread(func: Callable, *args, executor=None, **kwargs):
@@ -515,7 +541,9 @@ async def run_in_thread(func: Callable, *args, executor=None, **kwargs):
         result = await run_in_thread(cpu_intensive_func, data)
     """
     loop = asyncio.get_event_loop()
-    return await loop.run_in_executor(executor, functools.partial(func, *args, **kwargs))
+    return await loop.run_in_executor(
+        executor, functools.partial(func, *args, **kwargs)
+    )
 
 
 # =============================================================================
@@ -586,13 +614,17 @@ class PerformanceMiddleware:
 
                 # Add timing header
                 headers = list(message.get("headers", []))
-                headers.append((b"X-Response-Time", f"{duration:.2f}ms".encode()))
+                headers.append(
+                    (b"X-Response-Time", f"{duration:.2f}ms".encode())
+                )
                 message["headers"] = headers
 
                 # Log slow requests
                 if duration > self.slow_request_threshold:
                     path = scope.get("path", "unknown")
-                    logger.warning(f"Slow request: {path} took {duration:.2f}ms")
+                    logger.warning(
+                        f"Slow request: {path} took {duration:.2f}ms"
+                    )
 
             await send(message)
 
@@ -603,7 +635,11 @@ class PerformanceMiddleware:
         return {
             "request_count": self._request_count,
             "total_time_ms": self._total_time_ms,
-            "avg_time_ms": self._total_time_ms / self._request_count if self._request_count > 0 else 0,
+            "avg_time_ms": (
+                self._total_time_ms / self._request_count
+                if self._request_count > 0
+                else 0
+            ),
         }
 
 
@@ -634,7 +670,9 @@ def print_performance_report():
     logger.info("PERFORMANCE REPORT")
     logger.info("=" * 60)
 
-    for name, stat in sorted(stats.items(), key=lambda x: x[1].get("avg_ms", 0), reverse=True):
+    for name, stat in sorted(
+        stats.items(), key=lambda x: x[1].get("avg_ms", 0), reverse=True
+    ):
         logger.info(f"\n{name}:")
         logger.info(f"  Count: {stat['count']}")
         logger.info(f"  Avg: {stat['avg_ms']:.2f}ms")

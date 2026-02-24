@@ -43,7 +43,9 @@ class TestApplyWindowsAsyncFixes:
         monkeypatch.setattr(sys, "version_info", (3, 12))
 
         policy_calls = []
-        monkeypatch.setattr(asyncio, "set_event_loop_policy", lambda p: policy_calls.append(p))
+        monkeypatch.setattr(
+            asyncio, "set_event_loop_policy", lambda p: policy_calls.append(p)
+        )
 
         apply_windows_async_fixes()
         assert len(policy_calls) == 1
@@ -55,8 +57,14 @@ class TestApplyWindowsAsyncFixes:
 
         policy_calls = []
         filter_calls = []
-        monkeypatch.setattr(asyncio, "set_event_loop_policy", lambda p: policy_calls.append(p))
-        monkeypatch.setattr(warnings, "filterwarnings", lambda *a, **k: filter_calls.append((a, k)))
+        monkeypatch.setattr(
+            asyncio, "set_event_loop_policy", lambda p: policy_calls.append(p)
+        )
+        monkeypatch.setattr(
+            warnings,
+            "filterwarnings",
+            lambda *a, **k: filter_calls.append((a, k)),
+        )
 
         apply_windows_async_fixes()
         assert len(policy_calls) == 1
@@ -105,13 +113,19 @@ class TestSetupEventLoop:
 
     def test_create_new_loop(self, monkeypatch):
         """Test creating new event loop"""
-        monkeypatch.setattr(asyncio, "get_running_loop", lambda: (_ for _ in ()).throw(RuntimeError()))
+        monkeypatch.setattr(
+            asyncio,
+            "get_running_loop",
+            lambda: (_ for _ in ()).throw(RuntimeError()),
+        )
 
         mock_loop = MagicMock()
         monkeypatch.setattr(asyncio, "new_event_loop", lambda: mock_loop)
 
         set_calls = []
-        monkeypatch.setattr(asyncio, "set_event_loop", lambda loop: set_calls.append(loop))
+        monkeypatch.setattr(
+            asyncio, "set_event_loop", lambda loop: set_calls.append(loop)
+        )
 
         result = setup_event_loop()
         assert result == mock_loop
@@ -191,7 +205,11 @@ class TestSilenceAsyncioWarnings:
     def test_silences_warnings(self, monkeypatch):
         """Test that warnings are filtered"""
         filter_calls = []
-        monkeypatch.setattr(warnings, "filterwarnings", lambda *a, **k: filter_calls.append((a, k)))
+        monkeypatch.setattr(
+            warnings,
+            "filterwarnings",
+            lambda *a, **k: filter_calls.append((a, k)),
+        )
 
         silence_asyncio_warnings()
 
@@ -201,7 +219,11 @@ class TestSilenceAsyncioWarnings:
     def test_silences_coroutine_warning(self, monkeypatch):
         """Test coroutine never awaited is silenced"""
         filter_calls = []
-        monkeypatch.setattr(warnings, "filterwarnings", lambda *a, **k: filter_calls.append((a, k)))
+        monkeypatch.setattr(
+            warnings,
+            "filterwarnings",
+            lambda *a, **k: filter_calls.append((a, k)),
+        )
 
         silence_asyncio_warnings()
 
@@ -212,7 +234,11 @@ class TestSilenceAsyncioWarnings:
     def test_silences_proactor_warning(self, monkeypatch):
         """Test Proactor warning is silenced"""
         filter_calls = []
-        monkeypatch.setattr(warnings, "filterwarnings", lambda *a, **k: filter_calls.append((a, k)))
+        monkeypatch.setattr(
+            warnings,
+            "filterwarnings",
+            lambda *a, **k: filter_calls.append((a, k)),
+        )
 
         silence_asyncio_warnings()
 
@@ -244,7 +270,9 @@ class TestIntegration:
 
     def test_setup_event_loop_integration(self, monkeypatch):
         """Test setup_event_loop creates valid loop"""
-        monkeypatch.setattr("utils.async_fixes.apply_windows_async_fixes", lambda: None)
+        monkeypatch.setattr(
+            "utils.async_fixes.apply_windows_async_fixes", lambda: None
+        )
         loop = setup_event_loop()
         assert loop is not None
         assert isinstance(loop, asyncio.AbstractEventLoop)

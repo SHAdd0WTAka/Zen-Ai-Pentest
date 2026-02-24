@@ -18,7 +18,11 @@ import pytest
 import requests
 
 from notifications.email import EmailNotifier, email_scan_report
-from notifications.slack import SlackNotifier, _validate_slack_webhook_url, slack_notify_scan_complete
+from notifications.slack import (
+    SlackNotifier,
+    _validate_slack_webhook_url,
+    slack_notify_scan_complete,
+)
 
 # =============================================================================
 # Email Notifier Tests
@@ -65,12 +69,16 @@ class TestEmailNotifier:
         mock_smtp_class.return_value.__exit__ = Mock(return_value=False)
 
         result = email_notifier.send_email(
-            to_addrs=["recipient@example.com"], subject="Test Subject", body_text="Test body text"
+            to_addrs=["recipient@example.com"],
+            subject="Test Subject",
+            body_text="Test body text",
         )
 
         assert result is True
         mock_smtp.starttls.assert_called_once()
-        mock_smtp.login.assert_called_once_with("test@example.com", "password123")
+        mock_smtp.login.assert_called_once_with(
+            "test@example.com", "password123"
+        )
         mock_smtp.sendmail.assert_called_once()
 
         # Check email parameters
@@ -79,19 +87,26 @@ class TestEmailNotifier:
         assert call_args[0][1] == ["recipient@example.com"]
 
     @patch("smtplib.SMTP")
-    def test_send_email_multiple_recipients(self, mock_smtp_class, email_notifier):
+    def test_send_email_multiple_recipients(
+        self, mock_smtp_class, email_notifier
+    ):
         """Test sending to multiple recipients."""
         mock_smtp = Mock()
         mock_smtp_class.return_value.__enter__ = Mock(return_value=mock_smtp)
         mock_smtp_class.return_value.__exit__ = Mock(return_value=False)
 
         result = email_notifier.send_email(
-            to_addrs=["recipient1@example.com", "recipient2@example.com"], subject="Test", body_text="Test body"
+            to_addrs=["recipient1@example.com", "recipient2@example.com"],
+            subject="Test",
+            body_text="Test body",
         )
 
         assert result is True
         call_args = mock_smtp.sendmail.call_args
-        assert call_args[0][1] == ["recipient1@example.com", "recipient2@example.com"]
+        assert call_args[0][1] == [
+            "recipient1@example.com",
+            "recipient2@example.com",
+        ]
 
     @patch("smtplib.SMTP")
     def test_send_email_with_html(self, mock_smtp_class, email_notifier):
@@ -117,7 +132,9 @@ class TestEmailNotifier:
 
     @patch("smtplib.SMTP")
     @patch("builtins.open", mock_open(read_data=b"PDF content"))
-    def test_send_email_with_attachments(self, mock_smtp_class, email_notifier):
+    def test_send_email_with_attachments(
+        self, mock_smtp_class, email_notifier
+    ):
         """Test sending email with attachments."""
         mock_smtp = Mock()
         mock_smtp_class.return_value.__enter__ = Mock(return_value=mock_smtp)
@@ -133,7 +150,11 @@ class TestEmailNotifier:
         assert result is True
         call_args = mock_smtp.sendmail.call_args
         message = call_args[0][2]
-        assert "application/pdf" in message or "octet-stream" in message or "PDF content" in message
+        assert (
+            "application/pdf" in message
+            or "octet-stream" in message
+            or "PDF content" in message
+        )
 
     @patch("smtplib.SMTP")
     def test_send_email_failure(self, mock_smtp_class, email_notifier):
@@ -143,20 +164,32 @@ class TestEmailNotifier:
         mock_smtp_class.return_value.__enter__ = Mock(return_value=mock_smtp)
         mock_smtp_class.return_value.__exit__ = Mock(return_value=False)
 
-        result = email_notifier.send_email(to_addrs=["recipient@example.com"], subject="Test", body_text="Test body")
+        result = email_notifier.send_email(
+            to_addrs=["recipient@example.com"],
+            subject="Test",
+            body_text="Test body",
+        )
 
         assert result is False
 
     @patch("smtplib.SMTP")
     def test_send_email_no_auth(self, mock_smtp_class):
         """Test sending email without authentication."""
-        notifier = EmailNotifier(smtp_host="smtp.example.com", use_tls=False, from_addr="sender@example.com")
+        notifier = EmailNotifier(
+            smtp_host="smtp.example.com",
+            use_tls=False,
+            from_addr="sender@example.com",
+        )
 
         mock_smtp = Mock()
         mock_smtp_class.return_value.__enter__ = Mock(return_value=mock_smtp)
         mock_smtp_class.return_value.__exit__ = Mock(return_value=False)
 
-        result = notifier.send_email(to_addrs=["recipient@example.com"], subject="Test", body_text="Test body")
+        result = notifier.send_email(
+            to_addrs=["recipient@example.com"],
+            subject="Test",
+            body_text="Test body",
+        )
 
         assert result is True
         mock_smtp.login.assert_not_called()
@@ -200,14 +233,20 @@ class TestEmailNotifier:
         assert "Medium: 1" in message
 
     @patch("smtplib.SMTP")
-    def test_send_scan_report_no_findings(self, mock_smtp_class, email_notifier):
+    def test_send_scan_report_no_findings(
+        self, mock_smtp_class, email_notifier
+    ):
         """Test scan report with no findings."""
         mock_smtp = Mock()
         mock_smtp_class.return_value.__enter__ = Mock(return_value=mock_smtp)
         mock_smtp_class.return_value.__exit__ = Mock(return_value=False)
 
         result = email_notifier.send_scan_report(
-            to_addrs=["admin@example.com"], scan_id=12345, target="example.com", report_file=None, findings=[]
+            to_addrs=["admin@example.com"],
+            scan_id=12345,
+            target="example.com",
+            report_file=None,
+            findings=[],
         )
 
         assert result is True
@@ -220,7 +259,14 @@ class TestEmailNotifier:
 class TestEmailScanReport:
     """Tests for email_scan_report convenience function."""
 
-    @patch.dict(os.environ, {"SMTP_HOST": "smtp.gmail.com", "SMTP_USER": "user@gmail.com", "SMTP_PASS": "app_password"})
+    @patch.dict(
+        os.environ,
+        {
+            "SMTP_HOST": "smtp.gmail.com",
+            "SMTP_USER": "user@gmail.com",
+            "SMTP_PASS": "app_password",
+        },
+    )
     @patch("notifications.email.EmailNotifier")
     def test_email_scan_report_success(self, mock_notifier_class):
         """Test successful scan report email."""
@@ -228,16 +274,28 @@ class TestEmailScanReport:
         mock_notifier.send_email = Mock(return_value=True)
         mock_notifier_class.return_value = mock_notifier
 
-        result = email_scan_report(recipient="admin@example.com", scan_id=123, report_file="/path/to/report.pdf")
+        result = email_scan_report(
+            recipient="admin@example.com",
+            scan_id=123,
+            report_file="/path/to/report.pdf",
+        )
 
         assert result == "Email sent"
-        mock_notifier_class.assert_called_once_with("smtp.gmail.com", username="user@gmail.com", password="app_password")
+        mock_notifier_class.assert_called_once_with(
+            "smtp.gmail.com",
+            username="user@gmail.com",
+            password="app_password",
+        )
         mock_notifier.send_email.assert_called_once()
 
     @patch.dict(os.environ, {}, clear=True)
     def test_email_scan_report_no_credentials(self):
         """Test scan report without credentials."""
-        result = email_scan_report(recipient="admin@example.com", scan_id=123, report_file="/path/to/report.pdf")
+        result = email_scan_report(
+            recipient="admin@example.com",
+            scan_id=123,
+            report_file="/path/to/report.pdf",
+        )
 
         assert "credentials not configured" in result
 
@@ -292,7 +350,10 @@ class TestSlackNotifier:
 
     def test_initialization(self, slack_notifier):
         """Test Slack notifier initialization."""
-        assert slack_notifier.webhook_url == "https://hooks.slack.com/services/T00/B00/XXX"
+        assert (
+            slack_notifier.webhook_url
+            == "https://hooks.slack.com/services/T00/B00/XXX"
+        )
 
     def test_initialization_invalid_url(self):
         """Test initialization with invalid URL."""
@@ -313,7 +374,9 @@ class TestSlackNotifier:
 
         # Check payload
         call_args = mock_post.call_args
-        assert call_args[0][0] == "https://hooks.slack.com/services/T00/B00/XXX"
+        assert (
+            call_args[0][0] == "https://hooks.slack.com/services/T00/B00/XXX"
+        )
         payload = call_args[1]["json"]
         assert payload["text"] == "Hello, Slack!"
 
@@ -358,7 +421,12 @@ class TestSlackNotifier:
         mock_response.status_code = 200
         mock_post.return_value = mock_response
 
-        result = slack_notifier.send_scan_completed(scan_id=12345, target="example.com", findings_count=10, critical_count=2)
+        result = slack_notifier.send_scan_completed(
+            scan_id=12345,
+            target="example.com",
+            findings_count=10,
+            critical_count=2,
+        )
 
         assert result is True
         mock_post.assert_called_once()
@@ -385,7 +453,12 @@ class TestSlackNotifier:
         mock_response.status_code = 200
         mock_post.return_value = mock_response
 
-        result = slack_notifier.send_scan_completed(scan_id=12345, target="example.com", findings_count=5, critical_count=0)
+        result = slack_notifier.send_scan_completed(
+            scan_id=12345,
+            target="example.com",
+            findings_count=5,
+            critical_count=0,
+        )
 
         call_args = mock_post.call_args
         payload = call_args[1]["json"]
@@ -398,7 +471,12 @@ class TestSlackNotifier:
         mock_response.status_code = 200
         mock_post.return_value = mock_response
 
-        result = slack_notifier.send_scan_completed(scan_id=12345, target="example.com", findings_count=0, critical_count=0)
+        result = slack_notifier.send_scan_completed(
+            scan_id=12345,
+            target="example.com",
+            findings_count=0,
+            critical_count=0,
+        )
 
         call_args = mock_post.call_args
         payload = call_args[1]["json"]
@@ -460,7 +538,10 @@ class TestSlackNotifier:
 class TestSlackNotifyScanComplete:
     """Tests for slack_notify_scan_complete convenience function."""
 
-    @patch.dict(os.environ, {"SLACK_WEBHOOK_URL": "https://hooks.slack.com/services/T00/B00/XXX"})
+    @patch.dict(
+        os.environ,
+        {"SLACK_WEBHOOK_URL": "https://hooks.slack.com/services/T00/B00/XXX"},
+    )
     @patch("notifications.slack.SlackNotifier")
     def test_notify_success(self, mock_notifier_class):
         """Test successful notification."""
@@ -468,23 +549,40 @@ class TestSlackNotifyScanComplete:
         mock_notifier.send_scan_completed = Mock(return_value=True)
         mock_notifier_class.return_value = mock_notifier
 
-        result = slack_notify_scan_complete(scan_id=123, target="example.com", findings_count=5, critical_count=1)
+        result = slack_notify_scan_complete(
+            scan_id=123,
+            target="example.com",
+            findings_count=5,
+            critical_count=1,
+        )
 
         assert result == "Notification sent"
         mock_notifier_class.assert_called_once()
-        mock_notifier.send_scan_completed.assert_called_once_with(123, "example.com", 5, 1)
+        mock_notifier.send_scan_completed.assert_called_once_with(
+            123, "example.com", 5, 1
+        )
 
     @patch.dict(os.environ, {}, clear=True)
     def test_notify_no_webhook(self):
         """Test notification without webhook configured."""
-        result = slack_notify_scan_complete(scan_id=123, target="example.com", findings_count=5, critical_count=0)
+        result = slack_notify_scan_complete(
+            scan_id=123,
+            target="example.com",
+            findings_count=5,
+            critical_count=0,
+        )
 
         assert "webhook not configured" in result
 
     @patch.dict(os.environ, {"SLACK_WEBHOOK_URL": "https://evil.com/webhook"})
     def test_notify_invalid_webhook(self):
         """Test notification with invalid webhook."""
-        result = slack_notify_scan_complete(scan_id=123, target="example.com", findings_count=5, critical_count=0)
+        result = slack_notify_scan_complete(
+            scan_id=123,
+            target="example.com",
+            findings_count=5,
+            critical_count=0,
+        )
 
         assert "Invalid Slack webhook configuration" in result
 
@@ -512,7 +610,11 @@ class TestNotificationIntegration:
         mock_post.return_value = mock_response
 
         # Send email
-        email_notifier = EmailNotifier(smtp_host="smtp.example.com", username="test@example.com", password="pass")
+        email_notifier = EmailNotifier(
+            smtp_host="smtp.example.com",
+            username="test@example.com",
+            password="pass",
+        )
         email_result = email_notifier.send_scan_report(
             to_addrs=["admin@example.com"],
             scan_id=123,
@@ -522,9 +624,14 @@ class TestNotificationIntegration:
         )
 
         # Send Slack
-        slack_notifier = SlackNotifier("https://hooks.slack.com/services/T00/B00/XXX")
+        slack_notifier = SlackNotifier(
+            "https://hooks.slack.com/services/T00/B00/XXX"
+        )
         slack_result = slack_notifier.send_scan_completed(
-            scan_id=123, target="example.com", findings_count=1, critical_count=0
+            scan_id=123,
+            target="example.com",
+            findings_count=1,
+            critical_count=0,
         )
 
         assert email_result is True
@@ -538,7 +645,9 @@ class TestNotificationIntegration:
         # without actually sending them
 
         with patch("smtplib.SMTP"):
-            email_notifier = EmailNotifier(smtp_host="smtp.example.com", from_addr="test@example.com")
+            email_notifier = EmailNotifier(
+                smtp_host="smtp.example.com", from_addr="test@example.com"
+            )
 
             # Capture the email content
             with patch.object(email_notifier, "send_email") as mock_send:
@@ -578,7 +687,9 @@ class TestNotificationIntegration:
         mock_response.status_code = 200
         mock_post.return_value = mock_response
 
-        notifier = SlackNotifier("https://hooks.slack.com/services/T00/B00/XXX")
+        notifier = SlackNotifier(
+            "https://hooks.slack.com/services/T00/B00/XXX"
+        )
 
         # Test scan completion message
         notifier.send_scan_completed(1, "test.com", 5, 0)

@@ -128,10 +128,16 @@ class SQLMapScanner:
             self.logger.info(f"[REAL] Executing SQLMap: {' '.join(cmd)}")
 
             # Execute SQLMap
-            proc = await asyncio.create_subprocess_exec(*cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+            proc = await asyncio.create_subprocess_exec(
+                *cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+            )
 
             try:
-                stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=self.timeout)
+                stdout, stderr = await asyncio.wait_for(
+                    proc.communicate(), timeout=self.timeout
+                )
             except asyncio.TimeoutError:
                 proc.kill()
                 await proc.wait()
@@ -139,7 +145,9 @@ class SQLMapScanner:
                     success=False,
                     vulnerable=False,
                     error_message=f"SQLMap timeout after {self.timeout}s",
-                    execution_time=(datetime.now() - start_time).total_seconds(),
+                    execution_time=(
+                        datetime.now() - start_time
+                    ).total_seconds(),
                 )
 
             execution_time = (datetime.now() - start_time).total_seconds()
@@ -147,7 +155,9 @@ class SQLMapScanner:
             stderr_text = stderr.decode("utf-8", errors="replace")
 
             # Parse results
-            vulnerable, dbms, payload, parameters = self._parse_sqlmap_output(output)
+            vulnerable, dbms, payload, parameters = self._parse_sqlmap_output(
+                output
+            )
 
             findings = []
             if vulnerable:
@@ -229,7 +239,9 @@ class SQLMapScanner:
 
         return True, ""
 
-    def _parse_sqlmap_output(self, output: str) -> Tuple[bool, Optional[str], Optional[str], List[Dict]]:
+    def _parse_sqlmap_output(
+        self, output: str
+    ) -> Tuple[bool, Optional[str], Optional[str], List[Dict]]:
         """
         Parse SQLMap output to extract vulnerability information.
 
@@ -250,7 +262,9 @@ class SQLMapScanner:
 
             # Extract DBMS
             if "back-end DBMS:" in line:
-                match = re.search(r"back-end DBMS:\s*(.+)", line, re.IGNORECASE)
+                match = re.search(
+                    r"back-end DBMS:\s*(.+)", line, re.IGNORECASE
+                )
                 if match:
                     dbms = match.group(1).strip()
 
@@ -261,8 +275,12 @@ class SQLMapScanner:
                     payload = match.group(1).strip()
 
             # Extract parameter info
-            if "parameter" in line.lower() and ("get" in line.lower() or "post" in line.lower()):
-                match = re.search(r"(\w+)\s+parameter\s+\'([^\']+)\'", line, re.IGNORECASE)
+            if "parameter" in line.lower() and (
+                "get" in line.lower() or "post" in line.lower()
+            ):
+                match = re.search(
+                    r"(\w+)\s+parameter\s+\'([^\']+)\'", line, re.IGNORECASE
+                )
                 if match:
                     param_type = match.group(1).upper()
                     param_name = match.group(2)
@@ -284,7 +302,9 @@ class SQLMapTool:
         method = parameters.get("method", "GET")
         data = parameters.get("data")
 
-        result = await self.scanner.scan_target(target, method=method, data=data)
+        result = await self.scanner.scan_target(
+            target, method=method, data=data
+        )
 
         return {
             "tool": "sqlmap",
@@ -305,7 +325,9 @@ if __name__ == "__main__":
 
         # Test against deliberately vulnerable test target
         # Note: Only test against targets you own or have permission to test
-        result = await scanner.scan_target("http://testphp.vulnweb.com/artists.php?artist=1")
+        result = await scanner.scan_target(
+            "http://testphp.vulnweb.com/artists.php?artist=1"
+        )
 
         print(f"Success: {result.success}")
         print(f"Vulnerable: {result.vulnerable}")

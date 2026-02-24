@@ -8,7 +8,10 @@ import logging
 from typing import Any, Dict, List, Optional
 
 from core.orchestrator import ZenOrchestrator
-from tools.ffuf_integration_enhanced import FFuFIntegration, directory_bruteforce_sync
+from tools.ffuf_integration_enhanced import (
+    FFuFIntegration,
+    directory_bruteforce_sync,
+)
 from tools.wafw00f_integration import WAFW00FIntegration, detect_sync
 from tools.whatweb_integration import WhatWebIntegration, scan_sync
 
@@ -44,13 +47,22 @@ class EnhancedReconModule:
         result = scan_sync(target)
 
         if not result.success:
-            return {"success": False, "error": result.error, "technologies": []}
+            return {
+                "success": False,
+                "error": result.error,
+                "technologies": [],
+            }
 
         return {
             "success": True,
             "url": result.url,
             "technologies": [
-                {"name": t.name, "version": t.version, "confidence": t.confidence, "category": t.category}
+                {
+                    "name": t.name,
+                    "version": t.version,
+                    "confidence": t.confidence,
+                    "category": t.category,
+                }
                 for t in result.technologies
             ],
             "headers": result.headers,
@@ -74,12 +86,18 @@ class EnhancedReconModule:
             "success": result.success,
             "url": result.url,
             "firewall_detected": result.firewall_detected,
-            "wafs": [{"name": w.name, "confidence": w.confidence} for w in result.wafs],
+            "wafs": [
+                {"name": w.name, "confidence": w.confidence}
+                for w in result.wafs
+            ],
             "error": result.error,
         }
 
     def directory_bruteforce(
-        self, target: str, extensions: Optional[List[str]] = None, wordlist: Optional[str] = None
+        self,
+        target: str,
+        extensions: Optional[List[str]] = None,
+        wordlist: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         Directory Bruteforce mit FFuF
@@ -97,7 +115,9 @@ class EnhancedReconModule:
         if not target.endswith("/FUZZ") and "/FUZZ" not in target:
             target = f"{target.rstrip('/')}/FUZZ"
 
-        result = directory_bruteforce_sync(target, wordlist=wordlist, extensions=extensions)
+        result = directory_bruteforce_sync(
+            target, wordlist=wordlist, extensions=extensions
+        )
 
         return {
             "success": result.success,
@@ -133,7 +153,11 @@ class EnhancedReconModule:
             target_url = f"http://{target}"
         else:
             target_url = target
-            target = target.replace("http://", "").replace("https://", "").split("/")[0]
+            target = (
+                target.replace("http://", "")
+                .replace("https://", "")
+                .split("/")[0]
+            )
 
         # Run all scans
         tech_result = self.technology_detection(target_url)
@@ -150,13 +174,17 @@ class EnhancedReconModule:
         # Generate recommendations
         recommendations = []
         if not waf_result.get("firewall_detected"):
-            recommendations.append("Implement a Web Application Firewall (WAF)")
+            recommendations.append(
+                "Implement a Web Application Firewall (WAF)"
+            )
 
         for tech in tech_result.get("technologies", []):
             if tech.get("name") in ["Apache", "nginx", "PHP"]:
                 version = tech.get("version", "")
                 if version and version.startswith(("2.4.7", "1.18.0", "7.4")):
-                    recommendations.append(f"Update outdated {tech['name']} ({version})")
+                    recommendations.append(
+                        f"Update outdated {tech['name']} ({version})"
+                    )
 
         if len(dir_result.get("findings", [])) > 5:
             recommendations.append("Restrict access to sensitive directories")
@@ -182,16 +210,29 @@ if __name__ == "__main__":
     import argparse
     import json
 
-    parser = argparse.ArgumentParser(description="Enhanced Reconnaissance Module")
-    parser.add_argument("--target", "-t", required=True, help="Target domain or URL")
-    parser.add_argument(
-        "--mode", "-m", choices=["tech", "waf", "dir", "full"], default="full", help="Scan mode (default: full)"
+    parser = argparse.ArgumentParser(
+        description="Enhanced Reconnaissance Module"
     )
     parser.add_argument(
-        "--extensions", "-e", default="php,html,txt", help="File extensions for directory scan (comma-separated)"
+        "--target", "-t", required=True, help="Target domain or URL"
+    )
+    parser.add_argument(
+        "--mode",
+        "-m",
+        choices=["tech", "waf", "dir", "full"],
+        default="full",
+        help="Scan mode (default: full)",
+    )
+    parser.add_argument(
+        "--extensions",
+        "-e",
+        default="php,html,txt",
+        help="File extensions for directory scan (comma-separated)",
     )
     parser.add_argument("--output", "-o", help="Output file for JSON report")
-    parser.add_argument("--quiet", "-q", action="store_true", help="Minimal output")
+    parser.add_argument(
+        "--quiet", "-q", action="store_true", help="Minimal output"
+    )
 
     args = parser.parse_args()
 

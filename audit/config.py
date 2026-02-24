@@ -103,7 +103,16 @@ class AuditConfig:
             }
 
         if self.mask_fields is None:
-            self.mask_fields = ["password", "secret", "token", "api_key", "private_key", "credit_card", "ssn", "personal_id"]
+            self.mask_fields = [
+                "password",
+                "secret",
+                "token",
+                "api_key",
+                "private_key",
+                "credit_card",
+                "ssn",
+                "personal_id",
+            ]
 
     @classmethod
     def default(cls) -> "AuditConfig":
@@ -128,7 +137,11 @@ class AuditConfig:
             compliance_mode="strict",
             include_pii=False,
             retention_policies={
-                level: RetentionPolicy.EXTENDED if level.value in ["debug", "info", "notice"] else RetentionPolicy.PERMANENT
+                level: (
+                    RetentionPolicy.EXTENDED
+                    if level.value in ["debug", "info", "notice"]
+                    else RetentionPolicy.PERMANENT
+                )
                 for level in LogLevel
             },
         )

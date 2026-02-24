@@ -47,7 +47,12 @@ class HTTPXIntegration:
         self.timeout = timeout
         self.threads = threads
 
-    async def probe(self, targets: List[str], probe_all_ips: bool = False, follow_redirects: bool = True) -> HTTPXResult:
+    async def probe(
+        self,
+        targets: List[str],
+        probe_all_ips: bool = False,
+        follow_redirects: bool = True,
+    ) -> HTTPXResult:
         """
         Probe targets for HTTP/HTTPS
 
@@ -90,10 +95,14 @@ class HTTPXIntegration:
 
         try:
             process = await asyncio.create_subprocess_exec(
-                *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+                *cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
             )
 
-            stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=self.timeout * 2)
+            stdout, stderr = await asyncio.wait_for(
+                process.communicate(), timeout=self.timeout * 2
+            )
 
             hosts = []
 
@@ -127,7 +136,9 @@ class HTTPXIntegration:
 
             os.unlink(temp_file)
 
-            return HTTPXResult(success=True, hosts=hosts, count=len(hosts), duration=duration)
+            return HTTPXResult(
+                success=True, hosts=hosts, count=len(hosts), duration=duration
+            )
 
         except asyncio.TimeoutError:
             logger.error("HTTPX probe timed out")

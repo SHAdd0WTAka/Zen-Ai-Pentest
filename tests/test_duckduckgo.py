@@ -71,7 +71,9 @@ class TestDuckDuckGoGetVQDToken:
         mock_response.text = AsyncMock(return_value=html_response)
 
         mock_get = MagicMock()
-        mock_get.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_get.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_get.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -110,7 +112,9 @@ class TestDuckDuckGoGetVQDToken:
         mock_response.text = AsyncMock(return_value=html_response)
 
         mock_get = MagicMock()
-        mock_get.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_get.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_get.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -128,7 +132,9 @@ class TestDuckDuckGoGetVQDToken:
         import logging
 
         mock_get = MagicMock()
-        mock_get.return_value.__aenter__ = AsyncMock(side_effect=Exception("Connection failed"))
+        mock_get.return_value.__aenter__ = AsyncMock(
+            side_effect=Exception("Connection failed")
+        )
         mock_get.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -151,7 +157,9 @@ class TestDuckDuckGoGetVQDToken:
         mock_response.text = AsyncMock(return_value=html_response)
 
         mock_get = MagicMock()
-        mock_get.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_get.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_get.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -198,7 +206,9 @@ class TestDuckDuckGoChat:
         mock_response.content = self._async_iterator(stream_data)
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -235,7 +245,9 @@ class TestDuckDuckGoChat:
         mock_response.status = 429
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -262,7 +274,9 @@ class TestDuckDuckGoChat:
         mock_response.status = 418
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -289,7 +303,9 @@ class TestDuckDuckGoChat:
         mock_response.status = 503
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -312,7 +328,9 @@ class TestDuckDuckGoChat:
         backend.vqd_token = "test-token"
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(side_effect=Exception("Network error"))
+        mock_post.return_value.__aenter__ = AsyncMock(
+            side_effect=Exception("Network error")
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -342,7 +360,9 @@ class TestDuckDuckGoChat:
         mock_response.content = self._async_iterator(stream_data)
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -371,7 +391,9 @@ class TestDuckDuckGoChat:
         mock_response.content = empty_gen()
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -408,7 +430,9 @@ class TestDuckDuckGoHeaders:
         mock_response.content = self._async_iterator(stream_data)
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -439,7 +463,9 @@ class TestDuckDuckGoHeaders:
         mock_response.content = self._async_iterator(stream_data)
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -470,7 +496,9 @@ class TestDuckDuckGoHeaders:
         mock_response.content = self._async_iterator(stream_data)
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -511,7 +539,9 @@ class TestDuckDuckGoModelRotation:
         mock_response.content = self._async_iterator(stream_data)
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -541,7 +571,9 @@ class TestDuckDuckGoModelRotation:
         mock_response.content = self._async_iterator(stream_data)
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -568,7 +600,9 @@ class TestDuckDuckGoModelRotation:
         mock_response.status = 429
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -594,7 +628,9 @@ class TestDuckDuckGoHealthCheck:
         mock_response.text = AsyncMock(return_value=html_response)
 
         mock_get = MagicMock()
-        mock_get.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_get.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_get.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -616,7 +652,9 @@ class TestDuckDuckGoHealthCheck:
         mock_response.text = AsyncMock(return_value=html_response)
 
         mock_get = MagicMock()
-        mock_get.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_get.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_get.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -632,7 +670,9 @@ class TestDuckDuckGoHealthCheck:
     async def test_health_check_exception(self, backend):
         """Test health check with exception"""
         mock_get = MagicMock()
-        mock_get.return_value.__aenter__ = AsyncMock(side_effect=Exception("Connection failed"))
+        mock_get.return_value.__aenter__ = AsyncMock(
+            side_effect=Exception("Connection failed")
+        )
         mock_get.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -669,7 +709,9 @@ class TestDuckDuckGoEdgeCases:
         mock_response.content = self._async_iterator(stream_data)
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -694,14 +736,18 @@ class TestDuckDuckGoEdgeCases:
             backend.vqd_token = f"token-{i}"
             backend.current_model = i
 
-            stream_data = [f'data: {{"message": "Response from {model}"}}\n'.encode()]
+            stream_data = [
+                f'data: {{"message": "Response from {model}"}}\n'.encode()
+            ]
 
             mock_response = AsyncMock()
             mock_response.status = 200
             mock_response.content = self._async_iterator(stream_data)
 
             mock_post = MagicMock()
-            mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+            mock_post.return_value.__aenter__ = AsyncMock(
+                return_value=mock_response
+            )
             mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
             mock_session = AsyncMock()

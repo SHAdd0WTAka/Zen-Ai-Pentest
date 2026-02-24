@@ -12,7 +12,13 @@ from typing import Any, Callable, Dict, List, Optional
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from modules.benchmark import BenchmarkCategory, BenchmarkResult, BenchmarkRunner, ThroughputMetrics, measure_scan_throughput
+from modules.benchmark import (
+    BenchmarkCategory,
+    BenchmarkResult,
+    BenchmarkRunner,
+    ThroughputMetrics,
+    measure_scan_throughput,
+)
 
 
 @dataclass
@@ -34,7 +40,9 @@ class ScanPerformanceBenchmark:
         self.runner = BenchmarkRunner(output_dir=output_dir)
         self.config = ScanBenchmarkConfig()
 
-    def _generate_test_targets(self, count: int, target_type: str) -> List[str]:
+    def _generate_test_targets(
+        self, count: int, target_type: str
+    ) -> List[str]:
         """Generate test targets for benchmarking."""
         if target_type == "host":
             # Generate local network targets for testing
@@ -50,7 +58,9 @@ class ScanPerformanceBenchmark:
             return ranges
         return []
 
-    async def benchmark_nmap_speed(self, config: Optional[ScanBenchmarkConfig] = None) -> BenchmarkResult:
+    async def benchmark_nmap_speed(
+        self, config: Optional[ScanBenchmarkConfig] = None
+    ) -> BenchmarkResult:
         """
         Benchmark Nmap scan speed.
 
@@ -58,7 +68,9 @@ class ScanPerformanceBenchmark:
             BenchmarkResult with scan timing metrics
         """
         cfg = config or self.config
-        targets = self._generate_test_targets(cfg.target_count, cfg.target_type)
+        targets = self._generate_test_targets(
+            cfg.target_count, cfg.target_type
+        )
 
         # Mock scan function for benchmarking structure
         async def mock_nmap_scan(target: str) -> Dict[str, Any]:
@@ -76,7 +88,9 @@ class ScanPerformanceBenchmark:
 
         return result
 
-    async def benchmark_web_scan_speed(self, config: Optional[ScanBenchmarkConfig] = None) -> BenchmarkResult:
+    async def benchmark_web_scan_speed(
+        self, config: Optional[ScanBenchmarkConfig] = None
+    ) -> BenchmarkResult:
         """
         Benchmark web vulnerability scan speed.
 
@@ -84,12 +98,18 @@ class ScanPerformanceBenchmark:
             BenchmarkResult with web scan timing metrics
         """
         cfg = config or ScanBenchmarkConfig(target_count=5, target_type="web")
-        targets = self._generate_test_targets(cfg.target_count, cfg.target_type)
+        targets = self._generate_test_targets(
+            cfg.target_count, cfg.target_type
+        )
 
         async def mock_web_scan(target: str) -> Dict[str, Any]:
             # Simulate web scan with crawling
             await asyncio.sleep(1.2)
-            return {"target": target, "pages_scanned": 15, "vulnerabilities_found": 3}
+            return {
+                "target": target,
+                "pages_scanned": 15,
+                "vulnerabilities_found": 3,
+            }
 
         result, _ = await measure_scan_throughput(
             scan_func=mock_web_scan,
@@ -97,11 +117,15 @@ class ScanPerformanceBenchmark:
         )
 
         result.name = "web_scan_speed"
-        result.description = f"Web vulnerability scan speed for {len(targets)} targets"
+        result.description = (
+            f"Web vulnerability scan speed for {len(targets)} targets"
+        )
 
         return result
 
-    async def benchmark_scan_throughput(self, config: Optional[ScanBenchmarkConfig] = None) -> BenchmarkResult:
+    async def benchmark_scan_throughput(
+        self, config: Optional[ScanBenchmarkConfig] = None
+    ) -> BenchmarkResult:
         """
         Benchmark overall scan throughput (targets per minute).
 
@@ -109,7 +133,9 @@ class ScanPerformanceBenchmark:
             BenchmarkResult with throughput metrics
         """
         cfg = config or self.config
-        targets = self._generate_test_targets(cfg.target_count, cfg.target_type)
+        targets = self._generate_test_targets(
+            cfg.target_count, cfg.target_type
+        )
 
         async def mock_scan(target: str) -> Dict[str, Any]:
             # Simulate varying scan times
@@ -127,7 +153,9 @@ class ScanPerformanceBenchmark:
 
         return result
 
-    async def benchmark_concurrent_scans(self, config: Optional[ScanBenchmarkConfig] = None) -> BenchmarkResult:
+    async def benchmark_concurrent_scans(
+        self, config: Optional[ScanBenchmarkConfig] = None
+    ) -> BenchmarkResult:
         """
         Benchmark performance with concurrent scans.
 
@@ -135,7 +163,9 @@ class ScanPerformanceBenchmark:
             BenchmarkResult with concurrent scan metrics
         """
         cfg = config or self.config
-        targets = self._generate_test_targets(cfg.target_count * 2, cfg.target_type)
+        targets = self._generate_test_targets(
+            cfg.target_count * 2, cfg.target_type
+        )
 
         async def concurrent_benchmark():
             semaphore = asyncio.Semaphore(cfg.concurrent_scans)
@@ -157,7 +187,10 @@ class ScanPerformanceBenchmark:
         )
 
         # Calculate effective throughput
-        result.throughput = ThroughputMetrics(operations=len(targets), duration_seconds=result.timing.duration_seconds)
+        result.throughput = ThroughputMetrics(
+            operations=len(targets),
+            duration_seconds=result.timing.duration_seconds,
+        )
         result.throughput.calculate()
 
         result.custom_metrics["concurrent_scans"] = cfg.concurrent_scans
@@ -185,7 +218,9 @@ class ScanPerformanceBenchmark:
                 result = await benchmark_func()
                 results.append(result)
                 self.runner.save_result(result)
-                print(f"    ✓ {name}: {result.throughput.ops_per_minute:.1f} targets/min")
+                print(
+                    f"    ✓ {name}: {result.throughput.ops_per_minute:.1f} targets/min"
+                )
             except Exception as e:
                 print(f"    ✗ {name} failed: {e}")
 
@@ -201,7 +236,9 @@ class ScanPerformanceBenchmark:
 
 # Convenience function
 async def measure_scan_speed(
-    scan_func: Callable, targets: List[str], output_dir: str = "benchmark_results"
+    scan_func: Callable,
+    targets: List[str],
+    output_dir: str = "benchmark_results",
 ) -> BenchmarkResult:
     """
     Quick function to measure scan speed.
@@ -214,7 +251,9 @@ async def measure_scan_speed(
     Returns:
         BenchmarkResult with scan metrics
     """
-    result, _ = await measure_scan_throughput(scan_func=scan_func, targets=targets)
+    result, _ = await measure_scan_throughput(
+        scan_func=scan_func, targets=targets
+    )
 
     # Save result
     runner = BenchmarkRunner(output_dir=output_dir)
@@ -228,14 +267,25 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(description="Scan Performance Benchmarks")
-    parser.add_argument("--output", default="benchmark_results", help="Output directory")
-    parser.add_argument("--targets", type=int, default=10, help="Number of test targets")
-    parser.add_argument("--type", default="host", choices=["host", "web", "network"], help="Target type")
+    parser.add_argument(
+        "--output", default="benchmark_results", help="Output directory"
+    )
+    parser.add_argument(
+        "--targets", type=int, default=10, help="Number of test targets"
+    )
+    parser.add_argument(
+        "--type",
+        default="host",
+        choices=["host", "web", "network"],
+        help="Target type",
+    )
 
     args = parser.parse_args()
 
     async def main():
-        _ = ScanBenchmarkConfig(target_count=args.targets, target_type=args.type)
+        _ = ScanBenchmarkConfig(
+            target_count=args.targets, target_type=args.type
+        )
 
         benchmark = ScanPerformanceBenchmark(output_dir=args.output)
         results = await benchmark.run_all()
@@ -247,7 +297,9 @@ if __name__ == "__main__":
         for result in results:
             print(f"\n{result.name}:")
             print(f"  Duration: {result.timing.duration_ms:.2f}ms")
-            print(f"  Throughput: {result.throughput.ops_per_minute:.2f} ops/min")
+            print(
+                f"  Throughput: {result.throughput.ops_per_minute:.2f} ops/min"
+            )
             print(f"  Peak Memory: {result.memory.peak_mb:.2f} MB")
 
     asyncio.run(main())

@@ -233,7 +233,9 @@ class TestModulesForCodecov:
         """Test technology detection"""
         from modules.enhanced_recon import EnhancedReconModule
 
-        mock_scan.return_value = MagicMock(success=True, technologies=[], headers={})
+        mock_scan.return_value = MagicMock(
+            success=True, technologies=[], headers={}
+        )
 
         recon = EnhancedReconModule()
         result = recon.technology_detection("test.com")
@@ -246,7 +248,9 @@ class TestModulesForCodecov:
         """Test WAF detection"""
         from modules.enhanced_recon import EnhancedReconModule
 
-        mock_detect.return_value = MagicMock(success=True, firewall_detected=False, wafs=[])
+        mock_detect.return_value = MagicMock(
+            success=True, firewall_detected=False, wafs=[]
+        )
 
         recon = EnhancedReconModule()
         result = recon.waf_detection("test.com")
@@ -299,7 +303,9 @@ class TestWithMocks:
     @patch("builtins.open")
     def test_file_operations_mock(self, mock_open):
         """Test file operations with mock"""
-        mock_open.return_value.__enter__.return_value.read.return_value = "test"
+        mock_open.return_value.__enter__.return_value.read.return_value = (
+            "test"
+        )
 
         # Simulate file read
         with open("test.txt") as f:

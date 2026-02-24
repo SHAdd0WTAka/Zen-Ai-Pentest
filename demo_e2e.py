@@ -26,7 +26,10 @@ from datetime import datetime
 from typing import Dict
 
 # Setup logging
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
 logger = logging.getLogger("zen.demo")
 
 # Import our modules
@@ -90,7 +93,9 @@ class MockAgent:
         try:
             import subprocess
 
-            result = subprocess.run(["whois", target], capture_output=True, text=True, timeout=10)
+            result = subprocess.run(
+                ["whois", target], capture_output=True, text=True, timeout=10
+            )
 
             # Parse basic info
             output = result.stdout
@@ -101,7 +106,9 @@ class MockAgent:
 
             return {
                 "status": "success",
-                "output": output[:500] + "..." if len(output) > 500 else output,
+                "output": (
+                    output[:500] + "..." if len(output) > 500 else output
+                ),
                 "findings": (
                     [
                         {
@@ -124,9 +131,16 @@ class MockAgent:
         try:
             import subprocess
 
-            result = subprocess.run(["dig", "+short", target], capture_output=True, text=True, timeout=10)
+            result = subprocess.run(
+                ["dig", "+short", target],
+                capture_output=True,
+                text=True,
+                timeout=10,
+            )
 
-            ips = [ip.strip() for ip in result.stdout.split("\n") if ip.strip()]
+            ips = [
+                ip.strip() for ip in result.stdout.split("\n") if ip.strip()
+            ]
 
             return {
                 "status": "success",
@@ -149,9 +163,16 @@ class MockAgent:
         try:
             import subprocess
 
-            logger.info(f"🔍 Running nmap on {target} (this may take a moment)...")
+            logger.info(
+                f"🔍 Running nmap on {target} (this may take a moment)..."
+            )
 
-            result = subprocess.run(["nmap", "-Pn", "-F", "--open", target], capture_output=True, text=True, timeout=120)
+            result = subprocess.run(
+                ["nmap", "-Pn", "-F", "--open", target],
+                capture_output=True,
+                text=True,
+                timeout=120,
+            )
 
             output = result.stdout
 
@@ -177,7 +198,9 @@ class MockAgent:
 
             return {
                 "status": "success",
-                "output": output[:1000] + "..." if len(output) > 1000 else output,
+                "output": (
+                    output[:1000] + "..." if len(output) > 1000 else output
+                ),
                 "findings": findings,
             }
         except FileNotFoundError:
@@ -238,7 +261,12 @@ class MockAgent:
                 "status": "success",
                 "output": "Found 3 subdomains",
                 "findings": [
-                    {"type": "subdomain", "severity": "low", "title": f"Subdomains of {target}", "details": "www, mail, ftp"}
+                    {
+                        "type": "subdomain",
+                        "severity": "low",
+                        "title": f"Subdomains of {target}",
+                        "details": "www, mail, ftp",
+                    }
                 ],
             },
             "web_enum": {
@@ -267,7 +295,14 @@ class MockAgent:
             },
         }
 
-        return simulations.get(tool, {"status": "success", "output": f"Simulated {tool} execution", "findings": []})
+        return simulations.get(
+            tool,
+            {
+                "status": "success",
+                "output": f"Simulated {tool} execution",
+                "findings": [],
+            },
+        )
 
 
 class ReportGenerator:
@@ -316,7 +351,12 @@ class ReportGenerator:
         if agent.findings:
             for i, finding in enumerate(agent.findings, 1):
                 severity = finding.get("severity", "info").upper()
-                icon = {"HIGH": "🔴", "MEDIUM": "🟠", "LOW": "🟡", "INFO": "🔵"}.get(severity, "🔵")
+                icon = {
+                    "HIGH": "🔴",
+                    "MEDIUM": "🟠",
+                    "LOW": "🟡",
+                    "INFO": "🔵",
+                }.get(severity, "🔵")
 
                 report += f"""### {i}. {finding.get('title', 'Finding')}
 
@@ -342,7 +382,9 @@ For detailed technical information, please refer to the raw scan outputs.
         return report
 
 
-async def run_demo(target: str = "scanme.nmap.org", risk_level: RiskLevel = RiskLevel.NORMAL):
+async def run_demo(
+    target: str = "scanme.nmap.org", risk_level: RiskLevel = RiskLevel.NORMAL
+):
     """
     Run the complete end-to-end demo.
 
@@ -360,7 +402,9 @@ async def run_demo(target: str = "scanme.nmap.org", risk_level: RiskLevel = Risk
     print("📋 Step 1: Initializing Workflow Orchestrator")
     print("-" * 70)
 
-    orchestrator = WorkflowOrchestrator(step_timeout=30, risk_level=risk_level)  # Short timeout for demo
+    orchestrator = WorkflowOrchestrator(
+        step_timeout=30, risk_level=risk_level
+    )  # Short timeout for demo
     print(f"✅ Orchestrator initialized (Risk Level: {risk_level.name})")
     print()
 
@@ -405,7 +449,11 @@ async def run_demo(target: str = "scanme.nmap.org", risk_level: RiskLevel = Risk
         workflow = orchestrator.workflows[workflow_id]
 
         # Check for pending tasks
-        pending_tasks = [task for task in workflow.tasks.values() if task.status in ["assigned", "queued", "pending"]]
+        pending_tasks = [
+            task
+            for task in workflow.tasks.values()
+            if task.status in ["assigned", "queued", "pending"]
+        ]
 
         if pending_tasks:
             # Execute first pending task
@@ -498,7 +546,11 @@ Examples:
         """,
     )
 
-    parser.add_argument("--target", default="scanme.nmap.org", help="Target to scan (default: scanme.nmap.org)")
+    parser.add_argument(
+        "--target",
+        default="scanme.nmap.org",
+        help="Target to scan (default: scanme.nmap.org)",
+    )
 
     parser.add_argument(
         "--risk-level",
@@ -511,7 +563,12 @@ Examples:
     args = parser.parse_args()
 
     # Map risk level
-    risk_levels = {0: RiskLevel.SAFE, 1: RiskLevel.NORMAL, 2: RiskLevel.ELEVATED, 3: RiskLevel.AGGRESSIVE}
+    risk_levels = {
+        0: RiskLevel.SAFE,
+        1: RiskLevel.NORMAL,
+        2: RiskLevel.ELEVATED,
+        3: RiskLevel.AGGRESSIVE,
+    }
     risk_level = risk_levels[args.risk_level]
 
     # Warning for non-demo targets

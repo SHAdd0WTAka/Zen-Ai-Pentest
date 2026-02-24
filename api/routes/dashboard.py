@@ -7,7 +7,14 @@ REST API and WebSocket endpoints for live dashboard.
 from datetime import datetime
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, WebSocket, WebSocketDisconnect
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException,
+    Query,
+    WebSocket,
+    WebSocketDisconnect,
+)
 from pydantic import BaseModel, Field
 
 # Import dashboard
@@ -71,20 +78,26 @@ async def get_status(dashboard: DashboardManager = Depends(get_dashboard)):
     return DashboardStatusResponse(
         running=stats["running"],
         started_at=stats.get("started_at"),
-        websocket_connections=stats.get("websocket", {}).get("active_connections", 0),
+        websocket_connections=stats.get("websocket", {}).get(
+            "active_connections", 0
+        ),
         buffered_events=stats.get("buffered_events", 0),
     )
 
 
 @router.get("/system", response_model=SystemStatusResponse)
-async def get_system_status(dashboard: DashboardManager = Depends(get_dashboard)):
+async def get_system_status(
+    dashboard: DashboardManager = Depends(get_dashboard),
+):
     """Get overall system status"""
     data = await dashboard.get_dashboard_data()
     return SystemStatusResponse(**data["system_status"])
 
 
 @router.get("/data")
-async def get_dashboard_data(dashboard: DashboardManager = Depends(get_dashboard)):
+async def get_dashboard_data(
+    dashboard: DashboardManager = Depends(get_dashboard),
+):
     """Get complete dashboard data for initial load"""
     return await dashboard.get_dashboard_data()
 
@@ -114,13 +127,18 @@ async def get_recent_events(
             et = EventType(event_type)
             events = [e for e in events if e.type == et]
         except ValueError:
-            raise HTTPException(status_code=400, detail=f"Invalid event type: {event_type}")
+            raise HTTPException(
+                status_code=400, detail=f"Invalid event type: {event_type}"
+            )
 
     return {"events": [e.to_dict() for e in events], "total": len(events)}
 
 
 @router.post("/broadcast")
-async def broadcast_event(request: EventBroadcastRequest, dashboard: DashboardManager = Depends(get_dashboard)):
+async def broadcast_event(
+    request: EventBroadcastRequest,
+    dashboard: DashboardManager = Depends(get_dashboard),
+):
     """
     Broadcast a custom event to all connected clients
 
@@ -131,16 +149,28 @@ async def broadcast_event(request: EventBroadcastRequest, dashboard: DashboardMa
     except ValueError:
         event_type = EventType.CUSTOM
 
-    event = DashboardEvent(type=event_type, data=request.data, priority=request.priority, source="api")
+    event = DashboardEvent(
+        type=event_type,
+        data=request.data,
+        priority=request.priority,
+        source="api",
+    )
 
     count = await dashboard.broadcast(event)
 
-    return {"broadcasted": True, "clients_notified": count, "event_id": event.id}
+    return {
+        "broadcasted": True,
+        "clients_notified": count,
+        "event_id": event.id,
+    }
 
 
 @router.post("/notify")
 async def send_notification(
-    title: str, message: str, level: str = "info", dashboard: DashboardManager = Depends(get_dashboard)
+    title: str,
+    message: str,
+    level: str = "info",
+    dashboard: DashboardManager = Depends(get_dashboard),
 ):
     """
     Send notification to all connected clients
@@ -159,7 +189,9 @@ async def send_notification(
 
 @router.websocket("/ws")
 async def dashboard_websocket(
-    websocket: WebSocket, token: Optional[str] = None, dashboard: DashboardManager = Depends(get_dashboard)
+    websocket: WebSocket,
+    token: Optional[str] = None,
+    dashboard: DashboardManager = Depends(get_dashboard),
 ):
     """
     WebSocket endpoint for real-time dashboard updates
@@ -185,7 +217,9 @@ async def dashboard_websocket(
 
     # Connect to dashboard
     try:
-        connection_id = await dashboard.handle_websocket_connect(websocket, user_id)
+        connection_id = await dashboard.handle_websocket_connect(
+            websocket, user_id
+        )
 
         try:
             while True:
@@ -193,7 +227,9 @@ async def dashboard_websocket(
                 message = await websocket.receive_json()
 
                 # Handle message
-                await dashboard.handle_websocket_message(connection_id, message)
+                await dashboard.handle_websocket_message(
+                    connection_id, message
+                )
 
         except WebSocketDisconnect:
             pass
@@ -208,21 +244,30 @@ async def dashboard_websocket(
 
 
 @router.get("/tasks/{task_id}/progress")
-async def get_task_progress(task_id: str, dashboard: DashboardManager = Depends(get_dashboard)):
+async def get_task_progress(
+    task_id: str, dashboard: DashboardManager = Depends(get_dashboard)
+):
     """Get task progress from event buffer"""
     # Search in buffered events
     for event in reversed(dashboard._event_buffer):
-        if event.type == EventType.TASK_PROGRESS and event.data.get("task_id") == task_id:
+        if (
+            event.type == EventType.TASK_PROGRESS
+            and event.data.get("task_id") == task_id
+        ):
             return event.data
 
-    raise HTTPException(status_code=404, detail=f"No progress found for task {task_id}")
+    raise HTTPException(
+        status_code=404, detail=f"No progress found for task {task_id}"
+    )
 
 
 # Statistics Endpoints
 
 
 @router.get("/stats/websocket")
-async def get_websocket_stats(dashboard: DashboardManager = Depends(get_dashboard)):
+async def get_websocket_stats(
+    dashboard: DashboardManager = Depends(get_dashboard),
+):
     """Get WebSocket connection statistics"""
     if not dashboard.websocket:
         raise HTTPException(status_code=503, detail="WebSocket not enabled")
@@ -231,7 +276,9 @@ async def get_websocket_stats(dashboard: DashboardManager = Depends(get_dashboar
 
 
 @router.get("/stats/metrics")
-async def get_metrics_stats(dashboard: DashboardManager = Depends(get_dashboard)):
+async def get_metrics_stats(
+    dashboard: DashboardManager = Depends(get_dashboard),
+):
     """Get metrics collector statistics"""
     if not dashboard.metrics:
         raise HTTPException(status_code=503, detail="Metrics not enabled")
@@ -249,7 +296,9 @@ async def get_event_types():
         "event_types": [
             {
                 "value": et.value,
-                "category": et.value.split(".")[0] if "." in et.value else "general",
+                "category": (
+                    et.value.split(".")[0] if "." in et.value else "general"
+                ),
                 "description": et.name.replace("_", " ").title(),
             }
             for et in EventType
@@ -265,10 +314,16 @@ async def health_check(dashboard: DashboardManager = Depends(get_dashboard)):
     """Dashboard health check"""
     checks = {
         "dashboard": dashboard._running,
-        "websocket": dashboard.websocket._running if dashboard.websocket else False,
+        "websocket": (
+            dashboard.websocket._running if dashboard.websocket else False
+        ),
         "metrics": dashboard.metrics._running if dashboard.metrics else False,
     }
 
     all_healthy = all(checks.values())
 
-    return {"healthy": all_healthy, "checks": checks, "timestamp": datetime.utcnow().isoformat()}
+    return {
+        "healthy": all_healthy,
+        "checks": checks,
+        "timestamp": datetime.utcnow().isoformat(),
+    }

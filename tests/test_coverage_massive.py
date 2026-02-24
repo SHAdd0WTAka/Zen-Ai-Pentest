@@ -241,7 +241,11 @@ class TestMassiveCoverage2:
         assert [3, 1, 2].sort() is None
 
     def test_076(self):
-        assert [3, 1, 2].sorted() == [1, 2, 3] if hasattr([].__class__, "sorted") else True
+        assert (
+            [3, 1, 2].sorted() == [1, 2, 3]
+            if hasattr([].__class__, "sorted")
+            else True
+        )
 
     def test_077(self):
         assert sum([1, 2, 3]) == 6

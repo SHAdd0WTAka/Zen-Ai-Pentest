@@ -18,7 +18,8 @@ class CronExpression:
 
         if len(self.parts) != 5:
             raise ValueError(
-                f"Invalid cron expression: '{expression}'. " "Expected 5 fields: minute hour day month day_of_week"
+                f"Invalid cron expression: '{expression}'. "
+                "Expected 5 fields: minute hour day month day_of_week"
             )
 
         self.minutes = self._parse_field(self.parts[0], 0, 59)
@@ -79,13 +80,17 @@ class CronExpression:
             and dt.weekday() in self.days_of_week
         )
 
-    def next_occurrence(self, from_time: Optional[datetime] = None) -> datetime:
+    def next_occurrence(
+        self, from_time: Optional[datetime] = None
+    ) -> datetime:
         """Get the next occurrence after the given time"""
         if from_time is None:
             from_time = datetime.utcnow()
 
         # Start from the next minute
-        current = from_time.replace(second=0, microsecond=0) + timedelta(minutes=1)
+        current = from_time.replace(second=0, microsecond=0) + timedelta(
+            minutes=1
+        )
 
         # Search for next match (max 4 years to avoid infinite loop)
         for _ in range(366 * 24 * 60 * 4):
@@ -95,13 +100,17 @@ class CronExpression:
 
         raise RuntimeError("Could not find next occurrence")
 
-    def previous_occurrence(self, from_time: Optional[datetime] = None) -> datetime:
+    def previous_occurrence(
+        self, from_time: Optional[datetime] = None
+    ) -> datetime:
         """Get the previous occurrence before the given time"""
         if from_time is None:
             from_time = datetime.utcnow()
 
         # Start from the previous minute
-        current = from_time.replace(second=0, microsecond=0) - timedelta(minutes=1)
+        current = from_time.replace(second=0, microsecond=0) - timedelta(
+            minutes=1
+        )
 
         # Search for previous match (max 4 years)
         for _ in range(366 * 24 * 60 * 4):
@@ -163,7 +172,9 @@ class CronParser:
             return False
 
     @classmethod
-    def get_next_run(cls, expression: str, from_time: Optional[datetime] = None) -> datetime:
+    def get_next_run(
+        cls, expression: str, from_time: Optional[datetime] = None
+    ) -> datetime:
         """Get next run time for a cron expression"""
         cron = cls.parse(expression)
         return cron.next_occurrence(from_time)

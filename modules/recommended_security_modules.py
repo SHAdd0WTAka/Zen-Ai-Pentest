@@ -127,19 +127,34 @@ class CSRFScanner:
 
     async def scan_form(self, url: str, form_data: Dict) -> CSRFScanResult:
         """Scan a form for CSRF protection"""
-        result = CSRFScanResult(url=url, vulnerable=False, missing_protections=[], token_patterns_found=[], recommendations=[])
+        result = CSRFScanResult(
+            url=url,
+            vulnerable=False,
+            missing_protections=[],
+            token_patterns_found=[],
+            recommendations=[],
+        )
 
         # Check 1: Token presence
-        has_token = any(re.search(pattern, str(form_data), re.I) for pattern in self.TOKEN_PATTERNS)
+        has_token = any(
+            re.search(pattern, str(form_data), re.I)
+            for pattern in self.TOKEN_PATTERNS
+        )
 
         if has_token:
-            result.token_patterns_found = [p for p in self.TOKEN_PATTERNS if re.search(p, str(form_data), re.I)]
+            result.token_patterns_found = [
+                p
+                for p in self.TOKEN_PATTERNS
+                if re.search(p, str(form_data), re.I)
+            ]
         else:
             result.missing_protections.append("CSRF Token")
 
         # Check 2: SameSite cookie attribute
         cookies = await self.get_cookies(url)
-        samesite_missing = any("samesite" not in cookie.lower() for cookie in cookies)
+        samesite_missing = any(
+            "samesite" not in cookie.lower() for cookie in cookies
+        )
 
         if samesite_missing:
             result.missing_protections.append("SameSite Cookie")
@@ -157,7 +172,9 @@ class CSRFScanner:
         # Determine vulnerability
         if result.missing_protections:
             result.vulnerable = True
-            result.recommendations = self._generate_recommendations(result.missing_protections)
+            result.recommendations = self._generate_recommendations(
+                result.missing_protections
+            )
 
         return result
 
@@ -180,13 +197,21 @@ class CSRFScanner:
         """Generate recommendations based on missing protections"""
         recommendations = []
         if "CSRF Token" in missing:
-            recommendations.append("Implement anti-CSRF tokens in all state-changing forms")
+            recommendations.append(
+                "Implement anti-CSRF tokens in all state-changing forms"
+            )
         if "SameSite Cookie" in missing:
-            recommendations.append("Set SameSite=Strict or SameSite=Lax on session cookies")
+            recommendations.append(
+                "Set SameSite=Strict or SameSite=Lax on session cookies"
+            )
         if "Referer Validation" in missing:
-            recommendations.append("Validate Referer/Origin headers on sensitive endpoints")
+            recommendations.append(
+                "Validate Referer/Origin headers on sensitive endpoints"
+            )
         if "Custom Header Validation" in missing:
-            recommendations.append("Require custom headers (X-Requested-With) for AJAX requests")
+            recommendations.append(
+                "Require custom headers (X-Requested-With) for AJAX requests"
+            )
         return recommendations
 
 
@@ -254,7 +279,9 @@ class SSRFScanner:
         ],
     }
 
-    async def scan_parameter(self, url: str, param: str) -> List[SSRFScanResult]:
+    async def scan_parameter(
+        self, url: str, param: str
+    ) -> List[SSRFScanResult]:
         """Scan a parameter for SSRF vulnerability"""
         results = []
 
@@ -266,11 +293,18 @@ class SSRFScanner:
 
         return results
 
-    async def test_payload(self, url: str, param: str, payload: str, category: str) -> SSRFScanResult:
+    async def test_payload(
+        self, url: str, param: str, payload: str, category: str
+    ) -> SSRFScanResult:
         """Test a single SSRF payload"""
         # Implementation placeholder - educational only
         return SSRFScanResult(
-            url=url, parameter=param, vulnerable=False, payloads_tested=[payload], successful_payloads=[], evidence=""
+            url=url,
+            parameter=param,
+            vulnerable=False,
+            payloads_tested=[payload],
+            successful_payloads=[],
+            evidence="",
         )
 
 
@@ -349,7 +383,15 @@ class AccessControlScanner:
 
     async def test_mass_assignment(self, url: str, params: Dict) -> List[Dict]:
         """Test for mass assignment vulnerabilities"""
-        dangerous_params = ["is_admin", "admin", "role", "privilege", "user_type", "account_type", "permissions"]
+        dangerous_params = [
+            "is_admin",
+            "admin",
+            "role",
+            "privilege",
+            "user_type",
+            "account_type",
+            "permissions",
+        ]
 
         results = []
         for param in dangerous_params:
@@ -358,11 +400,18 @@ class AccessControlScanner:
 
         return results
 
-    async def test_idor(self, url: str, match: str, test_value: str) -> IDORFinding:
+    async def test_idor(
+        self, url: str, match: str, test_value: str
+    ) -> IDORFinding:
         """Test for IDOR with modified value"""
         # Implementation placeholder
         return IDORFinding(
-            url=url, parameter="id", original_value=match, modified_value=test_value, vulnerable=False, evidence=""
+            url=url,
+            parameter="id",
+            original_value=match,
+            modified_value=test_value,
+            vulnerable=False,
+            evidence="",
         )
 
 
@@ -395,11 +444,27 @@ class AuthenticationTester:
     EDUCATIONAL USE ONLY - For authorized security testing
     """
 
-    COMMON_PASSWORDS = ["password", "123456", "admin", "letmein", "welcome", "monkey", "dragon", "master"]
+    COMMON_PASSWORDS = [
+        "password",
+        "123456",
+        "admin",
+        "letmein",
+        "welcome",
+        "monkey",
+        "dragon",
+        "master",
+    ]
 
-    async def test_brute_force_protection(self, login_url: str, username: str) -> AuthTestResult:
+    async def test_brute_force_protection(
+        self, login_url: str, username: str
+    ) -> AuthTestResult:
         """Test for brute force protection mechanisms"""
-        results = {"rate_limiting": False, "account_lockout": False, "captcha_triggered": False, "ip_blocking": False}
+        results = {
+            "rate_limiting": False,
+            "account_lockout": False,
+            "captcha_triggered": False,
+            "ip_blocking": False,
+        }
 
         # Attempt multiple failed logins
         for i in range(20):
@@ -407,19 +472,32 @@ class AuthenticationTester:
             pass
 
         return AuthTestResult(
-            test_type="brute_force_protection", vulnerable=not any(results.values()), details=results, recommendations=[]
+            test_type="brute_force_protection",
+            vulnerable=not any(results.values()),
+            details=results,
+            recommendations=[],
         )
 
     async def test_password_policy(self, register_url: str) -> AuthTestResult:
         """Test password policy enforcement"""
-        test_passwords = [("short", "123"), ("common", "password123"), ("nocomplex", "abcdefgh"), ("valid", "Str0ng!P@ssw0rd")]
+        test_passwords = [
+            ("short", "123"),
+            ("common", "password123"),
+            ("nocomplex", "abcdefgh"),
+            ("valid", "Str0ng!P@ssw0rd"),
+        ]
 
         results = {}
         for test_name, password in test_passwords:
             # Implementation placeholder - educational only
             pass
 
-        return AuthTestResult(test_type="password_policy", vulnerable=False, details=results, recommendations=[])
+        return AuthTestResult(
+            test_type="password_policy",
+            vulnerable=False,
+            details=results,
+            recommendations=[],
+        )
 
     async def test_mfa_bypass(self, mfa_url: str) -> AuthTestResult:
         """Test MFA bypass techniques"""
@@ -429,7 +507,10 @@ class AuthenticationTester:
         # - backup_code_reuse
         # - session_fixation
         return AuthTestResult(
-            test_type="mfa_bypass", vulnerable=False, details={}, recommendations=["Implement rate limiting on MFA endpoints"]
+            test_type="mfa_bypass",
+            vulnerable=False,
+            details={},
+            recommendations=["Implement rate limiting on MFA endpoints"],
         )
 
 
@@ -462,7 +543,9 @@ class SessionManager:
     EDUCATIONAL USE ONLY - For authorized security testing
     """
 
-    async def test_session_id_entropy(self, session_ids: List[str]) -> SessionTestResult:
+    async def test_session_id_entropy(
+        self, session_ids: List[str]
+    ) -> SessionTestResult:
         """Test session ID randomness"""
         # Calculate entropy
         entropy = self._calculate_entropy(session_ids)
@@ -493,7 +576,12 @@ class SessionManager:
     async def test_cookie_security_flags(self, url: str) -> SessionTestResult:
         """Test cookie security flags (HttpOnly, Secure, SameSite)"""
         # Implementation placeholder
-        return SessionTestResult(test_name="cookie_security_flags", passed=True, findings=[], recommendations=[])
+        return SessionTestResult(
+            test_name="cookie_security_flags",
+            passed=True,
+            findings=[],
+            recommendations=[],
+        )
 
     def _calculate_entropy(self, data: List[str]) -> float:
         """Calculate Shannon entropy"""
@@ -505,7 +593,10 @@ class SessionManager:
 
         counter = Counter(data)
         length = len(data)
-        entropy = -sum((count / length) * math.log2(count / length) for count in counter.values())
+        entropy = -sum(
+            (count / length) * math.log2(count / length)
+            for count in counter.values()
+        )
         return entropy
 
     def _detect_patterns(self, session_ids: List[str]) -> List[str]:
@@ -592,7 +683,9 @@ class XSSScannerEnhanced:
         "null_byte_insertion",
     ]
 
-    async def scan_for_xss(self, url: str, params: Dict[str, str]) -> List[Dict]:
+    async def scan_for_xss(
+        self, url: str, params: Dict[str, str]
+    ) -> List[Dict]:
         """Comprehensive XSS scan"""
         findings = []
 
@@ -600,16 +693,26 @@ class XSSScannerEnhanced:
         for param_name, param_value in params.items():
             for category, payloads in self.PAYLOAD_CATEGORIES.items():
                 for payload in payloads:
-                    result = await self.test_xss_payload(url, param_name, payload, category)
+                    result = await self.test_xss_payload(
+                        url, param_name, payload, category
+                    )
                     if result.get("vulnerable"):
                         findings.append(result)
 
         return findings
 
-    async def test_xss_payload(self, url: str, param: str, payload: str, category: str) -> Dict:
+    async def test_xss_payload(
+        self, url: str, param: str, payload: str, category: str
+    ) -> Dict:
         """Test a single XSS payload"""
         # Implementation placeholder - educational only
-        return {"vulnerable": False, "url": url, "parameter": param, "payload": payload, "category": category}
+        return {
+            "vulnerable": False,
+            "url": url,
+            "parameter": param,
+            "payload": payload,
+            "category": category,
+        }
 
 
 # ============================================================================
@@ -642,7 +745,9 @@ class APISecurityScanner:
         "field_suggestions",
     ]
 
-    async def scan_rest_api(self, base_url: str, endpoints: List[str]) -> List[Dict]:
+    async def scan_rest_api(
+        self, base_url: str, endpoints: List[str]
+    ) -> List[Dict]:
         """Scan REST API endpoints"""
         results = []
 
@@ -707,7 +812,9 @@ class FileUploadTester:
         "html_test": ("test.html", b"<script>/* EDUCATIONAL TEST */</script>"),
     }
 
-    async def test_file_upload(self, upload_url: str, field_name: str) -> List[Dict]:
+    async def test_file_upload(
+        self, upload_url: str, field_name: str
+    ) -> List[Dict]:
         """Test file upload functionality"""
         results = []
 

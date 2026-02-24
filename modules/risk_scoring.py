@@ -38,7 +38,13 @@ class RiskScoringModule:
     enabled = True
 
     # Weight factors (must sum to 1.0)
-    WEIGHTS = {"cvss": 0.35, "epss": 0.25, "business": 0.25, "exposure": 0.10, "data": 0.05}
+    WEIGHTS = {
+        "cvss": 0.35,
+        "epss": 0.25,
+        "business": 0.25,
+        "exposure": 0.10,
+        "data": 0.05,
+    }
 
     def __init__(self):
         self.name = "risk_scoring"
@@ -115,7 +121,11 @@ class RiskScoringModule:
             return SeverityLevel.INFO
 
     def score_vulnerability(
-        self, cve_id: str, asset_type: str = "web_server", exposure: int = 3, data_sensitivity: int = 3
+        self,
+        cve_id: str,
+        asset_type: str = "web_server",
+        exposure: int = 3,
+        data_sensitivity: int = 3,
     ) -> Dict:
         """Score a single vulnerability"""
         factors = RiskFactors(
@@ -137,7 +147,9 @@ class RiskScoringModule:
             "business_impact": factors.business_impact,
             "composite_score": composite_score,
             "severity": severity.value,
-            "priority": self._calculate_priority(composite_score, factors.epss_score),
+            "priority": self._calculate_priority(
+                composite_score, factors.epss_score
+            ),
             "remediation_timeline": self._get_remediation_timeline(severity),
         }
 
@@ -165,7 +177,9 @@ class RiskScoringModule:
         }
         return timelines[severity]
 
-    def score_findings(self, findings: List[Dict], asset_inventory: Optional[Dict] = None) -> List[Dict]:
+    def score_findings(
+        self, findings: List[Dict], asset_inventory: Optional[Dict] = None
+    ) -> List[Dict]:
         """Score multiple findings"""
         scored_findings = []
         for finding in findings:

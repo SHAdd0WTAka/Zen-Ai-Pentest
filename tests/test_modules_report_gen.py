@@ -21,7 +21,13 @@ class TestReportGenerator:
         from modules.report_gen import ReportGenerator
 
         gen = ReportGenerator()
-        findings = [{"title": "Test", "severity": "high", "description": "Test finding"}]
+        findings = [
+            {
+                "title": "Test",
+                "severity": "high",
+                "description": "Test finding",
+            }
+        ]
         with patch("builtins.open", mock_open()) as mock_file:
             _ = gen.generate_json(findings, "test.json")
             mock_file.assert_called_once()
@@ -31,7 +37,13 @@ class TestReportGenerator:
         from modules.report_gen import ReportGenerator
 
         gen = ReportGenerator()
-        findings = [{"title": "Test", "severity": "high", "description": "Test finding"}]
+        findings = [
+            {
+                "title": "Test",
+                "severity": "high",
+                "description": "Test finding",
+            }
+        ]
         with patch("builtins.open", mock_open()) as mock_file:
             _ = gen.generate_markdown(findings, "test.md")
             mock_file.assert_called_once()
@@ -41,7 +53,10 @@ class TestReportGenerator:
         from modules.report_gen import ReportGenerator
 
         gen = ReportGenerator()
-        findings = [{"title": "Test", "severity": "high", "cvss": 8.5}, {"title": "Test2", "severity": "low", "cvss": 2.0}]
+        findings = [
+            {"title": "Test", "severity": "high", "cvss": 8.5},
+            {"title": "Test2", "severity": "low", "cvss": 2.0},
+        ]
         result = gen.format_findings(findings)
         assert len(result) == 2
 
@@ -50,7 +65,10 @@ class TestReportGenerator:
         from modules.report_gen import ReportGenerator
 
         gen = ReportGenerator()
-        findings = [{"severity": "critical", "cvss": 9.5}, {"severity": "high", "cvss": 7.5}]
+        findings = [
+            {"severity": "critical", "cvss": 9.5},
+            {"severity": "high", "cvss": 7.5},
+        ]
         score = gen.calculate_risk_score(findings)
         assert score > 0
 

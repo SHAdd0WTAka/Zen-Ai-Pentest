@@ -141,8 +141,12 @@ class ScheduledJob:
             "max_retries": self.max_retries,
             "timeout": self.timeout,
             "enabled": self.enabled,
-            "created_at": self.created_at.isoformat() if self.created_at else None,
-            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+            "created_at": (
+                self.created_at.isoformat() if self.created_at else None
+            ),
+            "updated_at": (
+                self.updated_at.isoformat() if self.updated_at else None
+            ),
             "last_run": self.last_run.isoformat() if self.last_run else None,
             "next_run": self.next_run.isoformat() if self.next_run else None,
             "run_count": self.run_count,
@@ -161,13 +165,22 @@ class ScheduledJob:
 
         return cls(**data)
 
-    def record_execution(self, success: bool, result: Optional[Dict] = None, error: Optional[str] = None):
+    def record_execution(
+        self,
+        success: bool,
+        result: Optional[Dict] = None,
+        error: Optional[str] = None,
+    ):
         """Record job execution result"""
         self.last_run = datetime.utcnow()
         self.run_count += 1
 
         if success:
-            self.status = JobStatus.SCHEDULED if self.schedule_type != ScheduleType.ONCE else JobStatus.COMPLETED
+            self.status = (
+                JobStatus.SCHEDULED
+                if self.schedule_type != ScheduleType.ONCE
+                else JobStatus.COMPLETED
+            )
         else:
             self.fail_count += 1
             self.status = JobStatus.FAILED

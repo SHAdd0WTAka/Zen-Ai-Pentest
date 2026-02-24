@@ -23,13 +23,17 @@ def example_1_basic_scan():
     print()
 
     # Agent konfigurieren
-    config = ReActAgentConfig(max_iterations=3, enable_sandbox=True, auto_approve_dangerous=False)
+    config = ReActAgentConfig(
+        max_iterations=3, enable_sandbox=True, auto_approve_dangerous=False
+    )
 
     agent = ReActAgent(config)
 
     # Scan ausführen
     target = "scanme.nmap.org"  # Offizieller Nmap Test-Server
-    result = agent.run(target=target, objective="Scan top 100 ports and identify services")
+    result = agent.run(
+        target=target, objective="Scan top 100 ports and identify services"
+    )
 
     # Report anzeigen
     print(agent.generate_report(result))
@@ -54,7 +58,10 @@ def example_2_vulnerability_assessment():
     agent = ReActAgent(config)
 
     target = "testphp.vulnweb.com"  # Offizieller Acunetix Test-Server
-    result = agent.run(target=target, objective="Find vulnerabilities (CVEs) and misconfigurations")
+    result = agent.run(
+        target=target,
+        objective="Find vulnerabilities (CVEs) and misconfigurations",
+    )
 
     print(agent.generate_report(result))
     print()
@@ -69,7 +76,12 @@ def example_3_full_assessment():
     print("=" * 70)
     print()
 
-    config = ReActAgentConfig(max_iterations=10, enable_sandbox=True, auto_approve_dangerous=False, llm_model="gpt-4o")
+    config = ReActAgentConfig(
+        max_iterations=10,
+        enable_sandbox=True,
+        auto_approve_dangerous=False,
+        llm_model="gpt-4o",
+    )
 
     agent = ReActAgent(config)
 
@@ -119,9 +131,14 @@ def example_4_interactive_mode():
     print("The agent will pause before dangerous actions.")
     print()
 
-    target = input("Enter target (e.g., scanme.nmap.org): ") or "scanme.nmap.org"
+    target = (
+        input("Enter target (e.g., scanme.nmap.org): ") or "scanme.nmap.org"
+    )
 
-    result = agent.run(target=target, objective="Full security assessment with exploit validation")
+    result = agent.run(
+        target=target,
+        objective="Full security assessment with exploit validation",
+    )
 
     print("\n" + agent.generate_report(result))
 
@@ -145,8 +162,12 @@ def example_5_continuous_mode():
     target = "example.com"
 
     def daily_scan():
-        print(f"\n[{time.strftime('%Y-%m-%d %H:%M:%S')}] Starting daily scan...")
-        result = agent.run(target=target, objective="Quick vulnerability check")
+        print(
+            f"\n[{time.strftime('%Y-%m-%d %H:%M:%S')}] Starting daily scan..."
+        )
+        result = agent.run(
+            target=target, objective="Quick vulnerability check"
+        )
 
         # Speichere Ergebnis
         timestamp = time.strftime("%Y%m%d_%H%M%S")
@@ -175,7 +196,11 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(description="ReAct Agent Examples")
-    parser.add_argument("example", choices=["1", "2", "3", "4", "5", "all"], help="Which example to run (1-5 or all)")
+    parser.add_argument(
+        "example",
+        choices=["1", "2", "3", "4", "5", "all"],
+        help="Which example to run (1-5 or all)",
+    )
 
     args = parser.parse_args()
 

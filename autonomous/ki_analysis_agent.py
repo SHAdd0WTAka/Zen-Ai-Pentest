@@ -23,7 +23,10 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
 logger = logging.getLogger(__name__)
 
 
@@ -112,7 +115,9 @@ class AgentMemory:
         """Fügt einen ReAct Step zum Context Window hinzu."""
         self.context_window.append(step)
         if len(self.context_window) > self.max_context_window:
-            self.context_window = self.context_window[-self.max_context_window :]
+            self.context_window = self.context_window[
+                -self.max_context_window :
+            ]
         self._persist_long_term()
 
     def add_finding(self, finding: Dict[str, Any]) -> None:
@@ -141,7 +146,9 @@ class AgentMemory:
         ]
 
         for step in self.context_window[-5:]:
-            context_parts.append(f"\n[Step {step.step_number}] {step.timestamp.strftime('%H:%M:%S')}")
+            context_parts.append(
+                f"\n[Step {step.step_number}] {step.timestamp.strftime('%H:%M:%S')}"
+            )
             context_parts.append(f"  Thought: {step.thought[:150]}...")
             context_parts.append(f"  Action: {step.action}")
             context_parts.append(f"  Success: {step.success}")
@@ -175,14 +182,18 @@ class AgentMemory:
     def load_session(self, session_id: str) -> bool:
         """Lädt eine vorherige Session."""
         try:
-            file_path = Path(f"logs/ki_agent_sessions/session_{session_id}.json")
+            file_path = Path(
+                f"logs/ki_agent_sessions/session_{session_id}.json"
+            )
             if file_path.exists():
                 with open(file_path, "r", encoding="utf-8") as f:
                     data = json.load(f)
                 self.goal = data.get("goal", "")
                 self.target = data.get("target", "")
                 self.findings = data.get("findings", [])
-                logger.info(f"Session {session_id} loaded with {len(self.findings)} findings")
+                logger.info(
+                    f"Session {session_id} loaded with {len(self.findings)} findings"
+                )
                 return True
         except Exception as e:
             logger.error(f"Failed to load session: {e}")
@@ -196,7 +207,9 @@ class KIAnalyzer:
         self.model = model
         self.logger = logging.getLogger("KIAnalyzer")
 
-    async def analyze(self, prompt: str, context: str = "", max_tokens: int = 2000) -> str:
+    async def analyze(
+        self, prompt: str, context: str = "", max_tokens: int = 2000
+    ) -> str:
         """
         Führt KI-Analyse durch mittels kimi-cli.
 
@@ -217,14 +230,20 @@ Provide a structured, actionable response. Be concise but thorough."""
             cmd = ["kimi", "-c", full_prompt]
 
             process = await asyncio.create_subprocess_exec(
-                *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+                *cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
             )
 
-            stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=60.0)
+            stdout, stderr = await asyncio.wait_for(
+                process.communicate(), timeout=60.0
+            )
 
             if process.returncode == 0:
                 response = stdout.decode("utf-8", errors="ignore").strip()
-                self.logger.info(f"KI analysis completed ({len(response)} chars)")
+                self.logger.info(
+                    f"KI analysis completed ({len(response)} chars)"
+                )
                 return response
             else:
                 error = stderr.decode("utf-8", errors="ignore")[:200]
@@ -260,7 +279,9 @@ The request "{prompt[:100]}..." requires further investigation.
 
 [Note: Full KI analysis unavailable - kimi-cli not installed or timeout]"""
 
-    async def plan_next_steps(self, memory: AgentMemory, phase: AnalysisPhase) -> List[Dict[str, Any]]:
+    async def plan_next_steps(
+        self, memory: AgentMemory, phase: AnalysisPhase
+    ) -> List[Dict[str, Any]]:
         """
         Nutzt KI zur Planung der nächsten Schritte.
 
@@ -308,37 +329,121 @@ Respond ONLY with the JSON array."""
         # Fallback Plan
         return self._generate_fallback_plan(phase, memory.target)
 
-    def _generate_fallback_plan(self, phase: AnalysisPhase, target: str) -> List[Dict[str, Any]]:
+    def _generate_fallback_plan(
+        self, phase: AnalysisPhase, target: str
+    ) -> List[Dict[str, Any]]:
         """Generiert Fallback-Plan wenn KI-Planung fehlschlägt."""
         plans = {
             AnalysisPhase.RECONNAISSANCE: [
-                {"action": "dns_enum", "tool": "dig", "target": target, "priority": 1},
-                {"action": "whois", "tool": "whois", "target": target, "priority": 2},
+                {
+                    "action": "dns_enum",
+                    "tool": "dig",
+                    "target": target,
+                    "priority": 1,
+                },
+                {
+                    "action": "whois",
+                    "tool": "whois",
+                    "target": target,
+                    "priority": 2,
+                },
             ],
             AnalysisPhase.SCANNING: [
-                {"action": "port_scan", "tool": "nmap", "target": target, "parameters": {"ports": "top100"}, "priority": 1},
-                {"action": "service_scan", "tool": "nmap", "target": target, "parameters": {"flags": "-sV"}, "priority": 2},
+                {
+                    "action": "port_scan",
+                    "tool": "nmap",
+                    "target": target,
+                    "parameters": {"ports": "top100"},
+                    "priority": 1,
+                },
+                {
+                    "action": "service_scan",
+                    "tool": "nmap",
+                    "target": target,
+                    "parameters": {"flags": "-sV"},
+                    "priority": 2,
+                },
             ],
             AnalysisPhase.VULNERABILITY_ANALYSIS: [
-                {"action": "vuln_scan", "tool": "nuclei", "target": target, "priority": 1},
-                {"action": "web_scan", "tool": "nikto", "target": target, "priority": 2},
+                {
+                    "action": "vuln_scan",
+                    "tool": "nuclei",
+                    "target": target,
+                    "priority": 1,
+                },
+                {
+                    "action": "web_scan",
+                    "tool": "nikto",
+                    "target": target,
+                    "priority": 2,
+                },
             ],
         }
-        return plans.get(phase, [{"action": "analyze", "tool": "manual", "target": target, "priority": 1}])
+        return plans.get(
+            phase,
+            [
+                {
+                    "action": "analyze",
+                    "tool": "manual",
+                    "target": target,
+                    "priority": 1,
+                }
+            ],
+        )
 
 
 class ToolExecutor:
     """Orchestration für 20+ Pentesting Tools."""
 
     TOOLS = {
-        "nmap": {"category": "scanner", "description": "Network port scanner", "command": "nmap", "safe": True},
-        "nikto": {"category": "web", "description": "Web vulnerability scanner", "command": "nikto", "safe": True},
-        "gobuster": {"category": "web", "description": "Directory/file brute forcer", "command": "gobuster", "safe": True},
-        "nuclei": {"category": "vuln", "description": "Fast vulnerability scanner", "command": "nuclei", "safe": True},
-        "subfinder": {"category": "recon", "description": "Subdomain discovery", "command": "subfinder", "safe": True},
-        "dnsrecon": {"category": "recon", "description": "DNS enumeration", "command": "dnsrecon", "safe": True},
-        "sslscan": {"category": "scanner", "description": "SSL/TLS scanner", "command": "sslscan", "safe": True},
-        "testssl": {"category": "scanner", "description": "Comprehensive SSL tests", "command": "testssl.sh", "safe": True},
+        "nmap": {
+            "category": "scanner",
+            "description": "Network port scanner",
+            "command": "nmap",
+            "safe": True,
+        },
+        "nikto": {
+            "category": "web",
+            "description": "Web vulnerability scanner",
+            "command": "nikto",
+            "safe": True,
+        },
+        "gobuster": {
+            "category": "web",
+            "description": "Directory/file brute forcer",
+            "command": "gobuster",
+            "safe": True,
+        },
+        "nuclei": {
+            "category": "vuln",
+            "description": "Fast vulnerability scanner",
+            "command": "nuclei",
+            "safe": True,
+        },
+        "subfinder": {
+            "category": "recon",
+            "description": "Subdomain discovery",
+            "command": "subfinder",
+            "safe": True,
+        },
+        "dnsrecon": {
+            "category": "recon",
+            "description": "DNS enumeration",
+            "command": "dnsrecon",
+            "safe": True,
+        },
+        "sslscan": {
+            "category": "scanner",
+            "description": "SSL/TLS scanner",
+            "command": "sslscan",
+            "safe": True,
+        },
+        "testssl": {
+            "category": "scanner",
+            "description": "Comprehensive SSL tests",
+            "command": "testssl.sh",
+            "safe": True,
+        },
     }
 
     def __init__(self, max_retries: int = 3):
@@ -363,9 +468,13 @@ class ToolExecutor:
         # Retry Logic
         for attempt in range(1, self.max_retries + 1):
             try:
-                self.logger.info(f"Executing {tool_name} (attempt {attempt}/{self.max_retries})")
+                self.logger.info(
+                    f"Executing {tool_name} (attempt {attempt}/{self.max_retries})"
+                )
 
-                result = await self._execute_tool(tool_name, target, parameters)
+                result = await self._execute_tool(
+                    tool_name, target, parameters
+                )
 
                 if result["success"]:
                     self.execution_history.append(
@@ -388,11 +497,18 @@ class ToolExecutor:
             except Exception as e:
                 self.logger.error(f"Execution error: {e}")
                 if attempt == self.max_retries:
-                    return {"success": False, "error": str(e), "tool": tool_name, "target": target}
+                    return {
+                        "success": False,
+                        "error": str(e),
+                        "tool": tool_name,
+                        "target": target,
+                    }
 
         return {"success": False, "error": "Max retries exceeded"}
 
-    async def _execute_tool(self, tool: str, target: str, params: Dict[str, Any]) -> Dict[str, Any]:
+    async def _execute_tool(
+        self, tool: str, target: str, params: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Führt ein spezifisches Tool aus."""
 
         # Simulierte Tool-Ausführung (für Demo)
@@ -409,10 +525,17 @@ class ToolExecutor:
                 "success": True,
                 "tool": tool,
                 "target": target,
-                "findings": [{"type": "info", "message": f"{tool} scan completed on {target}"}],
+                "findings": [
+                    {
+                        "type": "info",
+                        "message": f"{tool} scan completed on {target}",
+                    }
+                ],
             }
 
-    async def _simulate_nmap(self, target: str, params: Dict[str, Any]) -> Dict[str, Any]:
+    async def _simulate_nmap(
+        self, target: str, params: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Simuliert Nmap Scan."""
         await asyncio.sleep(1.0)
 
@@ -433,10 +556,15 @@ class ToolExecutor:
             "target": target,
             "command": f"nmap {flags} -p {ports} {target}",
             "open_ports": open_ports,
-            "findings": [{"port": p, "state": "open", "service": self._get_service(p)} for p in open_ports],
+            "findings": [
+                {"port": p, "state": "open", "service": self._get_service(p)}
+                for p in open_ports
+            ],
         }
 
-    async def _simulate_nikto(self, target: str, params: Dict[str, Any]) -> Dict[str, Any]:
+    async def _simulate_nikto(
+        self, target: str, params: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Simuliert Nikto Web Scan."""
         await asyncio.sleep(0.8)
 
@@ -445,19 +573,45 @@ class ToolExecutor:
             "tool": "nikto",
             "target": target,
             "findings": [
-                {"type": "header", "issue": "X-Frame-Options missing", "severity": "medium"},
-                {"type": "header", "issue": "Content-Security-Policy missing", "severity": "low"},
-                {"type": "info", "issue": "Server banner detected", "severity": "info"},
+                {
+                    "type": "header",
+                    "issue": "X-Frame-Options missing",
+                    "severity": "medium",
+                },
+                {
+                    "type": "header",
+                    "issue": "Content-Security-Policy missing",
+                    "severity": "low",
+                },
+                {
+                    "type": "info",
+                    "issue": "Server banner detected",
+                    "severity": "info",
+                },
             ],
         }
 
-    async def _simulate_subfinder(self, target: str, params: Dict[str, Any]) -> Dict[str, Any]:
+    async def _simulate_subfinder(
+        self, target: str, params: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Simuliert Subfinder."""
         await asyncio.sleep(0.6)
 
-        subdomains = [f"www.{target}", f"mail.{target}", f"ftp.{target}", f"admin.{target}", f"api.{target}"]
+        subdomains = [
+            f"www.{target}",
+            f"mail.{target}",
+            f"ftp.{target}",
+            f"admin.{target}",
+            f"api.{target}",
+        ]
 
-        return {"success": True, "tool": "subfinder", "target": target, "subdomains": subdomains, "count": len(subdomains)}
+        return {
+            "success": True,
+            "tool": "subfinder",
+            "target": target,
+            "subdomains": subdomains,
+            "count": len(subdomains),
+        }
 
     def _get_service(self, port: int) -> str:
         """Mapped Port zu Service."""
@@ -516,7 +670,9 @@ class KIAutonomousAgent:
         self.paused_for_input = False
 
         # Callbacks
-        self.on_state_change: Optional[Callable[[AgentState, AgentState], None]] = None
+        self.on_state_change: Optional[
+            Callable[[AgentState, AgentState], None]
+        ] = None
         self.on_step_complete: Optional[Callable[[ReActStep], None]] = None
         self.on_finding: Optional[Callable[[Dict[str, Any]], None]] = None
         self.on_human_prompt: Optional[Callable[[str], None]] = None
@@ -543,7 +699,9 @@ class KIAutonomousAgent:
         Führt den ReAct Pattern aus:
         REASON → ACT → OBSERVE → REFLECT → (REPEAT)
         """
-        self.logger.info(f"Starting KI Autonomous Agent for target: {self.memory.target}")
+        self.logger.info(
+            f"Starting KI Autonomous Agent for target: {self.memory.target}"
+        )
         self._transition_to(AgentState.PLANNING)
 
         try:
@@ -641,10 +799,14 @@ Be specific and actionable."""
         if "THOUGHT:" in response:
             thought = response.split("THOUGHT:")[1].split("\n")[0].strip()
         if "ACTION:" in response:
-            action = response.split("ACTION:")[1].split("\n")[0].strip().lower()
+            action = (
+                response.split("ACTION:")[1].split("\n")[0].strip().lower()
+            )
         if "PARAMS:" in response:
             try:
-                params_text = response.split("PARAMS:")[1].split("\n")[0].strip()
+                params_text = (
+                    response.split("PARAMS:")[1].split("\n")[0].strip()
+                )
                 params = json.loads(params_text)
             except Exception:
                 params = {"target": self.memory.target, "tool": "nmap"}
@@ -653,9 +815,18 @@ Be specific and actionable."""
         if not thought:
             thought = f"Continuing {self.current_phase.value} phase with standard scan"
             action = "scan"
-            params = {"target": self.memory.target, "tool": "nmap", "ports": "top100"}
+            params = {
+                "target": self.memory.target,
+                "tool": "nmap",
+                "ports": "top100",
+            }
 
-        return ReActStep(step_number=self.step_counter + 1, thought=thought, action=action, action_params=params)
+        return ReActStep(
+            step_number=self.step_counter + 1,
+            thought=thought,
+            action=action,
+            action_params=params,
+        )
 
     async def _act(self, step: ReActStep) -> str:
         """
@@ -665,7 +836,9 @@ Be specific and actionable."""
             result = await self.executor.execute(
                 {
                     "tool": step.action_params.get("tool", "nmap"),
-                    "target": step.action_params.get("target", self.memory.target),
+                    "target": step.action_params.get(
+                        "target", self.memory.target
+                    ),
                     "parameters": step.action_params,
                 }
             )
@@ -681,7 +854,9 @@ Be specific and actionable."""
         """
         OBSERVE Phase: Analysiert die Ergebnisse.
         """
-        context = f"Action: {step.action}\nObservation: {step.observation[:500]}"
+        context = (
+            f"Action: {step.action}\nObservation: {step.observation[:500]}"
+        )
 
         prompt = """Analyze the scan results and identify security findings.
 
@@ -715,7 +890,9 @@ If no findings, return empty array []."""
 
         return []
 
-    async def _reflect(self, step: ReActStep, findings: List[Dict[str, Any]]) -> str:
+    async def _reflect(
+        self, step: ReActStep, findings: List[Dict[str, Any]]
+    ) -> str:
         """
         REFLECT Phase: Evaluiert den Fortschritt.
         """
@@ -778,7 +955,9 @@ Provide a brief reflection (2-3 sentences)."""
         self.state = new_state
 
         if old_state != new_state:
-            self.logger.info(f"State transition: {old_state.name} -> {new_state.name}")
+            self.logger.info(
+                f"State transition: {old_state.name} -> {new_state.name}"
+            )
             if self.on_state_change:
                 self.on_state_change(old_state, new_state)
 
@@ -799,7 +978,9 @@ Provide a brief reflection (2-3 sentences)."""
             current_idx = phase_order.index(self.current_phase)
             if current_idx < len(phase_order) - 1:
                 self.current_phase = phase_order[current_idx + 1]
-                self.logger.info(f"Advanced to phase: {self.current_phase.value}")
+                self.logger.info(
+                    f"Advanced to phase: {self.current_phase.value}"
+                )
 
     def _get_next_phase(self) -> AnalysisPhase:
         """Gibt die nächste Phase zurück."""
@@ -812,7 +993,10 @@ Provide a brief reflection (2-3 sentences)."""
     def _is_complete(self) -> bool:
         """Prüft ob das Ziel erreicht ist."""
         # Mindestens 10 Steps und in REPORTING Phase
-        return self.step_counter >= 10 and self.current_phase == AnalysisPhase.REPORTING
+        return (
+            self.step_counter >= 10
+            and self.current_phase == AnalysisPhase.REPORTING
+        )
 
     def _generate_report(self) -> Dict[str, Any]:
         """Generiert finalen Bericht."""
@@ -827,7 +1011,12 @@ Provide a brief reflection (2-3 sentences)."""
             "findings_by_severity": self._categorize_findings(),
             "execution_summary": {
                 "phases_completed": self.current_phase.value,
-                "tools_used": list(set(h.get("tool", "unknown") for h in self.executor.execution_history)),
+                "tools_used": list(
+                    set(
+                        h.get("tool", "unknown")
+                        for h in self.executor.execution_history
+                    )
+                ),
                 "success_rate": self._calculate_success_rate(),
             },
             "findings": self.memory.findings,
@@ -847,7 +1036,13 @@ Provide a brief reflection (2-3 sentences)."""
 
     def _categorize_findings(self) -> Dict[str, int]:
         """Kategorisiert Findings nach Schwere."""
-        categories = {"critical": 0, "high": 0, "medium": 0, "low": 0, "info": 0}
+        categories = {
+            "critical": 0,
+            "high": 0,
+            "medium": 0,
+            "low": 0,
+            "info": 0,
+        }
         for f in self.memory.findings:
             sev = f.get("severity", "info").lower()
             if sev in categories:
@@ -858,7 +1053,9 @@ Provide a brief reflection (2-3 sentences)."""
         """Berechnet Erfolgsrate der Ausführungen."""
         if not self.executor.execution_history:
             return 0.0
-        successful = sum(1 for h in self.executor.execution_history if h.get("success"))
+        successful = sum(
+            1 for h in self.executor.execution_history if h.get("success")
+        )
         return (successful / len(self.executor.execution_history)) * 100
 
 
@@ -868,7 +1065,10 @@ Provide a brief reflection (2-3 sentences)."""
 
 
 async def run_ki_agent(
-    target: str, goal: str = "Comprehensive security assessment", human_in_loop: bool = False, verbose: bool = True
+    target: str,
+    goal: str = "Comprehensive security assessment",
+    human_in_loop: bool = False,
+    verbose: bool = True,
 ):
     """
     Führt den KI Autonomous Agent aus.
@@ -890,11 +1090,18 @@ async def run_ki_agent(
 
     print(f"[CONFIG] Target: {target}")
     print(f"[CONFIG] Goal: {goal}")
-    print(f"[CONFIG] Human-in-the-Loop: {'Enabled' if human_in_loop else 'Disabled'}")
+    print(
+        f"[CONFIG] Human-in-the-Loop: {'Enabled' if human_in_loop else 'Disabled'}"
+    )
     print("[CONFIG] KI Backend: kimi-cli (fallback: built-in)\n")
 
     # Erstelle Agent
-    agent = KIAutonomousAgent(goal=goal, target=target, human_in_loop=human_in_loop, max_iterations=20)
+    agent = KIAutonomousAgent(
+        goal=goal,
+        target=target,
+        human_in_loop=human_in_loop,
+        max_iterations=20,
+    )
 
     # Callbacks für Live-Updates
     def on_step(step: ReActStep):
@@ -911,7 +1118,9 @@ async def run_ki_agent(
     def on_state_change(old: AgentState, new: AgentState):
         print(f"  [STATE] {old.name} -> {new.name}")
 
-    agent.set_callbacks(step_complete=on_step, finding=on_finding, state_change=on_state_change)
+    agent.set_callbacks(
+        step_complete=on_step, finding=on_finding, state_change=on_state_change
+    )
 
     # Führe Agent aus
     start_time = datetime.now()
@@ -932,7 +1141,9 @@ async def run_ki_agent(
         if count > 0:
             print(f"  [{sev.upper()}] {count}")
 
-    print(f"\nReport saved: logs/ki_agent_reports/report_{report['session_id']}.json")
+    print(
+        f"\nReport saved: logs/ki_agent_reports/report_{report['session_id']}.json"
+    )
 
     return report
 
@@ -940,17 +1151,32 @@ async def run_ki_agent(
 if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser(description="KI Autonomous Agent for Zen AI Pentest")
+    parser = argparse.ArgumentParser(
+        description="KI Autonomous Agent for Zen AI Pentest"
+    )
     parser.add_argument("target", help="Target IP or domain")
-    parser.add_argument("--goal", default="Comprehensive security assessment", help="Assessment goal")
-    parser.add_argument("--human-in-loop", action="store_true", help="Enable human approval for critical actions")
+    parser.add_argument(
+        "--goal",
+        default="Comprehensive security assessment",
+        help="Assessment goal",
+    )
+    parser.add_argument(
+        "--human-in-loop",
+        action="store_true",
+        help="Enable human approval for critical actions",
+    )
     parser.add_argument("--quiet", action="store_true", help="Minimal output")
 
     args = parser.parse_args()
 
     try:
         result = asyncio.run(
-            run_ki_agent(target=args.target, goal=args.goal, human_in_loop=args.human_in_loop, verbose=not args.quiet)
+            run_ki_agent(
+                target=args.target,
+                goal=args.goal,
+                human_in_loop=args.human_in_loop,
+                verbose=not args.quiet,
+            )
         )
 
         if result.get("success") is False:

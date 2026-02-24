@@ -10,7 +10,12 @@ from .circuit_breaker import CircuitBreaker
 from .filters.compress import ContextCompressor
 from .filters.injection import PromptInjectionDetector
 from .filters.secrets import SecretScrubber
-from .schemas import RedactionInfo, RiskLevel, SanitizerRequest, SanitizerResponse
+from .schemas import (
+    RedactionInfo,
+    RiskLevel,
+    SanitizerRequest,
+    SanitizerResponse,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -43,11 +48,15 @@ class ZenSanitizer:
             circuit_breaker_threshold: Failures before fallback mode
         """
         self.secret_scrubber = SecretScrubber()
-        self.injection_detector = PromptInjectionDetector() if enable_injection_detection else None
+        self.injection_detector = (
+            PromptInjectionDetector() if enable_injection_detection else None
+        )
         self.enable_compression = enable_compression
 
         # Circuit breaker for LLM operations
-        self.circuit_breaker = CircuitBreaker(failure_threshold=circuit_breaker_threshold)
+        self.circuit_breaker = CircuitBreaker(
+            failure_threshold=circuit_breaker_threshold
+        )
 
         # Compression with circuit breaker protection
         self.compressor = ContextCompressor(small_llm_endpoint)
@@ -65,13 +74,19 @@ class ZenSanitizer:
         start_time = time.time()
         raw_data = request.raw_data
 
-        logger.info(f"Processing {len(raw_data)} chars from {request.source_tool}")
+        logger.info(
+            f"Processing {len(raw_data)} chars from {request.source_tool}"
+        )
 
         # Step 1: Prompt injection detection
         if self.injection_detector:
-            is_injection, injection_matches = self.injection_detector.scan(raw_data)
+            is_injection, injection_matches = self.injection_detector.scan(
+                raw_data
+            )
             if is_injection:
-                logger.warning(f"Detected {len(injection_matches)} injection attempts")
+                logger.warning(
+                    f"Detected {len(injection_matches)} injection attempts"
+                )
                 raw_data = self.injection_detector.sanitize(raw_data)
         else:
             is_injection = False
@@ -108,7 +123,9 @@ class ZenSanitizer:
             fallback_used = False
 
         # Step 4: Risk assessment
-        risk_indicators = self._assess_risk(cleaned_data, secret_redactions, injection_matches)
+        risk_indicators = self._assess_risk(
+            cleaned_data, secret_redactions, injection_matches
+        )
 
         # Determine risk level
         if len(secret_redactions) > 10 or len(injection_matches) > 2:
@@ -139,8 +156,10 @@ class ZenSanitizer:
             redactions=redaction_infos,
             risk_indicators=risk_indicators,
             compression_ratio=compression_ratio,
-            safe_to_send=risk_level != RiskLevel.DANGER or len(secret_redactions) <= 5,
-            fallback_used=fallback_used or not self.circuit_breaker.get_status()["state"] == "closed",
+            safe_to_send=risk_level != RiskLevel.DANGER
+            or len(secret_redactions) <= 5,
+            fallback_used=fallback_used
+            or not self.circuit_breaker.get_status()["state"] == "closed",
             risk_level=risk_level,
             tokens_saved=tokens_saved,
             processing_time_ms=processing_time,
@@ -156,12 +175,21 @@ class ZenSanitizer:
 
         return response
 
-    async def _compress_with_fallback(self, text: str, source_tool: str, target_tokens: int):
+    async def _compress_with_fallback(
+        self, text: str, source_tool: str, target_tokens: int
+    ):
         """Wrapper for compression with circuit breaker"""
         async with self.compressor:
-            return await self.compressor.compress(text, source_tool, max_output_tokens=target_tokens)
+            return await self.compressor.compress(
+                text, source_tool, max_output_tokens=target_tokens
+            )
 
-    def _assess_risk(self, cleaned_data: str, secret_redactions: list, injection_matches: list) -> list:
+    def _assess_risk(
+        self,
+        cleaned_data: str,
+        secret_redactions: list,
+        injection_matches: list,
+    ) -> list:
         """
         Assess overall risk indicators
 
@@ -205,7 +233,8 @@ class ZenSanitizer:
             "circuit_breaker": self.circuit_breaker.get_status(),
             "config": {
                 "compression_enabled": self.enable_compression,
-                "injection_detection_enabled": self.injection_detector is not None,
+                "injection_detection_enabled": self.injection_detector
+                is not None,
             },
         }
 
@@ -217,7 +246,9 @@ class ZenSanitizer:
         return {
             "status": "healthy",
             "secret_scrubber": "active",
-            "injection_detector": "active" if self.injection_detector else "disabled",
+            "injection_detector": (
+                "active" if self.injection_detector else "disabled"
+            ),
             "small_llm": "available" if llm_healthy else "unavailable",
             "circuit_breaker": self.circuit_breaker.get_status()["state"],
         }

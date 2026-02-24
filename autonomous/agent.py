@@ -114,7 +114,10 @@ class AutonomousAgent:
         result = await self.react.run(goal, context)
 
         # Record episode
-        await self.memory.record_episode(outcome=result.get("execution_trace", ""), success=result.get("completed", False))
+        await self.memory.record_episode(
+            outcome=result.get("execution_trace", ""),
+            success=result.get("completed", False),
+        )
 
         # Compile final report
         report = self._compile_report(result, target)
@@ -123,7 +126,9 @@ class AutonomousAgent:
 
         return report
 
-    def _compile_report(self, result: Dict, target: Optional[str]) -> Dict[str, Any]:
+    def _compile_report(
+        self, result: Dict, target: Optional[str]
+    ) -> Dict[str, Any]:
         """Compile execution result into a comprehensive report."""
 
         # Extract findings
@@ -136,7 +141,13 @@ class AutonomousAgent:
                         findings.extend(obs_result["findings"])
                     if "open_ports" in obs_result:
                         for port in obs_result["open_ports"]:
-                            findings.append({"type": "open_port", "severity": "info", "details": port})
+                            findings.append(
+                                {
+                                    "type": "open_port",
+                                    "severity": "info",
+                                    "details": port,
+                                }
+                            )
 
         # Calculate statistics
         tools_used = set()
@@ -170,7 +181,9 @@ class AutonomousAgent:
         # In production, track actual timestamps
         return result.get("steps_taken", 0) * 5.0  # Estimate 5s per step
 
-    async def scan_target(self, target: str, scan_type: str = "comprehensive") -> Dict[str, Any]:
+    async def scan_target(
+        self, target: str, scan_type: str = "comprehensive"
+    ) -> Dict[str, Any]:
         """
         Quick scan method for common use cases.
 
@@ -189,9 +202,13 @@ class AutonomousAgent:
 
         goal = goals.get(scan_type, goals["standard"])
 
-        return await self.run(goal=goal, target=target, scope={"depth": scan_type})
+        return await self.run(
+            goal=goal, target=target, scope={"depth": scan_type}
+        )
 
-    async def exploit_target(self, target: str, vulnerability: str) -> Dict[str, Any]:
+    async def exploit_target(
+        self, target: str, vulnerability: str
+    ) -> Dict[str, Any]:
         """
         Attempt to exploit a specific vulnerability.
 

@@ -15,7 +15,10 @@ import pytest
 @pytest.fixture(autouse=True)
 def setup_mock_modules():
     """Setup mock modules before each test"""
-    with patch.dict("sys.modules", {"modules": MagicMock(), "modules.cve_database": MagicMock()}):
+    with patch.dict(
+        "sys.modules",
+        {"modules": MagicMock(), "modules.cve_database": MagicMock()},
+    ):
         yield
 
 
@@ -162,7 +165,11 @@ class TestGetCveDb:
             # Check first entry has expected keys
             first_entry = result[0]
             assert "cve_id" in first_entry
-            assert first_entry["cve_id"] in ["CVE-2023-1234", "CVE-2024-5678", "CVE-2023-9999"]
+            assert first_entry["cve_id"] in [
+                "CVE-2023-1234",
+                "CVE-2024-5678",
+                "CVE-2023-9999",
+            ]
 
     def test_get_cve_db_empty_database(self):
         """Test with empty database"""
@@ -220,7 +227,9 @@ class TestGetRansomwareDb:
             result = get_ransomware_db()
 
             # Find RansomwareX entry
-            rx_entry = next(r for r in result if r.get("name") == "Ransomware X")
+            rx_entry = next(
+                r for r in result if r.get("name") == "Ransomware X"
+            )
             assert "type" in rx_entry
             assert rx_entry["type"] == "Encryptor"
 
@@ -251,7 +260,9 @@ class TestSearchCve:
             result = search_cve("2023-1234")
 
             assert len(result) >= 1
-            assert any("CVE-2023-1234" in str(r.get("cve_id", "")) for r in result)
+            assert any(
+                "CVE-2023-1234" in str(r.get("cve_id", "")) for r in result
+            )
 
     def test_search_by_description(self, mock_cve_db):
         """Test searching by description"""
@@ -383,7 +394,10 @@ class TestGetCveById:
             # Both should return the same CVE data (case insensitive lookup)
             assert result_lower is not None
             assert result_upper is not None
-            assert result_lower["cve_id"].upper() == result_upper["cve_id"].upper()
+            assert (
+                result_lower["cve_id"].upper()
+                == result_upper["cve_id"].upper()
+            )
 
     def test_get_cve_returns_dict(self, mock_cve_db):
         """Test that CVE data is returned as a dictionary"""

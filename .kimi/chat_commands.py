@@ -3,11 +3,19 @@
 
 import os
 import sys
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from github_app_auth import get_installation_token, get_headers, REPO_OWNER, REPO_NAME
-import requests
 from datetime import datetime
+
+import requests
+from github_app_auth import (
+    REPO_NAME,
+    REPO_OWNER,
+    get_headers,
+    get_installation_token,
+)
+
 
 def cmd_status():
     """!status - Repository overview"""
@@ -24,7 +32,9 @@ def cmd_status():
         # Get issues count
         issues_url = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/issues?state=open"
         issues_resp = requests.get(issues_url, headers=headers)
-        open_issues = len(issues_resp.json()) if issues_resp.status_code == 200 else "?"
+        open_issues = (
+            len(issues_resp.json()) if issues_resp.status_code == 200 else "?"
+        )
 
         # Get recent workflow runs
         wf_url = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/actions/runs?per_page=5"
@@ -34,7 +44,11 @@ def cmd_status():
         print(" ZENCLAW - REPOSITORY STATUS")
         print("=" * 60)
         print(f"\n Repository: {data.get('full_name')}")
-        desc = (data.get('description') or 'No description').encode('ascii', 'ignore').decode('ascii')
+        desc = (
+            (data.get("description") or "No description")
+            .encode("ascii", "ignore")
+            .decode("ascii")
+        )
         print(f" Description: {desc[:50]}...")
         print(f" Stars: {data.get('stargazers_count', 0)}")
         print(f" Forks: {data.get('forks_count', 0)}")
@@ -45,10 +59,18 @@ def cmd_status():
         print(f" Last Updated: {data.get('updated_at', 'N/A')[:10]}")
 
         if wf_resp.status_code == 200:
-            runs = wf_resp.json().get('workflow_runs', [])
+            runs = wf_resp.json().get("workflow_runs", [])
             print(f"\n Recent Workflows:")
             for run in runs[:3]:
-                status = "[OK]" if run.get('conclusion') == 'success' else "[FAIL]" if run.get('conclusion') == 'failure' else "[PENDING]"
+                status = (
+                    "[OK]"
+                    if run.get("conclusion") == "success"
+                    else (
+                        "[FAIL]"
+                        if run.get("conclusion") == "failure"
+                        else "[PENDING]"
+                    )
+                )
                 print(f"  {status} {run.get('name')}")
 
         print("\n" + "=" * 60)
@@ -56,6 +78,7 @@ def cmd_status():
         print("=" * 60)
     else:
         print(f"[ERROR] {resp.status_code}")
+
 
 def cmd_workflows():
     """!workflows - Show active workflows"""
@@ -70,10 +93,10 @@ def cmd_workflows():
     print("=" * 60)
 
     if resp.status_code == 200:
-        runs = resp.json().get('workflow_runs', [])
+        runs = resp.json().get("workflow_runs", [])
 
-        running = [r for r in runs if r.get('status') == 'in_progress']
-        recent = [r for r in runs if r.get('status') == 'completed'][:5]
+        running = [r for r in runs if r.get("status") == "in_progress"]
+        recent = [r for r in runs if r.get("status") == "completed"][:5]
 
         if running:
             print(f"\n RUNNING ({len(running)}):")
@@ -85,13 +108,22 @@ def cmd_workflows():
 
         print(f"\n RECENT COMPLETED:")
         for run in recent:
-            status = "[OK]" if run.get('conclusion') == 'success' else "[FAIL]" if run.get('conclusion') == 'failure' else "[WARN]"
+            status = (
+                "[OK]"
+                if run.get("conclusion") == "success"
+                else (
+                    "[FAIL]"
+                    if run.get("conclusion") == "failure"
+                    else "[WARN]"
+                )
+            )
             print(f"  {status} {run.get('name')}")
             print(f"     Result: {run.get('conclusion') or 'unknown'}")
     else:
         print(f"[ERROR] {resp.status_code}")
 
     print("\n" + "=" * 60)
+
 
 def cmd_issues():
     """!issues - Show open issues"""
@@ -114,8 +146,10 @@ def cmd_issues():
                 print(f"  #{issue.get('number')}: {issue.get('title')[:50]}")
                 print(f"     By: {issue.get('user', {}).get('login')}")
                 print(f"     Created: {issue.get('created_at', 'N/A')[:10]}")
-                if issue.get('labels'):
-                    labels = ', '.join([l.get('name') for l in issue.get('labels')])
+                if issue.get("labels"):
+                    labels = ", ".join(
+                        [l.get("name") for l in issue.get("labels")]
+                    )
                     print(f"     Labels: {labels}")
                 print()
         else:
@@ -124,6 +158,7 @@ def cmd_issues():
         print(f"[ERROR] {resp.status_code}")
 
     print("=" * 60)
+
 
 def cmd_coverage():
     """!coverage - Show coverage status"""
@@ -140,6 +175,7 @@ def cmd_coverage():
     print("    Test api/ endpoints")
     print("\n Details: https://codecov.io/gh/SHAdd0WTAka/Zen-Ai-Pentest")
     print("=" * 60)
+
 
 def cmd_help():
     """!help - Show available commands"""
@@ -158,6 +194,7 @@ def cmd_help():
     print("  Example: !status")
     print("=" * 60)
 
+
 def main():
     import sys
 
@@ -168,11 +205,11 @@ def main():
     command = sys.argv[1].lower()
 
     commands = {
-        'status': cmd_status,
-        'workflows': cmd_workflows,
-        'issues': cmd_issues,
-        'coverage': cmd_coverage,
-        'help': cmd_help,
+        "status": cmd_status,
+        "workflows": cmd_workflows,
+        "issues": cmd_issues,
+        "coverage": cmd_coverage,
+        "help": cmd_help,
     }
 
     if command in commands:
@@ -180,6 +217,7 @@ def main():
     else:
         print(f"[ERROR] Unknown command: !{command}")
         print("Type !help for available commands")
+
 
 if __name__ == "__main__":
     main()

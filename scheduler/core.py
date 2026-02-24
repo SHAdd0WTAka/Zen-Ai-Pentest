@@ -290,7 +290,10 @@ class TaskScheduler:
                 await self._check_due_jobs()
 
                 # Wait for next check
-                await asyncio.wait_for(self._shutdown_event.wait(), timeout=self.config.check_interval)
+                await asyncio.wait_for(
+                    self._shutdown_event.wait(),
+                    timeout=self.config.check_interval,
+                )
 
             except asyncio.TimeoutError:
                 continue
@@ -318,7 +321,9 @@ class TaskScheduler:
         async with self._semaphore:
             await self._execute_job(job)
 
-    async def _execute_job(self, job: ScheduledJob, manual: bool = False) -> str:
+    async def _execute_job(
+        self, job: ScheduledJob, manual: bool = False
+    ) -> str:
         """
         Execute a scheduled job
 
@@ -329,10 +334,14 @@ class TaskScheduler:
         Returns:
             Execution ID
         """
-        execution_id = f"exec-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}-{job.id}"
+        execution_id = (
+            f"exec-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}-{job.id}"
+        )
 
         # Create execution record
-        execution = JobExecution(id=execution_id, job_id=job.id, started_at=datetime.utcnow())
+        execution = JobExecution(
+            id=execution_id, job_id=job.id, started_at=datetime.utcnow()
+        )
 
         if job.id not in self._executions:
             self._executions[job.id] = []
@@ -365,7 +374,9 @@ class TaskScheduler:
                 logger.info(f"Job {job.id} completed successfully")
 
             else:
-                raise RuntimeError(f"No callback registered for task type: {job.task_type}")
+                raise RuntimeError(
+                    f"No callback registered for task type: {job.task_type}"
+                )
 
         except asyncio.TimeoutError:
             execution.status = "failed"
@@ -407,7 +418,9 @@ class TaskScheduler:
 
         return execution_id
 
-    async def _run_callback(self, callback: Callable, job: ScheduledJob) -> Any:
+    async def _run_callback(
+        self, callback: Callable, job: ScheduledJob
+    ) -> Any:
         """Run job callback with error handling"""
         try:
             if asyncio.iscoroutinefunction(callback):
@@ -509,7 +522,9 @@ class TaskScheduler:
                 else:
                     # Too old, just calculate next run
                     if job.schedule_type == ScheduleType.CRON:
-                        job.next_run = CronParser.get_next_run(job.schedule_expr)
+                        job.next_run = CronParser.get_next_run(
+                            job.schedule_expr
+                        )
 
         if caught_up > 0:
             logger.info(f"Caught up {caught_up} missed jobs")
@@ -521,7 +536,10 @@ class TaskScheduler:
         return self._jobs.get(job_id)
 
     async def list_jobs(
-        self, status: Optional[str] = None, task_type: Optional[str] = None, enabled_only: bool = False
+        self,
+        status: Optional[str] = None,
+        task_type: Optional[str] = None,
+        enabled_only: bool = False,
     ) -> List[ScheduledJob]:
         """List jobs with optional filtering"""
         jobs = list(self._jobs.values())
@@ -537,7 +555,9 @@ class TaskScheduler:
 
         return jobs
 
-    async def get_executions(self, job_id: str, limit: int = 100) -> List[JobExecution]:
+    async def get_executions(
+        self, job_id: str, limit: int = 100
+    ) -> List[JobExecution]:
         """Get execution history for a job"""
         executions = self._executions.get(job_id, [])
         return executions[-limit:]
@@ -547,7 +567,11 @@ class TaskScheduler:
         now = datetime.utcnow()
 
         # Count due jobs
-        due_jobs = sum(1 for j in self._jobs.values() if j.enabled and j.next_run and j.next_run <= now)
+        due_jobs = sum(
+            1
+            for j in self._jobs.values()
+            if j.enabled and j.next_run and j.next_run <= now
+        )
 
         return {
             "total_jobs": len(self._jobs),
@@ -557,5 +581,9 @@ class TaskScheduler:
             "total_executions": self._total_executions,
             "successful_executions": self._successful_executions,
             "failed_executions": self._failed_executions,
-            "success_rate": (self._successful_executions / self._total_executions * 100 if self._total_executions > 0 else 0),
+            "success_rate": (
+                self._successful_executions / self._total_executions * 100
+                if self._total_executions > 0
+                else 0
+            ),
         }

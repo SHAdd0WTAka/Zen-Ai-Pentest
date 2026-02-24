@@ -15,7 +15,10 @@ import pytest
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from backends.kimi_auth_backend import AuthenticationRequiredError, KimiAuthBackend
+from backends.kimi_auth_backend import (
+    AuthenticationRequiredError,
+    KimiAuthBackend,
+)
 
 
 @pytest.fixture
@@ -100,7 +103,9 @@ class TestKimiAuthToken:
 class TestKimiChat:
     """Test chat functionality"""
 
-    def _create_mock_response(self, status=200, json_data=None, raise_for_status=None):
+    def _create_mock_response(
+        self, status=200, json_data=None, raise_for_status=None
+    ):
         """Helper to create a mock response that works as async context manager"""
         mock_response = AsyncMock()
         mock_response.status = status
@@ -119,12 +124,17 @@ class TestKimiChat:
         mock_get_stored.return_value = "test-token"
 
         mock_response = self._create_mock_response(
-            status=200, json_data={"choices": [{"message": {"content": "Hello, I am Kimi!"}}]}
+            status=200,
+            json_data={
+                "choices": [{"message": {"content": "Hello, I am Kimi!"}}]
+            },
         )
 
         # Create a mock post that works as async context manager
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -165,7 +175,9 @@ class TestKimiChat:
 
         mock_session = AsyncMock()
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(side_effect=aiohttp.ClientError("Connection failed"))
+        mock_post.return_value.__aenter__ = AsyncMock(
+            side_effect=aiohttp.ClientError("Connection failed")
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
         mock_session.post = mock_post
 
@@ -184,14 +196,19 @@ class TestKimiChat:
 
         def mock_raise_for_status():
             raise aiohttp.ClientResponseError(
-                request_info=MagicMock(), history=(), status=500, message="Internal Server Error"
+                request_info=MagicMock(),
+                history=(),
+                status=500,
+                message="Internal Server Error",
             )
 
         mock_response = AsyncMock()
         mock_response.raise_for_status = mock_raise_for_status
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -209,7 +226,9 @@ class TestKimiTokenRefresh:
     @pytest.mark.asyncio
     @patch("backends.kimi_auth_backend.get_stored_token")
     @patch.object(KimiAuthBackend, "_refresh_token_if_needed")
-    async def test_chat_token_refresh_success(self, mock_refresh, mock_get_stored, backend):
+    async def test_chat_token_refresh_success(
+        self, mock_refresh, mock_get_stored, backend
+    ):
         """Test successful token refresh on 401"""
         mock_get_stored.return_value = "expired-token"
         mock_refresh.return_value = True
@@ -220,11 +239,17 @@ class TestKimiTokenRefresh:
 
         response_success = AsyncMock()
         response_success.status = 200
-        response_success.json = AsyncMock(return_value={"choices": [{"message": {"content": "Refreshed response"}}]})
+        response_success.json = AsyncMock(
+            return_value={
+                "choices": [{"message": {"content": "Refreshed response"}}]
+            }
+        )
         response_success.raise_for_status = Mock()
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(side_effect=[response_401, response_success])
+        mock_post.return_value.__aenter__ = AsyncMock(
+            side_effect=[response_401, response_success]
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -240,7 +265,9 @@ class TestKimiTokenRefresh:
     @pytest.mark.asyncio
     @patch("backends.kimi_auth_backend.get_stored_token")
     @patch.object(KimiAuthBackend, "_refresh_token_if_needed")
-    async def test_chat_token_refresh_failure(self, mock_refresh, mock_get_stored, backend):
+    async def test_chat_token_refresh_failure(
+        self, mock_refresh, mock_get_stored, backend
+    ):
         """Test failed token refresh on 401"""
         mock_get_stored.return_value = "expired-token"
         mock_refresh.return_value = False
@@ -249,7 +276,9 @@ class TestKimiTokenRefresh:
         mock_response.status = 401
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -272,7 +301,11 @@ class TestKimiTokenRefresh:
 
         mock_flow = AsyncMock()
         mock_flow.refresh_access_token = AsyncMock(
-            return_value={"access_token": "new-access-token", "refresh_token": "new-refresh-token", "expires_in": 3600}
+            return_value={
+                "access_token": "new-access-token",
+                "refresh_token": "new-refresh-token",
+                "expires_in": 3600,
+            }
         )
         mock_flow.__aenter__ = AsyncMock(return_value=mock_flow)
         mock_flow.__aexit__ = AsyncMock(return_value=None)
@@ -283,7 +316,10 @@ class TestKimiTokenRefresh:
 
         assert result is True
         backend.token_store.save_credentials.assert_called_once_with(
-            access_token="new-access-token", refresh_token="new-refresh-token", expires_in=3600, provider="kimi"
+            access_token="new-access-token",
+            refresh_token="new-refresh-token",
+            expires_in=3600,
+            provider="kimi",
         )
 
     @pytest.mark.asyncio
@@ -304,7 +340,9 @@ class TestKimiTokenRefresh:
         backend.token_store.get_refresh_token.return_value = "refresh-token"
 
         mock_flow = AsyncMock()
-        mock_flow.refresh_access_token.side_effect = Exception("Refresh failed")
+        mock_flow.refresh_access_token.side_effect = Exception(
+            "Refresh failed"
+        )
         mock_flow.__aenter__ = AsyncMock(return_value=mock_flow)
         mock_flow.__aexit__ = AsyncMock(return_value=None)
 
@@ -347,7 +385,9 @@ class TestKimiChatStream:
         mock_response.content = self._async_iterator(stream_data)
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -392,7 +432,9 @@ class TestKimiChatStream:
         mock_response.content = self._async_iterator(stream_data)
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -424,7 +466,9 @@ class TestKimiChatStream:
         mock_response.content = self._async_iterator(stream_data)
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -441,7 +485,9 @@ class TestKimiChatStream:
     @pytest.mark.asyncio
     @patch("backends.kimi_auth_backend.get_stored_token")
     @patch.object(KimiAuthBackend, "_refresh_token_if_needed")
-    async def test_chat_stream_token_refresh(self, mock_refresh, mock_get_stored, backend):
+    async def test_chat_stream_token_refresh(
+        self, mock_refresh, mock_get_stored, backend
+    ):
         """Test stream token refresh on 401"""
         mock_get_stored.return_value = "expired-token"
         mock_refresh.return_value = True
@@ -460,7 +506,9 @@ class TestKimiChatStream:
         response_success.content = self._async_iterator(stream_data)
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(side_effect=[response_401, response_success])
+        mock_post.return_value.__aenter__ = AsyncMock(
+            side_effect=[response_401, response_success]
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -513,11 +561,15 @@ class TestKimiEdgeCases:
 
         mock_response = AsyncMock()
         mock_response.status = 200
-        mock_response.json = AsyncMock(return_value={"choices": [{"message": {"content": "Response"}}]})
+        mock_response.json = AsyncMock(
+            return_value={"choices": [{"message": {"content": "Response"}}]}
+        )
         mock_response.raise_for_status = Mock()
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -542,7 +594,9 @@ class TestKimiEdgeCases:
         mock_get_stored.return_value = "test-token"
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(side_effect=aiohttp.ClientError("Connection error"))
+        mock_post.return_value.__aenter__ = AsyncMock(
+            side_effect=aiohttp.ClientError("Connection error")
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()

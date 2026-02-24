@@ -42,7 +42,10 @@ async def example_false_positive_detection():
         severity="critical",
         vulnerability_type="sql_injection",
         risk_factors=RiskFactors(
-            cvss_data=CVSSData(base_score=9.8, vector_string="CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"),
+            cvss_data=CVSSData(
+                base_score=9.8,
+                vector_string="CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+            ),
             epss_score=0.95,
             business_impact=0.9,
             exploitability=0.95,
@@ -52,7 +55,11 @@ async def example_false_positive_detection():
             patch_available=False,
             exploit_code_available=True,
         ),
-        raw_evidence={"payload": "' OR '1'='1", "response": "Login successful", "endpoint": "/api/login"},
+        raw_evidence={
+            "payload": "' OR '1'='1",
+            "response": "Login successful",
+            "endpoint": "/api/login",
+        },
         target="https://example.com/api/login",
         cve_ids=["CVE-2023-1234"],
     )
@@ -128,7 +135,10 @@ async def example_business_impact_calculation():
         asset_type="database",
         criticality=AssetCriticality.CRITICAL,
         data_classification=DataClassification.RESTRICTED,
-        compliance_frameworks={ComplianceFramework.GDPR, ComplianceFramework.PCI_DSS},
+        compliance_frameworks={
+            ComplianceFramework.GDPR,
+            ComplianceFramework.PCI_DSS,
+        },
         internet_exposed=False,
         user_count=5000000,
         revenue_dependency=40.0,
@@ -150,16 +160,28 @@ async def example_business_impact_calculation():
 
     print("\nFinanzieller Impact:")
     print(f"  Direkte Kosten: €{impact.financial_impact.direct_costs:,.2f}")
-    print(f"  Indirekte Kosten: €{impact.financial_impact.indirect_costs:,.2f}")
-    print(f"  Regulatorische Strafen: €{impact.financial_impact.regulatory_fines:,.2f}")
+    print(
+        f"  Indirekte Kosten: €{impact.financial_impact.indirect_costs:,.2f}"
+    )
+    print(
+        f"  Regulatorische Strafen: €{impact.financial_impact.regulatory_fines:,.2f}"
+    )
     print(f"  Rechtskosten: €{impact.financial_impact.legal_costs:,.2f}")
-    print(f"  Reputationskosten: €{impact.financial_impact.reputation_costs:,.2f}")
+    print(
+        f"  Reputationskosten: €{impact.financial_impact.reputation_costs:,.2f}"
+    )
     print(f"  GESAMT: €{impact.financial_impact.total_costs:,.2f}")
 
     print("\nCompliance-Impact:")
-    print(f"  Betroffene Frameworks: {', '.join(f.framework_name for f in impact.compliance_impact.frameworks)}")
-    print(f"  Verletzte Controls: {', '.join(impact.compliance_impact.violated_controls[:5])}")
-    print(f"  Maximale Strafe: €{impact.compliance_impact.get_max_fine():,.2f}")
+    print(
+        f"  Betroffene Frameworks: {', '.join(f.framework_name for f in impact.compliance_impact.frameworks)}"
+    )
+    print(
+        f"  Verletzte Controls: {', '.join(impact.compliance_impact.violated_controls[:5])}"
+    )
+    print(
+        f"  Maximale Strafe: €{impact.compliance_impact.get_max_fine():,.2f}"
+    )
 
     print(f"\nReputation-Impact: {impact.reputation_impact.name}")
     print(f"  Beschreibung: {impact.reputation_impact.description}")
@@ -246,12 +268,16 @@ async def example_prioritization():
     prioritized = engine.prioritize_findings(findings)
 
     print("\nPriorisierte Findings:")
-    print(f"{'Rank':<6} {'ID':<8} {'Title':<30} {'Severity':<10} {'Risk Score'}")
+    print(
+        f"{'Rank':<6} {'ID':<8} {'Title':<30} {'Severity':<10} {'Risk Score'}"
+    )
     print("-" * 70)
 
     for i, finding in enumerate(prioritized, 1):
         risk = engine.calculate_risk_score(finding.risk_factors)
-        print(f"{i:<6} {finding.id:<8} {finding.title[:28]:<30} {finding.severity:<10} {risk:.2f}")
+        print(
+            f"{i:<6} {finding.id:<8} {finding.title[:28]:<30} {finding.severity:<10} {risk:.2f}"
+        )
 
 
 async def main():

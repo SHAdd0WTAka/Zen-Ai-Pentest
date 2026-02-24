@@ -64,7 +64,12 @@ class TestFalsePositiveFilter:
         """Test ML filter with no evidence"""
         fpf = FalsePositiveFilter()
         finding = Finding(
-            title="Vulnerability", description="Description", severity="high", cvss_score=8.0, evidence=[], tool="scanner"
+            title="Vulnerability",
+            description="Description",
+            severity="high",
+            cvss_score=8.0,
+            evidence=[],
+            tool="scanner",
         )
         score = fpf.apply_ml_filter(finding)
         assert score >= 0.3  # High FP probability due to no evidence

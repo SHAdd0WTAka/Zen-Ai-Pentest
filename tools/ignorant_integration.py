@@ -62,7 +62,13 @@ class IgnorantIntegration:
         """
         # Parse email
         if "@" not in email:
-            return IgnorantResult(email=email, username=email, domain="", success=False, error="Invalid email format")
+            return IgnorantResult(
+                email=email,
+                username=email,
+                domain="",
+                success=False,
+                error="Invalid email format",
+            )
 
         username, domain = email.rsplit("@", 1)
 
@@ -72,10 +78,14 @@ class IgnorantIntegration:
 
         try:
             process = await asyncio.create_subprocess_exec(
-                *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+                *cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
             )
 
-            stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=self.timeout)
+            stdout, stderr = await asyncio.wait_for(
+                process.communicate(), timeout=self.timeout
+            )
 
             found_platforms = []
             not_found_platforms = []
@@ -93,10 +103,16 @@ class IgnorantIntegration:
 
                             if data.get("exists") is True:
                                 found_platforms.append(
-                                    IgnorantCheck(platform=data.get("name", "Unknown"), exists=True, url=data.get("url", ""))
+                                    IgnorantCheck(
+                                        platform=data.get("name", "Unknown"),
+                                        exists=True,
+                                        url=data.get("url", ""),
+                                    )
                                 )
                             else:
-                                not_found_platforms.append(data.get("name", "Unknown"))
+                                not_found_platforms.append(
+                                    data.get("name", "Unknown")
+                                )
                         except json.JSONDecodeError:
                             continue
 
@@ -115,12 +131,26 @@ class IgnorantIntegration:
 
         except asyncio.TimeoutError:
             logger.error("Ignorant check timed out")
-            return IgnorantResult(email=email, username=username, domain=domain, success=False, error="Timeout")
+            return IgnorantResult(
+                email=email,
+                username=username,
+                domain=domain,
+                success=False,
+                error="Timeout",
+            )
         except Exception as e:
             logger.error(f"Ignorant error: {e}")
-            return IgnorantResult(email=email, username=username, domain=domain, success=False, error=str(e))
+            return IgnorantResult(
+                email=email,
+                username=username,
+                domain=domain,
+                success=False,
+                error=str(e),
+            )
 
-    async def check_emails(self, emails: List[str]) -> Dict[str, IgnorantResult]:
+    async def check_emails(
+        self, emails: List[str]
+    ) -> Dict[str, IgnorantResult]:
         """
         Check multiple email addresses
 

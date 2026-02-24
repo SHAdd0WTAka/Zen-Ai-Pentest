@@ -225,8 +225,12 @@ class Finding:
 
     def get_hash(self) -> str:
         """Erzeugt einen eindeutigen Hash für das Finding."""
-        evidence_json = json.dumps(self.raw_evidence, sort_keys=True, default=str)
-        content = f"{self.title}:{self.description}:{self.target}:{evidence_json}"
+        evidence_json = json.dumps(
+            self.raw_evidence, sort_keys=True, default=str
+        )
+        content = (
+            f"{self.title}:{self.description}:{self.target}:{evidence_json}"
+        )
         return hashlib.sha256(content.encode()).hexdigest()[:16]
 
     def update_status(self, new_status: FindingStatus, confidence: float):
@@ -296,11 +300,15 @@ class BayesianFilter:
         if is_false_positive:
             self.fp_count += 1
             for word in words:
-                self.word_probs_fp[word] = (self.word_probs_fp[word] * self.fp_count + 1) / (self.fp_count + 2)
+                self.word_probs_fp[word] = (
+                    self.word_probs_fp[word] * self.fp_count + 1
+                ) / (self.fp_count + 2)
         else:
             self.tp_count += 1
             for word in words:
-                self.word_probs_tp[word] = (self.word_probs_tp[word] * self.tp_count + 1) / (self.tp_count + 2)
+                self.word_probs_tp[word] = (
+                    self.word_probs_tp[word] * self.tp_count + 1
+                ) / (self.tp_count + 2)
 
     def predict(self, text: str) -> Tuple[bool, float]:
         """Klassifiziert einen Text als FP oder nicht."""
@@ -309,8 +317,12 @@ class BayesianFilter:
             return False, 0.5
 
         # Naive Bayes Berechnung
-        fp_prob = math.log(self.fp_count + 1) - math.log(self.fp_count + self.tp_count + 2)
-        tp_prob = math.log(self.tp_count + 1) - math.log(self.fp_count + self.tp_count + 2)
+        fp_prob = math.log(self.fp_count + 1) - math.log(
+            self.fp_count + self.tp_count + 2
+        )
+        tp_prob = math.log(self.tp_count + 1) - math.log(
+            self.fp_count + self.tp_count + 2
+        )
 
         for word in words:
             fp_prob += math.log(self.word_probs_fp[word] + 0.01)
@@ -332,8 +344,23 @@ class BayesianFilter:
         # Einfache Tokenisierung
         words = text.lower().split()
         # Filtere kurze Wörter und häufige Stopwords
-        stopwords = {"the", "a", "an", "is", "are", "was", "were", "be", "been", "being"}
-        return [w.strip(".,;:!?()[]{}") for w in words if len(w) > 3 and w not in stopwords]
+        stopwords = {
+            "the",
+            "a",
+            "an",
+            "is",
+            "are",
+            "was",
+            "were",
+            "be",
+            "been",
+            "being",
+        }
+        return [
+            w.strip(".,;:!?()[]{}")
+            for w in words
+            if len(w) > 3 and w not in stopwords
+        ]
 
 
 class FalsePositiveDatabase:
@@ -348,7 +375,12 @@ class FalsePositiveDatabase:
         if storage_path:
             self._load_from_storage()
 
-    def add_finding(self, finding: Finding, is_false_positive: bool, user_feedback: Optional[bool] = None):
+    def add_finding(
+        self,
+        finding: Finding,
+        is_false_positive: bool,
+        user_feedback: Optional[bool] = None,
+    ):
         """Fügt ein Finding zur Datenbank hinzu."""
         finding_hash = finding.get_hash()
 
@@ -374,7 +406,9 @@ class FalsePositiveDatabase:
         if self.storage_path:
             self._save_to_storage()
 
-    def check_historical_match(self, finding: Finding) -> Optional[HistoricalFinding]:
+    def check_historical_match(
+        self, finding: Finding
+    ) -> Optional[HistoricalFinding]:
         """Prüft ob ein ähnliches Finding bereits existiert."""
         finding_hash = finding.get_hash()
 
@@ -429,7 +463,9 @@ class FalsePositiveDatabase:
                         occurrence_count=item["occurrence_count"],
                         user_feedback=item.get("user_feedback"),
                         feedback_timestamp=(
-                            datetime.fromisoformat(item["feedback_timestamp"]) if item.get("feedback_timestamp") else None
+                            datetime.fromisoformat(item["feedback_timestamp"])
+                            if item.get("feedback_timestamp")
+                            else None
                         ),
                         feedback_user=item.get("feedback_user"),
                     )
@@ -451,7 +487,11 @@ class FalsePositiveDatabase:
                         "last_seen": h.last_seen.isoformat(),
                         "occurrence_count": h.occurrence_count,
                         "user_feedback": h.user_feedback,
-                        "feedback_timestamp": h.feedback_timestamp.isoformat() if h.feedback_timestamp else None,
+                        "feedback_timestamp": (
+                            h.feedback_timestamp.isoformat()
+                            if h.feedback_timestamp
+                            else None
+                        ),
                         "feedback_user": h.feedback_user,
                     }
                     for h in self.findings.values()
@@ -476,7 +516,9 @@ class LLMVotingEngine:
         self.llm_clients[name] = client
         logger.info(f"LLM '{name}' registriert")
 
-    async def vote_on_finding(self, finding: Finding) -> Tuple[Dict[str, bool], float]:
+    async def vote_on_finding(
+        self, finding: Finding
+    ) -> Tuple[Dict[str, bool], float]:
         """
         Führt ein Multi-LLM-Voting für ein Finding durch.
 
@@ -514,10 +556,14 @@ class LLMVotingEngine:
         agreement = abs(fp_ratio - 0.5) * 2  # 0 = geteilt, 1 = einstimmig
         confidence = self.min_confidence + (agreement * 0.4)
 
-        logger.debug(f"LLM Voting: {fp_votes}/{total_votes} FP-Votes, Konfidenz: {confidence:.2f}")
+        logger.debug(
+            f"LLM Voting: {fp_votes}/{total_votes} FP-Votes, Konfidenz: {confidence:.2f}"
+        )
         return votes, confidence
 
-    async def _query_llm(self, name: str, client: Any, finding: Finding) -> bool:
+    async def _query_llm(
+        self, name: str, client: Any, finding: Finding
+    ) -> bool:
         """Fragt einen einzelnen LLM ab."""
         prompt = self._build_prompt(finding)
 
@@ -558,7 +604,10 @@ Respond with ONLY "TRUE_POSITIVE" or "FALSE_POSITIVE".
     def _parse_response(self, response: str) -> bool:
         """Parst die LLM-Antwort."""
         response_lower = response.lower().strip()
-        if "false_positive" in response_lower or "false positive" in response_lower:
+        if (
+            "false_positive" in response_lower
+            or "false positive" in response_lower
+        ):
             return True
         return False
 
@@ -574,7 +623,9 @@ Respond with ONLY "TRUE_POSITIVE" or "FALSE_POSITIVE".
         ]
 
         description_lower = finding.description.lower()
-        indicator_count = sum(1 for ind in fp_indicators if ind in description_lower)
+        indicator_count = sum(
+            1 for ind in fp_indicators if ind in description_lower
+        )
 
         return indicator_count >= 2
 
@@ -588,7 +639,10 @@ class FalsePositiveEngine:
     """
 
     def __init__(
-        self, fp_database_path: Optional[str] = None, epss_api_endpoint: Optional[str] = None, enable_llm_voting: bool = True
+        self,
+        fp_database_path: Optional[str] = None,
+        epss_api_endpoint: Optional[str] = None,
+        enable_llm_voting: bool = True,
     ):
         """
         Initialisiert die FalsePositiveEngine.
@@ -601,7 +655,9 @@ class FalsePositiveEngine:
         self.fp_database = FalsePositiveDatabase(fp_database_path)
         self.llm_voting = LLMVotingEngine() if enable_llm_voting else None
         self.business_calculator = BusinessImpactCalculator()
-        self.epss_api_endpoint = epss_api_endpoint or "https://api.first.org/data/v1/epss"
+        self.epss_api_endpoint = (
+            epss_api_endpoint or "https://api.first.org/data/v1/epss"
+        )
 
         # Konfiguration
         self.cvss_weight = 0.25
@@ -643,7 +699,9 @@ class FalsePositiveEngine:
         if finding.cve_ids:
             for cve in finding.cve_ids:
                 epss_score = await self.check_epss(cve)
-                finding.risk_factors.epss_score = max(finding.risk_factors.epss_score, epss_score)
+                finding.risk_factors.epss_score = max(
+                    finding.risk_factors.epss_score, epss_score
+                )
             validation_methods.append("epss")
 
         # 4. Risiko-Score Berechnung
@@ -656,7 +714,12 @@ class FalsePositiveEngine:
 
         # Entscheidungsfindung
         is_fp, confidence, reasoning = self._make_decision(
-            finding, historical_result, llm_votes, llm_confidence, risk_score, context_score
+            finding,
+            historical_result,
+            llm_votes,
+            llm_confidence,
+            risk_score,
+            context_score,
         )
 
         # Status aktualisieren
@@ -673,7 +736,9 @@ class FalsePositiveEngine:
         priority = self._calculate_priority(finding, risk_score, is_fp)
 
         # Empfehlungen generieren
-        recommendations = self._generate_recommendations(finding, is_fp, risk_score)
+        recommendations = self._generate_recommendations(
+            finding, is_fp, risk_score
+        )
 
         result = ValidationResult(
             finding=finding,
@@ -687,10 +752,14 @@ class FalsePositiveEngine:
             llm_votes=llm_votes,
         )
 
-        logger.info(f"Finding {finding.id} validiert: FP={is_fp}, Confidence={confidence:.2f}, Priority={priority}")
+        logger.info(
+            f"Finding {finding.id} validiert: FP={is_fp}, Confidence={confidence:.2f}, Priority={priority}"
+        )
         return result
 
-    async def multi_llm_voting(self, finding: Finding) -> Tuple[Dict[str, bool], float]:
+    async def multi_llm_voting(
+        self, finding: Finding
+    ) -> Tuple[Dict[str, bool], float]:
         """
         Führt ein Multi-LLM-Voting durch.
 
@@ -717,10 +786,14 @@ class FalsePositiveEngine:
             Risiko-Score zwischen 0 und 1
         """
         # Normalisierte Komponenten
-        cvss_component = (factors.cvss_data.get_effective_score() / 10.0) * self.cvss_weight
+        cvss_component = (
+            factors.cvss_data.get_effective_score() / 10.0
+        ) * self.cvss_weight
         epss_component = factors.epss_score * self.epss_weight
         business_component = factors.business_impact * self.business_weight
-        exploitability_component = factors.exploitability * self.exploitability_weight
+        exploitability_component = (
+            factors.exploitability * self.exploitability_weight
+        )
 
         # Kontext-Komponente
         context_multiplier = 1.0
@@ -740,7 +813,12 @@ class FalsePositiveEngine:
         context_component = (context_multiplier - 1.0) * self.context_weight
 
         # Gesamt-Score
-        base_score = cvss_component + epss_component + business_component + exploitability_component
+        base_score = (
+            cvss_component
+            + epss_component
+            + business_component
+            + exploitability_component
+        )
         risk_score = min(1.0, base_score * (1 + context_component))
 
         return risk_score
@@ -815,7 +893,9 @@ class FalsePositiveEngine:
         # Sortiere nach Prioritäts-Score (absteigend)
         return sorted(findings, key=get_priority_score, reverse=True)
 
-    async def learn_from_feedback(self, finding_id: str, is_fp: bool, user: Optional[str] = None):
+    async def learn_from_feedback(
+        self, finding_id: str, is_fp: bool, user: Optional[str] = None
+    ):
         """
         Lernen aus Benutzer-Feedback zur Verbesserung der Engine.
 
@@ -825,7 +905,9 @@ class FalsePositiveEngine:
             user: Optionaler Benutzername
         """
         # Finde das Finding (in einer echten Implementierung aus DB laden)
-        logger.info(f"Feedback erhalten für {finding_id}: is_fp={is_fp}, user={user}")
+        logger.info(
+            f"Feedback erhalten für {finding_id}: is_fp={is_fp}, user={user}"
+        )
 
         # Aktualisiere FP-Datenbank
         # Hinweis: Hier müsste das tatsächliche Finding-Objekt geladen werden
@@ -836,7 +918,9 @@ class FalsePositiveEngine:
 
         logger.info(f"Engine aus Feedback für {finding_id} aktualisiert")
 
-    def _check_historical_data(self, finding: Finding) -> Optional[HistoricalFinding]:
+    def _check_historical_data(
+        self, finding: Finding
+    ) -> Optional[HistoricalFinding]:
         """Prüft historische Daten für ein Finding."""
         return self.fp_database.check_historical_match(finding)
 
@@ -852,8 +936,15 @@ class FalsePositiveEngine:
             score += 0.2
 
         # Datenklassifizierung
-        data_weights = {"public": 0.0, "internal": 0.1, "confidential": 0.2, "restricted": 0.3}
-        score += data_weights.get(finding.risk_factors.data_classification, 0.1)
+        data_weights = {
+            "public": 0.0,
+            "internal": 0.1,
+            "confidential": 0.2,
+            "restricted": 0.3,
+        }
+        score += data_weights.get(
+            finding.risk_factors.data_classification, 0.1
+        )
 
         return min(1.0, score)
 
@@ -916,7 +1007,9 @@ class FalsePositiveEngine:
         total_indicators += 1
 
         # Entscheidung
-        fp_ratio = fp_indicators / total_indicators if total_indicators > 0 else 0
+        fp_ratio = (
+            fp_indicators / total_indicators if total_indicators > 0 else 0
+        )
         is_fp = fp_ratio >= 0.5
 
         # Konfidenzberechnung
@@ -930,7 +1023,9 @@ class FalsePositiveEngine:
         # Reasoning
         reasons = []
         if historical:
-            reasons.append(f"Historisch: {historical.occurrence_count}x gesehen")
+            reasons.append(
+                f"Historisch: {historical.occurrence_count}x gesehen"
+            )
         if llm_votes:
             fp_count = sum(1 for v in llm_votes.values() if v)
             reasons.append(f"LLM Voting: {fp_count}/{len(llm_votes)} FP-Votes")
@@ -938,11 +1033,17 @@ class FalsePositiveEngine:
             reasons.append(f"FP-Patterns gefunden: {pattern_matches}")
         reasons.append(f"Risiko-Score: {risk_score:.2f}")
 
-        reasoning = "; ".join(reasons) if reasons else "Basierend auf kombinierter Analyse"
+        reasoning = (
+            "; ".join(reasons)
+            if reasons
+            else "Basierend auf kombinierter Analyse"
+        )
 
         return is_fp, confidence, reasoning
 
-    def _calculate_priority(self, finding: Finding, risk_score: float, is_fp: bool) -> int:
+    def _calculate_priority(
+        self, finding: Finding, risk_score: float, is_fp: bool
+    ) -> int:
         """Berechnet die Priorität (1 = höchste)."""
         if is_fp:
             return 999  # Niedrigste Priorität für FPs
@@ -971,12 +1072,16 @@ class FalsePositiveEngine:
 
         return base_priority
 
-    def _generate_recommendations(self, finding: Finding, is_fp: bool, risk_score: float) -> List[str]:
+    def _generate_recommendations(
+        self, finding: Finding, is_fp: bool, risk_score: float
+    ) -> List[str]:
         """Generiert Empfehlungen basierend auf dem Ergebnis."""
         recommendations = []
 
         if is_fp:
-            recommendations.append("Als False Positive markieren und ausblenden")
+            recommendations.append(
+                "Als False Positive markieren und ausblenden"
+            )
             recommendations.append("Scanner-Konfiguration überprüfen")
             if finding.confidence < 0.9:
                 recommendations.append("Manuelle Überprüfung empfohlen")
@@ -995,10 +1100,14 @@ class FalsePositiveEngine:
                 recommendations.append("In regelmäßigem Patch-Zyklus beheben")
 
             if finding.risk_factors.internet_exposed:
-                recommendations.append("Internet-Exposition reduzieren oder WAF implementieren")
+                recommendations.append(
+                    "Internet-Exposition reduzieren oder WAF implementieren"
+                )
 
             if not finding.risk_factors.patch_available:
-                recommendations.append("Kompensierende Kontrollen implementieren")
+                recommendations.append(
+                    "Kompensierende Kontrollen implementieren"
+                )
 
         return recommendations
 
@@ -1011,7 +1120,9 @@ class FalsePositiveEngine:
 # Hilfsfunktionen für einfache Nutzung
 
 
-def create_finding_from_scan_result(scan_result: Dict[str, Any], asset_context: Optional[AssetContext] = None) -> Finding:
+def create_finding_from_scan_result(
+    scan_result: Dict[str, Any], asset_context: Optional[AssetContext] = None
+) -> Finding:
     """
     Erstellt ein Finding-Objekt aus einem Scan-Ergebnis.
 

@@ -58,7 +58,9 @@ def test_core_functionality():
 
         checker = ToolChecker()
         report = checker.get_status_report()
-        print(f"  [OK] Tool Checker: Found {report['required']['available']}/{report['required']['total']} required tools")
+        print(
+            f"  [OK] Tool Checker: Found {report['required']['available']}/{report['required']['total']} required tools"
+        )
         passed += 1
     except Exception as e:
         print(f"  [FAIL] Tool Checker: {e}")

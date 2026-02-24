@@ -16,7 +16,10 @@ from datetime import datetime
 import pytest
 
 from agents.v2.agent_task_processor import TaskProcessor, TaskResult
-from agents.workflows.orchestrator import WORKFLOW_DEFINITIONS, WorkflowOrchestrator
+from agents.workflows.orchestrator import (
+    WORKFLOW_DEFINITIONS,
+    WorkflowOrchestrator,
+)
 
 
 class TestWorkflowLifecycle:
@@ -34,7 +37,9 @@ class TestWorkflowLifecycle:
     async def test_workflow_creation(self, orchestrator):
         """Test workflow creation"""
         workflow_id = await orchestrator.start_workflow(
-            workflow_type="network_recon", target="192.168.1.0/24", agents=["agent-1"]
+            workflow_type="network_recon",
+            target="192.168.1.0/24",
+            agents=["agent-1"],
         )
 
         assert workflow_id is not None
@@ -50,7 +55,9 @@ class TestWorkflowLifecycle:
     async def test_workflow_state_transitions(self, orchestrator):
         """Test workflow state transitions"""
         workflow_id = await orchestrator.start_workflow(
-            workflow_type="network_recon", target="192.168.1.1", agents=["agent-1"]
+            workflow_type="network_recon",
+            target="192.168.1.1",
+            agents=["agent-1"],
         )
 
         # Check workflow was created in valid state
@@ -71,7 +78,9 @@ class TestWorkflowLifecycle:
     async def test_workflow_steps_execution(self, orchestrator):
         """Test that workflow steps are executed"""
         workflow_id = await orchestrator.start_workflow(
-            workflow_type="network_recon", target="192.168.1.1", agents=["agent-1"]
+            workflow_type="network_recon",
+            target="192.168.1.1",
+            agents=["agent-1"],
         )
 
         # Wait longer for completion (tasks need time to timeout/fail)
@@ -95,7 +104,9 @@ class TestWorkflowLifecycle:
     async def test_workflow_cancellation(self, orchestrator):
         """Test workflow cancellation"""
         workflow_id = await orchestrator.start_workflow(
-            workflow_type="full_pentest", target="192.168.1.0/24", agents=["agent-1"]  # Longer workflow
+            workflow_type="full_pentest",
+            target="192.168.1.0/24",
+            agents=["agent-1"],  # Longer workflow
         )
 
         # Wait for it to start
@@ -139,7 +150,9 @@ class TestTaskDistribution:
     async def test_task_creation(self, orchestrator):
         """Test that tasks are created for workflow steps"""
         workflow_id = await orchestrator.start_workflow(
-            workflow_type="network_recon", target="192.168.1.1", agents=["agent-1"]
+            workflow_type="network_recon",
+            target="192.168.1.1",
+            agents=["agent-1"],
         )
 
         # Wait for task creation
@@ -160,7 +173,9 @@ class TestTaskDistribution:
     async def test_task_assignment(self, orchestrator):
         """Test that tasks are assigned to agents"""
         workflow_id = await orchestrator.start_workflow(
-            workflow_type="network_recon", target="192.168.1.1", agents=["agent-1", "agent-2"]
+            workflow_type="network_recon",
+            target="192.168.1.1",
+            agents=["agent-1", "agent-2"],
         )
 
         await asyncio.sleep(0.3)
@@ -176,7 +191,9 @@ class TestTaskDistribution:
     async def test_task_result_submission(self, orchestrator):
         """Test task result submission"""
         workflow_id = await orchestrator.start_workflow(
-            workflow_type="network_recon", target="192.168.1.1", agents=["agent-1"]
+            workflow_type="network_recon",
+            target="192.168.1.1",
+            agents=["agent-1"],
         )
 
         await asyncio.sleep(0.3)
@@ -190,7 +207,13 @@ class TestTaskDistribution:
         result = {
             "task_id": task_id,
             "status": "success",
-            "findings": [{"type": "open_port", "severity": "info", "title": "Port 80 open"}],
+            "findings": [
+                {
+                    "type": "open_port",
+                    "severity": "info",
+                    "title": "Port 80 open",
+                }
+            ],
             "output": "Nmap scan results...",
             "timestamp": datetime.utcnow().isoformat(),
         }
@@ -217,19 +240,30 @@ class TestTaskProcessor:
     @pytest.mark.asyncio
     async def test_whois_task(self, processor):
         """Test whois task execution"""
-        task = {"id": "test-whois-1", "target": "example.com", "parameters": {"tool": "whois"}}
+        task = {
+            "id": "test-whois-1",
+            "target": "example.com",
+            "parameters": {"tool": "whois"},
+        }
 
         result = await processor.process_task(task)
 
         assert isinstance(result, TaskResult)
         assert result.task_id == "test-whois-1"
-        assert result.status in ["success", "failed"]  # May fail if whois not installed
+        assert result.status in [
+            "success",
+            "failed",
+        ]  # May fail if whois not installed
         assert result.execution_time > 0
 
     @pytest.mark.asyncio
     async def test_dns_task(self, processor):
         """Test DNS task execution"""
-        task = {"id": "test-dns-1", "target": "example.com", "parameters": {"tool": "dns"}}
+        task = {
+            "id": "test-dns-1",
+            "target": "example.com",
+            "parameters": {"tool": "dns"},
+        }
 
         result = await processor.process_task(task)
 
@@ -240,7 +274,11 @@ class TestTaskProcessor:
     @pytest.mark.asyncio
     async def test_unknown_tool(self, processor):
         """Test handling of unknown tool"""
-        task = {"id": "test-unknown-1", "target": "example.com", "parameters": {"tool": "unknown_tool_xyz"}}
+        task = {
+            "id": "test-unknown-1",
+            "target": "example.com",
+            "parameters": {"tool": "unknown_tool_xyz"},
+        }
 
         result = await processor.process_task(task)
 
@@ -261,8 +299,12 @@ class TestWorkflowListAndStatus:
     async def test_list_workflows(self, orchestrator):
         """Test listing workflows"""
         # Create a few workflows
-        await orchestrator.start_workflow("network_recon", "192.168.1.1", ["agent-1"])
-        await orchestrator.start_workflow("web_scan", "example.com", ["agent-1"])
+        await orchestrator.start_workflow(
+            "network_recon", "192.168.1.1", ["agent-1"]
+        )
+        await orchestrator.start_workflow(
+            "web_scan", "example.com", ["agent-1"]
+        )
 
         # List all
         workflows = orchestrator.list_workflows()
@@ -277,7 +319,9 @@ class TestWorkflowListAndStatus:
     @pytest.mark.asyncio
     async def test_get_workflow_status(self, orchestrator):
         """Test getting workflow status"""
-        workflow_id = await orchestrator.start_workflow("network_recon", "192.168.1.1", ["agent-1"])
+        workflow_id = await orchestrator.start_workflow(
+            "network_recon", "192.168.1.1", ["agent-1"]
+        )
 
         status = orchestrator.get_workflow_status(workflow_id)
 
@@ -320,7 +364,9 @@ class TestEndToEnd:
 
         # Start workflow
         workflow_id = await orchestrator.start_workflow(
-            workflow_type="network_recon", target="192.168.1.1", agents=["mock-agent"]
+            workflow_type="network_recon",
+            target="192.168.1.1",
+            agents=["mock-agent"],
         )
 
         # Wait for tasks to be created
@@ -334,7 +380,13 @@ class TestEndToEnd:
             result = {
                 "task_id": task_id,
                 "status": "success",
-                "findings": [{"type": "test_finding", "severity": "info", "title": f"Finding from {task.step}"}],
+                "findings": [
+                    {
+                        "type": "test_finding",
+                        "severity": "info",
+                        "title": f"Finding from {task.step}",
+                    }
+                ],
                 "output": f"Executed {task.parameters.get('tool', 'unknown')}",
                 "timestamp": datetime.utcnow().isoformat(),
             }

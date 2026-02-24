@@ -246,7 +246,9 @@ class TestMemoryCache:
 
         await asyncio.gather(*tasks)
 
-        assert len(errors) == 0, f"Errors during concurrent operations: {errors}"
+        assert (
+            len(errors) == 0
+        ), f"Errors during concurrent operations: {errors}"
 
     @pytest.mark.asyncio
     async def test_expired_entries_removed_on_eviction(self):
@@ -423,7 +425,9 @@ class TestRedisCache:
     @pytest.fixture
     async def cache(self):
         """Create a test Redis cache."""
-        cache = RedisCache(host="localhost", port=6379, db=15)  # Use DB 15 for tests
+        cache = RedisCache(
+            host="localhost", port=6379, db=15
+        )  # Use DB 15 for tests
         await cache.clear()
         yield cache
         await cache.clear()

@@ -30,22 +30,36 @@ class SecretScrubber:
     # Comprehensive secret patterns
     PATTERNS: Dict[str, Pattern] = {
         # API Keys
-        "api_key": re.compile(r'(?i)(api[_-]?key\s*[=:]\s*)["\']?[a-z0-9]{20,}["\']?', re.IGNORECASE),
+        "api_key": re.compile(
+            r'(?i)(api[_-]?key\s*[=:]\s*)["\']?[a-z0-9]{20,}["\']?',
+            re.IGNORECASE,
+        ),
         "generic_api_key": re.compile(
             r'(?i)(api[_-]?(?:key|secret|token)|key[_-]?api)\s*[=:]\s*["\']?[a-z0-9]{16,}["\']?',
             re.IGNORECASE,
         ),
         # Authentication tokens
-        "bearer_token": re.compile(r"(?i)(bearer\s+)[a-z0-9_\-\.]{20,}", re.IGNORECASE),
-        "jwt_token": re.compile(r"eyJ[a-zA-Z0-9_-]*\.eyJ[a-zA-Z0-9_-]*\.[a-zA-Z0-9_-]*", re.IGNORECASE),
-        "oauth_token": re.compile(r'(?i)(access[_-]?token|refresh[_-]?token)\s*[=:]\s*["\']?[a-z0-9]{20,}["\']?'),
+        "bearer_token": re.compile(
+            r"(?i)(bearer\s+)[a-z0-9_\-\.]{20,}", re.IGNORECASE
+        ),
+        "jwt_token": re.compile(
+            r"eyJ[a-zA-Z0-9_-]*\.eyJ[a-zA-Z0-9_-]*\.[a-zA-Z0-9_-]*",
+            re.IGNORECASE,
+        ),
+        "oauth_token": re.compile(
+            r'(?i)(access[_-]?token|refresh[_-]?token)\s*[=:]\s*["\']?[a-z0-9]{20,}["\']?'
+        ),
         # Cloud provider keys
         "aws_access_key": re.compile(r"AKIA[0-9A-Z]{16}"),
         "aws_secret_key": re.compile(
             r'(?i)aws[_-]?(?:secret[_-]?access[_-]?key|session[_-]?token)\s*[=:]\s*["\']?[a-z0-9/+=]{40}["\']?'
         ),
-        "azure_key": re.compile(r'(?i)azure[_-]?(?:key|secret|token)\s*[=:]\s*["\']?[a-z0-9]{32,}["\']?'),
-        "gcp_key": re.compile(r'(?i)gcp[_-]?(?:key|secret|token)\s*[=:]\s*["\']?[a-z0-9_-]{20,}["\']?'),
+        "azure_key": re.compile(
+            r'(?i)azure[_-]?(?:key|secret|token)\s*[=:]\s*["\']?[a-z0-9]{32,}["\']?'
+        ),
+        "gcp_key": re.compile(
+            r'(?i)gcp[_-]?(?:key|secret|token)\s*[=:]\s*["\']?[a-z0-9_-]{20,}["\']?'
+        ),
         # Private keys
         "private_key_pem": re.compile(
             r"-----BEGIN (RSA |DSA |EC |OPENSSH )?PRIVATE KEY-----[\s\S]*?-----END (RSA |DSA |EC |OPENSSH )?PRIVATE KEY-----",
@@ -56,27 +70,41 @@ class SecretScrubber:
             re.MULTILINE,
         ),
         # Database connections
-        "db_connection_string": re.compile(r"(?i)(mongodb|mysql|postgresql|postgres|redis|elastic)://[^\s\"\']+"),
-        "db_password": re.compile(r'(?i)(password|passwd|pwd)\s*[=:]\s*["\'][^"\']{4,}["\']'),
+        "db_connection_string": re.compile(
+            r"(?i)(mongodb|mysql|postgresql|postgres|redis|elastic)://[^\s\"\']+"
+        ),
+        "db_password": re.compile(
+            r'(?i)(password|passwd|pwd)\s*[=:]\s*["\'][^"\']{4,}["\']'
+        ),
         # Internal IPs (RFC 1918)
         "ip_internal": re.compile(
             r"\b(10\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.(1[6-9]|2[0-9]|3[01])\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3})\b"
         ),
         # Cookies and sessions
-        "session_cookie": re.compile(r"(?i)(session|jwt|token|auth)[_=:\s]+[^;\s]{10,}"),
-        "set_cookie_header": re.compile(r"(?i)set-cookie:\s*[^\r\n]+", re.MULTILINE),
+        "session_cookie": re.compile(
+            r"(?i)(session|jwt|token|auth)[_=:\s]+[^;\s]{10,}"
+        ),
+        "set_cookie_header": re.compile(
+            r"(?i)set-cookie:\s*[^\r\n]+", re.MULTILINE
+        ),
         # Email addresses (potentially sensitive)
-        "email_address": re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b"),
+        "email_address": re.compile(
+            r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b"
+        ),
         # Credit cards (PCI DSS)
         "credit_card": re.compile(r"\b(?:\d{4}[-\s]?){3}\d{4}\b"),
         # Slack tokens
-        "slack_token": re.compile(r"xox[baprs]-[0-9]{10,13}-[0-9]{10,13}[a-zA-Z0-9-]*"),
+        "slack_token": re.compile(
+            r"xox[baprs]-[0-9]{10,13}-[0-9]{10,13}[a-zA-Z0-9-]*"
+        ),
         # GitHub tokens
         "github_token": re.compile(r"gh[pousr]_[A-Za-z0-9_]{36,}"),
         # Docker registry auth
         "docker_auth": re.compile(r'"auths":\s*\{[\s\S]*?\}'),
         # Kubernetes secrets
-        "k8s_secret": re.compile(r'(?i)(?:token|cert|key)\s*[=:]\s*["\']?[a-z0-9/+=]{20,}["\']?'),
+        "k8s_secret": re.compile(
+            r'(?i)(?:token|cert|key)\s*[=:]\s*["\']?[a-z0-9/+=]{20,}["\']?'
+        ),
     }
 
     MASK_TEMPLATE = "[REDACTED_{hash}_{type}]"
@@ -125,10 +153,14 @@ class SecretScrubber:
                     continue
 
                 # Create hash for tracking
-                original_hash = hashlib.sha256(original.encode()).hexdigest()[:8]
+                original_hash = hashlib.sha256(original.encode()).hexdigest()[
+                    :8
+                ]
 
                 # Create mask
-                mask = self.MASK_TEMPLATE.format(hash=original_hash, type=secret_type.upper())
+                mask = self.MASK_TEMPLATE.format(
+                    hash=original_hash, type=secret_type.upper()
+                )
 
                 # Record redaction
                 redactions.append(
@@ -136,7 +168,11 @@ class SecretScrubber:
                         "type": secret_type,
                         "position": match.span(),
                         "hash": original_hash,
-                        "context": (original[:20] + "..." if len(original) > 20 else original),
+                        "context": (
+                            original[:20] + "..."
+                            if len(original) > 20
+                            else original
+                        ),
                         "length": len(original),
                     }
                 )
@@ -209,7 +245,9 @@ class SecretScrubber:
 
     def _is_json_web_token(self, text: str) -> bool:
         """Check if text contains JWT tokens"""
-        jwt_pattern = re.compile(r"eyJ[a-zA-Z0-9_-]*\.eyJ[a-zA-Z0-9_-]*\.[a-zA-Z0-9_-]*")
+        jwt_pattern = re.compile(
+            r"eyJ[a-zA-Z0-9_-]*\.eyJ[a-zA-Z0-9_-]*\.[a-zA-Z0-9_-]*"
+        )
         return bool(jwt_pattern.search(text))
 
     def get_stats(self, redactions: List[Dict]) -> Dict:

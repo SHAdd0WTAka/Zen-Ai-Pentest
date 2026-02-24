@@ -33,7 +33,14 @@ sys.modules["api.core.auth"] = mock_auth
 sys.modules["api.models.scan"] = mock_scan_model
 sys.modules["api.models.user"] = mock_user
 
-from api.routes.scans import create_scan, delete_scan, get_scan, list_scans, run_scan, stop_scan
+from api.routes.scans import (
+    create_scan,
+    delete_scan,
+    get_scan,
+    list_scans,
+    run_scan,
+    stop_scan,
+)
 
 # ==================== Test Fixtures ====================
 
@@ -104,41 +111,53 @@ class TestCreateScan:
     """Test create_scan endpoint"""
 
     @pytest.mark.asyncio
-    async def test_create_scan_success(self, mock_current_user, mock_scan, mock_scan_create_data):
+    async def test_create_scan_success(
+        self, mock_current_user, mock_scan, mock_scan_create_data
+    ):
         """Test successful scan creation"""
         with patch("api.routes.scans.Scan", mock_scan_model.Scan):
             mock_scan_model.Scan.return_value = mock_scan
 
             background_tasks = BackgroundTasks()
 
-            result = await create_scan(mock_scan_create_data, background_tasks, mock_current_user)
+            result = await create_scan(
+                mock_scan_create_data, background_tasks, mock_current_user
+            )
 
             assert result["id"] == "scan-001"
             assert result["target"] == "example.com"
             mock_scan.save.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_create_scan_auto_name(self, mock_current_user, mock_scan, mock_scan_create_data):
+    async def test_create_scan_auto_name(
+        self, mock_current_user, mock_scan, mock_scan_create_data
+    ):
         """Test scan creation with auto-generated name"""
         with patch("api.routes.scans.Scan", mock_scan_model.Scan):
             mock_scan_create_data.name = None
             mock_scan_model.Scan.return_value = mock_scan
 
             background_tasks = BackgroundTasks()
-            await create_scan(mock_scan_create_data, background_tasks, mock_current_user)
+            await create_scan(
+                mock_scan_create_data, background_tasks, mock_current_user
+            )
 
             # Name should be auto-generated
             assert "scan" in mock_scan.name.lower() or "Scan" in mock_scan.name
 
     @pytest.mark.asyncio
-    async def test_create_scan_custom_name(self, mock_current_user, mock_scan, mock_scan_create_data):
+    async def test_create_scan_custom_name(
+        self, mock_current_user, mock_scan, mock_scan_create_data
+    ):
         """Test scan creation with custom name"""
         with patch("api.routes.scans.Scan", mock_scan_model.Scan):
             mock_scan_create_data.name = "My Custom Scan"
             mock_scan_model.Scan.return_value = mock_scan
 
             background_tasks = BackgroundTasks()
-            await create_scan(mock_scan_create_data, background_tasks, mock_current_user)
+            await create_scan(
+                mock_scan_create_data, background_tasks, mock_current_user
+            )
 
             assert mock_scan.name == "My Custom Scan"
 
@@ -154,7 +173,9 @@ class TestListScans:
         """Test listing scans when none exist"""
         mock_query = AsyncMock()
         mock_query.to_list.return_value = []
-        mock_scan_model.Scan.find_many.return_value.limit.return_value.skip.return_value = mock_query
+        mock_scan_model.Scan.find_many.return_value.limit.return_value.skip.return_value = (
+            mock_query
+        )
 
         with patch("api.routes.scans.Scan", mock_scan_model.Scan):
             result = await list_scans(None, None, 20, 0, mock_current_user)
@@ -166,7 +187,9 @@ class TestListScans:
         """Test listing scans with results"""
         mock_query = AsyncMock()
         mock_query.to_list.return_value = [mock_scan]
-        mock_scan_model.Scan.find_many.return_value.limit.return_value.skip.return_value = mock_query
+        mock_scan_model.Scan.find_many.return_value.limit.return_value.skip.return_value = (
+            mock_query
+        )
 
         with patch("api.routes.scans.Scan", mock_scan_model.Scan):
             result = await list_scans(None, None, 20, 0, mock_current_user)
@@ -175,40 +198,62 @@ class TestListScans:
             assert result[0]["id"] == "scan-001"
 
     @pytest.mark.asyncio
-    async def test_list_scans_with_status_filter(self, mock_current_user, mock_scan):
+    async def test_list_scans_with_status_filter(
+        self, mock_current_user, mock_scan
+    ):
         """Test listing scans with status filter"""
         mock_query = AsyncMock()
         mock_query.to_list.return_value = [mock_scan]
-        mock_scan_model.Scan.find_many.return_value.limit.return_value.skip.return_value = mock_query
+        mock_scan_model.Scan.find_many.return_value.limit.return_value.skip.return_value = (
+            mock_query
+        )
 
         with patch("api.routes.scans.Scan", mock_scan_model.Scan):
-            result = await list_scans(mock_scan_model.ScanStatus.PENDING, None, 20, 0, mock_current_user)
+            result = await list_scans(
+                mock_scan_model.ScanStatus.PENDING,
+                None,
+                20,
+                0,
+                mock_current_user,
+            )
 
             assert len(result) == 1
 
     @pytest.mark.asyncio
-    async def test_list_scans_with_type_filter(self, mock_current_user, mock_scan):
+    async def test_list_scans_with_type_filter(
+        self, mock_current_user, mock_scan
+    ):
         """Test listing scans with type filter"""
         mock_query = AsyncMock()
         mock_query.to_list.return_value = [mock_scan]
-        mock_scan_model.Scan.find_many.return_value.limit.return_value.skip.return_value = mock_query
+        mock_scan_model.Scan.find_many.return_value.limit.return_value.skip.return_value = (
+            mock_query
+        )
 
         with patch("api.routes.scans.Scan", mock_scan_model.Scan):
-            result = await list_scans(None, mock_scan_model.ScanType.FULL, 20, 0, mock_current_user)
+            result = await list_scans(
+                None, mock_scan_model.ScanType.FULL, 20, 0, mock_current_user
+            )
 
             assert len(result) == 1
 
     @pytest.mark.asyncio
     async def test_list_scans_pagination(self, mock_current_user):
         """Test scan pagination"""
-        mock_scan_model.Scan.find_many.return_value.limit.return_value.skip.return_value = AsyncMock()
-        mock_scan_model.Scan.find_many.return_value.limit.return_value.skip.return_value.to_list.return_value = []
+        mock_scan_model.Scan.find_many.return_value.limit.return_value.skip.return_value = (
+            AsyncMock()
+        )
+        mock_scan_model.Scan.find_many.return_value.limit.return_value.skip.return_value.to_list.return_value = (
+            []
+        )
 
         with patch("api.routes.scans.Scan", mock_scan_model.Scan):
             await list_scans(None, None, 10, 20, mock_current_user)
 
             # Verify limit and offset were applied
-            mock_scan_model.Scan.find_many.return_value.limit.assert_called_once_with(10)
+            mock_scan_model.Scan.find_many.return_value.limit.assert_called_once_with(
+                10
+            )
 
 
 # ==================== Get Scan Tests ====================
@@ -350,15 +395,28 @@ class TestRunScan:
         mock_scanner_instance = AsyncMock()
         mock_scanner_instance.scan = AsyncMock()
         mock_scanner_instance.scan.return_value.__aiter__ = AsyncMock()
-        mock_scanner_instance.scan.return_value.__aiter__.return_value = [25, 50, 75, 100]
-        mock_vuln_scanner.VulnScannerModule.return_value = mock_scanner_instance
+        mock_scanner_instance.scan.return_value.__aiter__.return_value = [
+            25,
+            50,
+            75,
+            100,
+        ]
+        mock_vuln_scanner.VulnScannerModule.return_value = (
+            mock_scanner_instance
+        )
 
         with patch("api.routes.scans.Scan", mock_scan_model.Scan):
-            with patch.dict("sys.modules", {"modules.vuln_scanner": mock_vuln_scanner}):
+            with patch.dict(
+                "sys.modules", {"modules.vuln_scanner": mock_vuln_scanner}
+            ):
                 await run_scan("scan-001")
 
-                mock_scan.update_status.assert_any_call(mock_scan_model.ScanStatus.RUNNING)
-                mock_scan.update_status.assert_any_call(mock_scan_model.ScanStatus.COMPLETED)
+                mock_scan.update_status.assert_any_call(
+                    mock_scan_model.ScanStatus.RUNNING
+                )
+                mock_scan.update_status.assert_any_call(
+                    mock_scan_model.ScanStatus.COMPLETED
+                )
 
     @pytest.mark.asyncio
     async def test_run_scan_not_found(self):
@@ -375,13 +433,19 @@ class TestRunScan:
         mock_scan_model.Scan.find_one.return_value = mock_scan
 
         with patch("api.routes.scans.Scan", mock_scan_model.Scan):
-            with patch.dict("sys.modules", {"modules.vuln_scanner": MagicMock()}):
+            with patch.dict(
+                "sys.modules", {"modules.vuln_scanner": MagicMock()}
+            ):
                 # Make the import fail to trigger exception handling
-                sys.modules["modules.vuln_scanner"].VulnScannerModule = Mock(side_effect=Exception("Import failed"))
+                sys.modules["modules.vuln_scanner"].VulnScannerModule = Mock(
+                    side_effect=Exception("Import failed")
+                )
 
                 await run_scan("scan-001")
 
-                mock_scan.update_status.assert_any_call(mock_scan_model.ScanStatus.FAILED, error=pytest.any)
+                mock_scan.update_status.assert_any_call(
+                    mock_scan_model.ScanStatus.FAILED, error=pytest.any
+                )
 
 
 # ==================== Model Tests ====================

@@ -32,7 +32,9 @@ sys.modules["integrations.jira_client"] = MagicMock()
 # Set environment variables before import
 os.environ["ADMIN_PASSWORD"] = "test123"
 os.environ["SECRET_KEY"] = "test-secret-key"
-os.environ["CORS_ORIGINS"] = '["http://localhost:3000", "http://localhost:8000"]'  # JSON format
+os.environ["CORS_ORIGINS"] = (
+    '["http://localhost:3000", "http://localhost:8000"]'  # JSON format
+)
 
 # Now import the app
 from api.main import (
@@ -228,20 +230,26 @@ class TestCalculateNextRun:
     def test_calculate_next_run_daily(self):
         """Test daily schedule calculation"""
         now = datetime.utcnow()
-        result = calculate_next_run("daily", f"{now.hour:02d}:{now.minute:02d}")
+        result = calculate_next_run(
+            "daily", f"{now.hour:02d}:{now.minute:02d}"
+        )
         assert isinstance(result, datetime)
         assert result > now or result.day != now.day
 
     def test_calculate_next_run_weekly(self):
         """Test weekly schedule calculation"""
         now = datetime.utcnow()
-        result = calculate_next_run("weekly", f"{now.hour:02d}:{now.minute:02d}", day=0)
+        result = calculate_next_run(
+            "weekly", f"{now.hour:02d}:{now.minute:02d}", day=0
+        )
         assert isinstance(result, datetime)
 
     def test_calculate_next_run_weekly_same_day(self):
         """Test weekly schedule calculation for same day"""
         now = datetime.utcnow()
-        result = calculate_next_run("weekly", f"{now.hour:02d}:{now.minute:02d}", day=now.weekday())
+        result = calculate_next_run(
+            "weekly", f"{now.hour:02d}:{now.minute:02d}", day=now.weekday()
+        )
         assert isinstance(result, datetime)
 
     def test_calculate_next_run_once(self):
@@ -264,13 +272,17 @@ class TestCalculateNextRun:
     def test_calculate_next_run_monthly(self):
         """Test monthly schedule calculation"""
         now = datetime.utcnow()
-        result = calculate_next_run("monthly", f"{now.hour:02d}:{now.minute:02d}")
+        result = calculate_next_run(
+            "monthly", f"{now.hour:02d}:{now.minute:02d}"
+        )
         assert isinstance(result, datetime)
 
     def test_calculate_next_run_invalid_frequency(self):
         """Test schedule calculation with invalid frequency"""
         now = datetime.utcnow()
-        result = calculate_next_run("invalid", f"{now.hour:02d}:{now.minute:02d}")
+        result = calculate_next_run(
+            "invalid", f"{now.hour:02d}:{now.minute:02d}"
+        )
         assert isinstance(result, datetime)
 
 

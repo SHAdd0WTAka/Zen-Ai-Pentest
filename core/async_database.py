@@ -14,11 +14,23 @@ from contextlib import asynccontextmanager
 from typing import Any, AsyncGenerator, Dict, List, Optional, TypeVar
 
 from sqlalchemy import select, text
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.ext.asyncio import (
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
 from sqlalchemy.orm import selectinload
 
 # Import models
-from database.models import AuditLog, Finding, Report, Scan, ScanStatus, Severity, User
+from database.models import (
+    AuditLog,
+    Finding,
+    Report,
+    Scan,
+    ScanStatus,
+    Severity,
+    User,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -60,11 +72,16 @@ class AsyncDatabaseManager:
         import os
 
         # Try to get from environment
-        db_url = os.getenv("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/zen_pentest")
+        db_url = os.getenv(
+            "DATABASE_URL",
+            "postgresql://postgres:postgres@localhost:5432/zen_pentest",
+        )
 
         # Convert to async URL if needed
         if db_url.startswith("postgresql://"):
-            db_url = db_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+            db_url = db_url.replace(
+                "postgresql://", "postgresql+asyncpg://", 1
+            )
         elif db_url.startswith("sqlite:///"):
             db_url = db_url.replace("sqlite:///", "sqlite+aiosqlite:///", 1)
 
@@ -233,7 +250,9 @@ class AsyncDatabaseManager:
         finding_id: int,
     ) -> Optional[Finding]:
         """Get finding by ID"""
-        result = await session.execute(select(Finding).where(Finding.id == finding_id))
+        result = await session.execute(
+            select(Finding).where(Finding.id == finding_id)
+        )
         return result.scalar_one_or_none()
 
     async def get_findings(
@@ -285,7 +304,9 @@ class AsyncDatabaseManager:
         username: str,
     ) -> Optional[User]:
         """Get user by username"""
-        result = await session.execute(select(User).where(User.username == username))
+        result = await session.execute(
+            select(User).where(User.username == username)
+        )
         return result.scalar_one_or_none()
 
     # ========================================================================
@@ -327,7 +348,9 @@ class AsyncDatabaseManager:
                 return {
                     "status": "healthy",
                     "latency_ms": round(latency, 2),
-                    "database_url": self.database_url.split("@")[-1],  # Hide credentials
+                    "database_url": self.database_url.split("@")[
+                        -1
+                    ],  # Hide credentials
                 }
         except Exception as e:
             return {

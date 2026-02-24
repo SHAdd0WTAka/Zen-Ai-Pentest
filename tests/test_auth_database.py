@@ -41,8 +41,12 @@ from database.auth_models import (
 )
 
 # Create test database
-engine = create_engine(os.environ["DATABASE_URL"], connect_args={"check_same_thread": False})
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+engine = create_engine(
+    os.environ["DATABASE_URL"], connect_args={"check_same_thread": False}
+)
+TestingSessionLocal = sessionmaker(
+    autocommit=False, autoflush=False, bind=engine
+)
 
 
 @pytest.fixture(scope="function")
@@ -68,7 +72,12 @@ class TestUserModel:
 
     def test_create_user(self, db):
         """Test creating a user"""
-        user = User(username="testuser", email="test@example.com", hashed_password="hashed_password_here", role=UserRole.USER)
+        user = User(
+            username="testuser",
+            email="test@example.com",
+            hashed_password="hashed_password_here",
+            role=UserRole.USER,
+        )
         db.add(user)
         db.commit()
         db.refresh(user)
@@ -82,7 +91,12 @@ class TestUserModel:
 
     def test_user_to_dict(self, db):
         """Test user serialization"""
-        user = User(username="testuser", email="test@example.com", hashed_password="hashed", role=UserRole.ADMIN)
+        user = User(
+            username="testuser",
+            email="test@example.com",
+            hashed_password="hashed",
+            role=UserRole.ADMIN,
+        )
         db.add(user)
         db.commit()
 
@@ -95,7 +109,13 @@ class TestUserModel:
 
     def test_get_user_by_username(self, db):
         """Test retrieving user by username"""
-        create_user(db, "testuser", "test@example.com", "hashed_pass_hash", UserRole.USER)
+        create_user(
+            db,
+            "testuser",
+            "test@example.com",
+            "hashed_pass_hash",
+            UserRole.USER,
+        )
 
         user = get_user_by_username(db, "testuser")
         assert user is not None
@@ -103,7 +123,13 @@ class TestUserModel:
 
     def test_get_user_by_email(self, db):
         """Test retrieving user by email"""
-        create_user(db, "testuser", "test@example.com", "hashed_pass_hash", UserRole.USER)
+        create_user(
+            db,
+            "testuser",
+            "test@example.com",
+            "hashed_pass_hash",
+            UserRole.USER,
+        )
 
         user = get_user_by_email(db, "test@example.com")
         assert user is not None
@@ -115,7 +141,9 @@ class TestUserSession:
 
     def test_create_session(self, db):
         """Test creating a user session"""
-        user = create_user(db, "testuser", "test@example.com", "hashed", UserRole.USER)
+        user = create_user(
+            db, "testuser", "test@example.com", "hashed", UserRole.USER
+        )
 
         session = create_session(
             db,
@@ -134,7 +162,9 @@ class TestUserSession:
 
     def test_session_expiration(self, db):
         """Test session expiration check"""
-        user = create_user(db, "testuser", "test@example.com", "hashed", UserRole.USER)
+        user = create_user(
+            db, "testuser", "test@example.com", "hashed", UserRole.USER
+        )
 
         # Create expired session
         expired_session = create_session(
@@ -150,15 +180,28 @@ class TestUserSession:
 
         # Create active session
         active_session = create_session(
-            db, user.id, "active_session", "jti_active", datetime.utcnow() + timedelta(days=7), ip_address="192.168.1.1"
+            db,
+            user.id,
+            "active_session",
+            "jti_active",
+            datetime.utcnow() + timedelta(days=7),
+            ip_address="192.168.1.1",
         )
 
         assert active_session.is_expired() is False
 
     def test_revoke_session(self, db):
         """Test revoking a session"""
-        user = create_user(db, "testuser", "test@example.com", "hashed", UserRole.USER)
-        create_session(db, user.id, "session_123", "jti_456", datetime.utcnow() + timedelta(days=7))
+        user = create_user(
+            db, "testuser", "test@example.com", "hashed", UserRole.USER
+        )
+        create_session(
+            db,
+            user.id,
+            "session_123",
+            "jti_456",
+            datetime.utcnow() + timedelta(days=7),
+        )
 
         revoked = revoke_session(db, "session_123", "logout")
 
@@ -173,9 +216,18 @@ class TestTokenBlacklist:
 
     def test_blacklist_token(self, db):
         """Test adding token to blacklist"""
-        user = create_user(db, "testuser", "test@example.com", "hashed", UserRole.USER)
+        user = create_user(
+            db, "testuser", "test@example.com", "hashed", UserRole.USER
+        )
 
-        entry = blacklist_token(db, "jti_123", TokenType.ACCESS, datetime.utcnow() + timedelta(minutes=15), user.id, "logout")
+        entry = blacklist_token(
+            db,
+            "jti_123",
+            TokenType.ACCESS,
+            datetime.utcnow() + timedelta(minutes=15),
+            user.id,
+            "logout",
+        )
 
         assert entry.id is not None
         assert entry.jti == "jti_123"
@@ -184,13 +236,22 @@ class TestTokenBlacklist:
 
     def test_is_token_blacklisted(self, db):
         """Test checking if token is blacklisted"""
-        user = create_user(db, "testuser", "test@example.com", "hashed", UserRole.USER)
+        user = create_user(
+            db, "testuser", "test@example.com", "hashed", UserRole.USER
+        )
 
         # Initially not blacklisted
         assert is_token_blacklisted(db, "jti_123") is False
 
         # Add to blacklist
-        blacklist_token(db, "jti_123", TokenType.ACCESS, datetime.utcnow() + timedelta(minutes=15), user.id, "logout")
+        blacklist_token(
+            db,
+            "jti_123",
+            TokenType.ACCESS,
+            datetime.utcnow() + timedelta(minutes=15),
+            user.id,
+            "logout",
+        )
 
         # Now blacklisted
         assert is_token_blacklisted(db, "jti_123") is True
@@ -204,7 +265,9 @@ class TestUserManager:
         # Create user with hashed password
         password = "securepassword123"
         hashed = user_manager.pwd.hash(password)
-        user = create_user(db, "testuser", "test@example.com", hashed, UserRole.USER)
+        user = create_user(
+            db, "testuser", "test@example.com", hashed, UserRole.USER
+        )
 
         # Authenticate
         auth_user = user_manager.authenticate_user(db, "testuser", password)
@@ -220,23 +283,31 @@ class TestUserManager:
         create_user(db, "testuser", "test@example.com", hashed, UserRole.USER)
 
         # Try wrong password
-        auth_user = user_manager.authenticate_user(db, "testuser", "wrongpassword")
+        auth_user = user_manager.authenticate_user(
+            db, "testuser", "wrongpassword"
+        )
 
         assert auth_user is None
 
     def test_authenticate_user_not_found(self, db, user_manager):
         """Test authentication for non-existent user"""
-        auth_user = user_manager.authenticate_user(db, "nonexistent", "password")
+        auth_user = user_manager.authenticate_user(
+            db, "nonexistent", "password"
+        )
         assert auth_user is None
 
     def test_create_session_with_tokens(self, db, user_manager):
         """Test creating session with JWT tokens"""
         password = "securepassword123"
         hashed = user_manager.pwd.hash(password)
-        user = create_user(db, "testuser", "test@example.com", hashed, UserRole.USER)
+        user = create_user(
+            db, "testuser", "test@example.com", hashed, UserRole.USER
+        )
 
         # Create session
-        result = user_manager.create_session(db, user, "192.168.1.1", "TestAgent")
+        result = user_manager.create_session(
+            db, user, "192.168.1.1", "TestAgent"
+        )
 
         assert "access_token" in result
         assert "refresh_token" in result
@@ -244,7 +315,11 @@ class TestUserManager:
         assert result["token_type"] == "bearer"
 
         # Verify session was stored in DB
-        session = db.query(UserSession).filter(UserSession.session_id == result["session_id"]).first()
+        session = (
+            db.query(UserSession)
+            .filter(UserSession.session_id == result["session_id"])
+            .first()
+        )
 
         assert session is not None
         assert session.user_id == user.id
@@ -254,7 +329,9 @@ class TestUserManager:
         """Test refreshing access token"""
         password = "securepassword123"
         hashed = user_manager.pwd.hash(password)
-        user = create_user(db, "testuser", "test@example.com", hashed, UserRole.USER)
+        user = create_user(
+            db, "testuser", "test@example.com", hashed, UserRole.USER
+        )
 
         # Create initial session
         session_data = user_manager.create_session(db, user)
@@ -271,7 +348,9 @@ class TestUserManager:
         """Test revoking all user sessions"""
         password = "securepassword123"
         hashed = user_manager.pwd.hash(password)
-        user = create_user(db, "testuser", "test@example.com", hashed, UserRole.USER)
+        user = create_user(
+            db, "testuser", "test@example.com", hashed, UserRole.USER
+        )
 
         # Create multiple sessions
         user_manager.create_session(db, user, "192.168.1.1")
@@ -284,7 +363,11 @@ class TestUserManager:
         assert count == 3
 
         # Check all revoked
-        active_sessions = db.query(UserSession).filter(UserSession.user_id == user.id, UserSession.is_active).count()
+        active_sessions = (
+            db.query(UserSession)
+            .filter(UserSession.user_id == user.id, UserSession.is_active)
+            .count()
+        )
 
         assert active_sessions == 0
 
@@ -292,20 +375,28 @@ class TestUserManager:
         """Test password change"""
         old_password = "oldpassword123"
         hashed = user_manager.pwd.hash(old_password)
-        user = create_user(db, "testuser", "test@example.com", hashed, UserRole.USER)
+        user = create_user(
+            db, "testuser", "test@example.com", hashed, UserRole.USER
+        )
 
         # Change password
         new_password = "newpassword123"
-        result = user_manager.change_password(db, user.id, old_password, new_password)
+        result = user_manager.change_password(
+            db, user.id, old_password, new_password
+        )
 
         assert result is True
 
         # Verify old password no longer works
-        auth_user = user_manager.authenticate_user(db, "testuser", old_password)
+        auth_user = user_manager.authenticate_user(
+            db, "testuser", old_password
+        )
         assert auth_user is None
 
         # Verify new password works
-        auth_user = user_manager.authenticate_user(db, "testuser", new_password)
+        auth_user = user_manager.authenticate_user(
+            db, "testuser", new_password
+        )
         assert auth_user is not None
 
 
@@ -314,13 +405,19 @@ class TestUserAuditLog:
 
     def test_create_audit_log(self, db, user_manager):
         """Test creating audit log entries"""
-        user = create_user(db, "testuser", "test@example.com", "hashed", UserRole.USER)
+        user = create_user(
+            db, "testuser", "test@example.com", "hashed", UserRole.USER
+        )
 
         # Authenticate to generate audit log
         user_manager.authenticate_user(db, "testuser", "wrongpassword")
 
         # Check audit log
-        logs = db.query(UserAuditLog).filter(UserAuditLog.user_id == user.id).all()
+        logs = (
+            db.query(UserAuditLog)
+            .filter(UserAuditLog.user_id == user.id)
+            .all()
+        )
 
         assert len(logs) >= 1
         assert logs[0].action == "login"

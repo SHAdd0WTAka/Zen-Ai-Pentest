@@ -35,8 +35,12 @@ class JWTConfig:
         return cls(
             secret_key=os.getenv("JWT_SECRET_KEY", ""),
             algorithm=os.getenv("JWT_ALGORITHM", "HS256"),
-            access_token_expire_minutes=int(os.getenv("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", "15")),
-            refresh_token_expire_days=int(os.getenv("JWT_REFRESH_TOKEN_EXPIRE_DAYS", "7")),
+            access_token_expire_minutes=int(
+                os.getenv("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", "15")
+            ),
+            refresh_token_expire_days=int(
+                os.getenv("JWT_REFRESH_TOKEN_EXPIRE_DAYS", "7")
+            ),
             issuer=os.getenv("JWT_ISSUER", "zen-ai-pentest"),
             audience=os.getenv("JWT_AUDIENCE", "zen-ai-pentest-api"),
         )
@@ -91,9 +95,15 @@ class RateLimitConfig:
     def from_env(cls) -> "RateLimitConfig":
         return cls(
             login_attempts=int(os.getenv("RATE_LIMIT_LOGIN_ATTEMPTS", "5")),
-            login_window_seconds=int(os.getenv("RATE_LIMIT_LOGIN_WINDOW", "300")),
-            api_key_requests=int(os.getenv("RATE_LIMIT_API_KEY_REQUESTS", "100")),
-            api_key_window_seconds=int(os.getenv("RATE_LIMIT_API_KEY_WINDOW", "60")),
+            login_window_seconds=int(
+                os.getenv("RATE_LIMIT_LOGIN_WINDOW", "300")
+            ),
+            api_key_requests=int(
+                os.getenv("RATE_LIMIT_API_KEY_REQUESTS", "100")
+            ),
+            api_key_window_seconds=int(
+                os.getenv("RATE_LIMIT_API_KEY_WINDOW", "60")
+            ),
             mfa_attempts=int(os.getenv("RATE_LIMIT_MFA_ATTEMPTS", "3")),
             mfa_window_seconds=int(os.getenv("RATE_LIMIT_MFA_WINDOW", "300")),
         )
@@ -112,9 +122,15 @@ class SessionConfig:
     def from_env(cls) -> "SessionConfig":
         return cls(
             max_sessions_per_user=int(os.getenv("SESSION_MAX_PER_USER", "5")),
-            session_timeout_minutes=int(os.getenv("SESSION_TIMEOUT_MINUTES", "30")),
-            absolute_timeout_hours=int(os.getenv("SESSION_ABSOLUTE_TIMEOUT_HOURS", "8")),
-            cleanup_interval_minutes=int(os.getenv("SESSION_CLEANUP_INTERVAL", "60")),
+            session_timeout_minutes=int(
+                os.getenv("SESSION_TIMEOUT_MINUTES", "30")
+            ),
+            absolute_timeout_hours=int(
+                os.getenv("SESSION_ABSOLUTE_TIMEOUT_HOURS", "8")
+            ),
+            cleanup_interval_minutes=int(
+                os.getenv("SESSION_CLEANUP_INTERVAL", "60")
+            ),
         )
 
 
@@ -133,7 +149,9 @@ class APIKeyConfig:
             key_prefix=os.getenv("API_KEY_PREFIX", "zap_"),
             key_length=int(os.getenv("API_KEY_LENGTH", "32")),
             max_keys_per_user=int(os.getenv("API_KEY_MAX_PER_USER", "5")),
-            default_expiry_days=int(os.getenv("API_KEY_DEFAULT_EXPIRY_DAYS", "90")),
+            default_expiry_days=int(
+                os.getenv("API_KEY_DEFAULT_EXPIRY_DAYS", "90")
+            ),
         )
 
 
@@ -149,15 +167,24 @@ class AuditConfig:
 
     def __post_init__(self):
         if self.sensitive_fields is None:
-            self.sensitive_fields = ["password", "token", "secret", "api_key", "mfa_code"]
+            self.sensitive_fields = [
+                "password",
+                "token",
+                "secret",
+                "api_key",
+                "mfa_code",
+            ]
 
     @classmethod
     def from_env(cls) -> "AuditConfig":
         config = cls(
-            log_file_path=os.getenv("AUDIT_LOG_FILE", "/var/log/zen-ai-pentest/auth.log"),
+            log_file_path=os.getenv(
+                "AUDIT_LOG_FILE", "/var/log/zen-ai-pentest/auth.log"
+            ),
             max_file_size_mb=int(os.getenv("AUDIT_MAX_FILE_SIZE_MB", "100")),
             backup_count=int(os.getenv("AUDIT_BACKUP_COUNT", "10")),
-            log_to_console=os.getenv("AUDIT_LOG_TO_CONSOLE", "true").lower() == "true",
+            log_to_console=os.getenv("AUDIT_LOG_TO_CONSOLE", "true").lower()
+            == "true",
         )
         return config
 
@@ -189,7 +216,11 @@ class AuthConfig:
     @classmethod
     def from_env(cls) -> "AuthConfig":
         env_str = os.getenv("ENVIRONMENT", "development").lower()
-        environment = Environment(env_str) if env_str in [e.value for e in Environment] else Environment.DEVELOPMENT
+        environment = (
+            Environment(env_str)
+            if env_str in [e.value for e in Environment]
+            else Environment.DEVELOPMENT
+        )
 
         return cls(
             environment=environment,
@@ -200,15 +231,35 @@ class AuthConfig:
             session=SessionConfig.from_env(),
             api_key=APIKeyConfig.from_env(),
             audit=AuditConfig.from_env(),
-            require_mfa=os.getenv("AUTH_REQUIRE_MFA", "false").lower() == "true",
-            allow_registration=os.getenv("AUTH_ALLOW_REGISTRATION", "true").lower() == "true",
-            password_min_length=int(os.getenv("AUTH_PASSWORD_MIN_LENGTH", "12")),
-            password_require_uppercase=os.getenv("AUTH_PASSWORD_REQUIRE_UPPERCASE", "true").lower() == "true",
-            password_require_lowercase=os.getenv("AUTH_PASSWORD_REQUIRE_LOWERCASE", "true").lower() == "true",
-            password_require_digits=os.getenv("AUTH_PASSWORD_REQUIRE_DIGITS", "true").lower() == "true",
-            password_require_special=os.getenv("AUTH_PASSWORD_REQUIRE_SPECIAL", "true").lower() == "true",
+            require_mfa=os.getenv("AUTH_REQUIRE_MFA", "false").lower()
+            == "true",
+            allow_registration=os.getenv(
+                "AUTH_ALLOW_REGISTRATION", "true"
+            ).lower()
+            == "true",
+            password_min_length=int(
+                os.getenv("AUTH_PASSWORD_MIN_LENGTH", "12")
+            ),
+            password_require_uppercase=os.getenv(
+                "AUTH_PASSWORD_REQUIRE_UPPERCASE", "true"
+            ).lower()
+            == "true",
+            password_require_lowercase=os.getenv(
+                "AUTH_PASSWORD_REQUIRE_LOWERCASE", "true"
+            ).lower()
+            == "true",
+            password_require_digits=os.getenv(
+                "AUTH_PASSWORD_REQUIRE_DIGITS", "true"
+            ).lower()
+            == "true",
+            password_require_special=os.getenv(
+                "AUTH_PASSWORD_REQUIRE_SPECIAL", "true"
+            ).lower()
+            == "true",
             max_failed_logins=int(os.getenv("AUTH_MAX_FAILED_LOGINS", "5")),
-            lockout_duration_minutes=int(os.getenv("AUTH_LOCKOUT_DURATION_MINUTES", "30")),
+            lockout_duration_minutes=int(
+                os.getenv("AUTH_LOCKOUT_DURATION_MINUTES", "30")
+            ),
         )
 
 

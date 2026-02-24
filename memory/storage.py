@@ -73,7 +73,9 @@ class SQLiteStorage:
     def load(self, entry_id: str) -> Optional[MemoryEntry]:
         """Load memory entry by ID"""
         with sqlite3.connect(self.db_path) as conn:
-            cursor = conn.execute("SELECT * FROM memories WHERE id = ?", (entry_id,))
+            cursor = conn.execute(
+                "SELECT * FROM memories WHERE id = ?", (entry_id,)
+            )
             row = cursor.fetchone()
 
             if row:
@@ -87,7 +89,9 @@ class SQLiteStorage:
                 )
             return None
 
-    def load_by_type(self, memory_type: MemoryType, limit: int = 100) -> List[MemoryEntry]:
+    def load_by_type(
+        self, memory_type: MemoryType, limit: int = 100
+    ) -> List[MemoryEntry]:
         """Load memories by type"""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.execute(
@@ -145,7 +149,9 @@ class RedisStorage:
         if not REDIS_AVAILABLE:
             raise ImportError("Redis not installed. Run: pip install redis")
 
-        self.client = redis.Redis(host=host, port=port, db=db, decode_responses=True)
+        self.client = redis.Redis(
+            host=host, port=port, db=db, decode_responses=True
+        )
 
     def save(self, entry: MemoryEntry):
         """Save memory entry to Redis"""
@@ -164,7 +170,9 @@ class RedisStorage:
         ttl = int(86400 * entry.importance * 7)  # Up to 1 week
         self.client.expire(key, ttl)
 
-    def load(self, entry_id: str, memory_type: MemoryType = None) -> Optional[MemoryEntry]:
+    def load(
+        self, entry_id: str, memory_type: MemoryType = None
+    ) -> Optional[MemoryEntry]:
         """Load memory entry from Redis"""
         # Try to find without knowing type
         if memory_type:

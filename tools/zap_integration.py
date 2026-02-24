@@ -167,7 +167,10 @@ class ZAPScanner:
         return self._session
 
     async def _api_request(
-        self, endpoint: str, params: Optional[Dict[str, Any]] = None, method: str = "GET"
+        self,
+        endpoint: str,
+        params: Optional[Dict[str, Any]] = None,
+        method: str = "GET",
     ) -> Dict[str, Any]:
         """Make ZAP API request"""
         session = await self._get_session()
@@ -179,19 +182,27 @@ class ZAPScanner:
 
         try:
             if method.upper() == "GET":
-                async with session.get(url, params=params, timeout=aiohttp.ClientTimeout(total=30)) as response:
+                async with session.get(
+                    url, params=params, timeout=aiohttp.ClientTimeout(total=30)
+                ) as response:
                     if response.status == 200:
                         return await response.json()
                     else:
                         text = await response.text()
-                        raise RuntimeError(f"ZAP API error {response.status}: {text}")
+                        raise RuntimeError(
+                            f"ZAP API error {response.status}: {text}"
+                        )
             elif method.upper() == "POST":
-                async with session.post(url, data=params, timeout=aiohttp.ClientTimeout(total=30)) as response:
+                async with session.post(
+                    url, data=params, timeout=aiohttp.ClientTimeout(total=30)
+                ) as response:
                     if response.status == 200:
                         return await response.json()
                     else:
                         text = await response.text()
-                        raise RuntimeError(f"ZAP API error {response.status}: {text}")
+                        raise RuntimeError(
+                            f"ZAP API error {response.status}: {text}"
+                        )
         except aiohttp.ClientError as e:
             raise RuntimeError(f"Failed to connect to ZAP API: {e}")
 
@@ -204,7 +215,9 @@ class ZAPScanner:
     async def start_daemon(self, port: int = 8080) -> bool:
         """Start ZAP daemon"""
         if not self._check_zap_installed():
-            raise RuntimeError("ZAP not found. Install ZAP from: https://www.zaproxy.org/download/")
+            raise RuntimeError(
+                "ZAP not found. Install ZAP from: https://www.zaproxy.org/download/"
+            )
 
         if self.use_docker:
             return await self._start_docker_daemon(port)
@@ -299,7 +312,9 @@ class ZAPScanner:
         if self._session and not self._session.closed:
             await self._session.close()
 
-    async def spider_scan(self, progress_callback: Optional[Callable[[int], None]] = None) -> str:
+    async def spider_scan(
+        self, progress_callback: Optional[Callable[[int], None]] = None
+    ) -> str:
         """
         Run spider scan.
 
@@ -330,7 +345,9 @@ class ZAPScanner:
         start_time = time.time()
 
         while time.time() - start_time < timeout:
-            status = await self._api_request("spider/view/status/", {"scanId": scan_id})
+            status = await self._api_request(
+                "spider/view/status/", {"scanId": scan_id}
+            )
             progress = int(status.get("status", 0))
 
             if progress_callback:
@@ -343,7 +360,9 @@ class ZAPScanner:
 
         return scan_id
 
-    async def ajax_spider_scan(self, progress_callback: Optional[Callable[[int], None]] = None) -> bool:
+    async def ajax_spider_scan(
+        self, progress_callback: Optional[Callable[[int], None]] = None
+    ) -> bool:
         """
         Run AJAX spider scan for modern web applications.
 
@@ -383,7 +402,9 @@ class ZAPScanner:
 
         return False
 
-    async def active_scan(self, progress_callback: Optional[Callable[[int], None]] = None) -> str:
+    async def active_scan(
+        self, progress_callback: Optional[Callable[[int], None]] = None
+    ) -> str:
         """
         Run active scan.
 
@@ -421,7 +442,9 @@ class ZAPScanner:
         start_time = time.time()
 
         while time.time() - start_time < timeout:
-            status = await self._api_request("ascan/view/status/", {"scanId": scan_id})
+            status = await self._api_request(
+                "ascan/view/status/", {"scanId": scan_id}
+            )
             progress = int(status.get("status", 0))
 
             if progress_callback:
@@ -434,7 +457,9 @@ class ZAPScanner:
 
         return scan_id
 
-    async def get_alerts(self, base_url: Optional[str] = None) -> List[ZAPAlert]:
+    async def get_alerts(
+        self, base_url: Optional[str] = None
+    ) -> List[ZAPAlert]:
         """
         Get all alerts/findings from ZAP.
 
@@ -490,21 +515,33 @@ class ZAPScanner:
             if self.options.get("spider", True):
                 logger.info(f"Starting spider scan for {self.target}")
                 await self.spider_scan(
-                    progress_callback=lambda p: progress_callback({"spider": p}) if progress_callback else None
+                    progress_callback=lambda p: (
+                        progress_callback({"spider": p})
+                        if progress_callback
+                        else None
+                    )
                 )
 
             # AJAX spider scan
             if self.options.get("ajax_spider", False):
                 logger.info(f"Starting AJAX spider scan for {self.target}")
                 await self.ajax_spider_scan(
-                    progress_callback=lambda p: progress_callback({"ajax_spider": p}) if progress_callback else None
+                    progress_callback=lambda p: (
+                        progress_callback({"ajax_spider": p})
+                        if progress_callback
+                        else None
+                    )
                 )
 
             # Active scan
             if self.options.get("active_scan", True):
                 logger.info(f"Starting active scan for {self.target}")
                 await self.active_scan(
-                    progress_callback=lambda p: progress_callback({"active_scan": p}) if progress_callback else None
+                    progress_callback=lambda p: (
+                        progress_callback({"active_scan": p})
+                        if progress_callback
+                        else None
+                    )
                 )
 
             # Get alerts
@@ -569,7 +606,9 @@ class ZAPScanner:
             findings.append(finding)
         return findings
 
-    def normalize_findings(self, findings: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    def normalize_findings(
+        self, findings: List[Dict[str, Any]]
+    ) -> List[Dict[str, Any]]:
         """
         Normalize findings to standard format.
 
@@ -592,7 +631,9 @@ class ZAPScanner:
             normalized_finding = {
                 "tool": "owasp_zap",
                 "target": self.target,
-                "severity": severity_map.get(finding.get("severity", "").lower(), "info"),
+                "severity": severity_map.get(
+                    finding.get("severity", "").lower(), "info"
+                ),
                 "title": finding.get("name", "Unknown"),
                 "description": finding.get("description", ""),
                 "evidence": finding.get("evidence", {}),
@@ -621,10 +662,16 @@ class ZAPScanner:
         if not reference:
             return []
         # Split by common delimiters
-        refs = [r.strip() for r in reference.replace("\n", " ").split() if r.strip().startswith("http")]
+        refs = [
+            r.strip()
+            for r in reference.replace("\n", " ").split()
+            if r.strip().startswith("http")
+        ]
         return refs if refs else [reference]
 
-    async def generate_report(self, report_format: str = "json", output_path: Optional[str] = None) -> str:
+    async def generate_report(
+        self, report_format: str = "json", output_path: Optional[str] = None
+    ) -> str:
         """
         Generate ZAP report.
 
@@ -792,7 +839,9 @@ def zap_quick_scan(target: str, api_url: str = "http://localhost:8080") -> str:
 
 
 @tool
-def zap_spider_only(target: str, api_url: str = "http://localhost:8080") -> str:
+def zap_spider_only(
+    target: str, api_url: str = "http://localhost:8080"
+) -> str:
     """
     Run only ZAP spider/crawler without active scanning.
 
@@ -816,7 +865,9 @@ def zap_spider_only(target: str, api_url: str = "http://localhost:8080") -> str:
     if not result.success:
         return f"Spider failed: {result.error}"
 
-    return f"Spider completed. Crawled {result.urls_crawled} URLs from {target}"
+    return (
+        f"Spider completed. Crawled {result.urls_crawled} URLs from {target}"
+    )
 
 
 # Tool Registry integration

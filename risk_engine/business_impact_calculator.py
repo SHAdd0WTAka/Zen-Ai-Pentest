@@ -33,13 +33,27 @@ class ComplianceFramework(Enum):
     """Compliance-Frameworks mit ihren jeweiligen Impact-Gewichtungen."""
 
     PCI_DSS = ("PCI-DSS", 0.95, {"payment_data": 1.0, "cardholder_data": 0.9})
-    HIPAA = ("HIPAA", 0.9, {"phi": 1.0, "medical_records": 0.9, "patient_data": 0.85})
-    GDPR = ("GDPR", 0.85, {"pii": 0.9, "personal_data": 0.85, "sensitive_data": 0.95})
+    HIPAA = (
+        "HIPAA",
+        0.9,
+        {"phi": 1.0, "medical_records": 0.9, "patient_data": 0.85},
+    )
+    GDPR = (
+        "GDPR",
+        0.85,
+        {"pii": 0.9, "personal_data": 0.85, "sensitive_data": 0.95},
+    )
     SOX = ("SOX", 0.8, {"financial_data": 0.9, "audit_logs": 0.7})
     ISO27001 = ("ISO27001", 0.75, {"isms_data": 0.8, "security_controls": 0.7})
-    NIST = ("NIST", 0.7, {"federal_data": 0.9, "critical_infrastructure": 0.85})
+    NIST = (
+        "NIST",
+        0.7,
+        {"federal_data": 0.9, "critical_infrastructure": 0.85},
+    )
 
-    def __init__(self, name: str, base_weight: float, data_weights: Dict[str, float]):
+    def __init__(
+        self, name: str, base_weight: float, data_weights: Dict[str, float]
+    ):
         self.framework_name = name
         self.base_weight = base_weight
         self.data_weights = data_weights
@@ -86,7 +100,13 @@ class FinancialImpact:
     @property
     def total_costs(self) -> float:
         """Berechnet die gesamten finanziellen Auswirkungen."""
-        return self.direct_costs + self.indirect_costs + self.regulatory_fines + self.legal_costs + self.reputation_costs
+        return (
+            self.direct_costs
+            + self.indirect_costs
+            + self.regulatory_fines
+            + self.legal_costs
+            + self.reputation_costs
+        )
 
 
 @dataclass
@@ -95,19 +115,25 @@ class ComplianceImpact:
 
     frameworks: Set[ComplianceFramework] = field(default_factory=set)
     violated_controls: List[str] = field(default_factory=list)
-    potential_fines: Dict[ComplianceFramework, float] = field(default_factory=dict)
+    potential_fines: Dict[ComplianceFramework, float] = field(
+        default_factory=dict
+    )
     audit_findings: List[str] = field(default_factory=list)
 
     def get_max_fine(self) -> float:
         """Gibt die maximal mögliche Strafe zurück."""
-        return max(self.potential_fines.values()) if self.potential_fines else 0.0
+        return (
+            max(self.potential_fines.values()) if self.potential_fines else 0.0
+        )
 
     def get_compliance_score(self) -> float:
         """Berechnet einen Compliance-Risiko-Score (0-1)."""
         if not self.frameworks:
             return 0.0
 
-        base_score = sum(fw.base_weight for fw in self.frameworks) / len(self.frameworks)
+        base_score = sum(fw.base_weight for fw in self.frameworks) / len(
+            self.frameworks
+        )
         violation_multiplier = min(1.0, len(self.violated_controls) * 0.1)
         return min(1.0, base_score * (1 + violation_multiplier))
 
@@ -121,7 +147,9 @@ class AssetContext:
     asset_type: str
     criticality: AssetCriticality
     data_classification: DataClassification
-    compliance_frameworks: Set[ComplianceFramework] = field(default_factory=set)
+    compliance_frameworks: Set[ComplianceFramework] = field(
+        default_factory=set
+    )
     internet_exposed: bool = False
     user_count: int = 0
     revenue_dependency: float = 0.0  # Prozentualer Anteil am Umsatz
@@ -176,16 +204,24 @@ class BusinessImpactResult:
         recommendations = []
 
         if self.financial_impact.total_costs > 1000000:
-            recommendations.append("Sofortige Eskalation an das Management erforderlich")
+            recommendations.append(
+                "Sofortige Eskalation an das Management erforderlich"
+            )
 
         if self.compliance_impact.violated_controls:
-            recommendations.append(f"Compliance-Verstöße beheben: {', '.join(self.compliance_impact.violated_controls[:3])}")
+            recommendations.append(
+                f"Compliance-Verstöße beheben: {', '.join(self.compliance_impact.violated_controls[:3])}"
+            )
 
         if self.reputation_impact.weight >= 0.7:
-            recommendations.append("PR-Team benachrichtigen für mögliche Krisenkommunikation")
+            recommendations.append(
+                "PR-Team benachrichtigen für mögliche Krisenkommunikation"
+            )
 
         if self.exposure_score >= 0.7:
-            recommendations.append("Netzwerksegmentierung und Zugangskontrollen überprüfen")
+            recommendations.append(
+                "Netzwerksegmentierung und Zugangskontrollen überprüfen"
+            )
 
         return recommendations
 
@@ -197,7 +233,12 @@ class BusinessImpactCalculator:
     Berücksichtigt finanzielle, compliance-bezogene und reputationsbezogene Faktoren.
     """
 
-    def __init__(self, organization_size: str = "medium", annual_revenue: float = 0.0, industry: str = "technology"):
+    def __init__(
+        self,
+        organization_size: str = "medium",
+        annual_revenue: float = 0.0,
+        industry: str = "technology",
+    ):
         """
         Initialisiert den Calculator.
 
@@ -212,12 +253,32 @@ class BusinessImpactCalculator:
 
         # Branchenspezifische Multiplikatoren
         self.industry_multipliers = {
-            "healthcare": {"compliance": 1.2, "reputation": 1.3, "financial": 1.1},
-            "finance": {"compliance": 1.3, "reputation": 1.2, "financial": 1.2},
+            "healthcare": {
+                "compliance": 1.2,
+                "reputation": 1.3,
+                "financial": 1.1,
+            },
+            "finance": {
+                "compliance": 1.3,
+                "reputation": 1.2,
+                "financial": 1.2,
+            },
             "retail": {"compliance": 1.1, "reputation": 1.1, "financial": 1.0},
-            "technology": {"compliance": 1.0, "reputation": 1.2, "financial": 1.1},
-            "government": {"compliance": 1.4, "reputation": 1.0, "financial": 0.9},
-            "manufacturing": {"compliance": 0.9, "reputation": 0.9, "financial": 1.0},
+            "technology": {
+                "compliance": 1.0,
+                "reputation": 1.2,
+                "financial": 1.1,
+            },
+            "government": {
+                "compliance": 1.4,
+                "reputation": 1.0,
+                "financial": 0.9,
+            },
+            "manufacturing": {
+                "compliance": 0.9,
+                "reputation": 0.9,
+                "financial": 1.0,
+            },
         }
 
         # Organisationsspezifische Basiskosten
@@ -228,10 +289,15 @@ class BusinessImpactCalculator:
             "enterprise": 2000000,
         }
 
-        logger.info(f"BusinessImpactCalculator initialisiert für {industry} ({organization_size})")
+        logger.info(
+            f"BusinessImpactCalculator initialisiert für {industry} ({organization_size})"
+        )
 
     def calculate_financial_impact(
-        self, asset_context: AssetContext, breach_likelihood: float = 0.5, data_volume_records: int = 0
+        self,
+        asset_context: AssetContext,
+        breach_likelihood: float = 0.5,
+        data_volume_records: int = 0,
     ) -> FinancialImpact:
         """
         Berechnet den finanziellen Impact eines potenziellen Vorfalls.
@@ -244,25 +310,43 @@ class BusinessImpactCalculator:
         Returns:
             FinancialImpact-Objekt mit allen Kostenkomponenten
         """
-        multipliers = self.industry_multipliers.get(self.industry, {"compliance": 1.0, "reputation": 1.0, "financial": 1.0})
+        multipliers = self.industry_multipliers.get(
+            self.industry,
+            {"compliance": 1.0, "reputation": 1.0, "financial": 1.0},
+        )
 
         # Direkte Kosten
-        base_response = self.base_response_costs.get(self.organization_size, 150000)
-        direct_costs = base_response * breach_likelihood * multipliers["financial"]
+        base_response = self.base_response_costs.get(
+            self.organization_size, 150000
+        )
+        direct_costs = (
+            base_response * breach_likelihood * multipliers["financial"]
+        )
 
         # Indirekte Kosten (Ausfallzeiten)
         outage_hours = self._estimate_outage_hours(asset_context)
-        hourly_cost = (self.annual_revenue / 8760) * asset_context.revenue_dependency / 100
+        hourly_cost = (
+            (self.annual_revenue / 8760)
+            * asset_context.revenue_dependency
+            / 100
+        )
         indirect_costs = outage_hours * hourly_cost * breach_likelihood
 
         # Regulatorische Strafen
-        regulatory_fines = self._calculate_regulatory_fines(asset_context, data_volume_records, breach_likelihood)
+        regulatory_fines = self._calculate_regulatory_fines(
+            asset_context, data_volume_records, breach_likelihood
+        )
 
         # Rechtskosten
-        legal_costs = self._estimate_legal_costs(data_volume_records, breach_likelihood)
+        legal_costs = self._estimate_legal_costs(
+            data_volume_records, breach_likelihood
+        )
 
         # Reputationskosten
-        reputation_costs = self._calculate_reputation_costs(asset_context, breach_likelihood) * multipliers["reputation"]
+        reputation_costs = (
+            self._calculate_reputation_costs(asset_context, breach_likelihood)
+            * multipliers["reputation"]
+        )
 
         impact = FinancialImpact(
             direct_costs=direct_costs,
@@ -272,10 +356,14 @@ class BusinessImpactCalculator:
             reputation_costs=reputation_costs,
         )
 
-        logger.debug(f"Finanzieller Impact für {asset_context.asset_id}: {impact.total_costs:,.2f}")
+        logger.debug(
+            f"Finanzieller Impact für {asset_context.asset_id}: {impact.total_costs:,.2f}"
+        )
         return impact
 
-    def calculate_compliance_impact(self, asset_context: AssetContext, finding_type: str, severity: str) -> ComplianceImpact:
+    def calculate_compliance_impact(
+        self, asset_context: AssetContext, finding_type: str, severity: str
+    ) -> ComplianceImpact:
         """
         Berechnet den Compliance-Impact eines Findings.
 
@@ -290,7 +378,12 @@ class BusinessImpactCalculator:
         impact = ComplianceImpact()
         impact.frameworks = asset_context.compliance_frameworks.copy()
 
-        severity_multiplier = {"critical": 1.0, "high": 0.8, "medium": 0.5, "low": 0.2}.get(severity.lower(), 0.5)
+        severity_multiplier = {
+            "critical": 1.0,
+            "high": 0.8,
+            "medium": 0.5,
+            "low": 0.2,
+        }.get(severity.lower(), 0.5)
 
         for framework in asset_context.compliance_frameworks:
             # Potenzielle Strafen berechnen
@@ -299,14 +392,21 @@ class BusinessImpactCalculator:
             impact.potential_fines[framework] = adjusted_fine
 
             # Verletzte Controls identifizieren
-            violated = self._identify_violated_controls(framework, finding_type)
+            violated = self._identify_violated_controls(
+                framework, finding_type
+            )
             impact.violated_controls.extend(violated)
 
-        logger.debug(f"Compliance-Impact für {asset_context.asset_id}: {len(impact.violated_controls)} verletzte Controls")
+        logger.debug(
+            f"Compliance-Impact für {asset_context.asset_id}: {len(impact.violated_controls)} verletzte Controls"
+        )
         return impact
 
     def assess_reputation_impact(
-        self, asset_context: AssetContext, data_classification: DataClassification, public_exposure: bool = False
+        self,
+        asset_context: AssetContext,
+        data_classification: DataClassification,
+        public_exposure: bool = False,
     ) -> ReputationImpact:
         """
         Bewertet den potenziellen Reputationsschaden.
@@ -340,7 +440,9 @@ class BusinessImpactCalculator:
             score += 0.1
 
         # Branchenmultiplikator
-        multipliers = self.industry_multipliers.get(self.industry, {"reputation": 1.0})
+        multipliers = self.industry_multipliers.get(
+            self.industry, {"reputation": 1.0}
+        )
         score = min(1.0, score * multipliers["reputation"])
 
         if score >= 0.8:
@@ -373,14 +475,20 @@ class BusinessImpactCalculator:
             BusinessImpactResult mit allen Impact-Komponenten
         """
         # Finanzieller Impact
-        financial = self.calculate_financial_impact(asset_context, breach_likelihood, data_volume_records)
+        financial = self.calculate_financial_impact(
+            asset_context, breach_likelihood, data_volume_records
+        )
 
         # Compliance Impact
-        compliance = self.calculate_compliance_impact(asset_context, finding_type, severity)
+        compliance = self.calculate_compliance_impact(
+            asset_context, finding_type, severity
+        )
 
         # Reputation Impact
         reputation = self.assess_reputation_impact(
-            asset_context, asset_context.data_classification, public_exposure=asset_context.internet_exposed
+            asset_context,
+            asset_context.data_classification,
+            public_exposure=asset_context.internet_exposed,
         )
 
         # Einzelne Scores
@@ -391,7 +499,9 @@ class BusinessImpactCalculator:
         # Gewichtete Berechnung des Gesamtscores
         # Gewichtung: Finanzen 30%, Compliance 25%, Reputation 20%, Asset 15%, Daten 10%
         financial_normalized = (
-            min(1.0, financial.total_costs / (self.annual_revenue * 0.1)) if self.annual_revenue > 0 else 0.5
+            min(1.0, financial.total_costs / (self.annual_revenue * 0.1))
+            if self.annual_revenue > 0
+            else 0.5
         )
         compliance_normalized = compliance.get_compliance_score()
 
@@ -435,7 +545,10 @@ class BusinessImpactCalculator:
         return base_hours.get(asset_context.criticality, 24)
 
     def _calculate_regulatory_fines(
-        self, asset_context: AssetContext, data_volume_records: int, breach_likelihood: float
+        self,
+        asset_context: AssetContext,
+        data_volume_records: int,
+        breach_likelihood: float,
     ) -> float:
         """Berechnet potenzielle regulatorische Strafen."""
         max_fine = 0.0
@@ -448,7 +561,9 @@ class BusinessImpactCalculator:
 
         return max_fine * breach_likelihood
 
-    def _get_max_regulatory_fine(self, framework: ComplianceFramework) -> float:
+    def _get_max_regulatory_fine(
+        self, framework: ComplianceFramework
+    ) -> float:
         """Gibt die maximale Strafe für ein Framework zurück."""
         # Höchststrafen in USD
         max_fines = {
@@ -461,38 +576,84 @@ class BusinessImpactCalculator:
         }
         return max_fines.get(framework, 100000)
 
-    def _estimate_legal_costs(self, data_volume_records: int, breach_likelihood: float) -> float:
+    def _estimate_legal_costs(
+        self, data_volume_records: int, breach_likelihood: float
+    ) -> float:
         """Schätzt die Rechtskosten."""
         base_costs = 50000
         per_record_cost = 0.50  # Durchschnittliche Kosten pro Datensatz
-        return (base_costs + data_volume_records * per_record_cost) * breach_likelihood
+        return (
+            base_costs + data_volume_records * per_record_cost
+        ) * breach_likelihood
 
-    def _calculate_reputation_costs(self, asset_context: AssetContext, breach_likelihood: float) -> float:
+    def _calculate_reputation_costs(
+        self, asset_context: AssetContext, breach_likelihood: float
+    ) -> float:
         """Berechnet die Kosten durch Reputationsschaden."""
         if self.annual_revenue == 0:
             return 50000 * breach_likelihood
 
         # Geschätzter Umsatzverlust durch Reputationsschaden (5-15%)
-        revenue_loss_percentage = 0.05 + (asset_context.criticality.level * 0.02)
-        return self.annual_revenue * revenue_loss_percentage * breach_likelihood
+        revenue_loss_percentage = 0.05 + (
+            asset_context.criticality.level * 0.02
+        )
+        return (
+            self.annual_revenue * revenue_loss_percentage * breach_likelihood
+        )
 
-    def _identify_violated_controls(self, framework: ComplianceFramework, finding_type: str) -> List[str]:
+    def _identify_violated_controls(
+        self, framework: ComplianceFramework, finding_type: str
+    ) -> List[str]:
         """Identifiziert verletzte Controls basierend auf dem Finding-Typ."""
         control_mapping = {
-            "sql_injection": ["Input Validation", "Secure Coding", "WAF Protection"],
-            "xss": ["Output Encoding", "Content Security Policy", "Input Validation"],
-            "authentication_bypass": ["Authentication", "Access Control", "Session Management"],
-            "sensitive_data_exposure": ["Data Encryption", "Access Control", "Data Classification"],
-            "broken_access_control": ["Access Control", "Authorization", "RBAC"],
-            "security_misconfiguration": ["Configuration Management", "Hardening", "Patch Management"],
-            "insufficient_logging": ["Logging and Monitoring", "Audit Controls", "SIEM"],
-            "cryptographic_failure": ["Cryptography", "Key Management", "Data Protection"],
+            "sql_injection": [
+                "Input Validation",
+                "Secure Coding",
+                "WAF Protection",
+            ],
+            "xss": [
+                "Output Encoding",
+                "Content Security Policy",
+                "Input Validation",
+            ],
+            "authentication_bypass": [
+                "Authentication",
+                "Access Control",
+                "Session Management",
+            ],
+            "sensitive_data_exposure": [
+                "Data Encryption",
+                "Access Control",
+                "Data Classification",
+            ],
+            "broken_access_control": [
+                "Access Control",
+                "Authorization",
+                "RBAC",
+            ],
+            "security_misconfiguration": [
+                "Configuration Management",
+                "Hardening",
+                "Patch Management",
+            ],
+            "insufficient_logging": [
+                "Logging and Monitoring",
+                "Audit Controls",
+                "SIEM",
+            ],
+            "cryptographic_failure": [
+                "Cryptography",
+                "Key Management",
+                "Data Protection",
+            ],
         }
 
         finding_lower = finding_type.lower().replace(" ", "_")
         return control_mapping.get(finding_lower, ["General Security Control"])
 
-    def compare_impacts(self, results: List[BusinessImpactResult]) -> List[Tuple[BusinessImpactResult, int]]:
+    def compare_impacts(
+        self, results: List[BusinessImpactResult]
+    ) -> List[Tuple[BusinessImpactResult, int]]:
         """
         Vergleicht mehrere Impact-Ergebnisse und priorisiert sie.
 
@@ -503,7 +664,9 @@ class BusinessImpactCalculator:
             Liste von Tupeln (Result, Priorität)
         """
         # Sortieren nach Gesamtscore (absteigend)
-        sorted_results = sorted(results, key=lambda x: x.overall_score, reverse=True)
+        sorted_results = sorted(
+            results, key=lambda x: x.overall_score, reverse=True
+        )
 
         return [(result, i + 1) for i, result in enumerate(sorted_results)]
 
@@ -513,10 +676,14 @@ _default_calculator: Optional[BusinessImpactCalculator] = None
 
 
 def get_calculator(
-    organization_size: str = "medium", annual_revenue: float = 0.0, industry: str = "technology"
+    organization_size: str = "medium",
+    annual_revenue: float = 0.0,
+    industry: str = "technology",
 ) -> BusinessImpactCalculator:
     """Gibt eine Calculator-Instanz zurück (erstellt eine neue bei Bedarf)."""
     global _default_calculator
     if _default_calculator is None:
-        _default_calculator = BusinessImpactCalculator(organization_size, annual_revenue, industry)
+        _default_calculator = BusinessImpactCalculator(
+            organization_size, annual_revenue, industry
+        )
     return _default_calculator

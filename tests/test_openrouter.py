@@ -89,10 +89,16 @@ class TestOpenRouterChat:
 
         mock_response = AsyncMock()
         mock_response.status = 200
-        mock_response.json = AsyncMock(return_value={"choices": [{"message": {"content": "Hello from OpenRouter!"}}]})
+        mock_response.json = AsyncMock(
+            return_value={
+                "choices": [{"message": {"content": "Hello from OpenRouter!"}}]
+            }
+        )
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -113,10 +119,16 @@ class TestOpenRouterChat:
 
         mock_response = AsyncMock()
         mock_response.status = 200
-        mock_response.json = AsyncMock(return_value={"choices": [{"message": {"content": "Response with context"}}]})
+        mock_response.json = AsyncMock(
+            return_value={
+                "choices": [{"message": {"content": "Response with context"}}]
+            }
+        )
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -137,7 +149,9 @@ class TestOpenRouterChat:
         mock_response.status = 429
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -160,7 +174,9 @@ class TestOpenRouterChat:
         mock_response.status = 401
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -183,7 +199,9 @@ class TestOpenRouterChat:
         mock_response.status = 500
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -203,7 +221,9 @@ class TestOpenRouterChat:
         import logging
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(side_effect=Exception("Network error"))
+        mock_post.return_value.__aenter__ = AsyncMock(
+            side_effect=Exception("Network error")
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -228,7 +248,9 @@ class TestOpenRouterChat:
         mock_response.json = AsyncMock(return_value={"choices": []})
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -251,7 +273,9 @@ class TestOpenRouterChat:
         mock_response.json = AsyncMock(return_value={})
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -275,10 +299,14 @@ class TestOpenRouterHeaders:
 
         mock_response = AsyncMock()
         mock_response.status = 200
-        mock_response.json = AsyncMock(return_value={"choices": [{"message": {"content": "Hi"}}]})
+        mock_response.json = AsyncMock(
+            return_value={"choices": [{"message": {"content": "Hi"}}]}
+        )
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -298,16 +326,22 @@ class TestOpenRouterHeaders:
 
     @pytest.mark.asyncio
     @patch("backends.openrouter.random.choice")
-    async def test_correct_payload_structure(self, mock_choice, backend_with_key):
+    async def test_correct_payload_structure(
+        self, mock_choice, backend_with_key
+    ):
         """Test that correct payload is sent"""
         mock_choice.return_value = "test-model-v1"
 
         mock_response = AsyncMock()
         mock_response.status = 200
-        mock_response.json = AsyncMock(return_value={"choices": [{"message": {"content": "Hi"}}]})
+        mock_response.json = AsyncMock(
+            return_value={"choices": [{"message": {"content": "Hi"}}]}
+        )
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -333,10 +367,14 @@ class TestOpenRouterHeaders:
         """Test that correct endpoint is called"""
         mock_response = AsyncMock()
         mock_response.status = 200
-        mock_response.json = AsyncMock(return_value={"choices": [{"message": {"content": "Hi"}}]})
+        mock_response.json = AsyncMock(
+            return_value={"choices": [{"message": {"content": "Hi"}}]}
+        )
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -368,7 +406,9 @@ class TestOpenRouterHealthCheck:
         mock_response.status = 200
 
         mock_get = MagicMock()
-        mock_get.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_get.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_get.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -380,7 +420,8 @@ class TestOpenRouterHealthCheck:
 
         assert result is True
         mock_get.assert_called_once_with(
-            "https://openrouter.ai/api/v1/auth/key", headers={"Authorization": "Bearer test-api-key"}
+            "https://openrouter.ai/api/v1/auth/key",
+            headers={"Authorization": "Bearer test-api-key"},
         )
 
     @pytest.mark.asyncio
@@ -390,7 +431,9 @@ class TestOpenRouterHealthCheck:
         mock_response.status = 401
 
         mock_get = MagicMock()
-        mock_get.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_get.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_get.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -406,7 +449,9 @@ class TestOpenRouterHealthCheck:
     async def test_health_check_exception(self, backend_with_key):
         """Test health check with exception"""
         mock_get = MagicMock()
-        mock_get.return_value.__aenter__ = AsyncMock(side_effect=Exception("Connection failed"))
+        mock_get.return_value.__aenter__ = AsyncMock(
+            side_effect=Exception("Connection failed")
+        )
         mock_get.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -426,14 +471,20 @@ class TestOpenRouterModelRotation:
     @patch("backends.openrouter.random.choice")
     async def test_model_selection(self, mock_choice, backend_with_key):
         """Test that a model is randomly selected"""
-        mock_choice.return_value = "nvidia/llama-3.1-nemotron-70b-instruct:free"
+        mock_choice.return_value = (
+            "nvidia/llama-3.1-nemotron-70b-instruct:free"
+        )
 
         mock_response = AsyncMock()
         mock_response.status = 200
-        mock_response.json = AsyncMock(return_value={"choices": [{"message": {"content": "Hi"}}]})
+        mock_response.json = AsyncMock(
+            return_value={"choices": [{"message": {"content": "Hi"}}]}
+        )
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -447,7 +498,9 @@ class TestOpenRouterModelRotation:
 
         call_args = mock_post.call_args
         payload = call_args[1]["json"]
-        assert payload["model"] == "nvidia/llama-3.1-nemotron-70b-instruct:free"
+        assert (
+            payload["model"] == "nvidia/llama-3.1-nemotron-70b-instruct:free"
+        )
 
     @pytest.mark.asyncio
     @patch("backends.openrouter.random.choice")
@@ -458,10 +511,16 @@ class TestOpenRouterModelRotation:
 
             mock_response = AsyncMock()
             mock_response.status = 200
-            mock_response.json = AsyncMock(return_value={"choices": [{"message": {"content": "Response"}}]})
+            mock_response.json = AsyncMock(
+                return_value={
+                    "choices": [{"message": {"content": "Response"}}]
+                }
+            )
 
             mock_post = MagicMock()
-            mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+            mock_post.return_value.__aenter__ = AsyncMock(
+                return_value=mock_response
+            )
             mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
             mock_session = AsyncMock()
@@ -487,10 +546,14 @@ class TestOpenRouterEdgeCases:
 
         mock_response = AsyncMock()
         mock_response.status = 200
-        mock_response.json = AsyncMock(return_value={"choices": [{"message": {"content": "Response"}}]})
+        mock_response.json = AsyncMock(
+            return_value={"choices": [{"message": {"content": "Response"}}]}
+        )
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -509,16 +572,22 @@ class TestOpenRouterEdgeCases:
 
     @pytest.mark.asyncio
     @patch("backends.openrouter.random.choice")
-    async def test_chat_missing_message_content(self, mock_choice, backend_with_key):
+    async def test_chat_missing_message_content(
+        self, mock_choice, backend_with_key
+    ):
         """Test response with missing message content"""
         mock_choice.return_value = "test-model"
 
         mock_response = AsyncMock()
         mock_response.status = 200
-        mock_response.json = AsyncMock(return_value={"choices": [{"message": {}}]})  # No content field
+        mock_response.json = AsyncMock(
+            return_value={"choices": [{"message": {}}]}
+        )  # No content field
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -539,10 +608,14 @@ class TestOpenRouterEdgeCases:
 
         mock_response = AsyncMock()
         mock_response.status = 200
-        mock_response.json = AsyncMock(return_value={"choices": [{"message": {"content": None}}]})
+        mock_response.json = AsyncMock(
+            return_value={"choices": [{"message": {"content": None}}]}
+        )
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -568,10 +641,14 @@ class TestOpenRouterLogging:
 
         mock_response = AsyncMock()
         mock_response.status = 200
-        mock_response.json = AsyncMock(return_value={"choices": [{"message": {"content": "Hi"}}]})
+        mock_response.json = AsyncMock(
+            return_value={"choices": [{"message": {"content": "Hi"}}]}
+        )
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -605,7 +682,9 @@ class TestOpenRouterMultipleCalls:
         mock_response.json = AsyncMock(side_effect=responses)
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()

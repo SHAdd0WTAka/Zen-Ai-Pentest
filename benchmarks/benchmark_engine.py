@@ -20,7 +20,12 @@ from typing import Any, Dict, List, Optional
 
 # Type hints for Zen-AI-Pentest core
 from ..core.orchestrator import PentestOrchestrator
-from .comparison import ComparisonFramework, ToolBenchmarkResult, ToolCategory, ToolMetadata
+from .comparison import (
+    ComparisonFramework,
+    ToolBenchmarkResult,
+    ToolCategory,
+    ToolMetadata,
+)
 from .metrics import (
     BenchmarkMetrics,
     ClassificationMetrics,
@@ -32,7 +37,13 @@ from .metrics import (
     SeverityLevel,
     TokenUsage,
 )
-from .scenarios import ALL_SCENARIOS, DifficultyLevel, ScenarioType, TestScenario, get_scenario
+from .scenarios import (
+    ALL_SCENARIOS,
+    DifficultyLevel,
+    ScenarioType,
+    TestScenario,
+    get_scenario,
+)
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -124,7 +135,9 @@ class ScenarioResult:
             "scenario_id": self.scenario_id,
             "status": self.status.name,
             "benchmark_id": self.benchmark_id,
-            "start_time": self.start_time.isoformat() if self.start_time else None,
+            "start_time": (
+                self.start_time.isoformat() if self.start_time else None
+            ),
             "end_time": self.end_time.isoformat() if self.end_time else None,
             "duration_seconds": self.duration_seconds,
             "metrics": self.metrics.to_dict() if self.metrics else None,
@@ -168,18 +181,30 @@ class BenchmarkReport:
         if not self.scenario_results:
             return 0.0
 
-        successful = sum(1 for r in self.scenario_results if r.status == BenchmarkStatus.COMPLETED)
+        successful = sum(
+            1
+            for r in self.scenario_results
+            if r.status == BenchmarkStatus.COMPLETED
+        )
         return (successful / len(self.scenario_results)) * 100
 
     @property
     def scenarios_passed(self) -> int:
         """Count passed scenarios."""
-        return sum(1 for r in self.scenario_results if r.status == BenchmarkStatus.COMPLETED)
+        return sum(
+            1
+            for r in self.scenario_results
+            if r.status == BenchmarkStatus.COMPLETED
+        )
 
     @property
     def scenarios_failed(self) -> int:
         """Count failed scenarios."""
-        return sum(1 for r in self.scenario_results if r.status == BenchmarkStatus.FAILED)
+        return sum(
+            1
+            for r in self.scenario_results
+            if r.status == BenchmarkStatus.FAILED
+        )
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary."""
@@ -262,9 +287,13 @@ class BenchmarkReport:
         if self.aggregate_metrics:
             for key, value in self.aggregate_metrics.items():
                 if isinstance(value, float):
-                    lines.append(f"- **{key.replace('_', ' ').title()}:** {value:.3f}")
+                    lines.append(
+                        f"- **{key.replace('_', ' ').title()}:** {value:.3f}"
+                    )
                 else:
-                    lines.append(f"- **{key.replace('_', ' ').title()}:** {value}")
+                    lines.append(
+                        f"- **{key.replace('_', ' ').title()}:** {value}"
+                    )
 
         lines.extend(["", "## Detailed Results", ""])
 
@@ -294,7 +323,9 @@ class BenchmarkReport:
                 )
 
             if result.error_message:
-                lines.extend(["**Error:**", "```", result.error_message, "```", ""])
+                lines.extend(
+                    ["**Error:**", "```", result.error_message, "```", ""]
+                )
 
         return "\n".join(lines)
 
@@ -302,7 +333,11 @@ class BenchmarkReport:
 class BenchmarkEngine:
     """Main benchmark engine for Zen-AI-Pentest."""
 
-    def __init__(self, orchestrator: Optional[PentestOrchestrator] = None, output_dir: str = "benchmark_results"):
+    def __init__(
+        self,
+        orchestrator: Optional[PentestOrchestrator] = None,
+        output_dir: str = "benchmark_results",
+    ):
         self.orchestrator = orchestrator
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
@@ -365,7 +400,9 @@ class BenchmarkEngine:
 
         return scenarios
 
-    async def _run_single_scenario(self, scenario: TestScenario, config: BenchmarkConfig) -> ScenarioResult:
+    async def _run_single_scenario(
+        self, scenario: TestScenario, config: BenchmarkConfig
+    ) -> ScenarioResult:
         """Run a single benchmark scenario."""
 
         result = ScenarioResult(
@@ -391,7 +428,9 @@ class BenchmarkEngine:
 
             # Run competitor comparison if enabled
             if config.enable_competitor_comparison:
-                comparison = await self._run_comparison(scenario, config, metrics)
+                comparison = await self._run_comparison(
+                    scenario, config, metrics
+                )
                 result.comparison_result = comparison
 
             result.status = BenchmarkStatus.COMPLETED
@@ -399,7 +438,9 @@ class BenchmarkEngine:
 
         except asyncio.TimeoutError:
             result.status = BenchmarkStatus.TIMEOUT
-            result.error_message = f"Scenario timed out after {config.timeout_per_scenario}s"
+            result.error_message = (
+                f"Scenario timed out after {config.timeout_per_scenario}s"
+            )
             logger.error(f"Scenario timeout: {scenario.name}")
 
         except Exception as e:
@@ -440,7 +481,9 @@ class BenchmarkEngine:
             logger.info(f"Running teardown command: {cmd}")
             # subprocess.run(cmd, shell=True)
 
-    async def _wait_for_target(self, scenario: TestScenario, timeout: int = 120) -> bool:
+    async def _wait_for_target(
+        self, scenario: TestScenario, timeout: int = 120
+    ) -> bool:
         """Wait for target to be ready."""
         if not scenario.health_check_endpoint:
             return True
@@ -454,7 +497,9 @@ class BenchmarkEngine:
         while time.time() - start_time < timeout:
             try:
                 async with aiohttp.ClientSession() as session:
-                    async with session.get(scenario.health_check_endpoint, timeout=5) as response:
+                    async with session.get(
+                        scenario.health_check_endpoint, timeout=5
+                    ) as response:
                         if response.status < 500:
                             logger.info(f"Target ready: {scenario.id}")
                             return True
@@ -465,7 +510,9 @@ class BenchmarkEngine:
 
         raise TimeoutError(f"Target not ready after {timeout}s")
 
-    async def _execute_scan(self, scenario: TestScenario, config: BenchmarkConfig) -> BenchmarkMetrics:
+    async def _execute_scan(
+        self, scenario: TestScenario, config: BenchmarkConfig
+    ) -> BenchmarkMetrics:
         """Execute the actual scan and collect metrics."""
 
         metrics = BenchmarkMetrics(
@@ -489,11 +536,15 @@ class BenchmarkEngine:
 
         # Record end time
         metrics.performance.scan_end_time = datetime.utcnow()
-        metrics.performance.total_duration_ms = int((time.time() - start_time) * 1000)
+        metrics.performance.total_duration_ms = int(
+            (time.time() - start_time) * 1000
+        )
 
         return metrics
 
-    async def _simulate_scan(self, scenario: TestScenario, metrics: BenchmarkMetrics) -> None:
+    async def _simulate_scan(
+        self, scenario: TestScenario, metrics: BenchmarkMetrics
+    ) -> None:
         """Simulate a scan for testing purposes."""
         logger.info(f"Running simulated scan for {scenario.id}")
 
@@ -506,14 +557,18 @@ class BenchmarkEngine:
 
         for vuln in scenario.expected_vulnerabilities:
             # Simulate detection (90% detection rate)
-            if hashlib.md5(vuln.vuln_type.encode()).hexdigest()[0] in "0123456789a":
+            if (
+                hashlib.md5(vuln.vuln_type.encode()).hexdigest()[0]
+                in "0123456789a"
+            ):
                 true_positives += 1
                 metrics.findings.append(
                     FindingMetrics(
                         finding_type=FindingType.SQL_INJECTION,  # Simplified
                         severity=(
                             SeverityLevel(vuln.severity)
-                            if vuln.severity in ["critical", "high", "medium", "low", "info"]
+                            if vuln.severity
+                            in ["critical", "high", "medium", "low", "info"]
                             else SeverityLevel.MEDIUM
                         ),
                         confidence=0.85,
@@ -525,7 +580,9 @@ class BenchmarkEngine:
                 )
 
         # Simulate some false positives
-        false_positives = 1 if len(scenario.expected_vulnerabilities) > 5 else 0
+        false_positives = (
+            1 if len(scenario.expected_vulnerabilities) > 5 else 0
+        )
 
         # Set classification metrics
         expected_count = len(scenario.expected_vulnerabilities)
@@ -546,7 +603,10 @@ class BenchmarkEngine:
             tested_parameters=45,
             total_attack_vectors=20,
             tested_attack_vectors=18,
-            owasp_categories_covered=["A03:2021-Injection", "A01:2021-Broken Access Control"],
+            owasp_categories_covered=[
+                "A03:2021-Injection",
+                "A01:2021-Broken Access Control",
+            ],
         )
 
         # Exploit metrics
@@ -558,16 +618,29 @@ class BenchmarkEngine:
         )
 
         # Token usage (simulated)
-        metrics.token_usage = TokenUsage(prompt_tokens=5000, completion_tokens=3000, cost_usd=0.15, model="gpt-4")
+        metrics.token_usage = TokenUsage(
+            prompt_tokens=5000,
+            completion_tokens=3000,
+            cost_usd=0.15,
+            model="gpt-4",
+        )
 
-    async def _run_real_scan(self, scenario: TestScenario, config: BenchmarkConfig, metrics: BenchmarkMetrics) -> None:
+    async def _run_real_scan(
+        self,
+        scenario: TestScenario,
+        config: BenchmarkConfig,
+        metrics: BenchmarkMetrics,
+    ) -> None:
         """Run a real scan using the orchestrator."""
         # This would integrate with the actual PentestOrchestrator
         # For now, delegate to simulation
         await self._simulate_scan(scenario, metrics)
 
     async def _run_comparison(
-        self, scenario: TestScenario, config: BenchmarkConfig, zen_metrics: BenchmarkMetrics
+        self,
+        scenario: TestScenario,
+        config: BenchmarkConfig,
+        zen_metrics: BenchmarkMetrics,
     ) -> Optional[Any]:
         """Run comparison with competitor tools."""
         if not config.competitors:
@@ -606,7 +679,9 @@ class BenchmarkEngine:
             "target_port": scenario.target_port,
         }
 
-        comparison = await self.comparison_framework.run_comparison(zen_result, scenario_config, config.competitors)
+        comparison = await self.comparison_framework.run_comparison(
+            zen_result, scenario_config, config.competitors
+        )
 
         return comparison
 
@@ -642,14 +717,18 @@ class BenchmarkEngine:
             async with semaphore:
                 if self._cancelled:
                     result = ScenarioResult(
-                        scenario_id=scenario.id, status=BenchmarkStatus.CANCELLED, benchmark_id=config.benchmark_id or ""
+                        scenario_id=scenario.id,
+                        status=BenchmarkStatus.CANCELLED,
+                        benchmark_id=config.benchmark_id or "",
                     )
                     return result
 
                 return await self._run_single_scenario(scenario, config)
 
         # Run all scenarios
-        results = await asyncio.gather(*[run_with_semaphore(s) for s in scenarios])
+        results = await asyncio.gather(
+            *[run_with_semaphore(s) for s in scenarios]
+        )
 
         report.scenario_results = list(results)
         report.end_time = datetime.utcnow()
@@ -673,12 +752,18 @@ class BenchmarkEngine:
     def _calculate_aggregates(self, report: BenchmarkReport) -> Dict[str, Any]:
         """Calculate aggregate metrics across all scenarios."""
 
-        completed = [r for r in report.scenario_results if r.status == BenchmarkStatus.COMPLETED and r.metrics]
+        completed = [
+            r
+            for r in report.scenario_results
+            if r.status == BenchmarkStatus.COMPLETED and r.metrics
+        ]
 
         if not completed:
             return {}
 
-        all_scores = [r.metrics.calculate_aggregate_scores() for r in completed]
+        all_scores = [
+            r.metrics.calculate_aggregate_scores() for r in completed
+        ]
 
         # Average scores
         aggregate = {}
@@ -688,21 +773,33 @@ class BenchmarkEngine:
             aggregate[f"avg_{key}"] = sum(values) / len(values)
 
         # Total findings
-        aggregate["total_findings"] = sum(len(r.metrics.findings) for r in completed)
+        aggregate["total_findings"] = sum(
+            len(r.metrics.findings) for r in completed
+        )
 
         # Total duration
-        aggregate["total_duration_seconds"] = sum(r.duration_seconds for r in completed)
+        aggregate["total_duration_seconds"] = sum(
+            r.duration_seconds for r in completed
+        )
 
         # Average duration per scenario
-        aggregate["avg_duration_seconds"] = aggregate["total_duration_seconds"] / len(completed)
+        aggregate["avg_duration_seconds"] = aggregate[
+            "total_duration_seconds"
+        ] / len(completed)
 
         # Token usage
-        aggregate["total_tokens"] = sum(r.metrics.token_usage.total_tokens for r in completed)
-        aggregate["total_cost_usd"] = sum(r.metrics.token_usage.cost_usd for r in completed)
+        aggregate["total_tokens"] = sum(
+            r.metrics.token_usage.total_tokens for r in completed
+        )
+        aggregate["total_cost_usd"] = sum(
+            r.metrics.token_usage.cost_usd for r in completed
+        )
 
         return aggregate
 
-    def _compare_with_history(self, report: BenchmarkReport) -> Optional[Dict[str, Any]]:
+    def _compare_with_history(
+        self, report: BenchmarkReport
+    ) -> Optional[Dict[str, Any]]:
         """Compare current benchmark with historical results."""
 
         history_file = self.output_dir / report.config.history_file
@@ -718,7 +815,8 @@ class BenchmarkEngine:
             comparable = [
                 h
                 for h in history
-                if h.get("scenarios") == report.config.scenarios and h["benchmark_id"] != report.benchmark_id
+                if h.get("scenarios") == report.config.scenarios
+                and h["benchmark_id"] != report.benchmark_id
             ]
 
             if not comparable:
@@ -734,7 +832,11 @@ class BenchmarkEngine:
 
             for key in current_metrics.keys():
                 if key in previous_metrics and previous_metrics[key] != 0:
-                    change = (current_metrics[key] - previous_metrics[key]) / previous_metrics[key] * 100
+                    change = (
+                        (current_metrics[key] - previous_metrics[key])
+                        / previous_metrics[key]
+                        * 100
+                    )
                     comparison[key] = {
                         "current": current_metrics[key],
                         "previous": previous_metrics[key],
@@ -777,7 +879,9 @@ class BenchmarkEngine:
         with open(history_file, "w") as f:
             json.dump(history, f, indent=2)
 
-    def _save_report(self, report: BenchmarkReport, config: BenchmarkConfig) -> None:
+    def _save_report(
+        self, report: BenchmarkReport, config: BenchmarkConfig
+    ) -> None:
         """Save benchmark report to disk."""
 
         benchmark_dir = self.output_dir / report.benchmark_id

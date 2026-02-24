@@ -97,7 +97,9 @@ class TestClaudeChat:
         mock_response.content = self._async_iterator(stream_data)
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -125,7 +127,9 @@ class TestClaudeChat:
         mock_response.content = self._async_iterator(stream_data)
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -133,7 +137,9 @@ class TestClaudeChat:
 
         backend_with_key.session = mock_session
 
-        result = await backend_with_key.chat("Hello", context="Previous context")
+        result = await backend_with_key.chat(
+            "Hello", context="Previous context"
+        )
 
         assert result == "Response with context"
 
@@ -151,7 +157,9 @@ class TestClaudeChat:
 
     @pytest.mark.asyncio
     @patch.object(ClaudeDirectBackend, "_get_org_id")
-    async def test_chat_401_unauthorized(self, mock_get_org_id, backend_with_key, caplog):
+    async def test_chat_401_unauthorized(
+        self, mock_get_org_id, backend_with_key, caplog
+    ):
         """Test chat with 401 unauthorized"""
         import logging
 
@@ -161,7 +169,9 @@ class TestClaudeChat:
         mock_response.status = 401
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -177,7 +187,9 @@ class TestClaudeChat:
 
     @pytest.mark.asyncio
     @patch.object(ClaudeDirectBackend, "_get_org_id")
-    async def test_chat_500_server_error(self, mock_get_org_id, backend_with_key, caplog):
+    async def test_chat_500_server_error(
+        self, mock_get_org_id, backend_with_key, caplog
+    ):
         """Test chat with 500 server error"""
         import logging
 
@@ -187,7 +199,9 @@ class TestClaudeChat:
         mock_response.status = 500
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -203,14 +217,18 @@ class TestClaudeChat:
 
     @pytest.mark.asyncio
     @patch.object(ClaudeDirectBackend, "_get_org_id")
-    async def test_chat_exception(self, mock_get_org_id, backend_with_key, caplog):
+    async def test_chat_exception(
+        self, mock_get_org_id, backend_with_key, caplog
+    ):
         """Test chat when exception occurs"""
         import logging
 
         mock_get_org_id.return_value = "org-123"
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(side_effect=Exception("Network error"))
+        mock_post.return_value.__aenter__ = AsyncMock(
+            side_effect=Exception("Network error")
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -226,7 +244,9 @@ class TestClaudeChat:
 
     @pytest.mark.asyncio
     @patch.object(ClaudeDirectBackend, "_get_org_id")
-    async def test_chat_invalid_json_in_stream(self, mock_get_org_id, backend_with_key):
+    async def test_chat_invalid_json_in_stream(
+        self, mock_get_org_id, backend_with_key
+    ):
         """Test chat with invalid JSON in SSE stream"""
         mock_get_org_id.return_value = "org-123"
 
@@ -240,7 +260,9 @@ class TestClaudeChat:
         mock_response.content = self._async_iterator(stream_data)
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -254,7 +276,9 @@ class TestClaudeChat:
 
     @pytest.mark.asyncio
     @patch.object(ClaudeDirectBackend, "_get_org_id")
-    async def test_chat_empty_sse_data(self, mock_get_org_id, backend_with_key):
+    async def test_chat_empty_sse_data(
+        self, mock_get_org_id, backend_with_key
+    ):
         """Test chat with empty SSE data lines"""
         mock_get_org_id.return_value = "org-123"
 
@@ -269,7 +293,9 @@ class TestClaudeChat:
         mock_response.content = self._async_iterator(stream_data)
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -283,7 +309,9 @@ class TestClaudeChat:
 
     @pytest.mark.asyncio
     @patch.object(ClaudeDirectBackend, "_get_org_id")
-    async def test_chat_data_without_completion(self, mock_get_org_id, backend_with_key):
+    async def test_chat_data_without_completion(
+        self, mock_get_org_id, backend_with_key
+    ):
         """Test chat with data missing completion field"""
         mock_get_org_id.return_value = "org-123"
 
@@ -297,7 +325,9 @@ class TestClaudeChat:
         mock_response.content = self._async_iterator(stream_data)
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -318,10 +348,14 @@ class TestClaudeGetOrgId:
         """Test successful organization ID retrieval"""
         mock_response = AsyncMock()
         mock_response.status = 200
-        mock_response.json = AsyncMock(return_value=[{"uuid": "org-uuid-123", "name": "Test Org"}])
+        mock_response.json = AsyncMock(
+            return_value=[{"uuid": "org-uuid-123", "name": "Test Org"}]
+        )
 
         mock_get = MagicMock()
-        mock_get.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_get.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_get.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -341,7 +375,9 @@ class TestClaudeGetOrgId:
         mock_response.json = AsyncMock(return_value=[])
 
         mock_get = MagicMock()
-        mock_get.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_get.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_get.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -358,10 +394,14 @@ class TestClaudeGetOrgId:
         """Test get_org_id when org has no uuid field"""
         mock_response = AsyncMock()
         mock_response.status = 200
-        mock_response.json = AsyncMock(return_value=[{"name": "Test Org"}])  # No uuid field
+        mock_response.json = AsyncMock(
+            return_value=[{"name": "Test Org"}]
+        )  # No uuid field
 
         mock_get = MagicMock()
-        mock_get.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_get.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_get.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -380,7 +420,9 @@ class TestClaudeGetOrgId:
         mock_response.status = 401
 
         mock_get = MagicMock()
-        mock_get.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_get.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_get.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -396,7 +438,9 @@ class TestClaudeGetOrgId:
     async def test_get_org_id_exception(self, backend_with_key):
         """Test get_org_id with exception"""
         mock_get = MagicMock()
-        mock_get.return_value.__aenter__ = AsyncMock(side_effect=Exception("Connection failed"))
+        mock_get.return_value.__aenter__ = AsyncMock(
+            side_effect=Exception("Connection failed")
+        )
         mock_get.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -416,7 +460,9 @@ class TestClaudeGetOrgId:
         mock_response.json = AsyncMock(return_value=[{"uuid": "org-123"}])
 
         mock_get = MagicMock()
-        mock_get.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_get.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_get.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -446,7 +492,9 @@ class TestClaudeHeaders:
 
     @pytest.mark.asyncio
     @patch.object(ClaudeDirectBackend, "_get_org_id")
-    async def test_correct_headers_sent(self, mock_get_org_id, backend_with_key):
+    async def test_correct_headers_sent(
+        self, mock_get_org_id, backend_with_key
+    ):
         """Test that correct headers are sent with request"""
         mock_get_org_id.return_value = "org-123"
 
@@ -457,7 +505,9 @@ class TestClaudeHeaders:
         mock_response.content = self._async_iterator(stream_data)
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -477,7 +527,9 @@ class TestClaudeHeaders:
 
     @pytest.mark.asyncio
     @patch.object(ClaudeDirectBackend, "_get_org_id")
-    async def test_correct_payload_structure(self, mock_get_org_id, backend_with_key):
+    async def test_correct_payload_structure(
+        self, mock_get_org_id, backend_with_key
+    ):
         """Test that correct payload is sent"""
         mock_get_org_id.return_value = "org-123"
 
@@ -488,7 +540,9 @@ class TestClaudeHeaders:
         mock_response.content = self._async_iterator(stream_data)
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -519,7 +573,9 @@ class TestClaudeHeaders:
         mock_response.content = self._async_iterator(stream_data)
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -532,7 +588,10 @@ class TestClaudeHeaders:
         call_args = mock_post.call_args
         url = call_args[0][0]
 
-        assert url == "https://claude.ai/api/organizations/org-456/chat_conversations"
+        assert (
+            url
+            == "https://claude.ai/api/organizations/org-456/chat_conversations"
+        )
 
 
 class TestClaudeHealthCheck:
@@ -552,7 +611,9 @@ class TestClaudeHealthCheck:
         mock_response.json = AsyncMock(return_value=[{"uuid": "org-123"}])
 
         mock_get = MagicMock()
-        mock_get.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_get.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_get.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -572,7 +633,9 @@ class TestClaudeHealthCheck:
         mock_response.json = AsyncMock(return_value=[])
 
         mock_get = MagicMock()
-        mock_get.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_get.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_get.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -611,7 +674,9 @@ class TestClaudeTimeout:
         mock_response.content = self._async_iterator(stream_data)
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
@@ -648,7 +713,9 @@ class TestClaudeEmptyResponse:
         mock_response.content = empty_gen()
 
         mock_post = MagicMock()
-        mock_post.return_value.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_post.return_value.__aenter__ = AsyncMock(
+            return_value=mock_response
+        )
         mock_post.return_value.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()

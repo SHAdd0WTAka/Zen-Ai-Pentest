@@ -27,19 +27,39 @@ def test_file_structure():
     print("\n[TEST 1] Repository Struktur")
     print("-" * 70)
 
-    required_dirs = ["api", "autonomous", "backends", "core", "modules", "utils", "logs", "demos", "tests"]
+    required_dirs = [
+        "api",
+        "autonomous",
+        "backends",
+        "core",
+        "modules",
+        "utils",
+        "logs",
+        "demos",
+        "tests",
+    ]
 
     for dir_name in required_dirs:
         path = REPO_PATH / dir_name
         exists = path.exists() and path.is_dir()
-        log_test(f"Dir: {dir_name}/", exists, "exists" if exists else "missing")
+        log_test(
+            f"Dir: {dir_name}/", exists, "exists" if exists else "missing"
+        )
 
-    required_files = ["zen_ai_pentest.py", "config.json", "requirements.txt", "README.md", "setup.py"]
+    required_files = [
+        "zen_ai_pentest.py",
+        "config.json",
+        "requirements.txt",
+        "README.md",
+        "setup.py",
+    ]
 
     for file_name in required_files:
         path = REPO_PATH / file_name
         exists = path.exists() and path.is_file()
-        log_test(f"File: {file_name}", exists, "exists" if exists else "missing")
+        log_test(
+            f"File: {file_name}", exists, "exists" if exists else "missing"
+        )
 
 
 def test_python_modules():
@@ -139,15 +159,25 @@ def test_api_endpoints():
             else:
                 r = requests.post(url, json={}, timeout=5)
 
-            status_ok = r.status_code in [200, 401, 422]  # Auth errors are OK for structure
+            status_ok = r.status_code in [
+                200,
+                401,
+                422,
+            ]  # Auth errors are OK for structure
             log_test(f"API: {name}", status_ok, f"HTTP {r.status_code}")
         except Exception:
             log_test(f"API: {name}", False, "not reachable")
 
     # Test Auth
     try:
-        r = requests.post(f"{base_url}/auth/login", json={"username": "admin", "password": "admin"}, timeout=5)
-        has_token = "access_token" in r.json() if r.status_code == 200 else False
+        r = requests.post(
+            f"{base_url}/auth/login",
+            json={"username": "admin", "password": "admin"},
+            timeout=5,
+        )
+        has_token = (
+            "access_token" in r.json() if r.status_code == 200 else False
+        )
         log_test("API: Auth/Login", has_token)
     except Exception:
         log_test("API: Auth/Login", False)
@@ -166,7 +196,13 @@ def test_siem_integration():
     try:
         r = requests.post(
             f"{base_url}/siem/connect",
-            json={"name": "Test SIEM", "type": "mock", "url": "mock://test", "api_key": "test", "is_mock": True},
+            json={
+                "name": "Test SIEM",
+                "type": "mock",
+                "url": "mock://test",
+                "api_key": "test",
+                "is_mock": True,
+            },
             timeout=5,
         )
         log_test("SIEM Connect", r.status_code == 200)
@@ -239,7 +275,11 @@ def test_report_generation():
         md_files = list(logs_dir.glob("*.md"))
 
         total_reports = len(json_files) + len(md_files)
-        log_test("Generated Reports", total_reports > 0, f"{len(json_files)} JSON, {len(md_files)} MD")
+        log_test(
+            "Generated Reports",
+            total_reports > 0,
+            f"{len(json_files)} JSON, {len(md_files)} MD",
+        )
     except Exception:
         log_test("Generated Reports", False)
 
@@ -258,8 +298,16 @@ def test_cli_tools():
     for script, args, timeout in tools:
         try:
             cmd = [sys.executable, script] + args
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout, cwd=REPO_PATH)
-            success = result.returncode == 0 or "ABGESCHLOSSEN" in result.stdout
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                timeout=timeout,
+                cwd=REPO_PATH,
+            )
+            success = (
+                result.returncode == 0 or "ABGESCHLOSSEN" in result.stdout
+            )
             log_test(f"CLI: {script}", success)
         except Exception as e:
             log_test(f"CLI: {script}", False, str(e)[:20])
@@ -284,7 +332,11 @@ def test_backend_functionality():
         log_test("DuckDuckGo Backend", True)
 
         backend_count = len(orch.backends)
-        log_test("Backend registration", backend_count > 0, f"{backend_count} backends")
+        log_test(
+            "Backend registration",
+            backend_count > 0,
+            f"{backend_count} backends",
+        )
 
         caps = orch.get_capabilities()
         log_test("Capabilities check", len(caps) > 0, f"{len(caps)} caps")
@@ -323,7 +375,15 @@ def test_dependencies():
     print("\n[TEST 10] Abhängigkeiten")
     print("-" * 70)
 
-    required_packages = ["fastapi", "uvicorn", "requests", "pydantic", "python-multipart", "jinja2", "aiofiles"]
+    required_packages = [
+        "fastapi",
+        "uvicorn",
+        "requests",
+        "pydantic",
+        "python-multipart",
+        "jinja2",
+        "aiofiles",
+    ]
 
     for package in required_packages:
         try:
@@ -389,7 +449,12 @@ def main():
     report = {
         "timestamp": datetime.now().isoformat(),
         "repository": str(REPO_PATH),
-        "summary": {"total": total, "passed": passed, "failed": failed, "success_rate": round(passed / total * 100, 1)},
+        "summary": {
+            "total": total,
+            "passed": passed,
+            "failed": failed,
+            "success_rate": round(passed / total * 100, 1),
+        },
         "results": TEST_RESULTS,
     }
 

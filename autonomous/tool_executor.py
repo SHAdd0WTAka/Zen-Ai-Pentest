@@ -214,7 +214,11 @@ class ToolRegistry:
         """Get a tool by name."""
         return self.tools.get(name)
 
-    def list_tools(self, category: Optional[str] = None, safety: Optional[SafetyLevel] = None) -> List[ToolDefinition]:
+    def list_tools(
+        self,
+        category: Optional[str] = None,
+        safety: Optional[SafetyLevel] = None,
+    ) -> List[ToolDefinition]:
         """List available tools with optional filtering."""
         tools = list(self.tools.values())
 
@@ -229,7 +233,9 @@ class ToolRegistry:
     def check_installed(self, name: str) -> bool:
         """Check if a tool is installed."""
         try:
-            result = subprocess.run(["which", name], capture_output=True, timeout=5)
+            result = subprocess.run(
+                ["which", name], capture_output=True, timeout=5
+            )
             return result.return_code == 0
         except Exception:
             return False
@@ -268,7 +274,12 @@ class ToolExecutor:
             for t in tools
         ]
 
-    async def execute(self, tool_name: str, parameters: Dict[str, Any], timeout: Optional[int] = None) -> ToolResult:
+    async def execute(
+        self,
+        tool_name: str,
+        parameters: Dict[str, Any],
+        timeout: Optional[int] = None,
+    ) -> ToolResult:
         """
         Execute a tool with the given parameters.
 
@@ -327,9 +338,13 @@ class ToolExecutor:
         start_time = datetime.now()
         try:
             if self.use_docker:
-                stdout, stderr, return_code = await self._execute_docker(tool, command, timeout or tool.timeout)
+                stdout, stderr, return_code = await self._execute_docker(
+                    tool, command, timeout or tool.timeout
+                )
             else:
-                stdout, stderr, return_code = await self._execute_local(command, timeout or tool.timeout)
+                stdout, stderr, return_code = await self._execute_local(
+                    command, timeout or tool.timeout
+                )
 
             duration = (datetime.now() - start_time).total_seconds()
 
@@ -385,7 +400,9 @@ class ToolExecutor:
                 error_message=str(e),
             )
 
-    def _build_command(self, tool: ToolDefinition, parameters: Dict[str, Any]) -> str:
+    def _build_command(
+        self, tool: ToolDefinition, parameters: Dict[str, Any]
+    ) -> str:
         """Build the command string from template."""
         target = parameters.get("target", "")
         options = parameters.get("options", "")
@@ -394,7 +411,10 @@ class ToolExecutor:
         target = shlex.quote(target) if target else ""
 
         command = tool.command_template.format(
-            target=target, options=options, ports=parameters.get("ports", "1-65535"), **parameters
+            target=target,
+            options=options,
+            ports=parameters.get("ports", "1-65535"),
+            **parameters,
         )
 
         return command
@@ -402,17 +422,27 @@ class ToolExecutor:
     async def _execute_local(self, command: str, timeout: int) -> tuple:
         """Execute command locally."""
         process = await asyncio.create_subprocess_shell(
-            command, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+            command,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
         )
 
         try:
-            stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=timeout)
-            return (stdout.decode("utf-8", errors="ignore"), stderr.decode("utf-8", errors="ignore"), process.returncode)
+            stdout, stderr = await asyncio.wait_for(
+                process.communicate(), timeout=timeout
+            )
+            return (
+                stdout.decode("utf-8", errors="ignore"),
+                stderr.decode("utf-8", errors="ignore"),
+                process.returncode,
+            )
         except asyncio.TimeoutError:
             process.kill()
             raise
 
-    async def _execute_docker(self, tool: ToolDefinition, command: str, timeout: int) -> tuple:
+    async def _execute_docker(
+        self, tool: ToolDefinition, command: str, timeout: int
+    ) -> tuple:
         """Execute in Docker container."""
         # Docker execution for isolation
         docker_cmd = f"docker run --rm --network=host {tool.name} {command}"
@@ -446,7 +476,9 @@ class ToolExecutor:
                     port = parts[0].split("/")[0]
                     service = parts[2]
                     version = " ".join(parts[3:]) if len(parts) > 3 else ""
-                    ports.append({"port": port, "service": service, "version": version})
+                    ports.append(
+                        {"port": port, "service": service, "version": version}
+                    )
 
         return {"open_ports": ports}
 
@@ -462,20 +494,32 @@ class ToolExecutor:
 
     def _parse_subfinder(self, output: str) -> Dict:
         """Parse subfinder output."""
-        subdomains = [line.strip() for line in output.split("\n") if line.strip()]
+        subdomains = [
+            line.strip() for line in output.split("\n") if line.strip()
+        ]
         return {"subdomains": subdomains}
 
-    def _extract_findings(self, tool_name: str, stdout: str, parsed: Dict) -> List[Dict]:
+    def _extract_findings(
+        self, tool_name: str, stdout: str, parsed: Dict
+    ) -> List[Dict]:
         """Extract security findings from output."""
         findings = []
 
         # Add generic findings based on tool
         if tool_name == "nmap" and parsed.get("open_ports"):
             for port in parsed["open_ports"]:
-                findings.append({"type": "open_port", "severity": "info", "details": port})
+                findings.append(
+                    {"type": "open_port", "severity": "info", "details": port}
+                )
 
         elif tool_name == "nuclei" and parsed.get("findings"):
             for finding in parsed["findings"]:
-                findings.append({"type": "vulnerability", "severity": "unknown", "details": finding})
+                findings.append(
+                    {
+                        "type": "vulnerability",
+                        "severity": "unknown",
+                        "details": finding,
+                    }
+                )
 
         return findings

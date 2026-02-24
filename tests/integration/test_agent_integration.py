@@ -23,7 +23,12 @@ from unittest.mock import AsyncMock, MagicMock, Mock, patch
 import pytest
 
 # Ensure project root is in path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+sys.path.insert(
+    0,
+    os.path.dirname(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    ),
+)
 
 from agents.agent_base import AgentMessage, AgentRole, AgentState, BaseAgent
 from agents.agent_orchestrator import AgentOrchestrator
@@ -289,9 +294,13 @@ class TestAgentContextManagement:
         assert "target" in research_agent.context
 
     @pytest.mark.asyncio
-    async def test_update_shared_context(self, research_agent, mock_orchestrator):
+    async def test_update_shared_context(
+        self, research_agent, mock_orchestrator
+    ):
         """Test updating shared context."""
-        research_agent.update_context("finding", "Critical vulnerability", share=True)
+        research_agent.update_context(
+            "finding", "Critical vulnerability", share=True
+        )
 
         # Allow async call to complete
         await asyncio.sleep(0.1)
@@ -507,7 +516,10 @@ class TestSharedContext:
 
     def test_get_shared_context(self, orchestrator):
         """Test getting shared context values."""
-        orchestrator.shared_context["key1"] = {"value": "value1", "updated_by": "agent1"}
+        orchestrator.shared_context["key1"] = {
+            "value": "value1",
+            "updated_by": "agent1",
+        }
 
         value = orchestrator.get_shared_context("key1")
         assert value == "value1"
@@ -522,11 +534,15 @@ class TestSharedContext:
         orchestrator.register_agent(agent)
         await agent.start()
 
-        await orchestrator.update_shared_context("new_key", "new_value", "orchestrator")
+        await orchestrator.update_shared_context(
+            "new_key", "new_value", "orchestrator"
+        )
         await asyncio.sleep(0.1)
 
         # Agent should have received a context update message
-        context_messages = [m for m in agent.inbox if m.msg_type == "context_update"]
+        context_messages = [
+            m for m in agent.inbox if m.msg_type == "context_update"
+        ]
         assert len(context_messages) >= 1
 
         await agent.stop()
@@ -547,33 +563,47 @@ class TestMultiAgentCoordination:
         analysis_agent = AnalysisAgent("Analyst1")
 
         # Mock execute_task to avoid actual execution
-        research_agent.execute_task = AsyncMock(return_value={"status": "completed", "findings": []})
-        analysis_agent.execute_task = AsyncMock(return_value={"status": "completed", "analysis": {}})
+        research_agent.execute_task = AsyncMock(
+            return_value={"status": "completed", "findings": []}
+        )
+        analysis_agent.execute_task = AsyncMock(
+            return_value={"status": "completed", "analysis": {}}
+        )
 
         orchestrator.register_agent(research_agent)
         orchestrator.register_agent(analysis_agent)
 
-        result = await orchestrator.coordinate_agents("reconnaissance", {"target": "example.com"})
+        result = await orchestrator.coordinate_agents(
+            "reconnaissance", {"target": "example.com"}
+        )
 
         assert result["task_type"] == "reconnaissance"
         assert "agent_responses" in result
         assert len(result["agent_responses"]) == 2
 
     @pytest.mark.asyncio
-    async def test_coordinate_agents_for_vulnerability_analysis(self, orchestrator):
+    async def test_coordinate_agents_for_vulnerability_analysis(
+        self, orchestrator
+    ):
         """Test coordinating agents for vulnerability analysis."""
         analysis_agent = AnalysisAgent("Analyst1")
         exploit_agent = MagicMock()
         exploit_agent.id = "exploit123"
         exploit_agent.role = AgentRole.EXPLOIT
-        exploit_agent.execute_task = AsyncMock(return_value={"status": "completed"})
+        exploit_agent.execute_task = AsyncMock(
+            return_value={"status": "completed"}
+        )
 
-        analysis_agent.execute_task = AsyncMock(return_value={"status": "completed"})
+        analysis_agent.execute_task = AsyncMock(
+            return_value={"status": "completed"}
+        )
 
         orchestrator.register_agent(analysis_agent)
         orchestrator.register_agent(exploit_agent)
 
-        result = await orchestrator.coordinate_agents("vulnerability_analysis", {"findings": []})
+        result = await orchestrator.coordinate_agents(
+            "vulnerability_analysis", {"findings": []}
+        )
 
         assert result["task_type"] == "vulnerability_analysis"
 
@@ -726,7 +756,9 @@ class TestAgentErrorHandling:
     async def test_agent_exception_handling(self, orchestrator):
         """Test handling agent task exception."""
         error_agent = ResearchAgent("ErrorAgent")
-        error_agent.execute_task = AsyncMock(side_effect=Exception("Test error"))
+        error_agent.execute_task = AsyncMock(
+            side_effect=Exception("Test error")
+        )
 
         orchestrator.register_agent(error_agent)
 

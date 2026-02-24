@@ -5,6 +5,7 @@ import os
 import subprocess
 import sys
 
+
 def check_tests():
     """Check test files"""
     test_dir = "tests"
@@ -33,7 +34,7 @@ def check_tests():
             ["python", "-m", "pytest", "--collect-only", "-q"],
             capture_output=True,
             text=True,
-            timeout=30
+            timeout=30,
         )
 
         if result.returncode == 0:
@@ -48,6 +49,7 @@ def check_tests():
         print(f"[ERROR] Could not run pytest: {e}")
 
     return len(test_files) > 0
+
 
 if __name__ == "__main__":
     print("=" * 60)

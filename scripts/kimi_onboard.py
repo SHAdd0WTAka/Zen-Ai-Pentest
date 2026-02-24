@@ -9,7 +9,13 @@ from pathlib import Path
 
 def run_git_command(cmd):
     try:
-        result = subprocess.run(cmd, shell=True, capture_output=True, text=True, cwd=Path(__file__).parent.parent)
+        result = subprocess.run(
+            cmd,
+            shell=True,
+            capture_output=True,
+            text=True,
+            cwd=Path(__file__).parent.parent,
+        )
         return result.stdout.strip() if result.returncode == 0 else "N/A"
     except Exception:
         return "N/A"

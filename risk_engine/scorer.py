@@ -81,14 +81,25 @@ class RiskScorer:
     - Exploit Validation (15%): Confirmed exploitation
     """
 
-    WEIGHTS = {"cvss": 0.25, "epss": 0.25, "business": 0.35, "validation": 0.15}
+    WEIGHTS = {
+        "cvss": 0.25,
+        "epss": 0.25,
+        "business": 0.35,
+        "validation": 0.15,
+    }
 
-    def __init__(self, enable_epss: bool = True, enable_business_context: bool = True):
+    def __init__(
+        self, enable_epss: bool = True, enable_business_context: bool = True
+    ):
         self.cvss_calc = CVSSCalculator()
         self.epss_client = EPSSClient() if enable_epss else None
-        self.business_calc = BusinessImpactCalculator() if enable_business_context else None
+        self.business_calc = (
+            BusinessImpactCalculator() if enable_business_context else None
+        )
 
-    def calculate(self, finding: Dict[str, Any], target_context: Optional[Dict] = None) -> RiskScore:
+    def calculate(
+        self, finding: Dict[str, Any], target_context: Optional[Dict] = None
+    ) -> RiskScore:
         """
         Calculate comprehensive risk score for a finding.
 
@@ -108,7 +119,9 @@ class RiskScorer:
         epss_score = self._get_epss(finding)
 
         # 3. Business Impact (0-1)
-        business_score = self._calculate_business_impact(finding, target_context)
+        business_score = self._calculate_business_impact(
+            finding, target_context
+        )
 
         # 4. Exploit Validation (0 or 1)
         validation_score = self._validate_exploit(finding)
@@ -125,7 +138,9 @@ class RiskScorer:
         severity = self._get_severity(risk_value)
 
         # Generate recommendations
-        recommendations = self._generate_recommendations(finding, severity, cvss_score, epss_score)
+        recommendations = self._generate_recommendations(
+            finding, severity, cvss_score, epss_score
+        )
 
         return RiskScore(
             value=risk_value,
@@ -136,7 +151,10 @@ class RiskScorer:
             exploit_validation_score=validation_score,
             components={
                 "cvss_details": self.cvss_calc.get_details(finding),
-                "epss_details": {"cve_id": finding.get("cve_id"), "score": epss_score},
+                "epss_details": {
+                    "cve_id": finding.get("cve_id"),
+                    "score": epss_score,
+                },
                 "business_factors": self._get_business_factors(target_context),
                 "validation_status": self._get_validation_status(finding),
             },
@@ -171,7 +189,9 @@ class RiskScorer:
         except Exception:
             return 0.0
 
-    def _calculate_business_impact(self, finding: Dict, context: Dict) -> float:
+    def _calculate_business_impact(
+        self, finding: Dict, context: Dict
+    ) -> float:
         """Calculate business impact score."""
         if not self.business_calc:
             return 0.5  # Default
@@ -204,7 +224,9 @@ class RiskScorer:
                 return level
         return SeverityLevel.INFO
 
-    def _generate_recommendations(self, finding: Dict, severity: SeverityLevel, cvss: float, epss: float) -> List[str]:
+    def _generate_recommendations(
+        self, finding: Dict, severity: SeverityLevel, cvss: float, epss: float
+    ) -> List[str]:
         """Generate prioritized remediation actions."""
         recommendations = []
 
@@ -224,11 +246,15 @@ class RiskScorer:
 
         # EPSS-specific recommendations
         if epss > 0.5:
-            recommendations.append(f"HIGH EXPLOIT PROBABILITY ({epss:.1%}) - Prioritize patching")
+            recommendations.append(
+                f"HIGH EXPLOIT PROBABILITY ({epss:.1%}) - Prioritize patching"
+            )
 
         # CVSS-specific
         if cvss > 0.8:
-            recommendations.append("Critical technical severity - Network segmentation recommended")
+            recommendations.append(
+                "Critical technical severity - Network segmentation recommended"
+            )
 
         return recommendations
 
@@ -251,7 +277,9 @@ class RiskScorer:
             return "Theoretically Exploitable"
         return "No Known Exploit"
 
-    def prioritize_findings(self, findings: List[Dict], target_context: Optional[Dict] = None) -> List[Dict]:
+    def prioritize_findings(
+        self, findings: List[Dict], target_context: Optional[Dict] = None
+    ) -> List[Dict]:
         """
         Prioritize multiple findings by risk score.
 
@@ -265,6 +293,8 @@ class RiskScorer:
             scored_findings.append({**finding, "risk_score": risk.to_dict()})
 
         # Sort by risk score descending
-        scored_findings.sort(key=lambda x: x["risk_score"]["risk_score"], reverse=True)
+        scored_findings.sort(
+            key=lambda x: x["risk_score"]["risk_score"], reverse=True
+        )
 
         return scored_findings

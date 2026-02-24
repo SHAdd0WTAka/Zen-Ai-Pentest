@@ -27,11 +27,15 @@ class MemoryManager:
         else:
             raise ValueError(f"Unknown storage backend: {backend}")
 
-    def create_conversation_memory(self, session_id: str, max_history: int = 20) -> ConversationMemory:
+    def create_conversation_memory(
+        self, session_id: str, max_history: int = 20
+    ) -> ConversationMemory:
         """Create or retrieve conversation memory for a session"""
         if session_id not in self._memories:
             self._memories[session_id] = ConversationMemory(
-                session_id=session_id, storage=self.storage, max_history=max_history
+                session_id=session_id,
+                storage=self.storage,
+                max_history=max_history,
             )
         return self._memories[session_id]
 

@@ -158,7 +158,9 @@ def update_personas():
             filepath.write_text(content)
             created.append(filename)
 
-    console.print(f"[bold cyan]📁 Persona-Verzeichnis:[/bold cyan] {persona_dir}")
+    console.print(
+        f"[bold cyan]📁 Persona-Verzeichnis:[/bold cyan] {persona_dir}"
+    )
     console.print()
 
     if created:
@@ -187,7 +189,11 @@ def update_personas():
         "crypto": "🔬 Cryptography Analyst",
     }
     for key, name in personas.items():
-        exists = "[green]✓[/green]" if (persona_dir / f"{key}.md").exists() else "[red]✗[/red]"
+        exists = (
+            "[green]✓[/green]"
+            if (persona_dir / f"{key}.md").exists()
+            else "[red]✗[/red]"
+        )
         console.print(f"  {exists} [cyan]{key:10}[/cyan] {name}")
 
 

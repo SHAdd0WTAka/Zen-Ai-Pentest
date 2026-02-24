@@ -69,7 +69,11 @@ async def test_nmap_localhost():
     scanner = NmapScanner(timeout=30)
 
     result = await scanner.execute(
-        {"target": "127.0.0.1", "ports": "1-100", "options": "-sT"}  # Top 100 ports  # TCP connect scan
+        {
+            "target": "127.0.0.1",
+            "ports": "1-100",
+            "options": "-sT",
+        }  # Top 100 ports  # TCP connect scan
     )
 
     # Localhost should work but might have no open ports
@@ -77,7 +81,9 @@ async def test_nmap_localhost():
 
     if result.success:
         print("\n[SUCCESS] Localhost scan completed!")
-        print(f"   Open ports: {[p['port'] for p in result.data.get('open_ports', [])]}")
+        print(
+            f"   Open ports: {[p['port'] for p in result.data.get('open_ports', [])]}"
+        )
 
 
 @pytest.mark.asyncio
@@ -93,7 +99,10 @@ async def test_nmap_safety_validation():
 
     # Should be blocked for safety
     assert not result.success
-    assert "blocked" in result.error_message.lower() or "private" in result.error_message.lower()
+    assert (
+        "blocked" in result.error_message.lower()
+        or "private" in result.error_message.lower()
+    )
     print(f"\n[SUCCESS] Safety check working: {result.error_message}")
 
 

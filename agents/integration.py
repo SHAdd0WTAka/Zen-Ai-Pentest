@@ -63,7 +63,9 @@ class AgentSystemIntegration:
         await self.agent_orchestrator.start_all()
 
         self.initialized = True
-        logger.info("[AgentIntegration] Multi-agent system initialized with 3 agents")
+        logger.info(
+            "[AgentIntegration] Multi-agent system initialized with 3 agents"
+        )
 
     async def conduct_research(self, topic: str, pentest_context: Dict) -> str:
         """
@@ -73,7 +75,9 @@ class AgentSystemIntegration:
         if not self.initialized:
             await self.initialize()
 
-        thread_id = await self.agent_orchestrator.start_research_coordination(topic=topic, pentest_context=pentest_context)
+        thread_id = await self.agent_orchestrator.start_research_coordination(
+            topic=topic, pentest_context=pentest_context
+        )
 
         logger.info(f"[AgentIntegration] Research started: {thread_id}")
 
@@ -89,7 +93,9 @@ class AgentSystemIntegration:
         if not self.initialized:
             await self.initialize()
 
-        logger.info(f"[AgentIntegration] Starting collaborative analysis of {target}")
+        logger.info(
+            f"[AgentIntegration] Starting collaborative analysis of {target}"
+        )
 
         # Coordinate agents for vulnerability analysis
         results = await self.agent_orchestrator.coordinate_agents(
@@ -99,7 +105,9 @@ class AgentSystemIntegration:
 
         return results
 
-    async def develop_exploits(self, vulnerabilities: List[Dict]) -> List[Dict]:
+    async def develop_exploits(
+        self, vulnerabilities: List[Dict]
+    ) -> List[Dict]:
         """
         Have ExploitAgent develop exploits for vulnerabilities
         """
@@ -130,7 +138,9 @@ class AgentSystemIntegration:
 
         return exploits
 
-    async def facilitate_discussion(self, topic: str, rounds: int = 3) -> List[str]:
+    async def facilitate_discussion(
+        self, topic: str, rounds: int = 3
+    ) -> List[str]:
         """
         Have agents discuss a topic and share insights
         Similar to Clawed/Moltbot conversations
@@ -159,7 +169,9 @@ class AgentSystemIntegration:
     async def share_context(self, key: str, value: Any):
         """Share context with all agents"""
         if self.initialized:
-            await self.agent_orchestrator.update_shared_context(key=key, value=value, source_agent_id="user")
+            await self.agent_orchestrator.update_shared_context(
+                key=key, value=value, source_agent_id="user"
+            )
 
     async def shutdown(self):
         """Shutdown the agent system gracefully"""
@@ -172,7 +184,9 @@ class AgentSystemIntegration:
 # Convenience functions for direct use
 
 
-async def start_collaborative_research(topic: str, zen_orchestrator=None) -> AgentSystemIntegration:
+async def start_collaborative_research(
+    topic: str, zen_orchestrator=None
+) -> AgentSystemIntegration:
     """
     Quick-start function to begin collaborative research
 
@@ -183,11 +197,15 @@ async def start_collaborative_research(topic: str, zen_orchestrator=None) -> Age
     """
     integration = AgentSystemIntegration(zen_orchestrator)
     await integration.initialize()
-    await integration.conduct_research(topic=topic, pentest_context={"target_type": "web", "scope": "full"})
+    await integration.conduct_research(
+        topic=topic, pentest_context={"target_type": "web", "scope": "full"}
+    )
     return integration
 
 
-async def multi_agent_analysis(target: str, findings: List[Dict], zen_orchestrator=None) -> Dict:
+async def multi_agent_analysis(
+    target: str, findings: List[Dict], zen_orchestrator=None
+) -> Dict:
     """
     One-shot function for multi-agent analysis
 

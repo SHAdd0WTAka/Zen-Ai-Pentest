@@ -7,7 +7,12 @@ from unittest.mock import Mock, patch
 import pytest
 
 from analysis_bot import AnalysisBot, AnalysisConfig, AnalysisResult
-from analysis_bot.engines import ExploitabilityChecker, RecommendationEngine, RiskScorer, VulnerabilityAnalyzer
+from analysis_bot.engines import (
+    ExploitabilityChecker,
+    RecommendationEngine,
+    RiskScorer,
+    VulnerabilityAnalyzer,
+)
 
 
 class TestAnalysisConfig:
@@ -86,7 +91,11 @@ class TestExploitabilityChecker:
         mock_vuln.title = "SQL Injection"
 
         with patch.object(checker, "check_exploitability") as mock_check:
-            mock_check.return_value = {"exploitable": True, "difficulty": "Easy", "public_exploit_available": True}
+            mock_check.return_value = {
+                "exploitable": True,
+                "difficulty": "Easy",
+                "public_exploit_available": True,
+            }
             result = checker.check_exploitability(mock_vuln)
             assert result["exploitable"] is True
 
@@ -108,7 +117,11 @@ class TestRecommendationEngine:
         mock_vuln.severity = "High"
 
         with patch.object(engine, "generate_recommendation") as mock_gen:
-            mock_gen.return_value = {"title": "Use Prepared Statements", "priority": "High", "effort": "Medium"}
+            mock_gen.return_value = {
+                "title": "Use Prepared Statements",
+                "priority": "High",
+                "effort": "Medium",
+            }
             result = engine.generate_recommendation(mock_vuln)
             assert result["priority"] == "High"
 
@@ -138,7 +151,11 @@ class TestAnalysisBot:
             mock_analyze.return_value = mock_result
 
             config = AnalysisConfig(user_id="test-user")
-            result = await bot.analyze(target=r"<?php echo \$_GET['id']; ?>", target_type="code", config=config)
+            result = await bot.analyze(
+                target=r"<?php echo \$_GET['id']; ?>",
+                target_type="code",
+                config=config,
+            )
 
             assert result.id == "test-analysis-123"
             assert result.status == "completed"

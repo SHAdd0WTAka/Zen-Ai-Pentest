@@ -77,7 +77,17 @@ class TestNVDClient:
                             ]
                         },
                         "references": [{"url": "https://example.com"}],
-                        "configurations": [{"nodes": [{"cpeMatch": [{"criteria": "cpe:2.3:a:test:1.0"}]}]}],
+                        "configurations": [
+                            {
+                                "nodes": [
+                                    {
+                                        "cpeMatch": [
+                                            {"criteria": "cpe:2.3:a:test:1.0"}
+                                        ]
+                                    }
+                                ]
+                            }
+                        ],
                     }
                 }
             ]
@@ -114,7 +124,9 @@ class TestCVEUpdater:
     @pytest.mark.asyncio
     async def test_save_and_load_db(self, temp_updater):
         """Test saving and loading database"""
-        test_data = {"CVE-2024-1234": {"id": "CVE-2024-1234", "cvss_score": 7.5}}
+        test_data = {
+            "CVE-2024-1234": {"id": "CVE-2024-1234", "cvss_score": 7.5}
+        }
 
         await temp_updater._save_db(test_data)
         loaded = await temp_updater._load_db()
@@ -124,7 +136,9 @@ class TestCVEUpdater:
     @pytest.mark.asyncio
     async def test_lookup_cve(self, temp_updater):
         """Test CVE lookup"""
-        test_data = {"CVE-2024-1234": {"id": "CVE-2024-1234", "cvss_score": 7.5}}
+        test_data = {
+            "CVE-2024-1234": {"id": "CVE-2024-1234", "cvss_score": 7.5}
+        }
         await temp_updater._save_db(test_data)
 
         result = await temp_updater.lookup_cve("CVE-2024-1234")
@@ -149,7 +163,9 @@ class TestCVEUpdater:
             "CVE-2024-0003": {"id": "CVE-2024-0003", "severity": "high"},
         }
         await temp_updater._save_db(test_data)
-        await temp_updater._save_metadata({"last_update": datetime.utcnow().isoformat()})
+        await temp_updater._save_metadata(
+            {"last_update": datetime.utcnow().isoformat()}
+        )
 
         stats = temp_updater.get_stats()
         assert stats["status"] == "ready"
@@ -161,7 +177,13 @@ class TestCVEUpdater:
     async def test_update_merges_data(self, temp_updater):
         """Test that update merges new data"""
         # Initial data
-        initial_data = {"CVE-2024-0001": {"id": "CVE-2024-0001", "last_modified": "2024-01-01T00:00:00", "cvss_score": 5.0}}
+        initial_data = {
+            "CVE-2024-0001": {
+                "id": "CVE-2024-0001",
+                "last_modified": "2024-01-01T00:00:00",
+                "cvss_score": 5.0,
+            }
+        }
         await temp_updater._save_db(initial_data)
 
         # Mock NVD client to return update

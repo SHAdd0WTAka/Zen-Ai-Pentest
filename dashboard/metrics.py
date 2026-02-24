@@ -98,11 +98,19 @@ class MetricsCollector:
                         if key not in self._metrics:
                             self._metrics[key] = []
 
-                        self._metrics[key].append(MetricPoint(timestamp=datetime.utcnow(), value=float(value), labels={}))
+                        self._metrics[key].append(
+                            MetricPoint(
+                                timestamp=datetime.utcnow(),
+                                value=float(value),
+                                labels={},
+                            )
+                        )
 
                         # Trim history
                         if len(self._metrics[key]) > self._max_history:
-                            self._metrics[key] = self._metrics[key][-self._max_history :]
+                            self._metrics[key] = self._metrics[key][
+                                -self._max_history :
+                            ]
 
                 # Notify callback
                 if self._on_metrics:
@@ -174,7 +182,9 @@ class MetricsCollector:
         """Get current metrics snapshot"""
         return self._current.copy()
 
-    def get_metric_history(self, metric_name: str, duration_seconds: int = 3600) -> List[MetricPoint]:
+    def get_metric_history(
+        self, metric_name: str, duration_seconds: int = 3600
+    ) -> List[MetricPoint]:
         """Get historical data for a metric"""
         points = self._metrics.get(metric_name, [])
 
@@ -193,7 +203,9 @@ class MetricsCollector:
         return {
             "collection_interval": self.collection_interval,
             "metrics_count": len(self._metrics),
-            "data_points": sum(len(points) for points in self._metrics.values()),
+            "data_points": sum(
+                len(points) for points in self._metrics.values()
+            ),
             "last_update": self._current.get("timestamp"),
         }
 
@@ -225,7 +237,9 @@ class MetricsAggregator:
         return min(values), max(values)
 
     @staticmethod
-    def calculate_rate(points: List[MetricPoint], duration_seconds: int = 60) -> Optional[float]:
+    def calculate_rate(
+        points: List[MetricPoint], duration_seconds: int = 60
+    ) -> Optional[float]:
         """Calculate rate of change"""
         if len(points) < 2:
             return None

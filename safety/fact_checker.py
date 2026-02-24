@@ -42,7 +42,9 @@ class FactChecker:
         self._verified_facts: Dict[str, Any] = {}
         self._known_falsehoods: List[str] = []
 
-    def check_output(self, output: str, context: Optional[Dict] = None) -> List[FactCheckResult]:
+    def check_output(
+        self, output: str, context: Optional[Dict] = None
+    ) -> List[FactCheckResult]:
         """
         Check all verifiable claims in output
         """
@@ -71,28 +73,57 @@ class FactChecker:
             end = min(len(text), match.end() + 100)
             context = text[start:end]
 
-            claims.append({"type": "cve", "id": cve_id, "text": context, "extracted": cve_id})
+            claims.append(
+                {
+                    "type": "cve",
+                    "id": cve_id,
+                    "text": context,
+                    "extracted": cve_id,
+                }
+            )
 
         # Port/service claims
         port_pattern = r"port\s+(\d{1,5})\s+(is\s+)?(open|closed|filtered)"
         for match in re.finditer(port_pattern, text, re.IGNORECASE):
             claims.append(
-                {"type": "port_status", "port": match.group(1), "status": match.group(3).lower(), "text": match.group(0)}
+                {
+                    "type": "port_status",
+                    "port": match.group(1),
+                    "status": match.group(3).lower(),
+                    "text": match.group(0),
+                }
             )
 
         # Version claims
-        version_pattern = r"(Apache|Nginx|OpenSSH|MySQL)[/\s]+(\d+\.\d+(\.\d+)?)"
+        version_pattern = (
+            r"(Apache|Nginx|OpenSSH|MySQL)[/\s]+(\d+\.\d+(\.\d+)?)"
+        )
         for match in re.finditer(version_pattern, text, re.IGNORECASE):
-            claims.append({"type": "version", "software": match.group(1), "version": match.group(2), "text": match.group(0)})
+            claims.append(
+                {
+                    "type": "version",
+                    "software": match.group(1),
+                    "version": match.group(2),
+                    "text": match.group(0),
+                }
+            )
 
         # Severity claims
         severity_pattern = r"(critical|high|medium|low|informational)\s+(severity|risk|vulnerability)"
         for match in re.finditer(severity_pattern, text, re.IGNORECASE):
-            claims.append({"type": "severity", "level": match.group(1).lower(), "text": match.group(0)})
+            claims.append(
+                {
+                    "type": "severity",
+                    "level": match.group(1).lower(),
+                    "text": match.group(0),
+                }
+            )
 
         return claims
 
-    def _verify_claim(self, claim: Dict, context: Optional[Dict]) -> FactCheckResult:
+    def _verify_claim(
+        self, claim: Dict, context: Optional[Dict]
+    ) -> FactCheckResult:
         """Verify a single claim"""
         claim_type = claim.get("type")
 
@@ -106,7 +137,11 @@ class FactChecker:
             return self._verify_severity(claim, context)
 
         return FactCheckResult(
-            claim=claim.get("text", ""), status=FactCheckStatus.UNKNOWN, confidence=0.0, evidence=[], source="unknown"
+            claim=claim.get("text", ""),
+            status=FactCheckStatus.UNKNOWN,
+            confidence=0.0,
+            evidence=[],
+            source="unknown",
         )
 
     def _verify_cve(self, claim: Dict) -> FactCheckResult:
@@ -153,7 +188,9 @@ class FactChecker:
             source="format_check",
         )
 
-    def _verify_port_status(self, claim: Dict, context: Optional[Dict]) -> FactCheckResult:
+    def _verify_port_status(
+        self, claim: Dict, context: Optional[Dict]
+    ) -> FactCheckResult:
         """Verify port status against scan results"""
         port = claim["port"]
         claimed_status = claim["status"]
@@ -176,7 +213,9 @@ class FactChecker:
                         claim=f"Port {port} is {claimed_status}",
                         status=FactCheckStatus.CONTRADICTED,
                         confidence=0.9,
-                        evidence=[f"Scan shows port {port} is {actual_status}"],
+                        evidence=[
+                            f"Scan shows port {port} is {actual_status}"
+                        ],
                         source="scan_data",
                         correction=f"Port {port} is actually {actual_status}",
                     )
@@ -189,7 +228,9 @@ class FactChecker:
             source="none",
         )
 
-    def _verify_version(self, claim: Dict, context: Optional[Dict]) -> FactCheckResult:
+    def _verify_version(
+        self, claim: Dict, context: Optional[Dict]
+    ) -> FactCheckResult:
         """Verify software version"""
         software = claim["software"]
         version = claim["version"]
@@ -223,7 +264,9 @@ class FactChecker:
             source="none",
         )
 
-    def _verify_severity(self, claim: Dict, context: Optional[Dict]) -> FactCheckResult:
+    def _verify_severity(
+        self, claim: Dict, context: Optional[Dict]
+    ) -> FactCheckResult:
         """Verify severity rating"""
         level = claim["level"]
 
@@ -254,8 +297,16 @@ class FactChecker:
             return {"total": 0}
 
         total = len(self.check_history)
-        verified = sum(1 for r in self.check_history if r.status == FactCheckStatus.VERIFIED)
-        contradicted = sum(1 for r in self.check_history if r.status == FactCheckStatus.CONTRADICTED)
+        verified = sum(
+            1
+            for r in self.check_history
+            if r.status == FactCheckStatus.VERIFIED
+        )
+        contradicted = sum(
+            1
+            for r in self.check_history
+            if r.status == FactCheckStatus.CONTRADICTED
+        )
 
         return {
             "total": total,

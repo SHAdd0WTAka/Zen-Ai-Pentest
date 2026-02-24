@@ -82,7 +82,11 @@ def mock_ignorant_result():
 def mock_subfinder_result():
     """Create a mock Subfinder result"""
     result = Mock()
-    result.subdomains = ["www.example.com", "api.example.com", "mail.example.com"]
+    result.subdomains = [
+        "www.example.com",
+        "api.example.com",
+        "mail.example.com",
+    ]
     return result
 
 
@@ -90,7 +94,11 @@ def mock_subfinder_result():
 def mock_amass_result():
     """Create a mock Amass result"""
     result = Mock()
-    result.subdomains = ["dev.example.com", "staging.example.com", "admin.example.com"]
+    result.subdomains = [
+        "dev.example.com",
+        "staging.example.com",
+        "admin.example.com",
+    ]
     return result
 
 
@@ -132,9 +140,13 @@ class TestOSINTSuperModule:
             assert module.output_dir.exists()
 
     @pytest.mark.asyncio
-    async def test_investigate_username(self, osint_module, mock_sherlock_result):
+    async def test_investigate_username(
+        self, osint_module, mock_sherlock_result
+    ):
         """Test username investigation"""
-        osint_module.sherlock.search = AsyncMock(return_value=mock_sherlock_result)
+        osint_module.sherlock.search = AsyncMock(
+            return_value=mock_sherlock_result
+        )
 
         result = await osint_module.investigate_username("testuser")
 
@@ -147,7 +159,9 @@ class TestOSINTSuperModule:
     @pytest.mark.asyncio
     async def test_investigate_username_error(self, osint_module):
         """Test username investigation with error"""
-        osint_module.sherlock.search = AsyncMock(side_effect=Exception("Search failed"))
+        osint_module.sherlock.search = AsyncMock(
+            side_effect=Exception("Search failed")
+        )
 
         result = await osint_module.investigate_username("testuser")
 
@@ -157,10 +171,16 @@ class TestOSINTSuperModule:
         assert "error" in result.social_media
 
     @pytest.mark.asyncio
-    async def test_investigate_email(self, osint_module, mock_ignorant_result, mock_sherlock_result):
+    async def test_investigate_email(
+        self, osint_module, mock_ignorant_result, mock_sherlock_result
+    ):
         """Test email investigation"""
-        osint_module.ignorant.check_email = AsyncMock(return_value=mock_ignorant_result)
-        osint_module.sherlock.search = AsyncMock(return_value=mock_sherlock_result)
+        osint_module.ignorant.check_email = AsyncMock(
+            return_value=mock_ignorant_result
+        )
+        osint_module.sherlock.search = AsyncMock(
+            return_value=mock_sherlock_result
+        )
 
         result = await osint_module.investigate_email("test@example.com")
 
@@ -192,7 +212,9 @@ class TestOSINTSuperModule:
     @pytest.mark.asyncio
     async def test_investigate_email_ignorant_error(self, osint_module):
         """Test email investigation when Ignorant fails"""
-        osint_module.ignorant.check_email = AsyncMock(side_effect=Exception("API Error"))
+        osint_module.ignorant.check_email = AsyncMock(
+            side_effect=Exception("API Error")
+        )
 
         result = await osint_module.investigate_email("test@example.com")
 
@@ -202,10 +224,20 @@ class TestOSINTSuperModule:
         assert "error" in result.email_check
 
     @pytest.mark.asyncio
-    async def test_investigate_domain(self, osint_module, mock_subfinder_result, mock_amass_result, mock_whatweb_result):
+    async def test_investigate_domain(
+        self,
+        osint_module,
+        mock_subfinder_result,
+        mock_amass_result,
+        mock_whatweb_result,
+    ):
         """Test domain investigation"""
-        osint_module.subfinder.enumerate = AsyncMock(return_value=mock_subfinder_result)
-        osint_module.amass.enumerate = AsyncMock(return_value=mock_amass_result)
+        osint_module.subfinder.enumerate = AsyncMock(
+            return_value=mock_subfinder_result
+        )
+        osint_module.amass.enumerate = AsyncMock(
+            return_value=mock_amass_result
+        )
         osint_module.whatweb.scan = AsyncMock(return_value=mock_whatweb_result)
 
         result = await osint_module.investigate_domain("example.com")
@@ -213,16 +245,24 @@ class TestOSINTSuperModule:
         assert result.target == "example.com"
         assert result.target_type == "domain"
         # Should combine subdomains from both tools
-        assert result.subdomains["total"] == 6  # 3 from subfinder + 3 from amass
+        assert (
+            result.subdomains["total"] == 6
+        )  # 3 from subfinder + 3 from amass
         assert result.subdomains["success"] is True
         assert result.technologies["success"] is True
         assert len(result.technologies["technologies"]) == 2
 
     @pytest.mark.asyncio
-    async def test_investigate_domain_subfinder_error(self, osint_module, mock_amass_result, mock_whatweb_result):
+    async def test_investigate_domain_subfinder_error(
+        self, osint_module, mock_amass_result, mock_whatweb_result
+    ):
         """Test domain investigation when Subfinder fails"""
-        osint_module.subfinder.enumerate = AsyncMock(side_effect=Exception("Subfinder failed"))
-        osint_module.amass.enumerate = AsyncMock(return_value=mock_amass_result)
+        osint_module.subfinder.enumerate = AsyncMock(
+            side_effect=Exception("Subfinder failed")
+        )
+        osint_module.amass.enumerate = AsyncMock(
+            return_value=mock_amass_result
+        )
         osint_module.whatweb.scan = AsyncMock(return_value=mock_whatweb_result)
 
         result = await osint_module.investigate_domain("example.com")
@@ -233,10 +273,16 @@ class TestOSINTSuperModule:
         assert result.subdomains["total"] == 3
 
     @pytest.mark.asyncio
-    async def test_investigate_domain_amass_error(self, osint_module, mock_subfinder_result, mock_whatweb_result):
+    async def test_investigate_domain_amass_error(
+        self, osint_module, mock_subfinder_result, mock_whatweb_result
+    ):
         """Test domain investigation when Amass fails"""
-        osint_module.subfinder.enumerate = AsyncMock(return_value=mock_subfinder_result)
-        osint_module.amass.enumerate = AsyncMock(side_effect=Exception("Amass failed"))
+        osint_module.subfinder.enumerate = AsyncMock(
+            return_value=mock_subfinder_result
+        )
+        osint_module.amass.enumerate = AsyncMock(
+            side_effect=Exception("Amass failed")
+        )
         osint_module.whatweb.scan = AsyncMock(return_value=mock_whatweb_result)
 
         result = await osint_module.investigate_domain("example.com")
@@ -247,11 +293,19 @@ class TestOSINTSuperModule:
         assert result.subdomains["total"] == 3
 
     @pytest.mark.asyncio
-    async def test_investigate_domain_whatweb_error(self, osint_module, mock_subfinder_result, mock_amass_result):
+    async def test_investigate_domain_whatweb_error(
+        self, osint_module, mock_subfinder_result, mock_amass_result
+    ):
         """Test domain investigation when WhatWeb fails"""
-        osint_module.subfinder.enumerate = AsyncMock(return_value=mock_subfinder_result)
-        osint_module.amass.enumerate = AsyncMock(return_value=mock_amass_result)
-        osint_module.whatweb.scan = AsyncMock(side_effect=Exception("WhatWeb failed"))
+        osint_module.subfinder.enumerate = AsyncMock(
+            return_value=mock_subfinder_result
+        )
+        osint_module.amass.enumerate = AsyncMock(
+            return_value=mock_amass_result
+        )
+        osint_module.whatweb.scan = AsyncMock(
+            side_effect=Exception("WhatWeb failed")
+        )
 
         result = await osint_module.investigate_domain("example.com")
 
@@ -266,7 +320,9 @@ class TestOSINTSuperModule:
 class TestSummaryGeneration:
     """Tests for summary generation methods"""
 
-    def test_generate_username_summary_high_risk(self, osint_module, mock_sherlock_result):
+    def test_generate_username_summary_high_risk(
+        self, osint_module, mock_sherlock_result
+    ):
         """Test username summary with high risk (many accounts)"""
         result = OSINTSuperResult(
             target="testuser",
@@ -386,7 +442,9 @@ class TestSummaryGeneration:
             timestamp=datetime.now().isoformat(),
         )
         result.subdomains = {"total": 150}
-        result.technologies = {"technologies": [{"name": "Apache"}, {"name": "PHP"}]}
+        result.technologies = {
+            "technologies": [{"name": "Apache"}, {"name": "PHP"}]
+        }
 
         summary = osint_module._generate_domain_summary(result)
 
@@ -441,7 +499,9 @@ class TestReports:
         )
         result.summary = {"risk_level": "medium"}
 
-        filepath = osint_module.save_report(result, filename="test_report.json")
+        filepath = osint_module.save_report(
+            result, filename="test_report.json"
+        )
 
         assert filepath.exists()
         with open(filepath) as f:
@@ -478,7 +538,9 @@ class TestReports:
         # Should replace dots and @
         assert "_at_" in filepath.name
 
-    def test_print_report_username(self, osint_module, mock_sherlock_result, capsys):
+    def test_print_report_username(
+        self, osint_module, mock_sherlock_result, capsys
+    ):
         """Test printing username report"""
         result = OSINTSuperResult(
             target="testuser",
@@ -590,9 +652,15 @@ class TestDataClasses:
 async def test_full_investigation_workflow(temp_output_dir):
     """Test complete investigation workflow"""
     with (
-        patch("modules.osint_super.SherlockIntegration") as mock_sherlock_class,
-        patch("modules.osint_super.IgnorantIntegration") as mock_ignorant_class,
-        patch("modules.osint_super.SubfinderIntegration") as mock_subfinder_class,
+        patch(
+            "modules.osint_super.SherlockIntegration"
+        ) as mock_sherlock_class,
+        patch(
+            "modules.osint_super.IgnorantIntegration"
+        ) as mock_ignorant_class,
+        patch(
+            "modules.osint_super.SubfinderIntegration"
+        ) as mock_subfinder_class,
         patch("modules.osint_super.AmassIntegration") as mock_amass_class,
         patch("modules.osint_super.WhatWebIntegration") as mock_whatweb_class,
     ):
@@ -641,7 +709,9 @@ async def test_full_investigation_workflow(temp_output_dir):
         mock_whatweb = Mock()
         mock_whatweb.scan = AsyncMock(
             return_value=Mock(
-                technologies=[Mock(name="Apache", version="2.4", category="Web Server")],
+                technologies=[
+                    Mock(name="Apache", version="2.4", category="Web Server")
+                ],
             )
         )
         mock_whatweb_class.return_value = mock_whatweb

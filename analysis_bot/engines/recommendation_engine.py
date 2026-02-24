@@ -89,7 +89,9 @@ class RemediationStep:
 class RemediationOption:
     """Remediation-Option fÃ¼r eine Schwachstelle"""
 
-    id: str = field(default_factory=lambda: f"REM-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}")
+    id: str = field(
+        default_factory=lambda: f"REM-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}"
+    )
     type: RemediationType = RemediationType.PATCH
     priority: RemediationPriority = RemediationPriority.MEDIUM
     effort: RemediationEffort = RemediationEffort.MEDIUM
@@ -125,7 +127,9 @@ class RemediationOption:
         data["priority"] = self.priority.value
         data["effort"] = self.effort.value
         data["created_at"] = self.created_at.isoformat()
-        data["valid_until"] = self.valid_until.isoformat() if self.valid_until else None
+        data["valid_until"] = (
+            self.valid_until.isoformat() if self.valid_until else None
+        )
         return data
 
 
@@ -133,7 +137,9 @@ class RemediationOption:
 class Recommendation:
     """Empfehlung fÃ¼r eine Schwachstelle"""
 
-    id: str = field(default_factory=lambda: f"REC-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}")
+    id: str = field(
+        default_factory=lambda: f"REC-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}"
+    )
     vulnerability_id: str = ""
 
     # Priorisierung
@@ -163,11 +169,21 @@ class Recommendation:
 
     def to_dict(self) -> Dict[str, Any]:
         data = asdict(self)
-        data["recommended_option"] = self.recommended_option.to_dict() if self.recommended_option else None
-        data["alternative_options"] = [opt.to_dict() for opt in self.alternative_options]
+        data["recommended_option"] = (
+            self.recommended_option.to_dict()
+            if self.recommended_option
+            else None
+        )
+        data["alternative_options"] = [
+            opt.to_dict() for opt in self.alternative_options
+        ]
         data["created_at"] = self.created_at.isoformat()
-        data["implemented_at"] = self.implemented_at.isoformat() if self.implemented_at else None
-        data["verified_at"] = self.verified_at.isoformat() if self.verified_at else None
+        data["implemented_at"] = (
+            self.implemented_at.isoformat() if self.implemented_at else None
+        )
+        data["verified_at"] = (
+            self.verified_at.isoformat() if self.verified_at else None
+        )
         return data
 
 
@@ -507,14 +523,20 @@ class RecommendationEngine:
             options.append(self._generate_generic_option(vulnerability))
 
         # Priorisiere Optionen
-        prioritized_options = self._prioritize_options(options, risk_score, exploitability)
+        prioritized_options = self._prioritize_options(
+            options, risk_score, exploitability
+        )
 
         # WÃ¤hle empfohlene Option
         recommended = prioritized_options[0] if prioritized_options else None
-        alternatives = prioritized_options[1:] if len(prioritized_options) > 1 else []
+        alternatives = (
+            prioritized_options[1:] if len(prioritized_options) > 1 else []
+        )
 
         # Berechne PrioritÃ¤ts-Score
-        priority_score = self._calculate_priority_score(vulnerability, risk_score, exploitability)
+        priority_score = self._calculate_priority_score(
+            vulnerability, risk_score, exploitability
+        )
 
         # Erstelle Empfehlung
         recommendation = Recommendation(
@@ -523,7 +545,9 @@ class RecommendationEngine:
             recommended_option=recommended,
             alternative_options=alternatives,
             timeline=self._generate_timeline(recommended, risk_score),
-            responsible_roles=self._determine_responsible_roles(recommended, vulnerability),
+            responsible_roles=self._determine_responsible_roles(
+                recommended, vulnerability
+            ),
         )
 
         # Historie speichern
@@ -574,13 +598,20 @@ class RecommendationEngine:
         immediate = [
             r
             for r in recommendations
-            if r.recommended_option and r.recommended_option.priority == RemediationPriority.IMMEDIATE
+            if r.recommended_option
+            and r.recommended_option.priority == RemediationPriority.IMMEDIATE
         ]
         urgent = [
-            r for r in recommendations if r.recommended_option and r.recommended_option.priority == RemediationPriority.URGENT
+            r
+            for r in recommendations
+            if r.recommended_option
+            and r.recommended_option.priority == RemediationPriority.URGENT
         ]
         high = [
-            r for r in recommendations if r.recommended_option and r.recommended_option.priority == RemediationPriority.HIGH
+            r
+            for r in recommendations
+            if r.recommended_option
+            and r.recommended_option.priority == RemediationPriority.HIGH
         ]
 
         # SchÃ¤tze Gesamtaufwand
@@ -616,7 +647,9 @@ class RecommendationEngine:
             "all_recommendations": [r.to_dict() for r in recommendations],
         }
 
-    def get_compliance_mapping(self, vulnerability_category: str, framework: ComplianceFramework) -> List[str]:
+    def get_compliance_mapping(
+        self, vulnerability_category: str, framework: ComplianceFramework
+    ) -> List[str]:
         """
         Gibt Compliance-Mapping fÃ¼r eine Schwachstelle zurÃ¼ck.
 
@@ -627,7 +660,9 @@ class RecommendationEngine:
         Returns:
             Liste von Control-IDs
         """
-        remediation = self.remediation_db.get_remediation(vulnerability_category)
+        remediation = self.remediation_db.get_remediation(
+            vulnerability_category
+        )
         if not remediation:
             return []
 
@@ -640,7 +675,9 @@ class RecommendationEngine:
 
         return list(set(all_mappings))
 
-    def estimate_remediation_cost(self, recommendation: Recommendation) -> Dict[str, Any]:
+    def estimate_remediation_cost(
+        self, recommendation: Recommendation
+    ) -> Dict[str, Any]:
         """
         SchÃ¤tzt die Kosten fÃ¼r eine Remediation.
 
@@ -718,7 +755,9 @@ class RecommendationEngine:
             required_resources=data.get("required_resources", []),
         )
 
-    def _generate_generic_option(self, vulnerability: Dict) -> RemediationOption:
+    def _generate_generic_option(
+        self, vulnerability: Dict
+    ) -> RemediationOption:
         """Generiert eine generische Remediation-Option"""
         return RemediationOption(
             type=RemediationType.CODE_FIX,
@@ -746,7 +785,10 @@ class RecommendationEngine:
         )
 
     def _prioritize_options(
-        self, options: List[RemediationOption], risk_score: Dict, exploitability: Dict
+        self,
+        options: List[RemediationOption],
+        risk_score: Dict,
+        exploitability: Dict,
     ) -> List[RemediationOption]:
         """Priorisiert Remediation-Optionen"""
         # Sortiere nach PrioritÃ¤t und Effort
@@ -768,9 +810,17 @@ class RecommendationEngine:
             RemediationEffort.ARCHITECTURAL: 5,
         }
 
-        return sorted(options, key=lambda o: (priority_order.get(o.priority, 3), effort_order.get(o.effort, 2)))
+        return sorted(
+            options,
+            key=lambda o: (
+                priority_order.get(o.priority, 3),
+                effort_order.get(o.effort, 2),
+            ),
+        )
 
-    def _calculate_priority_score(self, vulnerability: Dict, risk_score: Dict, exploitability: Dict) -> float:
+    def _calculate_priority_score(
+        self, vulnerability: Dict, risk_score: Dict, exploitability: Dict
+    ) -> float:
         """Berechnet PrioritÃ¤ts-Score (0-100)"""
         score = 0.0
 
@@ -783,8 +833,16 @@ class RecommendationEngine:
         score += min(30, exploit_score * 3)
 
         # Schwachstellen-Kategorie (0-20 Punkte)
-        critical_categories = ["sql_injection", "code_execution", "insecure_deserialization"]
-        high_categories = ["command_injection", "authentication_bypass", "path_traversal"]
+        critical_categories = [
+            "sql_injection",
+            "code_execution",
+            "insecure_deserialization",
+        ]
+        high_categories = [
+            "command_injection",
+            "authentication_bypass",
+            "path_traversal",
+        ]
 
         category = vulnerability.get("category", "").lower()
         if category in critical_categories:
@@ -800,7 +858,9 @@ class RecommendationEngine:
 
         return min(100, score)
 
-    def _generate_timeline(self, option: Optional[RemediationOption], risk_score: Dict) -> str:
+    def _generate_timeline(
+        self, option: Optional[RemediationOption], risk_score: Dict
+    ) -> str:
         """Generiert empfohlenen Zeitplan"""
         if not option:
             return "As soon as possible"
@@ -816,7 +876,9 @@ class RecommendationEngine:
 
         return priority_timeline.get(option.priority, "As soon as possible")
 
-    def _determine_responsible_roles(self, option: Optional[RemediationOption], vulnerability: Dict) -> List[str]:
+    def _determine_responsible_roles(
+        self, option: Optional[RemediationOption], vulnerability: Dict
+    ) -> List[str]:
         """Bestimmt verantwortliche Rollen"""
         if option and option.required_skills:
             return option.required_skills
@@ -831,7 +893,9 @@ class RecommendationEngine:
         else:
             return ["Security Engineer", "Development Team"]
 
-    def _estimate_total_effort(self, recommendations: List[Recommendation]) -> int:
+    def _estimate_total_effort(
+        self, recommendations: List[Recommendation]
+    ) -> int:
         """SchÃ¤tzt Gesamtaufwand in Stunden"""
         effort_hours = {
             RemediationEffort.TRIVIAL: 1,
@@ -849,7 +913,9 @@ class RecommendationEngine:
 
         return total
 
-    def _calculate_timeline(self, total_hours: int, team_capacity: Dict) -> int:
+    def _calculate_timeline(
+        self, total_hours: int, team_capacity: Dict
+    ) -> int:
         """Berechnet benÃ¶tigte Wochen"""
         hours_per_week = team_capacity.get("hours_per_week", 40)
         return max(1, (total_hours // hours_per_week) + 1)
@@ -889,10 +955,16 @@ if __name__ == "__main__":
         "exploit_available": True,
     }
 
-    recommendation = engine.generate_recommendation(test_vuln, test_risk, test_exploit)
+    recommendation = engine.generate_recommendation(
+        test_vuln, test_risk, test_exploit
+    )
     print("Recommendation:")
     print(json.dumps(recommendation.to_dict(), indent=2, default=str))
 
     # Compliance Mapping
     print("\nPCI DSS Mapping:")
-    print(engine.get_compliance_mapping("sql_injection", ComplianceFramework.PCI_DSS))
+    print(
+        engine.get_compliance_mapping(
+            "sql_injection", ComplianceFramework.PCI_DSS
+        )
+    )

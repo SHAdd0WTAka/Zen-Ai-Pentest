@@ -64,7 +64,9 @@ class IPValidator:
             blocked_networks: List of CIDR ranges to block (uses defaults if None)
         """
         networks = blocked_networks or self.DEFAULT_BLOCKED_NETWORKS
-        self.blocked_networks = [ipaddress.ip_network(net, strict=False) for net in networks]
+        self.blocked_networks = [
+            ipaddress.ip_network(net, strict=False) for net in networks
+        ]
 
     def validate_ip(self, ip: str) -> ValidationResult:
         """
@@ -83,7 +85,9 @@ class IPValidator:
         try:
             addr = ipaddress.ip_address(ip)
         except ValueError:
-            return ValidationResult(is_valid=False, reason=f"Invalid IP address format: {ip}")
+            return ValidationResult(
+                is_valid=False, reason=f"Invalid IP address format: {ip}"
+            )
 
         # Check against blocked networks
         blocked = []
@@ -93,7 +97,9 @@ class IPValidator:
 
         if blocked:
             return ValidationResult(
-                is_valid=False, reason=f"IP {ip} is in blocked network range(s): {', '.join(blocked)}", blocked_ranges=blocked
+                is_valid=False,
+                reason=f"IP {ip} is in blocked network range(s): {', '.join(blocked)}",
+                blocked_ranges=blocked,
             )
 
         return ValidationResult(is_valid=True)
@@ -115,7 +121,9 @@ class IPValidator:
         try:
             net = ipaddress.ip_network(network, strict=False)
         except ValueError:
-            return ValidationResult(is_valid=False, reason=f"Invalid network format: {network}")
+            return ValidationResult(
+                is_valid=False, reason=f"Invalid network format: {network}"
+            )
 
         # Check if network overlaps with any blocked network
         blocked = []

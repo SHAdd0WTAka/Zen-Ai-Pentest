@@ -62,7 +62,9 @@ class ApplicationLifecycle:
         self._components: Dict[str, Any] = {}
         self._startup_order: List[str] = []
 
-    def on_start(self, name: str, callback: Callable, priority: int = 100) -> None:
+    def on_start(
+        self, name: str, callback: Callable, priority: int = 100
+    ) -> None:
         """
         Register a startup hook
 
@@ -71,14 +73,21 @@ class ApplicationLifecycle:
             callback: Function to call on startup
             priority: Execution priority (lower = earlier)
         """
-        hook = LifecycleHook(name=name, callback=callback, priority=priority, async_mode=asyncio.iscoroutinefunction(callback))
+        hook = LifecycleHook(
+            name=name,
+            callback=callback,
+            priority=priority,
+            async_mode=asyncio.iscoroutinefunction(callback),
+        )
 
         self._startup_hooks.append(hook)
         self._startup_hooks.sort(key=lambda h: h.priority)
 
         logger.debug(f"Registered startup hook: {name} (priority={priority})")
 
-    def on_stop(self, name: str, callback: Callable, priority: int = 100) -> None:
+    def on_stop(
+        self, name: str, callback: Callable, priority: int = 100
+    ) -> None:
         """
         Register a shutdown hook
 
@@ -87,7 +96,12 @@ class ApplicationLifecycle:
             callback: Function to call on shutdown
             priority: Execution priority (lower = earlier)
         """
-        hook = LifecycleHook(name=name, callback=callback, priority=priority, async_mode=asyncio.iscoroutinefunction(callback))
+        hook = LifecycleHook(
+            name=name,
+            callback=callback,
+            priority=priority,
+            async_mode=asyncio.iscoroutinefunction(callback),
+        )
 
         self._shutdown_hooks.append(hook)
         # Sort in reverse for shutdown (higher priority = earlier shutdown)
@@ -102,7 +116,10 @@ class ApplicationLifecycle:
         Returns:
             Results from each hook
         """
-        if self.phase not in [LifecyclePhase.INITIALIZING, LifecyclePhase.STOPPED]:
+        if self.phase not in [
+            LifecyclePhase.INITIALIZING,
+            LifecyclePhase.STOPPED,
+        ]:
             logger.warning(f"Cannot start from phase: {self.phase}")
             return {}
 
@@ -137,7 +154,9 @@ class ApplicationLifecycle:
         self.phase = LifecyclePhase.RUNNING
 
         logger.info("=" * 60)
-        logger.info(f"Started {sum(1 for r in results.values() if r['success'])}/{len(results)} components")
+        logger.info(
+            f"Started {sum(1 for r in results.values() if r['success'])}/{len(results)} components"
+        )
         logger.info("=" * 60)
 
         return results
@@ -181,7 +200,9 @@ class ApplicationLifecycle:
         self._components.clear()
 
         logger.info("=" * 60)
-        logger.info(f"Stopped {sum(1 for r in results.values() if r['success'])}/{len(results)} components")
+        logger.info(
+            f"Stopped {sum(1 for r in results.values() if r['success'])}/{len(results)} components"
+        )
         logger.info("=" * 60)
 
         return results

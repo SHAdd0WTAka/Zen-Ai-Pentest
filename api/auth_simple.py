@@ -24,7 +24,9 @@ security = HTTPBearer(auto_error=False)
 
 # In-memory user store (Production: Datenbank nutzen!)
 # Format: {username: {"password": hashed_password, "role": "admin|user"}}
-USERS_DB = {"admin": {"password": pwd_context.hash("admin123"), "role": "admin"}}  # Ändern in Production!
+USERS_DB = {
+    "admin": {"password": pwd_context.hash("admin123"), "role": "admin"}
+}  # Ändern in Production!
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -47,15 +49,21 @@ def authenticate_user(username: str, password: str) -> Optional[Dict]:
     return {"username": username, "role": user["role"]}
 
 
-def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
+def create_access_token(
+    data: dict, expires_delta: Optional[timedelta] = None
+) -> str:
     """Erstellt JWT Access Token"""
     to_encode = data.copy()
-    expire = datetime.now(timezone.utc) + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
+    expire = datetime.now(timezone.utc) + (
+        expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    )
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
-def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)) -> Dict:
+def verify_token(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+) -> Dict:
     """
     Verifiziert JWT Token aus Authorization Header
     Verwendet als Dependency in Protected Routes
@@ -100,7 +108,10 @@ def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)) 
 def require_admin(user: Dict = Depends(verify_token)) -> Dict:
     """Prüft ob User Admin-Rechte hat"""
     if user.get("role") != "admin":
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin privileges required")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin privileges required",
+        )
     return user
 
 
@@ -110,7 +121,10 @@ def create_user(username: str, password: str, role: str = "user") -> bool:
     if username in USERS_DB:
         return False
 
-    USERS_DB[username] = {"password": get_password_hash(password), "role": role}
+    USERS_DB[username] = {
+        "password": get_password_hash(password),
+        "role": role,
+    }
     return True
 
 

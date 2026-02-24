@@ -106,7 +106,9 @@ class APIKeyManager:
     def __init__(self, config: Optional[APIKeyConfig] = None):
         self.config = config or get_config().api_key
         self._keys: Dict[str, APIKey] = {}  # key_hash -> APIKey
-        self._user_keys: Dict[str, Set[str]] = {}  # user_id -> set of key_hashes
+        self._user_keys: Dict[str, Set[str]] = (
+            {}
+        )  # user_id -> set of key_hashes
 
     def _generate_key(self) -> str:
         """
@@ -119,7 +121,9 @@ class APIKeyManager:
         random_bytes = secrets.token_bytes(self.config.key_length)
 
         # Encode to URL-safe base64
-        key = base64.urlsafe_b64encode(random_bytes).decode("ascii").rstrip("=")
+        key = (
+            base64.urlsafe_b64encode(random_bytes).decode("ascii").rstrip("=")
+        )
 
         # Add prefix
         return f"{self.config.key_prefix}{key}"
@@ -183,7 +187,9 @@ class APIKeyManager:
         # Check key limit
         user_key_count = len(self._user_keys.get(user_id, set()))
         if user_key_count >= self.config.max_keys_per_user:
-            raise APIKeyLimitExceededError(f"Maximum of {self.config.max_keys_per_user} API keys allowed per user")
+            raise APIKeyLimitExceededError(
+                f"Maximum of {self.config.max_keys_per_user} API keys allowed per user"
+            )
 
         # Generate key
         plain_key = self._generate_key()
@@ -195,7 +201,9 @@ class APIKeyManager:
 
         expires_at = None
         if expires_in_days > 0:
-            expires_at = datetime.now(timezone.utc) + timedelta(days=expires_in_days)
+            expires_at = datetime.now(timezone.utc) + timedelta(
+                days=expires_in_days
+            )
 
         # Create API key object
         api_key = APIKey(
@@ -228,7 +236,9 @@ class APIKeyManager:
             plain_key=plain_key,
         )
 
-    def validate_api_key(self, key: str, ip_address: Optional[str] = None) -> Optional[APIKey]:
+    def validate_api_key(
+        self, key: str, ip_address: Optional[str] = None
+    ) -> Optional[APIKey]:
         """
         Validate an API key
 
@@ -258,7 +268,9 @@ class APIKeyManager:
             return None
 
         # Check expiration
-        if api_key.expires_at and api_key.expires_at < datetime.now(timezone.utc):
+        if api_key.expires_at and api_key.expires_at < datetime.now(
+            timezone.utc
+        ):
             api_key.status = APIKeyStatus.EXPIRED
             raise APIKeyExpiredError("API key has expired")
 
@@ -303,7 +315,9 @@ class APIKeyManager:
 
         return False
 
-    def revoke_all_user_keys(self, user_id: str, reason: str = "security") -> int:
+    def revoke_all_user_keys(
+        self, user_id: str, reason: str = "security"
+    ) -> int:
         """
         Revoke all API keys for a user
 
@@ -320,7 +334,9 @@ class APIKeyManager:
             if api_key and api_key.status == APIKeyStatus.ACTIVE:
                 api_key.status = APIKeyStatus.REVOKED
                 api_key.metadata["revoked_reason"] = reason
-                api_key.metadata["revoked_at"] = datetime.now(timezone.utc).isoformat()
+                api_key.metadata["revoked_at"] = datetime.now(
+                    timezone.utc
+                ).isoformat()
                 count += 1
 
         return count
@@ -392,7 +408,11 @@ class APIKeyManager:
         count = 0
 
         for api_key in self._keys.values():
-            if api_key.status == APIKeyStatus.ACTIVE and api_key.expires_at and api_key.expires_at < now:
+            if (
+                api_key.status == APIKeyStatus.ACTIVE
+                and api_key.expires_at
+                and api_key.expires_at < now
+            ):
                 api_key.status = APIKeyStatus.EXPIRED
                 count += 1
 
@@ -412,9 +432,15 @@ class APIKeyManager:
 
         return {
             "total_keys": len(keys),
-            "active_keys": sum(1 for k in keys if k.status == APIKeyStatus.ACTIVE),
-            "expired_keys": sum(1 for k in keys if k.status == APIKeyStatus.EXPIRED),
-            "revoked_keys": sum(1 for k in keys if k.status == APIKeyStatus.REVOKED),
+            "active_keys": sum(
+                1 for k in keys if k.status == APIKeyStatus.ACTIVE
+            ),
+            "expired_keys": sum(
+                1 for k in keys if k.status == APIKeyStatus.EXPIRED
+            ),
+            "revoked_keys": sum(
+                1 for k in keys if k.status == APIKeyStatus.REVOKED
+            ),
             "total_usage": sum(k.usage_count for k in keys),
         }
 
@@ -454,7 +480,10 @@ class APIKeyManager:
             if api_key and api_key.id == key_id:
                 if api_key.status == APIKeyStatus.SUSPENDED:
                     # Check if not expired
-                    if api_key.expires_at and api_key.expires_at < datetime.now(timezone.utc):
+                    if (
+                        api_key.expires_at
+                        and api_key.expires_at < datetime.now(timezone.utc)
+                    ):
                         api_key.status = APIKeyStatus.EXPIRED
                         return False
                     api_key.status = APIKeyStatus.ACTIVE

@@ -33,7 +33,12 @@ BACKENDS = {
         "name": "OpenRouter",
         "env_var": "OPENROUTER_API_KEY",
         "url": "https://openrouter.ai/keys",
-        "models": ["openrouter/auto", "anthropic/claude-3.5-sonnet", "openai/gpt-4o", "google/gemini-pro"],
+        "models": [
+            "openrouter/auto",
+            "anthropic/claude-3.5-sonnet",
+            "openai/gpt-4o",
+            "google/gemini-pro",
+        ],
         "test_url": "https://openrouter.ai/api/v1/auth/key",
     },
     "openai": {
@@ -49,9 +54,17 @@ BACKENDS = {
 def show_banner():
     console.print(
         Panel.fit(
-            Text("Zen-AI Pentest Configurator", justify="center", style="bold cyan")
+            Text(
+                "Zen-AI Pentest Configurator",
+                justify="center",
+                style="bold cyan",
+            )
             + "\n"
-            + Text("Waehle dein AI-Backend und Modell", justify="center", style="dim"),
+            + Text(
+                "Waehle dein AI-Backend und Modell",
+                justify="center",
+                style="dim",
+            ),
             border_style="cyan",
         )
     )
@@ -61,7 +74,9 @@ def test_api_key(backend_key, api_key):
     backend = BACKENDS[backend_key]
     try:
         headers = {"Authorization": f"Bearer {api_key}"}
-        response = requests.get(backend["test_url"], headers=headers, timeout=10)
+        response = requests.get(
+            backend["test_url"], headers=headers, timeout=10
+        )
         return response.status_code == 200
     except Exception:
         return False
@@ -72,17 +87,24 @@ def interactive_mode():
     try:
         import questionary
     except ImportError:
-        console.print("[red]questionary nicht installiert. Nutze CLI-Modus:[/red]")
-        console.print("  python setup_wizard.py --backend kimi --model kimi-k2.5 --key YOUR_KEY")
+        console.print(
+            "[red]questionary nicht installiert. Nutze CLI-Modus:[/red]"
+        )
+        console.print(
+            "  python setup_wizard.py --backend kimi --model kimi-k2.5 --key YOUR_KEY"
+        )
         return
 
     show_banner()
 
-    choices = [questionary.Choice(title=v["name"], value=k) for k, v in BACKENDS.items()] + [
-        questionary.Choice(title="[X] Abbrechen", value=None)
-    ]
+    choices = [
+        questionary.Choice(title=v["name"], value=k)
+        for k, v in BACKENDS.items()
+    ] + [questionary.Choice(title="[X] Abbrechen", value=None)]
 
-    backend_choice = questionary.select("Waehle dein AI Backend:", choices=choices).ask()
+    backend_choice = questionary.select(
+        "Waehle dein AI Backend:", choices=choices
+    ).ask()
 
     if not backend_choice:
         console.print("[yellow]Abgebrochen.[/yellow]")
@@ -90,8 +112,14 @@ def interactive_mode():
 
     backend = BACKENDS[backend_choice]
 
-    console.print(f"\n[blue]Verfuegbare Modelle fuer {backend['name']}:[/blue]")
-    model = questionary.select("Waehle das Modell:", choices=backend["models"], default=backend["models"][0]).ask()
+    console.print(
+        f"\n[blue]Verfuegbare Modelle fuer {backend['name']}:[/blue]"
+    )
+    model = questionary.select(
+        "Waehle das Modell:",
+        choices=backend["models"],
+        default=backend["models"][0],
+    ).ask()
 
     console.print(f"\n[dim]Hole deinen Key bei: {backend['url']}[/dim]")
     api_key = questionary.password("API Key eingeben:").ask()
@@ -135,7 +163,9 @@ def cli_mode(backend, model, api_key, test=False):
         if test_api_key(backend, api_key):
             console.print("[green]Key valide![/green]")
         else:
-            console.print("[yellow]Test fehlgeschlagen - speichere trotzdem[/yellow]")
+            console.print(
+                "[yellow]Test fehlgeschlagen - speichere trotzdem[/yellow]"
+            )
 
     save_config(backend, model, api_key)
 
@@ -206,11 +236,23 @@ Beispiele:
         """,
     )
 
-    parser.add_argument("-b", "--backend", choices=list(BACKENDS.keys()), help="Backend auswaehlen")
+    parser.add_argument(
+        "-b",
+        "--backend",
+        choices=list(BACKENDS.keys()),
+        help="Backend auswaehlen",
+    )
     parser.add_argument("-m", "--model", help="Modell auswaehlen")
     parser.add_argument("-k", "--key", help="API Key")
-    parser.add_argument("-t", "--test", action="store_true", help="API Key testen")
-    parser.add_argument("-s", "--status", action="store_true", help="Aktuelle Konfiguration anzeigen")
+    parser.add_argument(
+        "-t", "--test", action="store_true", help="API Key testen"
+    )
+    parser.add_argument(
+        "-s",
+        "--status",
+        action="store_true",
+        help="Aktuelle Konfiguration anzeigen",
+    )
 
     args = parser.parse_args()
 
@@ -219,7 +261,9 @@ Beispiele:
     elif args.backend and args.model and args.key:
         cli_mode(args.backend, args.model, args.key, args.test)
     elif args.backend or args.model or args.key:
-        parser.error("--backend, --model und --key muessen zusammen verwendet werden")
+        parser.error(
+            "--backend, --model und --key muessen zusammen verwendet werden"
+        )
     else:
         interactive_mode()
 

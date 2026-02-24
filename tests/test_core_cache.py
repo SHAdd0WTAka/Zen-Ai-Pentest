@@ -523,7 +523,12 @@ class TestCVECache:
     @pytest.mark.asyncio
     async def test_cache_and_get_cve(self):
         """Test caching and retrieving CVE data"""
-        cve_data = {"id": "CVE-2023-1234", "severity": "HIGH", "cvss": 8.5, "description": "Test CVE"}
+        cve_data = {
+            "id": "CVE-2023-1234",
+            "severity": "HIGH",
+            "cvss": 8.5,
+            "description": "Test CVE",
+        }
 
         await cache_cve("CVE-2023-1234", cve_data)
         result = await get_cached_cve("CVE-2023-1234")

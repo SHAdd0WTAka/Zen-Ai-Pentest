@@ -16,7 +16,12 @@ import pytest
 # Skip tests if scoutsuite_integration is not available
 pytest.importorskip("scoutsuite_integration", allow_module_level=True)
 
-from scoutsuite_integration import CloudProvider, ScoutSuiteConfig, ScoutSuiteFinding, ScoutSuiteReport
+from scoutsuite_integration import (
+    CloudProvider,
+    ScoutSuiteConfig,
+    ScoutSuiteFinding,
+    ScoutSuiteReport,
+)
 
 from modules.cloud_scanner import (
     CloudAccount,
@@ -35,7 +40,9 @@ from modules.cloud_scanner import (
 @pytest.fixture
 def temp_accounts_file():
     """Create a temporary accounts file"""
-    with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+    with tempfile.NamedTemporaryFile(
+        mode="w", suffix=".json", delete=False
+    ) as f:
         json.dump({"accounts": []}, f)
         path = f.name
     yield path
@@ -173,7 +180,9 @@ class TestCloudAccountManager:
         manager = CloudAccountManager(storage_path=temp_accounts_file)
         assert manager.get_account("non-existent") is None
 
-    def test_get_accounts_by_provider(self, temp_accounts_file, aws_account, azure_account):
+    def test_get_accounts_by_provider(
+        self, temp_accounts_file, aws_account, azure_account
+    ):
         """Test getting accounts by provider"""
         manager = CloudAccountManager(storage_path=temp_accounts_file)
 
@@ -225,7 +234,9 @@ class TestCloudAccountManager:
         assert success is True
         assert manager.get_account(added.id) is None
 
-    def test_list_accounts(self, temp_accounts_file, aws_account, azure_account):
+    def test_list_accounts(
+        self, temp_accounts_file, aws_account, azure_account
+    ):
         """Test listing all accounts"""
         manager = CloudAccountManager(storage_path=temp_accounts_file)
 
@@ -267,7 +278,9 @@ class TestCloudScanner:
     @pytest.fixture
     def scanner(self, temp_accounts_file):
         """Create a CloudScanner instance"""
-        with patch("modules.cloud_scanner.ScoutSuiteIntegration") as mock_scout:
+        with patch(
+            "modules.cloud_scanner.ScoutSuiteIntegration"
+        ) as mock_scout:
             mock_scout.return_value = Mock()
             scanner = CloudScanner({"accounts_file": temp_accounts_file})
             yield scanner
@@ -304,7 +317,9 @@ class TestCloudScanner:
     def test_create_scan_config_custom(self, scanner, aws_account):
         """Test creating custom scan config"""
         custom_services = ["s3", "ec2"]
-        config = scanner.create_scan_config(aws_account, ScanType.CUSTOM, custom_services=custom_services)
+        config = scanner.create_scan_config(
+            aws_account, ScanType.CUSTOM, custom_services=custom_services
+        )
 
         assert config.services == custom_services
 
@@ -315,7 +330,9 @@ class TestCloudScanner:
             await scanner.scan_account("non-existent", ScanType.QUICK)
 
     @pytest.mark.asyncio
-    async def test_scan_account_disabled(self, scanner, temp_accounts_file, aws_account):
+    async def test_scan_account_disabled(
+        self, scanner, temp_accounts_file, aws_account
+    ):
         """Test scanning disabled account"""
         account = scanner.account_manager.add_account(
             name=aws_account.name,
@@ -328,7 +345,9 @@ class TestCloudScanner:
             await scanner.scan_account(account.id, ScanType.QUICK)
 
     @pytest.mark.asyncio
-    async def test_scan_account_success(self, scanner, aws_account, mock_scoutsuite_report):
+    async def test_scan_account_success(
+        self, scanner, aws_account, mock_scoutsuite_report
+    ):
         """Test successful account scan"""
         account = scanner.account_manager.add_account(
             name=aws_account.name,
@@ -337,7 +356,9 @@ class TestCloudScanner:
         )
 
         # Mock the scoutsuite scan
-        scanner.scoutsuite.scan = AsyncMock(return_value=mock_scoutsuite_report)
+        scanner.scoutsuite.scan = AsyncMock(
+            return_value=mock_scoutsuite_report
+        )
         scanner._setup_credentials = Mock()
 
         result = await scanner.scan_account(account.id, ScanType.QUICK)
@@ -357,7 +378,9 @@ class TestCloudScanner:
         )
 
         # Mock the scoutsuite scan to raise exception
-        scanner.scoutsuite.scan = AsyncMock(side_effect=Exception("Scan failed"))
+        scanner.scoutsuite.scan = AsyncMock(
+            side_effect=Exception("Scan failed")
+        )
         scanner._setup_credentials = Mock()
 
         result = await scanner.scan_account(account.id, ScanType.QUICK)
@@ -366,7 +389,9 @@ class TestCloudScanner:
         assert result.error_message == "Scan failed"
 
     @pytest.mark.asyncio
-    async def test_scan_multiple_accounts(self, scanner, aws_account, azure_account, mock_scoutsuite_report):
+    async def test_scan_multiple_accounts(
+        self, scanner, aws_account, azure_account, mock_scoutsuite_report
+    ):
         """Test scanning multiple accounts"""
         aws = scanner.account_manager.add_account(
             name=aws_account.name,
@@ -379,15 +404,21 @@ class TestCloudScanner:
             credentials=azure_account.credentials,
         )
 
-        scanner.scoutsuite.scan = AsyncMock(return_value=mock_scoutsuite_report)
+        scanner.scoutsuite.scan = AsyncMock(
+            return_value=mock_scoutsuite_report
+        )
         scanner._setup_credentials = Mock()
 
-        results = await scanner.scan_multiple_accounts([aws.id, azure.id], ScanType.QUICK)
+        results = await scanner.scan_multiple_accounts(
+            [aws.id, azure.id], ScanType.QUICK
+        )
 
         assert len(results) == 2
 
     @pytest.mark.asyncio
-    async def test_scan_all_accounts(self, scanner, aws_account, azure_account):
+    async def test_scan_all_accounts(
+        self, scanner, aws_account, azure_account
+    ):
         """Test scanning all accounts"""
         scanner.account_manager.add_account(
             name=aws_account.name,
@@ -433,7 +464,9 @@ class TestCloudScanner:
             credentials=aws_account.credentials,
         )
 
-        scheduled = scanner.schedule_scan(account.id, ScanType.QUICK, ScanSchedule.DAILY)
+        scheduled = scanner.schedule_scan(
+            account.id, ScanType.QUICK, ScanSchedule.DAILY
+        )
 
         assert scheduled.account_id == account.id
         assert scheduled.scan_type == ScanType.QUICK
@@ -443,7 +476,9 @@ class TestCloudScanner:
     def test_schedule_scan_invalid_account(self, scanner):
         """Test scheduling scan for invalid account"""
         with pytest.raises(ValueError, match="Konto nicht gefunden"):
-            scanner.schedule_scan("invalid", ScanType.QUICK, ScanSchedule.DAILY)
+            scanner.schedule_scan(
+                "invalid", ScanType.QUICK, ScanSchedule.DAILY
+            )
 
     def test_get_scan_result(self, scanner):
         """Test getting scan result"""
@@ -542,7 +577,9 @@ class TestCloudScannerAPI:
             credentials=aws_account.credentials,
         )
 
-        with patch.object(api.scanner, "scan_account", new_callable=AsyncMock) as mock_scan:
+        with patch.object(
+            api.scanner, "scan_account", new_callable=AsyncMock
+        ) as mock_scan:
             mock_result = Mock()
             mock_result.scan_id = "test-scan-123"
             mock_result.status = "completed"

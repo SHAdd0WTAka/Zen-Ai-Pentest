@@ -124,7 +124,14 @@ class WorkflowHealthChecker:
             "issues_by_severity": {"error": 0, "warning": 0, "info": 0},
         }
 
-    def add_issue(self, workflow: str, issue_type: str, message: str, severity: str = "warning", line: int = None):
+    def add_issue(
+        self,
+        workflow: str,
+        issue_type: str,
+        message: str,
+        severity: str = "warning",
+        line: int = None,
+    ):
         """Add an issue to the report."""
         issue = {
             "workflow": workflow,
@@ -135,7 +142,9 @@ class WorkflowHealthChecker:
         }
         self.issues.append(issue)
         self.summary["total_issues"] += 1
-        self.summary["issues_by_type"][issue_type] = self.summary["issues_by_type"].get(issue_type, 0) + 1
+        self.summary["issues_by_type"][issue_type] = (
+            self.summary["issues_by_type"].get(issue_type, 0) + 1
+        )
         self.summary["issues_by_severity"][severity] += 1
 
     def check_yaml_syntax(self, workflow_path: Path) -> dict | None:
@@ -148,7 +157,10 @@ class WorkflowHealthChecker:
             # Only report real YAML errors, not heredoc parsing issues
             error_msg = str(e)
             # Skip errors that are likely from heredoc content
-            if "could not find expected ':'" in error_msg and "import " in error_msg:
+            if (
+                "could not find expected ':'" in error_msg
+                and "import " in error_msg
+            ):
                 # This is likely a heredoc with Python code, try to parse anyway
                 try:
                     # Try parsing by preprocessing
@@ -207,7 +219,10 @@ class WorkflowHealthChecker:
                 current_version = match.group(2)
                 if action_name in self.LATEST_ACTIONS:
                     latest = self.LATEST_ACTIONS[action_name]
-                    if current_version != latest and not current_version.startswith(latest):
+                    if (
+                        current_version != latest
+                        and not current_version.startswith(latest)
+                    ):
                         self.add_issue(
                             workflow_path.name,
                             "outdated_action",
@@ -234,7 +249,10 @@ class WorkflowHealthChecker:
         jobs = content.get("jobs", {})
         for job_name, job_config in jobs.items():
             if isinstance(job_config, dict):
-                if "permissions" not in job_config and "permissions" not in content:
+                if (
+                    "permissions" not in job_config
+                    and "permissions" not in content
+                ):
                     self.add_issue(
                         workflow_path.name,
                         "missing_job_permissions",
@@ -265,7 +283,10 @@ class WorkflowHealthChecker:
 
         jobs = content.get("jobs", {})
         for job_name, job_config in jobs.items():
-            if isinstance(job_config, dict) and "timeout-minutes" not in job_config:
+            if (
+                isinstance(job_config, dict)
+                and "timeout-minutes" not in job_config
+            ):
                 self.add_issue(
                     workflow_path.name,
                     "missing_timeout",
@@ -280,7 +301,10 @@ class WorkflowHealthChecker:
 
         for line_num, line in enumerate(lines, 1):
             # Skip lines that match ignore patterns
-            should_ignore = any(re.search(pattern, line, re.IGNORECASE) for pattern in self.IGNORE_PATTERNS)
+            should_ignore = any(
+                re.search(pattern, line, re.IGNORECASE)
+                for pattern in self.IGNORE_PATTERNS
+            )
             if should_ignore:
                 continue
 
@@ -349,13 +373,19 @@ class WorkflowHealthChecker:
     def run(self) -> dict:
         """Run the health check on all workflows."""
         if not self.workflows_dir.exists():
-            print(f"Error: Workflows directory not found: {self.workflows_dir}")
+            print(
+                f"Error: Workflows directory not found: {self.workflows_dir}"
+            )
             sys.exit(1)
 
-        workflow_files = list(self.workflows_dir.glob("*.yml")) + list(self.workflows_dir.glob("*.yaml"))
+        workflow_files = list(self.workflows_dir.glob("*.yml")) + list(
+            self.workflows_dir.glob("*.yaml")
+        )
 
         # Filter out disabled workflows
-        workflow_files = [w for w in workflow_files if ".disabled" not in w.name]
+        workflow_files = [
+            w for w in workflow_files if ".disabled" not in w.name
+        ]
 
         self.summary["total_workflows"] = len(workflow_files)
 
@@ -368,24 +398,36 @@ class WorkflowHealthChecker:
 
         return self.summary
 
-    def print_report(self, verbose: bool = False, fix_suggestions: bool = False):
+    def print_report(
+        self, verbose: bool = False, fix_suggestions: bool = False
+    ):
         """Print the health check report."""
         print("\n" + "=" * 80)
         print("WORKFLOW HEALTH CHECK REPORT")
         print("=" * 80)
 
-        print(f"\n[SUMMARY] Total Workflows: {self.summary['total_workflows']}")
-        print(f"[WARN] Workflows with Issues: {self.summary['workflows_with_issues']}")
+        print(
+            f"\n[SUMMARY] Total Workflows: {self.summary['total_workflows']}"
+        )
+        print(
+            f"[WARN] Workflows with Issues: {self.summary['workflows_with_issues']}"
+        )
         print(f"[INFO] Total Issues Found: {self.summary['total_issues']}")
 
         print("\n[BY SEVERITY] Issues by Severity:")
         for severity, count in self.summary["issues_by_severity"].items():
-            prefix = {"error": "[ERR]", "warning": "[WARN]", "info": "[INFO]"}.get(severity, "[?]")
+            prefix = {
+                "error": "[ERR]",
+                "warning": "[WARN]",
+                "info": "[INFO]",
+            }.get(severity, "[?]")
             print(f"  {prefix} {severity.capitalize()}: {count}")
 
         if self.summary["issues_by_type"]:
             print("\n[BY TYPE] Issues by Type:")
-            for issue_type, count in sorted(self.summary["issues_by_type"].items(), key=lambda x: -x[1]):
+            for issue_type, count in sorted(
+                self.summary["issues_by_type"].items(), key=lambda x: -x[1]
+            ):
                 print(f"  - {issue_type}: {count}")
 
         if verbose and self.issues:
@@ -406,7 +448,9 @@ class WorkflowHealthChecker:
                 }.get(issue["severity"], "[?]")
 
                 line_info = f" (line {issue['line']})" if issue["line"] else ""
-                print(f"  {prefix} [{issue['type']}]{line_info}: {issue['message']}")
+                print(
+                    f"  {prefix} [{issue['type']}]{line_info}: {issue['message']}"
+                )
 
         if fix_suggestions and self.issues:
             print("\n" + "-" * 80)
@@ -459,19 +503,28 @@ jobs:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="GitHub Actions Workflow Health Checker")
+    parser = argparse.ArgumentParser(
+        description="GitHub Actions Workflow Health Checker"
+    )
     parser.add_argument(
         "--workflows-dir",
         default=".github/workflows",
         help="Path to workflows directory",
     )
-    parser.add_argument("--verbose", "-v", action="store_true", help="Show detailed issue information")
+    parser.add_argument(
+        "--verbose",
+        "-v",
+        action="store_true",
+        help="Show detailed issue information",
+    )
     parser.add_argument(
         "--fix-suggestions",
         action="store_true",
         help="Show fix suggestions and examples",
     )
-    parser.add_argument("--json", "-j", action="store_true", help="Output report as JSON")
+    parser.add_argument(
+        "--json", "-j", action="store_true", help="Output report as JSON"
+    )
     parser.add_argument("--output", "-o", help="Save report to file")
 
     args = parser.parse_args()

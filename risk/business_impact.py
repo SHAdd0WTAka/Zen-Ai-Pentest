@@ -24,7 +24,9 @@ class BusinessContext:
 
     asset_type: str  # "web_server", "database", "workstation", etc.
     asset_value: ImpactLevel
-    data_classification: str  # "public", "internal", "confidential", "restricted"
+    data_classification: (
+        str  # "public", "internal", "confidential", "restricted"
+    )
     exposure: str  # "internet", "intranet", "internal"
     compliance_requirements: List[str]  # ["PCI-DSS", "GDPR", "HIPAA"]
     business_critical: bool
@@ -67,7 +69,9 @@ class BusinessImpactScorer:
     def __init__(self):
         self.assessment_history: List[Dict] = []
 
-    def calculate_impact(self, cvss_severity: str, business_context: BusinessContext) -> Dict:
+    def calculate_impact(
+        self, cvss_severity: str, business_context: BusinessContext
+    ) -> Dict:
         """
         Calculate business impact score
         """
@@ -85,13 +89,19 @@ class BusinessImpactScorer:
         asset_multiplier = business_context.asset_value.value
 
         # Data classification impact
-        data_multiplier = self.DATA_IMPACT.get(business_context.data_classification.lower(), 1.0)
+        data_multiplier = self.DATA_IMPACT.get(
+            business_context.data_classification.lower(), 1.0
+        )
 
         # Exposure multiplier
-        exposure_mult = self.EXPOSURE_MULTIPLIER.get(business_context.exposure.lower(), 1.0)
+        exposure_mult = self.EXPOSURE_MULTIPLIER.get(
+            business_context.exposure.lower(), 1.0
+        )
 
         # Calculate raw business impact
-        raw_impact = base_impact * asset_multiplier * data_multiplier * exposure_mult
+        raw_impact = (
+            base_impact * asset_multiplier * data_multiplier * exposure_mult
+        )
 
         # Cap at 10
         impact_score = min(raw_impact, 10.0)
@@ -99,9 +109,14 @@ class BusinessImpactScorer:
         # Compliance penalties
         compliance_penalties = []
         for req in business_context.compliance_requirements:
-            if req in self.COMPLIANCE_PENALTY and cvss_severity in ["High", "Critical"]:
+            if req in self.COMPLIANCE_PENALTY and cvss_severity in [
+                "High",
+                "Critical",
+            ]:
                 penalty = self.COMPLIANCE_PENALTY[req]
-                compliance_penalties.append(f"{req} violation risk (x{penalty})")
+                compliance_penalties.append(
+                    f"{req} violation risk (x{penalty})"
+                )
                 impact_score *= penalty
 
         # Business critical bonus
@@ -147,7 +162,9 @@ class BusinessImpactScorer:
         else:
             return "Minimal Business Impact"
 
-    def prioritize_vulnerabilities(self, vulns: List[Dict], business_context: BusinessContext) -> List[Dict]:
+    def prioritize_vulnerabilities(
+        self, vulns: List[Dict], business_context: BusinessContext
+    ) -> List[Dict]:
         """
         Sort vulnerabilities by combined risk + business impact
         """
@@ -160,9 +177,14 @@ class BusinessImpactScorer:
             vuln_with_impact = {
                 **vuln,
                 "business_impact": impact,
-                "combined_score": (vuln.get("cvss_score", 5) * 0.5 + impact["business_impact_score"] * 0.5),
+                "combined_score": (
+                    vuln.get("cvss_score", 5) * 0.5
+                    + impact["business_impact_score"] * 0.5
+                ),
             }
             scored_vulns.append(vuln_with_impact)
 
         # Sort by combined score descending
-        return sorted(scored_vulns, key=lambda x: x["combined_score"], reverse=True)
+        return sorted(
+            scored_vulns, key=lambda x: x["combined_score"], reverse=True
+        )

@@ -206,12 +206,18 @@ class ToolOrchestrator:
         """
         payload = {
             "target": target,
-            "options": {"mode": mode, "wordlist": wordlist, "extensions": extensions},
+            "options": {
+                "mode": mode,
+                "wordlist": wordlist,
+                "extensions": extensions,
+            },
         }
 
         return await self._trigger_scan("gobuster", payload)
 
-    async def enumerate_subdomains(self, domain: str, active: bool = False) -> Dict[str, Any]:
+    async def enumerate_subdomains(
+        self, domain: str, active: bool = False
+    ) -> Dict[str, Any]:
         """
         Enumerate subdomains with Amass
 
@@ -223,7 +229,9 @@ class ToolOrchestrator:
 
         return await self._trigger_scan("amass", payload)
 
-    async def scan_wordpress(self, url: str, enumerate_plugins: bool = True) -> Dict[str, Any]:
+    async def scan_wordpress(
+        self, url: str, enumerate_plugins: bool = True
+    ) -> Dict[str, Any]:
         """
         Scan WordPress site with WPScan
 
@@ -260,7 +268,9 @@ class ToolOrchestrator:
 
         return await self._trigger_scan("metasploit", payload)
 
-    async def _trigger_scan(self, tool: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+    async def _trigger_scan(
+        self, tool: str, payload: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Trigger scan via integration bridge"""
         tool_config = PENTEST_TOOLS.get(tool)
         if not tool_config:
@@ -274,7 +284,9 @@ class ToolOrchestrator:
             async with self.session.post(url, json=payload) as resp:
                 if resp.status != 200:
                     error_text = await resp.text()
-                    raise RuntimeError(f"Bridge returned {resp.status}: {error_text}")
+                    raise RuntimeError(
+                        f"Bridge returned {resp.status}: {error_text}"
+                    )
 
                 result = await resp.json()
                 self.active_scans[result["scan_id"]] = {
@@ -289,7 +301,9 @@ class ToolOrchestrator:
             logger.error(f"Failed to trigger {tool} scan: {e}")
             raise
 
-    async def wait_for_scan(self, scan_id: str, poll_interval: int = 10, timeout: int = 3600) -> Dict[str, Any]:
+    async def wait_for_scan(
+        self, scan_id: str, poll_interval: int = 10, timeout: int = 3600
+    ) -> Dict[str, Any]:
         """
         Wait for scan to complete
 
@@ -304,7 +318,9 @@ class ToolOrchestrator:
             # Check timeout
             elapsed = (datetime.utcnow() - start_time).total_seconds()
             if elapsed > timeout:
-                raise TimeoutError(f"Scan {scan_id} timed out after {timeout}s")
+                raise TimeoutError(
+                    f"Scan {scan_id} timed out after {timeout}s"
+                )
 
             # Get status
             status = await self.get_scan_status(scan_id)
@@ -313,7 +329,9 @@ class ToolOrchestrator:
             if current_status in ("completed", "failed", "cancelled"):
                 return status
 
-            logger.debug(f"Scan {scan_id} status: {current_status}, waiting...")
+            logger.debug(
+                f"Scan {scan_id} status: {current_status}, waiting..."
+            )
             await asyncio.sleep(poll_interval)
 
     async def get_scan_status(self, scan_id: str) -> Dict[str, Any]:
@@ -335,7 +353,10 @@ class ToolOrchestrator:
             return await resp.json()
 
     async def run_comprehensive_scan(
-        self, target: str, scan_type: str = "web", tools: Optional[List[str]] = None
+        self,
+        target: str,
+        scan_type: str = "web",
+        tools: Optional[List[str]] = None,
     ) -> Dict[str, Any]:
         """
         Run comprehensive multi-tool scan
@@ -361,7 +382,9 @@ class ToolOrchestrator:
             elif scan_type == "full":
                 tools = ["nmap", "nuclei", "gobuster", "amass", "nikto"]
 
-        console.print(f"[bold green]Starting comprehensive {scan_type} scan against {target}[/]")
+        console.print(
+            f"[bold green]Starting comprehensive {scan_type} scan against {target}[/]"
+        )
         console.print(f"[dim]Tools: {', '.join(tools)}[/]\n")
 
         # Run scans concurrently
@@ -385,7 +408,9 @@ class ToolOrchestrator:
 
         return results
 
-    async def _run_tool_with_progress(self, tool: str, target: str) -> Dict[str, Any]:
+    async def _run_tool_with_progress(
+        self, tool: str, target: str
+    ) -> Dict[str, Any]:
         """Run tool with progress indication"""
         config = PENTEST_TOOLS[tool]
 
@@ -407,7 +432,9 @@ class ToolOrchestrator:
             scan_id = result["scan_id"]
 
             # Wait for completion
-            final_status = await self.wait_for_scan(scan_id, poll_interval=5, timeout=config.typical_duration * 2)
+            final_status = await self.wait_for_scan(
+                scan_id, poll_interval=5, timeout=config.typical_duration * 2
+            )
 
             # Get results
             try:
@@ -435,7 +462,11 @@ class ToolOrchestrator:
 
         for tool, result in results.get("scans", {}).items():
             status = result.get("status", "unknown")
-            status_emoji = "✓" if status == "completed" else "✗" if "error" in result else "⏳"
+            status_emoji = (
+                "✓"
+                if status == "completed"
+                else "✗" if "error" in result else "⏳"
+            )
 
             # Count findings if available
             findings = "N/A"
@@ -447,27 +478,35 @@ class ToolOrchestrator:
 
             duration = str(result.get("duration", "N/A"))
 
-            table.add_row(tool, f"{status_emoji} {status}", findings, f"{duration}s")
+            table.add_row(
+                tool, f"{status_emoji} {status}", findings, f"{duration}s"
+            )
 
         console.print(table)
 
 
 # Convenience functions for direct usage
-async def quick_nmap_scan(target: str, bridge_url: str = "http://localhost:8080") -> Dict[str, Any]:
+async def quick_nmap_scan(
+    target: str, bridge_url: str = "http://localhost:8080"
+) -> Dict[str, Any]:
     """Quick Nmap scan wrapper"""
     async with ToolOrchestrator(bridge_url) as orch:
         result = await orch.scan_with_nmap(target, scan_type="quick")
         return await orch.wait_for_scan(result["scan_id"])
 
 
-async def quick_web_scan(url: str, bridge_url: str = "http://localhost:8080") -> Dict[str, Any]:
+async def quick_web_scan(
+    url: str, bridge_url: str = "http://localhost:8080"
+) -> Dict[str, Any]:
     """Quick web vulnerability scan with Nuclei"""
     async with ToolOrchestrator(bridge_url) as orch:
         result = await orch.scan_with_nuclei(url)
         return await orch.wait_for_scan(result["scan_id"])
 
 
-async def find_subdomains(domain: str, bridge_url: str = "http://localhost:8080") -> List[str]:
+async def find_subdomains(
+    domain: str, bridge_url: str = "http://localhost:8080"
+) -> List[str]:
     """Enumerate subdomains with Amass"""
     async with ToolOrchestrator(bridge_url) as orch:
         result = await orch.enumerate_subdomains(domain, active=False)

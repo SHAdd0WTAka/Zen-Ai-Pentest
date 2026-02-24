@@ -10,7 +10,12 @@ class TestUserModel:
         """Test User creation"""
         from database.models import User
 
-        user = User(username="testuser", email="test@example.com", hashed_password="hashed_pass", role="operator")
+        user = User(
+            username="testuser",
+            email="test@example.com",
+            hashed_password="hashed_pass",
+            role="operator",
+        )
 
         assert user.username == "testuser"
         assert user.email == "test@example.com"
@@ -20,7 +25,12 @@ class TestUserModel:
         """Test User with admin role"""
         from database.models import User
 
-        user = User(username="admin", email="admin@example.com", hashed_password="admin_pass", role="admin")
+        user = User(
+            username="admin",
+            email="admin@example.com",
+            hashed_password="admin_pass",
+            role="admin",
+        )
 
         assert user.role == "admin"
 
@@ -32,7 +42,12 @@ class TestScanModel:
         """Test Scan creation"""
         from database.models import Scan
 
-        scan = Scan(target="example.com", scan_type="quick", status="pending", user_id=1)
+        scan = Scan(
+            target="example.com",
+            scan_type="quick",
+            status="pending",
+            user_id=1,
+        )
 
         assert scan.target == "example.com"
         assert scan.scan_type == "quick"
@@ -60,7 +75,10 @@ class TestFindingModel:
         from database.models import Finding
 
         finding = Finding(
-            title="SQL Injection", severity="critical", description="A SQL injection vulnerability was found", scan_id=1
+            title="SQL Injection",
+            severity="critical",
+            description="A SQL injection vulnerability was found",
+            scan_id=1,
         )
 
         assert finding.title == "SQL Injection"
@@ -98,7 +116,9 @@ class TestVulnerabilityDBModel:
         """Test Vulnerability creation"""
         from database.models import VulnerabilityDB
 
-        vuln = VulnerabilityDB(cve_id="CVE-2021-1234", title="Test Vulnerability", severity="high")
+        vuln = VulnerabilityDB(
+            cve_id="CVE-2021-1234", title="Test Vulnerability", severity="high"
+        )
 
         assert vuln.cve_id == "CVE-2021-1234"
         assert vuln.title == "Test Vulnerability"
@@ -112,7 +132,12 @@ class TestAssetModel:
         """Test Asset creation"""
         from database.models import Asset
 
-        asset = Asset(name="Web Server", asset_type="server", ip_address="192.168.1.1", hostname="web.example.com")
+        asset = Asset(
+            name="Web Server",
+            asset_type="server",
+            ip_address="192.168.1.1",
+            hostname="web.example.com",
+        )
 
         assert asset.name == "Web Server"
         assert asset.asset_type == "server"
@@ -127,7 +152,10 @@ class TestNotificationModel:
         from database.models import Notification
 
         notification = Notification(
-            title="Scan Complete", message="Your scan has completed successfully", user_id=1, type="scan_complete"
+            title="Scan Complete",
+            message="Your scan has completed successfully",
+            user_id=1,
+            type="scan_complete",
         )
 
         assert notification.title == "Scan Complete"
@@ -140,7 +168,11 @@ class TestAuditLogModel:
         """Test AuditLog creation"""
         from database.models import AuditLog
 
-        log = AuditLog(action="CREATE_SCAN", user_id=1, details="Created scan for example.com")
+        log = AuditLog(
+            action="CREATE_SCAN",
+            user_id=1,
+            details="Created scan for example.com",
+        )
 
         assert log.action == "CREATE_SCAN"
         assert log.details == "Created scan for example.com"
@@ -153,7 +185,9 @@ class TestToolConfigModel:
         """Test ToolConfig creation"""
         from database.models import ToolConfig
 
-        config = ToolConfig(tool_name="nmap", config={"args": "-sV"}, user_id=1)
+        config = ToolConfig(
+            tool_name="nmap", config={"args": "-sV"}, user_id=1
+        )
 
         assert config.tool_name == "nmap"
 
@@ -212,7 +246,9 @@ class TestModelSerialization:
         """Test User attribute access"""
         from database.models import User
 
-        user = User(username="testuser", email="test@example.com", role="admin")
+        user = User(
+            username="testuser", email="test@example.com", role="admin"
+        )
 
         # Should be able to access attributes
         assert user.username == "testuser"
@@ -223,7 +259,12 @@ class TestModelSerialization:
         """Test Scan attribute access"""
         from database.models import Scan
 
-        scan = Scan(target="192.168.1.1", scan_type="network", status="completed", user_id=1)
+        scan = Scan(
+            target="192.168.1.1",
+            scan_type="network",
+            status="completed",
+            user_id=1,
+        )
 
         assert scan.target == "192.168.1.1"
         assert scan.scan_type == "network"

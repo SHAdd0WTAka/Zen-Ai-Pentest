@@ -10,7 +10,13 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional, Set
 
-from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException,
+    WebSocket,
+    WebSocketDisconnect,
+)
 from pydantic import BaseModel, Field
 
 from api.auth import verify_token
@@ -120,7 +126,9 @@ class AgentMessage(BaseModel):
 # ============================================================================
 
 
-def register_agent(agent_id: str, name: str, role: str, scan_id: Optional[int] = None):
+def register_agent(
+    agent_id: str, name: str, role: str, scan_id: Optional[int] = None
+):
     """Register a new agent in the system"""
     agent_registry[agent_id] = {
         "id": agent_id,
@@ -157,14 +165,21 @@ def update_agent_state(agent_id: str, state: AgentState, **kwargs):
     """Update agent state and metadata"""
     if agent_id in agent_registry:
         agent_registry[agent_id]["state"] = state
-        agent_registry[agent_id]["last_activity"] = datetime.utcnow().isoformat()
+        agent_registry[agent_id][
+            "last_activity"
+        ] = datetime.utcnow().isoformat()
         for key, value in kwargs.items():
             if key in agent_registry[agent_id]:
                 agent_registry[agent_id][key] = value
 
 
 def add_agent_thought(
-    agent_id: str, thought_type: str, content: str, confidence: float = None, related_tool: str = None, metadata: Dict = None
+    agent_id: str,
+    thought_type: str,
+    content: str,
+    confidence: float = None,
+    related_tool: str = None,
+    metadata: Dict = None,
 ) -> Dict:
     """Add a thought process entry for an agent"""
     if agent_id not in agent_thoughts:
@@ -210,7 +225,12 @@ async def broadcast_to_agent(agent_id: str, message: Dict):
 
 async def broadcast_agent_update(agent_id: str, update_type: str, data: Dict):
     """Broadcast agent update to all connected clients"""
-    message = {"type": update_type, "agent_id": agent_id, "timestamp": datetime.utcnow().isoformat(), **data}
+    message = {
+        "type": update_type,
+        "agent_id": agent_id,
+        "timestamp": datetime.utcnow().isoformat(),
+        **data,
+    }
 
     # Broadcast to agent-specific connections
     await broadcast_to_agent(agent_id, message)
@@ -226,7 +246,10 @@ async def broadcast_agent_update(agent_id: str, update_type: str, data: Dict):
 
 @router.get("/active", response_model=List[AgentInfo])
 async def get_active_agents(
-    scan_id: Optional[int] = None, role: Optional[str] = None, state: Optional[str] = None, user: dict = Depends(verify_token)
+    scan_id: Optional[int] = None,
+    role: Optional[str] = None,
+    state: Optional[str] = None,
+    user: dict = Depends(verify_token),
 ):
     """
     Get list of active agents.
@@ -278,29 +301,41 @@ async def get_agent_thoughts(
     Returns thoughts in reverse chronological order.
     """
     if agent_id not in agent_thoughts:
-        raise HTTPException(status_code=404, detail="Agent not found or no thoughts recorded")
+        raise HTTPException(
+            status_code=404, detail="Agent not found or no thoughts recorded"
+        )
 
     thoughts = agent_thoughts[agent_id]
 
     # Filter by type
     if thought_type:
-        thoughts = [t for t in thoughts if t.get("thought_type") == thought_type]
+        thoughts = [
+            t for t in thoughts if t.get("thought_type") == thought_type
+        ]
 
     # Filter by timestamp
     if since:
         thoughts = [t for t in thoughts if t.get("timestamp", "") > since]
 
     # Sort by timestamp descending
-    thoughts = sorted(thoughts, key=lambda x: x.get("timestamp", ""), reverse=True)
+    thoughts = sorted(
+        thoughts, key=lambda x: x.get("timestamp", ""), reverse=True
+    )
 
     # Limit
     limit = min(limit, 200)
 
-    return {"agent_id": agent_id, "total": len(thoughts), "thoughts": thoughts[:limit]}
+    return {
+        "agent_id": agent_id,
+        "total": len(thoughts),
+        "thoughts": thoughts[:limit],
+    }
 
 
 @router.get("/{agent_id}/timeline")
-async def get_agent_timeline(agent_id: str, user: dict = Depends(verify_token)):
+async def get_agent_timeline(
+    agent_id: str, user: dict = Depends(verify_token)
+):
     """
     Get agent activity timeline.
 
@@ -324,7 +359,11 @@ async def get_agent_timeline(agent_id: str, user: dict = Depends(verify_token)):
             }
         )
 
-    return {"agent_id": agent_id, "agent_info": agent_registry[agent_id], "timeline": timeline}
+    return {
+        "agent_id": agent_id,
+        "agent_info": agent_registry[agent_id],
+        "timeline": timeline,
+    }
 
 
 # ============================================================================
@@ -377,7 +416,9 @@ async def agent_websocket(websocket: WebSocket, agent_id: str):
 
         # Send initial agent info if available
         if agent_id in agent_registry:
-            await websocket.send_json({"type": "agent_info", "data": agent_registry[agent_id]})
+            await websocket.send_json(
+                {"type": "agent_info", "data": agent_registry[agent_id]}
+            )
 
         while True:
             try:
@@ -387,28 +428,51 @@ async def agent_websocket(websocket: WebSocket, agent_id: str):
                 action = message.get("action")
 
                 if action == "ping":
-                    await websocket.send_json({"type": "pong", "timestamp": datetime.utcnow().isoformat()})
+                    await websocket.send_json(
+                        {
+                            "type": "pong",
+                            "timestamp": datetime.utcnow().isoformat(),
+                        }
+                    )
 
                 elif action == "get_status":
                     if agent_id in agent_registry:
-                        await websocket.send_json({"type": "agent_info", "data": agent_registry[agent_id]})
+                        await websocket.send_json(
+                            {
+                                "type": "agent_info",
+                                "data": agent_registry[agent_id],
+                            }
+                        )
                     else:
-                        await websocket.send_json({"type": "error", "message": "Agent not found"})
+                        await websocket.send_json(
+                            {"type": "error", "message": "Agent not found"}
+                        )
 
                 elif action == "get_thoughts":
                     limit = message.get("limit", 10)
                     thoughts = agent_thoughts.get(agent_id, [])[-limit:]
-                    await websocket.send_json({"type": "thoughts", "data": thoughts})
+                    await websocket.send_json(
+                        {"type": "thoughts", "data": thoughts}
+                    )
 
                 elif action == "subscribe":
                     events = message.get("events", ["all"])
-                    await websocket.send_json({"type": "subscribed", "events": events})
+                    await websocket.send_json(
+                        {"type": "subscribed", "events": events}
+                    )
 
                 else:
-                    await websocket.send_json({"type": "error", "message": f"Unknown action: {action}"})
+                    await websocket.send_json(
+                        {
+                            "type": "error",
+                            "message": f"Unknown action: {action}",
+                        }
+                    )
 
             except json.JSONDecodeError:
-                await websocket.send_json({"type": "error", "message": "Invalid JSON"})
+                await websocket.send_json(
+                    {"type": "error", "message": "Invalid JSON"}
+                )
 
     except WebSocketDisconnect:
         # Cleanup connections
@@ -460,11 +524,20 @@ async def global_agents_websocket(websocket: WebSocket):
 
             if action == "ping":
                 await websocket.send_json(
-                    {"type": "pong", "active_agent_count": len(agent_registry), "timestamp": datetime.utcnow().isoformat()}
+                    {
+                        "type": "pong",
+                        "active_agent_count": len(agent_registry),
+                        "timestamp": datetime.utcnow().isoformat(),
+                    }
                 )
 
             elif action == "get_agents":
-                await websocket.send_json({"type": "agents_list", "agents": list(agent_registry.values())})
+                await websocket.send_json(
+                    {
+                        "type": "agents_list",
+                        "agents": list(agent_registry.values()),
+                    }
+                )
 
     except WebSocketDisconnect:
         agent_connections["global"].discard(websocket)
@@ -496,11 +569,20 @@ async def control_agent(
 
     valid_actions = ["pause", "resume", "stop"]
     if action not in valid_actions:
-        raise HTTPException(status_code=400, detail=f"Invalid action. Must be one of: {valid_actions}")
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid action. Must be one of: {valid_actions}",
+        )
 
     # Broadcast control command
     await broadcast_to_agent(
-        agent_id, {"type": "control_command", "action": action, "reason": reason, "timestamp": datetime.utcnow().isoformat()}
+        agent_id,
+        {
+            "type": "control_command",
+            "action": action,
+            "reason": reason,
+            "timestamp": datetime.utcnow().isoformat(),
+        },
     )
 
     # Update agent state
@@ -511,7 +593,11 @@ async def control_agent(
     elif action == "stop":
         update_agent_state(agent_id, AgentState.STOPPED)
 
-    return {"message": f"Control command '{action}' sent to agent {agent_id}", "agent_id": agent_id, "action": action}
+    return {
+        "message": f"Control command '{action}' sent to agent {agent_id}",
+        "agent_id": agent_id,
+        "action": action,
+    }
 
 
 # ============================================================================
@@ -519,7 +605,9 @@ async def control_agent(
 # ============================================================================
 
 
-async def publish_agent_thought(agent_id: str, thought_type: str, content: str, **kwargs):
+async def publish_agent_thought(
+    agent_id: str, thought_type: str, content: str, **kwargs
+):
     """
     Publish a thought from an agent.
     To be called from agent implementations.
@@ -558,11 +646,15 @@ async def publish_agent_action(
     return action
 
 
-async def publish_agent_state_change(agent_id: str, new_state: AgentState, **kwargs):
+async def publish_agent_state_change(
+    agent_id: str, new_state: AgentState, **kwargs
+):
     """
     Publish a state change from an agent.
     To be called from agent implementations.
     """
     update_agent_state(agent_id, new_state, **kwargs)
 
-    await broadcast_agent_update(agent_id, "state_change", {"new_state": new_state.value, **kwargs})
+    await broadcast_agent_update(
+        agent_id, "state_change", {"new_state": new_state.value, **kwargs}
+    )

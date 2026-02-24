@@ -46,10 +46,16 @@ class ScheduleJobRequest(BaseModel):
     name: str = Field(..., description="Job name")
     description: str = Field(default="", description="Job description")
     task_type: str = Field(..., description="Type of task to execute")
-    task_data: dict = Field(default_factory=dict, description="Task configuration")
+    task_data: dict = Field(
+        default_factory=dict, description="Task configuration"
+    )
     cron: Optional[str] = Field(default=None, description="Cron expression")
-    interval: Optional[int] = Field(default=None, description="Interval in minutes")
-    once_at: Optional[datetime] = Field(default=None, description="One-time execution time")
+    interval: Optional[int] = Field(
+        default=None, description="Interval in minutes"
+    )
+    once_at: Optional[datetime] = Field(
+        default=None, description="One-time execution time"
+    )
     timezone: str = Field(default="UTC", description="Timezone for scheduling")
     max_retries: int = Field(default=3, ge=0, le=10)
     timeout: int = Field(default=3600, ge=60, le=86400)
@@ -138,7 +144,10 @@ async def stop_scheduler(scheduler: TaskScheduler = Depends(get_scheduler)):
 
 
 @router.post("/jobs", response_model=dict)
-async def schedule_job(request: ScheduleJobRequest, scheduler: TaskScheduler = Depends(get_scheduler)):
+async def schedule_job(
+    request: ScheduleJobRequest,
+    scheduler: TaskScheduler = Depends(get_scheduler),
+):
     """
     Schedule a new job
 
@@ -150,13 +159,24 @@ async def schedule_job(request: ScheduleJobRequest, scheduler: TaskScheduler = D
     - One-time: once_at="2024-12-31T23:59:59"
     """
     # Validate schedule
-    schedule_count = sum([1 if request.cron else 0, 1 if request.interval else 0, 1 if request.once_at else 0])
+    schedule_count = sum(
+        [
+            1 if request.cron else 0,
+            1 if request.interval else 0,
+            1 if request.once_at else 0,
+        ]
+    )
 
     if schedule_count == 0:
-        raise HTTPException(status_code=400, detail="Must provide exactly one of: cron, interval, or once_at")
+        raise HTTPException(
+            status_code=400,
+            detail="Must provide exactly one of: cron, interval, or once_at",
+        )
 
     if schedule_count > 1:
-        raise HTTPException(status_code=400, detail="Can only provide one schedule type")
+        raise HTTPException(
+            status_code=400, detail="Can only provide one schedule type"
+        )
 
     try:
         job_id = await scheduler.schedule(
@@ -172,7 +192,11 @@ async def schedule_job(request: ScheduleJobRequest, scheduler: TaskScheduler = D
             timeout=request.timeout,
         )
 
-        return {"job_id": job_id, "status": "scheduled", "scheduled_at": datetime.utcnow().isoformat()}
+        return {
+            "job_id": job_id,
+            "status": "scheduled",
+            "scheduled_at": datetime.utcnow().isoformat(),
+        }
 
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -192,13 +216,19 @@ async def list_jobs(
     - **task_type**: Filter by task type
     - **enabled_only**: Only show enabled jobs
     """
-    jobs = await scheduler.list_jobs(status=status, task_type=task_type, enabled_only=enabled_only)
+    jobs = await scheduler.list_jobs(
+        status=status, task_type=task_type, enabled_only=enabled_only
+    )
 
-    return JobListResponse(jobs=[JobResponse(**job.to_dict()) for job in jobs], total=len(jobs))
+    return JobListResponse(
+        jobs=[JobResponse(**job.to_dict()) for job in jobs], total=len(jobs)
+    )
 
 
 @router.get("/jobs/{job_id}", response_model=JobResponse)
-async def get_job(job_id: str, scheduler: TaskScheduler = Depends(get_scheduler)):
+async def get_job(
+    job_id: str, scheduler: TaskScheduler = Depends(get_scheduler)
+):
     """Get job details"""
     job = await scheduler.get_job(job_id)
 
@@ -209,7 +239,9 @@ async def get_job(job_id: str, scheduler: TaskScheduler = Depends(get_scheduler)
 
 
 @router.delete("/jobs/{job_id}")
-async def delete_job(job_id: str, scheduler: TaskScheduler = Depends(get_scheduler)):
+async def delete_job(
+    job_id: str, scheduler: TaskScheduler = Depends(get_scheduler)
+):
     """Remove a scheduled job"""
     success = await scheduler.unschedule(job_id)
 
@@ -220,7 +252,9 @@ async def delete_job(job_id: str, scheduler: TaskScheduler = Depends(get_schedul
 
 
 @router.post("/jobs/{job_id}/pause")
-async def pause_job(job_id: str, scheduler: TaskScheduler = Depends(get_scheduler)):
+async def pause_job(
+    job_id: str, scheduler: TaskScheduler = Depends(get_scheduler)
+):
     """Pause a job temporarily"""
     success = await scheduler.pause_job(job_id)
 
@@ -231,7 +265,9 @@ async def pause_job(job_id: str, scheduler: TaskScheduler = Depends(get_schedule
 
 
 @router.post("/jobs/{job_id}/resume")
-async def resume_job(job_id: str, scheduler: TaskScheduler = Depends(get_scheduler)):
+async def resume_job(
+    job_id: str, scheduler: TaskScheduler = Depends(get_scheduler)
+):
     """Resume a paused job"""
     success = await scheduler.resume_job(job_id)
 
@@ -242,12 +278,18 @@ async def resume_job(job_id: str, scheduler: TaskScheduler = Depends(get_schedul
 
 
 @router.post("/jobs/{job_id}/run")
-async def run_job_now(job_id: str, scheduler: TaskScheduler = Depends(get_scheduler)):
+async def run_job_now(
+    job_id: str, scheduler: TaskScheduler = Depends(get_scheduler)
+):
     """Manually trigger a job to run immediately"""
     try:
         execution_id = await scheduler.run_job_now(job_id)
 
-        return {"job_id": job_id, "execution_id": execution_id, "status": "triggered"}
+        return {
+            "job_id": job_id,
+            "execution_id": execution_id,
+            "status": "triggered",
+        }
 
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
@@ -255,7 +297,9 @@ async def run_job_now(job_id: str, scheduler: TaskScheduler = Depends(get_schedu
 
 @router.get("/jobs/{job_id}/executions")
 async def get_job_executions(
-    job_id: str, limit: int = Query(default=100, ge=1, le=1000), scheduler: TaskScheduler = Depends(get_scheduler)
+    job_id: str,
+    limit: int = Query(default=100, ge=1, le=1000),
+    scheduler: TaskScheduler = Depends(get_scheduler),
 ):
     """Get execution history for a job"""
     executions = await scheduler.get_executions(job_id, limit)
@@ -266,7 +310,9 @@ async def get_job_executions(
             {
                 "id": e.id,
                 "started_at": e.started_at.isoformat(),
-                "completed_at": e.completed_at.isoformat() if e.completed_at else None,
+                "completed_at": (
+                    e.completed_at.isoformat() if e.completed_at else None
+                ),
                 "status": e.status,
                 "error": e.error,
             }
@@ -331,4 +377,8 @@ async def describe_cron(cron: str):
     description = CronParser.describe(cron)
     next_run = CronParser.get_next_run(cron)
 
-    return {"cron": cron, "description": description, "next_run": next_run.isoformat()}
+    return {
+        "cron": cron,
+        "description": description,
+        "next_run": next_run.isoformat(),
+    }

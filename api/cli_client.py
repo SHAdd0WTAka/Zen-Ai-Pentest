@@ -58,12 +58,18 @@ class KimiAPIClient:
         r = self.session.get(url)
         return r.text if r.ok else None
 
-    def chat(self, persona, message, temperature=0.7, context=None, complete=False):
+    def chat(
+        self, persona, message, temperature=0.7, context=None, complete=False
+    ):
         """Chat mit Persona"""
         endpoint = "/api/v1/chat/complete" if complete else "/api/v1/chat"
         url = f"{self.base_url}{endpoint}"
 
-        data = {"persona": persona, "message": message, "temperature": temperature}
+        data = {
+            "persona": persona,
+            "message": message,
+            "temperature": temperature,
+        }
         if context:
             data["context"] = context
 
@@ -118,7 +124,12 @@ def cmd_list(args):
     table.add_column("Description")
 
     for pid, pdata in data.get("personas", {}).items():
-        table.add_row(pid, pdata.get("name", ""), pdata.get("category", ""), pdata.get("description", "")[:50] + "...")
+        table.add_row(
+            pid,
+            pdata.get("name", ""),
+            pdata.get("category", ""),
+            pdata.get("description", "")[:50] + "...",
+        )
 
     console.print(table)
 
@@ -126,12 +137,23 @@ def cmd_list(args):
 def cmd_chat(args):
     client = KimiAPIClient(args.url, args.key)
 
-    console.print(Panel(f"[bold]{args.persona}[/bold] | Temp: {args.temperature}", border_style="cyan"))
+    console.print(
+        Panel(
+            f"[bold]{args.persona}[/bold] | Temp: {args.temperature}",
+            border_style="cyan",
+        )
+    )
     console.print(f"[dim]You:[/dim] {args.message}")
     console.print()
 
     with console.status("[cyan]Frage Kimi...[/cyan]"):
-        data = client.chat(args.persona, args.message, args.temperature, args.context, complete=args.complete)
+        data = client.chat(
+            args.persona,
+            args.message,
+            args.temperature,
+            args.context,
+            complete=args.complete,
+        )
 
     if not data:
         console.print("[red]❌ Fehler bei der Anfrage[/red]")
@@ -141,10 +163,14 @@ def cmd_chat(args):
         if args.complete:
             console.print(Markdown(data["response"]))
             if "usage" in data:
-                console.print(f"\n[dim]Tokens: {data['usage']}\nModel: {data.get('model', 'unknown')}[/dim]")
+                console.print(
+                    f"\n[dim]Tokens: {data['usage']}\nModel: {data.get('model', 'unknown')}[/dim]"
+                )
         else:
             console.print("[green]✓ Anfrage akzeptiert[/green]")
-            console.print(f"Prompt Länge: {data.get('system_prompt_length', 0)} chars")
+            console.print(
+                f"Prompt Länge: {data.get('system_prompt_length', 0)} chars"
+            )
     else:
         console.print(f"[red]❌ Fehler: {data.get('error', 'Unknown')}[/red]")
 
@@ -157,7 +183,11 @@ def cmd_prompt(args):
         console.print("[red]❌ Persona nicht gefunden[/red]")
         return 1
 
-    console.print(Panel(prompt, title=f"System Prompt: {args.persona}", border_style="blue"))
+    console.print(
+        Panel(
+            prompt, title=f"System Prompt: {args.persona}", border_style="blue"
+        )
+    )
 
 
 def cmd_admin(args):
@@ -206,7 +236,8 @@ def cmd_interactive(args):
 
     console.print(
         Panel.fit(
-            "[bold]Kimi Personas API Client[/bold]\n" "Befehle: /persona <name>, /temp <0.0-1.0>, /quit",
+            "[bold]Kimi Personas API Client[/bold]\n"
+            "Befehle: /persona <name>, /temp <0.0-1.0>, /quit",
             title="Interactive Mode",
             border_style="green",
         )
@@ -217,7 +248,9 @@ def cmd_interactive(args):
 
     while True:
         try:
-            user_input = console.input(f"[bold cyan]{current_persona}({current_temp})>[/bold cyan] ").strip()
+            user_input = console.input(
+                f"[bold cyan]{current_persona}({current_temp})>[/bold cyan] "
+            ).strip()
 
             if not user_input:
                 continue
@@ -250,20 +283,31 @@ def cmd_interactive(args):
                 elif cmd == "temp":
                     try:
                         current_temp = float(arg)
-                        console.print(f"[green]✓ Temperature:[/green] {current_temp}")
+                        console.print(
+                            f"[green]✓ Temperature:[/green] {current_temp}"
+                        )
                     except Exception:
                         console.print("[red]Ungültige Temperatur[/red]")
                 elif cmd == "prompt":
                     prompt = client.get_prompt(current_persona)
                     if prompt:
-                        console.print(Panel(prompt[:500] + "...", title="System Prompt"))
+                        console.print(
+                            Panel(prompt[:500] + "...", title="System Prompt")
+                        )
                 else:
-                    console.print("[dim]Befehle: /persona, /temp, /prompt, /quit[/dim]")
+                    console.print(
+                        "[dim]Befehle: /persona, /temp, /prompt, /quit[/dim]"
+                    )
                 continue
 
             # Send message
             with console.status("[cyan]Frage...[/cyan]"):
-                data = client.chat(current_persona, user_input, current_temp, complete=args.complete)
+                data = client.chat(
+                    current_persona,
+                    user_input,
+                    current_temp,
+                    complete=args.complete,
+                )
 
             if data and data.get("status") == "success" and args.complete:
                 console.print(Markdown(data["response"]))
@@ -299,8 +343,14 @@ Beispiele:
         """,
     )
 
-    parser.add_argument("--url", default=os.getenv("KIMI_API_URL", DEFAULT_API_URL), help="API Base URL")
-    parser.add_argument("--key", default=os.getenv("KIMI_API_KEY", ""), help="API Key")
+    parser.add_argument(
+        "--url",
+        default=os.getenv("KIMI_API_URL", DEFAULT_API_URL),
+        help="API Base URL",
+    )
+    parser.add_argument(
+        "--key", default=os.getenv("KIMI_API_KEY", ""), help="API Key"
+    )
 
     subparsers = parser.add_subparsers(dest="command", help="Befehle")
 
@@ -309,7 +359,11 @@ Beispiele:
 
     # List
     p_list = subparsers.add_parser("list", help="Liste Personas")
-    p_list.add_argument("--category", choices=["core", "extended"], help="Filter nach Kategorie")
+    p_list.add_argument(
+        "--category",
+        choices=["core", "extended"],
+        help="Filter nach Kategorie",
+    )
 
     # Chat
     p_chat = subparsers.add_parser("chat", help="Chat mit Persona")
@@ -317,7 +371,9 @@ Beispiele:
     p_chat.add_argument("message", help="Nachricht")
     p_chat.add_argument("-t", "--temperature", type=float, default=0.7)
     p_chat.add_argument("-c", "--context", help="Kontext")
-    p_chat.add_argument("--complete", action="store_true", help="Kimi API Integration nutzen")
+    p_chat.add_argument(
+        "--complete", action="store_true", help="Kimi API Integration nutzen"
+    )
 
     # Prompt
     p_prompt = subparsers.add_parser("prompt", help="Zeige System Prompt")
@@ -328,9 +384,15 @@ Beispiele:
     p_admin.add_argument("--logs", action="store_true", help="Zeige Logs")
 
     # Interactive
-    p_interactive = subparsers.add_parser("interactive", help="Interaktiver Modus")
-    p_interactive.add_argument("--persona", default="recon", help="Start-Persona")
-    p_interactive.add_argument("--complete", action="store_true", help="Kimi API Integration")
+    p_interactive = subparsers.add_parser(
+        "interactive", help="Interaktiver Modus"
+    )
+    p_interactive.add_argument(
+        "--persona", default="recon", help="Start-Persona"
+    )
+    p_interactive.add_argument(
+        "--complete", action="store_true", help="Kimi API Integration"
+    )
 
     args = parser.parse_args()
 

@@ -5,7 +5,11 @@ Provides comprehensive comparison capabilities against competitor tools
 including PentestGPT and AutoPentest-DRL.
 """
 
-from .autopentest_comparison import AutoPentestCapabilities, AutoPentestComparator, AutoPentestResultParser
+from .autopentest_comparison import (
+    AutoPentestCapabilities,
+    AutoPentestComparator,
+    AutoPentestResultParser,
+)
 from .common_benchmarks import (
     BenchmarkSuite,
     BenchmarkTestCase,
@@ -16,7 +20,11 @@ from .common_benchmarks import (
     load_test_suite,
     save_test_suite,
 )
-from .pentestgpt_comparison import PentestGPTCapabilities, PentestGPTComparator, PentestGPTResultParser
+from .pentestgpt_comparison import (
+    PentestGPTCapabilities,
+    PentestGPTComparator,
+    PentestGPTResultParser,
+)
 
 __all__ = [
     # Common benchmarks

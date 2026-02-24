@@ -121,7 +121,9 @@ class TestAgentMemory:
     def test_get_context_for_llm(self):
         """Test getting formatted context for LLM."""
         memory = AgentMemory(goal="Test goal", target="test.com")
-        memory.add_to_context_window({"type": "action", "content": "Scan ports"})
+        memory.add_to_context_window(
+            {"type": "action", "content": "Scan ports"}
+        )
         memory.add_to_finding({"type": "vulnerability", "severity": "high"})
 
         context = memory.get_context_for_llm()
@@ -301,11 +303,17 @@ class TestNmapScanner:
         </nmaprun>"""
 
         mock_process = AsyncMock()
-        mock_process.communicate = AsyncMock(return_value=(mock_xml_output.encode(), b""))
+        mock_process.communicate = AsyncMock(
+            return_value=(mock_xml_output.encode(), b"")
+        )
         mock_process.returncode = 0
 
-        with patch("asyncio.create_subprocess_exec", return_value=mock_process):
-            result = await scanner.execute({"target": "scanme.nmap.org", "ports": "80"})
+        with patch(
+            "asyncio.create_subprocess_exec", return_value=mock_process
+        ):
+            result = await scanner.execute(
+                {"target": "scanme.nmap.org", "ports": "80"}
+            )
 
         assert result.success is True
         assert result.tool_name == "NmapScanner"
@@ -317,11 +325,15 @@ class TestNmapScanner:
         scanner = NmapScanner(timeout=1)
 
         mock_process = AsyncMock()
-        mock_process.communicate = AsyncMock(side_effect=asyncio.TimeoutError())
+        mock_process.communicate = AsyncMock(
+            side_effect=asyncio.TimeoutError()
+        )
         mock_process.kill = Mock()
         mock_process.wait = AsyncMock()
 
-        with patch("asyncio.create_subprocess_exec", return_value=mock_process):
+        with patch(
+            "asyncio.create_subprocess_exec", return_value=mock_process
+        ):
             result = await scanner.execute({"target": "scanme.nmap.org"})
 
         assert result.success is False
@@ -332,7 +344,9 @@ class TestNmapScanner:
         """Test Nmap not found error."""
         scanner = NmapScanner()
 
-        with patch("asyncio.create_subprocess_exec", side_effect=FileNotFoundError()):
+        with patch(
+            "asyncio.create_subprocess_exec", side_effect=FileNotFoundError()
+        ):
             result = await scanner.execute({"target": "scanme.nmap.org"})
 
         assert result.success is False
@@ -428,13 +442,19 @@ class TestNucleiScanner:
         """Test successful Nuclei execution."""
         scanner = NucleiScanner()
 
-        mock_json_output = '{"template-id": "test", "info": {"severity": "high"}}\n'
+        mock_json_output = (
+            '{"template-id": "test", "info": {"severity": "high"}}\n'
+        )
 
         mock_process = AsyncMock()
-        mock_process.communicate = AsyncMock(return_value=(mock_json_output.encode(), b""))
+        mock_process.communicate = AsyncMock(
+            return_value=(mock_json_output.encode(), b"")
+        )
         mock_process.returncode = 0
 
-        with patch("asyncio.create_subprocess_exec", return_value=mock_process):
+        with patch(
+            "asyncio.create_subprocess_exec", return_value=mock_process
+        ):
             result = await scanner.execute({"target": "example.com"})
 
         assert result.success is True
@@ -578,7 +598,9 @@ class TestToolRegistry:
         assert nmap_tool is not None
         assert nmap_tool.name == "NmapScanner"
 
-        unknown = registry.get_tool(ToolType(999) if hasattr(ToolType, "_value2member_map_") else None)
+        unknown = registry.get_tool(
+            ToolType(999) if hasattr(ToolType, "_value2member_map_") else None
+        )
         assert unknown is None
 
 
@@ -641,12 +663,18 @@ class TestAutonomousAgentLoop:
         )
 
         with patch.object(
-            agent_loop.tool_registry.get_tool(ToolType.NMAP_SCANNER), "execute", AsyncMock(return_value=mock_result)
+            agent_loop.tool_registry.get_tool(ToolType.NMAP_SCANNER),
+            "execute",
+            AsyncMock(return_value=mock_result),
         ):
             with patch.object(
                 agent_loop.tool_registry.get_tool(ToolType.REPORT_GENERATOR),
                 "execute",
-                AsyncMock(return_value=ToolResult(tool_name="ReportGenerator", success=True, data={})),
+                AsyncMock(
+                    return_value=ToolResult(
+                        tool_name="ReportGenerator", success=True, data={}
+                    )
+                ),
             ):
                 result = await agent_loop.run(
                     goal="Find open ports",
@@ -661,7 +689,9 @@ class TestAutonomousAgentLoop:
     @pytest.mark.asyncio
     async def test_run_with_error(self, agent_loop):
         """Test agent loop with execution error."""
-        with patch.object(agent_loop, "plan", side_effect=Exception("Planning failed")):
+        with patch.object(
+            agent_loop, "plan", side_effect=Exception("Planning failed")
+        ):
             result = await agent_loop.run(goal="Test", target="example.com")
 
         assert result["success"] is False
@@ -671,7 +701,9 @@ class TestAutonomousAgentLoop:
     @pytest.mark.asyncio
     async def test_plan_port_scan(self, agent_loop):
         """Test planning for port scan goal."""
-        agent_loop.memory = AgentMemory(goal="Find open ports", target="example.com")
+        agent_loop.memory = AgentMemory(
+            goal="Find open ports", target="example.com"
+        )
 
         plan = await agent_loop.plan()
 
@@ -681,7 +713,9 @@ class TestAutonomousAgentLoop:
     @pytest.mark.asyncio
     async def test_plan_vulnerability_scan(self, agent_loop):
         """Test planning for vulnerability scan goal."""
-        agent_loop.memory = AgentMemory(goal="Scan for vulnerabilities", target="example.com")
+        agent_loop.memory = AgentMemory(
+            goal="Scan for vulnerabilities", target="example.com"
+        )
 
         plan = await agent_loop.plan()
 
@@ -690,7 +724,9 @@ class TestAutonomousAgentLoop:
     @pytest.mark.asyncio
     async def test_plan_default(self, agent_loop):
         """Test default plan when no specific goal matches."""
-        agent_loop.memory = AgentMemory(goal="Do something generic", target="example.com")
+        agent_loop.memory = AgentMemory(
+            goal="Do something generic", target="example.com"
+        )
 
         plan = await agent_loop.plan()
 
@@ -700,10 +736,14 @@ class TestAutonomousAgentLoop:
     @pytest.mark.asyncio
     async def test_execute_action(self, agent_loop):
         """Test executing an action."""
-        mock_result = ToolResult(tool_name="NmapScanner", success=True, data={})
+        mock_result = ToolResult(
+            tool_name="NmapScanner", success=True, data={}
+        )
 
         with patch.object(
-            agent_loop.tool_registry.get_tool(ToolType.NMAP_SCANNER), "execute", AsyncMock(return_value=mock_result)
+            agent_loop.tool_registry.get_tool(ToolType.NMAP_SCANNER),
+            "execute",
+            AsyncMock(return_value=mock_result),
         ):
             result = await agent_loop.execute_action(
                 {
@@ -736,10 +776,14 @@ class TestAutonomousAgentLoop:
             parameters={"target": "example.com"},
         )
 
-        mock_result = ToolResult(tool_name="NmapScanner", success=True, data={})
+        mock_result = ToolResult(
+            tool_name="NmapScanner", success=True, data={}
+        )
 
         with patch.object(
-            agent_loop.tool_registry.get_tool(ToolType.NMAP_SCANNER), "execute", AsyncMock(return_value=mock_result)
+            agent_loop.tool_registry.get_tool(ToolType.NMAP_SCANNER),
+            "execute",
+            AsyncMock(return_value=mock_result),
         ):
             result = await agent_loop._execute_with_retry(step)
 
@@ -754,10 +798,14 @@ class TestAutonomousAgentLoop:
             parameters={"target": "example.com"},
         )
 
-        mock_result = ToolResult(tool_name="NmapScanner", success=False, error_message="Failed")
+        mock_result = ToolResult(
+            tool_name="NmapScanner", success=False, error_message="Failed"
+        )
 
         with patch.object(
-            agent_loop.tool_registry.get_tool(ToolType.NMAP_SCANNER), "execute", AsyncMock(return_value=mock_result)
+            agent_loop.tool_registry.get_tool(ToolType.NMAP_SCANNER),
+            "execute",
+            AsyncMock(return_value=mock_result),
         ):
             result = await agent_loop._execute_with_retry(step)
 
@@ -765,7 +813,9 @@ class TestAutonomousAgentLoop:
         assert "All 2 attempts failed" in result.error_message
 
     @pytest.mark.asyncio
-    async def test_observe_success(self, agent_loop, sample_agent_memory, sample_tool_result):
+    async def test_observe_success(
+        self, agent_loop, sample_agent_memory, sample_tool_result
+    ):
         """Test observation of successful result."""
         agent_loop.memory = sample_agent_memory
 
@@ -801,7 +851,9 @@ class TestAutonomousAgentLoop:
         assert should_continue is True
 
     @pytest.mark.asyncio
-    async def test_reflect_max_iterations(self, agent_loop, sample_agent_memory):
+    async def test_reflect_max_iterations(
+        self, agent_loop, sample_agent_memory
+    ):
         """Test reflection at max iterations."""
         agent_loop.memory = sample_agent_memory
         agent_loop.progress["current_iteration"] = agent_loop.max_iterations
@@ -811,7 +863,9 @@ class TestAutonomousAgentLoop:
         assert should_continue is False
 
     @pytest.mark.asyncio
-    async def test_reflect_too_many_errors(self, agent_loop, sample_agent_memory):
+    async def test_reflect_too_many_errors(
+        self, agent_loop, sample_agent_memory
+    ):
         """Test reflection with too many errors."""
         agent_loop.memory = sample_agent_memory
         # Add multiple recent errors
@@ -979,11 +1033,15 @@ class TestEdgeCases:
         )
 
         with patch.object(
-            agent_loop.tool_registry.get_tool(ToolType.NMAP_SCANNER), "execute", AsyncMock(return_value=mock_result)
+            agent_loop.tool_registry.get_tool(ToolType.NMAP_SCANNER),
+            "execute",
+            AsyncMock(return_value=mock_result),
         ):
             result = await agent_loop.run(goal="Scan ports", target="invalid")
 
-        assert result["success"] is True  # Agent loop completes even with tool errors
+        assert (
+            result["success"] is True
+        )  # Agent loop completes even with tool errors
 
     @pytest.mark.asyncio
     async def test_callback_exception(self, agent_loop):

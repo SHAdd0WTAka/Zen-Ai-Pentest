@@ -44,7 +44,12 @@ class MasscanIntegration:
         """
         self.rate = rate
 
-    async def scan(self, target: str, ports: str = "1-65535", exclude_file: Optional[str] = None) -> MasscanResult:
+    async def scan(
+        self,
+        target: str,
+        ports: str = "1-65535",
+        exclude_file: Optional[str] = None,
+    ) -> MasscanResult:
         """
         Fast port scan with Masscan
 
@@ -60,7 +65,18 @@ class MasscanIntegration:
 
         start_time = time.time()
 
-        cmd = ["masscan", target, "-p", ports, "--rate", str(self.rate), "-oX", "-", "--wait", "2"]  # XML output to stdout
+        cmd = [
+            "masscan",
+            target,
+            "-p",
+            ports,
+            "--rate",
+            str(self.rate),
+            "-oX",
+            "-",
+            "--wait",
+            "2",
+        ]  # XML output to stdout
 
         if exclude_file:
             cmd.extend(["--excludefile", exclude_file])
@@ -69,10 +85,14 @@ class MasscanIntegration:
 
         try:
             process = await asyncio.create_subprocess_exec(
-                *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+                *cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
             )
 
-            stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=600)  # 10 min timeout
+            stdout, stderr = await asyncio.wait_for(
+                process.communicate(), timeout=600
+            )  # 10 min timeout
 
             # Parse XML output
             ports = []
@@ -94,7 +114,11 @@ class MasscanIntegration:
             duration = time.time() - start_time
 
             return MasscanResult(
-                success=True, ports=ports, command=" ".join(cmd), duration=duration, total_hosts=len(set(p.ip for p in ports))
+                success=True,
+                ports=ports,
+                command=" ".join(cmd),
+                duration=duration,
+                total_hosts=len(set(p.ip for p in ports)),
             )
 
         except asyncio.TimeoutError:

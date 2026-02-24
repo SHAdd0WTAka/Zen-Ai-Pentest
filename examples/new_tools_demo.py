@@ -47,7 +47,10 @@ async def demo_zap():
         },
     )
     print(f"ZAP Scanner initialized for: {scanner.target}")
-    print(f"Options: spider={scanner.options['spider']}, " f"active_scan={scanner.options['active_scan']}")
+    print(
+        f"Options: spider={scanner.options['spider']}, "
+        f"active_scan={scanner.options['active_scan']}"
+    )
 
     # Example 2: Quick scan using LangChain tool
     print("\n--- Example: ZAP Quick Scan Tool ---")
@@ -167,7 +170,10 @@ async def demo_trivy():
     try:
         scanner = TrivyScanner(
             severity=["HIGH", "CRITICAL"],
-            scanners=[TrivyScannerType.VULNERABILITY, TrivyScannerType.MISCONFIGURATION],
+            scanners=[
+                TrivyScannerType.VULNERABILITY,
+                TrivyScannerType.MISCONFIGURATION,
+            ],
             cache_dir="/tmp/trivy-cache",
         )
         print("Trivy Scanner initialized")
@@ -186,7 +192,9 @@ async def demo_trivy():
             print(f"Vulnerabilities: {len(result.vulnerabilities)}")
             print(f"Misconfigurations: {len(result.misconfigurations)}")
             if result.os_info:
-                print(f"OS: {result.os_info.get('Family')} {result.os_info.get('Name')}")
+                print(
+                    f"OS: {result.os_info.get('Family')} {result.os_info.get('Name')}"
+                )
         else:
             print(f"Scan failed: {result.error}")
     except Exception as e:
@@ -236,7 +244,9 @@ async def demo_semgrep():
         if result.success:
             print(f"Scan completed in {result.scan_time:.2f}s")
             print(f"Findings: {len(result.findings)}")
-            owasp_findings = [f for f in result.findings if f.metadata.get("owasp")]
+            owasp_findings = [
+                f for f in result.findings if f.metadata.get("owasp")
+            ]
             print(f"OWASP-related findings: {len(owasp_findings)}")
         else:
             print(f"Scan failed: {result.error}")

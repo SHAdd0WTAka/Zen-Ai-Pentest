@@ -47,14 +47,26 @@ class TestRiskScoringModule:
     def test_calculate_composite_score_max(self):
         """Test max composite score (100)"""
         module = RiskScoringModule()
-        factors = RiskFactors(cvss_score=10.0, epss_score=1.0, business_impact=5, exposure=5, data_sensitivity=5)
+        factors = RiskFactors(
+            cvss_score=10.0,
+            epss_score=1.0,
+            business_impact=5,
+            exposure=5,
+            data_sensitivity=5,
+        )
         score = module.calculate_composite_score(factors)
         assert score == 100.0
 
     def test_calculate_composite_score_min(self):
         """Test min composite score (low values)"""
         module = RiskScoringModule()
-        factors = RiskFactors(cvss_score=0.0, epss_score=0.0, business_impact=1, exposure=1, data_sensitivity=1)
+        factors = RiskFactors(
+            cvss_score=0.0,
+            epss_score=0.0,
+            business_impact=1,
+            exposure=1,
+            data_sensitivity=1,
+        )
         score = module.calculate_composite_score(factors)
         assert score < 20
 

@@ -3,10 +3,17 @@
 
 import os
 import sys
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from github_app_auth import get_installation_token, get_headers, REPO_OWNER, REPO_NAME
 import requests
+from github_app_auth import (
+    REPO_NAME,
+    REPO_OWNER,
+    get_headers,
+    get_installation_token,
+)
+
 
 def get_latest_workflow_run(workflow_name="Test Coverage"):
     """Get latest run ID for a workflow"""
@@ -20,11 +27,12 @@ def get_latest_workflow_run(workflow_name="Test Coverage"):
     response = requests.get(url, headers=headers, params=params)
 
     if response.status_code == 200:
-        runs = response.json().get('workflow_runs', [])
+        runs = response.json().get("workflow_runs", [])
         for run in runs:
-            if run.get('name') == workflow_name:
+            if run.get("name") == workflow_name:
                 return run
     return None
+
 
 def get_run_logs(run_id):
     """Get logs for a specific run"""
@@ -44,11 +52,11 @@ def get_run_logs(run_id):
         print(f"URL: {run.get('html_url')}")
 
         # Get jobs
-        jobs_url = run.get('jobs_url')
+        jobs_url = run.get("jobs_url")
         jobs_resp = requests.get(jobs_url, headers=headers)
 
         if jobs_resp.status_code == 200:
-            jobs = jobs_resp.json().get('jobs', [])
+            jobs = jobs_resp.json().get("jobs", [])
             print(f"\nJobs ({len(jobs)}):")
             for job in jobs:
                 print(f"\n  - {job.get('name')}")
@@ -56,16 +64,17 @@ def get_run_logs(run_id):
                 print(f"    Conclusion: {job.get('conclusion')}")
 
                 # Get steps
-                steps = job.get('steps', [])
+                steps = job.get("steps", [])
                 for step in steps:
-                    if step.get('conclusion') == 'failure':
+                    if step.get("conclusion") == "failure":
                         print(f"    FAILED STEP: {step.get('name')}")
                         print(f"      Status: {step.get('status')}")
                         print(f"      Number: {step.get('number')}")
 
+
 if __name__ == "__main__":
     run = get_latest_workflow_run("Test Coverage")
     if run:
-        get_run_logs(run.get('id'))
+        get_run_logs(run.get("id"))
     else:
         print("No workflow run found")

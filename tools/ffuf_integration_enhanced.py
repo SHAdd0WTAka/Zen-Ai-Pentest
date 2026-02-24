@@ -104,16 +104,22 @@ class FFuFIntegration:
 
         # Add extensions if specified
         if extensions:
-            cmd.extend(["-e", ",".join(f".{e.lstrip('.')}" for e in extensions)])
+            cmd.extend(
+                ["-e", ",".join(f".{e.lstrip('.')}" for e in extensions)]
+            )
 
         logger.info(f"Starting FFuF directory scan: {' '.join(cmd)}")
 
         try:
             process = await asyncio.create_subprocess_exec(
-                *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+                *cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
             )
 
-            stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=300)
+            stdout, stderr = await asyncio.wait_for(
+                process.communicate(), timeout=300
+            )
 
             findings = []
             total_requests = 0
@@ -147,18 +153,33 @@ class FFuFIntegration:
             duration = time.time() - start_time
 
             return FFuFResult(
-                success=True, findings=findings, command=" ".join(cmd), duration=duration, total_requests=total_requests
+                success=True,
+                findings=findings,
+                command=" ".join(cmd),
+                duration=duration,
+                total_requests=total_requests,
             )
 
         except asyncio.TimeoutError:
             logger.error("FFuF scan timed out")
-            return FFuFResult(success=False, error="Scan timeout (300s)", command=" ".join(cmd))
+            return FFuFResult(
+                success=False,
+                error="Scan timeout (300s)",
+                command=" ".join(cmd),
+            )
         except Exception as e:
             logger.error(f"FFuF error: {e}")
-            return FFuFResult(success=False, error=str(e), command=" ".join(cmd))
+            return FFuFResult(
+                success=False, error=str(e), command=" ".join(cmd)
+            )
 
     async def parameter_fuzzing(
-        self, target: str, wordlist: Optional[str] = None, method: str = "GET", data: Optional[str] = None, threads: int = 20
+        self,
+        target: str,
+        wordlist: Optional[str] = None,
+        method: str = "GET",
+        data: Optional[str] = None,
+        threads: int = 20,
     ) -> FFuFResult:
         """
         Parameter fuzzing with FFuF
@@ -198,10 +219,14 @@ class FFuFIntegration:
 
         try:
             process = await asyncio.create_subprocess_exec(
-                *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+                *cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
             )
 
-            stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=300)
+            stdout, stderr = await asyncio.wait_for(
+                process.communicate(), timeout=300
+            )
 
             findings = []
             for line in stdout.decode().strip().split("\n"):
@@ -222,13 +247,20 @@ class FFuFIntegration:
                 except json.JSONDecodeError:
                     continue
 
-            return FFuFResult(success=True, findings=findings, command=" ".join(cmd), duration=time.time() - start_time)
+            return FFuFResult(
+                success=True,
+                findings=findings,
+                command=" ".join(cmd),
+                duration=time.time() - start_time,
+            )
 
         except Exception as e:
             logger.error(f"FFuF parameter fuzzing error: {e}")
             return FFuFResult(success=False, error=str(e))
 
-    async def vhost_discovery(self, target: str, wordlist: Optional[str] = None, threads: int = 40) -> FFuFResult:
+    async def vhost_discovery(
+        self, target: str, wordlist: Optional[str] = None, threads: int = 40
+    ) -> FFuFResult:
         """
         Virtual host discovery
 
@@ -262,10 +294,14 @@ class FFuFIntegration:
 
         try:
             process = await asyncio.create_subprocess_exec(
-                *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+                *cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
             )
 
-            stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=300)
+            stdout, stderr = await asyncio.wait_for(
+                process.communicate(), timeout=300
+            )
 
             findings = []
             for line in stdout.decode().strip().split("\n"):
@@ -284,7 +320,12 @@ class FFuFIntegration:
                 except json.JSONDecodeError:
                     continue
 
-            return FFuFResult(success=True, findings=findings, command=" ".join(cmd), duration=time.time() - start_time)
+            return FFuFResult(
+                success=True,
+                findings=findings,
+                command=" ".join(cmd),
+                duration=time.time() - start_time,
+            )
 
         except Exception as e:
             logger.error(f"FFuF vhost discovery error: {e}")
@@ -293,7 +334,9 @@ class FFuFIntegration:
 
 # Sync wrapper for easier usage
 def directory_bruteforce_sync(
-    target: str, wordlist: Optional[str] = None, extensions: Optional[List[str]] = None
+    target: str,
+    wordlist: Optional[str] = None,
+    extensions: Optional[List[str]] = None,
 ) -> FFuFResult:
     """Synchronous wrapper for directory bruteforcing"""
     ffuf = FFuFIntegration()
@@ -310,7 +353,9 @@ if __name__ == "__main__":
     print("=" * 60)
 
     # Test directory bruteforce
-    result = directory_bruteforce_sync("http://scanme.nmap.org/FUZZ", extensions=["php", "html"])
+    result = directory_bruteforce_sync(
+        "http://scanme.nmap.org/FUZZ", extensions=["php", "html"]
+    )
 
     print(f"Success: {result.success}")
     print(f"Findings: {len(result.findings)}")
@@ -318,4 +363,6 @@ if __name__ == "__main__":
     print(f"Total Requests: {result.total_requests}")
 
     for finding in result.findings[:5]:
-        print(f"  [{finding.status_code}] {finding.url} ({finding.content_length} bytes)")
+        print(
+            f"  [{finding.status_code}] {finding.url} ({finding.content_length} bytes)"
+        )

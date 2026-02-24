@@ -23,7 +23,12 @@ from unittest.mock import AsyncMock, MagicMock, Mock, patch
 import pytest
 
 # Ensure project root is in path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+sys.path.insert(
+    0,
+    os.path.dirname(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    ),
+)
 
 from tools import TOOL_REGISTRY, get_all_tools
 
@@ -41,7 +46,9 @@ def mock_subprocess():
     """Mock subprocess for tool execution."""
     with patch("asyncio.create_subprocess_exec") as mock_exec:
         mock_process = AsyncMock()
-        mock_process.communicate = AsyncMock(return_value=(b"mock output", b""))
+        mock_process.communicate = AsyncMock(
+            return_value=(b"mock output", b"")
+        )
         mock_process.returncode = 0
         mock_exec.return_value = mock_process
         yield mock_exec
@@ -69,7 +76,9 @@ def mock_subprocess_nmap():
 
     with patch("asyncio.create_subprocess_exec") as mock_exec:
         mock_process = AsyncMock()
-        mock_process.communicate = AsyncMock(return_value=(nmap_xml_output, b""))
+        mock_process.communicate = AsyncMock(
+            return_value=(nmap_xml_output, b"")
+        )
         mock_process.returncode = 0
         mock_exec.return_value = mock_process
         yield mock_exec
@@ -80,7 +89,9 @@ def mock_subprocess_error():
     """Mock subprocess that returns an error."""
     with patch("asyncio.create_subprocess_exec") as mock_exec:
         mock_process = AsyncMock()
-        mock_process.communicate = AsyncMock(return_value=(b"", b"command not found"))
+        mock_process.communicate = AsyncMock(
+            return_value=(b"", b"command not found")
+        )
         mock_process.returncode = 127
         mock_exec.return_value = mock_process
         yield mock_exec
@@ -91,7 +102,9 @@ def mock_subprocess_timeout():
     """Mock subprocess that times out."""
     with patch("asyncio.create_subprocess_exec") as mock_exec:
         mock_process = AsyncMock()
-        mock_process.communicate = AsyncMock(side_effect=asyncio.TimeoutError())
+        mock_process.communicate = AsyncMock(
+            side_effect=asyncio.TimeoutError()
+        )
         mock_exec.return_value = mock_process
         yield mock_exec
 
@@ -193,7 +206,9 @@ class TestToolExecutionFlow:
         assert len(result["payloads"]) > 0
 
     @patch("tools.gobuster_integration.gobuster_dir_scan")
-    def test_gobuster_scan_execution(self, mock_gobuster, sample_tool_parameters):
+    def test_gobuster_scan_execution(
+        self, mock_gobuster, sample_tool_parameters
+    ):
         """Test gobuster directory scan execution flow."""
         mock_gobuster.return_value = {
             "status": "success",
@@ -216,7 +231,11 @@ class TestToolExecutionFlow:
             "password": "password123",
         }
 
-        result = mock_hydra(target="192.168.1.1", username="admin", wordlist="/path/to/wordlist.txt")
+        result = mock_hydra(
+            target="192.168.1.1",
+            username="admin",
+            wordlist="/path/to/wordlist.txt",
+        )
 
         assert result["status"] == "success"
         assert result["credentials_found"] is True
@@ -233,13 +252,19 @@ class TestToolParameterValidation:
     def test_nmap_parameter_validation(self):
         """Test nmap parameter validation."""
         # Valid parameters
-        valid_params = {"target": "scanme.nmap.org", "ports": "80,443", "options": "-sV"}
+        valid_params = {
+            "target": "scanme.nmap.org",
+            "ports": "80,443",
+            "options": "-sV",
+        }
 
         # Invalid parameters
         invalid_params = [
             {"target": "", "ports": "80"},  # Empty target
             {"target": "scanme.nmap.org", "ports": "invalid"},  # Invalid ports
-            {"target": "192.168.1.1"},  # Private IP (should be blocked in production)
+            {
+                "target": "192.168.1.1"
+            },  # Private IP (should be blocked in production)
         ]
 
         assert valid_params["target"] != ""
@@ -252,7 +277,11 @@ class TestToolParameterValidation:
     def test_sqlmap_parameter_validation(self):
         """Test sqlmap parameter validation."""
         # Valid parameters
-        valid_params = {"target": "http://example.com/page?id=1", "level": 1, "risk": 1}
+        valid_params = {
+            "target": "http://example.com/page?id=1",
+            "level": 1,
+            "risk": 1,
+        }
 
         assert valid_params["level"] >= 1
         assert valid_params["risk"] >= 0
@@ -273,7 +302,9 @@ class TestToolParameterValidation:
         for target in malicious_targets:
             # Should not contain shell metacharacters
             assert ";" not in target.replace("scanme.nmap.org; rm -rf /", "")
-            assert "&&" not in target.replace("scanme.nmap.org && cat /etc/passwd", "")
+            assert "&&" not in target.replace(
+                "scanme.nmap.org && cat /etc/passwd", ""
+            )
 
 
 # ============================================================================
@@ -297,7 +328,9 @@ class TestErrorHandling:
     @patch("tools.nmap_integration.nmap_scan")
     def test_tool_timeout_error(self, mock_nmap):
         """Test handling when tool execution times out."""
-        mock_nmap.side_effect = asyncio.TimeoutError("Tool execution timed out")
+        mock_nmap.side_effect = asyncio.TimeoutError(
+            "Tool execution timed out"
+        )
 
         with pytest.raises(asyncio.TimeoutError) as exc_info:
             mock_nmap(target="scanme.nmap.org", timeout=1)
@@ -317,7 +350,10 @@ class TestErrorHandling:
     @patch("tools.nmap_integration.nmap_scan")
     def test_tool_invalid_output(self, mock_nmap):
         """Test handling when tool returns invalid output."""
-        mock_nmap.return_value = {"status": "error", "error": "Invalid XML output"}
+        mock_nmap.return_value = {
+            "status": "error",
+            "error": "Invalid XML output",
+        }
 
         result = mock_nmap(target="scanme.nmap.org")
 
@@ -327,7 +363,11 @@ class TestErrorHandling:
     @patch("tools.nmap_integration.nmap_scan")
     def test_tool_non_zero_exit(self, mock_nmap):
         """Test handling when tool returns non-zero exit code."""
-        mock_nmap.return_value = {"status": "error", "exit_code": 1, "stderr": "Error message"}
+        mock_nmap.return_value = {
+            "status": "error",
+            "exit_code": 1,
+            "stderr": "Error message",
+        }
 
         result = mock_nmap(target="scanme.nmap.org")
 
@@ -361,7 +401,9 @@ class TestToolChainExecution:
         assert nmap_result["status"] == "success"
 
         # Then execute gobuster based on nmap results
-        if any(p.get("service") == "http" for p in nmap_result.get("ports", [])):
+        if any(
+            p.get("service") == "http" for p in nmap_result.get("ports", [])
+        ):
             gobuster_result = mock_gobuster(target="http://scanme.nmap.org")
             assert gobuster_result["status"] == "success"
 
@@ -379,16 +421,24 @@ class TestToolChainExecution:
         nmap_result = mock_nmap(target="scanme.nmap.org")
 
         # Conditionally run sqlmap only if HTTP port is open
-        http_open = any(p.get("port") == 80 and p.get("state") == "open" for p in nmap_result.get("ports", []))
+        http_open = any(
+            p.get("port") == 80 and p.get("state") == "open"
+            for p in nmap_result.get("ports", [])
+        )
 
-        if http_open or any(p.get("service") == "http" for p in nmap_result.get("ports", [])):
+        if http_open or any(
+            p.get("service") == "http" for p in nmap_result.get("ports", [])
+        ):
             sqlmap_result = mock_sqlmap(target="http://scanme.nmap.org")
             assert sqlmap_result["status"] == "success"
 
     @patch("tools.nmap_integration.nmap_scan")
     def test_tool_chain_failure_handling(self, mock_nmap):
         """Test handling when one tool in chain fails."""
-        mock_nmap.return_value = {"status": "error", "error": "Network unreachable"}
+        mock_nmap.return_value = {
+            "status": "error",
+            "error": "Network unreachable",
+        }
 
         # First tool fails
         result1 = mock_nmap(target="scanme.nmap.org")
@@ -406,7 +456,9 @@ class TestToolChainExecution:
     async def test_parallel_tool_execution(self):
         """Test running multiple tools in parallel."""
 
-        async def mock_tool_execution(tool_name: str, duration: float) -> Dict[str, Any]:
+        async def mock_tool_execution(
+            tool_name: str, duration: float
+        ) -> Dict[str, Any]:
             await asyncio.sleep(duration)
             return {"tool": tool_name, "status": "success"}
 
@@ -543,7 +595,9 @@ class TestToolSafetyControls:
             # Check for shell metacharacters
             dangerous_chars = [";", "&&", "|", "$(", "`", "#"]
             has_dangerous = any(char in input_str for char in dangerous_chars)
-            assert has_dangerous, f"{input_str} should be identified as dangerous"
+            assert (
+                has_dangerous
+            ), f"{input_str} should be identified as dangerous"
 
     def test_rate_limiting(self):
         """Test rate limiting for tool execution."""
@@ -650,11 +704,15 @@ class TestToolAgentIntegration:
             }
         )
 
-        result = await mock_agent.execute_tool("nmap", {"target": "scanme.nmap.org"})
+        result = await mock_agent.execute_tool(
+            "nmap", {"target": "scanme.nmap.org"}
+        )
 
         assert result["status"] == "success"
         assert result["tool"] == "nmap"
-        mock_agent.execute_tool.assert_called_once_with("nmap", {"target": "scanme.nmap.org"})
+        mock_agent.execute_tool.assert_called_once_with(
+            "nmap", {"target": "scanme.nmap.org"}
+        )
 
     @pytest.mark.asyncio
     async def test_tool_result_processing(self):

@@ -25,7 +25,9 @@ class WordlistConfig:
     include_numbers: bool = True
     include_special: bool = False
     include_years: bool = True
-    years_range: List[int] = field(default_factory=lambda: [2020, 2021, 2022, 2023, 2024, 2025])
+    years_range: List[int] = field(
+        default_factory=lambda: [2020, 2021, 2022, 2023, 2024, 2025]
+    )
     mutations: bool = True
     mutation_level: str = "medium"  # low, medium, high
 
@@ -99,7 +101,17 @@ class WordlistGenerator:
         "25",
     ]
 
-    COMMON_PREFIXES = ["", "The", "My", "Mr", "Ms", "Dr", "Admin", "User", "Test"]
+    COMMON_PREFIXES = [
+        "",
+        "The",
+        "My",
+        "Mr",
+        "Ms",
+        "Dr",
+        "Admin",
+        "User",
+        "Test",
+    ]
 
     SPECIAL_CHARS = ["!", "@", "#", "$", "%", "&", "*", "?", "_", "-"]
 
@@ -188,11 +200,17 @@ class WordlistGenerator:
                     all_words.add(f"{year}{word}")
 
         # Filter by length
-        filtered = {w for w in all_words if self.config.min_length <= len(w) <= self.config.max_length}
+        filtered = {
+            w
+            for w in all_words
+            if self.config.min_length <= len(w) <= self.config.max_length
+        }
 
         return sorted(list(filtered))
 
-    def generate_targeted_wordlist(self, target_info: Dict[str, Any]) -> List[str]:
+    def generate_targeted_wordlist(
+        self, target_info: Dict[str, Any]
+    ) -> List[str]:
         """
         Generate wordlist from target information.
 
@@ -268,7 +286,9 @@ class WordlistGenerator:
 
         return sorted(list(all_words))
 
-    def generate_pattern_wordlist(self, pattern: str, values: Dict[str, List[str]]) -> List[str]:
+    def generate_pattern_wordlist(
+        self, pattern: str, values: Dict[str, List[str]]
+    ) -> List[str]:
         """
         Generate wordlist from pattern.
 
@@ -451,8 +471,23 @@ class WordlistGenerator:
     def _get_industry_words(self, industry: str) -> Set[str]:
         """Get common words for industry"""
         industry_terms = {
-            "tech": ["tech", "software", "digital", "data", "cloud", "cyber", "it"],
-            "finance": ["finance", "bank", "money", "capital", "invest", "trade"],
+            "tech": [
+                "tech",
+                "software",
+                "digital",
+                "data",
+                "cloud",
+                "cyber",
+                "it",
+            ],
+            "finance": [
+                "finance",
+                "bank",
+                "money",
+                "capital",
+                "invest",
+                "trade",
+            ],
             "healthcare": ["health", "medical", "care", "clinic", "patient"],
             "education": ["edu", "school", "learn", "student", "academy"],
             "retail": ["shop", "store", "retail", "sale", "market"],
@@ -527,7 +562,9 @@ class WordlistGenerator:
         # Simple replacements
         for char, replacements in self.LEET_SPEAK.items():
             for replacement in replacements:
-                leet = text.replace(char, replacement).replace(char.upper(), replacement)
+                leet = text.replace(char, replacement).replace(
+                    char.upper(), replacement
+                )
                 results.add(leet)
 
         return results

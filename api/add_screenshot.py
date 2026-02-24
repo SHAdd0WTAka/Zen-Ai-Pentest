@@ -42,7 +42,9 @@ def list_screenshots():
     table.add_column("Größe", style="yellow")
     table.add_column("Datum", style="blue")
 
-    for i, screenshot in enumerate(sorted(screenshots, key=lambda x: x.stat().st_mtime, reverse=True), 1):
+    for i, screenshot in enumerate(
+        sorted(screenshots, key=lambda x: x.stat().st_mtime, reverse=True), 1
+    ):
         stat = screenshot.stat()
         size = f"{stat.st_size / 1024:.1f} KB"
         date = datetime.fromtimestamp(stat.st_mtime).strftime("%Y-%m-%d %H:%M")
@@ -65,7 +67,9 @@ def add_screenshot(source_path, rename=None):
     # Generiere Dateinamen
     if rename:
         filename = rename
-        if not filename.lower().endswith((".png", ".jpg", ".jpeg", ".gif", ".bmp")):
+        if not filename.lower().endswith(
+            (".png", ".jpg", ".jpeg", ".gif", ".bmp")
+        ):
             filename += source.suffix
     else:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -101,15 +105,27 @@ def add_from_downloads():
 
     # Suche nach Screenshots
     screenshots = []
-    for pattern in ["Screenshot*.png", "Screenshot*.jpg", "*zen*.png", "*kimi*.png", "*pentest*.png"]:
+    for pattern in [
+        "Screenshot*.png",
+        "Screenshot*.jpg",
+        "*zen*.png",
+        "*kimi*.png",
+        "*pentest*.png",
+    ]:
         screenshots.extend(downloads_dir.glob(pattern))
 
     if not screenshots:
-        console.print("[yellow]⚠️  Keine Screenshots in Downloads gefunden[/yellow]")
-        console.print("[dim]Suche nach: Screenshot*.png, *zen*.png, *kimi*.png[/dim]")
+        console.print(
+            "[yellow]⚠️  Keine Screenshots in Downloads gefunden[/yellow]"
+        )
+        console.print(
+            "[dim]Suche nach: Screenshot*.png, *zen*.png, *kimi*.png[/dim]"
+        )
         return
 
-    console.print(f"[green]📸 {len(screenshots)} Screenshot(s) in Downloads gefunden:[/green]")
+    console.print(
+        f"[green]📸 {len(screenshots)} Screenshot(s) in Downloads gefunden:[/green]"
+    )
 
     for screenshot in screenshots:
         console.print(f"  • {screenshot.name}")
@@ -123,8 +139,12 @@ def add_from_downloads():
             if add_screenshot(screenshot):
                 success_count += 1
 
-        console.print(f"\n[green]✅ {success_count}/{len(screenshots)} Screenshots kopiert[/green]")
-        console.print("[blue]🌐 Web UI: http://127.0.0.1:5000 → Tab 'Screenshots'[/blue]")
+        console.print(
+            f"\n[green]✅ {success_count}/{len(screenshots)} Screenshots kopiert[/green]"
+        )
+        console.print(
+            "[blue]🌐 Web UI: http://127.0.0.1:5000 → Tab 'Screenshots'[/blue]"
+        )
 
 
 def delete_screenshot(filename):

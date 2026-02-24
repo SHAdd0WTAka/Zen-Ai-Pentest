@@ -71,7 +71,9 @@ class GitHubAPI:
         """Make a GET request to the GitHub API."""
         url = urljoin(self.base_url + "/", endpoint)
         try:
-            response = requests.get(url, headers=self.headers, params=params, timeout=30)
+            response = requests.get(
+                url, headers=self.headers, params=params, timeout=30
+            )
             if response.status_code == 200:
                 return response.json()
             elif response.status_code == 404:
@@ -95,7 +97,9 @@ class GitHubAPI:
             params["page"] = page
             url = urljoin(self.base_url + "/", endpoint)
             try:
-                response = requests.get(url, headers=self.headers, params=params, timeout=30)
+                response = requests.get(
+                    url, headers=self.headers, params=params, timeout=30
+                )
                 if response.status_code != 200:
                     break
 
@@ -174,12 +178,22 @@ class HealthAnalyzer:
             self.metrics.issues_details = {"error": "Could not fetch issues"}
             return
 
-        open_issues = [i for i in issues if i.get("state") == "open" and "pull_request" not in i]
-        closed_issues = [i for i in issues if i.get("state") == "closed" and "pull_request" not in i]
+        open_issues = [
+            i
+            for i in issues
+            if i.get("state") == "open" and "pull_request" not in i
+        ]
+        closed_issues = [
+            i
+            for i in issues
+            if i.get("state") == "closed" and "pull_request" not in i
+        ]
 
         stale_issues = []
         for issue in open_issues:
-            updated_at = datetime.fromisoformat(issue["updated_at"].replace("Z", "+00:00"))
+            updated_at = datetime.fromisoformat(
+                issue["updated_at"].replace("Z", "+00:00")
+            )
             if updated_at.replace(tzinfo=None) < self.stale_date:
                 stale_issues.append(issue)
 
@@ -192,7 +206,9 @@ class HealthAnalyzer:
             stale_ratio = len(stale_issues) / max(len(open_issues), 1)
 
             # Score based on open ratio and stale issues
-            self.metrics.issues_score = max(0, 100 - (open_ratio * 30) - (stale_ratio * 40))
+            self.metrics.issues_score = max(
+                0, 100 - (open_ratio * 30) - (stale_ratio * 40)
+            )
 
         self.metrics.issues_details = {
             "total": total_issues,
@@ -205,11 +221,18 @@ class HealthAnalyzer:
         # Count critical issues
         critical_labels = ["critical", "security", "bug", "crash", "error"]
         critical_count = sum(
-            1 for i in open_issues if any(label["name"].lower() in critical_labels for label in i.get("labels", []))
+            1
+            for i in open_issues
+            if any(
+                label["name"].lower() in critical_labels
+                for label in i.get("labels", [])
+            )
         )
         self.metrics.critical_issues += critical_count
 
-        print(f"   ✓ Issues: {len(open_issues)} open, {len(stale_issues)} stale, score: {self.metrics.issues_score:.1f}")
+        print(
+            f"   ✓ Issues: {len(open_issues)} open, {len(stale_issues)} stale, score: {self.metrics.issues_score:.1f}"
+        )
 
     def _analyze_prs(self) -> None:
         """Analyze pull requests."""
@@ -230,7 +253,9 @@ class HealthAnalyzer:
         conflict_prs = []
 
         for pr in open_prs:
-            updated_at = datetime.fromisoformat(pr["updated_at"].replace("Z", "+00:00"))
+            updated_at = datetime.fromisoformat(
+                pr["updated_at"].replace("Z", "+00:00")
+            )
             if updated_at.replace(tzinfo=None) < self.stale_pr_date:
                 stale_prs.append(pr)
 
@@ -247,7 +272,13 @@ class HealthAnalyzer:
             stale_ratio = len(stale_prs) / max(len(open_prs), 1)
             conflict_ratio = len(conflict_prs) / max(len(open_prs), 1)
 
-            self.metrics.prs_score = max(0, 100 - (open_ratio * 20) - (stale_ratio * 30) - (conflict_ratio * 50))
+            self.metrics.prs_score = max(
+                0,
+                100
+                - (open_ratio * 20)
+                - (stale_ratio * 30)
+                - (conflict_ratio * 50),
+            )
 
         self.metrics.prs_details = {
             "total": total_prs,
@@ -271,12 +302,16 @@ class HealthAnalyzer:
 
         if branches is None:
             self.metrics.branches_score = 50.0
-            self.metrics.branches_details = {"error": "Could not fetch branches"}
+            self.metrics.branches_details = {
+                "error": "Could not fetch branches"
+            }
             return
 
         # Get default branch
         repo_info = self.api.get("")
-        default_branch = repo_info.get("default_branch", "main") if repo_info else "main"
+        default_branch = (
+            repo_info.get("default_branch", "main") if repo_info else "main"
+        )
 
         # Get all PRs to check which branches are associated
         prs = self.api.get_all_pages("pulls", {"state": "all"})
@@ -298,9 +333,16 @@ class HealthAnalyzer:
             # Get branch details
             branch_detail = self.api.get(f"branches/{branch_name}")
             if branch_detail:
-                commit_date_str = branch_detail.get("commit", {}).get("commit", {}).get("committer", {}).get("date")
+                commit_date_str = (
+                    branch_detail.get("commit", {})
+                    .get("commit", {})
+                    .get("committer", {})
+                    .get("date")
+                )
                 if commit_date_str:
-                    commit_date = datetime.fromisoformat(commit_date_str.replace("Z", "+00:00"))
+                    commit_date = datetime.fromisoformat(
+                        commit_date_str.replace("Z", "+00:00")
+                    )
                     if commit_date.replace(tzinfo=None) < self.orphaned_date:
                         orphaned_branches.append(branch_name)
 
@@ -315,7 +357,9 @@ class HealthAnalyzer:
             protected_ratio = protected_count / total_branches
             orphaned_ratio = orphaned_count / total_branches
 
-            self.metrics.branches_score = max(0, 100 - (orphaned_ratio * 40) + (protected_ratio * 10))
+            self.metrics.branches_score = max(
+                0, 100 - (orphaned_ratio * 40) + (protected_ratio * 10)
+            )
 
         self.metrics.branches_details = {
             "total": total_branches,
@@ -338,7 +382,9 @@ class HealthAnalyzer:
 
         if runs is None or "workflow_runs" not in runs:
             self.metrics.actions_score = 50.0
-            self.metrics.actions_details = {"error": "Could not fetch workflow runs"}
+            self.metrics.actions_details = {
+                "error": "Could not fetch workflow runs"
+            }
             return
 
         workflow_runs = runs["workflow_runs"]
@@ -348,21 +394,32 @@ class HealthAnalyzer:
         recent_runs = [
             r
             for r in workflow_runs
-            if datetime.fromisoformat(r["created_at"].replace("Z", "+00:00")).replace(tzinfo=None) > thirty_days_ago
+            if datetime.fromisoformat(
+                r["created_at"].replace("Z", "+00:00")
+            ).replace(tzinfo=None)
+            > thirty_days_ago
         ]
 
         if not recent_runs:
             self.metrics.actions_score = 75.0  # Neutral if no recent runs
-            self.metrics.actions_details = {"total_runs": 0, "success_rate": 0, "message": "No workflow runs in last 30 days"}
+            self.metrics.actions_details = {
+                "total_runs": 0,
+                "success_rate": 0,
+                "message": "No workflow runs in last 30 days",
+            }
             return
 
-        successful_runs = [r for r in recent_runs if r["conclusion"] == "success"]
+        successful_runs = [
+            r for r in recent_runs if r["conclusion"] == "success"
+        ]
         failed_runs = [r for r in recent_runs if r["conclusion"] == "failure"]
 
         success_rate = len(successful_runs) / len(recent_runs) * 100
 
         # Calculate score based on success rate
-        self.metrics.actions_score = min(100, success_rate * 1.2)  # Give bonus for high success rate
+        self.metrics.actions_score = min(
+            100, success_rate * 1.2
+        )  # Give bonus for high success rate
 
         self.metrics.actions_details = {
             "total_runs": len(recent_runs),
@@ -394,9 +451,15 @@ class HealthAnalyzer:
             if dependabot is not None:
                 security_details["dependabot_enabled"] = True
                 if isinstance(dependabot, list):
-                    critical_vulns = [a for a in dependabot if a.get("severity") in ["critical", "high"]]
+                    critical_vulns = [
+                        a
+                        for a in dependabot
+                        if a.get("severity") in ["critical", "high"]
+                    ]
                     security_details["vulnerabilities"] = len(dependabot)
-                    security_details["critical_vulnerabilities"] = len(critical_vulns)
+                    security_details["critical_vulnerabilities"] = len(
+                        critical_vulns
+                    )
                     security_score -= len(critical_vulns) * 15
                     security_score -= len(dependabot) * 2
         except Exception as e:
@@ -405,7 +468,9 @@ class HealthAnalyzer:
         # Check for CodeQL workflow
         workflows = self.api.get("contents/.github/workflows")
         if workflows:
-            codeql_files = [w for w in workflows if "codeql" in w.get("name", "").lower()]
+            codeql_files = [
+                w for w in workflows if "codeql" in w.get("name", "").lower()
+            ]
             security_details["codeql_enabled"] = len(codeql_files) > 0
             if not security_details["codeql_enabled"]:
                 security_score -= 10
@@ -417,13 +482,17 @@ class HealthAnalyzer:
             security_details["archived"] = repo_info.get("archived", False)
 
             if security_details["archived"]:
-                security_score = 50.0  # Archived repos get neutral security score
+                security_score = (
+                    50.0  # Archived repos get neutral security score
+                )
 
         self.metrics.security_score = max(0, security_score)
         self.metrics.security_details = security_details
 
         # Update critical issues count
-        self.metrics.critical_issues += security_details.get("critical_vulnerabilities", 0)
+        self.metrics.critical_issues += security_details.get(
+            "critical_vulnerabilities", 0
+        )
 
         print(
             f"   ✓ Security: Dependabot={security_details['dependabot_enabled']}, "
@@ -447,8 +516,13 @@ class HealthAnalyzer:
 
         if not is_fork:
             self.metrics.sync_score = 100.0
-            self.metrics.sync_details = {"is_fork": False, "message": "Not a fork repository"}
-            print(f"   ✓ Sync: Not a fork, score: {self.metrics.sync_score:.1f}")
+            self.metrics.sync_details = {
+                "is_fork": False,
+                "message": "Not a fork repository",
+            }
+            print(
+                f"   ✓ Sync: Not a fork, score: {self.metrics.sync_score:.1f}"
+            )
             return
 
         # For forks, check if behind upstream
@@ -481,10 +555,16 @@ class HealthAnalyzer:
                 }
             else:
                 self.metrics.sync_score = 75.0
-                self.metrics.sync_details = {"is_fork": True, "message": "Could not compare with upstream"}
+                self.metrics.sync_details = {
+                    "is_fork": True,
+                    "message": "Could not compare with upstream",
+                }
         else:
             self.metrics.sync_score = 75.0
-            self.metrics.sync_details = {"is_fork": True, "message": "No parent repository info"}
+            self.metrics.sync_details = {
+                "is_fork": True,
+                "message": "No parent repository info",
+            }
 
         print(
             f"   ✓ Sync: Fork, behind by {self.metrics.sync_details.get('behind_by', 'unknown')}, "
@@ -494,7 +574,14 @@ class HealthAnalyzer:
     def _calculate_overall_score(self) -> None:
         """Calculate the overall health score."""
         # Weights for each component
-        weights = {"issues": 0.20, "prs": 0.10, "branches": 0.10, "actions": 0.25, "security": 0.25, "sync": 0.10}
+        weights = {
+            "issues": 0.20,
+            "prs": 0.10,
+            "branches": 0.10,
+            "actions": 0.25,
+            "security": 0.25,
+            "sync": 0.10,
+        }
 
         self.metrics.overall_score = (
             self.metrics.issues_score * weights["issues"]
@@ -519,37 +606,58 @@ class HealthAnalyzer:
             )
 
         if self.metrics.issues_details.get("open", 0) > 50:
-            recommendations.append(f"📝 Consider triaging {self.metrics.issues_details['open']} open issues")
+            recommendations.append(
+                f"📝 Consider triaging {self.metrics.issues_details['open']} open issues"
+            )
 
         # PR recommendations
         if self.metrics.prs_details.get("conflicts", 0) > 0:
-            recommendations.append(f"🔀 Resolve merge conflicts in {self.metrics.prs_details['conflicts']} PRs")
+            recommendations.append(
+                f"🔀 Resolve merge conflicts in {self.metrics.prs_details['conflicts']} PRs"
+            )
 
         if self.metrics.prs_details.get("stale", 0) > 3:
-            recommendations.append(f"🔀 Review {self.metrics.prs_details['stale']} stale PRs")
+            recommendations.append(
+                f"🔀 Review {self.metrics.prs_details['stale']} stale PRs"
+            )
 
         # Branch recommendations
         if self.metrics.branches_details.get("orphaned", 0) > 5:
-            recommendations.append(f"🌿 Clean up {self.metrics.branches_details['orphaned']} orphaned branches")
+            recommendations.append(
+                f"🌿 Clean up {self.metrics.branches_details['orphaned']} orphaned branches"
+            )
 
         # Actions recommendations
         if self.metrics.actions_details.get("success_rate", 100) < 80:
             success_rate = self.metrics.actions_details.get("success_rate", 0)
-            recommendations.append(f"⚙️ Investigate workflow failures (current success rate: {success_rate}%)")
+            recommendations.append(
+                f"⚙️ Investigate workflow failures (current success rate: {success_rate}%)"
+            )
 
         # Security recommendations
         if not self.metrics.security_details.get("dependabot_enabled"):
-            recommendations.append("🔒 Enable Dependabot for automated dependency updates")
+            recommendations.append(
+                "🔒 Enable Dependabot for automated dependency updates"
+            )
 
         if not self.metrics.security_details.get("codeql_enabled"):
-            recommendations.append("🔒 Add CodeQL workflow for security analysis")
+            recommendations.append(
+                "🔒 Add CodeQL workflow for security analysis"
+            )
 
         if self.metrics.security_details.get("vulnerabilities", 0) > 0:
-            recommendations.append(f"🔒 Address {self.metrics.security_details['vulnerabilities']} security vulnerabilities")
+            recommendations.append(
+                f"🔒 Address {self.metrics.security_details['vulnerabilities']} security vulnerabilities"
+            )
 
         # Sync recommendations
-        if self.metrics.sync_details.get("is_fork") and self.metrics.sync_details.get("behind_by", 0) > 0:
-            recommendations.append(f"🔄 Sync fork with upstream (behind by {self.metrics.sync_details['behind_by']} commits)")
+        if (
+            self.metrics.sync_details.get("is_fork")
+            and self.metrics.sync_details.get("behind_by", 0) > 0
+        ):
+            recommendations.append(
+                f"🔄 Sync fork with upstream (behind by {self.metrics.sync_details['behind_by']} commits)"
+            )
 
         self.metrics.recommendations = recommendations
 
@@ -558,7 +666,11 @@ class HealthAnalyzer:
     def generate_report(self) -> str:
         """Generate a markdown report."""
         score = self.metrics.overall_score
-        status = "🟢 Healthy" if score >= 80 else "🟡 Needs Attention" if score >= 50 else "🔴 Critical"
+        status = (
+            "🟢 Healthy"
+            if score >= 80
+            else "🟡 Needs Attention" if score >= 50 else "🔴 Critical"
+        )
 
         report = f"""# Repository Health Report
 
@@ -681,13 +793,19 @@ See `.github/health-trends/` for historical data.
                 status = (
                     "Healthy"
                     if self.metrics.overall_score >= 80
-                    else "Needs Attention" if self.metrics.overall_score >= 50 else "Critical"
+                    else (
+                        "Needs Attention"
+                        if self.metrics.overall_score >= 50
+                        else "Critical"
+                    )
                 )
                 f.write(f"health_status={status}\n")
 
                 f.write("report_file=health-report.md\n")
                 f.write(f"critical_issues={self.metrics.critical_issues}\n")
-                f.write(f"has_recommendations={'true' if self.metrics.recommendations else 'false'}\n")
+                f.write(
+                    f"has_recommendations={'true' if self.metrics.recommendations else 'false'}\n"
+                )
 
         print()
         print("💾 Outputs saved:")

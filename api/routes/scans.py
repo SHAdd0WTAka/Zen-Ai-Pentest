@@ -7,7 +7,14 @@ Create, manage, and monitor penetration testing scans.
 from datetime import datetime
 from typing import List, Optional
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
+from fastapi import (
+    APIRouter,
+    BackgroundTasks,
+    Depends,
+    HTTPException,
+    Query,
+    status,
+)
 from pydantic import BaseModel, Field
 
 from api.core.auth import get_current_user
@@ -43,7 +50,9 @@ class ScanResponse(BaseModel):
     error_message: Optional[str]
 
 
-@router.post("/", response_model=ScanResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/", response_model=ScanResponse, status_code=status.HTTP_201_CREATED
+)
 async def create_scan(
     scan_data: ScanCreate,
     background_tasks: BackgroundTasks,
@@ -56,7 +65,8 @@ async def create_scan(
     Use the scan ID to check progress and retrieve results.
     """
     scan = Scan(
-        name=scan_data.name or f"Scan-{datetime.now().strftime('%Y%m%d-%H%M%S')}",
+        name=scan_data.name
+        or f"Scan-{datetime.now().strftime('%Y%m%d-%H%M%S')}",
         target=scan_data.target,
         scan_type=scan_data.scan_type,
         description=scan_data.description,
@@ -92,7 +102,9 @@ async def list_scans(
 
 
 @router.get("/{scan_id}", response_model=ScanResponse)
-async def get_scan(scan_id: str, current_user: User = Depends(get_current_user)):
+async def get_scan(
+    scan_id: str, current_user: User = Depends(get_current_user)
+):
     """Get scan details by ID"""
     scan = await Scan.find_one(id=scan_id, created_by=current_user.id)
     if not scan:
@@ -101,7 +113,9 @@ async def get_scan(scan_id: str, current_user: User = Depends(get_current_user))
 
 
 @router.post("/{scan_id}/stop")
-async def stop_scan(scan_id: str, current_user: User = Depends(get_current_user)):
+async def stop_scan(
+    scan_id: str, current_user: User = Depends(get_current_user)
+):
     """Stop a running scan"""
     scan = await Scan.find_one(id=scan_id, created_by=current_user.id)
     if not scan:
@@ -115,7 +129,9 @@ async def stop_scan(scan_id: str, current_user: User = Depends(get_current_user)
 
 
 @router.delete("/{scan_id}")
-async def delete_scan(scan_id: str, current_user: User = Depends(get_current_user)):
+async def delete_scan(
+    scan_id: str, current_user: User = Depends(get_current_user)
+):
     """Delete a scan and all associated data"""
     scan = await Scan.find_one(id=scan_id, created_by=current_user.id)
     if not scan:

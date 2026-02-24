@@ -7,7 +7,12 @@ Erweiterung des ReAct Agents für isolierte VM-basierte Pentests.
 import logging
 from typing import List
 
-from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
+from langchain_core.messages import (
+    AIMessage,
+    HumanMessage,
+    SystemMessage,
+    ToolMessage,
+)
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, START, StateGraph
 
@@ -50,7 +55,9 @@ class VMReActAgent(ReActAgent):
         self.tools = []
         self.graph = self._build_graph_with_vm()
 
-        logger.info(f"VMReActAgent initialisiert (VM: {self.vm_config.vm_name})")
+        logger.info(
+            f"VMReActAgent initialisiert (VM: {self.vm_config.vm_name})"
+        )
 
     def _build_graph_with_vm(self):
         """Baut Graph mit VM-Tools"""
@@ -81,19 +88,29 @@ Wenn fertig, gib eine finale Zusammenfassung."""
             if state["iteration"] >= state["max_iterations"]:
                 return {
                     **state,
-                    "messages": state["messages"] + [AIMessage(content="Maximale Iterationen erreicht.")],
+                    "messages": state["messages"]
+                    + [AIMessage(content="Maximale Iterationen erreicht.")],
                     "status": "completed",
                 }
 
-            messages = [SystemMessage(content=system_prompt)] + state["messages"]
+            messages = [SystemMessage(content=system_prompt)] + state[
+                "messages"
+            ]
             response = llm_with_tools.invoke(messages)
 
-            return {**state, "messages": [response], "iteration": state["iteration"] + 1}
+            return {
+                **state,
+                "messages": [response],
+                "iteration": state["iteration"] + 1,
+            }
 
         def tools_node(state: AgentState) -> AgentState:
             last_message = state["messages"][-1]
 
-            if not hasattr(last_message, "tool_calls") or not last_message.tool_calls:
+            if (
+                not hasattr(last_message, "tool_calls")
+                or not last_message.tool_calls
+            ):
                 return state
 
             tool_messages = []
@@ -110,16 +127,31 @@ Wenn fertig, gib eine finale Zusammenfassung."""
                     tool_func = {t.name: t for t in self.tools}.get(tool_name)
                     if tool_func:
                         result = tool_func.invoke(args)
-                        tool_messages.append(ToolMessage(content=result, tool_call_id=tool_id))
-                        new_findings.append({"tool": tool_name, "args": args, "result": result})
+                        tool_messages.append(
+                            ToolMessage(content=result, tool_call_id=tool_id)
+                        )
+                        new_findings.append(
+                            {"tool": tool_name, "args": args, "result": result}
+                        )
                     else:
-                        tool_messages.append(ToolMessage(content=f"Tool {tool_name} nicht gefunden", tool_call_id=tool_id))
+                        tool_messages.append(
+                            ToolMessage(
+                                content=f"Tool {tool_name} nicht gefunden",
+                                tool_call_id=tool_id,
+                            )
+                        )
                 except Exception as e:
                     error_msg = f"VM-Tool-Fehler: {str(e)}"
                     logger.error(error_msg)
-                    tool_messages.append(ToolMessage(content=error_msg, tool_call_id=tool_id))
+                    tool_messages.append(
+                        ToolMessage(content=error_msg, tool_call_id=tool_id)
+                    )
 
-            return {**state, "messages": tool_messages, "findings": state["findings"] + new_findings}
+            return {
+                **state,
+                "messages": tool_messages,
+                "findings": state["findings"] + new_findings,
+            }
 
         def should_continue(state: AgentState):
             last_message = state["messages"][-1]
@@ -139,8 +171,16 @@ Wenn fertig, gib eine finale Zusammenfassung."""
         workflow.add_node("agent", agent_node)
         workflow.add_node("tools", tools_node)
         workflow.add_edge(START, "agent")
-        workflow.add_conditional_edges("agent", should_continue, {"tools": "tools", "agent": "agent", "end": END})
-        workflow.add_conditional_edges("tools", should_continue, {"tools": "tools", "agent": "agent", "end": END})
+        workflow.add_conditional_edges(
+            "agent",
+            should_continue,
+            {"tools": "tools", "agent": "agent", "end": END},
+        )
+        workflow.add_conditional_edges(
+            "tools",
+            should_continue,
+            {"tools": "tools", "agent": "agent", "end": END},
+        )
 
         checkpointer = MemorySaver()
         return workflow.compile(checkpointer=checkpointer)
@@ -155,20 +195,32 @@ Wenn fertig, gib eine finale Zusammenfassung."""
             if not self.session_id:
                 return "Keine aktive Session"
 
-            port_arg = "--top-ports 100" if ports == "top-100" else f"-p {ports}"
+            port_arg = (
+                "--top-ports 100" if ports == "top-100" else f"-p {ports}"
+            )
             exit_code, stdout, stderr = self.sandbox.execute_tool(
-                self.session_id, "nmap", f"{port_arg} {target}", config.vm_username, config.vm_password
+                self.session_id,
+                "nmap",
+                f"{port_arg} {target}",
+                config.vm_username,
+                config.vm_password,
             )
             return stdout if exit_code == 0 else stderr
 
         @tool
-        def vm_nuclei_scan(target: str, severity: str = "critical,high") -> str:
+        def vm_nuclei_scan(
+            target: str, severity: str = "critical,high"
+        ) -> str:
             """Scannt nach CVEs in VM mit Nuclei"""
             if not self.session_id:
                 return "Keine aktive Session"
 
             exit_code, stdout, stderr = self.sandbox.execute_tool(
-                self.session_id, "nuclei", f"-u {target} -s {severity}", config.vm_username, config.vm_password
+                self.session_id,
+                "nuclei",
+                f"-u {target} -s {severity}",
+                config.vm_username,
+                config.vm_password,
             )
             return stdout if exit_code == 0 else stderr
 
@@ -191,9 +243,18 @@ Wenn fertig, gib eine finale Zusammenfassung."""
         def restore_vm_snapshot(snapshot_name: str = "clean_state") -> str:
             """Stellt VM-Snapshot wieder her"""
             success = self.vbox.restore_snapshot(config.vm_name, snapshot_name)
-            return f"Snapshot {snapshot_name} wiederhergestellt" if success else "Fehler"
+            return (
+                f"Snapshot {snapshot_name} wiederhergestellt"
+                if success
+                else "Fehler"
+            )
 
-        return [vm_nmap_scan, vm_nuclei_scan, vm_gobuster_scan, restore_vm_snapshot]
+        return [
+            vm_nmap_scan,
+            vm_nuclei_scan,
+            vm_gobuster_scan,
+            restore_vm_snapshot,
+        ]
 
     def run(self, target: str, objective: str = "comprehensive scan") -> dict:
         """Führt VM-basierten Pentest durch"""
@@ -208,9 +269,13 @@ Wenn fertig, gib eine finale Zusammenfassung."""
 
             if self.vm_config.auto_restore_snapshot:
                 logger.info("Stelle clean_state Snapshot wieder her...")
-                self.vbox.restore_snapshot(self.vm_config.vm_name, "clean_state")
+                self.vbox.restore_snapshot(
+                    self.vm_config.vm_name, "clean_state"
+                )
 
-            if not self.sandbox.create_session(self.session_id, self.vm_config.vm_name):
+            if not self.sandbox.create_session(
+                self.session_id, self.vm_config.vm_name
+            ):
                 raise RuntimeError("Konnte VM-Session nicht starten")
 
         try:
@@ -224,11 +289,18 @@ Wenn fertig, gib eine finale Zusammenfassung."""
                 "status": "running",
             }
 
-            result = self.graph.invoke(initial_state, config={"configurable": {"thread_id": self.session_id}})
+            result = self.graph.invoke(
+                initial_state,
+                config={"configurable": {"thread_id": self.session_id}},
+            )
 
             return {
                 "findings": result["findings"],
-                "final_message": result["messages"][-1].content if result["messages"] else "",
+                "final_message": (
+                    result["messages"][-1].content
+                    if result["messages"]
+                    else ""
+                ),
                 "iterations": result["iteration"],
                 "status": result["status"],
                 "target": target,
@@ -252,10 +324,17 @@ def get_vm_agent(config: VMAgentConfig = None) -> VMReActAgent:
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
 
-    config = VMAgentConfig(use_vm=True, vm_name="kali-pentest", max_iterations=5, auto_restore_snapshot=True)
+    config = VMAgentConfig(
+        use_vm=True,
+        vm_name="kali-pentest",
+        max_iterations=5,
+        auto_restore_snapshot=True,
+    )
 
     agent = VMReActAgent(config)
-    result = agent.run("scanme.nmap.org", "Port scan and vulnerability assessment")
+    result = agent.run(
+        "scanme.nmap.org", "Port scan and vulnerability assessment"
+    )
 
     print("\n" + "=" * 70)
     print("VM-BASIERTER PENTEST ABGESCHLOSSEN")

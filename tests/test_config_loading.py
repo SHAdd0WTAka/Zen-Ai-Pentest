@@ -159,7 +159,11 @@ def test_exception_types():
 
 def test_json_operations():
     """Test JSON handling"""
-    data = {"tool": "nmap", "target": "scanme.nmap.org", "options": ["-sV", "-O"]}
+    data = {
+        "tool": "nmap",
+        "target": "scanme.nmap.org",
+        "options": ["-sV", "-O"],
+    }
 
     # Serialize
     json_str = json.dumps(data)

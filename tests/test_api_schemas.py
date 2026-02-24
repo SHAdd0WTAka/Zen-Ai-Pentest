@@ -127,7 +127,11 @@ class TestUserCreate:
 
     def test_valid_user_create(self):
         """Test valid user creation data"""
-        data = {"username": "testuser", "password": "password123", "role": "user"}
+        data = {
+            "username": "testuser",
+            "password": "password123",
+            "role": "user",
+        }
         user = UserCreate(**data)
         assert user.username == "testuser"
         assert user.password == "password123"
@@ -142,7 +146,9 @@ class TestUserCreate:
     def test_invalid_role(self):
         """Test invalid role validation"""
         with pytest.raises(ValidationError) as exc_info:
-            UserCreate(username="testuser", password="password123", role="superadmin")
+            UserCreate(
+                username="testuser", password="password123", role="superadmin"
+            )
         assert "role" in str(exc_info.value)
 
 
@@ -169,7 +175,13 @@ class TestTokenResponse:
 
     def test_token_response_without_refresh(self):
         """Test token response without refresh token (backward compatibility)"""
-        data = {"access_token": "token123", "token_type": "bearer", "expires_in": 900, "username": "testuser", "role": "user"}
+        data = {
+            "access_token": "token123",
+            "token_type": "bearer",
+            "expires_in": 900,
+            "username": "testuser",
+            "role": "user",
+        }
         token = TokenResponse(**data)
         assert token.refresh_token is None
 
@@ -195,7 +207,12 @@ class TestScanBase:
 
     def test_valid_scan_base(self):
         """Test valid scan base data"""
-        data = {"name": "Test Scan", "target": "example.com", "scan_type": "full", "config": {"ports": "80,443"}}
+        data = {
+            "name": "Test Scan",
+            "target": "example.com",
+            "scan_type": "full",
+            "config": {"ports": "80,443"},
+        }
         scan = ScanBase(**data)
         assert scan.name == "Test Scan"
         assert scan.target == "example.com"
@@ -204,7 +221,11 @@ class TestScanBase:
 
     def test_scan_base_default_config(self):
         """Test scan base with default config"""
-        data = {"name": "Test Scan", "target": "example.com", "scan_type": "full"}
+        data = {
+            "name": "Test Scan",
+            "target": "example.com",
+            "scan_type": "full",
+        }
         scan = ScanBase(**data)
         assert scan.config == {}
 
@@ -232,13 +253,22 @@ class TestScanCreate:
 
     def test_valid_scan_create(self):
         """Test valid scan creation"""
-        data = {"name": "Test Scan", "target": "example.com", "scan_type": "full", "objective": "comprehensive security scan"}
+        data = {
+            "name": "Test Scan",
+            "target": "example.com",
+            "scan_type": "full",
+            "objective": "comprehensive security scan",
+        }
         scan = ScanCreate(**data)
         assert scan.objective == "comprehensive security scan"
 
     def test_default_objective(self):
         """Test default objective"""
-        data = {"name": "Test Scan", "target": "example.com", "scan_type": "full"}
+        data = {
+            "name": "Test Scan",
+            "target": "example.com",
+            "scan_type": "full",
+        }
         scan = ScanCreate(**data)
         assert scan.objective == "comprehensive security scan"
 
@@ -348,7 +378,11 @@ class TestFindingCreate:
 
     def test_valid_finding_create(self):
         """Test valid finding creation"""
-        data = {"title": "XSS Vulnerability", "description": "Reflected XSS found", "severity": Severity.CRITICAL}
+        data = {
+            "title": "XSS Vulnerability",
+            "description": "Reflected XSS found",
+            "severity": Severity.CRITICAL,
+        }
         finding = FindingCreate(**data)
         assert finding.title == "XSS Vulnerability"
 
@@ -359,7 +393,14 @@ class TestFindingResponse:
     def test_valid_finding_response(self):
         """Test valid finding response"""
         now = datetime.utcnow()
-        data = {"id": 1, "scan_id": 1, "title": "Test Finding", "severity": Severity.HIGH, "created_at": now, "verified": 1}
+        data = {
+            "id": 1,
+            "scan_id": 1,
+            "title": "Test Finding",
+            "severity": Severity.HIGH,
+            "created_at": now,
+            "verified": 1,
+        }
         finding = FindingResponse(**data)
         assert finding.id == 1
         assert finding.scan_id == 1
@@ -368,7 +409,12 @@ class TestFindingResponse:
     def test_default_verified(self):
         """Test default verified value"""
         now = datetime.utcnow()
-        data = {"id": 1, "scan_id": 1, "title": "Test Finding", "created_at": now}
+        data = {
+            "id": 1,
+            "scan_id": 1,
+            "title": "Test Finding",
+            "created_at": now,
+        }
         finding = FindingResponse(**data)
         assert finding.verified == 0
 
@@ -378,7 +424,11 @@ class TestFindingUpdate:
 
     def test_valid_finding_update(self):
         """Test valid finding update"""
-        data = {"severity": Severity.LOW, "verified": 1, "remediation": "Fixed in v2.0"}
+        data = {
+            "severity": Severity.LOW,
+            "verified": 1,
+            "remediation": "Fixed in v2.0",
+        }
         update = FindingUpdate(**data)
         assert update.severity == Severity.LOW
         assert update.verified == 1
@@ -394,7 +444,11 @@ class TestReportBase:
 
     def test_valid_report_base(self):
         """Test valid report base data"""
-        data = {"scan_id": 1, "format": ReportFormat.PDF, "template": "executive"}
+        data = {
+            "scan_id": 1,
+            "format": ReportFormat.PDF,
+            "template": "executive",
+        }
         report = ReportBase(**data)
         assert report.scan_id == 1
         assert report.format == ReportFormat.PDF
@@ -470,7 +524,12 @@ class TestToolExecuteResponse:
 
     def test_valid_tool_execute_response(self):
         """Test valid tool execution response"""
-        data = {"scan_id": 1, "status": "started", "message": "Tool execution started", "estimated_duration": 300}
+        data = {
+            "scan_id": 1,
+            "status": "started",
+            "message": "Tool execution started",
+            "estimated_duration": 300,
+        }
         resp = ToolExecuteResponse(**data)
         assert resp.scan_id == 1
         assert resp.status == "started"
@@ -524,7 +583,13 @@ class TestRecentActivity:
     def test_valid_recent_activity(self):
         """Test valid recent activity"""
         now = datetime.utcnow()
-        data = {"id": 1, "type": "scan", "description": "Scan completed", "timestamp": now, "user": "admin"}
+        data = {
+            "id": 1,
+            "type": "scan",
+            "description": "Scan completed",
+            "timestamp": now,
+            "user": "admin",
+        }
         activity = RecentActivity(**data)
         assert activity.type == "scan"
         assert activity.user == "admin"
@@ -548,7 +613,13 @@ class TestDashboardResponse:
                 "reports_generated": 3,
             },
             "recent_activities": [
-                {"id": 1, "type": "scan", "description": "Scan completed", "timestamp": now, "user": "admin"}
+                {
+                    "id": 1,
+                    "type": "scan",
+                    "description": "Scan completed",
+                    "timestamp": now,
+                    "user": "admin",
+                }
             ],
             "scans_by_status": {"pending": 2, "running": 1, "completed": 7},
             "findings_by_severity": {"critical": 5, "high": 15},
@@ -568,7 +639,12 @@ class TestWSMessage:
 
     def test_valid_ws_message(self):
         """Test valid WebSocket message"""
-        data = {"type": "status", "scan_id": 1, "message": "Scan started", "data": {"progress": 50}}
+        data = {
+            "type": "status",
+            "scan_id": 1,
+            "message": "Scan started",
+            "data": {"progress": 50},
+        }
         msg = WSMessage(**data)
         assert msg.type == "status"
         assert msg.scan_id == 1
@@ -586,7 +662,11 @@ class TestWSCommand:
 
     def test_valid_ws_command(self):
         """Test valid WebSocket command"""
-        data = {"action": "start", "scan_id": 1, "parameters": {"target": "example.com"}}
+        data = {
+            "action": "start",
+            "scan_id": 1,
+            "parameters": {"target": "example.com"},
+        }
         cmd = WSCommand(**data)
         assert cmd.action == "start"
         assert cmd.scan_id == 1
@@ -602,7 +682,11 @@ class TestNotificationBase:
 
     def test_valid_notification_base(self):
         """Test valid notification base"""
-        data = {"type": "scan_complete", "title": "Scan Completed", "message": "Your scan has completed successfully"}
+        data = {
+            "type": "scan_complete",
+            "title": "Scan Completed",
+            "message": "Your scan has completed successfully",
+        }
         notif = NotificationBase(**data)
         assert notif.type == "scan_complete"
         assert notif.title == "Scan Completed"
@@ -613,7 +697,12 @@ class TestNotificationCreate:
 
     def test_valid_notification_create(self):
         """Test valid notification creation"""
-        data = {"type": "alert", "title": "Critical Finding", "message": "Critical vulnerability detected", "user_id": 1}
+        data = {
+            "type": "alert",
+            "title": "Critical Finding",
+            "message": "Critical vulnerability detected",
+            "user_id": 1,
+        }
         notif = NotificationCreate(**data)
         assert notif.user_id == 1
 
@@ -704,7 +793,10 @@ class TestVulnerabilityDBResponse:
             "severity": "critical",
             "cvss_score": 9.8,
             "epss_score": 0.95,
-            "affected_products": ["Example Software 1.0", "Example Software 1.1"],
+            "affected_products": [
+                "Example Software 1.0",
+                "Example Software 1.1",
+            ],
             "references": ["https://example.com/advisory"],
             "exploits": ["https://exploit-db.com/example"],
         }
@@ -757,7 +849,13 @@ class TestPaginatedResponse:
 
     def test_valid_paginated_response(self):
         """Test valid paginated response"""
-        data = {"items": [{"id": 1}, {"id": 2}], "total": 100, "page": 1, "page_size": 20, "pages": 5}
+        data = {
+            "items": [{"id": 1}, {"id": 2}],
+            "total": 100,
+            "page": 1,
+            "page_size": 20,
+            "pages": 5,
+        }
         resp = PaginatedResponse(**data)
         assert len(resp.items) == 2
         assert resp.total == 100
@@ -790,7 +888,11 @@ class TestScheduledScanCreate:
 
     def test_default_values(self):
         """Test default values"""
-        data = {"name": "Test Schedule", "target": "example.com", "schedule_time": "02:00"}
+        data = {
+            "name": "Test Schedule",
+            "target": "example.com",
+            "schedule_time": "02:00",
+        }
         scan = ScheduledScanCreate(**data)
         assert scan.scan_type == "comprehensive"
         assert scan.frequency == ScheduleFrequency.WEEKLY
@@ -799,29 +901,61 @@ class TestScheduledScanCreate:
     def test_schedule_time_format_validation(self):
         """Test schedule time format validation"""
         # Valid times
-        ScheduledScanCreate(name="Test", target="example.com", schedule_time="00:00")
-        ScheduledScanCreate(name="Test", target="example.com", schedule_time="23:59")
-        ScheduledScanCreate(name="Test", target="example.com", schedule_time="9:30")
+        ScheduledScanCreate(
+            name="Test", target="example.com", schedule_time="00:00"
+        )
+        ScheduledScanCreate(
+            name="Test", target="example.com", schedule_time="23:59"
+        )
+        ScheduledScanCreate(
+            name="Test", target="example.com", schedule_time="9:30"
+        )
 
         # Invalid times
         with pytest.raises(ValidationError):
-            ScheduledScanCreate(name="Test", target="example.com", schedule_time="25:00")
+            ScheduledScanCreate(
+                name="Test", target="example.com", schedule_time="25:00"
+            )
         with pytest.raises(ValidationError):
-            ScheduledScanCreate(name="Test", target="example.com", schedule_time="12:60")
+            ScheduledScanCreate(
+                name="Test", target="example.com", schedule_time="12:60"
+            )
         with pytest.raises(ValidationError):
-            ScheduledScanCreate(name="Test", target="example.com", schedule_time="invalid")
+            ScheduledScanCreate(
+                name="Test", target="example.com", schedule_time="invalid"
+            )
 
     def test_schedule_day_validation(self):
         """Test schedule day validation"""
         # Valid days
-        ScheduledScanCreate(name="Test", target="example.com", schedule_time="02:00", schedule_day=0)
-        ScheduledScanCreate(name="Test", target="example.com", schedule_time="02:00", schedule_day=6)
+        ScheduledScanCreate(
+            name="Test",
+            target="example.com",
+            schedule_time="02:00",
+            schedule_day=0,
+        )
+        ScheduledScanCreate(
+            name="Test",
+            target="example.com",
+            schedule_time="02:00",
+            schedule_day=6,
+        )
 
         # Invalid days
         with pytest.raises(ValidationError):
-            ScheduledScanCreate(name="Test", target="example.com", schedule_time="02:00", schedule_day=-1)
+            ScheduledScanCreate(
+                name="Test",
+                target="example.com",
+                schedule_time="02:00",
+                schedule_day=-1,
+            )
         with pytest.raises(ValidationError):
-            ScheduledScanCreate(name="Test", target="example.com", schedule_time="02:00", schedule_day=7)
+            ScheduledScanCreate(
+                name="Test",
+                target="example.com",
+                schedule_time="02:00",
+                schedule_day=7,
+            )
 
 
 class TestScheduledScanUpdate:
@@ -829,7 +963,11 @@ class TestScheduledScanUpdate:
 
     def test_valid_scheduled_scan_update(self):
         """Test valid scheduled scan update"""
-        data = {"name": "Updated Schedule", "enabled": False, "last_run_status": "completed"}
+        data = {
+            "name": "Updated Schedule",
+            "enabled": False,
+            "last_run_status": "completed",
+        }
         update = ScheduledScanUpdate(**data)
         assert update.name == "Updated Schedule"
         assert update.enabled is False
@@ -910,7 +1048,13 @@ class TestSerialization:
     def test_finding_response_dict_serialization(self):
         """Test FindingResponse dict serialization"""
         now = datetime.utcnow()
-        finding = FindingResponse(id=1, scan_id=1, title="Test Finding", severity=Severity.HIGH, created_at=now)
+        finding = FindingResponse(
+            id=1,
+            scan_id=1,
+            title="Test Finding",
+            severity=Severity.HIGH,
+            created_at=now,
+        )
         data = finding.model_dump()
         assert data["title"] == "Test Finding"
         assert data["severity"] == "high"
@@ -941,13 +1085,18 @@ class TestEdgeCases:
 
     def test_unicode_support(self):
         """Test unicode support in strings"""
-        scan = ScanCreate(name="スキャン", target="例え.com", scan_type="full")  # Japanese  # Japanese domain
+        scan = ScanCreate(
+            name="スキャン", target="例え.com", scan_type="full"
+        )  # Japanese  # Japanese domain
         assert scan.name == "スキャン"
         assert scan.target == "例え.com"
 
     def test_special_characters(self):
         """Test special characters in strings"""
-        finding = FindingBase(title="Test <script>alert(1)</script>", description="Test with 'quotes' and \"double quotes\"")
+        finding = FindingBase(
+            title="Test <script>alert(1)</script>",
+            description="Test with 'quotes' and \"double quotes\"",
+        )
         assert "<script>" in finding.title
 
     def test_very_long_strings(self):
@@ -968,7 +1117,10 @@ class TestEdgeCases:
             name="Test",
             target="example.com",
             scan_type="full",
-            config={"nmap": {"ports": "80,443", "scripts": ["vuln", "safe"]}, "timeout": 300},
+            config={
+                "nmap": {"ports": "80,443", "scripts": ["vuln", "safe"]},
+                "timeout": 300,
+            },
         )
         assert scan.config["nmap"]["ports"] == "80,443"
         assert len(scan.config["nmap"]["scripts"]) == 2

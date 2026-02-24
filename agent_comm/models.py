@@ -66,8 +66,12 @@ class MessageContext(BaseModel):
     session_id: str
     scan_id: Optional[str] = None
     risk_score: Optional[float] = Field(None, ge=0.0, le=10.0)
-    safety_level: Literal["non_destructive", "low_risk", "medium_risk", "high_risk", "manual"] = "non_destructive"
-    environment: Optional[Dict[str, Any]] = None  # e.g., {"vm_id": "vm-kali-01"}
+    safety_level: Literal[
+        "non_destructive", "low_risk", "medium_risk", "high_risk", "manual"
+    ] = "non_destructive"
+    environment: Optional[Dict[str, Any]] = (
+        None  # e.g., {"vm_id": "vm-kali-01"}
+    )
 
 
 class AgentMessage(BaseModel):
@@ -107,7 +111,8 @@ class AgentMessage(BaseModel):
     type: str = Field(
         ...,
         description=(
-            "Message type: reason, act, observe, reflect, delegate, " "delegate_task, error, complete, status_update, cancel"
+            "Message type: reason, act, observe, reflect, delegate, "
+            "delegate_task, error, complete, status_update, cancel"
         ),
     )
     priority: int = Field(default=PriorityLevel.NORMAL, ge=0, le=4)
@@ -133,8 +138,13 @@ class AgentMessage(BaseModel):
         if msg_type == MessageType.ACT and not v.action:
             raise ValueError("'act' messages must have 'action' field")
 
-        if msg_type in (MessageType.OBSERVE, MessageType.REFLECT) and not v.observation:
-            raise ValueError(f"'{msg_type}' messages should contain 'observation'")
+        if (
+            msg_type in (MessageType.OBSERVE, MessageType.REFLECT)
+            and not v.observation
+        ):
+            raise ValueError(
+                f"'{msg_type}' messages should contain 'observation'"
+            )
 
         if msg_type == MessageType.DELEGATE_TASK and not v.task_description:
             raise ValueError("'delegate_task' requires 'task_description'")
@@ -196,11 +206,21 @@ class MessageTemplates:
                 parameters=parameters or {},
             ),
             targets=[assignee] if isinstance(assignee, str) else assignee,
-            context=MessageContext(target=target, session_id=session_id, safety_level="medium_risk"),
+            context=MessageContext(
+                target=target,
+                session_id=session_id,
+                safety_level="medium_risk",
+            ),
         )
 
     @staticmethod
-    def create_status_update(agent_id: str, session_id: str, status: str, progress_percent: int, target: str) -> AgentMessage:
+    def create_status_update(
+        agent_id: str,
+        session_id: str,
+        status: str,
+        progress_percent: int,
+        target: str,
+    ) -> AgentMessage:
         """Create a status_update message"""
         return AgentMessage(
             message_id=f"msg_status_{datetime.utcnow().strftime('%Y%m%d%H%M%S')}",
@@ -208,7 +228,13 @@ class MessageTemplates:
             session_id=session_id,
             type=MessageType.STATUS_UPDATE,
             priority=PriorityLevel.NORMAL,
-            content=MessageContent(observation=status, result={"progress": progress_percent}),
+            content=MessageContent(
+                observation=status, result={"progress": progress_percent}
+            ),
             targets=["orchestrator"],
-            context=MessageContext(target=target, session_id=session_id, safety_level="non_destructive"),
+            context=MessageContext(
+                target=target,
+                session_id=session_id,
+                safety_level="non_destructive",
+            ),
         )

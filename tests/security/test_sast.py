@@ -36,7 +36,12 @@ class TestSQLInjection:
         project_root = Path(__file__).parent.parent.parent
         python_files = []
 
-        for pattern in ["core/**/*.py", "api/**/*.py", "modules/**/*.py", "agents/**/*.py"]:
+        for pattern in [
+            "core/**/*.py",
+            "api/**/*.py",
+            "modules/**/*.py",
+            "agents/**/*.py",
+        ]:
             python_files.extend(project_root.glob(pattern))
 
         return [f for f in python_files if f.is_file()]
@@ -61,7 +66,9 @@ class TestSQLInjection:
                         }
                     )
 
-        assert len(violations) == 0, f"SQL Injection Risiken gefunden: {violations}"
+        assert (
+            len(violations) == 0
+        ), f"SQL Injection Risiken gefunden: {violations}"
 
     def test_parameterized_queries_used(self):
         """SAST: Parametrisierte Queries werden verwendet"""
@@ -73,8 +80,13 @@ class TestSQLInjection:
             # Suche nach execute-Aufrufen
             if "execute(" in content:
                 # Prüfe ob parametrisierte Queries verwendet werden
-                if not re.search(r'execute\s*\(\s*["\'][^"\']*\?[^"\']*["\']\s*,', content):
-                    if not re.search(r'execute\s*\(\s*["\'][^"\']*%s[^"\']*["\']\s*,', content):
+                if not re.search(
+                    r'execute\s*\(\s*["\'][^"\']*\?[^"\']*["\']\s*,', content
+                ):
+                    if not re.search(
+                        r'execute\s*\(\s*["\'][^"\']*%s[^"\']*["\']\s*,',
+                        content,
+                    ):
                         # Könnte ein Problem sein, aber wir müssen kontextuell prüfen
                         pass  # Manuelle Überprüfung erforderlich
 
@@ -108,7 +120,11 @@ class TestXSSVulnerabilities:
                 matches = re.finditer(pattern, content, re.IGNORECASE)
                 for match in matches:
                     violations.append(
-                        {"file": str(file_path), "line": content[: match.start()].count("\n") + 1, "match": match.group()}
+                        {
+                            "file": str(file_path),
+                            "line": content[: match.start()].count("\n") + 1,
+                            "match": match.group(),
+                        }
                     )
 
         assert len(violations) == 0, f"XSS Risiken gefunden: {violations}"
@@ -145,7 +161,9 @@ class TestHardcodedSecrets:
 
         for file_path in source_files:
             # Ausschluss von Test- und Beispieldateien
-            if any(excluded in str(file_path) for excluded in self.EXCLUDED_FILES):
+            if any(
+                excluded in str(file_path) for excluded in self.EXCLUDED_FILES
+            ):
                 continue
 
             try:
@@ -155,14 +173,27 @@ class TestHardcodedSecrets:
                     matches = re.finditer(pattern, content, re.IGNORECASE)
                     for match in matches:
                         # Prüfe ob es sich um einen Platzhalter handelt
-                        if not re.search(r"(placeholder|example|test|dummy|xxx|your_)", match.group(), re.IGNORECASE):
+                        if not re.search(
+                            r"(placeholder|example|test|dummy|xxx|your_)",
+                            match.group(),
+                            re.IGNORECASE,
+                        ):
                             violations.append(
-                                {"file": str(file_path), "type": description, "line": content[: match.start()].count("\n") + 1}
+                                {
+                                    "file": str(file_path),
+                                    "type": description,
+                                    "line": content[: match.start()].count(
+                                        "\n"
+                                    )
+                                    + 1,
+                                }
                             )
             except Exception:
                 continue
 
-        assert len(violations) == 0, f"Hardcodierte Secrets gefunden: {violations}"
+        assert (
+            len(violations) == 0
+        ), f"Hardcodierte Secrets gefunden: {violations}"
 
 
 class TestInsecureDeserialization:
@@ -197,10 +228,21 @@ class TestInsecureDeserialization:
                     if "pickle.loads" in line:
                         # Kontext prüfen
                         context = "\n".join(lines[max(0, i - 3) : i + 1])
-                        if "trusted" not in context.lower() and "safe" not in context.lower():
-                            violations.append({"file": str(file_path), "line": i + 1, "context": line.strip()})
+                        if (
+                            "trusted" not in context.lower()
+                            and "safe" not in context.lower()
+                        ):
+                            violations.append(
+                                {
+                                    "file": str(file_path),
+                                    "line": i + 1,
+                                    "context": line.strip(),
+                                }
+                            )
 
-        assert len(violations) == 0, f"Unsichere pickle Verwendung: {violations}"
+        assert (
+            len(violations) == 0
+        ), f"Unsichere pickle Verwendung: {violations}"
 
     def test_yaml_safe_load(self):
         """SAST: yaml.safe_load statt yaml.load verwenden"""
@@ -212,9 +254,16 @@ class TestInsecureDeserialization:
 
             # Suche nach yaml.load ohne Loader
             if re.search(r"yaml\.load\s*\([^)]*\)(?!.*Loader)", content):
-                violations.append({"file": str(file_path), "issue": "yaml.load ohne Loader Parameter"})
+                violations.append(
+                    {
+                        "file": str(file_path),
+                        "issue": "yaml.load ohne Loader Parameter",
+                    }
+                )
 
-        assert len(violations) == 0, f"Unsichere yaml.load Verwendung: {violations}"
+        assert (
+            len(violations) == 0
+        ), f"Unsichere yaml.load Verwendung: {violations}"
 
 
 class TestCommandInjection:
@@ -249,10 +298,24 @@ class TestCommandInjection:
                         context = "\n".join(lines[max(0, i - 5) : i + 1])
 
                         # Prüfe ob Benutzereingaben involviert sind
-                        if re.search(r"(request|input|param|arg)", context, re.IGNORECASE):
+                        if re.search(
+                            r"(request|input|param|arg)",
+                            context,
+                            re.IGNORECASE,
+                        ):
                             # Prüfe ob Input validiert wird
-                            if not re.search(r"(validate|sanitize|escape)", context, re.IGNORECASE):
-                                violations.append({"file": str(file_path), "line": i + 1, "context": line.strip()})
+                            if not re.search(
+                                r"(validate|sanitize|escape)",
+                                context,
+                                re.IGNORECASE,
+                            ):
+                                violations.append(
+                                    {
+                                        "file": str(file_path),
+                                        "line": i + 1,
+                                        "context": line.strip(),
+                                    }
+                                )
 
         assert len(violations) == 0, f"Command Injection Risiken: {violations}"
 
@@ -281,15 +344,25 @@ class TestPathTraversal:
             content = file_path.read_text()
 
             # Suche nach Dateioperationen mit Benutzereingaben
-            if re.search(r"open\s*\([^)]*(request|input|param)", content, re.IGNORECASE):
+            if re.search(
+                r"open\s*\([^)]*(request|input|param)", content, re.IGNORECASE
+            ):
                 lines = content.split("\n")
                 for i, line in enumerate(lines):
-                    if "open(" in line and re.search(r"(request|input|param)", line, re.IGNORECASE):
+                    if "open(" in line and re.search(
+                        r"(request|input|param)", line, re.IGNORECASE
+                    ):
                         context = "\n".join(lines[max(0, i - 5) : i + 1])
 
                         # Prüfe ob Path Traversal Schutz vorhanden
-                        if not re.search(r"(sanitize|validate|realpath|abspath)", context, re.IGNORECASE):
-                            violations.append({"file": str(file_path), "line": i + 1})
+                        if not re.search(
+                            r"(sanitize|validate|realpath|abspath)",
+                            context,
+                            re.IGNORECASE,
+                        ):
+                            violations.append(
+                                {"file": str(file_path), "line": i + 1}
+                            )
 
         assert len(violations) == 0, f"Path Traversal Risiken: {violations}"
 
@@ -320,7 +393,13 @@ class TestInsecureCryptography:
 
             for algo in ["md5", "sha1"]:
                 if f"hashlib.{algo}" in content:
-                    violations.append({"file": str(file_path), "algorithm": algo, "issue": "Weak hashing algorithm"})
+                    violations.append(
+                        {
+                            "file": str(file_path),
+                            "algorithm": algo,
+                            "issue": "Weak hashing algorithm",
+                        }
+                    )
 
         assert len(violations) == 0, f"Schwache Kryptographie: {violations}"
 
@@ -335,10 +414,19 @@ class TestInsecureCryptography:
             # Suche nach unsicherem random
             if re.search(r"import\s+random\s*\n[^#]*random\.", content):
                 # Prüfe ob es für kryptographische Zwecke verwendet wird
-                if re.search(r"(token|password|key|secret)", content, re.IGNORECASE):
-                    violations.append({"file": str(file_path), "issue": "Insecure random for cryptographic use"})
+                if re.search(
+                    r"(token|password|key|secret)", content, re.IGNORECASE
+                ):
+                    violations.append(
+                        {
+                            "file": str(file_path),
+                            "issue": "Insecure random for cryptographic use",
+                        }
+                    )
 
-        assert len(violations) == 0, f"Unsichere Zufallszahlengenerierung: {violations}"
+        assert (
+            len(violations) == 0
+        ), f"Unsichere Zufallszahlengenerierung: {violations}"
 
 
 class TestSSRFProtection:
@@ -358,16 +446,26 @@ class TestSSRFProtection:
             content = file_path.read_text()
 
             # Suche nach HTTP-Requests mit Benutzereingaben
-            if re.search(r"(requests\.(get|post)|urllib|http\.client)", content):
+            if re.search(
+                r"(requests\.(get|post)|urllib|http\.client)", content
+            ):
                 lines = content.split("\n")
                 for i, line in enumerate(lines):
                     if re.search(r"(requests\.(get|post)|urllib)", line):
                         context = "\n".join(lines[max(0, i - 5) : i + 1])
 
                         # Prüfe ob URL validiert wird
-                        if re.search(r"(request|input|param)", context, re.IGNORECASE):
-                            if not re.search(r"(validate|whitelist|allowlist)", context, re.IGNORECASE):
-                                violations.append({"file": str(file_path), "line": i + 1})
+                        if re.search(
+                            r"(request|input|param)", context, re.IGNORECASE
+                        ):
+                            if not re.search(
+                                r"(validate|whitelist|allowlist)",
+                                context,
+                                re.IGNORECASE,
+                            ):
+                                violations.append(
+                                    {"file": str(file_path), "line": i + 1}
+                                )
 
         assert len(violations) == 0, f"SSRF Risiken: {violations}"
 
@@ -425,9 +523,16 @@ class TestInputValidation:
                         # Prüfe ob der nächsten Zeilen Validation haben
                         context = "\n".join(lines[i : min(i + 10, len(lines))])
 
-                        if "request" in context.lower() or "body" in context.lower():
-                            if not re.search(r"(BaseModel|validator|Field)", context):
-                                violations.append({"file": str(file_path), "line": i + 1})
+                        if (
+                            "request" in context.lower()
+                            or "body" in context.lower()
+                        ):
+                            if not re.search(
+                                r"(BaseModel|validator|Field)", context
+                            ):
+                                violations.append(
+                                    {"file": str(file_path), "line": i + 1}
+                                )
 
         assert len(violations) == 0, f"Fehlende Input Validation: {violations}"
 
@@ -441,7 +546,10 @@ class TestBanditScan:
 
         try:
             result = subprocess.run(
-                ["bandit", "-r", str(project_root), "-f", "json"], capture_output=True, text=True, timeout=300
+                ["bandit", "-r", str(project_root), "-f", "json"],
+                capture_output=True,
+                text=True,
+                timeout=300,
             )
 
             if result.returncode == 0:
@@ -453,9 +561,15 @@ class TestBanditScan:
 
                 try:
                     findings = json.loads(result.stdout)
-                    high_severity = [r for r in findings.get("results", []) if r["issue_severity"] in ["HIGH", "CRITICAL"]]
+                    high_severity = [
+                        r
+                        for r in findings.get("results", [])
+                        if r["issue_severity"] in ["HIGH", "CRITICAL"]
+                    ]
 
-                    assert len(high_severity) == 0, f"Bandit fand kritische Probleme: {high_severity}"
+                    assert (
+                        len(high_severity) == 0
+                    ), f"Bandit fand kritische Probleme: {high_severity}"
                 except json.JSONDecodeError:
                     pass  # Bandit nicht installiert oder kein JSON Output
 

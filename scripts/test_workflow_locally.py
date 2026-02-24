@@ -75,7 +75,9 @@ def print_warning(text: str):
     print(f"{Fore.YELLOW}[WARN]{Style.RESET_ALL} {text}")
 
 
-def run_command(cmd: List[str], timeout: int = 300, env: dict = None) -> Tuple[int, str, str]:
+def run_command(
+    cmd: List[str], timeout: int = 300, env: dict = None
+) -> Tuple[int, str, str]:
     """
     Run a command and return (exit_code, stdout, stderr)
 
@@ -95,7 +97,9 @@ def run_command(cmd: List[str], timeout: int = 300, env: dict = None) -> Tuple[i
     full_env["PYTHONIOENCODING"] = "utf-8"
 
     try:
-        result = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout, env=full_env)
+        result = subprocess.run(
+            cmd, capture_output=True, text=True, timeout=timeout, env=full_env
+        )
         return result.returncode, result.stdout, result.stderr
     except subprocess.TimeoutExpired:
         return -1, "", f"Command timed out after {timeout} seconds"
@@ -108,10 +112,14 @@ def check_python_version() -> bool:
     print_step("Checking Python version...")
     version = sys.version_info
     if version.major == 3 and version.minor >= 9:
-        print_success(f"Python {version.major}.{version.minor}.{version.micro} is supported")
+        print_success(
+            f"Python {version.major}.{version.minor}.{version.micro} is supported"
+        )
         return True
     else:
-        print_error(f"Python {version.major}.{version.minor} is not supported (requires 3.9+)")
+        print_error(
+            f"Python {version.major}.{version.minor} is not supported (requires 3.9+)"
+        )
         return False
 
 
@@ -138,12 +146,16 @@ def check_dependencies() -> bool:
             missing_optional.append(pkg)
 
     if missing_required:
-        print_error(f"Missing required packages: {', '.join(missing_required)}")
+        print_error(
+            f"Missing required packages: {', '.join(missing_required)}"
+        )
         print("  Install with: pip install -r requirements.txt")
         return False
 
     if missing_optional:
-        print_warning(f"Missing optional packages: {', '.join(missing_optional)}")
+        print_warning(
+            f"Missing optional packages: {', '.join(missing_optional)}"
+        )
         print("  Some checks will be skipped")
     else:
         print_success("All dependencies found")
@@ -205,7 +217,18 @@ def run_quick_tests() -> bool:
     for test_file in test_files:
         if os.path.exists(test_file):
             print(f"  Running {test_file}...")
-            code, stdout, stderr = run_command(["python", "-m", "pytest", test_file, "-v", "--tb=short", "-x"], timeout=60)
+            code, stdout, stderr = run_command(
+                [
+                    "python",
+                    "-m",
+                    "pytest",
+                    test_file,
+                    "-v",
+                    "--tb=short",
+                    "-x",
+                ],
+                timeout=60,
+            )
             if code == 0:
                 print_success(f"{test_file} passed")
             else:
@@ -253,7 +276,9 @@ def run_lint_checks() -> bool:
 
     # Ruff check
     print("  Running ruff...")
-    code, stdout, stderr = run_command(["ruff", "check", ".", "--output-format=text"])
+    code, stdout, stderr = run_command(
+        ["ruff", "check", ".", "--output-format=text"]
+    )
     if code == 0:
         print_success("Ruff check passed")
     else:
@@ -262,7 +287,9 @@ def run_lint_checks() -> bool:
 
     # Black check
     print("  Running black...")
-    code, stdout, stderr = run_command(["black", "--check", "--diff", "--line-length", "127", "."])
+    code, stdout, stderr = run_command(
+        ["black", "--check", "--diff", "--line-length", "127", "."]
+    )
     if code == 0:
         print_success("Black check passed")
     else:
@@ -276,7 +303,10 @@ def run_security_scan() -> bool:
     """Run security scan with bandit"""
     print_step("Running security scan...")
 
-    code, stdout, stderr = run_command(["bandit", "-r", "core/", "modules/", "tools/", "-f", "screen", "-ll"], timeout=60)
+    code, stdout, stderr = run_command(
+        ["bandit", "-r", "core/", "modules/", "tools/", "-f", "screen", "-ll"],
+        timeout=60,
+    )
 
     if code == 0:
         print_success("No security issues found")
@@ -324,11 +354,17 @@ def create_test_summary(results: dict):
     failed = total - passed
 
     for check, result in results.items():
-        status = f"{Fore.GREEN}PASS{Style.RESET_ALL}" if result else f"{Fore.RED}FAIL{Style.RESET_ALL}"
+        status = (
+            f"{Fore.GREEN}PASS{Style.RESET_ALL}"
+            if result
+            else f"{Fore.RED}FAIL{Style.RESET_ALL}"
+        )
         print(f"  {check:.<40} {status}")
 
     print("\n" + "-" * 60)
-    print(f"Total: {total} | Passed: {Fore.GREEN}{passed}{Style.RESET_ALL} | Failed: {Fore.RED}{failed}{Style.RESET_ALL}")
+    print(
+        f"Total: {total} | Passed: {Fore.GREEN}{passed}{Style.RESET_ALL} | Failed: {Fore.RED}{failed}{Style.RESET_ALL}"
+    )
 
     return failed == 0
 
@@ -345,17 +381,36 @@ Examples:
         """,
     )
 
-    parser.add_argument("--quick", action="store_true", help="Run quick tests (default)")
-    parser.add_argument("--full", action="store_true", help="Run full test suite")
-    parser.add_argument("--coverage", action="store_true", help="Run with coverage")
-    parser.add_argument("--lint", action="store_true", help="Run linting checks")
-    parser.add_argument("--security", action="store_true", help="Run security scan")
+    parser.add_argument(
+        "--quick", action="store_true", help="Run quick tests (default)"
+    )
+    parser.add_argument(
+        "--full", action="store_true", help="Run full test suite"
+    )
+    parser.add_argument(
+        "--coverage", action="store_true", help="Run with coverage"
+    )
+    parser.add_argument(
+        "--lint", action="store_true", help="Run linting checks"
+    )
+    parser.add_argument(
+        "--security", action="store_true", help="Run security scan"
+    )
     parser.add_argument("--all", action="store_true", help="Run all checks")
 
     args = parser.parse_args()
 
     # If no specific args, run quick tests
-    if not any([args.quick, args.full, args.coverage, args.lint, args.security, args.all]):
+    if not any(
+        [
+            args.quick,
+            args.full,
+            args.coverage,
+            args.lint,
+            args.security,
+            args.all,
+        ]
+    ):
         args.quick = True
 
     # Set up environment

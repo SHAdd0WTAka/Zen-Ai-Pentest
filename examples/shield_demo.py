@@ -21,7 +21,12 @@ console = Console()
 
 async def demo_basic_sanitization():
     """Demo: Basic secret detection and masking"""
-    console.print(Panel.fit("[bold cyan]Zen Shield Demo - Basic Sanitization[/]", border_style="cyan"))
+    console.print(
+        Panel.fit(
+            "[bold cyan]Zen Shield Demo - Basic Sanitization[/]",
+            border_style="cyan",
+        )
+    )
 
     # Initialize sanitizer (local mode, no LLM needed for this demo)
     sanitizer = ZenSanitizer(
@@ -69,7 +74,9 @@ session=eyJ1c2VyX2lkIjoxMjN9.abc123def456
     console.print(sample_data[:500] + "...\n")
 
     # Process through shield
-    request = SanitizerRequest(raw_data=sample_data, source_tool="nmap", intent="analyze")
+    request = SanitizerRequest(
+        raw_data=sample_data, source_tool="nmap", intent="analyze"
+    )
 
     with console.status("[cyan]Sanitizing...[/]"):
         response = await sanitizer.process(request)
@@ -86,7 +93,9 @@ session=eyJ1c2VyX2lkIjoxMjN9.abc123def456
     table.add_row("Secrets Found", str(len(response.redactions)))
     table.add_row("Safe to Send", "✓ Yes" if response.safe_to_send else "✗ No")
     table.add_row("Risk Level", response.risk_level.value.upper())
-    table.add_row("Fallback Used", "✓ Yes" if response.fallback_used else "✗ No")
+    table.add_row(
+        "Fallback Used", "✓ Yes" if response.fallback_used else "✗ No"
+    )
     table.add_row("Processing Time", f"{response.processing_time_ms:.1f}ms")
 
     console.print(table)
@@ -100,7 +109,9 @@ session=eyJ1c2VyX2lkIjoxMjN9.abc123def456
         redact_table.add_column("Context", style="yellow")
 
         for r in response.redactions[:10]:  # Show first 10
-            redact_table.add_row(r.type, r.hash[:8] + "...", r.context[:30] + "...")
+            redact_table.add_row(
+                r.type, r.hash[:8] + "...", r.context[:30] + "..."
+            )
 
         console.print(redact_table)
 
@@ -113,7 +124,12 @@ session=eyJ1c2VyX2lkIjoxMjN9.abc123def456
 
 async def demo_compression():
     """Demo: Context compression"""
-    console.print(Panel.fit("[bold cyan]Zen Shield Demo - Context Compression[/]", border_style="cyan"))
+    console.print(
+        Panel.fit(
+            "[bold cyan]Zen Shield Demo - Context Compression[/]",
+            border_style="cyan",
+        )
+    )
 
     sanitizer = ZenSanitizer(
         enable_compression=True,
@@ -123,7 +139,9 @@ async def demo_compression():
     # Simulate large Nmap output
     large_output = ""
     for i in range(1000):
-        large_output += f"Scanning port {i}... {'open' if i % 100 == 0 else 'closed'}\n"
+        large_output += (
+            f"Scanning port {i}... {'open' if i % 100 == 0 else 'closed'}\n"
+        )
 
     console.print(f"[bold]Original Size:[/] {len(large_output)} characters")
 
@@ -137,10 +155,16 @@ async def demo_compression():
     with console.status("[cyan]Compressing...[/]"):
         response = await sanitizer.process(request)
 
-    console.print(f"[bold]Compressed Size:[/] {len(response.cleaned_data)} characters")
-    console.print(f"[bold]Compression Ratio:[/] {response.compression_ratio:.2%}")
+    console.print(
+        f"[bold]Compressed Size:[/] {len(response.cleaned_data)} characters"
+    )
+    console.print(
+        f"[bold]Compression Ratio:[/] {response.compression_ratio:.2%}"
+    )
     console.print(f"[bold]Tokens Saved:[/] ~{response.tokens_saved}")
-    console.print(f"[bold]Est. Cost Savings:[/] ${response.tokens_saved * 0.00003:.4f}")
+    console.print(
+        f"[bold]Est. Cost Savings:[/] ${response.tokens_saved * 0.00003:.4f}"
+    )
 
 
 async def demo_injection_detection():
@@ -172,7 +196,9 @@ async def demo_injection_detection():
     table.add_column("Severity", style="yellow")
 
     for name, test_input in test_cases:
-        request = SanitizerRequest(raw_data=test_input, source_tool="test", intent="analyze")
+        request = SanitizerRequest(
+            raw_data=test_input, source_tool="test", intent="analyze"
+        )
 
         response = await sanitizer.process(request)
 
@@ -196,7 +222,12 @@ async def demo_injection_detection():
 
 async def demo_circuit_breaker():
     """Demo: Circuit breaker behavior"""
-    console.print(Panel.fit("[bold cyan]Zen Shield Demo - Circuit Breaker[/]", border_style="cyan"))
+    console.print(
+        Panel.fit(
+            "[bold cyan]Zen Shield Demo - Circuit Breaker[/]",
+            border_style="cyan",
+        )
+    )
 
     sanitizer = ZenSanitizer()
 
@@ -212,8 +243,13 @@ async def demo_circuit_breaker():
     table.add_row("Circuit State", status["state"])
     table.add_row("Failure Count", str(status["metrics"]["failures"]))
     table.add_row("Success Count", str(status["metrics"]["successes"]))
-    table.add_row("Consecutive Successes", str(status["metrics"]["consecutive_successes"]))
-    table.add_row("Failure Threshold", str(status["config"]["failure_threshold"]))
+    table.add_row(
+        "Consecutive Successes",
+        str(status["metrics"]["consecutive_successes"]),
+    )
+    table.add_row(
+        "Failure Threshold", str(status["config"]["failure_threshold"])
+    )
 
     console.print(table)
 

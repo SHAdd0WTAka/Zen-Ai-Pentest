@@ -14,7 +14,10 @@ from .sanitizer import ZenSanitizer
 from .schemas import HealthStatus, SanitizerRequest, SanitizerResponse
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
 logger = logging.getLogger(__name__)
 
 # Global sanitizer instance
@@ -62,7 +65,9 @@ app.add_middleware(
 async def health_check():
     """Health check endpoint"""
     if not sanitizer:
-        raise HTTPException(status_code=503, detail="Sanitizer not initialized")
+        raise HTTPException(
+            status_code=503, detail="Sanitizer not initialized"
+        )
 
     health = await sanitizer.health_check()
     return HealthStatus(
@@ -71,7 +76,11 @@ async def health_check():
         circuit_breaker_state=health["circuit_breaker"],
         active_filters=[
             "secret_scrubber",
-            "injection_detector" if health["injection_detector"] == "active" else None,
+            (
+                "injection_detector"
+                if health["injection_detector"] == "active"
+                else None
+            ),
             "context_compressor",
         ],
         version="1.0.0",
@@ -90,7 +99,9 @@ async def sanitize_data(request: SanitizerRequest):
     4. Returns cleaned data with metadata
     """
     if not sanitizer:
-        raise HTTPException(status_code=503, detail="Sanitizer not initialized")
+        raise HTTPException(
+            status_code=503, detail="Sanitizer not initialized"
+        )
 
     try:
         response = await sanitizer.process(request)
@@ -108,7 +119,9 @@ async def quick_scrub(text: str):
     Useful for simple cases where speed is priority.
     """
     if not sanitizer:
-        raise HTTPException(status_code=503, detail="Sanitizer not initialized")
+        raise HTTPException(
+            status_code=503, detail="Sanitizer not initialized"
+        )
 
     cleaned = await sanitizer.quick_scrub(text)
     return {"cleaned_data": cleaned}
@@ -118,7 +131,9 @@ async def quick_scrub(text: str):
 async def get_stats():
     """Get sanitizer statistics"""
     if not sanitizer:
-        raise HTTPException(status_code=503, detail="Sanitizer not initialized")
+        raise HTTPException(
+            status_code=503, detail="Sanitizer not initialized"
+        )
 
     return sanitizer.get_stats()
 
@@ -127,7 +142,9 @@ async def get_stats():
 async def reset_circuit_breaker():
     """Reset circuit breaker to closed state"""
     if not sanitizer:
-        raise HTTPException(status_code=503, detail="Sanitizer not initialized")
+        raise HTTPException(
+            status_code=503, detail="Sanitizer not initialized"
+        )
 
     await sanitizer.circuit_breaker.force_reset()
     return {"message": "Circuit breaker reset to CLOSED"}
@@ -149,7 +166,9 @@ async def sanitize_batch(request: BatchSanitizeRequest):
     Useful for processing multiple scan results at once.
     """
     if not sanitizer:
-        raise HTTPException(status_code=503, detail="Sanitizer not initialized")
+        raise HTTPException(
+            status_code=503, detail="Sanitizer not initialized"
+        )
 
     results = []
     errors = []

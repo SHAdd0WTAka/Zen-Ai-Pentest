@@ -109,11 +109,17 @@ class TestSecureInputValidatorInit:
         validator = SecureInputValidator()
         assert validator.strict_mode is True
         assert validator.audit_logging is True
-        assert validator.validation_stats == {"total_validated": 0, "rejected": 0, "sanitized": 0}
+        assert validator.validation_stats == {
+            "total_validated": 0,
+            "rejected": 0,
+            "sanitized": 0,
+        }
 
     def test_custom_initialization(self):
         """Test custom initialization"""
-        validator = SecureInputValidator(strict_mode=False, audit_logging=False)
+        validator = SecureInputValidator(
+            strict_mode=False, audit_logging=False
+        )
         assert validator.strict_mode is False
         assert validator.audit_logging is False
 
@@ -145,7 +151,9 @@ class TestUrlValidation:
     def test_valid_url_with_query(self):
         """Test valid URL with query string"""
         validator = SecureInputValidator()
-        result = validator.validate_url("https://example.com?key=value&foo=bar")
+        result = validator.validate_url(
+            "https://example.com?key=value&foo=bar"
+        )
         assert "example.com" in result
 
     def test_valid_url_with_port(self):
@@ -206,13 +214,17 @@ class TestUrlValidation:
     def test_localhost_allowed(self):
         """Test localhost URL allowed when allow_local=True"""
         validator = SecureInputValidator()
-        result = validator.validate_url("http://localhost:8080", allow_local=True)
+        result = validator.validate_url(
+            "http://localhost:8080", allow_local=True
+        )
         assert result == "http://localhost:8080"
 
     def test_html_entities_decoded(self):
         """Test HTML entities are decoded"""
         validator = SecureInputValidator()
-        result = validator.validate_url("https://example.com?key=&lt;value&gt;")
+        result = validator.validate_url(
+            "https://example.com?key=&lt;value&gt;"
+        )
         assert "<value>" in result
 
     def test_null_bytes_removed(self):
@@ -261,25 +273,33 @@ class TestIpValidation:
     def test_private_ip_blocked(self):
         """Test private IP is blocked by default"""
         validator = SecureInputValidator()
-        with pytest.raises(ValidationError, match="Private IP addresses not allowed"):
+        with pytest.raises(
+            ValidationError, match="Private IP addresses not allowed"
+        ):
             validator.validate_ip("192.168.1.1")
 
     def test_private_ip_10_blocked(self):
         """Test 10.x.x.x IP is blocked by default"""
         validator = SecureInputValidator()
-        with pytest.raises(ValidationError, match="Private IP addresses not allowed"):
+        with pytest.raises(
+            ValidationError, match="Private IP addresses not allowed"
+        ):
             validator.validate_ip("10.0.0.1")
 
     def test_private_ip_172_blocked(self):
         """Test 172.16.x.x IP is blocked by default"""
         validator = SecureInputValidator()
-        with pytest.raises(ValidationError, match="Private IP addresses not allowed"):
+        with pytest.raises(
+            ValidationError, match="Private IP addresses not allowed"
+        ):
             validator.validate_ip("172.16.0.1")
 
     def test_loopback_blocked(self):
         """Test loopback IP is blocked by default"""
         validator = SecureInputValidator()
-        with pytest.raises(ValidationError, match="Private IP addresses not allowed"):
+        with pytest.raises(
+            ValidationError, match="Private IP addresses not allowed"
+        ):
             validator.validate_ip("127.0.0.1")
 
     def test_private_ip_allowed(self):
@@ -396,37 +416,49 @@ class TestCommandValidation:
     def test_dangerous_command_rm_blocked(self):
         """Test rm command is blocked"""
         validator = SecureInputValidator()
-        with pytest.raises(ValidationError, match="Dangerous command detected"):
+        with pytest.raises(
+            ValidationError, match="Dangerous command detected"
+        ):
             validator.validate_command("rm -rf /")
 
     def test_dangerous_command_bash_blocked(self):
         """Test bash command is blocked"""
         validator = SecureInputValidator()
-        with pytest.raises(ValidationError, match="Dangerous command detected"):
+        with pytest.raises(
+            ValidationError, match="Dangerous command detected"
+        ):
             validator.validate_command("bash script.sh")
 
     def test_dangerous_command_python_blocked(self):
         """Test python command is blocked"""
         validator = SecureInputValidator()
-        with pytest.raises(ValidationError, match="Dangerous command detected"):
+        with pytest.raises(
+            ValidationError, match="Dangerous command detected"
+        ):
             validator.validate_command("python exploit.py")
 
     def test_shell_metacharacter_semicolon_blocked(self):
         """Test semicolon metacharacter is blocked"""
         validator = SecureInputValidator()
-        with pytest.raises(ValidationError, match="Shell metacharacter not allowed"):
+        with pytest.raises(
+            ValidationError, match="Shell metacharacter not allowed"
+        ):
             validator.validate_command("cmd1; cmd2")
 
     def test_shell_metacharacter_ampersand_blocked(self):
         """Test ampersand metacharacter is blocked"""
         validator = SecureInputValidator()
-        with pytest.raises(ValidationError, match="Shell metacharacter not allowed"):
+        with pytest.raises(
+            ValidationError, match="Shell metacharacter not allowed"
+        ):
             validator.validate_command("cmd1 && cmd2")
 
     def test_shell_metacharacter_pipe_blocked(self):
         """Test pipe metacharacter is blocked"""
         validator = SecureInputValidator()
-        with pytest.raises(ValidationError, match="Shell metacharacter not allowed"):
+        with pytest.raises(
+            ValidationError, match="Shell metacharacter not allowed"
+        ):
             validator.validate_command("cmd1 | cmd2")
 
     def test_shell_metacharacter_backtick_blocked(self):
@@ -439,7 +471,9 @@ class TestCommandValidation:
     def test_shell_metacharacter_dollar_blocked(self):
         """Test dollar metacharacter is blocked"""
         validator = SecureInputValidator()
-        with pytest.raises(ValidationError, match="Shell metacharacter not allowed"):
+        with pytest.raises(
+            ValidationError, match="Shell metacharacter not allowed"
+        ):
             validator.validate_command("echo $VAR")
 
 
@@ -460,7 +494,9 @@ class TestSqlValidation:
         """Test that common SQL keywords are blocked for security"""
         validator = SecureInputValidator()
         # SELECT is blocked by the validator
-        with pytest.raises(ValidationError, match="SQL injection pattern detected"):
+        with pytest.raises(
+            ValidationError, match="SQL injection pattern detected"
+        ):
             validator.validate_sql("SELECT id FROM users")
 
     def test_empty_sql(self):
@@ -478,31 +514,43 @@ class TestSqlValidation:
     def test_sql_injection_union_blocked(self):
         """Test UNION-based SQL injection is blocked"""
         validator = SecureInputValidator()
-        with pytest.raises(ValidationError, match="SQL injection pattern detected"):
-            validator.validate_sql("SELECT * FROM users UNION SELECT * FROM passwords")
+        with pytest.raises(
+            ValidationError, match="SQL injection pattern detected"
+        ):
+            validator.validate_sql(
+                "SELECT * FROM users UNION SELECT * FROM passwords"
+            )
 
     def test_sql_injection_or_blocked(self):
         """Test OR-based SQL injection is blocked"""
         validator = SecureInputValidator()
-        with pytest.raises(ValidationError, match="SQL injection pattern detected"):
+        with pytest.raises(
+            ValidationError, match="SQL injection pattern detected"
+        ):
             validator.validate_sql("SELECT * FROM users WHERE id = 1 OR 1=1")
 
     def test_sql_injection_comment_blocked(self):
         """Test comment-based SQL injection is blocked"""
         validator = SecureInputValidator()
-        with pytest.raises(ValidationError, match="SQL injection pattern detected"):
+        with pytest.raises(
+            ValidationError, match="SQL injection pattern detected"
+        ):
             validator.validate_sql("SELECT * FROM users; --")
 
     def test_sql_injection_stored_proc_blocked(self):
         """Test stored procedure SQL injection is blocked"""
         validator = SecureInputValidator()
-        with pytest.raises(ValidationError, match="SQL injection pattern detected"):
+        with pytest.raises(
+            ValidationError, match="SQL injection pattern detected"
+        ):
             validator.validate_sql("EXEC xp_cmdshell 'dir'")
 
     def test_sql_injection_time_delay_blocked(self):
         """Test time delay SQL injection is blocked"""
         validator = SecureInputValidator()
-        with pytest.raises(ValidationError, match="SQL injection pattern detected"):
+        with pytest.raises(
+            ValidationError, match="SQL injection pattern detected"
+        ):
             validator.validate_sql("SELECT * FROM users WHERE SLEEP(5)")
 
 
@@ -595,19 +643,25 @@ class TestPathValidation:
     def test_path_traversal_dotdot_blocked(self):
         """Test ../ path traversal is blocked"""
         validator = SecureInputValidator()
-        with pytest.raises(ValidationError, match="Path traversal not allowed"):
+        with pytest.raises(
+            ValidationError, match="Path traversal not allowed"
+        ):
             validator.validate_path("../../../etc/passwd")
 
     def test_path_traversal_backslash_blocked(self):
         """Test ..\ path traversal is blocked"""
         validator = SecureInputValidator()
-        with pytest.raises(ValidationError, match="Path traversal not allowed"):
+        with pytest.raises(
+            ValidationError, match="Path traversal not allowed"
+        ):
             validator.validate_path("..\\..\\windows\\system32")
 
     def test_path_traversal_encoded_blocked(self):
         """Test encoded path traversal is blocked"""
         validator = SecureInputValidator()
-        with pytest.raises(ValidationError, match="Path traversal not allowed"):
+        with pytest.raises(
+            ValidationError, match="Path traversal not allowed"
+        ):
             validator.validate_path("%2e%2e%2fetc%2fpasswd")
 
     def test_backslash_normalized(self):
@@ -844,7 +898,9 @@ class TestEdgeCases:
     def test_html_entity_handling(self):
         """Test HTML entity handling in URL"""
         validator = SecureInputValidator()
-        result = validator.validate_url("https://example.com?q=test&amp;foo=bar")
+        result = validator.validate_url(
+            "https://example.com?q=test&amp;foo=bar"
+        )
         # Should decode &amp; to &
         assert "&amp;" not in result or "&" in result
 

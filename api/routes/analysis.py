@@ -24,14 +24,18 @@ class AnalysisTarget(BaseModel):
 
     type: str = Field(..., description="Target type: url, code, file")
     value: str = Field(..., description="Target value to analyze")
-    context: Optional[Dict[str, Any]] = Field(default=None, description="Additional context")
+    context: Optional[Dict[str, Any]] = Field(
+        default=None, description="Additional context"
+    )
 
 
 class AnalysisRequest(BaseModel):
     """Request body for analysis"""
 
     target: AnalysisTarget
-    config: Optional[Dict[str, Any]] = Field(default=None, description="Analysis configuration")
+    config: Optional[Dict[str, Any]] = Field(
+        default=None, description="Analysis configuration"
+    )
 
 
 class VulnerabilityResult(BaseModel):
@@ -83,7 +87,9 @@ def get_analysis_bot() -> AnalysisBot:
 
 @router.post("/analyze", response_model=AnalysisResponse)
 async def analyze_target(
-    request: AnalysisRequest, background_tasks: BackgroundTasks, current_user: User = Depends(get_current_user)
+    request: AnalysisRequest,
+    background_tasks: BackgroundTasks,
+    current_user: User = Depends(get_current_user),
 ):
     """
     Analyze a target for vulnerabilities.
@@ -111,10 +117,16 @@ async def analyze_target(
         bot = get_analysis_bot()
 
         # Create analysis config
-        config = AnalysisConfig(user_id=str(current_user.id), **(request.config or {}))
+        config = AnalysisConfig(
+            user_id=str(current_user.id), **(request.config or {})
+        )
 
         # Run analysis
-        result = await bot.analyze(target=request.target.value, target_type=request.target.type, config=config)
+        result = await bot.analyze(
+            target=request.target.value,
+            target_type=request.target.type,
+            config=config,
+        )
 
         return AnalysisResponse(
             analysis_id=result.id,
@@ -146,11 +158,15 @@ async def analyze_target(
 
     except Exception as e:
         logger.error(f"Analysis failed: {e}")
-        raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Analysis failed: {str(e)}"
+        )
 
 
 @router.get("/status/{analysis_id}")
-async def get_analysis_status(analysis_id: str, current_user: User = Depends(get_current_user)):
+async def get_analysis_status(
+    analysis_id: str, current_user: User = Depends(get_current_user)
+):
     """Get status of an analysis job"""
     bot = get_analysis_bot()
     status = await bot.get_status(analysis_id)
@@ -158,7 +174,9 @@ async def get_analysis_status(analysis_id: str, current_user: User = Depends(get
 
 
 @router.get("/vulnerabilities/{analysis_id}")
-async def get_vulnerabilities(analysis_id: str, current_user: User = Depends(get_current_user)):
+async def get_vulnerabilities(
+    analysis_id: str, current_user: User = Depends(get_current_user)
+):
     """Get vulnerabilities found in an analysis"""
     bot = get_analysis_bot()
     vulns = await bot.get_vulnerabilities(analysis_id)
@@ -166,13 +184,18 @@ async def get_vulnerabilities(analysis_id: str, current_user: User = Depends(get
 
 
 @router.post("/batch")
-async def analyze_batch(targets: List[AnalysisTarget], current_user: User = Depends(get_current_user)):
+async def analyze_batch(
+    targets: List[AnalysisTarget],
+    current_user: User = Depends(get_current_user),
+):
     """Analyze multiple targets in batch"""
     bot = get_analysis_bot()
     results = []
 
     for target in targets:
-        result = await bot.analyze(target=target.value, target_type=target.type)
+        result = await bot.analyze(
+            target=target.value, target_type=target.type
+        )
         results.append(result)
 
     return {"results": results}

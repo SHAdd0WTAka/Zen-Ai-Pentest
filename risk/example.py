@@ -2,7 +2,13 @@
 Risk Scoring Examples
 """
 
-from risk import BusinessContext, CVSSVector, ImpactLevel, RiskEngine, RiskReportGenerator
+from risk import (
+    BusinessContext,
+    CVSSVector,
+    ImpactLevel,
+    RiskEngine,
+    RiskReportGenerator,
+)
 
 
 def example_basic_risk():
@@ -50,7 +56,9 @@ def example_with_business_context():
 
     risk = engine.calculate_risk(
         cve_id="CVE-2023-5678",
-        cvss_vector=CVSSVector(av="N", ac="H", pr="L", ui="N", s="U", c="H", i="L", a="N"),
+        cvss_vector=CVSSVector(
+            av="N", ac="H", pr="L", ui="N", s="U", c="H", i="L", a="N"
+        ),
         business_context=context,
     )
 
@@ -67,8 +75,22 @@ def example_report():
 
     # Calculate risks for multiple CVEs
     cves = [
-        {"id": "CVE-2023-1111", "data": {"cvss3": {"vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"}}},
-        {"id": "CVE-2023-2222", "data": {"cvss3": {"vectorString": "CVSS:3.1/AV:N/AC:H/PR:L/UI:R/S:U/C:L/I:L/A:N"}}},
+        {
+            "id": "CVE-2023-1111",
+            "data": {
+                "cvss3": {
+                    "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
+                }
+            },
+        },
+        {
+            "id": "CVE-2023-2222",
+            "data": {
+                "cvss3": {
+                    "vectorString": "CVSS:3.1/AV:N/AC:H/PR:L/UI:R/S:U/C:L/I:L/A:N"
+                }
+            },
+        },
         {"id": "CVE-2023-3333", "data": {}},
     ]
 
@@ -77,7 +99,9 @@ def example_report():
     # Generate reports
     generator = RiskReportGenerator()
 
-    executive = generator.generate(risks, "executive", organization="Acme Corp")
+    executive = generator.generate(
+        risks, "executive", organization="Acme Corp"
+    )
     print("\nExecutive Summary:")
     print(f"  Critical: {executive['summary']['critical_count']}")
     print(f"  High: {executive['summary']['high_count']}")

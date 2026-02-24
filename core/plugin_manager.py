@@ -159,7 +159,9 @@ class HookManager:
         self._hooks: Dict[str, List[Callable]] = {}
         self._filters: Dict[str, List[Callable]] = {}
 
-    def register_hook(self, hook_name: str, callback: Callable, priority: int = 10):
+    def register_hook(
+        self, hook_name: str, callback: Callable, priority: int = 10
+    ):
         """
         Register a hook callback.
 
@@ -171,7 +173,9 @@ class HookManager:
         if hook_name not in self._hooks:
             self._hooks[hook_name] = []
 
-        self._hooks[hook_name].append({"callback": callback, "priority": priority})
+        self._hooks[hook_name].append(
+            {"callback": callback, "priority": priority}
+        )
 
         # Sort by priority
         self._hooks[hook_name].sort(key=lambda x: x["priority"])
@@ -180,7 +184,9 @@ class HookManager:
     def unregister_hook(self, hook_name: str, callback: Callable):
         """Unregister a hook callback"""
         if hook_name in self._hooks:
-            self._hooks[hook_name] = [h for h in self._hooks[hook_name] if h["callback"] != callback]
+            self._hooks[hook_name] = [
+                h for h in self._hooks[hook_name] if h["callback"] != callback
+            ]
 
     async def execute_hook(self, hook_name: str, *args, **kwargs) -> List[Any]:
         """
@@ -205,7 +211,9 @@ class HookManager:
 
         return results
 
-    def register_filter(self, filter_name: str, callback: Callable, priority: int = 10):
+    def register_filter(
+        self, filter_name: str, callback: Callable, priority: int = 10
+    ):
         """
         Register a filter callback.
         Filters modify data passed through them.
@@ -213,7 +221,9 @@ class HookManager:
         if filter_name not in self._filters:
             self._filters[filter_name] = []
 
-        self._filters[filter_name].append({"callback": callback, "priority": priority})
+        self._filters[filter_name].append(
+            {"callback": callback, "priority": priority}
+        )
 
         self._filters[filter_name].sort(key=lambda x: x["priority"])
 
@@ -287,7 +297,9 @@ class PluginManager:
                             version=manifest.get("version", "1.0.0"),
                             description=manifest.get("description", ""),
                             author=manifest.get("author", "Unknown"),
-                            plugin_type=PluginType(manifest.get("type", "tool")),
+                            plugin_type=PluginType(
+                                manifest.get("type", "tool")
+                            ),
                             dependencies=manifest.get("dependencies", []),
                             hooks=manifest.get("hooks", []),
                             path=item_path,
@@ -295,7 +307,9 @@ class PluginManager:
                         discovered.append(info)
 
                     except Exception as e:
-                        logger.error(f"Failed to load plugin manifest {manifest_path}: {e}")
+                        logger.error(
+                            f"Failed to load plugin manifest {manifest_path}: {e}"
+                        )
 
                 # Check for Python module
                 elif os.path.isfile(os.path.join(item_path, "__init__.py")):
@@ -305,7 +319,9 @@ class PluginManager:
                         if info:
                             discovered.append(info)
                     except Exception as e:
-                        logger.error(f"Failed to inspect plugin {item_path}: {e}")
+                        logger.error(
+                            f"Failed to inspect plugin {item_path}: {e}"
+                        )
 
         return discovered
 
@@ -318,7 +334,9 @@ class PluginManager:
 
         try:
             module_name = os.path.basename(path)
-            spec = importlib.util.spec_from_file_location(module_name, os.path.join(path, "__init__.py"))
+            spec = importlib.util.spec_from_file_location(
+                module_name, os.path.join(path, "__init__.py")
+            )
 
             if spec and spec.loader:
                 module = importlib.util.module_from_spec(spec)
@@ -338,7 +356,9 @@ class PluginManager:
                             version=getattr(attr, "VERSION", "1.0.0"),
                             description=getattr(attr, "DESCRIPTION", ""),
                             author=getattr(attr, "AUTHOR", "Unknown"),
-                            plugin_type=getattr(attr, "PLUGIN_TYPE", PluginType.TOOL),
+                            plugin_type=getattr(
+                                attr, "PLUGIN_TYPE", PluginType.TOOL
+                            ),
                             path=path,
                         )
         finally:
@@ -347,7 +367,9 @@ class PluginManager:
 
         return None
 
-    async def load_plugin(self, plugin_name: str, config: Optional[Dict] = None) -> bool:
+    async def load_plugin(
+        self, plugin_name: str, config: Optional[Dict] = None
+    ) -> bool:
         """
         Load a plugin by name.
 
@@ -364,7 +386,9 @@ class PluginManager:
 
         # Find plugin
         discovered = self.discover_plugins()
-        plugin_info = next((p for p in discovered if p.name == plugin_name), None)
+        plugin_info = next(
+            (p for p in discovered if p.name == plugin_name), None
+        )
 
         if not plugin_info:
             logger.error(f"Plugin '{plugin_name}' not found")
@@ -376,7 +400,9 @@ class PluginManager:
             # Check dependencies
             for dep in plugin_info.dependencies:
                 if dep not in self.plugins:
-                    logger.error(f"Plugin '{plugin_name}' requires '{dep}' which is not loaded")
+                    logger.error(
+                        f"Plugin '{plugin_name}' requires '{dep}' which is not loaded"
+                    )
                     plugin_info.status = PluginStatus.ERROR
                     plugin_info.error_message = f"Missing dependency: {dep}"
                     return False
@@ -406,7 +432,9 @@ class PluginManager:
             self.plugin_info[plugin_name] = plugin_info
             plugin_info.status = PluginStatus.LOADED
 
-            logger.info(f"Plugin '{plugin_name}' v{plugin_info.version} loaded successfully")
+            logger.info(
+                f"Plugin '{plugin_name}' v{plugin_info.version} loaded successfully"
+            )
             return True
 
         except Exception as e:
@@ -415,7 +443,9 @@ class PluginManager:
             plugin_info.error_message = str(e)
             return False
 
-    async def _load_plugin_class(self, info: PluginInfo, config: Optional[Dict]) -> Optional[BasePlugin]:
+    async def _load_plugin_class(
+        self, info: PluginInfo, config: Optional[Dict]
+    ) -> Optional[BasePlugin]:
         """Load and instantiate plugin class"""
         if not info.path:
             return None
@@ -426,7 +456,9 @@ class PluginManager:
 
         try:
             module_name = os.path.basename(info.path)
-            spec = importlib.util.spec_from_file_location(module_name, os.path.join(info.path, "__init__.py"))
+            spec = importlib.util.spec_from_file_location(
+                module_name, os.path.join(info.path, "__init__.py")
+            )
 
             if spec and spec.loader:
                 module = importlib.util.module_from_spec(spec)
@@ -509,7 +541,9 @@ class PluginManager:
 
     def get_plugins_by_type(self, plugin_type: PluginType) -> List[BasePlugin]:
         """Get all plugins of a specific type"""
-        return [p for p in self.plugins.values() if p.PLUGIN_TYPE == plugin_type]
+        return [
+            p for p in self.plugins.values() if p.PLUGIN_TYPE == plugin_type
+        ]
 
     async def execute_plugin(self, name: str, **kwargs) -> Any:
         """

@@ -13,7 +13,12 @@ from typing import Any, Callable, Dict, List, Optional
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from modules.benchmark import BenchmarkCategory, BenchmarkResult, BenchmarkRunner, ThroughputMetrics
+from modules.benchmark import (
+    BenchmarkCategory,
+    BenchmarkResult,
+    BenchmarkRunner,
+    ThroughputMetrics,
+)
 
 
 class APIEndpointType(Enum):
@@ -47,7 +52,13 @@ class APIPerformanceBenchmark:
     def _get_test_endpoints(self) -> List[Dict[str, Any]]:
         """Get test endpoint definitions."""
         return [
-            {"name": "health_check", "path": "/health", "method": "GET", "type": APIEndpointType.AUTH, "payload": None},
+            {
+                "name": "health_check",
+                "path": "/health",
+                "method": "GET",
+                "type": APIEndpointType.AUTH,
+                "payload": None,
+            },
             {
                 "name": "auth_login",
                 "path": "/auth/login",
@@ -55,19 +66,38 @@ class APIPerformanceBenchmark:
                 "type": APIEndpointType.AUTH,
                 "payload": {"username": "test", "password": "test"},
             },
-            {"name": "list_scans", "path": "/scans", "method": "GET", "type": APIEndpointType.SCANS, "payload": None},
+            {
+                "name": "list_scans",
+                "path": "/scans",
+                "method": "GET",
+                "type": APIEndpointType.SCANS,
+                "payload": None,
+            },
             {
                 "name": "create_scan",
                 "path": "/scans",
                 "method": "POST",
                 "type": APIEndpointType.SCANS,
-                "payload": {"name": "test", "target": "127.0.0.1", "type": "quick"},
+                "payload": {
+                    "name": "test",
+                    "target": "127.0.0.1",
+                    "type": "quick",
+                },
             },
-            {"name": "list_findings", "path": "/findings", "method": "GET", "type": APIEndpointType.FINDINGS, "payload": None},
+            {
+                "name": "list_findings",
+                "path": "/findings",
+                "method": "GET",
+                "type": APIEndpointType.FINDINGS,
+                "payload": None,
+            },
         ]
 
     async def benchmark_endpoint_latency(
-        self, endpoint_name: str, request_func: Callable, config: Optional[APIBenchmarkConfig] = None
+        self,
+        endpoint_name: str,
+        request_func: Callable,
+        config: Optional[APIBenchmarkConfig] = None,
     ) -> BenchmarkResult:
         """
         Benchmark latency for a specific endpoint.
@@ -94,13 +124,17 @@ class APIPerformanceBenchmark:
 
         # Calculate RPS
         result.custom_metrics["requests_per_second"] = (
-            cfg.iterations / result.timing.duration_seconds if result.timing.duration_seconds > 0 else 0
+            cfg.iterations / result.timing.duration_seconds
+            if result.timing.duration_seconds > 0
+            else 0
         )
         result.custom_metrics["endpoint"] = endpoint_name
 
         return result
 
-    async def benchmark_all_endpoints(self, config: Optional[APIBenchmarkConfig] = None) -> List[BenchmarkResult]:
+    async def benchmark_all_endpoints(
+        self, config: Optional[APIBenchmarkConfig] = None
+    ) -> List[BenchmarkResult]:
         """
         Benchmark all API endpoints.
 
@@ -128,14 +162,18 @@ class APIPerformanceBenchmark:
                 return {"status": "ok", "endpoint": endpoint["name"]}
 
             try:
-                result = await self.benchmark_endpoint_latency(endpoint["name"], mock_request, cfg)
+                result = await self.benchmark_endpoint_latency(
+                    endpoint["name"], mock_request, cfg
+                )
                 results.append(result)
             except Exception as e:
                 print(f"  Failed to benchmark {endpoint['name']}: {e}")
 
         return results
 
-    async def benchmark_concurrent_requests(self, config: Optional[APIBenchmarkConfig] = None) -> BenchmarkResult:
+    async def benchmark_concurrent_requests(
+        self, config: Optional[APIBenchmarkConfig] = None
+    ) -> BenchmarkResult:
         """
         Benchmark API with concurrent requests.
 
@@ -169,16 +207,23 @@ class APIPerformanceBenchmark:
         )
 
         total_requests = cfg.iterations * cfg.concurrent_requests
-        result.throughput = ThroughputMetrics(operations=total_requests, duration_seconds=result.timing.duration_seconds)
+        result.throughput = ThroughputMetrics(
+            operations=total_requests,
+            duration_seconds=result.timing.duration_seconds,
+        )
         result.throughput.calculate()
 
         result.custom_metrics["concurrent_limit"] = cfg.concurrent_requests
         result.custom_metrics["total_requests"] = total_requests
-        result.custom_metrics["requests_per_second"] = result.throughput.ops_per_second
+        result.custom_metrics["requests_per_second"] = (
+            result.throughput.ops_per_second
+        )
 
         return result
 
-    async def benchmark_authentication_flow(self, config: Optional[APIBenchmarkConfig] = None) -> BenchmarkResult:
+    async def benchmark_authentication_flow(
+        self, config: Optional[APIBenchmarkConfig] = None
+    ) -> BenchmarkResult:
         """
         Benchmark complete authentication flow.
 
@@ -213,7 +258,9 @@ class APIPerformanceBenchmark:
 
         return result
 
-    async def benchmark_scan_workflow(self, config: Optional[APIBenchmarkConfig] = None) -> BenchmarkResult:
+    async def benchmark_scan_workflow(
+        self, config: Optional[APIBenchmarkConfig] = None
+    ) -> BenchmarkResult:
         """
         Benchmark complete scan workflow (create -> start -> poll -> results).
 
@@ -253,7 +300,9 @@ class APIPerformanceBenchmark:
 
         return result
 
-    async def benchmark_websocket_performance(self, config: Optional[APIBenchmarkConfig] = None) -> BenchmarkResult:
+    async def benchmark_websocket_performance(
+        self, config: Optional[APIBenchmarkConfig] = None
+    ) -> BenchmarkResult:
         """
         Benchmark WebSocket connection performance.
 
@@ -289,19 +338,25 @@ class APIPerformanceBenchmark:
 
         result.custom_metrics["messages_per_connection"] = 10
         result.custom_metrics["connections_per_second"] = (
-            cfg.iterations / result.timing.duration_seconds if result.timing.duration_seconds > 0 else 0
+            cfg.iterations / result.timing.duration_seconds
+            if result.timing.duration_seconds > 0
+            else 0
         )
 
         return result
 
-    async def benchmark_memory_usage_under_load(self, config: Optional[APIBenchmarkConfig] = None) -> BenchmarkResult:
+    async def benchmark_memory_usage_under_load(
+        self, config: Optional[APIBenchmarkConfig] = None
+    ) -> BenchmarkResult:
         """
         Benchmark API memory usage under sustained load.
 
         Returns:
             BenchmarkResult with memory usage metrics
         """
-        cfg = config or APIBenchmarkConfig(iterations=500, concurrent_requests=50)
+        cfg = config or APIBenchmarkConfig(
+            iterations=500, concurrent_requests=50
+        )
 
         async def sustained_load():
             semaphore = asyncio.Semaphore(cfg.concurrent_requests)
@@ -328,7 +383,9 @@ class APIPerformanceBenchmark:
         )
 
         result.custom_metrics["total_requests"] = cfg.iterations
-        result.custom_metrics["memory_per_100_requests"] = result.memory.peak_mb / (cfg.iterations / 100)
+        result.custom_metrics["memory_per_100_requests"] = (
+            result.memory.peak_mb / (cfg.iterations / 100)
+        )
 
         return result
 
@@ -344,7 +401,9 @@ class APIPerformanceBenchmark:
         results.extend(endpoint_results)
         for result in endpoint_results:
             self.runner.save_result(result)
-            print(f"    ✓ {result.custom_metrics.get('endpoint', 'unknown')}: {result.timing.avg_ms:.2f}ms avg")
+            print(
+                f"    ✓ {result.custom_metrics.get('endpoint', 'unknown')}: {result.timing.avg_ms:.2f}ms avg"
+            )
 
         # Run other benchmarks
         benchmarks = [
@@ -377,7 +436,10 @@ class APIPerformanceBenchmark:
 
 # Convenience function
 async def measure_api_response_time(
-    endpoint: str, request_func: Callable, iterations: int = 100, output_dir: str = "benchmark_results"
+    endpoint: str,
+    request_func: Callable,
+    iterations: int = 100,
+    output_dir: str = "benchmark_results",
 ) -> BenchmarkResult:
     """
     Quick function to measure API response time.
@@ -401,16 +463,26 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(description="API Performance Benchmarks")
-    parser.add_argument("--output", default="benchmark_results", help="Output directory")
-    parser.add_argument("--iterations", type=int, default=100, help="Number of iterations")
-    parser.add_argument("--concurrent", type=int, default=10, help="Concurrent requests")
-    parser.add_argument("--base-url", default="http://localhost:8000", help="API base URL")
+    parser.add_argument(
+        "--output", default="benchmark_results", help="Output directory"
+    )
+    parser.add_argument(
+        "--iterations", type=int, default=100, help="Number of iterations"
+    )
+    parser.add_argument(
+        "--concurrent", type=int, default=10, help="Concurrent requests"
+    )
+    parser.add_argument(
+        "--base-url", default="http://localhost:8000", help="API base URL"
+    )
 
     args = parser.parse_args()
 
     async def main():
         _ = APIBenchmarkConfig(  # TODO: Use config
-            iterations=args.iterations, concurrent_requests=args.concurrent, base_url=args.base_url
+            iterations=args.iterations,
+            concurrent_requests=args.concurrent,
+            base_url=args.base_url,
         )
 
         benchmark = APIPerformanceBenchmark(output_dir=args.output)

@@ -20,7 +20,13 @@ def validate_workflow_file(filepath: str) -> list[dict]:
             content = f.read()
             lines = content.split("\n")
     except Exception as e:
-        return [{"line": 0, "message": f"Failed to read file: {e}", "severity": "error"}]
+        return [
+            {
+                "line": 0,
+                "message": f"Failed to read file: {e}",
+                "severity": "error",
+            }
+        ]
 
     # Check 1: Using secrets in job-level 'if' condition (GitHub Actions limitation)
     job_if_pattern = r"^\s+if:\s*.*secrets\."
@@ -36,8 +42,15 @@ def validate_workflow_file(filepath: str) -> list[dict]:
             )
 
     # Check 2: Missing continue-on-error for external service calls
-    if "discord" in filepath.lower() or "webhook" in filepath.lower() or "notify" in filepath.lower():
-        if "continue-on-error" not in content and "if: steps.check-secret" not in content:
+    if (
+        "discord" in filepath.lower()
+        or "webhook" in filepath.lower()
+        or "notify" in filepath.lower()
+    ):
+        if (
+            "continue-on-error" not in content
+            and "if: steps.check-secret" not in content
+        ):
             issues.append(
                 {
                     "line": 0,
@@ -48,10 +61,20 @@ def validate_workflow_file(filepath: str) -> list[dict]:
             )
 
     # Check 3: Shell JSON escaping issues
-    json_payload_patterns = [r"sanitize_json\(\)", r"python3?\s*<<.*EOF.*json", r"python3?\s+-c.*json"]
-    has_proper_json_handling = any(re.search(p, content, re.IGNORECASE) for p in json_payload_patterns)
+    json_payload_patterns = [
+        r"sanitize_json\(\)",
+        r"python3?\s*<<.*EOF.*json",
+        r"python3?\s+-c.*json",
+    ]
+    has_proper_json_handling = any(
+        re.search(p, content, re.IGNORECASE) for p in json_payload_patterns
+    )
 
-    if "json" in content.lower() and not has_proper_json_handling and "curl" in content:
+    if (
+        "json" in content.lower()
+        and not has_proper_json_handling
+        and "curl" in content
+    ):
         # Check for naive sed-based JSON escaping
         if "sed.*\\\\" in content or 'sed.*\\"' in content:
             issues.append(
@@ -105,7 +128,12 @@ def validate_workflow_file(filepath: str) -> list[dict]:
         for pattern, message in deprecated_patterns:
             if re.search(pattern, line) and "uses:" in line:
                 issues.append(
-                    {"line": i, "message": message, "severity": "warning", "fix": "Pin to a specific version like @v1.12.0"}
+                    {
+                        "line": i,
+                        "message": message,
+                        "severity": "warning",
+                        "fix": "Pin to a specific version like @v1.12.0",
+                    }
                 )
 
     return issues
@@ -121,11 +149,21 @@ def print_validation_results(filepath: str, issues: list[dict]):
     warning_count = sum(1 for i in issues if i["severity"] == "warning")
     info_count = sum(1 for i in issues if i["severity"] == "info")
 
-    status = "[ERR]" if error_count > 0 else "[WARN]" if warning_count > 0 else "[INFO]"
-    print(f"{status} {filepath} ({error_count} errors, {warning_count} warnings, {info_count} info)")
+    status = (
+        "[ERR]"
+        if error_count > 0
+        else "[WARN]" if warning_count > 0 else "[INFO]"
+    )
+    print(
+        f"{status} {filepath} ({error_count} errors, {warning_count} warnings, {info_count} info)"
+    )
 
     for issue in issues:
-        severity_icon = {"error": "[ERR]", "warning": "[WARN]", "info": "[INFO]"}.get(issue["severity"], "[*]")
+        severity_icon = {
+            "error": "[ERR]",
+            "warning": "[WARN]",
+            "info": "[INFO]",
+        }.get(issue["severity"], "[*]")
         line_info = f"line {issue['line']}" if issue["line"] > 0 else "general"
         print(f"   {severity_icon} [{line_info}] {issue['message']}")
         if "fix" in issue:

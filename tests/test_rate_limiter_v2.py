@@ -10,9 +10,18 @@ from unittest.mock import Mock
 import pytest
 from fastapi import HTTPException
 
-sys.path.insert(0, "C:\\Users\\Ataka\\source\\repos\\SHAdd0WTAka\\Zen-Ai-Pentest")
+sys.path.insert(
+    0, "C:\\Users\\Ataka\\source\\repos\\SHAdd0WTAka\\Zen-Ai-Pentest"
+)
 
-from api.rate_limiter_v2 import RATE_LIMITS, MemoryStorage, TokenBucket, UserAuthRateLimiter, UserContext, rate_limit
+from api.rate_limiter_v2 import (
+    RATE_LIMITS,
+    MemoryStorage,
+    TokenBucket,
+    UserAuthRateLimiter,
+    UserContext,
+    rate_limit,
+)
 
 
 class TestTokenBucket:
@@ -43,7 +52,9 @@ class TestTokenBucket:
         assert bucket.tokens > 0
 
     def test_wait_time_calculation(self):
-        bucket = TokenBucket(rate=1 / 60, burst_size=10)  # 1 per 60 seconds = slow
+        bucket = TokenBucket(
+            rate=1 / 60, burst_size=10
+        )  # 1 per 60 seconds = slow
         bucket.tokens = 0
 
         wait_time = bucket.get_wait_time(1)
@@ -116,14 +127,23 @@ class TestUserContext:
         user = UserContext(tier="anonymous")
         limits = user.get_limits()
 
-        assert limits["requests_per_minute"] == RATE_LIMITS["anonymous"]["requests_per_minute"]
+        assert (
+            limits["requests_per_minute"]
+            == RATE_LIMITS["anonymous"]["requests_per_minute"]
+        )
 
     def test_get_limits_premium(self):
         user = UserContext(tier="premium")
         limits = user.get_limits()
 
-        assert limits["requests_per_minute"] == RATE_LIMITS["premium"]["requests_per_minute"]
-        assert limits["requests_per_minute"] > RATE_LIMITS["user"]["requests_per_minute"]
+        assert (
+            limits["requests_per_minute"]
+            == RATE_LIMITS["premium"]["requests_per_minute"]
+        )
+        assert (
+            limits["requests_per_minute"]
+            > RATE_LIMITS["user"]["requests_per_minute"]
+        )
 
 
 class TestUserAuthRateLimiter:

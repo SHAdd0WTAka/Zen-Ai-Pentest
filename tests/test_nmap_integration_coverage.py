@@ -113,7 +113,11 @@ class TestNmapResult:
 
         hosts = [NmapHost(ip="192.168.1.1")]
         result = NmapResult(
-            success=True, hosts=hosts, command="nmap 192.168.1.1", scan_time=10.5, summary={"hosts_up": 1, "hosts_down": 0}
+            success=True,
+            hosts=hosts,
+            command="nmap 192.168.1.1",
+            scan_time=10.5,
+            summary={"hosts_up": 1, "hosts_down": 0},
         )
 
         assert result.success is True
@@ -159,9 +163,17 @@ class TestNmapScanner:
 
     def test_init_with_options(self, mock_nmap_path):
         """Test scanner initialization with options"""
-        from tools.nmap_integration import NmapScanner, ScanType, TimingTemplate
+        from tools.nmap_integration import (
+            NmapScanner,
+            ScanType,
+            TimingTemplate,
+        )
 
-        options = {"ports": "80,443", "scan_type": ScanType.CONNECT, "timing": TimingTemplate.AGGRESSIVE}
+        options = {
+            "ports": "80,443",
+            "scan_type": ScanType.CONNECT,
+            "timing": TimingTemplate.AGGRESSIVE,
+        }
         scanner = NmapScanner("192.168.1.1", options=options)
 
         assert scanner.options["ports"] == "80,443"
@@ -215,7 +227,9 @@ class TestNmapScanner:
         """Test command building with service detection"""
         from tools.nmap_integration import NmapScanner
 
-        scanner = NmapScanner("192.168.1.1", options={"service_detection": True})
+        scanner = NmapScanner(
+            "192.168.1.1", options={"service_detection": True}
+        )
         cmd = scanner._build_command()
 
         assert "-sV" in cmd
@@ -404,7 +418,9 @@ class TestNmapScanner:
         scanner = NmapScanner("192.168.1.1")
 
         with patch.object(scanner, "_run_subprocess") as mock_run:
-            mock_run.return_value = subprocess.CompletedProcess(args=["nmap"], returncode=0, stdout=mock_xml, stderr=b"")
+            mock_run.return_value = subprocess.CompletedProcess(
+                args=["nmap"], returncode=0, stdout=mock_xml, stderr=b""
+            )
 
             result = await scanner.scan()
 
@@ -421,7 +437,10 @@ class TestNmapScanner:
 
         with patch.object(scanner, "_run_subprocess") as mock_run:
             mock_run.return_value = subprocess.CompletedProcess(
-                args=["nmap"], returncode=1, stdout=b"", stderr=b"nmap: command failed"
+                args=["nmap"],
+                returncode=1,
+                stdout=b"",
+                stderr=b"nmap: command failed",
             )
 
             result = await scanner.scan()

@@ -39,12 +39,16 @@ class NotificationManager:
     def __init__(self):
         self.slack_webhook = os.getenv("SLACK_WEBHOOK_URL")
         self.discord_webhook = os.getenv("DISCORD_WEBHOOK_URL")
-        self.enabled = os.getenv("NOTIFICATION_ENABLED", "true").lower() == "true"
+        self.enabled = (
+            os.getenv("NOTIFICATION_ENABLED", "true").lower() == "true"
+        )
 
         if not self.enabled:
             logger.info("Notifications disabled")
         elif not self.slack_webhook and not self.discord_webhook:
-            logger.warning("No webhook URLs configured - notifications will be logged only")
+            logger.warning(
+                "No webhook URLs configured - notifications will be logged only"
+            )
 
     async def send_alert(
         self,
@@ -65,7 +69,9 @@ class NotificationManager:
             notify_channels: List of channels ['slack', 'discord'] or None for all
         """
         if not self.enabled:
-            logger.info(f"[ALERT - {severity.value.upper()}] {title}: {message}")
+            logger.info(
+                f"[ALERT - {severity.value.upper()}] {title}: {message}"
+            )
             return
 
         channels = notify_channels or ["slack", "discord"]
@@ -81,19 +87,39 @@ class NotificationManager:
         if tasks:
             await asyncio.gather(*tasks, return_exceptions=True)
 
-    async def _send_slack(self, title: str, message: str, severity: AlertSeverity, fields: Optional[Dict[str, Any]] = None):
+    async def _send_slack(
+        self,
+        title: str,
+        message: str,
+        severity: AlertSeverity,
+        fields: Optional[Dict[str, Any]] = None,
+    ):
         """Send alert to Slack"""
 
         # Color based on severity
-        colors = {AlertSeverity.CRITICAL: "#FF0000", AlertSeverity.WARNING: "#FFA500", AlertSeverity.INFO: "#36A64F"}
+        colors = {
+            AlertSeverity.CRITICAL: "#FF0000",
+            AlertSeverity.WARNING: "#FFA500",
+            AlertSeverity.INFO: "#36A64F",
+        }
 
-        emoji = {AlertSeverity.CRITICAL: "🚨", AlertSeverity.WARNING: "⚠️", AlertSeverity.INFO: "ℹ️"}
+        emoji = {
+            AlertSeverity.CRITICAL: "🚨",
+            AlertSeverity.WARNING: "⚠️",
+            AlertSeverity.INFO: "ℹ️",
+        }
 
         # Build attachment fields
         attachment_fields = []
         if fields:
             for key, value in fields.items():
-                attachment_fields.append({"title": key, "value": str(value), "short": len(str(value)) < 50})
+                attachment_fields.append(
+                    {
+                        "title": key,
+                        "value": str(value),
+                        "short": len(str(value)) < 50,
+                    }
+                )
 
         payload = {
             "attachments": [
@@ -110,15 +136,27 @@ class NotificationManager:
 
         try:
             async with aiohttp.ClientSession() as session:
-                async with session.post(self.slack_webhook, json=payload, timeout=aiohttp.ClientTimeout(total=10)) as response:
+                async with session.post(
+                    self.slack_webhook,
+                    json=payload,
+                    timeout=aiohttp.ClientTimeout(total=10),
+                ) as response:
                     if response.status != 200:
-                        logger.error(f"Slack notification failed: {response.status}")
+                        logger.error(
+                            f"Slack notification failed: {response.status}"
+                        )
                     else:
                         logger.debug(f"Slack notification sent: {title}")
         except Exception as e:
             logger.error(f"Failed to send Slack notification: {e}")
 
-    async def _send_discord(self, title: str, message: str, severity: AlertSeverity, fields: Optional[Dict[str, Any]] = None):
+    async def _send_discord(
+        self,
+        title: str,
+        message: str,
+        severity: AlertSeverity,
+        fields: Optional[Dict[str, Any]] = None,
+    ):
         """Send alert to Discord"""
 
         # Color based on severity (Discord uses integer colors)
@@ -128,7 +166,11 @@ class NotificationManager:
             AlertSeverity.INFO: 0x36A64F,  # Green
         }
 
-        emoji = {AlertSeverity.CRITICAL: "🚨", AlertSeverity.WARNING: "⚠️", AlertSeverity.INFO: "ℹ️"}
+        emoji = {
+            AlertSeverity.CRITICAL: "🚨",
+            AlertSeverity.WARNING: "⚠️",
+            AlertSeverity.INFO: "ℹ️",
+        }
 
         # Build embed fields
         embed_fields = []
@@ -158,10 +200,14 @@ class NotificationManager:
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.post(
-                    self.discord_webhook, json=payload, timeout=aiohttp.ClientTimeout(total=10)
+                    self.discord_webhook,
+                    json=payload,
+                    timeout=aiohttp.ClientTimeout(total=10),
                 ) as response:
                     if response.status not in (200, 204):
-                        logger.error(f"Discord notification failed: {response.status}")
+                        logger.error(
+                            f"Discord notification failed: {response.status}"
+                        )
                     else:
                         logger.debug(f"Discord notification sent: {title}")
         except Exception as e:
@@ -169,7 +215,13 @@ class NotificationManager:
 
     # Convenience methods for common alerts
 
-    async def notify_critical_finding(self, target: str, vulnerability: str, severity: str, scan_id: Optional[str] = None):
+    async def notify_critical_finding(
+        self,
+        target: str,
+        vulnerability: str,
+        severity: str,
+        scan_id: Optional[str] = None,
+    ):
         """Notify about critical vulnerability finding"""
         await self.send_alert(
             title="Critical Vulnerability Discovered",
@@ -184,9 +236,13 @@ class NotificationManager:
             },
         )
 
-    async def notify_auth_failure(self, username: str, ip_address: str, failure_count: int):
+    async def notify_auth_failure(
+        self, username: str, ip_address: str, failure_count: int
+    ):
         """Notify about authentication failure"""
-        severity = AlertSeverity.WARNING if failure_count > 3 else AlertSeverity.INFO
+        severity = (
+            AlertSeverity.WARNING if failure_count > 3 else AlertSeverity.INFO
+        )
 
         await self.send_alert(
             title="Authentication Failure",
@@ -200,9 +256,13 @@ class NotificationManager:
             },
         )
 
-    async def notify_scan_completed(self, scan_id: str, target: str, duration: float, findings_count: int):
+    async def notify_scan_completed(
+        self, scan_id: str, target: str, duration: float, findings_count: int
+    ):
         """Notify about scan completion"""
-        severity = AlertSeverity.WARNING if findings_count > 0 else AlertSeverity.INFO
+        severity = (
+            AlertSeverity.WARNING if findings_count > 0 else AlertSeverity.INFO
+        )
 
         await self.send_alert(
             title="Scan Completed",
@@ -217,7 +277,12 @@ class NotificationManager:
             },
         )
 
-    async def notify_system_error(self, error_type: str, error_message: str, endpoint: Optional[str] = None):
+    async def notify_system_error(
+        self,
+        error_type: str,
+        error_message: str,
+        endpoint: Optional[str] = None,
+    ):
         """Notify about system error"""
         await self.send_alert(
             title="System Error",
@@ -230,7 +295,9 @@ class NotificationManager:
             },
         )
 
-    async def notify_rate_limit_hit(self, tier: str, endpoint: str, ip_address: str):
+    async def notify_rate_limit_hit(
+        self, tier: str, endpoint: str, ip_address: str
+    ):
         """Notify about rate limit hit (throttled)"""
         await self.send_alert(
             title="Rate Limit Exceeded",
@@ -273,12 +340,18 @@ async def send_system_error(*args, **kwargs):
 
 
 def notify_critical_finding_sync(*args, **kwargs):
-    asyncio.create_task(notification_manager.notify_critical_finding(*args, **kwargs))
+    asyncio.create_task(
+        notification_manager.notify_critical_finding(*args, **kwargs)
+    )
 
 
 def notify_auth_failure_sync(*args, **kwargs):
-    asyncio.create_task(notification_manager.notify_auth_failure(*args, **kwargs))
+    asyncio.create_task(
+        notification_manager.notify_auth_failure(*args, **kwargs)
+    )
 
 
 def notify_scan_completed_sync(*args, **kwargs):
-    asyncio.create_task(notification_manager.notify_scan_completed(*args, **kwargs))
+    asyncio.create_task(
+        notification_manager.notify_scan_completed(*args, **kwargs)
+    )

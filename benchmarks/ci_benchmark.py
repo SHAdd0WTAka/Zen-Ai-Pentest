@@ -15,7 +15,12 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-from .benchmark_engine import BenchmarkConfig, BenchmarkEngine, BenchmarkReport, BenchmarkStatus
+from .benchmark_engine import (
+    BenchmarkConfig,
+    BenchmarkEngine,
+    BenchmarkReport,
+    BenchmarkStatus,
+)
 from .scenarios import ALL_SCENARIOS
 
 logger = logging.getLogger(__name__)
@@ -81,8 +86,12 @@ class CIConfig:
     schedule_cron: str = "0 0 * * 0"  # Weekly
 
     # Scenarios
-    quick_scenarios: List[str] = field(default_factory=lambda: ["dvwa", "juice-shop"])
-    full_scenarios: List[str] = field(default_factory=lambda: list(ALL_SCENARIOS.keys()))
+    quick_scenarios: List[str] = field(
+        default_factory=lambda: ["dvwa", "juice-shop"]
+    )
+    full_scenarios: List[str] = field(
+        default_factory=lambda: list(ALL_SCENARIOS.keys())
+    )
 
     # Performance gates
     performance_gates: List[PerformanceGate] = field(
@@ -175,7 +184,9 @@ class CIBenchmarkRunner:
 
         return report
 
-    def check_performance_gates(self, report: BenchmarkReport) -> List[GateResult]:
+    def check_performance_gates(
+        self, report: BenchmarkReport
+    ) -> List[GateResult]:
         """Check if benchmark passes all performance gates."""
 
         logger.info("Checking performance gates")
@@ -212,7 +223,9 @@ class CIBenchmarkRunner:
 
         return self.gate_results
 
-    def detect_regressions(self, report: BenchmarkReport) -> List[RegressionCheck]:
+    def detect_regressions(
+        self, report: BenchmarkReport
+    ) -> List[RegressionCheck]:
         """Detect performance regressions compared to baseline."""
 
         logger.info("Detecting regressions")
@@ -269,7 +282,9 @@ class CIBenchmarkRunner:
 
         return self.regressions
 
-    def _get_baseline_report(self, current: BenchmarkReport) -> Optional[BenchmarkReport]:
+    def _get_baseline_report(
+        self, current: BenchmarkReport
+    ) -> Optional[BenchmarkReport]:
         """Get baseline report for comparison."""
 
         history = self.engine.get_benchmark_history(limit=10)
@@ -282,7 +297,9 @@ class CIBenchmarkRunner:
                 and entry.get("success_rate", 0) > 50
             ):
                 # Load full report if available
-                report_path = self.output_dir / entry["benchmark_id"] / "report.json"
+                report_path = (
+                    self.output_dir / entry["benchmark_id"] / "report.json"
+                )
                 if report_path.exists():
                     try:
                         with open(report_path) as f:
@@ -302,7 +319,9 @@ class CIBenchmarkRunner:
 
         logger.info("Analyzing performance trends")
 
-        history = self.engine.get_benchmark_history(limit=self.config.trend_lookback_runs)
+        history = self.engine.get_benchmark_history(
+            limit=self.config.trend_lookback_runs
+        )
 
         if len(history) < 3:
             logger.info("Not enough history for trend analysis")
@@ -311,7 +330,13 @@ class CIBenchmarkRunner:
         trends = {}
 
         # Analyze key metrics
-        metrics_to_track = ["avg_precision", "avg_recall", "avg_f1_score", "avg_accuracy", "success_rate"]
+        metrics_to_track = [
+            "avg_precision",
+            "avg_recall",
+            "avg_f1_score",
+            "avg_accuracy",
+            "success_rate",
+        ]
 
         for metric in metrics_to_track:
             values = [
@@ -353,13 +378,21 @@ class CIBenchmarkRunner:
         if self.config.fail_on_gate_failure:
             failed_gates = [g for g in self.gate_results if not g.passed]
             if failed_gates:
-                reasons.append(f"{len(failed_gates)} performance gate(s) failed")
+                reasons.append(
+                    f"{len(failed_gates)} performance gate(s) failed"
+                )
 
         # Check critical regressions
         if self.config.fail_on_critical_regression:
-            critical = [r for r in self.regressions if r.severity == RegressionSeverity.CRITICAL]
+            critical = [
+                r
+                for r in self.regressions
+                if r.severity == RegressionSeverity.CRITICAL
+            ]
             if critical:
-                reasons.append(f"{len(critical)} critical regression(s) detected")
+                reasons.append(
+                    f"{len(critical)} critical regression(s) detected"
+                )
 
         if reasons:
             return True, "; ".join(reasons)
@@ -382,12 +415,18 @@ class CIBenchmarkRunner:
         # Add scenario tests
         for scenario_result in report.scenario_results:
             testcase = ET.SubElement(
-                suite, "testcase", name=scenario_result.scenario_id, time=str(scenario_result.duration_seconds)
+                suite,
+                "testcase",
+                name=scenario_result.scenario_id,
+                time=str(scenario_result.duration_seconds),
             )
 
             if scenario_result.status != BenchmarkStatus.COMPLETED:
                 failure = ET.SubElement(testcase, "failure")
-                failure.text = scenario_result.error_message or f"Scenario failed with status: {scenario_result.status.name}"
+                failure.text = (
+                    scenario_result.error_message
+                    or f"Scenario failed with status: {scenario_result.status.name}"
+                )
 
             elif scenario_result.metrics:
                 # Add metrics as system output
@@ -405,7 +444,9 @@ class CIBenchmarkRunner:
         )
 
         for gate_result in self.gate_results:
-            testcase = ET.SubElement(gate_suite, "testcase", name=gate_result.gate.name)
+            testcase = ET.SubElement(
+                gate_suite, "testcase", name=gate_result.gate.name
+            )
 
             if not gate_result.passed:
                 failure = ET.SubElement(testcase, "failure")
@@ -413,12 +454,22 @@ class CIBenchmarkRunner:
 
         # Add regression checks
         if self.regressions:
-            reg_suite = ET.SubElement(root, "testsuite", name="Regression Checks", tests=str(len(self.regressions)))
+            reg_suite = ET.SubElement(
+                root,
+                "testsuite",
+                name="Regression Checks",
+                tests=str(len(self.regressions)),
+            )
 
             for reg in self.regressions:
-                testcase = ET.SubElement(reg_suite, "testcase", name=f"regression_{reg.metric}")
+                testcase = ET.SubElement(
+                    reg_suite, "testcase", name=f"regression_{reg.metric}"
+                )
 
-                if reg.severity in [RegressionSeverity.CRITICAL, RegressionSeverity.HIGH]:
+                if reg.severity in [
+                    RegressionSeverity.CRITICAL,
+                    RegressionSeverity.HIGH,
+                ]:
                     failure = ET.SubElement(testcase, "failure")
                     failure.text = reg.message
 
@@ -481,13 +532,22 @@ class CIBenchmarkRunner:
         # Build status
         should_fail, reason = self.should_fail_build()
         if should_fail:
-            lines.extend(["### ❌ Build Status: FAILED", "", f"**Reason:** {reason}", ""])
+            lines.extend(
+                [
+                    "### ❌ Build Status: FAILED",
+                    "",
+                    f"**Reason:** {reason}",
+                    "",
+                ]
+            )
         else:
             lines.extend(["### ✅ Build Status: PASSED", ""])
 
         return "\n".join(lines)
 
-    async def run_ci_pipeline(self, benchmark_type: str = "quick") -> Dict[str, Any]:
+    async def run_ci_pipeline(
+        self, benchmark_type: str = "quick"
+    ) -> Dict[str, Any]:
         """Run complete CI pipeline."""
 
         logger.info(f"Starting CI pipeline ({benchmark_type})")
@@ -517,7 +577,9 @@ class CIBenchmarkRunner:
             outputs["junit_xml"] = self.generate_junit_xml(report)
 
         if self.config.output_format in ["markdown", "all"]:
-            outputs["markdown_summary"] = self.generate_summary_markdown(report)
+            outputs["markdown_summary"] = self.generate_summary_markdown(
+                report
+            )
 
         if self.config.output_format in ["json", "all"]:
             outputs["json_report"] = report.to_dict()
@@ -531,7 +593,11 @@ class CIBenchmarkRunner:
             "gates_passed": sum(1 for g in self.gate_results if g.passed),
             "gates_total": len(self.gate_results),
             "regressions": len(self.regressions),
-            "critical_regressions": sum(1 for r in self.regressions if r.severity == RegressionSeverity.CRITICAL),
+            "critical_regressions": sum(
+                1
+                for r in self.regressions
+                if r.severity == RegressionSeverity.CRITICAL
+            ),
             "should_fail": should_fail,
             "fail_reason": fail_reason if should_fail else None,
             "trends": trends,
@@ -542,7 +608,9 @@ class CIBenchmarkRunner:
 
         return result
 
-    def _save_ci_outputs(self, report: BenchmarkReport, outputs: Dict[str, Any]) -> None:
+    def _save_ci_outputs(
+        self, report: BenchmarkReport, outputs: Dict[str, Any]
+    ) -> None:
         """Save CI output files."""
 
         ci_dir = self.output_dir / "ci_outputs"
@@ -658,18 +726,40 @@ async def main():
     """CLI entry point for CI benchmark."""
     import argparse
 
-    parser = argparse.ArgumentParser(description="Zen-AI-Pentest CI Benchmark Runner")
-    parser.add_argument("--type", choices=["quick", "full"], default="quick", help="Type of benchmark to run")
-    parser.add_argument("--output", default="ci_benchmark_results", help="Output directory")
-    parser.add_argument("--format", choices=["json", "junit", "markdown", "all"], default="all", help="Output format")
-    parser.add_argument("--fail-on-gate", action="store_true", help="Fail on gate failure")
-    parser.add_argument("--fail-on-regression", action="store_true", help="Fail on critical regression")
+    parser = argparse.ArgumentParser(
+        description="Zen-AI-Pentest CI Benchmark Runner"
+    )
+    parser.add_argument(
+        "--type",
+        choices=["quick", "full"],
+        default="quick",
+        help="Type of benchmark to run",
+    )
+    parser.add_argument(
+        "--output", default="ci_benchmark_results", help="Output directory"
+    )
+    parser.add_argument(
+        "--format",
+        choices=["json", "junit", "markdown", "all"],
+        default="all",
+        help="Output format",
+    )
+    parser.add_argument(
+        "--fail-on-gate", action="store_true", help="Fail on gate failure"
+    )
+    parser.add_argument(
+        "--fail-on-regression",
+        action="store_true",
+        help="Fail on critical regression",
+    )
 
     args = parser.parse_args()
 
     # Create config
     config = CIConfig(
-        output_format=args.format, fail_on_gate_failure=args.fail_on_gate, fail_on_critical_regression=args.fail_on_regression
+        output_format=args.format,
+        fail_on_gate_failure=args.fail_on_gate,
+        fail_on_critical_regression=args.fail_on_regression,
     )
 
     # Run pipeline

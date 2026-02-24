@@ -27,7 +27,12 @@ from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
 # Ensure project root is in path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+sys.path.insert(
+    0,
+    os.path.dirname(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    ),
+)
 
 from database.crud import (
     create_finding,
@@ -80,7 +85,9 @@ def engine():
 @pytest.fixture(scope="function")
 def db_session(engine) -> Generator[Session, None, None]:
     """Create a database session for testing."""
-    TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    TestingSessionLocal = sessionmaker(
+        autocommit=False, autoflush=False, bind=engine
+    )
     session = TestingSessionLocal()
     try:
         yield session
@@ -161,7 +168,9 @@ class TestDatabaseConnection:
     def test_tables_created(self, engine):
         """Test that all tables are created."""
         with engine.connect() as conn:
-            result = conn.execute(text("SELECT name FROM sqlite_master WHERE type='table'"))
+            result = conn.execute(
+                text("SELECT name FROM sqlite_master WHERE type='table'")
+            )
             tables = [row[0] for row in result.fetchall()]
 
             assert "users" in tables
@@ -240,10 +249,14 @@ class TestUserCRUD:
         db_session.delete(user)
         db_session.commit()
 
-        deleted_user = db_session.query(User).filter(User.id == user_id).first()
+        deleted_user = (
+            db_session.query(User).filter(User.id == user_id).first()
+        )
         assert deleted_user is None
 
-    def test_user_unique_constraints(self, db_session: Session, sample_user: User):
+    def test_user_unique_constraints(
+        self, db_session: Session, sample_user: User
+    ):
         """Test unique constraints on username and email."""
         duplicate_user = User(
             username="testuser",  # Same username as sample_user
@@ -294,13 +307,17 @@ class TestScanCRUD:
 
     def test_update_scan_status(self, db_session: Session, sample_scan: Scan):
         """Test updating scan status."""
-        updated_scan = update_scan_status(db_session, sample_scan.id, "running")
+        updated_scan = update_scan_status(
+            db_session, sample_scan.id, "running"
+        )
         assert updated_scan is not None
         assert updated_scan.status == "running"
         assert updated_scan.started_at is not None
 
         # Complete the scan
-        updated_scan = update_scan_status(db_session, sample_scan.id, "completed", {"findings_count": 5})
+        updated_scan = update_scan_status(
+            db_session, sample_scan.id, "completed", {"findings_count": 5}
+        )
         assert updated_scan.status == "completed"
         assert updated_scan.completed_at is not None
 
@@ -319,7 +336,9 @@ class TestScanCRUD:
         db_session.delete(scan)
         db_session.commit()
 
-        deleted_scan = db_session.query(Scan).filter(Scan.id == scan_id).first()
+        deleted_scan = (
+            db_session.query(Scan).filter(Scan.id == scan_id).first()
+        )
         assert deleted_scan is None
 
     def test_list_scans(self, db_session: Session, sample_user: User):
@@ -342,10 +361,16 @@ class TestScanCRUD:
         scans = get_scans(db_session, skip=5, limit=5)
         assert len(scans) == 5
 
-    def test_filter_scans_by_status(self, db_session: Session, sample_user: User):
+    def test_filter_scans_by_status(
+        self, db_session: Session, sample_user: User
+    ):
         """Test filtering scans by status."""
         # Create scans with different statuses
-        for status in [ScanStatus.PENDING, ScanStatus.RUNNING, ScanStatus.COMPLETED]:
+        for status in [
+            ScanStatus.PENDING,
+            ScanStatus.RUNNING,
+            ScanStatus.COMPLETED,
+        ]:
             scan = Scan(
                 name=f"{status.value} Scan",
                 target="example.com",
@@ -396,12 +421,18 @@ class TestFindingCRUD:
 
     def test_read_finding(self, db_session: Session, sample_finding: Finding):
         """Test reading a finding."""
-        finding = db_session.query(Finding).filter(Finding.id == sample_finding.id).first()
+        finding = (
+            db_session.query(Finding)
+            .filter(Finding.id == sample_finding.id)
+            .first()
+        )
         assert finding is not None
         assert finding.title == "Test Vulnerability"
         assert finding.severity == Severity.HIGH
 
-    def test_update_finding(self, db_session: Session, sample_finding: Finding):
+    def test_update_finding(
+        self, db_session: Session, sample_finding: Finding
+    ):
         """Test updating a finding."""
         sample_finding.verified = 1
         sample_finding.remediation = "Apply security patch"
@@ -428,13 +459,23 @@ class TestFindingCRUD:
         db_session.delete(finding)
         db_session.commit()
 
-        deleted_finding = db_session.query(Finding).filter(Finding.id == finding_id).first()
+        deleted_finding = (
+            db_session.query(Finding).filter(Finding.id == finding_id).first()
+        )
         assert deleted_finding is None
 
-    def test_list_findings_by_severity(self, db_session: Session, sample_scan: Scan):
+    def test_list_findings_by_severity(
+        self, db_session: Session, sample_scan: Scan
+    ):
         """Test listing findings filtered by severity."""
         # Create findings with different severities
-        severities = [Severity.CRITICAL, Severity.HIGH, Severity.MEDIUM, Severity.LOW, Severity.INFO]
+        severities = [
+            Severity.CRITICAL,
+            Severity.HIGH,
+            Severity.MEDIUM,
+            Severity.LOW,
+            Severity.INFO,
+        ]
         for sev in severities:
             finding = Finding(
                 scan_id=sample_scan.id,
@@ -452,7 +493,9 @@ class TestFindingCRUD:
         # Filter by severity (if supported by the function)
         # Note: The current CRUD function may not support severity filtering
 
-    def test_finding_scan_relationship(self, db_session: Session, sample_finding: Finding):
+    def test_finding_scan_relationship(
+        self, db_session: Session, sample_finding: Finding
+    ):
         """Test relationship between finding and scan."""
         # Access scan through relationship
         scan = sample_finding.scan
@@ -473,7 +516,9 @@ class TestFindingCRUD:
 class TestReportCRUD:
     """Test CRUD operations for Report model."""
 
-    def test_create_report(self, db_session: Session, sample_scan: Scan, sample_user: User):
+    def test_create_report(
+        self, db_session: Session, sample_scan: Scan, sample_user: User
+    ):
         """Test creating a new report."""
         report = Report(
             scan_id=sample_scan.id,
@@ -492,7 +537,9 @@ class TestReportCRUD:
         assert report.format == "pdf"
         assert report.status == "pending"
 
-    def test_read_report(self, db_session: Session, sample_scan: Scan, sample_user: User):
+    def test_read_report(
+        self, db_session: Session, sample_scan: Scan, sample_user: User
+    ):
         """Test reading a report."""
         report = Report(
             scan_id=sample_scan.id,
@@ -504,12 +551,16 @@ class TestReportCRUD:
         db_session.add(report)
         db_session.commit()
 
-        retrieved = db_session.query(Report).filter(Report.id == report.id).first()
+        retrieved = (
+            db_session.query(Report).filter(Report.id == report.id).first()
+        )
         assert retrieved is not None
         assert retrieved.format == "html"
         assert retrieved.status == "completed"
 
-    def test_update_report(self, db_session: Session, sample_scan: Scan, sample_user: User):
+    def test_update_report(
+        self, db_session: Session, sample_scan: Scan, sample_user: User
+    ):
         """Test updating a report."""
         report = Report(
             scan_id=sample_scan.id,
@@ -539,7 +590,9 @@ class TestReportCRUD:
 class TestRelationships:
     """Test relationships between models."""
 
-    def test_user_scans_relationship(self, db_session: Session, sample_user: User, sample_scan: Scan):
+    def test_user_scans_relationship(
+        self, db_session: Session, sample_user: User, sample_scan: Scan
+    ):
         """Test relationship between user and scans."""
         # User should have scans
         assert len(sample_user.scans) >= 1
@@ -549,7 +602,9 @@ class TestRelationships:
         assert sample_scan.user is not None
         assert sample_scan.user.id == sample_user.id
 
-    def test_scan_findings_relationship(self, db_session: Session, sample_scan: Scan, sample_finding: Finding):
+    def test_scan_findings_relationship(
+        self, db_session: Session, sample_scan: Scan, sample_finding: Finding
+    ):
         """Test cascade delete of findings when scan is deleted."""
         scan_id = sample_scan.id
         finding_id = sample_finding.id
@@ -559,10 +614,14 @@ class TestRelationships:
         db_session.commit()
 
         # Finding should also be deleted (cascade)
-        finding = db_session.query(Finding).filter(Finding.id == finding_id).first()
+        finding = (
+            db_session.query(Finding).filter(Finding.id == finding_id).first()
+        )
         assert finding is None
 
-    def test_scan_reports_relationship(self, db_session: Session, sample_scan: Scan, sample_user: User):
+    def test_scan_reports_relationship(
+        self, db_session: Session, sample_scan: Scan, sample_user: User
+    ):
         """Test relationship between scan and reports."""
         # Create reports for the scan
         for fmt in ["pdf", "html", "json"]:
@@ -582,7 +641,9 @@ class TestRelationships:
         for report in sample_scan.reports:
             assert report.scan.id == sample_scan.id
 
-    def test_user_reports_relationship(self, db_session: Session, sample_user: User, sample_scan: Scan):
+    def test_user_reports_relationship(
+        self, db_session: Session, sample_user: User, sample_scan: Scan
+    ):
         """Test relationship between user and reports."""
         report = Report(
             scan_id=sample_scan.id,
@@ -619,10 +680,16 @@ class TestTransactions:
         db_session.commit()
 
         # Should be persisted
-        retrieved = db_session.query(Scan).filter(Scan.name == "Transaction Test").first()
+        retrieved = (
+            db_session.query(Scan)
+            .filter(Scan.name == "Transaction Test")
+            .first()
+        )
         assert retrieved is not None
 
-    def test_rollback_transaction(self, db_session: Session, sample_user: User):
+    def test_rollback_transaction(
+        self, db_session: Session, sample_user: User
+    ):
         """Test transaction rollback on error."""
         scan = Scan(
             name="Rollback Test",
@@ -636,10 +703,14 @@ class TestTransactions:
         db_session.rollback()
 
         # Should not be persisted
-        retrieved = db_session.query(Scan).filter(Scan.name == "Rollback Test").first()
+        retrieved = (
+            db_session.query(Scan).filter(Scan.name == "Rollback Test").first()
+        )
         assert retrieved is None
 
-    def test_nested_transaction_savepoint(self, db_session: Session, sample_user: User):
+    def test_nested_transaction_savepoint(
+        self, db_session: Session, sample_user: User
+    ):
         """Test nested transactions with savepoints."""
         # Outer transaction
         scan1 = Scan(
@@ -665,8 +736,14 @@ class TestTransactions:
         db_session.commit()
 
         # Both should be persisted
-        assert db_session.query(Scan).filter(Scan.name == "Outer Scan").first() is not None
-        assert db_session.query(Scan).filter(Scan.name == "Inner Scan").first() is not None
+        assert (
+            db_session.query(Scan).filter(Scan.name == "Outer Scan").first()
+            is not None
+        )
+        assert (
+            db_session.query(Scan).filter(Scan.name == "Inner Scan").first()
+            is not None
+        )
 
     def test_concurrent_access_simulation(self, engine, sample_user: User):
         """Test concurrent access with separate sessions."""
@@ -702,11 +779,18 @@ class TestTransactions:
 class TestComplexQueries:
     """Test complex database queries."""
 
-    def test_join_query(self, db_session: Session, sample_user: User, sample_scan: Scan):
+    def test_join_query(
+        self, db_session: Session, sample_user: User, sample_scan: Scan
+    ):
         """Test join query between users and scans."""
         from sqlalchemy.orm import joinedload
 
-        result = db_session.query(Scan).options(joinedload(Scan.user)).filter(Scan.user_id == sample_user.id).all()
+        result = (
+            db_session.query(Scan)
+            .options(joinedload(Scan.user))
+            .filter(Scan.user_id == sample_user.id)
+            .all()
+        )
 
         assert len(result) >= 1
         assert result[0].user.username == "testuser"
@@ -716,7 +800,12 @@ class TestComplexQueries:
         # Create findings with different severities
         from sqlalchemy import func
 
-        for severity in [Severity.HIGH, Severity.HIGH, Severity.MEDIUM, Severity.LOW]:
+        for severity in [
+            Severity.HIGH,
+            Severity.HIGH,
+            Severity.MEDIUM,
+            Severity.LOW,
+        ]:
             finding = Finding(
                 scan_id=sample_scan.id,
                 title=f"{severity.value} Finding",
@@ -737,7 +826,9 @@ class TestComplexQueries:
         severity_counts = {r[0]: r[1] for r in result}
         assert severity_counts[Severity.HIGH] == 2
 
-    def test_filter_by_date_range(self, db_session: Session, sample_user: User):
+    def test_filter_by_date_range(
+        self, db_session: Session, sample_user: User
+    ):
         """Test filtering scans by date range."""
         # Create scans with different dates
         from datetime import datetime, timedelta
@@ -756,7 +847,10 @@ class TestComplexQueries:
         # Filter by date
         cutoff_date = datetime.utcnow() - timedelta(days=3)
         recent_scans = (
-            db_session.query(Scan).filter(Scan.created_at >= cutoff_date).filter(Scan.user_id == sample_user.id).all()
+            db_session.query(Scan)
+            .filter(Scan.created_at >= cutoff_date)
+            .filter(Scan.user_id == sample_user.id)
+            .all()
         )
 
         assert len(recent_scans) >= 3
@@ -867,4 +961,6 @@ class TestAdditionalModels:
 
 
 if __name__ == "__main__":
-    pytest.main([__file__, "-v", "--cov=database", "--cov-report=term-missing"])
+    pytest.main(
+        [__file__, "-v", "--cov=database", "--cov-report=term-missing"]
+    )

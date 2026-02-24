@@ -83,7 +83,9 @@ class TestCVEDatabase:
                         "hashes": ["db349b97c37d22f5ea1d1841e3c89eb4"],
                         "registry": ["HKLM\\Software\\WannaCry"],
                         "processes": ["tasksche.exe"],
-                        "network": ["iuqerfsodp9ifjaposdfjhgosurijfaewrwergwea.com"],
+                        "network": [
+                            "iuqerfsodp9ifjaposdfjhgosurijfaewrwergwea.com"
+                        ],
                     },
                     "mitigation": ["Apply MS17-010"],
                     "detection": ["SMB anomaly detection"],
@@ -105,7 +107,9 @@ class TestCVEDatabase:
                     "ransomware_used_by": ["WannaCry", "NotPetya"],
                 }
             },
-            "common_exploit_chains": {"eternalblue_chain": ["CVE-2017-0144", "CVE-2017-0145"]},
+            "common_exploit_chains": {
+                "eternalblue_chain": ["CVE-2017-0144", "CVE-2017-0145"]
+            },
         }
 
     @pytest.fixture
@@ -218,7 +222,11 @@ class TestCVEDatabase:
     def test_get_critical_cves(self, cve_db):
         """Test getting critical CVEs"""
         # Add a critical CVE
-        cve_db.cve_data["CVE-2021-9999"] = {"name": "Critical Vuln", "cvss": 9.9, "severity": "Critical"}
+        cve_db.cve_data["CVE-2021-9999"] = {
+            "name": "Critical Vuln",
+            "cvss": 9.9,
+            "severity": "Critical",
+        }
 
         results = cve_db.get_critical_cves()
 
@@ -240,7 +248,10 @@ class TestCVEDatabase:
 
     def test_check_system_for_ransomware_no_match(self, cve_db):
         """Test system check with no ransomware indicators"""
-        indicators = {"files": ["notepad.exe", "calc.exe"], "hashes": ["12345"]}
+        indicators = {
+            "files": ["notepad.exe", "calc.exe"],
+            "hashes": ["12345"],
+        }
 
         results = cve_db.check_system_for_ransomware(indicators)
 
@@ -249,7 +260,10 @@ class TestCVEDatabase:
 
     def test_check_system_for_ransomware_with_match(self, cve_db):
         """Test system check with matching ransomware indicators"""
-        indicators = {"files": ["tasksche.exe"], "hashes": ["db349b97c37d22f5ea1d1841e3c89eb4"]}
+        indicators = {
+            "files": ["tasksche.exe"],
+            "hashes": ["db349b97c37d22f5ea1d1841e3c89eb4"],
+        }
 
         results = cve_db.check_system_for_ransomware(indicators)
 

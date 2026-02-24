@@ -7,7 +7,13 @@ from unittest.mock import AsyncMock, Mock
 import pytest
 
 from autonomous.memory import MemoryManager
-from autonomous.react import Action, ActionType, Observation, ReActLoop, Thought
+from autonomous.react import (
+    Action,
+    ActionType,
+    Observation,
+    ReActLoop,
+    Thought,
+)
 from autonomous.tool_executor import ToolExecutor
 
 
@@ -23,8 +29,15 @@ def mock_llm():
 def mock_tool_executor():
     """Mock tool executor."""
     executor = Mock(spec=ToolExecutor)
-    executor.get_available_tools = Mock(return_value=[{"name": "nmap", "description": "Port scanner"}])
-    executor.execute = AsyncMock(return_value={"stdout": "PORT   STATE SERVICE\n80/tcp open  http", "success": True})
+    executor.get_available_tools = Mock(
+        return_value=[{"name": "nmap", "description": "Port scanner"}]
+    )
+    executor.execute = AsyncMock(
+        return_value={
+            "stdout": "PORT   STATE SERVICE\n80/tcp open  http",
+            "success": True,
+        }
+    )
     return executor
 
 
@@ -41,7 +54,12 @@ def mock_memory():
 @pytest.fixture
 def react_loop(mock_llm, mock_tool_executor, mock_memory):
     """Create ReAct loop instance."""
-    return ReActLoop(llm_client=mock_llm, tool_executor=mock_tool_executor, memory_manager=mock_memory, max_iterations=5)
+    return ReActLoop(
+        llm_client=mock_llm,
+        tool_executor=mock_tool_executor,
+        memory_manager=mock_memory,
+        max_iterations=5,
+    )
 
 
 class TestReActLoop:
@@ -96,13 +114,20 @@ class TestReActLoop:
     @pytest.mark.asyncio
     async def test_execute_tool_call(self, react_loop, mock_tool_executor):
         """Test tool execution."""
-        action = Action(type=ActionType.TOOL_CALL, tool_name="nmap", parameters={"target": "192.168.1.1"}, step_number=1)
+        action = Action(
+            type=ActionType.TOOL_CALL,
+            tool_name="nmap",
+            parameters={"target": "192.168.1.1"},
+            step_number=1,
+        )
 
         observation = await react_loop._execute_action(action)
 
         assert isinstance(observation, Observation)
         assert observation.success is True
-        mock_tool_executor.execute.assert_called_once_with("nmap", {"target": "192.168.1.1"})
+        mock_tool_executor.execute.assert_called_once_with(
+            "nmap", {"target": "192.168.1.1"}
+        )
 
     @pytest.mark.asyncio
     async def test_max_iterations_limit(self, react_loop, mock_llm):
@@ -133,7 +158,9 @@ class TestThought:
 
     def test_thought_to_dict(self):
         """Test thought serialization."""
-        thought = Thought(content="Test thought", context={"key": "value"}, step_number=1)
+        thought = Thought(
+            content="Test thought", context={"key": "value"}, step_number=1
+        )
 
         d = thought.to_dict()
 
@@ -149,7 +176,11 @@ class TestAction:
     def test_action_to_dict(self):
         """Test action serialization."""
         action = Action(
-            type=ActionType.TOOL_CALL, tool_name="nmap", parameters={"target": "test"}, reasoning="Scan target", step_number=2
+            type=ActionType.TOOL_CALL,
+            tool_name="nmap",
+            parameters={"target": "test"},
+            reasoning="Scan target",
+            step_number=2,
         )
 
         d = action.to_dict()
@@ -165,7 +196,12 @@ class TestObservation:
     def test_observation_to_dict(self):
         """Test observation serialization."""
         action = Action(type=ActionType.TOOL_CALL, step_number=1)
-        observation = Observation(action=action, result={"ports": [80, 443]}, success=True, step_number=1)
+        observation = Observation(
+            action=action,
+            result={"ports": [80, 443]},
+            success=True,
+            step_number=1,
+        )
 
         d = observation.to_dict()
 

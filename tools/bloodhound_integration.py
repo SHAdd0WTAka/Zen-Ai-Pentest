@@ -9,12 +9,19 @@ logger = logging.getLogger(__name__)
 class BloodHoundAnalyzer:
     """Active Directory Attack Path Analysis"""
 
-    def __init__(self, neo4j_uri: str = "bolt://localhost:7687", neo4j_user: str = "neo4j", neo4j_pass: str = "password"):
+    def __init__(
+        self,
+        neo4j_uri: str = "bolt://localhost:7687",
+        neo4j_user: str = "neo4j",
+        neo4j_pass: str = "password",
+    ):
         self.neo4j_uri = neo4j_uri
         self.neo4j_user = neo4j_user
         self.neo4j_pass = neo4j_pass
 
-    def run_sharphound(self, domain: str, username: str, password: str, target: str) -> str:
+    def run_sharphound(
+        self, domain: str, username: str, password: str, target: str
+    ) -> str:
         """
         Führt SharpHound Collector aus (auf Windows Target).
         Gibt ZIP-Datei mit Daten zurück.
@@ -49,7 +56,9 @@ class BloodHoundAnalyzer:
         try:
             from neo4j import GraphDatabase
 
-            driver = GraphDatabase.driver(self.neo4j_uri, auth=(self.neo4j_user, self.neo4j_pass))
+            driver = GraphDatabase.driver(
+                self.neo4j_uri, auth=(self.neo4j_user, self.neo4j_pass)
+            )
 
             with driver.session() as session:
                 result = session.run(query, start=start_node, end=end_node)

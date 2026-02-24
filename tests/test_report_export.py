@@ -119,7 +119,17 @@ class TestReportExporter:
         rows = list(reader)
 
         # Check header
-        assert rows[0] == ["ID", "Severity", "Title", "Description", "Target", "CVE", "CVSS", "Status", "Discovered"]
+        assert rows[0] == [
+            "ID",
+            "Severity",
+            "Title",
+            "Description",
+            "Target",
+            "CVE",
+            "CVSS",
+            "Status",
+            "Discovered",
+        ]
 
         # Check data rows
         assert len(rows) == 5  # header + 4 findings
@@ -138,7 +148,9 @@ class TestReportExporter:
 
     def test_export_csv_custom_filename(self, exporter, sample_findings):
         """Test CSV export with custom filename"""
-        csv_data = exporter.export_csv(sample_findings, filename="custom_report.csv")
+        csv_data = exporter.export_csv(
+            sample_findings, filename="custom_report.csv"
+        )
 
         assert isinstance(csv_data, bytes)
         # Filename parameter doesn't affect content, just for reference
@@ -163,7 +175,8 @@ class TestReportExporter:
         assert parsed == []
 
     @pytest.mark.skipif(
-        not hasattr(ReportExporter, "_check_weasyprint") or not ReportExporter()._check_weasyprint(),
+        not hasattr(ReportExporter, "_check_weasyprint")
+        or not ReportExporter()._check_weasyprint(),
         reason="WeasyPrint not available",
     )
     def test_export_pdf_executive(self, exporter, sample_report_data):
@@ -173,13 +186,16 @@ class TestReportExporter:
             mock_html.return_value = mock_html_instance
             mock_html_instance.write_pdf.return_value = b"PDF content"
 
-            pdf_data = exporter.export_pdf(sample_report_data, template="executive")
+            pdf_data = exporter.export_pdf(
+                sample_report_data, template="executive"
+            )
 
             assert pdf_data == b"PDF content"
             mock_html.assert_called_once()
 
     @pytest.mark.skipif(
-        not hasattr(ReportExporter, "_check_weasyprint") or not ReportExporter()._check_weasyprint(),
+        not hasattr(ReportExporter, "_check_weasyprint")
+        or not ReportExporter()._check_weasyprint(),
         reason="WeasyPrint not available",
     )
     def test_export_pdf_technical(self, exporter, sample_report_data):
@@ -189,12 +205,15 @@ class TestReportExporter:
             mock_html.return_value = mock_html_instance
             mock_html_instance.write_pdf.return_value = b"PDF content"
 
-            pdf_data = exporter.export_pdf(sample_report_data, template="technical")
+            pdf_data = exporter.export_pdf(
+                sample_report_data, template="technical"
+            )
 
             assert pdf_data == b"PDF content"
 
     @pytest.mark.skipif(
-        not hasattr(ReportExporter, "_check_weasyprint") or not ReportExporter()._check_weasyprint(),
+        not hasattr(ReportExporter, "_check_weasyprint")
+        or not ReportExporter()._check_weasyprint(),
         reason="WeasyPrint not available",
     )
     def test_export_pdf_default_template(self, exporter, sample_report_data):
@@ -208,10 +227,14 @@ class TestReportExporter:
 
             assert pdf_data == b"PDF content"
 
-    def test_export_pdf_weasyprint_not_available(self, exporter, sample_report_data):
+    def test_export_pdf_weasyprint_not_available(
+        self, exporter, sample_report_data
+    ):
         """Test PDF export when WeasyPrint is not available"""
         with patch("modules.report_export.WEASYPRINT_AVAILABLE", False):
-            with pytest.raises(RuntimeError, match="PDF generation requires WeasyPrint"):
+            with pytest.raises(
+                RuntimeError, match="PDF generation requires WeasyPrint"
+            ):
                 exporter.export_pdf(sample_report_data)
 
     def test_executive_template(self, exporter, sample_report_data):
@@ -228,7 +251,13 @@ class TestReportExporter:
     def test_executive_template_with_many_findings(self, exporter):
         """Test executive template limits to top 10 findings"""
         many_findings = [
-            {"id": f"FIND-{i}", "severity": "high", "title": f"Finding {i}", "description": "Test"} for i in range(20)
+            {
+                "id": f"FIND-{i}",
+                "severity": "high",
+                "title": f"Finding {i}",
+                "description": "Test",
+            }
+            for i in range(20)
         ]
         report = ReportData(
             title="Test Report",
@@ -242,7 +271,9 @@ class TestReportExporter:
         html = exporter._executive_template(report)
 
         # Should only show top 10
-        assert html.count("Finding") <= 15  # Some tolerance for other occurrences
+        assert (
+            html.count("Finding") <= 15
+        )  # Some tolerance for other occurrences
 
     def test_technical_template(self, exporter, sample_report_data):
         """Test technical template generation"""
@@ -265,7 +296,10 @@ class TestReportExporter:
         assert "csv" in formats
         assert "json" in formats
         # PDF availability depends on WeasyPrint
-        if hasattr(ReportExporter, "_check_weasyprint") and ReportExporter()._check_weasyprint():
+        if (
+            hasattr(ReportExporter, "_check_weasyprint")
+            and ReportExporter()._check_weasyprint()
+        ):
             assert "pdf" in formats
 
     def test_get_export_formats_without_weasyprint(self, exporter):
@@ -335,7 +369,8 @@ class TestExportFunctions:
         assert len(parsed) == 4
 
     @pytest.mark.skipif(
-        not hasattr(ReportExporter, "_check_weasyprint") or not ReportExporter()._check_weasyprint(),
+        not hasattr(ReportExporter, "_check_weasyprint")
+        or not ReportExporter()._check_weasyprint(),
         reason="WeasyPrint not available",
     )
     def test_export_findings_pdf(self, sample_findings):
@@ -357,7 +392,9 @@ class TestExportFunctions:
     def test_export_findings_calculates_summary(self, sample_findings):
         """Test that export_findings calculates summary for PDF"""
         with (
-            patch("modules.report_export.ReportExporter.export_pdf") as mock_export,
+            patch(
+                "modules.report_export.ReportExporter.export_pdf"
+            ) as mock_export,
             patch("modules.report_export.WEASYPRINT_AVAILABLE", True),
         ):
             mock_export.return_value = b"PDF content"
@@ -392,7 +429,9 @@ class TestTemplateContent:
         assert "style" in html
         assert "font-family" in html or "color" in html
 
-    def test_executive_template_severity_colors(self, exporter, sample_report_data):
+    def test_executive_template_severity_colors(
+        self, exporter, sample_report_data
+    ):
         """Test that severity colors are properly applied"""
         html = exporter._executive_template(sample_report_data)
 
@@ -409,7 +448,9 @@ class TestTemplateContent:
         assert "1" in html  # Count values
         assert "metric" in html.lower() or "summary" in html.lower()
 
-    def test_executive_template_confidentiality(self, exporter, sample_report_data):
+    def test_executive_template_confidentiality(
+        self, exporter, sample_report_data
+    ):
         """Test confidentiality notice in template"""
         html = exporter._executive_template(sample_report_data)
 
@@ -421,7 +462,9 @@ class TestTemplateContent:
 class TestIntegration:
     """Integration tests for report export workflow"""
 
-    def test_full_export_workflow(self, exporter, sample_findings, sample_report_data):
+    def test_full_export_workflow(
+        self, exporter, sample_findings, sample_report_data
+    ):
         """Test complete export workflow"""
         # Export in all available formats
         csv_data = exporter.export_csv(sample_findings)
@@ -439,7 +482,9 @@ class TestIntegration:
         json_parsed = json.loads(json_data)
         assert len(json_parsed) == len(sample_findings)
 
-    def test_report_data_consistency(self, exporter, sample_findings, sample_report_data):
+    def test_report_data_consistency(
+        self, exporter, sample_findings, sample_report_data
+    ):
         """Test that report data is consistent across exports"""
         # Export as JSON
         json_data = exporter.export_json(sample_findings)
@@ -449,7 +494,9 @@ class TestIntegration:
         assert len(json_parsed) == len(sample_report_data.findings)
 
         # Verify severity counts match summary
-        critical_count = sum(1 for f in sample_findings if f["severity"] == "critical")
+        critical_count = sum(
+            1 for f in sample_findings if f["severity"] == "critical"
+        )
         assert critical_count == sample_report_data.summary["critical"]
 
     def test_empty_report_handling(self, exporter):

@@ -96,7 +96,9 @@ class EmailHarvester:
 
         logger.info("EmailHarvester initialisiert")
 
-    async def harvest(self, domain: str, sources: Optional[List[str]] = None) -> Dict:
+    async def harvest(
+        self, domain: str, sources: Optional[List[str]] = None
+    ) -> Dict:
         """
         Sammelt E-Mail-Adressen für eine Domain
 
@@ -140,7 +142,9 @@ class EmailHarvester:
             "common_formats": self._identify_common_formats(),
         }
 
-        logger.info(f"Email-Harvesting abgeschlossen: {len(self.found_emails)} Adressen gefunden")
+        logger.info(
+            f"Email-Harvesting abgeschlossen: {len(self.found_emails)} Adressen gefunden"
+        )
 
         return result
 
@@ -158,21 +162,29 @@ class EmailHarvester:
                 f"https://{domain}/imprint",
             ]
 
-            headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
+            headers = {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+            }
 
             async with aiohttp.ClientSession(headers=headers) as session:
                 for url in urls_to_check:
                     try:
-                        async with session.get(url, timeout=self.timeout, ssl=False) as response:
+                        async with session.get(
+                            url, timeout=self.timeout, ssl=False
+                        ) as response:
                             if response.status == 200:
                                 text = await response.text()
 
                                 # Suche E-Mails
-                                emails = re.findall(self.EMAIL_PATTERN, text, re.IGNORECASE)
+                                emails = re.findall(
+                                    self.EMAIL_PATTERN, text, re.IGNORECASE
+                                )
 
                                 for email in emails:
                                     if self._is_valid_email(email):
-                                        self._add_email(email, "web", context=url)
+                                        self._add_email(
+                                            email, "web", context=url
+                                        )
 
                     except Exception as e:
                         logger.debug(f"Fehler beim Abrufen von {url}: {e}")
@@ -184,7 +196,10 @@ class EmailHarvester:
         """Harvested E-Mails aus WHOIS-Daten"""
         try:
             proc = await asyncio.create_subprocess_exec(
-                "whois", domain, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+                "whois",
+                domain,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
             )
 
             stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=10)
@@ -231,7 +246,11 @@ class EmailHarvester:
         for first, last in common_names:
             for format_str in self.EMAIL_FORMATS:
                 email = format_str.format(
-                    first=first, last=last, f=first[0] if first else "", l=last[0] if last else "", domain=domain
+                    first=first,
+                    last=last,
+                    f=first[0] if first else "",
+                    l=last[0] if last else "",
+                    domain=domain,
                 )
 
                 # Füge nur als potenziell hinzu (niedrigere Confidence)
@@ -268,7 +287,13 @@ class EmailHarvester:
 
         return True
 
-    def _add_email(self, email: str, source: str, confidence: float = 1.0, context: Optional[str] = None) -> None:
+    def _add_email(
+        self,
+        email: str,
+        source: str,
+        confidence: float = 1.0,
+        context: Optional[str] = None,
+    ) -> None:
         """Fügt eine E-Mail-Adresse hinzu"""
         email = email.lower().strip()
 
@@ -280,14 +305,23 @@ class EmailHarvester:
                 existing.context = context
         else:
             # Neuer Eintrag
-            self.found_emails[email] = EmailAddress(email=email, source=source, confidence=confidence, context=context)
+            self.found_emails[email] = EmailAddress(
+                email=email,
+                source=source,
+                confidence=confidence,
+                context=context,
+            )
 
     def _deduplicate_and_clean(self) -> None:
         """Entfernt Duplikate und bereinigt die Liste"""
         # Entferne Einträge über dem Limit
         if len(self.found_emails) > self.max_results:
             # Sortiere nach Confidence und behalte die besten
-            sorted_emails = sorted(self.found_emails.items(), key=lambda x: x[1].confidence, reverse=True)
+            sorted_emails = sorted(
+                self.found_emails.items(),
+                key=lambda x: x[1].confidence,
+                reverse=True,
+            )
             self.found_emails = dict(sorted_emails[: self.max_results])
 
     async def _verify_emails(self) -> None:
@@ -315,7 +349,11 @@ class EmailHarvester:
         for email in self.found_emails.keys():
             local_part = email.split("@")[0]
 
-            if "." in local_part and "_" not in local_part and "-" not in local_part:
+            if (
+                "." in local_part
+                and "_" not in local_part
+                and "-" not in local_part
+            ):
                 formats_found.append("first.last")
             elif "_" in local_part:
                 formats_found.append("first_last")
@@ -331,15 +369,23 @@ class EmailHarvester:
 
         format_counts = Counter(formats_found)
 
-        return [f"{fmt} ({count})" for fmt, count in format_counts.most_common(5)]
+        return [
+            f"{fmt} ({count})" for fmt, count in format_counts.most_common(5)
+        ]
 
     def get_emails_by_source(self, source: str) -> List[EmailAddress]:
         """Gibt E-Mails nach Quelle gefiltert zurück"""
         return [e for e in self.found_emails.values() if e.source == source]
 
-    def get_emails_by_confidence(self, min_confidence: float = 0.5) -> List[EmailAddress]:
+    def get_emails_by_confidence(
+        self, min_confidence: float = 0.5
+    ) -> List[EmailAddress]:
         """Gibt E-Mails mit Mindest-Confidence zurück"""
-        return [e for e in self.found_emails.values() if e.confidence >= min_confidence]
+        return [
+            e
+            for e in self.found_emails.values()
+            if e.confidence >= min_confidence
+        ]
 
 
 async def main():
@@ -349,7 +395,9 @@ async def main():
 
     parser = argparse.ArgumentParser(description="Email Harvester")
     parser.add_argument("domain", help="Ziel-Domain")
-    parser.add_argument("--verify", action="store_true", help="E-Mails verifizieren")
+    parser.add_argument(
+        "--verify", action="store_true", help="E-Mails verifizieren"
+    )
     parser.add_argument("-o", "--output", help="Ausgabedatei")
     parser.add_argument("-v", "--verbose", action="store_true")
 

@@ -7,7 +7,9 @@ import sys
 
 import pytest
 
-sys.path.insert(0, "C:\\Users\\Ataka\\source\\repos\\SHAdd0WTAka\\Zen-Ai-Pentest")
+sys.path.insert(
+    0, "C:\\Users\\Ataka\\source\\repos\\SHAdd0WTAka\\Zen-Ai-Pentest"
+)
 
 os.environ["DATABASE_URL"] = "sqlite:///./test_api.db"
 os.environ["JWT_SECRET_KEY"] = "test-secret"
@@ -29,7 +31,10 @@ class TestHealthEndpoints:
         assert response.status_code == 200
         data = response.json()
         assert "status" in data
-        assert data["status"] in ["healthy", "degraded"]  # Redis may be unavailable
+        assert data["status"] in [
+            "healthy",
+            "degraded",
+        ]  # Redis may be unavailable
 
     def test_health_check_has_services(self):
         """Test health endpoint returns services info"""
@@ -45,7 +50,9 @@ class TestAuthEndpoints:
 
     def test_login_success(self):
         """Test successful login"""
-        response = client.post("/auth/login", json={"username": "admin", "password": "admin123"})
+        response = client.post(
+            "/auth/login", json={"username": "admin", "password": "admin123"}
+        )
         assert response.status_code == 200
         data = response.json()
         assert "access_token" in data
@@ -53,7 +60,10 @@ class TestAuthEndpoints:
 
     def test_login_failure(self):
         """Test failed login"""
-        response = client.post("/auth/login", json={"username": "admin", "password": "wrongpassword123"})
+        response = client.post(
+            "/auth/login",
+            json={"username": "admin", "password": "wrongpassword123"},
+        )
         assert response.status_code == 401
 
     def test_login_missing_fields(self):
@@ -83,7 +93,14 @@ class TestScanEndpoints:
 
     def test_create_scan_unauthorized(self):
         """Test creating scan without auth"""
-        response = client.post("/scans", json={"name": "Test Scan", "target": "localhost", "scan_type": "quick"})
+        response = client.post(
+            "/scans",
+            json={
+                "name": "Test Scan",
+                "target": "localhost",
+                "scan_type": "quick",
+            },
+        )
         assert response.status_code == 401
 
     def test_get_scan_by_id_unauthorized(self):
@@ -120,7 +137,11 @@ class TestCORSEndpoints:
     def test_cors_preflight(self):
         """Test CORS preflight request"""
         response = client.options(
-            "/auth/login", headers={"Origin": "http://localhost:3000", "Access-Control-Request-Method": "POST"}
+            "/auth/login",
+            headers={
+                "Origin": "http://localhost:3000",
+                "Access-Control-Request-Method": "POST",
+            },
         )
         assert response.status_code == 200
         assert "access-control-allow-origin" in response.headers
@@ -128,7 +149,9 @@ class TestCORSEndpoints:
     def test_cors_headers_present(self):
         """Test CORS headers on actual request"""
         response = client.post(
-            "/auth/login", json={"username": "admin", "password": "admin123"}, headers={"Origin": "http://localhost:3000"}
+            "/auth/login",
+            json={"username": "admin", "password": "admin123"},
+            headers={"Origin": "http://localhost:3000"},
         )
         assert response.status_code == 200
         assert "access-control-allow-origin" in response.headers
@@ -139,13 +162,22 @@ class TestInputValidation:
 
     def test_sql_injection_attempt(self):
         """Test that SQL injection is blocked"""
-        response = client.post("/auth/login", json={"username": "admin' OR '1'='1", "password": "admin123"})
+        response = client.post(
+            "/auth/login",
+            json={"username": "admin' OR '1'='1", "password": "admin123"},
+        )
         # Should fail auth, not crash
         assert response.status_code == 401
 
     def test_xss_attempt(self):
         """Test that XSS is blocked"""
-        response = client.post("/auth/login", json={"username": "<script>alert('xss')</script>", "password": "admin123"})
+        response = client.post(
+            "/auth/login",
+            json={
+                "username": "<script>alert('xss')</script>",
+                "password": "admin123",
+            },
+        )
         # Should fail auth, not execute script
         assert response.status_code == 401
 

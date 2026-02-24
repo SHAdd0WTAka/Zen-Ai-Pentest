@@ -168,7 +168,10 @@ class NmapScanner:
         """Validate nmap binary exists"""
         nmap_path = shutil.which(path)
         if not nmap_path:
-            raise RuntimeError(f"nmap not found at '{path}'. Please install nmap: " "https://nmap.org/download.html")
+            raise RuntimeError(
+                f"nmap not found at '{path}'. Please install nmap: "
+                "https://nmap.org/download.html"
+            )
         return nmap_path
 
     def _validate_targets(self, targets: Union[str, List[str]]) -> List[str]:
@@ -183,7 +186,20 @@ class NmapScanner:
                 continue
 
             # Check for invalid characters that could lead to command injection
-            dangerous_chars = [";", "&&", "||", "|", "`", "$", "(", ")", "{", "}", "<", ">"]
+            dangerous_chars = [
+                ";",
+                "&&",
+                "||",
+                "|",
+                "`",
+                "$",
+                "(",
+                ")",
+                "{",
+                "}",
+                "<",
+                ">",
+            ]
             if any(char in target for char in dangerous_chars):
                 raise ValueError(f"Invalid characters in target: {target}")
 
@@ -211,7 +227,9 @@ class NmapScanner:
             if hostname_pattern.match(target):
                 validated.append(target)
             else:
-                logger.warning(f"Target '{target}' doesn't look like a valid hostname or IP, but accepting anyway")
+                logger.warning(
+                    f"Target '{target}' doesn't look like a valid hostname or IP, but accepting anyway"
+                )
                 validated.append(target)
 
         if not validated:
@@ -442,7 +460,11 @@ class NmapScanner:
             protocol = port_elem.get("protocol", "tcp")
 
             state_elem = port_elem.find("state")
-            state = state_elem.get("state", "") if state_elem is not None else "unknown"
+            state = (
+                state_elem.get("state", "")
+                if state_elem is not None
+                else "unknown"
+            )
 
             port = NmapPort(port=port_id, protocol=protocol, state=state)
 
@@ -484,7 +506,9 @@ class NmapScanner:
                 host_xml = match.group(0)
 
                 # Extract IP
-                ip_match = re.search(r'addr="([^"]+)"\s+addrtype="ipv4"', host_xml)
+                ip_match = re.search(
+                    r'addr="([^"]+)"\s+addrtype="ipv4"', host_xml
+                )
                 if ip_match:
                     host = NmapHost(ip=ip_match.group(1))
 
@@ -544,7 +568,9 @@ class NmapScanner:
                 "total_hosts": len(hosts),
                 "up_hosts": sum(1 for h in hosts if h.status == "up"),
                 "total_ports": sum(len(h.ports) for h in hosts),
-                "open_ports": sum(1 for h in hosts for p in h.ports if p.state == "open"),
+                "open_ports": sum(
+                    1 for h in hosts for p in h.ports if p.state == "open"
+                ),
             }
 
             return NmapResult(
@@ -792,14 +818,20 @@ def nmap_scan(
         return f"Scan failed: {result.error}"
 
     # Format results
-    lines = [f"Nmap scan completed in {result.scan_time:.2f}s", f"Command: {result.command}", ""]
+    lines = [
+        f"Nmap scan completed in {result.scan_time:.2f}s",
+        f"Command: {result.command}",
+        "",
+    ]
 
     for host in result.hosts:
         lines.append(f"Host: {host.ip} ({host.hostname})")
         lines.append(f"Status: {host.status}")
 
         if host.os_match:
-            lines.append(f"OS: {host.os_match} ({host.os_accuracy}% confidence)")
+            lines.append(
+                f"OS: {host.os_match} ({host.os_accuracy}% confidence)"
+            )
 
         lines.append("")
         lines.append("Open Ports:")
@@ -813,7 +845,9 @@ def nmap_scan(
 
                 if port.scripts:
                     for script_id, output in port.scripts.items():
-                        lines.append(f"    Script ({script_id}): {output[:100]}")
+                        lines.append(
+                            f"    Script ({script_id}): {output[:100]}"
+                        )
 
         lines.append("")
 
@@ -840,7 +874,9 @@ def nmap_quick_scan(target: str, ports: str = "top-100") -> str:
     if not result.success:
         return f"Scan failed: {result.error}"
 
-    open_count = sum(1 for h in result.hosts for p in h.ports if p.state == "open")
+    open_count = sum(
+        1 for h in result.hosts for p in h.ports if p.state == "open"
+    )
 
     if open_count == 0:
         return f"No open ports found on {target}"
@@ -879,7 +915,9 @@ def nmap_vuln_scan(target: str, ports: str = "top-100") -> str:
         for port in host.ports:
             for script_id, output in port.scripts.items():
                 if "vuln" in script_id.lower() or "cve" in output.lower():
-                    findings.append(f"Port {port.port}: [{script_id}] {output[:200]}")
+                    findings.append(
+                        f"Port {port.port}: [{script_id}] {output[:200]}"
+                    )
 
     if not findings:
         return f"No obvious vulnerabilities found on {target}"

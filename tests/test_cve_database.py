@@ -108,7 +108,13 @@ class TestCVEDatabaseInit:
     @patch(
         "builtins.open",
         mock_open(
-            read_data=json.dumps({"ransomware_campaigns": {}, "critical_historical_cves": {}, "common_exploit_chains": {}})
+            read_data=json.dumps(
+                {
+                    "ransomware_campaigns": {},
+                    "critical_historical_cves": {},
+                    "common_exploit_chains": {},
+                }
+            )
         ),
     )
     def test_init_no_existing_db(self, mock_exists):
@@ -126,9 +132,18 @@ class TestCVEDatabaseInit:
         mock_open(
             read_data=json.dumps(
                 {
-                    "ransomware_campaigns": {"lockbit": {"name": "LockBit", "cves": ["CVE-2021-1234"]}},
-                    "critical_historical_cves": {"CVE-2021-44228": {"name": "Log4Shell", "cvss": 10.0}},
-                    "common_exploit_chains": {"chain1": {"name": "Test Chain"}},
+                    "ransomware_campaigns": {
+                        "lockbit": {
+                            "name": "LockBit",
+                            "cves": ["CVE-2021-1234"],
+                        }
+                    },
+                    "critical_historical_cves": {
+                        "CVE-2021-44228": {"name": "Log4Shell", "cvss": 10.0}
+                    },
+                    "common_exploit_chains": {
+                        "chain1": {"name": "Test Chain"}
+                    },
                 }
             )
         ),
@@ -524,7 +539,9 @@ class TestAnalyzeVulnerability:
     @pytest.mark.asyncio
     async def test_analyze_with_ransomware(self, db):
         """Test analyzing CVE used by ransomware"""
-        result = await db.analyze_vulnerability_for_ransomware_risk("CVE-2021-44228")
+        result = await db.analyze_vulnerability_for_ransomware_risk(
+            "CVE-2021-44228"
+        )
         assert result["cve_id"] == "CVE-2021-44228"
         assert result["cvss_score"] == 10.0
         assert len(result["ransomware_associated"]) == 2
@@ -534,7 +551,9 @@ class TestAnalyzeVulnerability:
     @pytest.mark.asyncio
     async def test_analyze_without_ransomware(self, db):
         """Test analyzing CVE not used by ransomware"""
-        result = await db.analyze_vulnerability_for_ransomware_risk("CVE-2021-34527")
+        result = await db.analyze_vulnerability_for_ransomware_risk(
+            "CVE-2021-34527"
+        )
         assert result["cve_id"] == "CVE-2021-34527"
         assert result["ransomware_associated"] == []
         assert result["ransomware_risk"] == "High"  # Severity
@@ -543,7 +562,9 @@ class TestAnalyzeVulnerability:
     @pytest.mark.asyncio
     async def test_analyze_nonexistent_cve(self, db):
         """Test analyzing non-existent CVE"""
-        result = await db.analyze_vulnerability_for_ransomware_risk("CVE-2099-9999")
+        result = await db.analyze_vulnerability_for_ransomware_risk(
+            "CVE-2099-9999"
+        )
         assert "error" in result
 
     @pytest.mark.asyncio
@@ -560,7 +581,9 @@ class TestAnalyzeVulnerability:
         mock_orch.process = async_process
         db.orchestrator = mock_orch
 
-        result = await db.analyze_vulnerability_for_ransomware_risk("CVE-2021-44228")
+        result = await db.analyze_vulnerability_for_ransomware_risk(
+            "CVE-2021-44228"
+        )
 
         assert "ai_analysis" in result
 
@@ -724,7 +747,9 @@ class TestReportGeneration:
 
     def test_generate_report_multiple(self, db):
         """Test generating report with multiple CVEs"""
-        report = db.generate_vulnerability_report(["CVE-2021-44228", "CVE-2099-9999"])
+        report = db.generate_vulnerability_report(
+            ["CVE-2021-44228", "CVE-2099-9999"]
+        )
         assert "CVE-2021-44228" in report
         assert "CVE-2099-9999" in report
 

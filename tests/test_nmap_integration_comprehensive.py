@@ -88,7 +88,9 @@ def mock_nmap_path():
 @pytest.fixture
 def scanner(mock_nmap_path):
     """Create a NmapScanner instance with mocked path validation"""
-    with patch("tools.nmap_integration.shutil.which", return_value=mock_nmap_path):
+    with patch(
+        "tools.nmap_integration.shutil.which", return_value=mock_nmap_path
+    ):
         return NmapScanner("scanme.nmap.org")
 
 
@@ -102,20 +104,26 @@ class TestNmapScannerInit:
 
     def test_init_with_single_target(self, mock_nmap_path):
         """Test initialization with single target string"""
-        with patch("tools.nmap_integration.shutil.which", return_value=mock_nmap_path):
+        with patch(
+            "tools.nmap_integration.shutil.which", return_value=mock_nmap_path
+        ):
             scanner = NmapScanner("scanme.nmap.org")
             assert scanner.targets == ["scanme.nmap.org"]
             assert scanner.nmap_path == mock_nmap_path
 
     def test_init_with_multiple_targets(self, mock_nmap_path):
         """Test initialization with multiple targets"""
-        with patch("tools.nmap_integration.shutil.which", return_value=mock_nmap_path):
+        with patch(
+            "tools.nmap_integration.shutil.which", return_value=mock_nmap_path
+        ):
             scanner = NmapScanner(["scanme.nmap.org", "example.com"])
             assert scanner.targets == ["scanme.nmap.org", "example.com"]
 
     def test_init_with_options(self, mock_nmap_path):
         """Test initialization with options"""
-        with patch("tools.nmap_integration.shutil.which", return_value=mock_nmap_path):
+        with patch(
+            "tools.nmap_integration.shutil.which", return_value=mock_nmap_path
+        ):
             options = {"ports": "80,443", "service_detection": True}
             scanner = NmapScanner("scanme.nmap.org", options)
             assert scanner.options["ports"] == "80,443"
@@ -124,7 +132,9 @@ class TestNmapScannerInit:
 
     def test_init_default_options(self, mock_nmap_path):
         """Test default options are set"""
-        with patch("tools.nmap_integration.shutil.which", return_value=mock_nmap_path):
+        with patch(
+            "tools.nmap_integration.shutil.which", return_value=mock_nmap_path
+        ):
             scanner = NmapScanner("scanme.nmap.org")
             assert scanner.options["timing"] == TimingTemplate.NORMAL
             assert scanner.options["scan_type"] == ScanType.SYN
@@ -146,49 +156,65 @@ class TestTargetValidation:
 
     def test_validate_ip_address(self, mock_nmap_path):
         """Test validation of IP addresses"""
-        with patch("tools.nmap_integration.shutil.which", return_value=mock_nmap_path):
+        with patch(
+            "tools.nmap_integration.shutil.which", return_value=mock_nmap_path
+        ):
             scanner = NmapScanner("192.168.1.1")
             assert "192.168.1.1" in scanner.targets
 
     def test_validate_ipv6_address(self, mock_nmap_path):
         """Test validation of IPv6 addresses"""
-        with patch("tools.nmap_integration.shutil.which", return_value=mock_nmap_path):
+        with patch(
+            "tools.nmap_integration.shutil.which", return_value=mock_nmap_path
+        ):
             scanner = NmapScanner("2001:db8::1")
             assert "2001:db8::1" in scanner.targets
 
     def test_validate_cidr_network(self, mock_nmap_path):
         """Test validation of CIDR notation"""
-        with patch("tools.nmap_integration.shutil.which", return_value=mock_nmap_path):
+        with patch(
+            "tools.nmap_integration.shutil.which", return_value=mock_nmap_path
+        ):
             scanner = NmapScanner("192.168.1.0/24")
             assert "192.168.1.0/24" in scanner.targets
 
     def test_validate_hostname(self, mock_nmap_path):
         """Test validation of hostnames"""
-        with patch("tools.nmap_integration.shutil.which", return_value=mock_nmap_path):
+        with patch(
+            "tools.nmap_integration.shutil.which", return_value=mock_nmap_path
+        ):
             scanner = NmapScanner("scanme.nmap.org")
             assert "scanme.nmap.org" in scanner.targets
 
     def test_validate_invalid_characters(self, mock_nmap_path):
         """Test rejection of dangerous characters"""
-        with patch("tools.nmap_integration.shutil.which", return_value=mock_nmap_path):
+        with patch(
+            "tools.nmap_integration.shutil.which", return_value=mock_nmap_path
+        ):
             with pytest.raises(ValueError, match="Invalid characters"):
                 NmapScanner("scanme.nmap.org;rm -rf /")
 
     def test_validate_empty_target(self, mock_nmap_path):
         """Test handling of empty targets"""
-        with patch("tools.nmap_integration.shutil.which", return_value=mock_nmap_path):
+        with patch(
+            "tools.nmap_integration.shutil.which", return_value=mock_nmap_path
+        ):
             with pytest.raises(ValueError, match="No valid targets"):
                 NmapScanner("")
 
     def test_validate_no_valid_targets(self, mock_nmap_path):
         """Test error when no valid targets"""
-        with patch("tools.nmap_integration.shutil.which", return_value=mock_nmap_path):
+        with patch(
+            "tools.nmap_integration.shutil.which", return_value=mock_nmap_path
+        ):
             with pytest.raises(ValueError, match="No valid targets"):
                 NmapScanner(["", "   "])
 
     def test_validate_mixed_targets(self, mock_nmap_path):
         """Test validation with mixed valid/invalid targets"""
-        with patch("tools.nmap_integration.shutil.which", return_value=mock_nmap_path):
+        with patch(
+            "tools.nmap_integration.shutil.which", return_value=mock_nmap_path
+        ):
             scanner = NmapScanner(["scanme.nmap.org", "", "192.168.1.1"])
             assert len(scanner.targets) == 2
 
@@ -213,15 +239,21 @@ class TestCommandBuilding:
 
     def test_scan_type_options(self, mock_nmap_path):
         """Test different scan types"""
-        with patch("tools.nmap_integration.shutil.which", return_value=mock_nmap_path):
+        with patch(
+            "tools.nmap_integration.shutil.which", return_value=mock_nmap_path
+        ):
             for scan_type in ScanType:
-                scanner = NmapScanner("scanme.nmap.org", {"scan_type": scan_type})
+                scanner = NmapScanner(
+                    "scanme.nmap.org", {"scan_type": scan_type}
+                )
                 cmd = scanner._build_command()
                 assert scan_type.value in cmd
 
     def test_timing_templates(self, mock_nmap_path):
         """Test timing template options"""
-        with patch("tools.nmap_integration.shutil.which", return_value=mock_nmap_path):
+        with patch(
+            "tools.nmap_integration.shutil.which", return_value=mock_nmap_path
+        ):
             for timing in TimingTemplate:
                 scanner = NmapScanner("scanme.nmap.org", {"timing": timing})
                 cmd = scanner._build_command()
@@ -229,7 +261,9 @@ class TestCommandBuilding:
 
     def test_port_specifications(self, mock_nmap_path):
         """Test various port specifications"""
-        with patch("tools.nmap_integration.shutil.which", return_value=mock_nmap_path):
+        with patch(
+            "tools.nmap_integration.shutil.which", return_value=mock_nmap_path
+        ):
             test_cases = [
                 ("80,443", "-p", "80,443"),
                 ("1-1000", "-p", "1-1000"),
@@ -245,8 +279,13 @@ class TestCommandBuilding:
 
     def test_service_detection(self, mock_nmap_path):
         """Test service detection options"""
-        with patch("tools.nmap_integration.shutil.which", return_value=mock_nmap_path):
-            scanner = NmapScanner("scanme.nmap.org", {"service_detection": True, "version_intensity": 9})
+        with patch(
+            "tools.nmap_integration.shutil.which", return_value=mock_nmap_path
+        ):
+            scanner = NmapScanner(
+                "scanme.nmap.org",
+                {"service_detection": True, "version_intensity": 9},
+            )
             cmd = scanner._build_command()
             assert "-sV" in cmd
             assert "--version-intensity" in cmd
@@ -254,59 +293,81 @@ class TestCommandBuilding:
 
     def test_os_detection(self, mock_nmap_path):
         """Test OS detection options"""
-        with patch("tools.nmap_integration.shutil.which", return_value=mock_nmap_path):
-            scanner = NmapScanner("scanme.nmap.org", {"os_detection": True, "osscan_limit": True})
+        with patch(
+            "tools.nmap_integration.shutil.which", return_value=mock_nmap_path
+        ):
+            scanner = NmapScanner(
+                "scanme.nmap.org", {"os_detection": True, "osscan_limit": True}
+            )
             cmd = scanner._build_command()
             assert "-O" in cmd
             assert "--osscan-limit" in cmd
 
     def test_script_scan_string(self, mock_nmap_path):
         """Test script scan with string"""
-        with patch("tools.nmap_integration.shutil.which", return_value=mock_nmap_path):
-            scanner = NmapScanner("scanme.nmap.org", {"script_scan": "http-title"})
+        with patch(
+            "tools.nmap_integration.shutil.which", return_value=mock_nmap_path
+        ):
+            scanner = NmapScanner(
+                "scanme.nmap.org", {"script_scan": "http-title"}
+            )
             cmd = scanner._build_command()
             assert "--script" in cmd
             assert "http-title" in cmd
 
     def test_script_scan_list(self, mock_nmap_path):
         """Test script scan with list"""
-        with patch("tools.nmap_integration.shutil.which", return_value=mock_nmap_path):
-            scanner = NmapScanner("scanme.nmap.org", {"script_scan": ["http-title", "vulners"]})
+        with patch(
+            "tools.nmap_integration.shutil.which", return_value=mock_nmap_path
+        ):
+            scanner = NmapScanner(
+                "scanme.nmap.org", {"script_scan": ["http-title", "vulners"]}
+            )
             cmd = scanner._build_command()
             assert "--script" in cmd
             assert "http-title,vulners" in cmd
 
     def test_script_scan_default(self, mock_nmap_path):
         """Test default script scan"""
-        with patch("tools.nmap_integration.shutil.which", return_value=mock_nmap_path):
+        with patch(
+            "tools.nmap_integration.shutil.which", return_value=mock_nmap_path
+        ):
             scanner = NmapScanner("scanme.nmap.org", {"script_scan": True})
             cmd = scanner._build_command()
             assert "-sC" in cmd
 
     def test_aggressive_scan(self, mock_nmap_path):
         """Test aggressive scan flag"""
-        with patch("tools.nmap_integration.shutil.which", return_value=mock_nmap_path):
+        with patch(
+            "tools.nmap_integration.shutil.which", return_value=mock_nmap_path
+        ):
             scanner = NmapScanner("scanme.nmap.org", {"aggressive": True})
             cmd = scanner._build_command()
             assert "-A" in cmd
 
     def test_ping_scan(self, mock_nmap_path):
         """Test ping scan option"""
-        with patch("tools.nmap_integration.shutil.which", return_value=mock_nmap_path):
+        with patch(
+            "tools.nmap_integration.shutil.which", return_value=mock_nmap_path
+        ):
             scanner = NmapScanner("scanme.nmap.org", {"ping_scan": True})
             cmd = scanner._build_command()
             assert ScanType.PING.value in cmd
 
     def test_no_ping(self, mock_nmap_path):
         """Test no ping option"""
-        with patch("tools.nmap_integration.shutil.which", return_value=mock_nmap_path):
+        with patch(
+            "tools.nmap_integration.shutil.which", return_value=mock_nmap_path
+        ):
             scanner = NmapScanner("scanme.nmap.org", {"no_ping": True})
             cmd = scanner._build_command()
             assert "-Pn" in cmd
 
     def test_advanced_options(self, mock_nmap_path):
         """Test advanced options"""
-        with patch("tools.nmap_integration.shutil.which", return_value=mock_nmap_path):
+        with patch(
+            "tools.nmap_integration.shutil.which", return_value=mock_nmap_path
+        ):
             options = {
                 "source_port": 53,
                 "interface": "eth0",
@@ -326,15 +387,24 @@ class TestCommandBuilding:
 
     def test_verbosity_options(self, mock_nmap_path):
         """Test verbosity levels"""
-        with patch("tools.nmap_integration.shutil.which", return_value=mock_nmap_path):
-            for level, expected in [(1, "-v"), (2, "-vv"), (3, "-vvv"), (5, "-vvv")]:
+        with patch(
+            "tools.nmap_integration.shutil.which", return_value=mock_nmap_path
+        ):
+            for level, expected in [
+                (1, "-v"),
+                (2, "-vv"),
+                (3, "-vvv"),
+                (5, "-vvv"),
+            ]:
                 scanner = NmapScanner("scanme.nmap.org", {"verbosity": level})
                 cmd = scanner._build_command()
                 assert expected in cmd
 
     def test_debugging_options(self, mock_nmap_path):
         """Test debugging levels"""
-        with patch("tools.nmap_integration.shutil.which", return_value=mock_nmap_path):
+        with patch(
+            "tools.nmap_integration.shutil.which", return_value=mock_nmap_path
+        ):
             for level, expected in [(1, "-d"), (2, "-dd"), (3, "-dd")]:
                 scanner = NmapScanner("scanme.nmap.org", {"debugging": level})
                 cmd = scanner._build_command()
@@ -342,15 +412,22 @@ class TestCommandBuilding:
 
     def test_additional_args(self, mock_nmap_path):
         """Test additional arguments"""
-        with patch("tools.nmap_integration.shutil.which", return_value=mock_nmap_path):
-            scanner = NmapScanner("scanme.nmap.org", {"additional_args": ["--reason", "--packet-trace"]})
+        with patch(
+            "tools.nmap_integration.shutil.which", return_value=mock_nmap_path
+        ):
+            scanner = NmapScanner(
+                "scanme.nmap.org",
+                {"additional_args": ["--reason", "--packet-trace"]},
+            )
             cmd = scanner._build_command()
             assert "--reason" in cmd
             assert "--packet-trace" in cmd
 
     def test_multiple_targets_in_command(self, mock_nmap_path):
         """Test command with multiple targets"""
-        with patch("tools.nmap_integration.shutil.which", return_value=mock_nmap_path):
+        with patch(
+            "tools.nmap_integration.shutil.which", return_value=mock_nmap_path
+        ):
             scanner = NmapScanner(["scanme.nmap.org", "example.com"])
             cmd = scanner._build_command()
             assert cmd[-2] == "scanme.nmap.org"
@@ -358,14 +435,18 @@ class TestCommandBuilding:
 
     def test_string_scan_type(self, mock_nmap_path):
         """Test string scan type instead of enum"""
-        with patch("tools.nmap_integration.shutil.which", return_value=mock_nmap_path):
+        with patch(
+            "tools.nmap_integration.shutil.which", return_value=mock_nmap_path
+        ):
             scanner = NmapScanner("scanme.nmap.org", {"scan_type": "-sT"})
             cmd = scanner._build_command()
             assert "-sT" in cmd
 
     def test_string_timing(self, mock_nmap_path):
         """Test string timing instead of enum"""
-        with patch("tools.nmap_integration.shutil.which", return_value=mock_nmap_path):
+        with patch(
+            "tools.nmap_integration.shutil.which", return_value=mock_nmap_path
+        ):
             scanner = NmapScanner("scanme.nmap.org", {"timing": "-T5"})
             cmd = scanner._build_command()
             assert "-T5" in cmd
@@ -444,7 +525,9 @@ class TestXMLParsing:
 
     def test_parse_empty_xml(self, scanner):
         """Test parsing empty XML"""
-        hosts = scanner.parse_xml_output("<?xml version='1.0'?><nmaprun></nmaprun>")
+        hosts = scanner.parse_xml_output(
+            "<?xml version='1.0'?><nmaprun></nmaprun>"
+        )
         assert len(hosts) == 0
 
     def test_parse_invalid_xml(self, scanner):
@@ -523,7 +606,9 @@ class TestAsyncScanning:
         mock_result.stdout = sample_xml_output
         mock_result.stderr = ""
 
-        with patch.object(scanner, "_run_subprocess", return_value=mock_result):
+        with patch.object(
+            scanner, "_run_subprocess", return_value=mock_result
+        ):
             result = await scanner.scan(timeout=60)
 
         assert result.success is True
@@ -540,7 +625,9 @@ class TestAsyncScanning:
         mock_result.stdout = ""
         mock_result.stderr = "Error: Invalid target"
 
-        with patch.object(scanner, "_run_subprocess", return_value=mock_result):
+        with patch.object(
+            scanner, "_run_subprocess", return_value=mock_result
+        ):
             result = await scanner.scan(timeout=60)
 
         assert result.success is False
@@ -549,17 +636,26 @@ class TestAsyncScanning:
     @pytest.mark.asyncio
     async def test_scan_timeout(self, scanner):
         """Test scan timeout handling"""
-        with patch.object(scanner, "_run_subprocess", side_effect=asyncio.TimeoutError):
+        with patch.object(
+            scanner, "_run_subprocess", side_effect=asyncio.TimeoutError
+        ):
             result = await scanner.scan(timeout=1)
 
         assert result.success is False
         # Check for timeout in error message (case-insensitive)
-        assert "timeout" in result.error.lower() or "timed out" in result.error.lower()
+        assert (
+            "timeout" in result.error.lower()
+            or "timed out" in result.error.lower()
+        )
 
     @pytest.mark.asyncio
     async def test_scan_exception(self, scanner):
         """Test scan with unexpected exception"""
-        with patch.object(scanner, "_run_subprocess", side_effect=Exception("Unexpected error")):
+        with patch.object(
+            scanner,
+            "_run_subprocess",
+            side_effect=Exception("Unexpected error"),
+        ):
             result = await scanner.scan(timeout=60)
 
         assert result.success is False
@@ -568,7 +664,9 @@ class TestAsyncScanning:
     @pytest.mark.asyncio
     async def test_scan_ports_method(self, mock_nmap_path):
         """Test scan_ports convenience method"""
-        with patch("tools.nmap_integration.shutil.which", return_value=mock_nmap_path):
+        with patch(
+            "tools.nmap_integration.shutil.which", return_value=mock_nmap_path
+        ):
             scanner = NmapScanner("scanme.nmap.org")
 
         mock_result = MagicMock()
@@ -576,8 +674,12 @@ class TestAsyncScanning:
         mock_result.stdout = "<?xml version='1.0'?><nmaprun></nmaprun>"
         mock_result.stderr = ""
 
-        with patch.object(scanner, "_run_subprocess", return_value=mock_result):
-            result = await scanner.scan_ports(ports="top-10", scan_type=ScanType.SYN)
+        with patch.object(
+            scanner, "_run_subprocess", return_value=mock_result
+        ):
+            result = await scanner.scan_ports(
+                ports="top-10", scan_type=ScanType.SYN
+            )
 
         assert isinstance(result, dict)
         assert "success" in result
@@ -585,7 +687,9 @@ class TestAsyncScanning:
     @pytest.mark.asyncio
     async def test_service_detection_method(self, mock_nmap_path):
         """Test service_detection convenience method"""
-        with patch("tools.nmap_integration.shutil.which", return_value=mock_nmap_path):
+        with patch(
+            "tools.nmap_integration.shutil.which", return_value=mock_nmap_path
+        ):
             scanner = NmapScanner("scanme.nmap.org")
 
         mock_result = MagicMock()
@@ -593,7 +697,9 @@ class TestAsyncScanning:
         mock_result.stdout = "<?xml version='1.0'?><nmaprun></nmaprun>"
         mock_result.stderr = ""
 
-        with patch.object(scanner, "_run_subprocess", return_value=mock_result):
+        with patch.object(
+            scanner, "_run_subprocess", return_value=mock_result
+        ):
             result = await scanner.service_detection(ports="80,443")
 
         assert isinstance(result, dict)
@@ -602,7 +708,9 @@ class TestAsyncScanning:
     @pytest.mark.asyncio
     async def test_os_detection_method(self, mock_nmap_path):
         """Test os_detection convenience method"""
-        with patch("tools.nmap_integration.shutil.which", return_value=mock_nmap_path):
+        with patch(
+            "tools.nmap_integration.shutil.which", return_value=mock_nmap_path
+        ):
             scanner = NmapScanner("scanme.nmap.org")
 
         mock_result = MagicMock()
@@ -610,7 +718,9 @@ class TestAsyncScanning:
         mock_result.stdout = "<?xml version='1.0'?><nmaprun></nmaprun>"
         mock_result.stderr = ""
 
-        with patch.object(scanner, "_run_subprocess", return_value=mock_result):
+        with patch.object(
+            scanner, "_run_subprocess", return_value=mock_result
+        ):
             result = await scanner.os_detection(ports="top-100")
 
         assert isinstance(result, dict)
@@ -619,7 +729,9 @@ class TestAsyncScanning:
     @pytest.mark.asyncio
     async def test_run_script_method(self, mock_nmap_path):
         """Test run_script convenience method"""
-        with patch("tools.nmap_integration.shutil.which", return_value=mock_nmap_path):
+        with patch(
+            "tools.nmap_integration.shutil.which", return_value=mock_nmap_path
+        ):
             scanner = NmapScanner("scanme.nmap.org")
 
         mock_result = MagicMock()
@@ -627,8 +739,14 @@ class TestAsyncScanning:
         mock_result.stdout = "<?xml version='1.0'?><nmaprun></nmaprun>"
         mock_result.stderr = ""
 
-        with patch.object(scanner, "_run_subprocess", return_value=mock_result):
-            result = await scanner.run_script("http-title", ports="80,443", script_args={"http.useragent": "Mozilla"})
+        with patch.object(
+            scanner, "_run_subprocess", return_value=mock_result
+        ):
+            result = await scanner.run_script(
+                "http-title",
+                ports="80,443",
+                script_args={"http.useragent": "Mozilla"},
+            )
 
         assert isinstance(result, dict)
         assert scanner.options["script_scan"] == "http-title"
@@ -636,7 +754,9 @@ class TestAsyncScanning:
     @pytest.mark.asyncio
     async def test_scan_ports_with_enum_type(self, mock_nmap_path):
         """Test scan_ports with ScanType enum"""
-        with patch("tools.nmap_integration.shutil.which", return_value=mock_nmap_path):
+        with patch(
+            "tools.nmap_integration.shutil.which", return_value=mock_nmap_path
+        ):
             scanner = NmapScanner("scanme.nmap.org")
 
         mock_result = MagicMock()
@@ -644,8 +764,12 @@ class TestAsyncScanning:
         mock_result.stdout = "<?xml version='1.0'?><nmaprun></nmaprun>"
         mock_result.stderr = ""
 
-        with patch.object(scanner, "_run_subprocess", return_value=mock_result):
-            result = await scanner.scan_ports(ports="80", scan_type=ScanType.SYN)
+        with patch.object(
+            scanner, "_run_subprocess", return_value=mock_result
+        ):
+            result = await scanner.scan_ports(
+                ports="80", scan_type=ScanType.SYN
+            )
 
         assert isinstance(result, dict)
         assert scanner.options["scan_type"] == ScanType.SYN
@@ -662,7 +786,9 @@ class TestResultConversion:
     def test_result_to_dict(self, scanner, sample_xml_output):
         """Test converting result to dictionary"""
         hosts = scanner.parse_xml_output(sample_xml_output)
-        result = NmapResult(success=True, hosts=hosts, command="nmap test", scan_time=5.0)
+        result = NmapResult(
+            success=True, hosts=hosts, command="nmap test", scan_time=5.0
+        )
 
         result_dict = scanner._result_to_dict(result)
 
@@ -732,7 +858,13 @@ class TestLangChainTools:
         mock_run.return_value = mock_result
 
         # Invoke via LangChain tool interface
-        result = nmap_scan.invoke({"target": "scanme.nmap.org", "ports": "top-100", "scan_type": "syn"})
+        result = nmap_scan.invoke(
+            {
+                "target": "scanme.nmap.org",
+                "ports": "top-100",
+                "scan_type": "syn",
+            }
+        )
 
         assert isinstance(result, str)
         mock_scanner_class.assert_called_once()

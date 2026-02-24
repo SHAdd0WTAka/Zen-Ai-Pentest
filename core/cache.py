@@ -92,7 +92,9 @@ class CacheBackend:
     async def get(self, key: str) -> Optional[Any]:
         raise NotImplementedError()
 
-    async def set(self, key: str, value: Any, ttl: Optional[int] = None) -> bool:
+    async def set(
+        self, key: str, value: Any, ttl: Optional[int] = None
+    ) -> bool:
         raise NotImplementedError()
 
     async def delete(self, key: str) -> bool:
@@ -113,7 +115,9 @@ class CacheBackend:
                 result[key] = value
         return result
 
-    async def mset(self, items: Dict[str, Any], ttl: Optional[int] = None) -> bool:
+    async def mset(
+        self, items: Dict[str, Any], ttl: Optional[int] = None
+    ) -> bool:
         """Batch set operation"""
         success = True
         for key, value in items.items():
@@ -178,11 +182,15 @@ class MemoryCache(CacheBackend):
             self.stats.hits += 1
             return self._cache[key]
 
-    async def set(self, key: str, value: Any, ttl: Optional[int] = None) -> bool:
+    async def set(
+        self, key: str, value: Any, ttl: Optional[int] = None
+    ) -> bool:
         async with self._lock:
             return await self._set_locked(key, value, ttl)
 
-    async def _set_locked(self, key: str, value: Any, ttl: Optional[int] = None) -> bool:
+    async def _set_locked(
+        self, key: str, value: Any, ttl: Optional[int] = None
+    ) -> bool:
         """Internal set with lock held"""
         self.stats.total_sets += 1
 
@@ -198,12 +206,15 @@ class MemoryCache(CacheBackend):
 
         # Check if value is too large
         if value_size > self._max_memory_bytes * 0.5:
-            logger.warning(f"Value for key {key} is too large ({value_size} bytes), skipping")
+            logger.warning(
+                f"Value for key {key} is too large ({value_size} bytes), skipping"
+            )
             return False
 
         # Evict entries if needed
         while (
-            len(self._cache) >= self._max_size or self._current_memory + value_size > self._max_memory_bytes
+            len(self._cache) >= self._max_size
+            or self._current_memory + value_size > self._max_memory_bytes
         ) and self._cache:
             self._evict_lru()
 
@@ -286,7 +297,9 @@ class MemoryCache(CacheBackend):
                     self.stats.misses += 1
         return result
 
-    async def mset(self, items: Dict[str, Any], ttl: Optional[int] = None) -> bool:
+    async def mset(
+        self, items: Dict[str, Any], ttl: Optional[int] = None
+    ) -> bool:
         """Optimized batch set"""
         async with self._lock:
             for key, value in items.items():
@@ -318,7 +331,9 @@ class SQLiteCache(CacheBackend):
         cleanup_interval: int = 3600,
     ):
         super().__init__()
-        self.db_path = db_path or Path.home() / ".cache" / "zen-ai-pentest" / "cache.db"
+        self.db_path = (
+            db_path or Path.home() / ".cache" / "zen-ai-pentest" / "cache.db"
+        )
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
         self._pool_size = pool_size
         self._cleanup_interval = cleanup_interval
@@ -387,11 +402,15 @@ class SQLiteCache(CacheBackend):
                 await self.delete(key)
                 return None
 
-    async def set(self, key: str, value: Any, ttl: Optional[int] = None) -> bool:
+    async def set(
+        self, key: str, value: Any, ttl: Optional[int] = None
+    ) -> bool:
         async with self._lock:
             return await self._set_locked(key, value, ttl)
 
-    async def _set_locked(self, key: str, value: Any, ttl: Optional[int] = None) -> bool:
+    async def _set_locked(
+        self, key: str, value: Any, ttl: Optional[int] = None
+    ) -> bool:
         self.stats.total_sets += 1
 
         try:
@@ -400,7 +419,9 @@ class SQLiteCache(CacheBackend):
 
             expires = None
             if ttl:
-                expires = (datetime.utcnow() + timedelta(seconds=ttl)).isoformat()
+                expires = (
+                    datetime.utcnow() + timedelta(seconds=ttl)
+                ).isoformat()
 
             await db.execute(
                 """
@@ -479,7 +500,10 @@ class SQLiteCache(CacheBackend):
                 # Clean up expired keys
                 if expired_keys:
                     placeholders = ",".join("?" * len(expired_keys))
-                    await db.execute(f"DELETE FROM cache WHERE key IN ({placeholders})", expired_keys)
+                    await db.execute(
+                        f"DELETE FROM cache WHERE key IN ({placeholders})",
+                        expired_keys,
+                    )
                     await db.commit()
 
                 return result
@@ -487,7 +511,9 @@ class SQLiteCache(CacheBackend):
                 logger.error(f"SQLite cache mget error: {e}")
                 return {}
 
-    async def mset(self, items: Dict[str, Any], ttl: Optional[int] = None) -> bool:
+    async def mset(
+        self, items: Dict[str, Any], ttl: Optional[int] = None
+    ) -> bool:
         """Optimized batch set with transaction"""
         if not items:
             return True
@@ -498,7 +524,9 @@ class SQLiteCache(CacheBackend):
                 db = await self._get_db()
                 expires = None
                 if ttl:
-                    expires = (datetime.utcnow() + timedelta(seconds=ttl)).isoformat()
+                    expires = (
+                        datetime.utcnow() + timedelta(seconds=ttl)
+                    ).isoformat()
 
                 await db.execute("BEGIN")
                 for key, value in items.items():
@@ -587,7 +615,9 @@ class RedisCache(CacheBackend):
             self.stats.misses += 1
             return None
 
-    async def set(self, key: str, value: Any, ttl: Optional[int] = None) -> bool:
+    async def set(
+        self, key: str, value: Any, ttl: Optional[int] = None
+    ) -> bool:
         try:
             pool = await self._get_pool()
             serialized = pickle.dumps(value)
@@ -651,7 +681,9 @@ class RedisCache(CacheBackend):
             logger.error(f"Redis mget error: {e}")
             return {}
 
-    async def mset(self, items: Dict[str, Any], ttl: Optional[int] = None) -> bool:
+    async def mset(
+        self, items: Dict[str, Any], ttl: Optional[int] = None
+    ) -> bool:
         """Batch set using Redis MSET with optional TTL"""
         if not items:
             return True
@@ -699,7 +731,9 @@ class MultiTierCache:
         sqlite_path: Optional[Path] = None,
         redis_config: Optional[dict] = None,
     ):
-        self.l1 = MemoryCache(max_size=memory_size, max_memory_mb=memory_max_mb)
+        self.l1 = MemoryCache(
+            max_size=memory_size, max_memory_mb=memory_max_mb
+        )
         self.l2 = SQLiteCache(sqlite_path) if SQLITE_AVAILABLE else None
         self.l3 = None
 
@@ -818,7 +852,12 @@ class MultiTierCache:
         total_hits = sum(self._hit_distribution.values())
         return {
             "hit_distribution": {
-                tier: {"count": count, "percentage": (count / total_hits * 100) if total_hits > 0 else 0}
+                tier: {
+                    "count": count,
+                    "percentage": (
+                        (count / total_hits * 100) if total_hits > 0 else 0
+                    ),
+                }
                 for tier, count in self._hit_distribution.items()
             },
             "L1_memory": self.l1.get_stats().to_dict(),
@@ -834,7 +873,9 @@ class MultiTierCache:
 
 def generate_cache_key(*args, **kwargs) -> str:
     """Generate cache key from function arguments"""
-    key_data = json.dumps({"args": args, "kwargs": kwargs}, sort_keys=True, default=str)
+    key_data = json.dumps(
+        {"args": args, "kwargs": kwargs}, sort_keys=True, default=str
+    )
     return hashlib.md5(key_data.encode()).hexdigest()
 
 
@@ -883,7 +924,11 @@ def cached(
             # For sync functions, run in async context
             return asyncio.run(async_wrapper(*args, **kwargs))
 
-        return async_wrapper if asyncio.iscoroutinefunction(func) else sync_wrapper
+        return (
+            async_wrapper
+            if asyncio.iscoroutinefunction(func)
+            else sync_wrapper
+        )
 
     return decorator
 

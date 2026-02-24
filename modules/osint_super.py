@@ -23,7 +23,10 @@ from tools.sherlock_integration import SherlockIntegration
 from tools.subfinder_integration import SubfinderIntegration
 from tools.whatweb_integration import WhatWebIntegration
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
 logger = logging.getLogger(__name__)
 
 
@@ -77,7 +80,11 @@ class OSINTSuperModule:
         print(f"🔍 OSINT USERNAME INVESTIGATION: {username}")
         print(f"{'='*70}\n")
 
-        result = OSINTSuperResult(target=username, target_type="username", timestamp=datetime.now().isoformat())
+        result = OSINTSuperResult(
+            target=username,
+            target_type="username",
+            timestamp=datetime.now().isoformat(),
+        )
 
         # Phase 1: Sherlock Social Media Search
         print("[1/1] 🔎 Searching 400+ social media platforms...")
@@ -116,7 +123,11 @@ class OSINTSuperModule:
         print(f"📧 OSINT EMAIL INVESTIGATION: {email}")
         print(f"{'='*70}\n")
 
-        result = OSINTSuperResult(target=email, target_type="email", timestamp=datetime.now().isoformat())
+        result = OSINTSuperResult(
+            target=email,
+            target_type="email",
+            timestamp=datetime.now().isoformat(),
+        )
 
         # Phase 1: Ignorant Email Check
         print("[1/2] 📮 Checking 120+ platforms for email...")
@@ -129,12 +140,15 @@ class OSINTSuperModule:
                 "username": ignorant_result.username,
                 "domain": ignorant_result.domain,
                 "found_platforms": [
-                    {"platform": p.platform, "url": p.url, "exists": p.exists} for p in ignorant_result.found_platforms
+                    {"platform": p.platform, "url": p.url, "exists": p.exists}
+                    for p in ignorant_result.found_platforms
                 ],
                 "total_found": len(ignorant_result.found_platforms),
                 "platforms_checked": ignorant_result.total_checked,
             }
-            print(f"      Found on {len(ignorant_result.found_platforms)} platforms")
+            print(
+                f"      Found on {len(ignorant_result.found_platforms)} platforms"
+            )
         except Exception as e:
             logger.error(f"Ignorant check failed: {e}")
             result.email_check = {"success": False, "error": str(e)}
@@ -142,7 +156,9 @@ class OSINTSuperModule:
         # Phase 2: Try username investigation if email parsed
         if result.email_check.get("username"):
             username = result.email_check["username"]
-            print(f"[2/2] 🔎 Searching social media for username '{username}'...")
+            print(
+                f"[2/2] 🔎 Searching social media for username '{username}'..."
+            )
             try:
                 sherlock_result = await self.sherlock.search(username)
                 result.social_media = {
@@ -151,7 +167,9 @@ class OSINTSuperModule:
                     "found_accounts": sherlock_result.found_sites,
                     "total_found": len(sherlock_result.found_sites),
                 }
-                print(f"      Found {len(sherlock_result.found_sites)} accounts")
+                print(
+                    f"      Found {len(sherlock_result.found_sites)} accounts"
+                )
             except Exception as e:
                 logger.error(f"Social media search failed: {e}")
                 result.social_media = {"success": False, "error": str(e)}
@@ -176,7 +194,11 @@ class OSINTSuperModule:
         print(f"🌐 OSINT DOMAIN INVESTIGATION: {domain}")
         print(f"{'='*70}\n")
 
-        result = OSINTSuperResult(target=domain, target_type="domain", timestamp=datetime.now().isoformat())
+        result = OSINTSuperResult(
+            target=domain,
+            target_type="domain",
+            timestamp=datetime.now().isoformat(),
+        )
 
         # Phase 1: Subdomain Enumeration
         print("[1/3] 🔍 Enumerating subdomains (Subfinder)...")
@@ -215,10 +237,17 @@ class OSINTSuperModule:
             result.technologies = {
                 "success": True,
                 "technologies": [
-                    {"name": t.name, "version": t.version, "category": t.category} for t in whatweb_result.technologies
+                    {
+                        "name": t.name,
+                        "version": t.version,
+                        "category": t.category,
+                    }
+                    for t in whatweb_result.technologies
                 ],
             }
-            print(f"      Found {len(whatweb_result.technologies)} technologies")
+            print(
+                f"      Found {len(whatweb_result.technologies)} technologies"
+            )
         except Exception as e:
             logger.error(f"Technology detection failed: {e}")
             result.technologies = {"success": False, "error": str(e)}
@@ -228,7 +257,9 @@ class OSINTSuperModule:
 
         return result
 
-    def _generate_username_summary(self, result: OSINTSuperResult) -> Dict[str, Any]:
+    def _generate_username_summary(
+        self, result: OSINTSuperResult
+    ) -> Dict[str, Any]:
         """Generate summary for username investigation"""
         found = result.social_media.get("found_accounts", [])
 
@@ -255,7 +286,9 @@ class OSINTSuperModule:
             ),
         }
 
-    def _generate_email_summary(self, result: OSINTSuperResult) -> Dict[str, Any]:
+    def _generate_email_summary(
+        self, result: OSINTSuperResult
+    ) -> Dict[str, Any]:
         """Generate summary for email investigation"""
         email_found = result.email_check.get("total_found", 0)
         social_found = result.social_media.get("total_found", 0)
@@ -283,7 +316,9 @@ class OSINTSuperModule:
             ),
         }
 
-    def _generate_domain_summary(self, result: OSINTSuperResult) -> Dict[str, Any]:
+    def _generate_domain_summary(
+        self, result: OSINTSuperResult
+    ) -> Dict[str, Any]:
         """Generate summary for domain investigation"""
         subdomains = result.subdomains.get("total", 0)
         technologies = len(result.technologies.get("technologies", []))
@@ -300,20 +335,32 @@ class OSINTSuperModule:
             "risk_level": risk_level,
             "subdomains": subdomains,
             "technologies": technologies,
-            "attack_surface": "large" if subdomains > 50 else "medium" if subdomains > 10 else "small",
+            "attack_surface": (
+                "large"
+                if subdomains > 50
+                else "medium" if subdomains > 10 else "small"
+            ),
             "recommendations": (
-                ["Implement subdomain monitoring", "Review and secure exposed services", "Keep software versions up to date"]
+                [
+                    "Implement subdomain monitoring",
+                    "Review and secure exposed services",
+                    "Keep software versions up to date",
+                ]
                 if subdomains > 10
                 else []
             ),
         }
 
-    def save_report(self, result: OSINTSuperResult, filename: Optional[str] = None):
+    def save_report(
+        self, result: OSINTSuperResult, filename: Optional[str] = None
+    ):
         """Save report to file"""
         if filename is None:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             safe_target = result.target.replace("@", "_at_").replace(".", "_")
-            filename = f"osint_{result.target_type}_{safe_target}_{timestamp}.json"
+            filename = (
+                f"osint_{result.target_type}_{safe_target}_{timestamp}.json"
+            )
 
         filepath = self.output_dir / filename
 
@@ -339,19 +386,27 @@ class OSINTSuperModule:
 
         # Print type-specific results
         if result.target_type == "username":
-            print(f"👤 Social Media Accounts: {result.social_media.get('total_found', 0)}")
+            print(
+                f"👤 Social Media Accounts: {result.social_media.get('total_found', 0)}"
+            )
             for account in result.social_media.get("found_accounts", [])[:10]:
                 print(f"  ✓ {account.get('site')}: {account.get('url')}")
 
         elif result.target_type == "email":
-            print(f"📧 Email Platforms: {result.email_check.get('total_found', 0)}")
-            print(f"👤 Social Accounts: {result.social_media.get('total_found', 0)}")
+            print(
+                f"📧 Email Platforms: {result.email_check.get('total_found', 0)}"
+            )
+            print(
+                f"👤 Social Accounts: {result.social_media.get('total_found', 0)}"
+            )
             for platform in result.email_check.get("found_platforms", [])[:10]:
                 print(f"  ✓ {platform.get('platform')}: {platform.get('url')}")
 
         elif result.target_type == "domain":
             print(f"🌐 Subdomains: {result.subdomains.get('total', 0)}")
-            print(f"🔧 Technologies: {len(result.technologies.get('technologies', []))}")
+            print(
+                f"🔧 Technologies: {len(result.technologies.get('technologies', []))}"
+            )
             for tech in result.technologies.get("technologies", [])[:10]:
                 print(f"  • {tech.get('name')} {tech.get('version')}")
 
@@ -385,8 +440,12 @@ Examples:
     parser.add_argument("--username", "-u", help="Username to investigate")
     parser.add_argument("--email", "-e", help="Email address to investigate")
     parser.add_argument("--domain", "-d", help="Domain to investigate")
-    parser.add_argument("--output-dir", "-o", default="reports", help="Output directory")
-    parser.add_argument("--quiet", "-q", action="store_true", help="Minimal output")
+    parser.add_argument(
+        "--output-dir", "-o", default="reports", help="Output directory"
+    )
+    parser.add_argument(
+        "--quiet", "-q", action="store_true", help="Minimal output"
+    )
 
     args = parser.parse_args()
 

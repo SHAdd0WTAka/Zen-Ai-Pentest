@@ -36,7 +36,13 @@ from autonomous.exploit_validator import (
     SafetyLevel,
     ScopeConfig,
 )
-from autonomous.memory import EpisodicMemory, LongTermMemory, MemoryEntry, MemoryManager, WorkingMemory
+from autonomous.memory import (
+    EpisodicMemory,
+    LongTermMemory,
+    MemoryEntry,
+    MemoryManager,
+    WorkingMemory,
+)
 from autonomous.tool_executor import SafetyLevel as ToolSafetyLevel
 from autonomous.tool_executor import ToolDefinition, ToolExecutor
 from autonomous.tool_executor import ToolRegistry as ToolExecRegistry
@@ -125,7 +131,9 @@ class TestAgentMemory:
     def test_get_context_for_llm(self):
         """Get formatted context for LLM"""
         memory = AgentMemory(goal="Find vulnerabilities", target="example.com")
-        memory.add_to_context_window({"type": "action", "content": "Port scan completed"})
+        memory.add_to_context_window(
+            {"type": "action", "content": "Port scan completed"}
+        )
 
         context = memory.get_context_for_llm()
 
@@ -268,7 +276,9 @@ class TestReportGenerator:
             {"severity": "medium", "title": "Info Disclosure"},
         ]
 
-        result = await tool.execute({"findings": findings, "target": "example.com", "format": "json"})
+        result = await tool.execute(
+            {"findings": findings, "target": "example.com", "format": "json"}
+        )
 
         assert result.success is True
         assert "report" in result.data or "title" in result.data
@@ -294,7 +304,9 @@ class TestSubdomainEnumerator:
         """Enumerate subdomains successfully"""
         tool = SubdomainEnumerator()
 
-        result = await tool.execute({"target": "example.com", "wordlist": "default"})
+        result = await tool.execute(
+            {"target": "example.com", "wordlist": "default"}
+        )
 
         assert result.success is True
         assert "subdomains" in result.data
@@ -306,7 +318,9 @@ class TestSubdomainEnumerator:
         """Enumerate with recursive option"""
         tool = SubdomainEnumerator()
 
-        result = await tool.execute({"target": "example.com", "recursive": True})
+        result = await tool.execute(
+            {"target": "example.com", "recursive": True}
+        )
 
         assert result.success is True
         assert result.data.get("recursive") is True
@@ -451,8 +465,16 @@ class TestWorkingMemory:
         """Search working memory"""
         memory = WorkingMemory()
 
-        await memory.add(MemoryEntry(id="1", content="SQL injection found", memory_type="finding"))
-        await memory.add(MemoryEntry(id="2", content="Port scan completed", memory_type="action"))
+        await memory.add(
+            MemoryEntry(
+                id="1", content="SQL injection found", memory_type="finding"
+            )
+        )
+        await memory.add(
+            MemoryEntry(
+                id="2", content="Port scan completed", memory_type="action"
+            )
+        )
 
         results = await memory.search("SQL")
 
@@ -465,7 +487,11 @@ class TestWorkingMemory:
         memory = WorkingMemory()
 
         for i in range(5):
-            await memory.add(MemoryEntry(id=str(i), content=f"Entry {i}", memory_type="thought"))
+            await memory.add(
+                MemoryEntry(
+                    id=str(i), content=f"Entry {i}", memory_type="thought"
+                )
+            )
 
         recent = await memory.get_recent(3)
 
@@ -478,7 +504,9 @@ class TestWorkingMemory:
         memory = WorkingMemory()
         memory.set_goal("Find vulnerabilities", {"target": "example.com"})
 
-        await memory.add(MemoryEntry(id="1", content="Action 1", memory_type="action"))
+        await memory.add(
+            MemoryEntry(id="1", content="Action 1", memory_type="action")
+        )
 
         context = await memory.get_context_window()
 
@@ -552,7 +580,11 @@ class TestLongTermMemory:
         """Add entry and search"""
         memory = LongTermMemory()
 
-        entry = MemoryEntry(id="1", content="SQL injection vulnerability", memory_type="finding")
+        entry = MemoryEntry(
+            id="1",
+            content="SQL injection vulnerability",
+            memory_type="finding",
+        )
         await memory.add(entry)
 
         results = await memory.search("SQL injection")
@@ -566,7 +598,11 @@ class TestLongTermMemory:
         memory = LongTermMemory()
 
         for i in range(3):
-            await memory.add(MemoryEntry(id=str(i), content=f"Entry {i}", memory_type="thought"))
+            await memory.add(
+                MemoryEntry(
+                    id=str(i), content=f"Entry {i}", memory_type="thought"
+                )
+            )
 
         recent = await memory.get_recent(2)
 
@@ -612,7 +648,9 @@ class TestEpisodicMemory:
             lessons_learned=[],
         )
 
-        similar = memory.get_similar_episodes("Find SQL injection in login form")
+        similar = memory.get_similar_episodes(
+            "Find SQL injection in login form"
+        )
 
         assert len(similar) > 0
         # First result should be SQL injection episode
@@ -627,7 +665,9 @@ class TestMemoryManager:
         """Add goal to memory"""
         manager = MemoryManager()
 
-        await manager.add_goal("Find vulnerabilities", {"target": "example.com"})
+        await manager.add_goal(
+            "Find vulnerabilities", {"target": "example.com"}
+        )
 
         assert manager.working.current_goal == "Find vulnerabilities"
 
@@ -637,8 +677,15 @@ class TestMemoryManager:
         manager = MemoryManager()
 
         thought = Mock(content="I should scan ports", step_number=1)
-        action = Mock(type=Mock(name="EXECUTE"), tool_name="nmap", parameters={"target": "example.com"}, step_number=1)
-        observation = Mock(result="Ports 80, 443 open", success=True, step_number=1)
+        action = Mock(
+            type=Mock(name="EXECUTE"),
+            tool_name="nmap",
+            parameters={"target": "example.com"},
+            step_number=1,
+        )
+        observation = Mock(
+            result="Ports 80, 443 open", success=True, step_number=1
+        )
 
         await manager.add_experience(thought, action, observation)
 
@@ -651,7 +698,9 @@ class TestMemoryManager:
         manager = MemoryManager()
 
         await manager.add_goal("Test goal")
-        await manager.working.add(MemoryEntry(id="1", content="Recent action", memory_type="action"))
+        await manager.working.add(
+            MemoryEntry(id="1", content="Recent action", memory_type="action")
+        )
 
         context = await manager.get_relevant_context("test query")
 
@@ -717,7 +766,11 @@ class TestScopeConfig:
         valid, error = config.validate_target("http://example.com:25")
 
         assert valid is False
-        assert "blocked" in error.lower() or "25" in error or "port" in error.lower()
+        assert (
+            "blocked" in error.lower()
+            or "25" in error
+            or "port" in error.lower()
+        )
 
     def test_validate_target_private_ip(self):
         """Validate private IP"""
@@ -858,10 +911,17 @@ class TestExploitValidator:
         """Validate exploit dictionary structure"""
         validator = ExploitValidator()
 
-        valid_exploit = {"code": "test", "target": "http://example.com", "type": "web_sqli"}
+        valid_exploit = {
+            "code": "test",
+            "target": "http://example.com",
+            "type": "web_sqli",
+        }
         assert validator._validate_exploit_structure(valid_exploit) is True
 
-        invalid_exploit = {"code": "test", "type": "web_sqli"}  # Missing target
+        invalid_exploit = {
+            "code": "test",
+            "type": "web_sqli",
+        }  # Missing target
         assert validator._validate_exploit_structure(invalid_exploit) is False
 
 
@@ -952,7 +1012,10 @@ class TestToolExecRegistry:
         tools = registry.list_tools(safety=ToolSafetyLevel.READ_ONLY)
 
         # Should include tools with safety <= READ_ONLY
-        assert all(t.safety_level.value <= ToolSafetyLevel.READ_ONLY.value for t in tools)
+        assert all(
+            t.safety_level.value <= ToolSafetyLevel.READ_ONLY.value
+            for t in tools
+        )
 
     def test_check_installed(self):
         """Check if tool is installed"""
@@ -974,7 +1037,9 @@ class TestToolExecutor:
 
     def test_init_custom(self):
         """Initialize with custom values"""
-        executor = ToolExecutor(safety_level=ToolSafetyLevel.EXPLOIT, use_docker=True)
+        executor = ToolExecutor(
+            safety_level=ToolSafetyLevel.EXPLOIT, use_docker=True
+        )
 
         assert executor.max_safety == ToolSafetyLevel.EXPLOIT
         assert executor.use_docker is True
@@ -996,7 +1061,10 @@ class TestToolExecutor:
         result = await executor.execute("unknown_tool_12345", {})
 
         assert result.success is False
-        assert "unknown" in result.error_message.lower() or "not found" in result.error_message.lower()
+        assert (
+            "unknown" in result.error_message.lower()
+            or "not found" in result.error_message.lower()
+        )
 
     @pytest.mark.asyncio
     async def test_execute_safety_violation(self):
@@ -1004,7 +1072,9 @@ class TestToolExecutor:
         executor = ToolExecutor(safety_level=ToolSafetyLevel.READ_ONLY)
 
         # SQLMap is DESTRUCTIVE, should fail at READ_ONLY level
-        result = await executor.execute("sqlmap", {"target": "http://example.com"})
+        result = await executor.execute(
+            "sqlmap", {"target": "http://example.com"}
+        )
 
         assert result.success is False
         assert "safety" in result.error_message.lower()
@@ -1024,7 +1094,10 @@ class TestToolExecutor:
         # Build command without target in parameters to avoid duplicate key issue
         # The template already has {target} and _build_command adds target=target
         try:
-            command = executor._build_command(tool, {"target": "example.com", "options": "-sV", "ports": "80,443"})
+            command = executor._build_command(
+                tool,
+                {"target": "example.com", "options": "-sV", "ports": "80,443"},
+            )
             assert "example.com" in command
             assert "-sV" in command
             assert "80,443" in command
@@ -1101,24 +1174,37 @@ class TestAutonomousIntegration:
         manager = MemoryManager()
 
         # Add goal
-        await manager.add_goal("Test application security", {"target": "example.com"})
+        await manager.add_goal(
+            "Test application security", {"target": "example.com"}
+        )
 
         # Add experience
         thought = Mock(content="I should scan for open ports", step_number=1)
-        action = Mock(type=Mock(name="SCAN"), tool_name="nmap", parameters={"target": "example.com"}, step_number=1)
-        observation = Mock(result={"open_ports": [80, 443]}, success=True, step_number=1)
+        action = Mock(
+            type=Mock(name="SCAN"),
+            tool_name="nmap",
+            parameters={"target": "example.com"},
+            step_number=1,
+        )
+        observation = Mock(
+            result={"open_ports": [80, 443]}, success=True, step_number=1
+        )
 
         await manager.add_experience(thought, action, observation)
 
         # Get context
         context = await manager.get_relevant_context("open ports")
 
-        assert context["current_session"]["goal"] == "Test application security"
+        assert (
+            context["current_session"]["goal"] == "Test application security"
+        )
 
     def test_exploit_validator_scope_integration(self):
         """Test exploit validator with scope config"""
         scope = ScopeConfig(allowed_hosts=["example.com"])
-        validator = ExploitValidator(scope_config=scope, safety_level=SafetyLevel.CONTROLLED)
+        validator = ExploitValidator(
+            scope_config=scope, safety_level=SafetyLevel.CONTROLLED
+        )
 
         # Should block localhost
         assert not scope.validate_target("http://localhost")[0]

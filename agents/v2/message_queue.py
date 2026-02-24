@@ -106,7 +106,12 @@ class AgentMessageQueue:
     KEY_DEAD_LETTER = "zen:dead:{channel}"
     KEY_STATUS = "zen:status:{message_id}"
 
-    def __init__(self, redis_url: str = "redis://localhost:6379", max_retries: int = 3, visibility_timeout: int = 30):
+    def __init__(
+        self,
+        redis_url: str = "redis://localhost:6379",
+        max_retries: int = 3,
+        visibility_timeout: int = 30,
+    ):
         """
         Initialize message queue
 
@@ -116,7 +121,9 @@ class AgentMessageQueue:
             visibility_timeout: Seconds before message reappears in queue
         """
         if not REDIS_AVAILABLE:
-            raise ImportError("aioredis required. Install with: pip install aioredis")
+            raise ImportError(
+                "aioredis required. Install with: pip install aioredis"
+            )
 
         self.redis_url = redis_url
         self.max_retries = max_retries
@@ -133,7 +140,9 @@ class AgentMessageQueue:
     async def connect(self):
         """Connect to Redis"""
         try:
-            self.redis = aioredis.from_url(self.redis_url, decode_responses=True)
+            self.redis = aioredis.from_url(
+                self.redis_url, decode_responses=True
+            )
 
             # Test connection
             await self.redis.ping()
@@ -155,7 +164,13 @@ class AgentMessageQueue:
             self._connected = False
             logger.info("Disconnected from Redis")
 
-    async def publish(self, channel: str, message: SecureMessage, priority: int = 5, persist: bool = True) -> str:
+    async def publish(
+        self,
+        channel: str,
+        message: SecureMessage,
+        priority: int = 5,
+        persist: bool = True,
+    ) -> str:
         """
         Publish message to channel
 
@@ -184,27 +199,43 @@ class AgentMessageQueue:
 
         # Store status
         await self.redis.set(
-            self.KEY_STATUS.format(message_id=queued.id), json.dumps(queued.to_dict()), ex=3600  # Expire after 1 hour
+            self.KEY_STATUS.format(message_id=queued.id),
+            json.dumps(queued.to_dict()),
+            ex=3600,  # Expire after 1 hour
         )
 
         if persist:
             # Add to reliable queue (sorted by priority)
             score = 10 - priority  # Lower score = higher priority
-            await self.redis.zadd(self.KEY_QUEUE.format(channel=channel), {queued.id: score})
+            await self.redis.zadd(
+                self.KEY_QUEUE.format(channel=channel), {queued.id: score}
+            )
 
             # Store message data
-            await self.redis.set(f"zen:msg:{queued.id}", json.dumps(queued.to_dict()), ex=3600)
+            await self.redis.set(
+                f"zen:msg:{queued.id}", json.dumps(queued.to_dict()), ex=3600
+            )
 
         # Publish for real-time subscribers
         await self.redis.publish(
-            channel, json.dumps({"type": "new_message", "message_id": queued.id, "channel": channel, "priority": priority})
+            channel,
+            json.dumps(
+                {
+                    "type": "new_message",
+                    "message_id": queued.id,
+                    "channel": channel,
+                    "priority": priority,
+                }
+            ),
         )
 
         logger.debug(f"Published message {queued.id} to {channel}")
         return queued.id
 
     async def subscribe(
-        self, channels: List[str], handler: Optional[Callable[[QueuedMessage], None]] = None
+        self,
+        channels: List[str],
+        handler: Optional[Callable[[QueuedMessage], None]] = None,
     ) -> AsyncIterator[QueuedMessage]:
         """
         Subscribe to channels
@@ -246,7 +277,9 @@ class AgentMessageQueue:
         finally:
             await pubsub.unsubscribe(*channels)
 
-    async def receive(self, channel: str, timeout: Optional[float] = None) -> Optional[QueuedMessage]:
+    async def receive(
+        self, channel: str, timeout: Optional[float] = None
+    ) -> Optional[QueuedMessage]:
         """
         Receive message from queue (blocking)
 
@@ -283,7 +316,11 @@ class AgentMessageQueue:
         queued.status = MessageStatus.DELIVERED
         queued.delivered_at = datetime.utcnow().isoformat()
 
-        await self.redis.set(f"zen:processing:{msg_id}", json.dumps(queued.to_dict()), ex=self.visibility_timeout)
+        await self.redis.set(
+            f"zen:processing:{msg_id}",
+            json.dumps(queued.to_dict()),
+            ex=self.visibility_timeout,
+        )
 
         # Schedule visibility timeout
         asyncio.create_task(self._visibility_timeout_handler(channel, msg_id))
@@ -309,7 +346,9 @@ class AgentMessageQueue:
             queued.status = MessageStatus.ACKNOWLEDGED
             queued.acknowledged_at = datetime.utcnow().isoformat()
 
-            await self.redis.set(status_key, json.dumps(queued.to_dict()), ex=3600)
+            await self.redis.set(
+                status_key, json.dumps(queued.to_dict()), ex=3600
+            )
 
         # Clean up message data
         await self.redis.delete(f"zen:msg:{message_id}")
@@ -335,16 +374,23 @@ class AgentMessageQueue:
             queued.retry_count += 1
             queued.status = MessageStatus.PENDING
 
-            await self.redis.zadd(self.KEY_QUEUE.format(channel=queued.channel), {message_id: 10 - queued.priority})
+            await self.redis.zadd(
+                self.KEY_QUEUE.format(channel=queued.channel),
+                {message_id: 10 - queued.priority},
+            )
 
-            logger.debug(f"Requeued message {message_id} (retry {queued.retry_count})")
+            logger.debug(
+                f"Requeued message {message_id} (retry {queued.retry_count})"
+            )
         else:
             # Move to dead letter queue
             await self._to_dead_letter(queued, "Max retries exceeded")
 
     async def get_status(self, message_id: str) -> Optional[MessageStatus]:
         """Get message delivery status"""
-        data = await self.redis.get(self.KEY_STATUS.format(message_id=message_id))
+        data = await self.redis.get(
+            self.KEY_STATUS.format(message_id=message_id)
+        )
 
         if data:
             queued = QueuedMessage.from_dict(json.loads(data))
@@ -393,13 +439,19 @@ class AgentMessageQueue:
 
         dead_key = self.KEY_DEAD_LETTER.format(channel=queued.channel)
 
-        await self.redis.zadd(dead_key, {queued.id: datetime.utcnow().timestamp()})
-        await self.redis.set(f"zen:dead:msg:{queued.id}", json.dumps(queued.to_dict()), ex=86400)  # Keep for 24 hours
+        await self.redis.zadd(
+            dead_key, {queued.id: datetime.utcnow().timestamp()}
+        )
+        await self.redis.set(
+            f"zen:dead:msg:{queued.id}", json.dumps(queued.to_dict()), ex=86400
+        )  # Keep for 24 hours
 
         # Clean up processing
         await self.redis.delete(f"zen:processing:{queued.id}")
 
-        logger.warning(f"Message {queued.id} moved to dead letter queue: {reason}")
+        logger.warning(
+            f"Message {queued.id} moved to dead letter queue: {reason}"
+        )
 
 
 # ============================================================================
@@ -427,7 +479,13 @@ class InMemoryMessageQueue:
         """No-op"""
         pass
 
-    async def publish(self, channel: str, message: SecureMessage, priority: int = 5, persist: bool = True) -> str:
+    async def publish(
+        self,
+        channel: str,
+        message: SecureMessage,
+        priority: int = 5,
+        persist: bool = True,
+    ) -> str:
         """Publish message"""
         import uuid
 
@@ -457,7 +515,9 @@ class InMemoryMessageQueue:
         return msg_id
 
     async def subscribe(
-        self, channels: List[str], handler: Optional[Callable[[QueuedMessage], None]] = None
+        self,
+        channels: List[str],
+        handler: Optional[Callable[[QueuedMessage], None]] = None,
     ) -> AsyncIterator[QueuedMessage]:
         """Subscribe to channels"""
         # Create subscription queue
@@ -480,14 +540,18 @@ class InMemoryMessageQueue:
                 if channel in self.subscribers:
                     self.subscribers[channel].remove(sub_queue)
 
-    async def receive(self, channel: str, timeout: Optional[float] = None) -> Optional[QueuedMessage]:
+    async def receive(
+        self, channel: str, timeout: Optional[float] = None
+    ) -> Optional[QueuedMessage]:
         """Receive message"""
         if channel not in self.queues:
             return None
 
         try:
             if timeout:
-                return await asyncio.wait_for(self.queues[channel].get(), timeout=timeout)
+                return await asyncio.wait_for(
+                    self.queues[channel].get(), timeout=timeout
+                )
             else:
                 return await self.queues[channel].get()
         except asyncio.TimeoutError:
@@ -542,7 +606,9 @@ async def test_in_memory_queue():
             timestamp=datetime.utcnow().isoformat(),
             msg_type="test",
         ),
-        payload=EncryptedPayload(ciphertext="encrypted", nonce="nonce", salt="salt"),
+        payload=EncryptedPayload(
+            ciphertext="encrypted", nonce="nonce", salt="salt"
+        ),
         signature="sig",
     )
 

@@ -101,7 +101,9 @@ class BenchmarkTestCase:
     tags: List[str] = field(default_factory=list)
     difficulty: str = "medium"  # easy, medium, hard, expert
     owasp_categories: List[str] = field(default_factory=list)
-    created_at: str = field(default_factory=lambda: datetime.utcnow().isoformat())
+    created_at: str = field(
+        default_factory=lambda: datetime.utcnow().isoformat()
+    )
     version: str = "1.0"
 
     def to_dict(self) -> Dict[str, Any]:
@@ -117,7 +119,10 @@ class BenchmarkTestCase:
         """Create test case from dictionary."""
         # Handle expected_findings conversion
         if "expected_findings" in data:
-            data["expected_findings"] = [ExpectedFinding(**f) if isinstance(f, dict) else f for f in data["expected_findings"]]
+            data["expected_findings"] = [
+                ExpectedFinding(**f) if isinstance(f, dict) else f
+                for f in data["expected_findings"]
+            ]
         return cls(**data)
 
     @classmethod
@@ -140,14 +145,18 @@ class BenchmarkSuite:
     description: str
     version: str = "1.0"
     test_cases: List[BenchmarkTestCase] = field(default_factory=list)
-    created_at: str = field(default_factory=lambda: datetime.utcnow().isoformat())
+    created_at: str = field(
+        default_factory=lambda: datetime.utcnow().isoformat()
+    )
     tags: List[str] = field(default_factory=list)
 
     def add_test_case(self, test_case: BenchmarkTestCase) -> None:
         """Add a test case to the suite."""
         self.test_cases.append(test_case)
 
-    def get_by_category(self, category: TestCategory) -> List[BenchmarkTestCase]:
+    def get_by_category(
+        self, category: TestCategory
+    ) -> List[BenchmarkTestCase]:
         """Get test cases by category."""
         return [tc for tc in self.test_cases if tc.category == category]
 
@@ -173,7 +182,10 @@ class BenchmarkSuite:
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "BenchmarkSuite":
         """Create suite from dictionary."""
-        test_cases = [BenchmarkTestCase.from_dict(tc) for tc in data.pop("test_cases", [])]
+        test_cases = [
+            BenchmarkTestCase.from_dict(tc)
+            for tc in data.pop("test_cases", [])
+        ]
         return cls(test_cases=test_cases, **data)
 
 
@@ -232,13 +244,17 @@ class CompetitorResult:
     cost_usd: float = 0.0
     api_calls: int = 0
 
-    def calculate_metrics(self, expected_findings: List[ExpectedFinding]) -> None:
+    def calculate_metrics(
+        self, expected_findings: List[ExpectedFinding]
+    ) -> None:
         """Calculate comparison metrics against expected findings."""
         if not expected_findings:
             return
 
         # Build sets of finding types and locations
-        expected_set = set(f"{f.vuln_type}:{f.location}" for f in expected_findings)
+        expected_set = set(
+            f"{f.vuln_type}:{f.location}" for f in expected_findings
+        )
         found_set = set(f"{f.vuln_type}:{f.location}" for f in self.findings)
 
         # True positives: found and expected
@@ -259,7 +275,9 @@ class CompetitorResult:
         self.precision = tp / (tp + fp) if (tp + fp) > 0 else 0
         self.recall = tp / (tp + fn) if (tp + fn) > 0 else 0
         self.f1_score = (
-            2 * (self.precision * self.recall) / (self.precision + self.recall) if (self.precision + self.recall) > 0 else 0
+            2 * (self.precision * self.recall) / (self.precision + self.recall)
+            if (self.precision + self.recall) > 0
+            else 0
         )
 
         # Accuracy: (TP + TN) / Total (simplified, assuming TN = 0 for security tests)
@@ -311,7 +329,9 @@ class ComparisonMetrics:
         all_results = []
 
         if self.zen_result:
-            all_results.append(("Zen-AI-Pentest", getattr(self.zen_result, metric, 0)))
+            all_results.append(
+                ("Zen-AI-Pentest", getattr(self.zen_result, metric, 0))
+            )
 
         for comp in self.competitor_results:
             all_results.append((comp.tool_name, getattr(comp, metric, 0)))
@@ -324,14 +344,23 @@ class ComparisonMetrics:
         self.winner_reason = f"Highest {metric}: {winner[1]:.3f}"
         return winner
 
-    def calculate_improvement(self, competitor_name: str, metric: str) -> float:
+    def calculate_improvement(
+        self, competitor_name: str, metric: str
+    ) -> float:
         """Calculate improvement percentage over a competitor."""
         if not self.zen_result:
             return 0.0
 
         zen_value = getattr(self.zen_result, metric, 0)
 
-        competitor = next((c for c in self.competitor_results if c.tool_name == competitor_name), None)
+        competitor = next(
+            (
+                c
+                for c in self.competitor_results
+                if c.tool_name == competitor_name
+            ),
+            None,
+        )
 
         if not competitor:
             return 0.0
@@ -358,7 +387,9 @@ class TestScenarioValidator:
     """Validator for test scenarios and results."""
 
     @staticmethod
-    def validate_test_case(test_case: BenchmarkTestCase) -> Tuple[bool, List[str]]:
+    def validate_test_case(
+        test_case: BenchmarkTestCase,
+    ) -> Tuple[bool, List[str]]:
         """Validate a test case configuration."""
         errors = []
 
@@ -371,27 +402,39 @@ class TestScenarioValidator:
         if not test_case.target_url and not test_case.target_host:
             errors.append("Either target_url or target_host is required")
 
-        if test_case.min_detection_rate < 0 or test_case.min_detection_rate > 1:
+        if (
+            test_case.min_detection_rate < 0
+            or test_case.min_detection_rate > 1
+        ):
             errors.append("min_detection_rate must be between 0 and 1")
 
-        if test_case.max_false_positive_rate < 0 or test_case.max_false_positive_rate > 1:
+        if (
+            test_case.max_false_positive_rate < 0
+            or test_case.max_false_positive_rate > 1
+        ):
             errors.append("max_false_positive_rate must be between 0 and 1")
 
         return len(errors) == 0, errors
 
     @staticmethod
-    def validate_result(result: CompetitorResult, test_case: BenchmarkTestCase) -> Tuple[bool, List[str]]:
+    def validate_result(
+        result: CompetitorResult, test_case: BenchmarkTestCase
+    ) -> Tuple[bool, List[str]]:
         """Validate a test result against expectations."""
         errors = []
         warnings = []
 
         # Check if scan completed
         if result.status != TestStatus.PASSED:
-            errors.append(f"Test did not complete successfully: {result.status.value}")
+            errors.append(
+                f"Test did not complete successfully: {result.status.value}"
+            )
 
         # Check detection rate
         if result.detection_rate < test_case.min_detection_rate:
-            errors.append(f"Detection rate {result.detection_rate:.2%} below minimum {test_case.min_detection_rate:.2%}")
+            errors.append(
+                f"Detection rate {result.detection_rate:.2%} below minimum {test_case.min_detection_rate:.2%}"
+            )
 
         # Check false positive rate
         if result.false_positive_rate > test_case.max_false_positive_rate:
@@ -401,7 +444,9 @@ class TestScenarioValidator:
 
         # Check duration
         if result.duration_seconds > test_case.max_duration_seconds:
-            warnings.append(f"Duration {result.duration_seconds:.1f}s exceeds maximum {test_case.max_duration_seconds}s")
+            warnings.append(
+                f"Duration {result.duration_seconds:.1f}s exceeds maximum {test_case.max_duration_seconds}s"
+            )
 
         return len(errors) == 0, errors + warnings
 
@@ -415,7 +460,9 @@ class CompetitorAdapter(ABC):
         pass
 
     @abstractmethod
-    async def execute_test(self, test_case: BenchmarkTestCase, timeout_seconds: int = 600) -> CompetitorResult:
+    async def execute_test(
+        self, test_case: BenchmarkTestCase, timeout_seconds: int = 600
+    ) -> CompetitorResult:
         """Execute a test case and return results."""
         pass
 
@@ -437,7 +484,9 @@ def load_test_suite(yaml_path: Union[str, Path]) -> BenchmarkSuite:
     return BenchmarkSuite.from_dict(data)
 
 
-def save_test_suite(suite: BenchmarkSuite, yaml_path: Union[str, Path]) -> None:
+def save_test_suite(
+    suite: BenchmarkSuite, yaml_path: Union[str, Path]
+) -> None:
     """Save a benchmark suite to YAML file."""
     with open(yaml_path, "w") as f:
         f.write(suite.to_yaml())
@@ -450,7 +499,9 @@ def load_test_case(yaml_path: Union[str, Path]) -> BenchmarkTestCase:
     return BenchmarkTestCase.from_dict(data)
 
 
-def save_test_case(test_case: BenchmarkTestCase, yaml_path: Union[str, Path]) -> None:
+def save_test_case(
+    test_case: BenchmarkTestCase, yaml_path: Union[str, Path]
+) -> None:
     """Save a single test case to YAML file."""
     with open(yaml_path, "w") as f:
         f.write(test_case.to_yaml())
@@ -484,7 +535,9 @@ def calculate_overall_score(result: CompetitorResult) -> float:
     # Cost efficiency (for AI tools)
     if result.cost_usd > 0:
         findings_per_dollar = len(result.findings) / result.cost_usd
-        cost_factor = min(1.0, findings_per_dollar / 100)  # 100 findings/$ is max
+        cost_factor = min(
+            1.0, findings_per_dollar / 100
+        )  # 100 findings/$ is max
         score += SCORING_WEIGHTS["cost_efficiency"] * cost_factor
     else:
         score += SCORING_WEIGHTS["cost_efficiency"]  # Full points if free

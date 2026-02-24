@@ -57,13 +57,23 @@ class HydraBruteForcer:
         cmd.append(service)
 
         try:
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=3600)
+            result = subprocess.run(
+                cmd, capture_output=True, text=True, timeout=3600
+            )
 
             # Parse Results
             if "password found" in result.stdout.lower():
-                return {"success": True, "credentials_found": True, "output": result.stdout}
+                return {
+                    "success": True,
+                    "credentials_found": True,
+                    "output": result.stdout,
+                }
             else:
-                return {"success": True, "credentials_found": False, "output": result.stdout}
+                return {
+                    "success": True,
+                    "credentials_found": False,
+                    "output": result.stdout,
+                }
         except subprocess.TimeoutExpired:
             return {"success": False, "error": "Timeout"}
         except Exception as e:
@@ -74,16 +84,30 @@ from langchain_core.tools import tool
 
 
 @tool
-def hydra_ssh_brute(target: str, username_file: str, password_file: str) -> str:
+def hydra_ssh_brute(
+    target: str, username_file: str, password_file: str
+) -> str:
     """SSH Brute-Force mit Hydra"""
     hydra = HydraBruteForcer()
-    result = hydra.brute_force(target, "ssh", username_file=username_file, password_file=password_file)
-    return "Credentials found!" if result.get("credentials_found") else "No credentials found"
+    result = hydra.brute_force(
+        target, "ssh", username_file=username_file, password_file=password_file
+    )
+    return (
+        "Credentials found!"
+        if result.get("credentials_found")
+        else "No credentials found"
+    )
 
 
 @tool
 def hydra_ftp_brute(target: str, username: str, password_file: str) -> str:
     """FTP Brute-Force mit Hydra"""
     hydra = HydraBruteForcer()
-    result = hydra.brute_force(target, "ftp", username=username, password_file=password_file)
-    return "Credentials found!" if result.get("credentials_found") else "No credentials found"
+    result = hydra.brute_force(
+        target, "ftp", username=username, password_file=password_file
+    )
+    return (
+        "Credentials found!"
+        if result.get("credentials_found")
+        else "No credentials found"
+    )

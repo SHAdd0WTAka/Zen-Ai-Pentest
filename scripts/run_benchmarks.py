@@ -52,12 +52,17 @@ class LocalBenchmarkRunner:
             json.dump(baselines, f, indent=2)
         print(f"\n✓ Saved {len(baselines)} baselines to {self.baseline_file}")
 
-    def compare_with_baselines(self, results: List[BenchmarkResult]) -> Dict[str, Any]:
+    def compare_with_baselines(
+        self, results: List[BenchmarkResult]
+    ) -> Dict[str, Any]:
         """Compare results with baselines."""
         baselines = self.load_baselines()
 
         if not baselines:
-            return {"status": "no_baselines", "message": "No baselines found for comparison"}
+            return {
+                "status": "no_baselines",
+                "message": "No baselines found for comparison",
+            }
 
         comparison = {
             "timestamp": datetime.utcnow().isoformat(),
@@ -72,17 +77,23 @@ class LocalBenchmarkRunner:
             key = f"{result.category.value}:{result.name}"
 
             if key not in baselines:
-                comparison["unchanged"].append({"benchmark": result.name, "reason": "no_baseline"})
+                comparison["unchanged"].append(
+                    {"benchmark": result.name, "reason": "no_baseline"}
+                )
                 continue
 
             baseline = baselines[key]
 
             # Compare duration
-            baseline_duration = baseline.get("timing", {}).get("duration_ms", 0)
+            baseline_duration = baseline.get("timing", {}).get(
+                "duration_ms", 0
+            )
             current_duration = result.timing.duration_ms
 
             if baseline_duration > 0:
-                change_pct = ((current_duration - baseline_duration) / baseline_duration) * 100
+                change_pct = (
+                    (current_duration - baseline_duration) / baseline_duration
+                ) * 100
 
                 comparison_data = {
                     "benchmark": result.name,
@@ -106,7 +117,9 @@ class LocalBenchmarkRunner:
             current_memory = result.memory.peak_mb
 
             if baseline_memory > 0 and current_memory > 0:
-                memory_change = ((current_memory - baseline_memory) / baseline_memory) * 100
+                memory_change = (
+                    (current_memory - baseline_memory) / baseline_memory
+                ) * 100
                 if memory_change > 20:  # 20% memory increase threshold
                     comparison["regressions"].append(
                         {
@@ -159,7 +172,9 @@ class LocalBenchmarkRunner:
         results = await benchmark.run_all()
         return results
 
-    async def run_all(self, benchmark_type: str = "all") -> List[BenchmarkResult]:
+    async def run_all(
+        self, benchmark_type: str = "all"
+    ) -> List[BenchmarkResult]:
         """Run all requested benchmarks."""
         all_results = []
 
@@ -210,9 +225,14 @@ class LocalBenchmarkRunner:
 
             for result in results:
                 throughput = result.custom_metrics.get(
-                    "targets_per_minute", result.custom_metrics.get("requests_per_second", "N/A")
+                    "targets_per_minute",
+                    result.custom_metrics.get("requests_per_second", "N/A"),
                 )
-                throughput_str = f"{throughput:.2f}" if isinstance(throughput, float) else str(throughput)
+                throughput_str = (
+                    f"{throughput:.2f}"
+                    if isinstance(throughput, float)
+                    else str(throughput)
+                )
 
                 lines.append(
                     f"| {result.name} | "
@@ -295,7 +315,9 @@ class LocalBenchmarkRunner:
 
         return report
 
-    def generate_json_report(self, output_file: str = "benchmark_report.json") -> str:
+    def generate_json_report(
+        self, output_file: str = "benchmark_report.json"
+    ) -> str:
         """Generate JSON report of benchmark results."""
         data = {
             "timestamp": datetime.utcnow().isoformat(),
@@ -328,13 +350,18 @@ class LocalBenchmarkRunner:
             print(f"\n{category.upper()}:")
             for result in results:
                 throughput = result.custom_metrics.get(
-                    "targets_per_minute", result.custom_metrics.get("requests_per_second", None)
+                    "targets_per_minute",
+                    result.custom_metrics.get("requests_per_second", None),
                 )
 
                 if throughput:
-                    print(f"  ✓ {result.name}: {result.timing.avg_ms:.2f}ms avg, {throughput:.2f} throughput")
+                    print(
+                        f"  ✓ {result.name}: {result.timing.avg_ms:.2f}ms avg, {throughput:.2f} throughput"
+                    )
                 else:
-                    print(f"  ✓ {result.name}: {result.timing.avg_ms:.2f}ms avg")
+                    print(
+                        f"  ✓ {result.name}: {result.timing.avg_ms:.2f}ms avg"
+                    )
 
         print(f"\nResults saved to: {self.output_dir}")
 
@@ -369,16 +396,41 @@ Examples:
     )
 
     parser.add_argument(
-        "--type", choices=["all", "scan", "agent", "api", "quick"], default="all", help="Type of benchmarks to run"
+        "--type",
+        choices=["all", "scan", "agent", "api", "quick"],
+        default="all",
+        help="Type of benchmarks to run",
     )
-    parser.add_argument("--output", default="benchmark_results", help="Output directory for results")
-    parser.add_argument("--compare", action="store_true", help="Compare results with baselines")
-    parser.add_argument("--update-baseline", action="store_true", help="Update baselines after running")
-    parser.add_argument("--report", action="store_true", help="Generate markdown report from existing results")
-    parser.add_argument("--summarize", action="store_true", help="Print summary of existing results")
+    parser.add_argument(
+        "--output",
+        default="benchmark_results",
+        help="Output directory for results",
+    )
+    parser.add_argument(
+        "--compare", action="store_true", help="Compare results with baselines"
+    )
+    parser.add_argument(
+        "--update-baseline",
+        action="store_true",
+        help="Update baselines after running",
+    )
+    parser.add_argument(
+        "--report",
+        action="store_true",
+        help="Generate markdown report from existing results",
+    )
+    parser.add_argument(
+        "--summarize",
+        action="store_true",
+        help="Print summary of existing results",
+    )
     parser.add_argument("--input", help="Input directory for existing results")
-    parser.add_argument("--baseline", help="Path to baseline file for comparison")
-    parser.add_argument("--results", help="Path to results file for comparison")
+    parser.add_argument(
+        "--baseline", help="Path to baseline file for comparison"
+    )
+    parser.add_argument(
+        "--results", help="Path to results file for comparison"
+    )
 
     args = parser.parse_args()
 
@@ -476,14 +528,18 @@ Examples:
         if comparison.get("regressions_found"):
             print("\n⚠️  Performance regressions detected:")
             for reg in comparison["regressions"]:
-                print(f"  - {reg['benchmark']}: +{reg['change_percent']}% {reg['metric']}")
+                print(
+                    f"  - {reg['benchmark']}: +{reg['change_percent']}% {reg['metric']}"
+                )
         else:
             print("\n✅ No performance regressions detected")
 
         if comparison.get("improvements"):
             print("\n📈 Improvements:")
             for imp in comparison["improvements"]:
-                print(f"  - {imp['benchmark']}: {imp['change_percent']}% {imp['metric']}")
+                print(
+                    f"  - {imp['benchmark']}: {imp['change_percent']}% {imp['metric']}"
+                )
 
         # Save comparison
         comparison_path = runner.output_dir / "comparison_report.json"

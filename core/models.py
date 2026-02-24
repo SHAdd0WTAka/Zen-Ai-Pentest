@@ -50,9 +50,13 @@ class APIKeyConfig(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    openrouter_key: Optional[str] = Field(None, pattern=r"^sk-or-[a-zA-Z0-9]{20,}$")
+    openrouter_key: Optional[str] = Field(
+        None, pattern=r"^sk-or-[a-zA-Z0-9]{20,}$"
+    )
     openai_key: Optional[str] = Field(None, pattern=r"^sk-[a-zA-Z0-9]{20,}$")
-    anthropic_key: Optional[str] = Field(None, pattern=r"^sk-ant-[a-zA-Z0-9]{20,}$")
+    anthropic_key: Optional[str] = Field(
+        None, pattern=r"^sk-ant-[a-zA-Z0-9]{20,}$"
+    )
     github_token: Optional[str] = Field(None, min_length=20)
     shodan_key: Optional[str] = None
 

@@ -43,7 +43,9 @@ def test_client():
 @pytest.fixture
 def auth_headers(test_client):
     """Get authentication headers with valid token."""
-    response = test_client.post("/token", data={"username": "admin", "password": "testpass"})
+    response = test_client.post(
+        "/token", data={"username": "admin", "password": "testpass"}
+    )
     if response.status_code == 200:
         token = response.json()["access_token"]
         return {"Authorization": f"Bearer {token}"}

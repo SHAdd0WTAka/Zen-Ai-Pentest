@@ -586,7 +586,9 @@ class SQLInjectionDatabase:
 
         return payloads
 
-    def get_payloads(self, db_type: DBType = None, technique: SQLITechnique = None) -> List[SQLPayload]:
+    def get_payloads(
+        self, db_type: DBType = None, technique: SQLITechnique = None
+    ) -> List[SQLPayload]:
         """Get payloads filtered by database type and/or technique"""
         results = []
 
@@ -616,7 +618,9 @@ class SQLInjectionDatabase:
         variants = [payload]
 
         # Case variations
-        variants.append(payload.replace("SELECT", "SeLeCt").replace("UNION", "UnIoN"))
+        variants.append(
+            payload.replace("SELECT", "SeLeCt").replace("UNION", "UnIoN")
+        )
 
         # Space alternatives
         variants.append(payload.replace(" ", "/**/"))
@@ -633,7 +637,9 @@ class SQLInjectionDatabase:
         variants.append(urllib.parse.quote(urllib.parse.quote(payload)))
 
         # Unicode normalization
-        variants.append(payload.replace("'", "%ef%bc%87"))  # Fullwidth apostrophe
+        variants.append(
+            payload.replace("'", "%ef%bc%87")
+        )  # Fullwidth apostrophe
 
         return list(set(variants))  # Remove duplicates
 

@@ -142,7 +142,13 @@ class TestTrivyScannerInit:
         mock_which.return_value = "/usr/bin/trivy"
         scanner = TrivyScanner()
         assert scanner.cache_dir is None
-        assert scanner.severity == ["UNKNOWN", "LOW", "MEDIUM", "HIGH", "CRITICAL"]
+        assert scanner.severity == [
+            "UNKNOWN",
+            "LOW",
+            "MEDIUM",
+            "HIGH",
+            "CRITICAL",
+        ]
         assert scanner.scanners == [TrivyScannerType.VULNERABILITY]
         assert scanner.skip_db_update is False
 
@@ -153,7 +159,10 @@ class TestTrivyScannerInit:
         scanner = TrivyScanner(
             cache_dir="/tmp/trivy-cache",
             severity=["HIGH", "CRITICAL"],
-            scanners=[TrivyScannerType.VULNERABILITY, TrivyScannerType.MISCONFIGURATION],
+            scanners=[
+                TrivyScannerType.VULNERABILITY,
+                TrivyScannerType.MISCONFIGURATION,
+            ],
             skip_db_update=True,
             offline_scan=True,
             timeout=1800,
@@ -269,7 +278,13 @@ class TestSeverityOrder:
         """Test severity order list is correct"""
         mock_which.return_value = "/usr/bin/trivy"
         scanner = TrivyScanner()
-        assert scanner.SEVERITY_ORDER == ["UNKNOWN", "LOW", "MEDIUM", "HIGH", "CRITICAL"]
+        assert scanner.SEVERITY_ORDER == [
+            "UNKNOWN",
+            "LOW",
+            "MEDIUM",
+            "HIGH",
+            "CRITICAL",
+        ]
 
 
 class TestCVSSExtraction:
@@ -310,7 +325,9 @@ class TestVulnerabilityParsing:
         """Test parsing vulnerabilities from output"""
         mock_which.return_value = "/usr/bin/trivy"
         scanner = TrivyScanner()
-        vulns = scanner._parse_vulnerabilities(SAMPLE_TRIVY_VULN_OUTPUT["Results"])
+        vulns = scanner._parse_vulnerabilities(
+            SAMPLE_TRIVY_VULN_OUTPUT["Results"]
+        )
 
         assert len(vulns) == 2
         assert vulns[0].vulnerability_id == "CVE-2021-1234"
@@ -335,7 +352,9 @@ class TestMisconfigurationParsing:
         """Test parsing misconfigurations"""
         mock_which.return_value = "/usr/bin/trivy"
         scanner = TrivyScanner()
-        misconfs = scanner._parse_misconfigurations(SAMPLE_TRIVY_MISCONFIG_OUTPUT["Results"])
+        misconfs = scanner._parse_misconfigurations(
+            SAMPLE_TRIVY_MISCONFIG_OUTPUT["Results"]
+        )
 
         assert len(misconfs) == 1
         assert misconfs[0].id == "DS002"
@@ -387,7 +406,12 @@ class TestCommandBuilding:
     def test_build_command_with_scanners(self, mock_which):
         """Test command with multiple scanners"""
         mock_which.return_value = "/usr/bin/trivy"
-        scanner = TrivyScanner(scanners=[TrivyScannerType.VULNERABILITY, TrivyScannerType.MISCONFIGURATION])
+        scanner = TrivyScanner(
+            scanners=[
+                TrivyScannerType.VULNERABILITY,
+                TrivyScannerType.MISCONFIGURATION,
+            ]
+        )
         cmd = scanner._build_command(TrivyScanTarget.FILESYSTEM, ".")
 
         assert "--scanners" in cmd
@@ -419,7 +443,9 @@ class TestAsyncScanning:
         mock_result.stdout = json.dumps(SAMPLE_TRIVY_VULN_OUTPUT)
         mock_result.stderr = ""
 
-        with patch.object(scanner, "_run_subprocess", return_value=mock_result):
+        with patch.object(
+            scanner, "_run_subprocess", return_value=mock_result
+        ):
             result = await scanner.scan_image("nginx:latest")
 
             assert result.success is True
@@ -447,7 +473,9 @@ class TestAsyncScanning:
         mock_which.return_value = "/usr/bin/trivy"
         scanner = TrivyScanner()
 
-        with patch.object(scanner, "_run_subprocess", side_effect=asyncio.TimeoutError):
+        with patch.object(
+            scanner, "_run_subprocess", side_effect=asyncio.TimeoutError
+        ):
             result = await scanner.scan_image("nginx:latest", timeout=1)
 
             assert result.success is False
@@ -465,7 +493,9 @@ class TestAsyncScanning:
         mock_result.stdout = "invalid json"
         mock_result.stderr = ""
 
-        with patch.object(scanner, "_run_subprocess", return_value=mock_result):
+        with patch.object(
+            scanner, "_run_subprocess", return_value=mock_result
+        ):
             result = await scanner.scan_image("nginx:latest")
 
             assert result.success is False
@@ -550,7 +580,9 @@ class TestSBOMGeneration:
         mock_result.returncode = 0
         mock_result.stdout = '{"components": []}'
 
-        with patch.object(scanner, "_run_subprocess", return_value=mock_result):
+        with patch.object(
+            scanner, "_run_subprocess", return_value=mock_result
+        ):
             sbom = await scanner.generate_sbom("nginx:latest")
             assert '{"components": []}' in sbom
 
@@ -565,7 +597,9 @@ class TestSBOMGeneration:
         mock_result.returncode = 1
         mock_result.stderr = "Error generating SBOM"
 
-        with patch.object(scanner, "_run_subprocess", return_value=mock_result):
+        with patch.object(
+            scanner, "_run_subprocess", return_value=mock_result
+        ):
             sbom = await scanner.generate_sbom("nginx:latest")
             assert "failed" in sbom.lower()
 

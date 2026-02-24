@@ -14,7 +14,9 @@ except ImportError:
     CORE_AVAILABLE = False
 
 
-@pytest.mark.skipif(not CORE_AVAILABLE, reason="Core orchestrator not available")
+@pytest.mark.skipif(
+    not CORE_AVAILABLE, reason="Core orchestrator not available"
+)
 class TestZenOrchestrator:
     """Test ZenOrchestrator class"""
 
@@ -45,7 +47,9 @@ class TestZenOrchestrator:
         assert isinstance(str_str, str)
 
 
-@pytest.mark.skipif(not CORE_AVAILABLE, reason="Core orchestrator not available")
+@pytest.mark.skipif(
+    not CORE_AVAILABLE, reason="Core orchestrator not available"
+)
 class TestOrchestratorStateManagement:
     """Test state management in orchestrator"""
 
@@ -67,7 +71,9 @@ class TestOrchestratorStateManagement:
         assert isinstance(state, dict)
 
 
-@pytest.mark.skipif(not CORE_AVAILABLE, reason="Core orchestrator not available")
+@pytest.mark.skipif(
+    not CORE_AVAILABLE, reason="Core orchestrator not available"
+)
 class TestOrchestratorConfiguration:
     """Test orchestrator configuration"""
 
@@ -102,14 +108,20 @@ except ImportError:
     DB_MODELS_AVAILABLE = False
 
 
-@pytest.mark.skipif(not DB_MODELS_AVAILABLE, reason="Database models not available")
+@pytest.mark.skipif(
+    not DB_MODELS_AVAILABLE, reason="Database models not available"
+)
 class TestDatabaseUserModel:
     """Test User database model"""
 
     def test_user_creation(self):
         """Test user can be created"""
         user = db_models.User(
-            username="testuser", email="test@example.com", hashed_password="hashed_pass", role="user", is_active=True
+            username="testuser",
+            email="test@example.com",
+            hashed_password="hashed_pass",
+            role="user",
+            is_active=True,
         )
 
         assert user.username == "testuser"
@@ -141,13 +153,17 @@ class TestDatabaseUserModel:
         assert hasattr(user, "id")
 
 
-@pytest.mark.skipif(not DB_MODELS_AVAILABLE, reason="Database models not available")
+@pytest.mark.skipif(
+    not DB_MODELS_AVAILABLE, reason="Database models not available"
+)
 class TestDatabaseScanModel:
     """Test Scan database model"""
 
     def test_scan_creation(self):
         """Test scan can be created"""
-        scan = db_models.Scan(target="example.com", scan_type="full", status="pending")
+        scan = db_models.Scan(
+            target="example.com", scan_type="full", status="pending"
+        )
 
         assert scan.target == "example.com"
         assert scan.scan_type == "full"
@@ -170,13 +186,17 @@ class TestDatabaseScanModel:
             assert scan.target == target
 
 
-@pytest.mark.skipif(not DB_MODELS_AVAILABLE, reason="Database models not available")
+@pytest.mark.skipif(
+    not DB_MODELS_AVAILABLE, reason="Database models not available"
+)
 class TestDatabaseFindingModel:
     """Test Finding database model"""
 
     def test_finding_creation(self):
         """Test finding can be created"""
-        finding = db_models.Finding(title="SQL Injection", severity="high", description="Test finding")
+        finding = db_models.Finding(
+            title="SQL Injection", severity="high", description="Test finding"
+        )
 
         assert finding.title == "SQL Injection"
         assert finding.severity == "high"
@@ -186,17 +206,26 @@ class TestDatabaseFindingModel:
         severities = ["critical", "high", "medium", "low", "info"]
 
         for severity in severities:
-            finding = db_models.Finding(title=f"Test {severity}", severity=severity)
+            finding = db_models.Finding(
+                title=f"Test {severity}", severity=severity
+            )
             assert finding.severity == severity
 
     def test_finding_optional_fields(self):
         """Test finding with optional fields"""
-        finding = db_models.Finding(title="Test", severity="medium", target="http://example.com", cvss_score=7.5)
+        finding = db_models.Finding(
+            title="Test",
+            severity="medium",
+            target="http://example.com",
+            cvss_score=7.5,
+        )
 
         assert finding.title == "Test"
 
 
-@pytest.mark.skipif(not DB_MODELS_AVAILABLE, reason="Database models not available")
+@pytest.mark.skipif(
+    not DB_MODELS_AVAILABLE, reason="Database models not available"
+)
 class TestDatabaseRelationships:
     """Test database model relationships"""
 

@@ -45,7 +45,9 @@ class TestRBACManager:
         rbac = RBACManager()
 
         # User without any role assignment
-        has_permission = rbac.has_permission("unknown_user", Permission.USER_READ)
+        has_permission = rbac.has_permission(
+            "unknown_user", Permission.USER_READ
+        )
 
         assert has_permission is False
 
@@ -82,7 +84,9 @@ class TestRBACManager:
         rbac = RBACManager()
         rbac.assign_role("user1", Role.SECURITY_ANALYST)
 
-        has_any = rbac.has_any_role("user1", [Role.ADMIN, Role.SECURITY_ANALYST])
+        has_any = rbac.has_any_role(
+            "user1", [Role.ADMIN, Role.SECURITY_ANALYST]
+        )
 
         assert has_any is True
 
@@ -94,7 +98,9 @@ class TestRBACManager:
         rbac.assign_role("user1", Role.SECURITY_ANALYST)
 
         # User only has OPERATOR, not ADMIN
-        has_all = rbac.has_all_roles("user1", [Role.ADMIN, Role.SECURITY_ANALYST])
+        has_all = rbac.has_all_roles(
+            "user1", [Role.ADMIN, Role.SECURITY_ANALYST]
+        )
 
         assert has_all is False
 

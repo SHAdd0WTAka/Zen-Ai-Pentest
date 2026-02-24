@@ -36,7 +36,10 @@ class TestToolRegistry:
     def test_register_tool(self, registry, sample_tool):
         """Test tool registration"""
         registered = registry.register(
-            tool=sample_tool, category=ToolCategory.SCANNING, safety_level=ToolSafetyLevel.SAFE, tags=["test", "scan"]
+            tool=sample_tool,
+            category=ToolCategory.SCANNING,
+            safety_level=ToolSafetyLevel.SAFE,
+            tags=["test", "scan"],
         )
 
         assert registered.metadata.name == "test_scan"
@@ -45,7 +48,11 @@ class TestToolRegistry:
 
     def test_get_tool(self, registry, sample_tool):
         """Test retrieving tool by name"""
-        registry.register(tool=sample_tool, category=ToolCategory.SCANNING, safety_level=ToolSafetyLevel.SAFE)
+        registry.register(
+            tool=sample_tool,
+            category=ToolCategory.SCANNING,
+            safety_level=ToolSafetyLevel.SAFE,
+        )
 
         tool = registry.get_tool("test_scan")
         assert tool is not None
@@ -53,7 +60,11 @@ class TestToolRegistry:
 
     def test_list_tools_by_category(self, registry, sample_tool):
         """Test listing tools filtered by category"""
-        registry.register(tool=sample_tool, category=ToolCategory.SCANNING, safety_level=ToolSafetyLevel.SAFE)
+        registry.register(
+            tool=sample_tool,
+            category=ToolCategory.SCANNING,
+            safety_level=ToolSafetyLevel.SAFE,
+        )
 
         tools = registry.list_tools(category=ToolCategory.SCANNING)
         assert len(tools) == 1
@@ -61,11 +72,17 @@ class TestToolRegistry:
 
     def test_enable_disable_tool(self, registry, sample_tool):
         """Test enabling and disabling tools"""
-        registry.register(tool=sample_tool, category=ToolCategory.SCANNING, safety_level=ToolSafetyLevel.SAFE)
+        registry.register(
+            tool=sample_tool,
+            category=ToolCategory.SCANNING,
+            safety_level=ToolSafetyLevel.SAFE,
+        )
 
         # Disable
         assert registry.disable_tool("test_scan") is True
-        assert registry.get_tool("test_scan") is None  # Disabled tools not returned
+        assert (
+            registry.get_tool("test_scan") is None
+        )  # Disabled tools not returned
 
         # Enable
         assert registry.enable_tool("test_scan") is True
@@ -74,7 +91,10 @@ class TestToolRegistry:
     def test_safety_level_filter(self, registry, sample_tool):
         """Test filtering by safety level"""
         registry.register(
-            tool=sample_tool, category=ToolCategory.SCANNING, safety_level=ToolSafetyLevel.DANGEROUS, requires_approval=True
+            tool=sample_tool,
+            category=ToolCategory.SCANNING,
+            safety_level=ToolSafetyLevel.DANGEROUS,
+            requires_approval=True,
         )
 
         dangerous = registry.get_dangerous_tools()
@@ -88,7 +108,11 @@ class TestToolCaller:
     @pytest.mark.asyncio
     async def test_call_tool_success(self, registry, sample_tool):
         """Test successful tool call"""
-        registry.register(tool=sample_tool, category=ToolCategory.SCANNING, safety_level=ToolSafetyLevel.SAFE)
+        registry.register(
+            tool=sample_tool,
+            category=ToolCategory.SCANNING,
+            safety_level=ToolSafetyLevel.SAFE,
+        )
 
         caller = ToolCaller(registry)
         result = await caller.call_tool("test_scan", {"target": "test.com"})
@@ -114,7 +138,11 @@ class TestToolCaller:
     @pytest.mark.asyncio
     async def test_call_tool_disabled(self, registry, sample_tool):
         """Test calling disabled tool"""
-        registry.register(tool=sample_tool, category=ToolCategory.SCANNING, safety_level=ToolSafetyLevel.SAFE)
+        registry.register(
+            tool=sample_tool,
+            category=ToolCategory.SCANNING,
+            safety_level=ToolSafetyLevel.SAFE,
+        )
         registry.disable_tool("test_scan")
 
         caller = ToolCaller(registry)
@@ -143,7 +171,9 @@ class TestToolCaller:
         registry.register(tool2, ToolCategory.UTILITY, ToolSafetyLevel.SAFE)
 
         caller = ToolCaller(registry)
-        results = await caller.call_tools_parallel([("tool1", {"x": "a"}), ("tool2", {"x": "b"})])
+        results = await caller.call_tools_parallel(
+            [("tool1", {"x": "a"}), ("tool2", {"x": "b"})]
+        )
 
         assert results["tool1"].success is True
         assert results["tool2"].success is True
@@ -164,7 +194,9 @@ class TestToolCaller:
             time.sleep(10)
             return "done"
 
-        registry.register(slow_tool, ToolCategory.UTILITY, ToolSafetyLevel.SAFE)
+        registry.register(
+            slow_tool, ToolCategory.UTILITY, ToolSafetyLevel.SAFE
+        )
 
         caller = ToolCaller(registry)
         result = await caller.call_tool("slow_tool", {}, timeout=1)
@@ -191,12 +223,17 @@ class TestToolIntegration:
             return {"target": target, "ports": [80, 443], "open": True}
 
         registry.register(
-            tool=scan_ports, category=ToolCategory.RECONNAISSANCE, safety_level=ToolSafetyLevel.SAFE, tags=["port", "scan"]
+            tool=scan_ports,
+            category=ToolCategory.RECONNAISSANCE,
+            safety_level=ToolSafetyLevel.SAFE,
+            tags=["port", "scan"],
         )
 
         # Call tool
         caller = ToolCaller(registry)
-        result = await caller.call_tool("scan_ports", {"target": "scanme.nmap.org", "ports": "top-1000"})
+        result = await caller.call_tool(
+            "scan_ports", {"target": "scanme.nmap.org", "ports": "top-1000"}
+        )
 
         assert result.success is True
         assert result.result["target"] == "scanme.nmap.org"

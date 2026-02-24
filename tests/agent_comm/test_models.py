@@ -26,7 +26,9 @@ class TestMessageContent:
 
     def test_valid_content(self):
         """Test creating valid MessageContent"""
-        content = MessageContent(reasoning="Test reasoning", action="nmap_scan", confidence=0.85)
+        content = MessageContent(
+            reasoning="Test reasoning", action="nmap_scan", confidence=0.85
+        )
         assert content.reasoning == "Test reasoning"
         assert content.action == "nmap_scan"
         assert content.confidence == 0.85
@@ -63,7 +65,12 @@ class TestMessageContext:
 
     def test_valid_context(self):
         """Test creating valid MessageContext"""
-        context = MessageContext(target="192.168.1.1", session_id="scan_123", risk_score=7.5, safety_level="medium_risk")
+        context = MessageContext(
+            target="192.168.1.1",
+            session_id="scan_123",
+            risk_score=7.5,
+            safety_level="medium_risk",
+        )
         assert context.target == "192.168.1.1"
         assert context.session_id == "scan_123"
         assert context.risk_score == 7.5
@@ -85,12 +92,18 @@ class TestMessageContext:
     def test_safety_level_validation(self):
         """Test safety_level must be valid enum"""
         # Valid
-        MessageContext(target="test", session_id="123", safety_level="non_destructive")
-        MessageContext(target="test", session_id="123", safety_level="high_risk")
+        MessageContext(
+            target="test", session_id="123", safety_level="non_destructive"
+        )
+        MessageContext(
+            target="test", session_id="123", safety_level="high_risk"
+        )
 
         # Invalid
         with pytest.raises(ValidationError):
-            MessageContext(target="test", session_id="123", safety_level="invalid_level")
+            MessageContext(
+                target="test", session_id="123", safety_level="invalid_level"
+            )
 
 
 class TestAgentMessage:
@@ -105,7 +118,9 @@ class TestAgentMessage:
             type=MessageType.OBSERVE,
             content=MessageContent(observation="Port 80 open"),
             targets=["orchestrator"],
-            context=MessageContext(target="192.168.1.1", session_id="scan_123"),
+            context=MessageContext(
+                target="192.168.1.1", session_id="scan_123"
+            ),
         )
         assert msg.message_id == "msg_abc12345"
         assert msg.version == "1.1"
@@ -335,7 +350,11 @@ class TestSerialization:
             "type": "observe",
             "content": {"observation": "Port 80 open"},
             "targets": ["orchestrator"],
-            "context": {"target": "192.168.1.1", "session_id": "scan_123", "safety_level": "non_destructive"},
+            "context": {
+                "target": "192.168.1.1",
+                "session_id": "scan_123",
+                "safety_level": "non_destructive",
+            },
         }
 
         msg = AgentMessage.model_validate(data)

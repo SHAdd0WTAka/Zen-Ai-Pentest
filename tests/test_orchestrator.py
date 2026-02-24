@@ -17,9 +17,25 @@ from unittest.mock import AsyncMock, MagicMock, Mock, patch
 import pytest
 
 # Import orchestrator components
-from orchestrator.core import OrchestratorConfig, OrchestratorStatus, ZenOrchestrator
-from orchestrator.events import Event, EventBus, EventPriority, EventStream, EventType, Subscription
-from orchestrator.state import StateManager, StateSnapshot, SystemState, TaskState
+from orchestrator.core import (
+    OrchestratorConfig,
+    OrchestratorStatus,
+    ZenOrchestrator,
+)
+from orchestrator.events import (
+    Event,
+    EventBus,
+    EventPriority,
+    EventStream,
+    EventType,
+    Subscription,
+)
+from orchestrator.state import (
+    StateManager,
+    StateSnapshot,
+    SystemState,
+    TaskState,
+)
 from orchestrator.tasks import Task, TaskManager, TaskPriority
 from orchestrator.tasks import TaskState as TaskManagerState
 
@@ -122,7 +138,9 @@ class TestZenOrchestrator:
         orchestrator = running_orchestrator
 
         with patch.object(orchestrator, "_log_event", new_callable=AsyncMock):
-            with patch.object(orchestrator.event_bus, "publish", new_callable=AsyncMock):
+            with patch.object(
+                orchestrator.event_bus, "publish", new_callable=AsyncMock
+            ):
                 with patch("orchestrator.core.TaskManager") as mock_tm_class:
                     mock_tm = AsyncMock()
                     mock_tm.submit = AsyncMock(return_value="task-123")
@@ -132,8 +150,13 @@ class TestZenOrchestrator:
                     await orchestrator.start()
 
                     # Submit task
-                    task_data = {"type": "vulnerability_scan", "target": "example.com"}
-                    task_id = await orchestrator.submit_task(task_data, priority=TaskPriority.HIGH)
+                    task_data = {
+                        "type": "vulnerability_scan",
+                        "target": "example.com",
+                    }
+                    task_id = await orchestrator.submit_task(
+                        task_data, priority=TaskPriority.HIGH
+                    )
 
                     assert task_id == "task-123"
                     mock_tm.submit.assert_called_once()
@@ -153,7 +176,9 @@ class TestZenOrchestrator:
         orchestrator.validator = mock_validator
 
         with patch.object(orchestrator, "_log_event", new_callable=AsyncMock):
-            with patch.object(orchestrator.event_bus, "publish", new_callable=AsyncMock):
+            with patch.object(
+                orchestrator.event_bus, "publish", new_callable=AsyncMock
+            ):
                 with patch("orchestrator.core.TaskManager") as mock_tm_class:
                     mock_tm = AsyncMock()
                     mock_tm.submit = AsyncMock(return_value="task-456")
@@ -161,11 +186,16 @@ class TestZenOrchestrator:
 
                     await orchestrator.start()
 
-                    task_data = {"type": "scan", "target": "https://example.com"}
+                    task_data = {
+                        "type": "scan",
+                        "target": "https://example.com",
+                    }
                     task_id = await orchestrator.submit_task(task_data)
 
                     assert task_id == "task-456"
-                    mock_validator.validate_url.assert_called_once_with("https://example.com")
+                    mock_validator.validate_url.assert_called_once_with(
+                        "https://example.com"
+                    )
 
                     await orchestrator.stop()
 
@@ -255,7 +285,9 @@ class TestZenOrchestrator:
 
             # List with filter
             tasks = await orchestrator.list_tasks(status="running")
-            mock_tm.list_tasks.assert_called_with(status="running", task_type=None, limit=100)
+            mock_tm.list_tasks.assert_called_with(
+                status="running", task_type=None, limit=100
+            )
 
             await orchestrator.stop()
 
@@ -267,17 +299,23 @@ class TestZenOrchestrator:
         mock_handler = AsyncMock()
 
         await orchestrator.subscribe(EventType.TASK_COMPLETED, mock_handler)
-        orchestrator.event_bus.subscribe.assert_called_once_with(EventType.TASK_COMPLETED, mock_handler)
+        orchestrator.event_bus.subscribe.assert_called_once_with(
+            EventType.TASK_COMPLETED, mock_handler
+        )
 
         await orchestrator.unsubscribe(EventType.TASK_COMPLETED, mock_handler)
-        orchestrator.event_bus.unsubscribe.assert_called_once_with(EventType.TASK_COMPLETED, mock_handler)
+        orchestrator.event_bus.unsubscribe.assert_called_once_with(
+            EventType.TASK_COMPLETED, mock_handler
+        )
 
     @pytest.mark.asyncio
     async def test_emit_custom_event(self, running_orchestrator):
         """Test emitting custom events."""
         orchestrator = running_orchestrator
 
-        with patch.object(orchestrator.event_bus, "publish", new_callable=AsyncMock) as mock_publish:
+        with patch.object(
+            orchestrator.event_bus, "publish", new_callable=AsyncMock
+        ) as mock_publish:
             await orchestrator.emit_event("custom_event", {"key": "value"})
 
             mock_publish.assert_called_once()
@@ -291,7 +329,9 @@ class TestZenOrchestrator:
         orchestrator = running_orchestrator
 
         # No analysis bot configured
-        result = await orchestrator.analyze_results({"findings": []}, "vulnerability")
+        result = await orchestrator.analyze_results(
+            {"findings": []}, "vulnerability"
+        )
         assert "error" in result
 
         # With analysis bot
@@ -299,7 +339,9 @@ class TestZenOrchestrator:
         mock_bot.analyze = Mock(return_value={"summary": "test analysis"})
         orchestrator.analysis_bot = mock_bot
 
-        result = await orchestrator.analyze_results({"findings": [1, 2, 3]}, "vulnerability")
+        result = await orchestrator.analyze_results(
+            {"findings": [1, 2, 3]}, "vulnerability"
+        )
         assert result["summary"] == "test analysis"
 
     @pytest.mark.asyncio
@@ -340,18 +382,32 @@ class TestZenOrchestrator:
         """Test internal event handlers."""
         orchestrator = running_orchestrator
 
-        with patch.object(orchestrator, "_log_event", new_callable=AsyncMock) as mock_log:
+        with patch.object(
+            orchestrator, "_log_event", new_callable=AsyncMock
+        ) as mock_log:
             # Test task completed handler
-            event = Event(type=EventType.TASK_COMPLETED, source="test", data={"task_id": "task-123", "auto_analyze": False})
+            event = Event(
+                type=EventType.TASK_COMPLETED,
+                source="test",
+                data={"task_id": "task-123", "auto_analyze": False},
+            )
             await orchestrator._on_task_completed(event)
             mock_log.assert_called()
 
             # Test task failed handler
-            event = Event(type=EventType.TASK_FAILED, source="test", data={"task_id": "task-456", "error": "Test error"})
+            event = Event(
+                type=EventType.TASK_FAILED,
+                source="test",
+                data={"task_id": "task-456", "error": "Test error"},
+            )
             await orchestrator._on_task_failed(event)
 
             # Test security alert handler
-            event = Event(type=EventType.SECURITY_ALERT, source="test", data={"alert_type": "test_alert", "details": {}})
+            event = Event(
+                type=EventType.SECURITY_ALERT,
+                source="test",
+                data={"alert_type": "test_alert", "details": {}},
+            )
             await orchestrator._on_security_alert(event)
 
 
@@ -398,7 +454,9 @@ class TestStateManager:
         await state_manager.set_task_state("task-1", TaskState.QUEUED)
 
         # Force invalid transition
-        result = await state_manager.set_task_state("task-1", TaskState.COMPLETED, force=True)
+        result = await state_manager.set_task_state(
+            "task-1", TaskState.COMPLETED, force=True
+        )
         assert result is True
 
         state = await state_manager.get_task_state("task-1")
@@ -407,7 +465,9 @@ class TestStateManager:
     @pytest.mark.asyncio
     async def test_task_data_management(self, state_manager):
         """Test task data storage and retrieval."""
-        await state_manager.update_task_data("task-1", {"target": "example.com", "scan_type": "full"})
+        await state_manager.update_task_data(
+            "task-1", {"target": "example.com", "scan_type": "full"}
+        )
 
         data = await state_manager.get_task_data("task-1")
         assert data["target"] == "example.com"
@@ -421,7 +481,9 @@ class TestStateManager:
         assert data["progress"] == 50
 
         # Test non-merge (replace)
-        await state_manager.update_task_data("task-1", {"new_key": "value"}, merge=False)
+        await state_manager.update_task_data(
+            "task-1", {"new_key": "value"}, merge=False
+        )
         data = await state_manager.get_task_data("task-1")
         assert "target" not in data  # Replaced
         assert data["new_key"] == "value"
@@ -477,7 +539,9 @@ class TestStateManager:
     @pytest.mark.asyncio
     async def test_system_state(self, state_manager):
         """Test system state management."""
-        await state_manager.set_system_state(SystemState.ACTIVE, {"version": "1.0"})
+        await state_manager.set_system_state(
+            SystemState.ACTIVE, {"version": "1.0"}
+        )
 
         state = await state_manager.get_system_state()
         assert state == SystemState.ACTIVE
@@ -556,9 +620,13 @@ class TestStateManager:
         """Test save/load to file."""
         await state_manager.set_task_state("task-1", TaskState.RUNNING)
         await state_manager.update_task_data("task-1", {"target": "test.com"})
-        await state_manager.set_system_state(SystemState.ACTIVE, {"version": "1.0"})
+        await state_manager.set_system_state(
+            SystemState.ACTIVE, {"version": "1.0"}
+        )
 
-        with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".json") as f:
+        with tempfile.NamedTemporaryFile(
+            mode="w", delete=False, suffix=".json"
+        ) as f:
             filepath = f.name
 
         try:
@@ -667,7 +735,11 @@ class TestEventBus:
         sub_id = await event_bus.subscribe(EventType.TASK_COMPLETED, handler)
         assert sub_id.startswith("sub-")
 
-        event = Event(type=EventType.TASK_COMPLETED, source="test", data={"task_id": "123"})
+        event = Event(
+            type=EventType.TASK_COMPLETED,
+            source="test",
+            data={"task_id": "123"},
+        )
         await event_bus.publish(event)
 
         # Wait for processing
@@ -714,21 +786,39 @@ class TestEventBus:
         source_filtered_handler = AsyncMock()
 
         await event_bus.subscribe(
-            EventType.TASK_COMPLETED, high_priority_handler, priority_filter=[EventPriority.HIGH, EventPriority.CRITICAL]
+            EventType.TASK_COMPLETED,
+            high_priority_handler,
+            priority_filter=[EventPriority.HIGH, EventPriority.CRITICAL],
         )
 
-        await event_bus.subscribe(EventType.TASK_COMPLETED, source_filtered_handler, source_filter=["worker-1"])
+        await event_bus.subscribe(
+            EventType.TASK_COMPLETED,
+            source_filtered_handler,
+            source_filter=["worker-1"],
+        )
 
         # High priority event
-        event1 = Event(type=EventType.TASK_COMPLETED, source="test", data={}, priority=EventPriority.HIGH)
+        event1 = Event(
+            type=EventType.TASK_COMPLETED,
+            source="test",
+            data={},
+            priority=EventPriority.HIGH,
+        )
         await event_bus.publish(event1)
 
         # Normal priority event
-        event2 = Event(type=EventType.TASK_COMPLETED, source="test", data={}, priority=EventPriority.NORMAL)
+        event2 = Event(
+            type=EventType.TASK_COMPLETED,
+            source="test",
+            data={},
+            priority=EventPriority.NORMAL,
+        )
         await event_bus.publish(event2)
 
         # From worker-1
-        event3 = Event(type=EventType.TASK_COMPLETED, source="worker-1", data={})
+        event3 = Event(
+            type=EventType.TASK_COMPLETED, source="worker-1", data={}
+        )
         await event_bus.publish(event3)
 
         await asyncio.sleep(0.1)
@@ -754,7 +844,11 @@ class TestEventBus:
         """Test event history."""
         # Publish some events
         for i in range(5):
-            event = Event(type=EventType.TASK_COMPLETED, source=f"source-{i}", data={"index": i})
+            event = Event(
+                type=EventType.TASK_COMPLETED,
+                source=f"source-{i}",
+                data={"index": i},
+            )
             await event_bus.publish(event)
 
         await asyncio.sleep(0.1)
@@ -764,7 +858,9 @@ class TestEventBus:
         assert len(history) == 5
 
         # Filter by type
-        filtered = await event_bus.get_history(event_type=EventType.TASK_COMPLETED)
+        filtered = await event_bus.get_history(
+            event_type=EventType.TASK_COMPLETED
+        )
         assert len(filtered) == 5
 
         # Filter by source
@@ -800,12 +896,18 @@ class TestEventBus:
 
         async def publish_delayed():
             await asyncio.sleep(0.05)
-            event = Event(type=EventType.TASK_COMPLETED, source="test", data={"task_id": "123"})
+            event = Event(
+                type=EventType.TASK_COMPLETED,
+                source="test",
+                data={"task_id": "123"},
+            )
             await event_bus.publish(event)
 
         asyncio.create_task(publish_delayed())
 
-        event = await event_bus.wait_for_event(EventType.TASK_COMPLETED, timeout=1.0)
+        event = await event_bus.wait_for_event(
+            EventType.TASK_COMPLETED, timeout=1.0
+        )
         assert event is not None
         assert event.data["task_id"] == "123"
 
@@ -815,14 +917,28 @@ class TestEventBus:
 
         async def publish_events():
             await asyncio.sleep(0.01)
-            await event_bus.publish(Event(type=EventType.TASK_COMPLETED, source="test", data={"task_id": "111"}))
+            await event_bus.publish(
+                Event(
+                    type=EventType.TASK_COMPLETED,
+                    source="test",
+                    data={"task_id": "111"},
+                )
+            )
             await asyncio.sleep(0.01)
-            await event_bus.publish(Event(type=EventType.TASK_COMPLETED, source="test", data={"task_id": "222"}))
+            await event_bus.publish(
+                Event(
+                    type=EventType.TASK_COMPLETED,
+                    source="test",
+                    data={"task_id": "222"},
+                )
+            )
 
         asyncio.create_task(publish_events())
 
         event = await event_bus.wait_for_event(
-            EventType.TASK_COMPLETED, timeout=1.0, predicate=lambda e: e.data.get("task_id") == "222"
+            EventType.TASK_COMPLETED,
+            timeout=1.0,
+            predicate=lambda e: e.data.get("task_id") == "222",
         )
 
         assert event is not None
@@ -831,7 +947,9 @@ class TestEventBus:
     @pytest.mark.asyncio
     async def test_wait_for_event_timeout(self, event_bus):
         """Test wait_for_event timeout."""
-        event = await event_bus.wait_for_event(EventType.TASK_COMPLETED, timeout=0.01)
+        event = await event_bus.wait_for_event(
+            EventType.TASK_COMPLETED, timeout=0.01
+        )
         assert event is None
 
     @pytest.mark.asyncio
@@ -882,7 +1000,13 @@ class TestEventStream:
         # Publish some events
         async def publish_events():
             for i in range(3):
-                await bus.publish(Event(type=EventType.TASK_COMPLETED, source="test", data={"index": i}))
+                await bus.publish(
+                    Event(
+                        type=EventType.TASK_COMPLETED,
+                        source="test",
+                        data={"index": i},
+                    )
+                )
             await stream.stop()
 
         asyncio.create_task(publish_events())
@@ -946,7 +1070,12 @@ class TestTaskManager:
     @pytest.mark.asyncio
     async def test_submit_task(self, task_manager):
         """Test submitting a task."""
-        task = Task(id="task-1", type="test_task", data={"key": "value"}, priority=TaskPriority.NORMAL)
+        task = Task(
+            id="task-1",
+            type="test_task",
+            data={"key": "value"},
+            priority=TaskPriority.NORMAL,
+        )
 
         # Register handler
         async def handler(t):
@@ -992,13 +1121,21 @@ class TestTaskManager:
         task_manager.register_handler("test_task", handler)
 
         # Submit low priority first
-        await task_manager.submit(Task(id="low", type="test_task", priority=TaskPriority.LOW))
+        await task_manager.submit(
+            Task(id="low", type="test_task", priority=TaskPriority.LOW)
+        )
 
         # Then high priority
-        await task_manager.submit(Task(id="high", type="test_task", priority=TaskPriority.HIGH))
+        await task_manager.submit(
+            Task(id="high", type="test_task", priority=TaskPriority.HIGH)
+        )
 
         # And critical
-        await task_manager.submit(Task(id="critical", type="test_task", priority=TaskPriority.CRITICAL))
+        await task_manager.submit(
+            Task(
+                id="critical", type="test_task", priority=TaskPriority.CRITICAL
+            )
+        )
 
         await asyncio.sleep(0.2)
 
@@ -1010,7 +1147,9 @@ class TestTaskManager:
     @pytest.mark.asyncio
     async def test_task_timeout(self, task_manager):
         """Test task timeout handling."""
-        task = Task(id="task-1", type="slow_task", timeout=0.1)  # 100ms timeout
+        task = Task(
+            id="task-1", type="slow_task", timeout=0.1
+        )  # 100ms timeout
 
         async def slow_handler(t):
             await asyncio.sleep(1.0)  # Too slow
@@ -1104,9 +1243,13 @@ class TestTaskManager:
     async def test_list_tasks(self, task_manager):
         """Test listing tasks with filtering."""
         # Create tasks in different states
-        task1 = Task(id="task-1", type="scan", state=TaskManagerState.COMPLETED)
+        task1 = Task(
+            id="task-1", type="scan", state=TaskManagerState.COMPLETED
+        )
         task2 = Task(id="task-2", type="scan", state=TaskManagerState.RUNNING)
-        task3 = Task(id="task-3", type="report", state=TaskManagerState.PENDING)
+        task3 = Task(
+            id="task-3", type="report", state=TaskManagerState.PENDING
+        )
 
         task_manager._tasks["task-1"] = task1
         task_manager._tasks["task-2"] = task2
@@ -1131,7 +1274,10 @@ class TestTaskManager:
         from datetime import timedelta
 
         old_task = Task(
-            id="old-task", type="scan", state=TaskManagerState.COMPLETED, completed_at=datetime.utcnow() - timedelta(hours=48)
+            id="old-task",
+            type="scan",
+            state=TaskManagerState.COMPLETED,
+            completed_at=datetime.utcnow() - timedelta(hours=48),
         )
 
         recent_task = Task(
@@ -1175,12 +1321,19 @@ class TestTaskManager:
         from datetime import timedelta
 
         now = datetime.utcnow()
-        task = Task(id="task-1", type="scan", started_at=now - timedelta(minutes=5), completed_at=now)
+        task = Task(
+            id="task-1",
+            type="scan",
+            started_at=now - timedelta(minutes=5),
+            completed_at=now,
+        )
 
         assert task.duration_seconds() == 300.0
 
         # Running task
-        running_task = Task(id="task-2", type="scan", started_at=now - timedelta(minutes=2))
+        running_task = Task(
+            id="task-2", type="scan", started_at=now - timedelta(minutes=2)
+        )
 
         duration = running_task.duration_seconds()
         assert duration is not None
@@ -1226,9 +1379,15 @@ class TestTaskManager:
     async def test_statistics(self, task_manager):
         """Test statistics collection."""
         # Add some tasks
-        task_manager._tasks["task-1"] = Task(id="task-1", type="scan", state=TaskManagerState.PENDING)
-        task_manager._tasks["task-2"] = Task(id="task-2", type="scan", state=TaskManagerState.RUNNING)
-        task_manager._tasks["task-3"] = Task(id="task-3", type="scan", state=TaskManagerState.COMPLETED)
+        task_manager._tasks["task-1"] = Task(
+            id="task-1", type="scan", state=TaskManagerState.PENDING
+        )
+        task_manager._tasks["task-2"] = Task(
+            id="task-2", type="scan", state=TaskManagerState.RUNNING
+        )
+        task_manager._tasks["task-3"] = Task(
+            id="task-3", type="scan", state=TaskManagerState.COMPLETED
+        )
 
         task_manager.submitted_count = 10
         task_manager.completed_count = 5
@@ -1294,24 +1453,42 @@ class TestSubscription:
         )
 
         # Should match
-        event1 = Event(type=EventType.TASK_COMPLETED, source="worker-1", priority=EventPriority.HIGH)
+        event1 = Event(
+            type=EventType.TASK_COMPLETED,
+            source="worker-1",
+            priority=EventPriority.HIGH,
+        )
         assert sub.matches(event1) is True
 
         # Wrong priority
-        event2 = Event(type=EventType.TASK_COMPLETED, source="worker-1", priority=EventPriority.NORMAL)
+        event2 = Event(
+            type=EventType.TASK_COMPLETED,
+            source="worker-1",
+            priority=EventPriority.NORMAL,
+        )
         assert sub.matches(event2) is False
 
         # Wrong source
-        event3 = Event(type=EventType.TASK_COMPLETED, source="worker-2", priority=EventPriority.HIGH)
+        event3 = Event(
+            type=EventType.TASK_COMPLETED,
+            source="worker-2",
+            priority=EventPriority.HIGH,
+        )
         assert sub.matches(event3) is False
 
     def test_subscription_no_filters(self):
         """Test subscription without filters matches all."""
         handler = Mock()
 
-        sub = Subscription(id="sub-1", event_type=EventType.TASK_COMPLETED, handler=handler)
+        sub = Subscription(
+            id="sub-1", event_type=EventType.TASK_COMPLETED, handler=handler
+        )
 
-        event = Event(type=EventType.TASK_COMPLETED, source="any-source", priority=EventPriority.NORMAL)
+        event = Event(
+            type=EventType.TASK_COMPLETED,
+            source="any-source",
+            priority=EventPriority.NORMAL,
+        )
         assert sub.matches(event) is True
 
 
@@ -1365,7 +1542,9 @@ class TestOrchestratorIntegration:
             await orchestrator.start()
 
             # Submit task
-            task_id = await orchestrator.submit_task({"type": "vulnerability_scan", "target": "example.com"})
+            task_id = await orchestrator.submit_task(
+                {"type": "vulnerability_scan", "target": "example.com"}
+            )
 
             assert task_id == "task-123"
 
@@ -1398,7 +1577,9 @@ class TestOrchestratorIntegration:
         # Publish completion event
         await event_bus.publish(
             Event(
-                type=EventType.TASK_COMPLETED, source="state_manager", data={"task_id": "task-1", "final_state": "completed"}
+                type=EventType.TASK_COMPLETED,
+                source="state_manager",
+                data={"task_id": "task-1", "final_state": "completed"},
             )
         )
 

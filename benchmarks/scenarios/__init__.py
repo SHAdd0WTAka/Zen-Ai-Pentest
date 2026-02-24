@@ -61,7 +61,9 @@ class TestScenario:
     credentials: Optional[Dict[str, str]] = None
 
     # Vulnerabilities
-    expected_vulnerabilities: List[VulnerabilityProfile] = field(default_factory=list)
+    expected_vulnerabilities: List[VulnerabilityProfile] = field(
+        default_factory=list
+    )
     known_false_positives: List[str] = field(default_factory=list)
 
     # Metadata
@@ -93,7 +95,9 @@ class TestScenario:
             "tags": self.tags,
             "category": self.category,
             "estimated_duration_minutes": self.estimated_duration_minutes,
-            "expected_vulnerabilities_count": len(self.expected_vulnerabilities),
+            "expected_vulnerabilities_count": len(
+                self.expected_vulnerabilities
+            ),
             "expected_vulnerabilities": [
                 {
                     "type": v.vuln_type,
@@ -132,7 +136,11 @@ OWASP_JUICE_SHOP = TestScenario(
             verification_method="sqlmap",
         ),
         VulnerabilityProfile(
-            vuln_type="xss", severity="high", location="/api/Products/", cwe_id="CWE-79", verification_method="manual"
+            vuln_type="xss",
+            severity="high",
+            location="/api/Products/",
+            cwe_id="CWE-79",
+            verification_method="manual",
         ),
         VulnerabilityProfile(
             vuln_type="authentication_bypass",
@@ -163,13 +171,25 @@ OWASP_JUICE_SHOP = TestScenario(
             verification_method="api_test",
         ),
         VulnerabilityProfile(
-            vuln_type="xxe", severity="critical", location="/api/Products/", cwe_id="CWE-611", verification_method="manual"
+            vuln_type="xxe",
+            severity="critical",
+            location="/api/Products/",
+            cwe_id="CWE-611",
+            verification_method="manual",
         ),
         VulnerabilityProfile(
-            vuln_type="idor", severity="high", location="/rest/track-order", cwe_id="CWE-639", verification_method="api_test"
+            vuln_type="idor",
+            severity="high",
+            location="/rest/track-order",
+            cwe_id="CWE-639",
+            verification_method="api_test",
         ),
         VulnerabilityProfile(
-            vuln_type="command_injection", severity="critical", location="/ftp/", cwe_id="CWE-78", verification_method="manual"
+            vuln_type="command_injection",
+            severity="critical",
+            location="/ftp/",
+            cwe_id="CWE-78",
+            verification_method="manual",
         ),
         VulnerabilityProfile(
             vuln_type="unsafe_mass_assignment",
@@ -307,11 +327,20 @@ METASPLOITABLE2_SCENARIO = TestScenario(
     scenario_type=ScenarioType.NETWORK,
     difficulty=DifficultyLevel.MEDIUM,
     target_host="192.168.56.101",
-    credentials={"msfadmin": "msfadmin", "postgres": "postgres", "user": "user", "service": "service"},
+    credentials={
+        "msfadmin": "msfadmin",
+        "postgres": "postgres",
+        "user": "user",
+        "service": "service",
+    },
     tags=["metasploitable", "network", "vm", "multi-service"],
     category="Vulnerable VMs",
     estimated_duration_minutes=90,
-    resource_requirements={"vm_memory_mb": 512, "vm_disk_gb": 8, "network": "host-only"},
+    resource_requirements={
+        "vm_memory_mb": 512,
+        "vm_disk_gb": 8,
+        "network": "host-only",
+    },
     expected_vulnerabilities=[
         VulnerabilityProfile(
             vuln_type="vsftpd_backdoor",
@@ -370,7 +399,11 @@ METASPLOITABLE2_SCENARIO = TestScenario(
             verification_method="vnc_viewer",
         ),
         VulnerabilityProfile(
-            vuln_type="nfs_exports", severity="high", location="port 2049", cwe_id="CWE-276", verification_method="showmount"
+            vuln_type="nfs_exports",
+            severity="high",
+            location="port 2049",
+            cwe_id="CWE-276",
+            verification_method="showmount",
         ),
         VulnerabilityProfile(
             vuln_type="unreal_irc_backdoor",
@@ -398,7 +431,11 @@ METASPLOITABLE3_SCENARIO = TestScenario(
     tags=["metasploitable", "windows", "modern", "active-directory"],
     category="Vulnerable VMs",
     estimated_duration_minutes=120,
-    resource_requirements={"vm_memory_mb": 2048, "vm_disk_gb": 20, "network": "host-only"},
+    resource_requirements={
+        "vm_memory_mb": 2048,
+        "vm_disk_gb": 20,
+        "network": "host-only",
+    },
     expected_vulnerabilities=[
         VulnerabilityProfile(
             vuln_type="elasticsearch_rce",
@@ -450,7 +487,11 @@ METASPLOITABLE3_SCENARIO = TestScenario(
             verification_method="bruteforce",
         ),
         VulnerabilityProfile(
-            vuln_type="solr_rce", severity="critical", location="port 8983", cwe_id="CWE-78", verification_method="metasploit"
+            vuln_type="solr_rce",
+            severity="critical",
+            location="port 8983",
+            cwe_id="CWE-78",
+            verification_method="metasploit",
         ),
     ],
 )
@@ -489,7 +530,11 @@ WEBGOAT_SCENARIO = TestScenario(
             verification_method="sqlmap",
         ),
         VulnerabilityProfile(
-            vuln_type="xss", severity="medium", location="/CrossSiteScripting/", cwe_id="CWE-79", verification_method="manual"
+            vuln_type="xss",
+            severity="medium",
+            location="/CrossSiteScripting/",
+            cwe_id="CWE-79",
+            verification_method="manual",
         ),
         VulnerabilityProfile(
             vuln_type="insecure_deserialization",
@@ -506,19 +551,39 @@ WEBGOAT_SCENARIO = TestScenario(
             verification_method="dependency_check",
         ),
         VulnerabilityProfile(
-            vuln_type="xxe", severity="critical", location="/XXE/", cwe_id="CWE-611", verification_method="manual"
+            vuln_type="xxe",
+            severity="critical",
+            location="/XXE/",
+            cwe_id="CWE-611",
+            verification_method="manual",
         ),
         VulnerabilityProfile(
-            vuln_type="auth_bypass", severity="high", location="/AuthBypass/", cwe_id="CWE-287", verification_method="manual"
+            vuln_type="auth_bypass",
+            severity="high",
+            location="/AuthBypass/",
+            cwe_id="CWE-287",
+            verification_method="manual",
         ),
         VulnerabilityProfile(
-            vuln_type="csrf", severity="medium", location="/CSRF/", cwe_id="CWE-352", verification_method="manual"
+            vuln_type="csrf",
+            severity="medium",
+            location="/CSRF/",
+            cwe_id="CWE-352",
+            verification_method="manual",
         ),
         VulnerabilityProfile(
-            vuln_type="idor", severity="medium", location="/IDOR/", cwe_id="CWE-639", verification_method="manual"
+            vuln_type="idor",
+            severity="medium",
+            location="/IDOR/",
+            cwe_id="CWE-639",
+            verification_method="manual",
         ),
         VulnerabilityProfile(
-            vuln_type="jwt_tokens", severity="high", location="/JWT/", cwe_id="CWE-345", verification_method="jwt_tool"
+            vuln_type="jwt_tokens",
+            severity="high",
+            location="/JWT/",
+            cwe_id="CWE-345",
+            verification_method="jwt_tool",
         ),
         VulnerabilityProfile(
             vuln_type="client_side_filtering",
@@ -608,16 +673,32 @@ HTB_WEB_CHALLENGES = TestScenario(
     estimated_duration_minutes=45,
     expected_vulnerabilities=[
         VulnerabilityProfile(
-            vuln_type="sqli", severity="high", location="webapp", cwe_id="CWE-89", verification_method="sqlmap"
+            vuln_type="sqli",
+            severity="high",
+            location="webapp",
+            cwe_id="CWE-89",
+            verification_method="sqlmap",
         ),
         VulnerabilityProfile(
-            vuln_type="ssti", severity="critical", location="template_engine", cwe_id="CWE-1336", verification_method="manual"
+            vuln_type="ssti",
+            severity="critical",
+            location="template_engine",
+            cwe_id="CWE-1336",
+            verification_method="manual",
         ),
         VulnerabilityProfile(
-            vuln_type="lfi_rfi", severity="high", location="file_inclusion", cwe_id="CWE-98", verification_method="manual"
+            vuln_type="lfi_rfi",
+            severity="high",
+            location="file_inclusion",
+            cwe_id="CWE-98",
+            verification_method="manual",
         ),
         VulnerabilityProfile(
-            vuln_type="type_juggling", severity="medium", location="php_auth", cwe_id="CWE-843", verification_method="manual"
+            vuln_type="type_juggling",
+            severity="medium",
+            location="php_auth",
+            cwe_id="CWE-843",
+            verification_method="manual",
         ),
         VulnerabilityProfile(
             vuln_type="serialization",
@@ -667,7 +748,11 @@ THM_OWASP_TOP10 = TestScenario(
             verification_method="access_test",
         ),
         VulnerabilityProfile(
-            vuln_type="xxe", severity="critical", location="xml_parser", cwe_id="CWE-611", verification_method="manual"
+            vuln_type="xxe",
+            severity="critical",
+            location="xml_parser",
+            cwe_id="CWE-611",
+            verification_method="manual",
         ),
         VulnerabilityProfile(
             vuln_type="broken_access_control",
@@ -677,7 +762,11 @@ THM_OWASP_TOP10 = TestScenario(
             verification_method="manual",
         ),
         VulnerabilityProfile(
-            vuln_type="xss", severity="medium", location="comment_form", cwe_id="CWE-79", verification_method="manual"
+            vuln_type="xss",
+            severity="medium",
+            location="comment_form",
+            cwe_id="CWE-79",
+            verification_method="manual",
         ),
         VulnerabilityProfile(
             vuln_type="insecure_deserialization",
@@ -701,7 +790,11 @@ THM_OWASP_TOP10 = TestScenario(
             verification_method="analysis",
         ),
         VulnerabilityProfile(
-            vuln_type="ssrf", severity="critical", location="url_fetcher", cwe_id="CWE-918", verification_method="manual"
+            vuln_type="ssrf",
+            severity="critical",
+            location="url_fetcher",
+            cwe_id="CWE-918",
+            verification_method="manual",
         ),
     ],
 )
@@ -718,7 +811,10 @@ THM_ROOTME = TestScenario(
     estimated_duration_minutes=45,
     expected_vulnerabilities=[
         VulnerabilityProfile(
-            vuln_type="hidden_directory", severity="info", location="web_root", verification_method="gobuster"
+            vuln_type="hidden_directory",
+            severity="info",
+            location="web_root",
+            verification_method="gobuster",
         ),
         VulnerabilityProfile(
             vuln_type="file_upload_bypass",
@@ -765,10 +861,14 @@ def get_scenario(scenario_id: str) -> Optional[TestScenario]:
 
 def get_scenarios_by_type(scenario_type: ScenarioType) -> List[TestScenario]:
     """Get all scenarios of a specific type."""
-    return [s for s in ALL_SCENARIOS.values() if s.scenario_type == scenario_type]
+    return [
+        s for s in ALL_SCENARIOS.values() if s.scenario_type == scenario_type
+    ]
 
 
-def get_scenarios_by_difficulty(difficulty: DifficultyLevel) -> List[TestScenario]:
+def get_scenarios_by_difficulty(
+    difficulty: DifficultyLevel,
+) -> List[TestScenario]:
     """Get all scenarios of a specific difficulty."""
     return [s for s in ALL_SCENARIOS.values() if s.difficulty == difficulty]
 
@@ -799,9 +899,15 @@ def create_benchmark_suite(
         scenarios = [s for s in scenarios if s.scenario_type == scenario_type]
 
     if tags:
-        scenarios = [s for s in scenarios if any(tag in s.tags for tag in tags)]
+        scenarios = [
+            s for s in scenarios if any(tag in s.tags for tag in tags)
+        ]
 
     if max_duration_minutes:
-        scenarios = [s for s in scenarios if s.estimated_duration_minutes <= max_duration_minutes]
+        scenarios = [
+            s
+            for s in scenarios
+            if s.estimated_duration_minutes <= max_duration_minutes
+        ]
 
     return scenarios

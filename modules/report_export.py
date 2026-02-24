@@ -12,6 +12,7 @@ from typing import Any, Dict, List
 
 try:
     from weasyprint import HTML  # CSS not used directly
+
     WEASYPRINT_AVAILABLE = True
 except ImportError:
     WEASYPRINT_AVAILABLE = False
@@ -22,6 +23,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class ReportData:
     """Report data structure"""
+
     title: str
     scan_date: datetime
     target: str
@@ -37,46 +39,65 @@ class ReportExporter:
         self.templates = {
             "executive": self._executive_template,
             "technical": self._technical_template,
-            "compliance": self._compliance_template
+            "compliance": self._compliance_template,
         }
 
     def export_csv(self, findings: List[Dict], filename: str = None) -> bytes:
         """Export findings to CSV"""
         if not filename:
-            filename = f"findings_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+            filename = (
+                f"findings_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+            )
 
         output = io.StringIO()
         writer = csv.writer(output)
 
         # Header
-        writer.writerow([
-            "ID", "Severity", "Title", "Description", "Target",
-            "CVE", "CVSS", "Status", "Discovered"
-        ])
+        writer.writerow(
+            [
+                "ID",
+                "Severity",
+                "Title",
+                "Description",
+                "Target",
+                "CVE",
+                "CVSS",
+                "Status",
+                "Discovered",
+            ]
+        )
 
         # Data
         for finding in findings:
-            writer.writerow([
-                finding.get("id", ""),
-                finding.get("severity", ""),
-                finding.get("title", ""),
-                finding.get("description", ""),
-                finding.get("target", ""),
-                finding.get("cve_id", ""),
-                finding.get("cvss_score", ""),
-                finding.get("status", "open"),
-                finding.get("discovered_at", "")
-            ])
+            writer.writerow(
+                [
+                    finding.get("id", ""),
+                    finding.get("severity", ""),
+                    finding.get("title", ""),
+                    finding.get("description", ""),
+                    finding.get("target", ""),
+                    finding.get("cve_id", ""),
+                    finding.get("cvss_score", ""),
+                    finding.get("status", "open"),
+                    finding.get("discovered_at", ""),
+                ]
+            )
 
-        return output.getvalue().encode('utf-8')
+        return output.getvalue().encode("utf-8")
 
-    def export_pdf(self, report: ReportData, template: str = "executive") -> bytes:
+    def export_pdf(
+        self, report: ReportData, template: str = "executive"
+    ) -> bytes:
         """Export report to PDF"""
         if not WEASYPRINT_AVAILABLE:
-            logger.error("WeasyPrint not available. Install: pip install weasyprint")
+            logger.error(
+                "WeasyPrint not available. Install: pip install weasyprint"
+            )
             raise RuntimeError("PDF generation requires WeasyPrint")
 
-        html_content = self.templates.get(template, self._executive_template)(report)
+        html_content = self.templates.get(template, self._executive_template)(
+            report
+        )
 
         pdf = HTML(string=html_content).write_pdf()
         return pdf
@@ -89,7 +110,7 @@ class ReportExporter:
                 "critical": "#dc2626",
                 "high": "#ea580c",
                 "medium": "#ca8a04",
-                "low": "#16a34a"
+                "low": "#16a34a",
             }.get(f.get("severity", "low"), "#6b7280")
 
             findings_html += f"""
@@ -169,6 +190,7 @@ class ReportExporter:
     def export_json(self, findings: List[Dict]) -> str:
         """Export findings to JSON"""
         import json
+
         return json.dumps(findings, indent=2)
 
     def get_export_formats(self) -> List[str]:
@@ -187,7 +209,7 @@ def export_findings(findings: List[Dict], format: str = "csv") -> bytes:
     if format == "csv":
         return exporter.export_csv(findings)
     elif format == "json":
-        return exporter.export_json(findings).encode('utf-8')
+        return exporter.export_json(findings).encode("utf-8")
     elif format == "pdf":
         report = ReportData(
             title="Security Assessment Report",
@@ -195,12 +217,20 @@ def export_findings(findings: List[Dict], format: str = "csv") -> bytes:
             target="Multiple Targets",
             findings=findings,
             summary={
-                "critical": len([f for f in findings if f.get("severity") == "critical"]),
-                "high": len([f for f in findings if f.get("severity") == "high"]),
-                "medium": len([f for f in findings if f.get("severity") == "medium"]),
-                "low": len([f for f in findings if f.get("severity") == "low"])
+                "critical": len(
+                    [f for f in findings if f.get("severity") == "critical"]
+                ),
+                "high": len(
+                    [f for f in findings if f.get("severity") == "high"]
+                ),
+                "medium": len(
+                    [f for f in findings if f.get("severity") == "medium"]
+                ),
+                "low": len(
+                    [f for f in findings if f.get("severity") == "low"]
+                ),
             },
-            recommendations=[]
+            recommendations=[],
         )
         return exporter.export_pdf(report)
     else:
