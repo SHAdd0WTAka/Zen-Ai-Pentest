@@ -29,7 +29,7 @@ typer>=0.9.0
 
 # Security and Cryptography
 cryptography>=44.0.0  # SECURITY FIX: CVE-2024-26130, CVE-2024-41985, CVE-2024-25185, CVE-2024-12797
-python-jose>=3.4.0  # SECURITY FIX: CVE-2024-33663
+PyJWT>=2.11.0  # SECURITY: Replaced python-jose (CVE-2024-23342)
 passlib>=1.7.4
 
 # Database

@@ -2,7 +2,7 @@
 fastapi>=0.109.0
 uvicorn[standard]>=0.27.0
 pydantic>=2.5.3
-python-jose[cryptography]>=3.4.0  # SECURITY FIX: CVE-2024-33663
+PyJWT>=2.11.0  # SECURITY: Replaced python-jose (CVE-2024-23342)
 passlib[bcrypt]>=1.7.4
 python-multipart>=0.0.22  # SECURITY FIX: CVE-2026-24486, CVE-2024-53981, CVE-2024-24762
 
