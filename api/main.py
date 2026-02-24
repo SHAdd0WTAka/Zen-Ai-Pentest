@@ -1227,8 +1227,9 @@ async def agent_websocket_endpoint(websocket: WebSocket):
             }
         )
 
+        from utils.security import mask_api_key
         logger.info(
-            f"🔌 Agent {agent_id} authenticated with API key {api_key[:15]}..."
+            f"🔌 Agent {agent_id} authenticated with API key {mask_api_key(api_key)}"
         )
 
         # Main message loop

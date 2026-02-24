@@ -6,6 +6,7 @@ Reads encrypted or plaintext secrets from Obsidian vault
 
 import json
 import os
+from utils.security import mask_secret as mask_sensitive_data
 from pathlib import Path
 from typing import Optional
 
@@ -68,10 +69,6 @@ def list_secrets() -> list:
     return secrets
 
 
-def mask_sensitive_data(value: str) -> str:
-    """Mask sensitive data for logging - only show first/last 4 chars"""
-    if not value or len(value) <= 8:
-        return "***"
     return f"{value[:4]}...{value[-4:]}"
 
 
