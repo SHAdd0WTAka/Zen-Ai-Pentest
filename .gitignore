@@ -142,3 +142,58 @@ requirements.txt.backup*
 # Context/metadata
 managed_context/
 test_suite_analysis/
+
+# Security & Secrets
+.env
+.env.local
+.env.*.local
+.env.load.sh
+*.key
+*.pem
+*.crt
+*.p12
+*.pfx
+secrets.yaml
+secrets.json
+secrets.toml
+*.secret
+*-credentials*
+*password*
+*token*
+
+# Backup files (potential secret leaks)
+*.bak
+*.backup
+*~
+.*.swp
+.*.swo
+
+# Database dumps (may contain sensitive data)
+*.sql
+*.dump
+*.sqlite
+*.sqlite3
+
+# Log files (may contain sensitive data)
+*.log
+logs/
+log/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Downloaded files (like private keys)
+Downloads/*.pem
+Downloads/*.key
