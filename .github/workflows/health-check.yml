@@ -21,7 +21,7 @@ jobs:
     
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v6
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       
     - name: Debug Environment
       run: |
@@ -104,7 +104,7 @@ jobs:
         
     - name: Upload Health Report
       if: always()
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
       with:
         name: health-check-report
         path: health_check_report.md
@@ -112,7 +112,7 @@ jobs:
         
     - name: Notify on Failure
       if: failure()
-      uses: actions/github-script@v8
+      uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
       with:
         script: |
           github.rest.issues.create({

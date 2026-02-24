@@ -43,12 +43,12 @@ jobs:
       results_file: ${{ steps.benchmark.outputs.results_file }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0
 
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c # v5.0.0
         with:
           python-version: '3.12'
           cache: 'pip'
@@ -101,7 +101,7 @@ jobs:
 
       - name: Upload benchmark results
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
         with:
           name: benchmark-results
           path: |
@@ -120,18 +120,18 @@ jobs:
     if: github.event_name == 'pull_request'
     steps:
       - name: Checkout current PR
-        uses: actions/checkout@v6
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Checkout base branch
-        uses: actions/checkout@v6
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           ref: ${{ github.event.inputs.compare_branch || 'main' }}
           path: base-branch
 
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c # v5.0.0
         with:
           python-version: '3.12'
           cache: 'pip'
@@ -142,7 +142,7 @@ jobs:
           pip install -e ".[dev]"
 
       - name: Download current benchmark results
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: benchmark-results
           path: current-results/
@@ -193,7 +193,7 @@ jobs:
 
       - name: Comment on PR with comparison
         if: steps.compare.outputs.comparison_result == 'success'
-        uses: actions/github-script@v8
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         with:
           script: |
             const fs = require('fs');
@@ -258,12 +258,12 @@ jobs:
     if: github.event_name == 'schedule'
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0
 
       - name: Download benchmark results
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: benchmark-results
           path: benchmarks/results/
@@ -302,7 +302,7 @@ jobs:
 
       - name: Upload trend report
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
         with:
           name: trend-report
           path: benchmarks/trend_report.md
@@ -320,13 +320,13 @@ jobs:
     if: github.event_name == 'schedule'
     steps:
       - name: Download benchmark results
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: benchmark-results
           path: benchmarks/results/
 
       - name: Comment on benchmark results issue
-        uses: actions/github-script@v8
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         with:
           script: |
             const fs = require('fs');

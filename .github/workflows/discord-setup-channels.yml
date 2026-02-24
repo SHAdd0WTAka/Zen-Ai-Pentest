@@ -44,9 +44,9 @@ jobs:
           echo "Please add this secret to your GitHub repository settings."
           exit 1
 
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c # v5.0.0
         with:
           python-version: '3.11'
       

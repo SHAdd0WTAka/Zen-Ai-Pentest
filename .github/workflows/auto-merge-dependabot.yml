@@ -27,7 +27,7 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Get Admin Token
         uses: actions/create-github-app-token@v2
@@ -37,7 +37,7 @@ jobs:
           private-key: ${{ secrets.ADMIN_BOT_PRIVATE_KEY }}
 
       - name: Setup Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c # v5.0.0
         with:
           python-version: '3.11'
 
@@ -226,7 +226,7 @@ jobs:
 
       - name: Notify Success
         if: success()
-        uses: actions/github-script@v8
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         with:
           script: |
             github.rest.issues.create({
@@ -239,7 +239,7 @@ jobs:
 
       - name: Emergency Re-enable Protection
         if: failure()
-        uses: actions/github-script@v8
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
