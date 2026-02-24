@@ -10,6 +10,9 @@ env:
   PYTHONIOENCODING: utf-8
   PYTHONUNBUFFERED: 1
 
+permissions:
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest

@@ -1027,7 +1027,10 @@ class SecurityHealthCheck(BaseHealthCheck):
                 hostname = host
                 port = 443
 
+            # Security: Enforce TLS 1.2+ only, disable insecure protocols
             context = ssl.create_default_context()
+            context.minimum_version = ssl.TLSVersion.TLSv1_2
+            context.check_hostname = True
             with context.wrap_socket(
                 ssl.socket(), server_hostname=hostname
             ) as sock:
