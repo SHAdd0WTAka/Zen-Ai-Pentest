@@ -2,6 +2,27 @@
 
 Diese Dokumentation beschreibt die Einrichtung und Verwendung der GitHub App-Authentifizierung für das Zen-AI-Pentest-Projekt.
 
+> 📖 **Ausführliche Architektur-Dokumentation:**  
+> Für detaillierte Informationen über Sicherheit, Datenfluss und Token-Lebenszyklus, siehe:  
+> **[SECRETS_ARCHITECTURE.md](./SECRETS_ARCHITECTURE.md)**
+>
+> 🔒 **Wichtig:** Deine Secrets werden niemals an externe Server gesendet. Alle Operationen sind **lokal**.
+
+## ⚡ Quick Start (3 Schritte)
+
+```bash
+# 1. Setup ausführen
+bash mcp/obsidian/setup.sh
+
+# 2. Secrets eintragen (siehe unten)
+code ~/Documents/Obsidian\ Vault/Secrets/secrets.yaml
+
+# 3. VS Codium neu laden
+# Ctrl+Shift+P → Developer: Reload Window
+```
+
+**Das war's!** Ab sofort werden Tokens automatisch bei jedem `git push` generiert.
+
 ## Übersicht
 
 Die GitHub App-Authentifizierung bietet **sichere, automatische Token-Generierung** für Git-Operationen, ohne langlaufende Personal Access Tokens (PATs) zu speichern.
@@ -130,11 +151,22 @@ git config --local credential.helper
 - 🔒 **Lokale Speicherung:** Nur in `~/Downloads/` oder sicherem Verzeichnis
 - 🔒 **Backup:** Bei Verlust muss ein neuer Key in GitHub generiert werden
 
-### Token-Lebensdauer
+### Token-Lebensdauer & Auto-Refresh
 
 - ⏱️ **Installation Token:** 1 Stunde (von GitHub festgelegt)
 - ⏱️ **JWT:** 10 Minuten (von uns generiert)
-- 🔄 **Auto-Refresh:** Bei jedem `git push` wird ein neuer Token generiert
+- 🔄 **Auto-Refresh:** Bei jedem `git push` wird automatisch ein neuer Token generiert
+
+#### Wie funktioniert der Auto-Refresh?
+
+```
+13:00 Uhr: git push → Token #1 generiert (gültig bis 14:00)
+13:30 Uhr: git push → Token #2 generiert (gültig bis 14:30), Token #1 läuft in 30min ab
+14:00 Uhr: Token #1 ist ungültig (egal, du hast #2)
+14:15 Uhr: git push → Token #3 generiert (gültig bis 15:15)
+```
+
+**Du musst dich um nichts kümmern** - bei jedem Push wird automatisch ein frischer Token erzeugt!
 
 ## Technische Details
 
