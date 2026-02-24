@@ -31,7 +31,7 @@ typer>=0.9.0
 
 # Security and Cryptography
 cryptography>=44.0.0  # SECURITY FIX: CVE-2024-26130, CVE-2024-41985, CVE-2024-25185, CVE-2025-...
-PyJWT>=3.4.0  # SECURITY: Algorithm confusion fix (CVE-2024-33663)
+PyJWT>=2.8.0  # SECURITY: Algorithm confusion fix (CVE-2024-33663) - Note: PyJWT uses 2.x versioning
 passlib>=1.7.4
 bcrypt>=4.0.0,<5.0.0  # Required for passlib (5.0 has breaking changes)
 
