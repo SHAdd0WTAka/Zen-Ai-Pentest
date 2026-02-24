@@ -205,6 +205,56 @@ Resource Scaling
 - [ ] Community building
 - [ ] Conference presence
 
+---
+
+## 🚀 Q5+ 2026-2030: NetworkCluster of Generational Defense
+
+> **Langfristige Vision:** Ein dezentrales, KI-gestütztes Verteidigungsnetzwerk
+> 
+> **Konzept:** "Sandwurm mit Zustimmung" - wie Dune, aber schützend statt zerstörerisch
+
+### Das Ziel
+
+Transformation von Zen-AI von einem einzelnen Tool zu einem **Node** in einem globalen, dezentralen Immunsystem:
+
+```
+Jetzt (2026):                    Zukunft (2030+):
+┌─────────────┐                ┌──────────────────────────┐
+│ Einzelnes   │                │ Dezentrales Netzwerk     │
+│ Pentest-Tool│───────────────▶│ aus Millionen von Nodes  │
+└─────────────┘                │ (Schwarm-Intelligenz)    │
+                               └──────────────────────────┘
+```
+
+### Kernprinzipien
+
+1. **Dezentral:** Keine Firma, kein Staat, kein Single Point of Failure
+2. **Lokal:** Deine Daten bleiben auf deinem Gerät (Obsidian-Prinzip)
+3. **Kollaborativ:** Alle profitieren von gemeinsamer Intelligenz
+4. **Autonom:** KI-Agenten verteidigen dich ohne Cloud-Abhängigkeit
+
+### Roadmap Details
+
+Siehe vollständige Dokumentation:
+📄 **[NetworkCluster of Generational Defense](roadmap/NetworkCluster-of-Generational-Defense.md)**
+
+### Phase-Übersicht
+
+| Phase | Zeitraum | Ziel |
+|-------|----------|------|
+| **1: Foundation** | 2026-2030 | Einzelner Node funktioniert autonom (Chain_of_Trust + lokale AI) |
+| **2: P2P Network** | 2030-2040 | Nodes vernetzen sich, Byzantinischer Konsens |
+| **3: Schwarm** | 2040-2055 | Kollektive Intelligenz emergiert |
+| **4: Generational** | 2055-2100 | Globales Immunsystem, "erbliche Immunität" |
+
+### Warum das wichtig ist
+
+> *"Wenn wir das bessere Angebot haben, werden die Leute kommen. Nicht weil sie unsere Philosophie teilen, sondern weil es funktioniert."*
+
+Die "Unsichtbare Hand" wird es zeigen - dezentrale Systeme mit echtem Nutzen für den Einzelnen gewinnen langfristig immer gegen zentralisierte Kontrolle.
+
+**Status:** Visionäre Planung - erste Schritte mit Zen-AI als Proof-of-Concept
+
 ### Key Deliverables
 
 | Issue | Feature | Status | Priority |
