@@ -248,8 +248,9 @@ def test_report_generation():
     sys.path.insert(0, str(REPO_PATH))
 
     try:
-        from modules.report_export import ReportExporter
         from modules.report_gen import ReportGenerator
+
+        from modules.report_export import ReportExporter
 
         # Test ReportGenerator
         gen = ReportGenerator()

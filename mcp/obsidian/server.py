@@ -6,11 +6,12 @@ Reads encrypted or plaintext secrets from Obsidian vault
 
 import json
 import os
-from utils.security import mask_secret as mask_sensitive_data
 from pathlib import Path
 from typing import Optional
 
 import yaml
+
+from utils.security import mask_secret as mask_sensitive_data
 
 # Obsidian Vault Path (anpassen!)
 VAULT_PATH = os.getenv(

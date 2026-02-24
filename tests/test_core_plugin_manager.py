@@ -20,9 +20,9 @@ from core.plugin_manager import (
     PluginType,
     apply_filter,
     execute_hook,
+    register_hook,
 )
 from core.plugin_manager import plugin_manager as global_plugin_manager
-from core.plugin_manager import register_hook
 
 # ==================== Test Fixtures ====================
 

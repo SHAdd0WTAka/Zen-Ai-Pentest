@@ -18,9 +18,8 @@ from typing import Dict, List, Optional
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
 
-from database.auth_models import TokenBlacklist
+from database.auth_models import TokenBlacklist, User, UserAuditLog, UserRole, UserSession
 from database.auth_models import TokenType as DBTokenType
-from database.auth_models import User, UserAuditLog, UserRole, UserSession
 
 from .jwt_handler import JWTHandler, TokenType
 from .password_hasher import PasswordHasher

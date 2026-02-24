@@ -22,11 +22,12 @@ test_results = {}
 print("\n[TEST 1] Module Importe")
 print("-" * 70)
 try:
+    from modules.report_gen import ReportGenerator  # noqa: F401
+
     from autonomous.agent_loop import AutonomousAgentLoop  # noqa: F401
     from modules.exploit_assist import ExploitAssistModule  # noqa: F401
     from modules.recon import ReconModule  # noqa: F401
     from modules.report_export import ReportExporter  # noqa: F401
-    from modules.report_gen import ReportGenerator  # noqa: F401
     from modules.vuln_scanner import VulnScannerModule  # noqa: F401
 
     print("  [OK] Alle Module erfolgreich importiert")

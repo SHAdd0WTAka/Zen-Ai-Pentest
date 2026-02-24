@@ -28,60 +28,60 @@ ALLOWED_SCHEMES: Final[Tuple[str, ...]] = ("https",)  # Slack only uses HTTPS
 class ValidatedSlackWebhook:
     """
     A Slack webhook URL that has been validated and is safe to use.
-    
+
     This type ensures that any URL used for outbound requests has passed
     SSRF validation. The validation happens at construction time.
     """
-    
+
     __slots__ = ("url",)
-    
+
     def __init__(self, url: str) -> None:
         """
         Validate and store a Slack webhook URL.
-        
+
         Raises:
             ValueError: If URL is not a valid Slack webhook URL
         """
         self.url = self._validate(url)
-    
+
     @staticmethod
     def _validate(url: str) -> str:
         """
         Validate that the provided URL is a legitimate Slack webhook URL.
-        
+
         This function provides SSRF protection by:
         1. Requiring HTTPS scheme
         2. Restricting to official Slack webhook hosts only
         3. Ensuring the URL has a valid structure
-        
+
         Args:
             url: The webhook URL to validate
-            
+
         Returns:
             The validated URL (unchanged, but confirmed safe)
-            
+
         Raises:
             ValueError: If URL fails any validation check
         """
         if not url:
             raise ValueError("webhook_url is required")
-        
+
         parsed = urlparse(url)
-        
+
         # Validate scheme (prevent file://, ftp://, etc.)
         if parsed.scheme not in ALLOWED_SCHEMES:
             raise ValueError(
                 f"Invalid scheme '{parsed.scheme}'. "
                 f"Only {ALLOWED_SCHEMES} are allowed for security reasons."
             )
-        
+
         # Validate hostname exists
         if not parsed.netloc:
             raise ValueError("Invalid webhook URL: no hostname found")
-        
+
         # Extract hostname (remove port if present)
         host = parsed.hostname or ""
-        
+
         # Strict host validation (SSRF protection)
         # Only allow official Slack webhook domains
         if host not in ALLOWED_SLACK_HOSTS:
@@ -90,13 +90,13 @@ class ValidatedSlackWebhook:
                 f"Only official Slack hosts {ALLOWED_SLACK_HOSTS} are allowed. "
                 f"This restriction prevents server-side request forgery (SSRF) attacks."
             )
-        
+
         return url
-    
+
     def __str__(self) -> str:
         """Return the validated URL (masked for logging)."""
         return self.url
-    
+
     def __repr__(self) -> str:
         """Return masked representation."""
         # Mask the URL for secure logging
@@ -111,7 +111,7 @@ class SlackNotifier:
     def __init__(self, webhook_url: ValidatedSlackWebhook) -> None:
         """
         Initialize with a validated Slack webhook URL.
-        
+
         Args:
             webhook_url: A pre-validated Slack webhook URL
         """
@@ -121,16 +121,16 @@ class SlackNotifier:
     def from_raw_url(cls, webhook_url: str) -> "SlackNotifier":
         """
         Create a SlackNotifier from a raw URL string.
-        
+
         This method validates the URL before creating the notifier.
         Use this when you have a URL that hasn't been validated yet.
-        
+
         Args:
             webhook_url: Raw webhook URL string
-            
+
         Returns:
             Configured SlackNotifier instance
-            
+
         Raises:
             ValueError: If URL is not a valid Slack webhook URL
         """

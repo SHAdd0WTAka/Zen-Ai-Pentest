@@ -6,7 +6,6 @@ This addresses CodeQL 'Pinned-Dependencies' alerts for supply chain security.
 """
 
 import re
-import os
 from pathlib import Path
 
 # Known action SHAs (as of 2024-02-24)
@@ -33,7 +32,7 @@ ACTION_SHAS = {
     "actions/stale@v8": "116f913a0c8cfe30e1e28450f0bc9979d9b89075 # v8.0.0",
     "actions/create-release@v1": "0cb9c9b65d5d1901c1f53e5e66eaf4afd303e70e # v1.1.4",
     "actions/first-interaction@v1": "34f25e0d3e4d1c08b9a920d0e0c9c9e7a5e6e5e5 # v1.3.0",
-    
+
     # Security scanning
     "github/codeql-action/init@v3": "17a1043258c5b7d6fc27a0295b7b6e5f6f4b6c5e # v3.28.5",
     "github/codeql-action/analyze@v3": "17a1043258c5b7d6fc27a0295b7b6e5f6f4b6c5e # v3.28.5",
@@ -44,7 +43,7 @@ ACTION_SHAS = {
     "github/codeql-action/upload-sarif@v2": "ee117c90599b1d9893f400c9dc8c3b6c5e5e6e5e # v2.23.0",
     "step-security/harden-runner@v2": "63c24ba5bd7bcdc9b61a9a8a1e0c0c6e6e6e6e5e # v2.10.0",
     "ossf/scorecard-action@v2": "62b272b99c4c9c1e5c5e6e6e6e6e6e6e6e6e6e5e # v2.4.0",
-    
+
     # Third-party actions
     "codecov/codecov-action@v5": "13ce5b9fc600fc6a1b1c5c9e5c6e5e6e5e6e5e5e # v5.0.0",
     "codecov/codecov-action@v4": "e28a75e2bfe8e5e5e6e5e6e6e6e6e6e6e6e6e5e5e # v4.6.0",
@@ -75,10 +74,10 @@ def pin_actions_in_file(file_path: Path) -> tuple[int, list[str]]:
     content = file_path.read_text()
     original_content = content
     changes = []
-    
+
     # Pattern to match uses: owner/repo@version
     pattern = r'uses:\s+([a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+@[^\s\n]+)'
-    
+
     for match in re.finditer(pattern, content):
         action = match.group(1)
         if action in ACTION_SHAS:
@@ -87,11 +86,11 @@ def pin_actions_in_file(file_path: Path) -> tuple[int, list[str]]:
             new_line = f"uses: {sha_version}"
             content = content.replace(old_line, new_line, 1)
             changes.append(f"  {action} → {sha_version.split('#')[1].strip()}")
-    
+
     if content != original_content:
         file_path.write_text(content)
         return len(changes), changes
-    
+
     return 0, []
 
 
@@ -100,37 +99,37 @@ def main():
     if not workflows_dir.exists():
         print("❌ .github/workflows directory not found")
         return
-    
+
     total_files = 0
     total_changes = 0
     all_changes = []
-    
+
     # Process all .yml and .yaml files
     for file_path in workflows_dir.glob("*.yml"):
         # Skip disabled workflows
         if file_path.name.endswith(".disabled"):
             continue
-            
+
         count, changes = pin_actions_in_file(file_path)
         if count > 0:
             total_files += 1
             total_changes += count
             all_changes.append(f"\n{file_path.name}:")
             all_changes.extend(changes)
-    
+
     # Print summary
-    print(f"📊 Summary")
-    print(f"==========")
+    print("📊 Summary")
+    print("==========")
     print(f"Files modified: {total_files}")
     print(f"Actions pinned: {total_changes}")
-    
+
     if all_changes:
         print("\n📝 Changes made:")
         for change in all_changes[:50]:  # Limit output
             print(change)
         if len(all_changes) > 50:
             print(f"\n... and {len(all_changes) - 50} more changes")
-    
+
     return total_changes
 
 

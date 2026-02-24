@@ -24,10 +24,11 @@ from typing import Any, Dict, List
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+from modules.report_gen import ReportGenerator
+
 from backends.duckduckgo import DuckDuckGoBackend
 from core.orchestrator import ZenOrchestrator
 from modules.recon import ReconModule
-from modules.report_gen import ReportGenerator
 from modules.vuln_scanner import VulnScannerModule
 
 # Apply Windows/asyncio fixes

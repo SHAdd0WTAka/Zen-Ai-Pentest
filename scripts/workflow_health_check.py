@@ -69,7 +69,6 @@ class WorkflowHealthChecker:
         "micnncim/action-label-syncer": "v1",
         "actions/upload-pages-artifact": "v3",
         "actions/deploy-pages": "v4",
-        "actions/labeler": "v5",
         "lewagon/wait-on-check-action": "v1.3.4",
         "PyCQA/bandit": "main",
     }
