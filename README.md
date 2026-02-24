@@ -575,8 +575,72 @@ zen-ai-pentest/
 
 ## 🔧 Configuration
 
-### Environment Variables
+Zen-AI-Pentest supports **two approaches** for managing configuration and secrets. Choose the one that fits your security requirements:
 
+| Approach | Best For | Security Level | Setup Complexity |
+|----------|----------|----------------|------------------|
+| **🛡️ Obsidian Vault** (Recommended) | Production, Teams | ⭐⭐⭐⭐⭐ High | Medium |
+| **📄 .env File** | Development, Quick Start | ⭐⭐⭐ Medium | Easy |
+
+---
+
+### 🛡️ Option 1: Obsidian Vault (Recommended)
+
+Store secrets securely in an encrypted Obsidian vault with MCP integration. Secrets never touch your codebase.
+
+```bash
+# 1. Setup Obsidian Secrets Vault
+bash mcp/obsidian/setup.sh
+
+# 2. Edit your secrets
+code ~/Documents/Obsidian\ Vault/Secrets/secrets.yaml
+
+# 3. Reload VS Codium
+Ctrl+Shift+P → Developer: Reload Window
+```
+
+**Vault Structure:**
+```yaml
+# ~/Documents/Obsidian Vault/Secrets/secrets.yaml
+kimi:
+  api_key: "sk-your-kimi-api-key"
+  
+openai:
+  api_key: "sk-your-openai-key"
+  
+database:
+  url: "postgresql://postgres:pass@localhost:5432/zen_pentest"
+  
+notifications:
+  slack_webhook: "https://hooks.slack.com/..."
+```
+
+**Benefits:**
+- 🔐 Encrypted at rest (Obsidian encryption)
+- 🚫 Never committed to Git
+- 🤖 AI-assisted via MCP server
+- 🔄 Hot-reload without restart
+
+📖 **Full Vault Docs**: [mcp/obsidian/README.md](mcp/obsidian/README.md)
+
+---
+
+### 📄 Option 2: Environment Variables (.env)
+
+Quick setup for development using a local `.env` file.
+
+```bash
+# 1. Copy example file
+cp .env.example .env
+
+# 2. Edit with your secrets
+nano .env
+
+# 3. Load environment
+source .env
+```
+
+**Example `.env`:**
 ```env
 # Database
 DATABASE_URL=postgresql://postgres:password@localhost:5432/zen_pentest
@@ -604,7 +668,31 @@ AWS_ACCESS_KEY_ID=AKIA...
 AZURE_SUBSCRIPTION_ID=...
 ```
 
-See `.env.example` for all options.
+⚠️ **Important**: Add `.env` to your `.gitignore`!
+```gitignore
+.env
+.env.local
+.env.*.local
+```
+
+See `.env.example` for all available options.
+
+---
+
+### 🔄 Switching Between Options
+
+You can switch between Vault and `.env` at any time:
+
+```bash
+# Check current configuration
+python3 -c "from core.config import settings; print(settings.secret_source)"
+
+# Force reload from Vault
+export USE_VAULT=true
+
+# Force reload from .env
+export USE_ENV_FILE=true
+```
 
 ---
 
