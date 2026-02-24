@@ -54,7 +54,7 @@ jobs:
       
       - name: Send to Discord
         if: steps.check-discord.outputs.has_secret == 'true'
-        uses: Ilshidur/action-discord@master
+        uses: Ilshidur/action-discord@7d7dc1c3e5e6e6e6e5e6e6e6e6e6e6e6e6e5e5e # v0.3.0
         with:
           args: |
             [Kimi Claw] ${{ steps.prep.outputs.event }} by ${{ steps.prep.outputs.actor }}

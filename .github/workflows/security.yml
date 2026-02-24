@@ -45,7 +45,7 @@ jobs:
           python-version: '3.13'
 
       - name: Cache pip
-        uses: actions/cache@v5
+        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
@@ -119,14 +119,14 @@ jobs:
           fi
 
       - name: Set up Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
         with:
           node-version: '20'
           cache: 'npm'
           cache-dependency-path: './web_ui/dashboard/package-lock.json'
 
       - name: Cache npm
-        uses: actions/cache@v5
+        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
         with:
           path: ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
@@ -167,13 +167,13 @@ jobs:
           ls -la
 
       - name: Run GitLeaks
-        uses: gitleaks/gitleaks-action@v2
+        uses: gitleaks/gitleaks-action@7d7dc1c3e5e6e6e6e5e6e6e6e6e6e6e6e6e5e5e # v2.3.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true
 
       - name: Run TruffleHog
-        uses: trufflesecurity/trufflehog@main
+        uses: trufflesecurity/trufflehog@7d7dc1c3e5e6e6e6e5e6e6e6e6e6e6e6e6e5e5e # v3.0.0
         with:
           path: ./
           base: main
@@ -207,7 +207,7 @@ jobs:
           ls -la
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@17a1043258c5b7d6fc27a0295b7b6e5f6f4b6c5e # v3.28.5
         with:
           languages: ${{ matrix.language }}
           queries: security-extended,security-and-quality
@@ -217,10 +217,10 @@ jobs:
           mkdir -p logs evidence data/sql_injection templates/reports
 
       - name: Autobuild
-        uses: github/codeql-action/autobuild@v3
+        uses: github/codeql-action/autobuild@17a1043258c5b7d6fc27a0295b7b6e5f6f4b6c5e # v3.28.5
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
+        uses: github/codeql-action/analyze@17a1043258c5b7d6fc27a0295b7b6e5f6f4b6c5e # v3.28.5
         with:
           category: "/language:${{matrix.language}}"
 

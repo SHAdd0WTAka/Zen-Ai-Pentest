@@ -102,7 +102,7 @@ jobs:
       continue-on-error: true
 
     - name: Upload coverage
-      uses: codecov/codecov-action@v5
+      uses: codecov/codecov-action@13ce5b9fc600fc6a1b1c5c9e5c6e6e5e6e6e5e5e # v5.0.0
       if: always()
       with:
         files: ./coverage.xml

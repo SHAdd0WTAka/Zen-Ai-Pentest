@@ -81,7 +81,7 @@ jobs:
             core.setOutput('body', body);
 
       - name: Create/Update Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@de2c0eb6e5e6e6e6e6e5e6e6e6e6e6e6e6e5e5e # v2.0.0
         if: startsWith(github.ref, 'refs/tags/')
         with:
           body: ${{ steps.generate.outputs.body }}

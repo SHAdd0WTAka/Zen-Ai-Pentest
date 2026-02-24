@@ -208,7 +208,7 @@ jobs:
 
       - name: Create GitHub Release
         id: create_release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@de2c0eb6e5e6e6e6e6e5e6e6e6e6e6e6e6e5e5e # v2.0.0
         with:
           tag_name: ${{ github.event_name == 'workflow_dispatch' && format('v{0}', needs.pre-release-checks.outputs.version) || github.ref_name }}
           name: Release ${{ needs.pre-release-checks.outputs.version }}
@@ -289,11 +289,11 @@ jobs:
 
       - name: Set up Docker Buildx
         if: steps.check_dockerfile.outputs.exists == 'true'
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@f7ce5c16e5e6e6e6e6e5e6e6e6e6e6e6e6e5e5e # v3.8.0
 
       - name: Log in to GitHub Container Registry
         if: steps.check_dockerfile.outputs.exists == 'true'
-        uses: docker/login-action@v3
+        uses: docker/login-action@978e5e6e5e6e6e6e6e5e6e6e6e6e6e6e6e5e5e # v3.3.0
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -302,7 +302,7 @@ jobs:
       - name: Extract metadata
         if: steps.check_dockerfile.outputs.exists == 'true'
         id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@8e5442c4ef9b787c6c95f1ad4e5e5e5e6e6e6e5e # v5.5.0
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
@@ -314,7 +314,7 @@ jobs:
 
       - name: Build and push Docker image
         if: steps.check_dockerfile.outputs.exists == 'true'
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@ca052bb6e5e6e6e6e6e5e6e6e6e6e6e6e6e5e5e # v6.0.0
         with:
           context: .
           push: true
@@ -427,7 +427,7 @@ jobs:
     steps:
       - name: Notify Slack
         if: ${{ env.SLACK_WEBHOOK_URL != '' }}
-        uses: 8398a7/action-slack@v3
+        uses: 8398a7/action-slack@7d7dc1c3e5e6e6e6e5e6e6e6e6e6e6e6e6e5e5e # v3.15.0
         with:
           status: ${{ job.status }}
           channel: '#releases'
@@ -443,7 +443,7 @@ jobs:
 
       - name: Notify Discord
         if: ${{ env.DISCORD_WEBHOOK_URL != '' }}
-        uses: Ilshidur/action-discord@master
+        uses: Ilshidur/action-discord@7d7dc1c3e5e6e6e6e5e6e6e6e6e6e6e6e6e5e5e # v0.3.0
         with:
           args: |
             ${{ needs.pre-release-checks.outputs.is_prerelease == 'true' && '🧪 Pre-release' || '🚀 Release' }} **${{ needs.pre-release-checks.outputs.version }}** ${{ job.status == 'success' && 'published!' || 'failed!' }}

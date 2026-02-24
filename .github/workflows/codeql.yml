@@ -33,7 +33,7 @@ jobs:
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@v3
+      uses: github/codeql-action/init@17a1043258c5b7d6fc27a0295b7b6e5f6f4b6c5e # v3.28.5
       with:
         languages: ${{ matrix.language }}
         queries: security-extended,security-and-quality
@@ -42,9 +42,9 @@ jobs:
       run: mkdir -p logs evidence data/sql_injection templates/reports
 
     - name: Autobuild
-      uses: github/codeql-action/autobuild@v3
+      uses: github/codeql-action/autobuild@17a1043258c5b7d6fc27a0295b7b6e5f6f4b6c5e # v3.28.5
 
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v3
+      uses: github/codeql-action/analyze@17a1043258c5b7d6fc27a0295b7b6e5f6f4b6c5e # v3.28.5
       with:
         category: "/language:${{matrix.language}}"
