@@ -23,14 +23,14 @@ curl -X POST http://localhost:8000/api/v1/auth/login \
   -H "Content-Type: application/json" \
   -d '{
     "username": "admin",
-    "password": "admin"
+    "password": "[YOUR_PASSWORD_HERE]"
   }'
 ```
 
 **Response:**
 ```json
 {
-  "access_token": "eyJhbGciOiJIUzI1NiIs...",
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...[EXAMPLE_TOKEN]",
   "token_type": "bearer",
   "expires_in": 3600
 }
@@ -40,7 +40,7 @@ curl -X POST http://localhost:8000/api/v1/auth/login \
 
 ```bash
 curl http://localhost:8000/api/v1/scans \
-  -H "Authorization: Bearer <token>"
+  -H "Authorization: Bearer [YOUR_JWT_TOKEN_HERE]"
 ```
 
 ## Endpoints
@@ -57,7 +57,7 @@ curl http://localhost:8000/api/v1/scans \
 **Scan starten:**
 ```bash
 curl -X POST http://localhost:8000/api/v1/scans \
-  -H "Authorization: Bearer <token>" \
+  -H "Authorization: Bearer [YOUR_JWT_TOKEN_HERE]" \
   -H "Content-Type: application/json" \
   -d '{
     "target": "example.com",
@@ -85,7 +85,7 @@ curl -X POST http://localhost:8000/api/v1/scans \
 **Tool ausführen:**
 ```bash
 curl -X POST http://localhost:8000/api/v1/tools/execute \
-  -H "Authorization: Bearer <token>" \
+  -H "Authorization: Bearer [YOUR_JWT_TOKEN_HERE]" \
   -H "Content-Type: application/json" \
   -d '{
     "tool": "nmap",
