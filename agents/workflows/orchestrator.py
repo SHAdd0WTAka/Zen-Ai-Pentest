@@ -390,8 +390,11 @@ class WorkflowOrchestrator:
 
         self.workflows[workflow_id] = workflow
 
+        from utils.security import sanitize_log_id
+
         logger.info(
-            f"🚀 Workflow {workflow_id} created ({workflow_type} on {target})"
+            f"🚀 Workflow {sanitize_log_id(workflow_id)} created "
+            f"({sanitize_log_id(workflow_type)} on {sanitize_log_id(target)})"
         )
 
         # Start workflow execution

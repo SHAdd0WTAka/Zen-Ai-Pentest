@@ -178,7 +178,11 @@ class OSINTModule:
                         emails.add(item.value)
                         self.results.append(item)
 
-        logger.info(f"Found {len(emails)} unique emails for {domain}")
+        from utils.security import sanitize_log_value
+
+        logger.info(
+            f"Found {len(emails)} unique emails for {sanitize_log_value(domain)}"
+        )
         return [
             r
             for r in self.results

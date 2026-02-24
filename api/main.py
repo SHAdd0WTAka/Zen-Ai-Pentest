@@ -1227,9 +1227,11 @@ async def agent_websocket_endpoint(websocket: WebSocket):
             }
         )
 
-        from utils.security import mask_api_key
+        from utils.security import mask_api_key, sanitize_log_id
+
         logger.info(
-            f"🔌 Agent {agent_id} authenticated with API key {mask_api_key(api_key)}"
+            f"🔌 Agent {sanitize_log_id(agent_id)} authenticated "
+            f"with API key {mask_api_key(api_key)}"
         )
 
         # Main message loop
@@ -1244,7 +1246,8 @@ async def agent_websocket_endpoint(websocket: WebSocket):
                     result = data.get("result", {})
 
                     logger.info(
-                        f"✅ Task result received from {agent_id}: {task_id}"
+                        f"✅ Task result received from "
+                        f"{sanitize_log_id(agent_id)}: {sanitize_log_id(task_id)}"
                     )
 
                     # Forward to workflow orchestrator
@@ -1271,7 +1274,8 @@ async def agent_websocket_endpoint(websocket: WebSocket):
                     # Agent acknowledged task receipt
                     task_id = data.get("task_id")
                     logger.debug(
-                        f"📋 Task {task_id} acknowledged by {agent_id}"
+                        f"📋 Task {sanitize_log_id(task_id)} acknowledged by "
+                        f"{sanitize_log_id(agent_id)}"
                     )
 
                 elif msg_type == "message":

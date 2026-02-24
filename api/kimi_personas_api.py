@@ -210,8 +210,11 @@ def require_api_key(f):
             return jsonify({"error": "API key not configured on server"}), 500
 
         if not api_key or api_key != expected_key:
+            from utils.security import sanitize_log_value
+
             logger.warning(
-                f"Unauthorized access attempt from {request.remote_addr}"
+                f"Unauthorized access attempt from "
+                f"{sanitize_log_value(request.remote_addr)}"
             )
             return jsonify({"error": "Unauthorized"}), 401
 
@@ -516,8 +519,11 @@ def chat():
         full_prompt = message
 
     # Log request
+    from utils.security import sanitize_log_id
+
     logger.info(
-        f"Chat request: persona={persona_id}, message_length={len(message)}"
+        f"Chat request: persona={sanitize_log_id(persona_id)}, "
+        f"message_length={len(message)}"
     )
 
     # Update persona stats

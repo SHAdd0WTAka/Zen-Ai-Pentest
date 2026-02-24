@@ -74,8 +74,10 @@ class ZenSanitizer:
         start_time = time.time()
         raw_data = request.raw_data
 
+        from utils.security import sanitize_log_value
+
         logger.info(
-            f"Processing {len(raw_data)} chars from {request.source_tool}"
+            f"Processing {len(raw_data)} chars from {sanitize_log_value(request.source_tool)}"
         )
 
         # Step 1: Prompt injection detection
