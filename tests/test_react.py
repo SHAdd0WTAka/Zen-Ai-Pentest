@@ -5,7 +5,6 @@ Target: 80%+ coverage
 Tests: ReActLoop, Thought, Action, Observation, reasoning, action selection, reflection
 """
 
-import json
 from datetime import datetime
 from unittest.mock import AsyncMock, MagicMock, Mock
 

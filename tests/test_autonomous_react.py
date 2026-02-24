@@ -9,7 +9,6 @@ Tests the ReactPattern class:
 - Execution flow
 """
 
-import json
 from datetime import datetime
 from unittest.mock import AsyncMock, MagicMock, Mock
 

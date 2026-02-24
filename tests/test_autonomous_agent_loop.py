@@ -9,7 +9,6 @@ Tests the AutonomousAgentLoop class with ReAct pattern implementation:
 - State management
 """
 
-import asyncio
 from datetime import datetime
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 

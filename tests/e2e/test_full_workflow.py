@@ -16,18 +16,14 @@ Usage:
     pytest tests/e2e/test_full_workflow.py -v --cov=. --cov-report=term-missing
 """
 
-import asyncio
 import os
 import sys
-import tempfile
-from datetime import datetime, timezone
-from typing import Dict, Generator
-from unittest.mock import AsyncMock, MagicMock, Mock, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
 # Ensure project root is in path

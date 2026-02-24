@@ -8,11 +8,9 @@ Covers:
 - SIEMIntegration
 """
 
-import hashlib
-import hmac
 import json
 from datetime import datetime, timedelta
-from unittest.mock import AsyncMock, MagicMock, Mock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
@@ -29,7 +27,6 @@ from audit.logger import AuditLogEntry, AuditLogger, EventCategory, LogLevel
 from audit.siem import (
     ElasticsearchBackend,
     GenericHTTPBackend,
-    QRadarBackend,
     SIEMConfig,
     SIEMIntegration,
     SplunkBackend,

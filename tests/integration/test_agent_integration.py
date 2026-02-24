@@ -17,8 +17,7 @@ Usage:
 import asyncio
 import os
 import sys
-from typing import Any, Dict, List
-from unittest.mock import AsyncMock, MagicMock, Mock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
@@ -30,7 +29,7 @@ sys.path.insert(
     ),
 )
 
-from agents.agent_base import AgentMessage, AgentRole, AgentState, BaseAgent
+from agents.agent_base import AgentMessage, AgentRole, BaseAgent
 from agents.agent_orchestrator import AgentOrchestrator
 from agents.analysis_agent import AnalysisAgent
 from agents.research_agent import ResearchAgent

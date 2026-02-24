@@ -9,9 +9,7 @@ Tests cover:
 - Error handling
 """
 
-import json
 import os
-from datetime import datetime
 from unittest.mock import Mock, mock_open, patch
 
 import pytest

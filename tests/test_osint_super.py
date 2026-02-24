@@ -3,13 +3,11 @@ Tests for OSINT Super Module
 Username, Email & Domain Investigation
 """
 
-import asyncio
 import json
-import os
 import tempfile
 from datetime import datetime
 from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, Mock, patch
+from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 

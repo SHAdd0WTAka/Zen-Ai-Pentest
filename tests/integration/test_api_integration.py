@@ -10,11 +10,9 @@ Usage:
     pytest tests/integration/test_api_integration.py -v --cov=api --cov-report=term-missing
 """
 
-import asyncio
-import json
 import os
 import sys
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 from fastapi.testclient import TestClient

@@ -10,14 +10,13 @@ Covers:
 """
 
 import json
-from datetime import datetime
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import Mock
 
 import pytest
 
 from safety.confidence import ConfidenceScore, ConfidenceScorer
 from safety.fact_checker import FactChecker, FactCheckResult, FactCheckStatus
-from safety.guardrails import GuardrailResult, OutputGuardrails, SafetyLevel
+from safety.guardrails import OutputGuardrails, SafetyLevel
 
 # Import safety modules
 from safety.pipeline import SafetyPipeline

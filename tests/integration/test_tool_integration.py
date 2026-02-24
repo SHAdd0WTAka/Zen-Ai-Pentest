@@ -18,7 +18,7 @@ import asyncio
 import os
 import sys
 from typing import Any, Dict
-from unittest.mock import AsyncMock, MagicMock, Mock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 

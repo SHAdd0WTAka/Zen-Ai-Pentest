@@ -285,7 +285,7 @@ class JWTHandler:
         try:
             # Decode without verification first to get JTI
             unverified = jwt.decode(
-                token, options={"verify_signature": False, "verify_exp": False}
+                token, options={"verify_signature": True, "verify_exp": False}
             )
             jti = unverified.get("jti")
 
@@ -423,7 +423,7 @@ class JWTHandler:
     def get_token_expiry(self, token: str) -> Optional[datetime]:
         """Get token expiration time"""
         try:
-            payload = jwt.decode(token, options={"verify_signature": False})
+            payload = jwt.decode(token, options={"verify_signature": True})
             exp_timestamp = payload.get("exp")
             if exp_timestamp:
                 return datetime.fromtimestamp(exp_timestamp, tz=timezone.utc)

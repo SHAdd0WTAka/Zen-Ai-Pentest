@@ -13,23 +13,17 @@ Benchmarks:
 
 import asyncio
 import gc
-import os
 import sys
 import time
-from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 # Add parent to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from core.performance import (
-    MemoryProfiler,
-    PerformanceTimer,
     get_timer,
-    timed,
-    timed_block,
 )
 
 

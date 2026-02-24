@@ -10,7 +10,7 @@ Target Coverage: 70%+
 import asyncio
 import json
 from datetime import datetime
-from unittest.mock import AsyncMock, MagicMock, Mock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
@@ -214,7 +214,6 @@ class TestSubdomainScannerWordlist:
     @pytest.mark.asyncio
     async def test_wordlist_bruteforce_timeout(self, scanner):
         """Test wordlist brute-force with timeout"""
-        import asyncio
 
         scanner.wordlist = ["www"]
 

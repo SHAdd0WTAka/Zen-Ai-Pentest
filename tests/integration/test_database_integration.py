@@ -17,8 +17,7 @@ Usage:
 
 import os
 import sys
-import tempfile
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Generator
 
 import pytest
@@ -35,12 +34,7 @@ sys.path.insert(
 )
 
 from database.crud import (
-    create_finding,
-    create_report,
-    create_scan,
     get_findings,
-    get_reports,
-    get_scan,
     get_scans,
     update_scan_status,
 )
@@ -831,7 +825,7 @@ class TestComplexQueries:
     ):
         """Test filtering scans by date range."""
         # Create scans with different dates
-        from datetime import datetime, timedelta
+        from datetime import timedelta
 
         for i in range(5):
             scan = Scan(

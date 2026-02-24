@@ -23,7 +23,7 @@ class BurpSuiteAPI:
         """Listet konfigurierte Sites"""
         try:
             resp = requests.get(
-                f"{self.api_url}/v1/sites", headers=self.headers, verify=False
+                f"{self.api_url}/v1/sites", headers=self.headers, verify=True
             )
             return resp.json().get("sites", [])
         except Exception as e:
@@ -43,7 +43,7 @@ class BurpSuiteAPI:
                 f"{self.api_url}/v1/scans",
                 headers=self.headers,
                 json=data,
-                verify=False,
+                verify=True,
             )
             return resp.json().get("scan_id", "")
         except Exception as e:
@@ -56,7 +56,7 @@ class BurpSuiteAPI:
             resp = requests.get(
                 f"{self.api_url}/v1/scans/{scan_id}/issues",
                 headers=self.headers,
-                verify=False,
+                verify=True,
             )
             return resp.json()
         except Exception as e:

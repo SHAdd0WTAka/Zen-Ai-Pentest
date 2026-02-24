@@ -153,10 +153,10 @@ def test_webhook_payload(webhook_url: str) -> bool:
             print("  [OK] Webhook test message sent successfully!")
             return True
         elif response.status_code == 404:
-            print(f"  [ERR] Webhook not found (404). Check your webhook URL.")
+            print("  [ERR] Webhook not found (404). Check your webhook URL.")
             return False
         elif response.status_code == 429:
-            print(f"  [WARN] Rate limited (429). Too many requests.")
+            print("  [WARN] Rate limited (429). Too many requests.")
             return False
         else:
             print(f"  [ERR] Unexpected status code: {response.status_code}")

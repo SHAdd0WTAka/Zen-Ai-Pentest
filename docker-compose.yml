@@ -121,7 +121,7 @@ services:
       AGENT_API_KEY: ${AGENT_API_KEY:-}
       AGENT_API_SECRET: ${AGENT_API_SECRET:-}
     # Privileged mode needed for some security tools
-    privileged: true
+    privileged: false
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./agent_data:/app/agent_data

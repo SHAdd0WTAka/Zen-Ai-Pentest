@@ -15,7 +15,7 @@ def run_git_command(cmd):
     """Run git command and return output"""
     try:
         result = subprocess.run(
-            cmd, shell=True, capture_output=True, text=True, cwd=os.getcwd()
+            cmd, shell=False, capture_output=True, text=True, cwd=os.getcwd()
         )
         return result.stdout.strip()
     except Exception as e:

@@ -7,21 +7,16 @@ Covers:
 - Cloud providers (AWS, Azure, GCP)
 """
 
-import subprocess
 import time
-from datetime import datetime
-from unittest.mock import AsyncMock, MagicMock, Mock, call, patch
+from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
 # Import virtualization modules
 from virtualization.cloud_vm_manager import (
-    AWSProvider,
-    AzureProvider,
     CloudProviderBase,
     CloudVMConfig,
     CloudVMManager,
-    GCPProvider,
     create_aws_manager,
     create_azure_manager,
     create_gcp_manager,

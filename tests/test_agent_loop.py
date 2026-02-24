@@ -6,8 +6,6 @@ Tests: ReActAgent, reasoning loop, action execution, observation handling, error
 """
 
 import asyncio
-import json
-import uuid
 from datetime import datetime
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
@@ -17,7 +15,6 @@ from autonomous.agent_loop import (
     AgentMemory,
     AgentState,
     AutonomousAgentLoop,
-    BaseTool,
     ExploitValidator,
     NmapScanner,
     NucleiScanner,

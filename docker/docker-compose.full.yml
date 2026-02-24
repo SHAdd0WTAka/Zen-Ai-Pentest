@@ -155,7 +155,7 @@ services:
   pentest-vm:
     image: ubuntu:24.04
     container_name: zen-pentest-vm
-    privileged: true
+    privileged: false
     network_mode: host
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock

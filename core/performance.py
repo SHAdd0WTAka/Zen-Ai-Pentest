@@ -14,9 +14,7 @@ import functools
 import gc
 import importlib
 import importlib.util
-import inspect
 import logging
-import sys
 import threading
 import time
 import tracemalloc
@@ -24,7 +22,7 @@ from collections import defaultdict
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from functools import lru_cache, wraps
-from typing import Any, Callable, Dict, List, Optional, TypeVar, Union
+from typing import Any, Callable, Dict, List, Optional, TypeVar
 
 logger = logging.getLogger(__name__)
 

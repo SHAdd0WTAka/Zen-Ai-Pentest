@@ -14,14 +14,13 @@ import hashlib
 import json
 import logging
 import pickle
-import threading
 import time
 from collections import OrderedDict
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from functools import wraps
 from pathlib import Path
-from typing import Any, Callable, Dict, Generic, List, Optional, TypeVar, Union
+from typing import Any, Callable, Dict, List, Optional, TypeVar, Union
 
 logger = logging.getLogger(__name__)
 

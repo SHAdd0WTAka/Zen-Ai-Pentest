@@ -583,7 +583,7 @@ class ToolsHealthCheck(BaseHealthCheck):
                 try:
                     output = subprocess.run(
                         cmd,
-                        shell=True,
+                        shell=False,
                         capture_output=True,
                         text=True,
                         timeout=10,

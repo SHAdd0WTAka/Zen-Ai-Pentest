@@ -3,12 +3,9 @@ Tests for OSINT Sub-modules
 Certificate Transparency, WHOIS Lookup, DNS Enumeration
 """
 
-import asyncio
-import json
 import socket
-import ssl
 from datetime import datetime
-from unittest.mock import AsyncMock, MagicMock, Mock, patch
+from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 
@@ -612,8 +609,6 @@ class TestDNSEnumerator:
     @pytest.mark.asyncio
     async def test_check_dnssec_enabled(self, dns_enum):
         """Test checking DNSSEC when enabled"""
-        import dns.dnssec
-        import dns.resolver
 
         mock_answer = Mock()
         mock_answer.algorithm = 8  # RSA/SHA-256
@@ -651,9 +646,6 @@ class TestDNSEnumerator:
     @pytest.mark.asyncio
     async def test_try_zone_transfer_success(self, dns_enum):
         """Test successful zone transfer"""
-        import dns.query
-        import dns.resolver
-        import dns.zone
 
         # Mock NS records
         with patch.object(
@@ -672,7 +664,6 @@ class TestDNSEnumerator:
     @pytest.mark.asyncio
     async def test_try_zone_transfer_failure(self, dns_enum):
         """Test failed zone transfer"""
-        import dns.resolver
 
         with patch.object(
             dns_enum,

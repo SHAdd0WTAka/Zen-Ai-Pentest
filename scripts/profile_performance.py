@@ -187,7 +187,7 @@ def profile_memory(target: str = None):
     delta = end_mem - start_mem
 
     print(f"\n{'─' * 70}")
-    print(f"Memory Usage:")
+    print("Memory Usage:")
     print(f"  Start: {start_mem:.2f}MB")
     print(f"  End: {end_mem:.2f}MB")
     print(f"  Delta: {delta:+.2f}MB")

@@ -5,7 +5,6 @@ Validate GitHub Actions workflows for common issues.
 Usage: python scripts/validate_workflows.py
 """
 
-import glob
 import re
 import sys
 from pathlib import Path

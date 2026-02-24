@@ -23,7 +23,6 @@ from sqlalchemy.orm import selectinload
 
 # Import models
 from database.models import (
-    AuditLog,
     Finding,
     Report,
     Scan,

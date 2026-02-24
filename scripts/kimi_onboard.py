@@ -11,7 +11,7 @@ def run_git_command(cmd):
     try:
         result = subprocess.run(
             cmd,
-            shell=True,
+            shell=False,
             capture_output=True,
             text=True,
             cwd=Path(__file__).parent.parent,

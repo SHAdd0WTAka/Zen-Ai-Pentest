@@ -13,8 +13,6 @@ Tests cover:
 
 import asyncio
 import time
-import traceback
-from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from unittest.mock import AsyncMock, MagicMock, Mock
 
@@ -23,7 +21,6 @@ import pytest
 from core.workflow_engine import (
     EventBus,
     FunctionTask,
-    StateManager,
     SubWorkflowTask,
     Task,
     TaskResult,

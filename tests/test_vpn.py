@@ -3,10 +3,8 @@ Tests for VPN Integration Module
 ProtonVPN, OpenVPN, WireGuard
 """
 
-import asyncio
-import subprocess
 from datetime import datetime
-from unittest.mock import AsyncMock, MagicMock, Mock, patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 

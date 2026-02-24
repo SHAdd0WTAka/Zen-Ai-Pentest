@@ -649,7 +649,7 @@ class TestPathValidation:
             validator.validate_path("../../../etc/passwd")
 
     def test_path_traversal_backslash_blocked(self):
-        """Test ..\ path traversal is blocked"""
+        r"""Test ..\ path traversal is blocked"""
         validator = SecureInputValidator()
         with pytest.raises(
             ValidationError, match="Path traversal not allowed"

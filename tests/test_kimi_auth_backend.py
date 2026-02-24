@@ -4,10 +4,8 @@ Comprehensive tests for Kimi Auth Backend
 Target: 80%+ coverage
 """
 
-import json
 import os
 import sys
-from typing import AsyncGenerator
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest

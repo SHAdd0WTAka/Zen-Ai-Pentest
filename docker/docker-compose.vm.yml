@@ -14,7 +14,7 @@ services:
       context: ..
       dockerfile: docker/Dockerfile
     container_name: zen-ai-pentest
-    privileged: true  # Erforderlich für VM-Steuerung
+    privileged: false  # Erforderlich für VM-Steuerung
     volumes:
       # VirtualBox Socket (Host muss VirtualBox haben)
       - /var/run/vboxdrv:/var/run/vboxdrv
@@ -46,7 +46,7 @@ services:
       - USER_ID=1000
       - GROUP_ID=1000
       - VBOX_WEB_AUTO_START=1
-    privileged: true
+    privileged: false
     profiles:
       - gui  # Nur mit: docker-compose --profile gui up
 

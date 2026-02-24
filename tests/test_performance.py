@@ -10,7 +10,7 @@ Covers:
 
 import asyncio
 import time
-from unittest.mock import AsyncMock, MagicMock, Mock, patch
+from unittest.mock import AsyncMock, Mock
 
 import pytest
 

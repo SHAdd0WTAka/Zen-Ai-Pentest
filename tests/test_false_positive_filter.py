@@ -8,7 +8,6 @@ Target Coverage: 70%+
 """
 
 import re
-from unittest.mock import MagicMock, patch
 
 import pytest
 

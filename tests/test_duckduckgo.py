@@ -4,10 +4,9 @@ Comprehensive tests for DuckDuckGo Backend
 Target: 80%+ coverage
 """
 
-import json
 import os
 import sys
-from unittest.mock import AsyncMock, MagicMock, Mock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
