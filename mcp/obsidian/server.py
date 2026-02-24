@@ -11,7 +11,10 @@ from pathlib import Path
 from typing import Optional
 
 # Obsidian Vault Path (anpassen!)
-VAULT_PATH = os.getenv("OBSIDIAN_VAULT_PATH", "~/Documents/Obsidian Vault/Secrets")
+VAULT_PATH = os.getenv(
+    "OBSIDIAN_VAULT_PATH",
+    "~/Documents/Obsidian Vault/Secrets"
+)
 
 
 def get_secret(name: str) -> Optional[str]:
@@ -79,7 +82,11 @@ def main():
             if method == "get_secret":
                 name = params.get("name")
                 value = get_secret(name)
-                response = {"result": value, "error": None if value else f"Secret '{name}' not found"}
+                if value:
+                    response = {"result": value, "error": None}
+                else:
+                    msg = f"Secret '{name}' not found"
+                    response = {"result": None, "error": msg}
 
             elif method == "list_secrets":
                 secrets = list_secrets()
@@ -88,7 +95,11 @@ def main():
             elif method == "health":
                 vault = Path(VAULT_PATH).expanduser()
                 response = {
-                    "result": {"status": "ok", "vault_exists": vault.exists(), "vault_path": str(vault)},
+                    "result": {
+                        "status": "ok",
+                        "vault_exists": vault.exists(),
+                        "vault_path": str(vault),
+                    },
                     "error": None,
                 }
 
