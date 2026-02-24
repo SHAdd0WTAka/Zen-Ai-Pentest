@@ -35,6 +35,8 @@ Q1 2026          Q2 2026          Q3 2026          Q4 2026
 - [ ] Real tool execution (nmap, nuclei, sqlmap, metasploit)
 - [ ] LangGraph memory system
 - [ ] Self-correction capabilities
+- [ ] **Resource-Aware Multi-Agent Orchestrator** (NEW)
+- [ ] **AgentZero VectorMemory Integration** (NEW)
 
 ### Key Deliverables
 
@@ -45,12 +47,67 @@ Q1 2026          Q2 2026          Q3 2026          Q4 2026
 | #20 | Memory System | 📋 Planned | High |
 | - | Docker Sandbox | 📋 Planned | High |
 | - | Tool Integration API | 📋 Planned | Medium |
+| **NEW** | **Resource-Aware Orchestrator** | 📋 Planned | High |
+| **NEW** | **AgentZero VectorMemory** | 📋 Planned | High |
+| **NEW** | **Crawl4AI Research Module** | 📋 Planned | Medium |
+| **NEW** | **Cloudflare Edge Workers** | 📋 Planned | Medium |
 
 ### Success Metrics
 - [ ] Agent completes recon-to-exploit chain without human input
 - [ ] 5+ tools integrated with real execution
 - [ ] Memory persistence across sessions
 - [ ] < 30s average response time
+- [ ] Dynamic agent scaling based on available resources
+- [ ] Long-term vector memory for tool knowledge
+
+---
+
+### 🆕 Resource-Aware Multi-Agent Architecture (NEW)
+
+**Inspiriert von:** Kimi.com Agent Swarm Pattern
+
+#### Konzept
+Hierarchisches Multi-Agent System mit dynamischer Ressourcen-Allokation:
+
+```
+Orchestrator (1)
+├── Analyse: Was habe ich? (Ressourcen, Tools, Target)
+├── Planung: Wie strukturiere ich es?
+└── Ausführung: Phasen-basiert mit max 3 parallelen Clustern
+
+Core Agents (10)
+├── Jeder Core spawnert 3-9 Sub-Agents (je nach Ressourcen)
+├── Jede Phase: Info → Plan → Execute → Deliver
+└── Parallelisierung: Max 3 Cluster gleichzeitig
+
+Resource Scaling
+├── Low (4GB RAM, 2 CPU): 1 Cluster, 3 Subs
+├── Medium (8GB RAM, 4 CPU): 3 Cluster, 6 Subs  ← Kimi-Style
+└── High (16GB+ RAM, 8 CPU+): 5 Cluster, 9 Subs
+```
+
+#### Komponenten
+
+| Komponente | Funktion | Tech Stack |
+|------------|----------|------------|
+| **AgentZero** | Multi-Agent Core, hierarchisches Spawning | AgentZero Framework |
+| **VectorMemory** | Long-term memory für Tool-Knowledge | ChromaDB / Qdrant |
+| **Crawl4AI** | Research Phase, compact web crawling | crawl4ai |
+| **Cloudflare Edge** | Verteilte Ausführung für leichte Tasks | Workers + D1 |
+
+#### Vorteile
+- ✅ **Skalierbar**: Läuft auf Laptop (langsam) und Server (schnell)
+- ✅ **Resilient**: Core-Agents übernehmen bei Sub-Agent Failures
+- ✅ **Effizient**: Keine Ressourcen-Verschwendung durch dynamische Allokation
+- ✅ **Long-term Memory**: VectorDB speichert Tool-Erfahrungen über Sessions hinweg
+
+#### Abgrenzung zu aktuellem System
+| Aktuell (11 Agents) | Neu (Resource-Aware) |
+|---------------------|----------------------|
+| Flache Struktur | Hierarchisch (1→10→90) |
+| Statisch | Dynamisch skalierend |
+| Nur Markdown Memory | VectorMemory (Embeddings) |
+| Lokal nur | Lokal + Cloudflare Edge |
 
 ---
 
@@ -154,7 +211,9 @@ Q1 2026          Q2 2026          Q3 2026          Q4 2026
 
 | Feature | Description | Complexity | ETA |
 |---------|-------------|------------|-----|
-| Memory System | Persistent agent memory | Medium | Q1-Q2 2026 |
+| Memory System | Persistent agent memory (Markdown + Vector) | Medium | Q1-Q2 2026 |
+| VectorMemory | AgentZero VectorMemory for long-term tool knowledge | Medium | Q1 2026 |
+| Resource Orchestrator | Dynamic agent scaling based on CPU/RAM | High | Q1 2026 |
 | Exploit Validator | Automated PoC validation | High | Q2 2026 |
 | Guardrails | Safety and output validation | Medium | Q2 2026 |
 | PyPI Package | pip install zen-ai-pentest | Low | Q3 2026 |
