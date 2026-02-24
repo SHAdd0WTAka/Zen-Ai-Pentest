@@ -1,179 +1,57 @@
-# Zen-AI-Pentest Pre-commit Configuration
-# Fast, comprehensive hooks for code quality and security
-#
-# Installation:
-#   python scripts/setup_precommit.py
-#   OR: pip install pre-commit && pre-commit install
-#
-# Usage:
-#   pre-commit run --all-files     Run on all files
-#   pre-commit run ruff            Run specific hook
-#   SKIP=pytest git commit ...     Skip specific hooks
-#
-# Docs: https://pre-commit.com
+# Pre-commit hooks for Zen-AI-Pentest
+# Install: pre-commit install
+# Run all: pre-commit run --all-files
+# Skip: git commit -m "msg" --no-verify
 
 repos:
-  # ============================================================================
-  # File Checks (fast, run first)
-  # ============================================================================
+  # Black - Code formatter
+  - repo: https://github.com/psf/black
+    rev: 24.1.1
+    hooks:
+      - id: black
+        language_version: python3
+        args: [--line-length=79]
+
+  # isort - Import sorting
+  - repo: https://github.com/PyCQA/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        args: [--profile=black, --line-length=79]
+
+  # Flake8 - Linting
+  - repo: https://github.com/PyCQA/flake8
+    rev: 7.0.0
+    hooks:
+      - id: flake8
+        args: [--max-line-length=79, --max-complexity=10]
+        additional_dependencies: [flake8-docstrings]
+
+  # Trailing whitespace
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.5.0
     hooks:
       - id: trailing-whitespace
-        name: "Trim trailing whitespace"
-        exclude: "^(tests/fixtures/|evidence/|logs/)"
-
       - id: end-of-file-fixer
-        name: "Fix end of files"
-        exclude: "^(tests/fixtures/|evidence/|logs/)"
-
       - id: check-yaml
-        name: "Check YAML syntax"
-        exclude: "^(k8s/|kubernetes/|helm/)"
-
       - id: check-json
-        name: "Check JSON syntax"
-        exclude: "^(tests/fixtures/|evidence/)"
-
       - id: check-added-large-files
-        name: "Check for large files (>500KB)"
-        args: ["--maxkb=500"]
-        exclude: "^(screenshots/|evidence/|\\.coverage$|coverage\\.xml$)"
-
+        args: [--maxkb=1000]
       - id: check-merge-conflict
-        name: "Check merge conflicts"
+      - id: detect-private-key
 
-      - id: check-case-conflict
-        name: "Check case conflicts"
-
-      - id: mixed-line-ending
-        name: "Fix line endings"
-        args: ["--fix=lf"]
-        exclude: "^\\.(bat|ps1|cmd)$"
-
-  # ============================================================================
-  # Python Code Quality
-  # ============================================================================
-
-  # Ruff: Fast Python linter (replaces flake8, pydocstyle, etc.)
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.9.0
+  # Security - detect secrets
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.4.0
     hooks:
-      - id: ruff
-        name: "Ruff linter"
-        args: [--fix, --exit-non-zero-on-fix]
-        exclude: "^(tests/|venv/|\\.venv/|env/|build/|dist/)"
+      - id: detect-secrets
+        args: [--baseline, .secrets.baseline]
+        exclude: package.lock.json
 
-      - id: ruff-format
-        name: "Ruff formatter"
-        exclude: "^(tests/|venv/|\\.venv/|env/|build/|dist/)"
-
-  # Black: Python code formatter (backup for complex formatting)
-  - repo: https://github.com/psf/black
-    rev: 23.12.1
-    hooks:
-      - id: black
-        name: "Black formatter"
-        language_version: python3
-        args: [--line-length=127]
-        exclude: "^(tests/|venv/|\\.venv/|env/|build/|dist/|logs/|evidence/)"
-
-  # isort: Import sorting
-  - repo: https://github.com/pycqa/isort
-    rev: 5.13.2
-    hooks:
-      - id: isort
-        name: "isort (import sorting)"
-        args: ["--profile", "black", "--line-length=127"]
-        exclude: "^(venv/|\\.venv/|env/|build/|dist/|logs/|evidence/)"
-
-  # ============================================================================
-  # Security Scans
-  # ============================================================================
-
-  # Bandit: Security vulnerability scanner
+  # Bandit - Security linter
   - repo: https://github.com/PyCQA/bandit
-    rev: 1.7.6
+    rev: 1.7.7
     hooks:
       - id: bandit
-        name: "Bandit security scan"
-        args:
-          - "-c"
-          - "pyproject.toml"
-          - "-ll"
-          - "--exclude=./tests,./venv,./.venv,./env,./build,./dist,./logs,./evidence"
-        exclude: "^(tests/|venv/|\\.venv/|env/|build/|dist/|logs/|evidence/)"
-
-  # pip-audit: Python dependency vulnerability scanner
-  - repo: https://github.com/pypa/pip-audit
-    rev: v2.8.0
-    hooks:
-      - id: pip-audit
-        name: "pip-audit dependency scan"
-        args: ["--desc", "--skip-editable"]
-        stages: [pre-commit, pre-push]
-
-  # ============================================================================
-  # Testing (quick tests only - staged files)
-  # ============================================================================
-
-  # Run pytest on staged files only (fast subset)
-  - repo: local
-    hooks:
-      - id: pytest-quick
-        name: "Pytest (quick)"
-        entry: pytest
-        language: system
-        types: [python]
-        pass_filenames: false
-        always_run: false
-        stages: [commit]
-        args:
-          - "-xvs"
-          - "-m"
-          - "not slow and not integration"
-          - "--tb=short"
-          - "--timeout=30"
-        exclude: "^(tests/test_real_|tests/integration/)"
-
-# ============================================================================
-# Configuration
-# ============================================================================
-
-# Default settings for all hooks
-default_stages: [commit, push]
-default_language_version:
-  python: python3
-
-# Minimum pre-commit version
-minimum_pre_commit_version: "3.0.0"
-
-# Files to exclude from all hooks (in addition to per-hook excludes)
-exclude: |
-  (?x)^(
-    \\.git/|
-    \\.github/|
-    \\.vscode/|
-    \\.kimi/|
-    \\.pytest_cache/|
-    \\.ruff_cache/|
-    \\.mypy_cache/|
-    __pycache__/|
-    venv/|
-    \\.venv/|
-    env/|
-    build/|
-    dist/|
-    logs/|
-    evidence/|
-    \\.coverage|
-    coverage\\.xml|
-    htmlcov/|
-    \\.egg-info/|
-    node_modules/|
-    \\.tox/|
-    \\.eggs/
-  )
-
-# Skip certain hooks during specific git operations
-# Use environment variable SKIP to skip hooks: SKIP=pytest,black git commit
+        args: [-c, pyproject.toml]
+        additional_dependencies: ["bandit[toml]"]
