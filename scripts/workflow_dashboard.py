@@ -104,7 +104,7 @@ class WorkflowDashboard:
             elif url.startswith("git@github.com:"):
                 return url.replace("git@github.com:", "").replace(".git", "")
         except Exception:
-            pass
+            logger.debug("Could not parse GitHub URL, using env var")
         return os.environ.get("GITHUB_REPOSITORY")
 
     def _run_gh_command(self, args: list[str]) -> Optional[dict]:

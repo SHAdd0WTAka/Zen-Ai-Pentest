@@ -70,6 +70,8 @@ def list_secrets() -> list:
     return secrets
 
 
+def _mask_value(value: str) -> str:
+    """Mask sensitive values for display."""
     return f"{value[:4]}...{value[-4:]}"
 
 

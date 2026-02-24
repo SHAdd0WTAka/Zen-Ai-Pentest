@@ -224,7 +224,7 @@ class ReportGenerator:
         self, scan_id: int, findings: List[Dict], scan_info: Dict
     ) -> str:
         """Rendert HTML-Template"""
-        template = Template(self.html_template)
+        template = Template(self.html_template, autoescape=True)
 
         # Sort findings by severity
         severity_order = {
