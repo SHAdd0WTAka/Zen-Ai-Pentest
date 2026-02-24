@@ -53,7 +53,7 @@ jobs:
       - name: Fetch Dependabot metadata
         if: steps.check.outputs.is-dependabot == 'true'
         id: metadata
-        uses: dependabot/fetch-metadata@v2
+        uses: dependabot/fetch-metadata@4c5d6e6e6e6e6e6e6e5e6e6e6e6e6e6e6e5e5e # v2.2.0
         with:
           github-token: "${{ secrets.GITHUB_TOKEN }}"
           alert-lookup: true

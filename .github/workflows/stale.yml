@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/stale@v10
+      - uses: actions/stale@28ca1036281a5e5922ead5184a1bbf96e5fc594e # v9.0.0
         with:
           stale-issue-message: 'This issue has been marked as stale due to inactivity. It will be closed in 7 days if no further activity occurs.'
           stale-pr-message: 'This PR has been marked as stale due to inactivity. It will be closed in 7 days if no further activity occurs.'
