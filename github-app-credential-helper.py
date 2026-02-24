@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 """
-Git Credential Helper für GitHub App Authentication
-Generiert automatisch frische Installation Tokens
+Git Credential Helper für GitHub App Authentication.
+
+Generiert automatisch frische Installation Tokens.
 """
-import re
 import sys
 import time
-import urllib.parse
 from pathlib import Path
 
 import jwt
@@ -20,13 +19,13 @@ PRIVATE_KEY_PATH = (
 
 
 def generate_jwt():
-    """Generate JWT from Private Key"""
+    """Generate JWT from Private Key."""
     with open(PRIVATE_KEY_PATH, "r") as f:
         private_key = f.read()
 
     payload = {
-        "iat": int(time.time()) - 60,  # 1 min back for clock skew
-        "exp": int(time.time()) + (10 * 60),  # 10 minutes
+        "iat": int(time.time()) - 60,
+        "exp": int(time.time()) + (10 * 60),
         "iss": APP_ID,
     }
 
@@ -34,7 +33,7 @@ def generate_jwt():
 
 
 def get_installation_token(jwt_token):
-    """Exchange JWT for Installation Access Token via API"""
+    """Exchange JWT for Installation Access Token via API."""
     import json
     import urllib.request
 
@@ -55,7 +54,8 @@ def get_installation_token(jwt_token):
     installation_id = installations[0]["id"]
 
     req = urllib.request.Request(
-        f"https://api.github.com/app/installations/{installation_id}/access_tokens",
+        f"https://api.github.com/app/installations/"
+        f"{installation_id}/access_tokens",
         headers={
             "Authorization": f"Bearer {jwt_token}",
             "Accept": "application/vnd.github.v3+json",
@@ -69,8 +69,7 @@ def get_installation_token(jwt_token):
 
 
 def main():
-    """Git credential helper main loop"""
-    # Read git-credential input
+    """Git credential helper main loop."""
     lines = []
     for line in sys.stdin:
         line = line.strip()
@@ -78,22 +77,18 @@ def main():
             break
         lines.append(line)
 
-    # Parse input
     props = {}
     for line in lines:
         if "=" in line:
             key, value = line.split("=", 1)
             props[key] = value
 
-    protocol = props.get("protocol", "https")
     host = props.get("host", "")
 
-    # Only handle github.com
     if host != "github.com":
         sys.exit(0)
 
     try:
-        # Generate fresh token
         jwt_token = generate_jwt()
         install_token = get_installation_token(jwt_token)
 
@@ -103,8 +98,7 @@ def main():
             print("username=x-access-token")
             print(f"password={install_token}")
             print("")
-    except Exception as e:
-        # Silent fail - git will try other credential helpers
+    except Exception:
         sys.exit(0)
 
 

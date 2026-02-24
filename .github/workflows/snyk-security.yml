@@ -22,104 +22,128 @@ jobs:
     name: Snyk Vulnerability Scan
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Check Snyk Token
+        run: |
+          if [ -z "${{ secrets.SNYK_TOKEN }}" ]; then
+            echo "⚠️ SNYK_TOKEN is not set!"
+            echo "Please add SNYK_TOKEN to repository secrets:"
+            echo "https://github.com/${{ github.repository }}/settings/secrets/actions"
+            exit 1
+          fi
+          echo "✅ SNYK_TOKEN is configured"
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
+      - name: Install Snyk CLI
+        run: |
+          npm install -g snyk
+          snyk --version
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt 2>/dev/null || echo "No requirements.txt"
-          pip install -e . 2>/dev/null || echo "No setup.py"
+          pip install -r requirements.txt 2>/dev/null || echo "No requirements.txt found"
 
       - name: Run Snyk to check for vulnerabilities
-        uses: snyk/actions/python@master
-        continue-on-error: true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          args: --severity-threshold=high --sarif-file-output=snyk.sarif
+        run: |
+          snyk test --severity-threshold=high || true
+        continue-on-error: true
+
+      - name: Generate SARIF report
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        run: |
+          snyk test --severity-threshold=high --sarif-file-output=snyk.sarif || true
+        continue-on-error: true
 
       - name: Upload result to GitHub Code Scanning
         uses: github/codeql-action/upload-sarif@v3
-        if: always()
+        if: always() && hashFiles('snyk.sarif') != ''
         with:
           sarif_file: snyk.sarif
 
       - name: Snyk monitor (for dashboard)
-        uses: snyk/actions/python@master
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        continue-on-error: true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          command: monitor
+        run: |
+          snyk monitor || true
+        continue-on-error: true
 
   snyk-code:
     name: Snyk Code Analysis (SAST)
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
+      - name: Install Snyk CLI
+        run: npm install -g snyk
+
       - name: Run Snyk Code Test
-        uses: snyk/actions/node@master
-        continue-on-error: true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          command: code test
-          args: --severity-threshold=high
+        run: |
+          snyk code test --severity-threshold=high || true
+        continue-on-error: true
 
   snyk-container:
     name: Snyk Container Scan
     runs-on: ubuntu-latest
     timeout-minutes: 15
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Install Snyk CLI
+        run: npm install -g snyk
+
       - name: Build Docker image
-        run: docker build -t zen-ai-pentest:test .
+        run: docker build -t zen-ai-pentest:test . || echo "No Dockerfile found"
         continue-on-error: true
 
       - name: Run Snyk Container Test
-        uses: snyk/actions/docker@master
-        continue-on-error: true
+        if: hashFiles('Dockerfile') != ''
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          image: zen-ai-pentest:test
-          args: --severity-threshold=high
+        run: |
+          snyk container test zen-ai-pentest:test --severity-threshold=high || true
+        continue-on-error: true
 
   snyk-iac:
     name: Snyk Infrastructure as Code
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Install Snyk CLI
+        run: npm install -g snyk
+
       - name: Run Snyk IaC Test
-        uses: snyk/actions/iac@master
-        continue-on-error: true
+        if: hashFiles('k8s/') != ''
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          file: k8s/
-          args: --severity-threshold=medium
+        run: |
+          snyk iac test k8s/ --severity-threshold=medium || true
+        continue-on-error: true

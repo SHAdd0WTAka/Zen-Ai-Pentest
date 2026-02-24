@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """
-Generate GitHub App Installation Access Token
-Uses Private Key to authenticate as the GitHub App
+Generate GitHub App Installation Access Token.
+
+Uses Private Key to authenticate as the GitHub App.
 """
 import sys
 import time
 from pathlib import Path
 
 import jwt
-import requests
 
 # GitHub App Configuration
 APP_ID = "2872904"
@@ -20,53 +20,58 @@ PRIVATE_KEY_PATH = (
 
 
 def generate_jwt():
-    """Generate JWT from App ID and Private Key"""
+    """Generate JWT from App ID and Private Key."""
     with open(PRIVATE_KEY_PATH, "r") as f:
         private_key = f.read()
 
     payload = {
         "iat": int(time.time()),
-        "exp": int(time.time()) + (10 * 60),
+        "exp": int(time.time()) + (10 * 60),  # 10 minutes expiry
         "iss": APP_ID,
-    }  # 10 minutes expiry
+    }
 
     token = jwt.encode(payload, private_key, algorithm="RS256")
     return token
 
 
 def get_installation_token(jwt_token):
-    """Exchange JWT for Installation Access Token"""
-    # First, get the installation ID
-    headers = {
-        "Authorization": f"Bearer {jwt_token}",
-        "Accept": "application/vnd.github.v3+json",
-    }
+    """Exchange JWT for Installation Access Token."""
+    import json
+    import urllib.request
 
-    # Get installations
-    resp = requests.get(
-        "https://api.github.com/app/installations", headers=headers
+    req = urllib.request.Request(
+        "https://api.github.com/app/installations",
+        headers={
+            "Authorization": f"Bearer {jwt_token}",
+            "Accept": "application/vnd.github.v3+json",
+        },
     )
-    resp.raise_for_status()
-    installations = resp.json()
+
+    with urllib.request.urlopen(req, timeout=30) as resp:
+        installations = json.loads(resp.read())
 
     if not installations:
-        print("❌ No installations found!")
-        sys.exit(1)
+        return None
 
     installation_id = installations[0]["id"]
-    print(f"✅ Found Installation ID: {installation_id}")
 
-    # Generate access token for this installation
-    resp = requests.post(
-        f"https://api.github.com/app/installations/{installation_id}/access_tokens",
-        headers=headers,
+    req = urllib.request.Request(
+        f"https://api.github.com/app/installations/"
+        f"{installation_id}/access_tokens",
+        headers={
+            "Authorization": f"Bearer {jwt_token}",
+            "Accept": "application/vnd.github.v3+json",
+        },
+        method="POST",
     )
-    resp.raise_for_status()
 
-    return resp.json()["token"]
+    with urllib.request.urlopen(req, timeout=30) as resp:
+        data = json.loads(resp.read())
+        return data.get("token")
 
 
 def main():
+    """Generate and display GitHub App token."""
     print("🔐 Generating GitHub App Installation Token...")
     print(f"   App ID: {APP_ID}")
     print(f"   Private Key: {PRIVATE_KEY_PATH}")
@@ -77,11 +82,9 @@ def main():
         sys.exit(1)
 
     try:
-        # Generate JWT
         jwt_token = generate_jwt()
         print("✅ JWT generated successfully")
 
-        # Get installation token
         token = get_installation_token(jwt_token)
         print("\n" + "=" * 60)
         print("🎉 INSTALLATION ACCESS TOKEN:")
@@ -90,9 +93,8 @@ def main():
         print("=" * 60)
         print("\n📋 Verwendung:")
         print(f"   export GITHUB_TOKEN='{token}'")
-        print(
-            "   git push https://$GITHUB_TOKEN@github.com/SHAdd0WTAka/obsidian-vault.git"
-        )
+        print("   git push https://$GITHUB_TOKEN@")
+        print("github.com/SHAdd0WTAka/obsidian-vault.git")
 
     except Exception as e:
         print(f"❌ Error: {e}")
