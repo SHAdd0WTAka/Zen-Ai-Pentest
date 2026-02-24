@@ -692,7 +692,8 @@ def main():
         logger.warning("⚠️ API key authentication disabled!")
         app.config["DISABLE_AUTH"] = True
 
-    print(f"""
+    print(
+        f"""
 🚀 Kimi Personas API Server
 ═══════════════════════════════════════════════════════════════
 Host:       {args.host}
@@ -710,7 +711,8 @@ Endpoints:
 
 Start: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 ═══════════════════════════════════════════════════════════════
-""")
+"""
+    )
 
     app.run(host=args.host, port=args.port, debug=args.debug)
 

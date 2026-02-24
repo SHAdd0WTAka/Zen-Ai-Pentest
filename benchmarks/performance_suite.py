@@ -24,13 +24,7 @@ from typing import Any, Callable, Dict, List, Optional
 # Add parent to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from core.performance import (
-    MemoryProfiler,
-    PerformanceTimer,
-    get_timer,
-    timed,
-    timed_block,
-)
+from core.performance import MemoryProfiler, PerformanceTimer, get_timer, timed, timed_block
 
 
 @dataclass
@@ -191,9 +185,7 @@ class PerformanceBenchmarkSuite:
                 ops_per_second=1000 * 1000 / duration,
                 memory_delta_mb=0,
             )
-            results.append(
-                BenchmarkResult(category="Cache", name="1000 Cache Writes", metrics=metrics)
-            )
+            results.append(BenchmarkResult(category="Cache", name="1000 Cache Writes", metrics=metrics))
             print(f"  [OK] 1000 Cache Writes: {duration:.2f}ms ({metrics.ops_per_second:.0f} ops/s)")
 
             # Benchmark cache reads
@@ -211,9 +203,7 @@ class PerformanceBenchmarkSuite:
                 ops_per_second=1000 * 1000 / duration,
                 memory_delta_mb=0,
             )
-            results.append(
-                BenchmarkResult(category="Cache", name="1000 Cache Reads", metrics=metrics)
-            )
+            results.append(BenchmarkResult(category="Cache", name="1000 Cache Reads", metrics=metrics))
             print(f"  [OK] 1000 Cache Reads: {duration:.2f}ms ({metrics.ops_per_second:.0f} ops/s)")
 
         except Exception as e:
@@ -254,14 +244,8 @@ class PerformanceBenchmarkSuite:
                     ops_per_second=100 * 1000 / create_duration,
                     memory_delta_mb=0,
                 )
-                results.append(
-                    BenchmarkResult(
-                        category="Database", name="100 DB Inserts", metrics=metrics
-                    )
-                )
-                print(
-                    f"  [OK] 100 DB Inserts: {create_duration:.2f}ms ({metrics.ops_per_second:.0f} ops/s)"
-                )
+                results.append(BenchmarkResult(category="Database", name="100 DB Inserts", metrics=metrics))
+                print(f"  [OK] 100 DB Inserts: {create_duration:.2f}ms ({metrics.ops_per_second:.0f} ops/s)")
 
                 # Benchmark read operations
                 start = time.perf_counter()
@@ -276,9 +260,7 @@ class PerformanceBenchmarkSuite:
                     ops_per_second=50 * 1000 / read_duration,
                     memory_delta_mb=0,
                 )
-                results.append(
-                    BenchmarkResult(category="Database", name="50 DB Reads", metrics=metrics)
-                )
+                results.append(BenchmarkResult(category="Database", name="50 DB Reads", metrics=metrics))
                 print(f"  [OK] 50 DB Reads: {read_duration:.2f}ms ({metrics.ops_per_second:.0f} ops/s)")
 
                 # Benchmark list query
@@ -294,11 +276,7 @@ class PerformanceBenchmarkSuite:
                     memory_delta_mb=0,
                     metadata={"scans_returned": len(scans)},
                 )
-                results.append(
-                    BenchmarkResult(
-                        category="Database", name="DB List Query (100)", metrics=metrics
-                    )
-                )
+                results.append(BenchmarkResult(category="Database", name="DB List Query (100)", metrics=metrics))
                 print(f"  [OK] DB List Query: {list_duration:.2f}ms")
 
                 # Cleanup
@@ -346,9 +324,7 @@ class PerformanceBenchmarkSuite:
                     metrics=metrics,
                 )
             )
-            print(
-                f"  [OK] 10 Sequential Tools: {seq_duration:.2f}ms ({metrics.ops_per_second:.0f} ops/s)"
-            )
+            print(f"  [OK] 10 Sequential Tools: {seq_duration:.2f}ms ({metrics.ops_per_second:.0f} ops/s)")
 
             # Parallel execution with gather
             start = time.perf_counter()
@@ -407,9 +383,7 @@ class PerformanceBenchmarkSuite:
                     metrics=metrics,
                 )
             )
-            print(
-                f"  [OK] 100 Sequential Async: {seq_duration:.2f}ms ({metrics.ops_per_second:.0f} ops/s)"
-            )
+            print(f"  [OK] 100 Sequential Async: {seq_duration:.2f}ms ({metrics.ops_per_second:.0f} ops/s)")
 
             # Parallel with gather
             start = time.perf_counter()
@@ -456,9 +430,7 @@ class PerformanceBenchmarkSuite:
                     metrics=metrics,
                 )
             )
-            print(
-                f"  [OK] 100 Tasks (10 concurrent): {sem_duration:.2f}ms ({metrics.ops_per_second:.0f} ops/s)"
-            )
+            print(f"  [OK] 100 Tasks (10 concurrent): {sem_duration:.2f}ms ({metrics.ops_per_second:.0f} ops/s)")
 
         asyncio.run(run_async_benchmarks())
         return results
@@ -575,7 +547,7 @@ class PerformanceBenchmarkSuite:
 
         # Save to file
         report_file = self.output_dir / f"performance_report_{int(time.time())}.txt"
-        report_file.write_text(report, encoding='utf-8')
+        report_file.write_text(report, encoding="utf-8")
         print(f"\n[REPORT] Report saved to: {report_file}")
 
         return report
@@ -593,15 +565,17 @@ class PerformanceBenchmarkSuite:
                     "category": result.category,
                     "name": result.name,
                     "status": result.status,
-                    "metrics": {
-                        "duration_ms": result.metrics.duration_ms,
-                        "iterations": result.metrics.iterations,
-                        "ops_per_second": result.metrics.ops_per_second,
-                        "memory_delta_mb": result.metrics.memory_delta_mb,
-                        **result.metrics.metadata,
-                    }
-                    if result.metrics
-                    else None,
+                    "metrics": (
+                        {
+                            "duration_ms": result.metrics.duration_ms,
+                            "iterations": result.metrics.iterations,
+                            "ops_per_second": result.metrics.ops_per_second,
+                            "memory_delta_mb": result.metrics.memory_delta_mb,
+                            **result.metrics.metadata,
+                        }
+                        if result.metrics
+                        else None
+                    ),
                     "error": result.error,
                 }
             )
@@ -621,9 +595,7 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(description="Zen-AI-Pentest Performance Benchmarks")
-    parser.add_argument(
-        "--output", default="benchmark_results", help="Output directory for results"
-    )
+    parser.add_argument("--output", default="benchmark_results", help="Output directory for results")
     parser.add_argument("--category", help="Run only specific category")
     parser.add_argument(
         "--compare",

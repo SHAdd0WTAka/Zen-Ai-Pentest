@@ -310,8 +310,7 @@ class TestSubdomainScannerLLM:
         scanner.orchestrator.process = AsyncMock(return_value=mock_response)
 
         results = await scanner._llm_assisted_enum("example.com")
-        expected = {"admin.example.com", "api.example.com", "dev.example.com",
-                   "staging.example.com", "cdn.example.com"}
+        expected = {"admin.example.com", "api.example.com", "dev.example.com", "staging.example.com", "cdn.example.com"}
         assert set(results).issuperset(expected)
 
     @pytest.mark.asyncio
@@ -585,11 +584,13 @@ class TestSubdomainScannerScan:
     @pytest.mark.asyncio
     async def test_scan_basic(self, scanner):
         """Test basic scan functionality"""
-        with patch.object(scanner, "_dns_enumeration", new_callable=AsyncMock) as mock_dns, \
-             patch.object(scanner, "_wordlist_bruteforce", new_callable=AsyncMock) as mock_wordlist, \
-             patch.object(scanner, "_crt_sh_enum", new_callable=AsyncMock) as mock_crt, \
-             patch.object(scanner, "_filter_wildcards") as mock_filter, \
-             patch.object(scanner, "_check_http_availability", new_callable=AsyncMock):
+        with (
+            patch.object(scanner, "_dns_enumeration", new_callable=AsyncMock) as mock_dns,
+            patch.object(scanner, "_wordlist_bruteforce", new_callable=AsyncMock) as mock_wordlist,
+            patch.object(scanner, "_crt_sh_enum", new_callable=AsyncMock) as mock_crt,
+            patch.object(scanner, "_filter_wildcards") as mock_filter,
+            patch.object(scanner, "_check_http_availability", new_callable=AsyncMock),
+        ):
 
             mock_dns.return_value = {"www.example.com"}
             mock_wordlist.return_value = {"api.example.com"}
@@ -604,11 +605,13 @@ class TestSubdomainScannerScan:
     @pytest.mark.asyncio
     async def test_scan_with_url_input(self, scanner):
         """Test scan with URL input"""
-        with patch.object(scanner, "_dns_enumeration", new_callable=AsyncMock) as mock_dns, \
-             patch.object(scanner, "_wordlist_bruteforce", new_callable=AsyncMock) as mock_wordlist, \
-             patch.object(scanner, "_crt_sh_enum", new_callable=AsyncMock) as mock_crt, \
-             patch.object(scanner, "_filter_wildcards") as mock_filter, \
-             patch.object(scanner, "_check_http_availability", new_callable=AsyncMock):
+        with (
+            patch.object(scanner, "_dns_enumeration", new_callable=AsyncMock) as mock_dns,
+            patch.object(scanner, "_wordlist_bruteforce", new_callable=AsyncMock) as mock_wordlist,
+            patch.object(scanner, "_crt_sh_enum", new_callable=AsyncMock) as mock_crt,
+            patch.object(scanner, "_filter_wildcards") as mock_filter,
+            patch.object(scanner, "_check_http_availability", new_callable=AsyncMock),
+        ):
 
             mock_dns.return_value = set()
             mock_wordlist.return_value = set()
@@ -621,12 +624,14 @@ class TestSubdomainScannerScan:
     @pytest.mark.asyncio
     async def test_scan_with_techniques(self, scanner):
         """Test scan with specific techniques"""
-        with patch.object(scanner, "_dns_enumeration", new_callable=AsyncMock) as mock_dns, \
-             patch.object(scanner, "_wordlist_bruteforce", new_callable=AsyncMock) as mock_wordlist, \
-             patch.object(scanner, "_crt_sh_enum", new_callable=AsyncMock) as mock_crt, \
-             patch.object(scanner, "_filter_wildcards") as mock_filter, \
-             patch.object(scanner, "_check_http_availability", new_callable=AsyncMock), \
-             patch.object(scanner, "_llm_assisted_enum", new_callable=AsyncMock) as mock_llm:
+        with (
+            patch.object(scanner, "_dns_enumeration", new_callable=AsyncMock) as mock_dns,
+            patch.object(scanner, "_wordlist_bruteforce", new_callable=AsyncMock) as mock_wordlist,
+            patch.object(scanner, "_crt_sh_enum", new_callable=AsyncMock) as mock_crt,
+            patch.object(scanner, "_filter_wildcards") as mock_filter,
+            patch.object(scanner, "_check_http_availability", new_callable=AsyncMock),
+            patch.object(scanner, "_llm_assisted_enum", new_callable=AsyncMock) as mock_llm,
+        ):
 
             mock_dns.return_value = {"dns.example.com"}
             mock_wordlist.return_value = {"wordlist.example.com"}
@@ -649,11 +654,13 @@ class TestSubdomainScannerScan:
         """Test scan with custom wordlist"""
         custom_wordlist = ["custom1", "custom2"]
 
-        with patch.object(scanner, "_dns_enumeration", new_callable=AsyncMock) as mock_dns, \
-             patch.object(scanner, "_wordlist_bruteforce", new_callable=AsyncMock) as mock_wordlist, \
-             patch.object(scanner, "_crt_sh_enum", new_callable=AsyncMock) as mock_crt, \
-             patch.object(scanner, "_filter_wildcards") as mock_filter, \
-             patch.object(scanner, "_check_http_availability", new_callable=AsyncMock):
+        with (
+            patch.object(scanner, "_dns_enumeration", new_callable=AsyncMock) as mock_dns,
+            patch.object(scanner, "_wordlist_bruteforce", new_callable=AsyncMock) as mock_wordlist,
+            patch.object(scanner, "_crt_sh_enum", new_callable=AsyncMock) as mock_crt,
+            patch.object(scanner, "_filter_wildcards") as mock_filter,
+            patch.object(scanner, "_check_http_availability", new_callable=AsyncMock),
+        ):
 
             mock_dns.return_value = set()
             mock_wordlist.return_value = set()
@@ -699,11 +706,13 @@ class TestSubdomainScannerIntegration:
         """Test complete scan workflow"""
         scanner = SubdomainScanner(max_workers=5, timeout=2)
 
-        with patch.object(scanner, "_dns_enumeration", new_callable=AsyncMock) as mock_dns, \
-             patch.object(scanner, "_wordlist_bruteforce", new_callable=AsyncMock) as mock_wordlist, \
-             patch.object(scanner, "_crt_sh_enum", new_callable=AsyncMock) as mock_crt, \
-             patch.object(scanner, "_filter_wildcards") as mock_filter, \
-             patch.object(scanner, "_check_http_availability", new_callable=AsyncMock) as mock_http:
+        with (
+            patch.object(scanner, "_dns_enumeration", new_callable=AsyncMock) as mock_dns,
+            patch.object(scanner, "_wordlist_bruteforce", new_callable=AsyncMock) as mock_wordlist,
+            patch.object(scanner, "_crt_sh_enum", new_callable=AsyncMock) as mock_crt,
+            patch.object(scanner, "_filter_wildcards") as mock_filter,
+            patch.object(scanner, "_check_http_availability", new_callable=AsyncMock) as mock_http,
+        ):
 
             mock_dns.return_value = {"www.example.com", "mail.example.com"}
             mock_wordlist.return_value = {"api.example.com"}

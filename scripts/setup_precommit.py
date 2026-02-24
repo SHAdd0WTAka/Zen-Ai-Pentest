@@ -139,7 +139,8 @@ def print_usage():
     print("\n" + "=" * 60)
     print("PRE-COMMIT USAGE")
     print("=" * 60)
-    print("""
+    print(
+        """
 Quick commands:
     pre-commit run --all-files     Run all hooks on all files
     pre-commit run ruff            Run specific hook (ruff)
@@ -154,7 +155,8 @@ Update hooks to latest versions:
 
 Uninstall hooks:
     pre-commit uninstall
-""")
+"""
+    )
 
 
 def print_summary():
@@ -162,7 +164,8 @@ def print_summary():
     print("\n" + "=" * 60)
     print("INSTALLED HOOKS SUMMARY")
     print("=" * 60)
-    print("""
+    print(
+        """
 File checks:
   [x] trailing-whitespace    Remove trailing whitespace
   [x] end-of-file-fixer      Ensure files end with newline
@@ -185,7 +188,8 @@ All hooks:
   - Run only on staged files (fast)
   - Can be skipped with SKIP=hook-name
   - Work on Windows, Linux, and macOS
-""")
+"""
+    )
 
 
 def main() -> int:

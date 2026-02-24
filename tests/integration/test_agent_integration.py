@@ -27,8 +27,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspa
 
 from agents.agent_base import AgentMessage, AgentRole, AgentState, BaseAgent
 from agents.agent_orchestrator import AgentOrchestrator
-from agents.research_agent import ResearchAgent
 from agents.analysis_agent import AnalysisAgent
+from agents.research_agent import ResearchAgent
 
 # Mark all tests in this file
 pytestmark = [pytest.mark.integration, pytest.mark.asyncio]
@@ -37,6 +37,7 @@ pytestmark = [pytest.mark.integration, pytest.mark.asyncio]
 # ============================================================================
 # FIXTURES
 # ============================================================================
+
 
 @pytest.fixture
 def orchestrator():
@@ -98,6 +99,7 @@ def sample_message():
 # TEST CLASS: Agent Initialization
 # ============================================================================
 
+
 class TestAgentInitialization:
     """Test agent initialization and basic properties."""
 
@@ -139,6 +141,7 @@ class TestAgentInitialization:
 # ============================================================================
 # TEST CLASS: Agent Lifecycle
 # ============================================================================
+
 
 class TestAgentLifecycle:
     """Test agent start, stop, and status."""
@@ -188,6 +191,7 @@ class TestAgentLifecycle:
 # ============================================================================
 # TEST CLASS: Agent Messaging
 # ============================================================================
+
 
 class TestAgentMessaging:
     """Test agent message passing."""
@@ -273,6 +277,7 @@ class TestAgentMessaging:
 # TEST CLASS: Agent Context Management
 # ============================================================================
 
+
 class TestAgentContextManagement:
     """Test agent context management."""
 
@@ -323,6 +328,7 @@ class TestAgentContextManagement:
 # TEST CLASS: Orchestrator Registration
 # ============================================================================
 
+
 class TestOrchestratorRegistration:
     """Test agent registration with orchestrator."""
 
@@ -344,7 +350,10 @@ class TestOrchestratorRegistration:
         orchestrator.unregister_agent(agent.id)
 
         assert agent.id not in orchestrator.agents
-        assert AgentRole.RESEARCHER not in orchestrator.agent_by_role or len(orchestrator.agent_by_role[AgentRole.RESEARCHER]) == 0
+        assert (
+            AgentRole.RESEARCHER not in orchestrator.agent_by_role
+            or len(orchestrator.agent_by_role[AgentRole.RESEARCHER]) == 0
+        )
 
     def test_register_multiple_agents_same_role(self, orchestrator):
         """Test registering multiple agents with same role."""
@@ -373,6 +382,7 @@ class TestOrchestratorRegistration:
 # ============================================================================
 # TEST CLASS: Message Routing
 # ============================================================================
+
 
 class TestMessageRouting:
     """Test message routing through orchestrator."""
@@ -482,6 +492,7 @@ class TestMessageRouting:
 # TEST CLASS: Shared Context
 # ============================================================================
 
+
 class TestSharedContext:
     """Test shared context functionality."""
 
@@ -524,6 +535,7 @@ class TestSharedContext:
 # ============================================================================
 # TEST CLASS: Multi-Agent Coordination
 # ============================================================================
+
 
 class TestMultiAgentCoordination:
     """Test multi-agent coordination scenarios."""
@@ -605,6 +617,7 @@ class TestMultiAgentCoordination:
 # TEST CLASS: Research Coordination
 # ============================================================================
 
+
 class TestResearchCoordination:
     """Test research coordination functionality."""
 
@@ -659,6 +672,7 @@ class TestResearchCoordination:
 # TEST CLASS: Conversation Facilitation
 # ============================================================================
 
+
 class TestConversationFacilitation:
     """Test conversation facilitation between agents."""
 
@@ -690,6 +704,7 @@ class TestConversationFacilitation:
 # ============================================================================
 # TEST CLASS: Error Handling
 # ============================================================================
+
 
 class TestAgentErrorHandling:
     """Test error handling in agent operations."""
@@ -724,7 +739,11 @@ class TestAgentErrorHandling:
         """Test routing to invalid role."""
         import logging
 
-        with self.assertLogs(level="ERROR") if hasattr(self, "assertLogs") else patch.object(logging.getLogger("ZenAI.Agents"), "error"):
+        with (
+            self.assertLogs(level="ERROR")
+            if hasattr(self, "assertLogs")
+            else patch.object(logging.getLogger("ZenAI.Agents"), "error")
+        ):
             msg = AgentMessage(
                 sender="Test[1234]",
                 recipient="role:invalid_role",
@@ -739,6 +758,7 @@ class TestAgentErrorHandling:
 # ============================================================================
 # TEST CLASS: Agent Memory
 # ============================================================================
+
 
 class TestAgentMemory:
     """Test agent memory functionality."""
@@ -756,6 +776,7 @@ class TestAgentMemory:
     @pytest.mark.asyncio
     async def test_memory_mark_processed(self, research_agent, sample_message):
         """Test that processed messages are marked."""
+
         # Register a handler to process the message
         async def handler(msg):
             pass

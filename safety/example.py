@@ -2,10 +2,7 @@
 Example: Using Safety System
 """
 
-from safety import (
-    SafetyLevel,
-    SafetyPipeline,
-)
+from safety import SafetyLevel, SafetyPipeline
 
 
 def example_basic_usage():

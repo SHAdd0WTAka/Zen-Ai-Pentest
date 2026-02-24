@@ -29,7 +29,8 @@ class SQLiteStorage:
     def _init_db(self):
         """Initialize database schema"""
         with sqlite3.connect(self.db_path) as conn:
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS memories (
                     id TEXT PRIMARY KEY,
                     content TEXT NOT NULL,
@@ -38,13 +39,16 @@ class SQLiteStorage:
                     metadata TEXT,
                     importance REAL DEFAULT 1.0
                 )
-            """)
+            """
+            )
 
             # Index for faster queries
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE INDEX IF NOT EXISTS idx_type_time
                 ON memories(memory_type, timestamp)
-            """)
+            """
+            )
 
             conn.commit()
 

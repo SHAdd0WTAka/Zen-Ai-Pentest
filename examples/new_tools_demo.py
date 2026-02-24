@@ -21,25 +21,11 @@ from pathlib import Path
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from tools.scout_integration import (
-    CloudProvider,
-    ScoutSuiteScanner,
-)
-from tools.semgrep_integration import (
-    SemgrepScanner,
-)
-from tools.trivy_integration import (
-    TrivyScanner,
-    TrivyScannerType,
-)
-from tools.trufflehog_integration import (
-    TruffleHogScanner,
-)
-from tools.zap_integration import (
-    ZAPScanner,
-    zap_quick_scan,
-    zap_spider_only,
-)
+from tools.scout_integration import CloudProvider, ScoutSuiteScanner
+from tools.semgrep_integration import SemgrepScanner
+from tools.trivy_integration import TrivyScanner, TrivyScannerType
+from tools.trufflehog_integration import TruffleHogScanner
+from tools.zap_integration import ZAPScanner, zap_quick_scan, zap_spider_only
 
 
 async def demo_zap():
@@ -278,7 +264,8 @@ async def demo_best_practices():
     print("Best Practices and Usage Patterns")
     print("=" * 60)
 
-    print("""
+    print(
+        """
 1. OWASP ZAP Best Practices:
    - Always start ZAP daemon before scanning
    - Use spider-only mode first for reconnaissance
@@ -313,10 +300,12 @@ async def demo_best_practices():
    - Filter false positives with custom patterns
    - Focus on high-confidence findings initially
    - Customize rules for your codebase patterns
-""")
+"""
+    )
 
     print("\n--- Example: Integrated Security Pipeline ---")
-    print("""
+    print(
+        """
 # Example CI/CD Pipeline Integration:
 
 # Step 1: Secrets Detection (TruffleHog)
@@ -333,7 +322,8 @@ $ scout aws --services iam,s3,ec2
 
 # Step 5: Web App Scanning (ZAP)
 $ zap-baseline.py -t https://myapp.example.com
-""")
+"""
+    )
 
 
 async def main():
@@ -341,7 +331,8 @@ async def main():
     print("=" * 60)
     print("Zen AI Pentest - New Security Tools Demo")
     print("=" * 60)
-    print("""
+    print(
+        """
 This demo showcases 5 new security tool integrations:
 1. OWASP ZAP - Web Application Security Scanner
 2. TruffleHog - Secrets Detection in Code
@@ -350,7 +341,8 @@ This demo showcases 5 new security tool integrations:
 5. Semgrep - Static Analysis for Code Security
 
 Note: Some demos require the tools to be installed.
-""")
+"""
+    )
 
     try:
         await demo_zap()

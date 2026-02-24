@@ -101,7 +101,7 @@ class WorkflowHealthChecker:
         r"password:\s*[\"'][^${][^\"']{3,}[\"']": "Hardcoded password detected",
         r"passwd:\s*[\"'][^${][^\"']{3,}[\"']": "Hardcoded password detected",
     }
-    
+
     # Lines to ignore (GitHub expressions, env vars, etc.)
     IGNORE_PATTERNS = [
         r"secrets\.",  # GitHub secrets reference
@@ -124,9 +124,7 @@ class WorkflowHealthChecker:
             "issues_by_severity": {"error": 0, "warning": 0, "info": 0},
         }
 
-    def add_issue(
-        self, workflow: str, issue_type: str, message: str, severity: str = "warning", line: int = None
-    ):
+    def add_issue(self, workflow: str, issue_type: str, message: str, severity: str = "warning", line: int = None):
         """Add an issue to the report."""
         issue = {
             "workflow": workflow,
@@ -137,9 +135,7 @@ class WorkflowHealthChecker:
         }
         self.issues.append(issue)
         self.summary["total_issues"] += 1
-        self.summary["issues_by_type"][issue_type] = (
-            self.summary["issues_by_type"].get(issue_type, 0) + 1
-        )
+        self.summary["issues_by_type"][issue_type] = self.summary["issues_by_type"].get(issue_type, 0) + 1
         self.summary["issues_by_severity"][severity] += 1
 
     def check_yaml_syntax(self, workflow_path: Path) -> dict | None:
@@ -156,19 +152,19 @@ class WorkflowHealthChecker:
                 # This is likely a heredoc with Python code, try to parse anyway
                 try:
                     # Try parsing by preprocessing
-                    lines = content.split('\n')
+                    lines = content.split("\n")
                     processed_lines = []
                     in_heredoc = False
                     for line in lines:
-                        if '<<' in line and ('PYEOF' in line or 'EOF' in line):
+                        if "<<" in line and ("PYEOF" in line or "EOF" in line):
                             in_heredoc = not in_heredoc
                             processed_lines.append(line)
                         elif in_heredoc:
                             # Comment out heredoc content for parsing
-                            processed_lines.append('# ' + line)
+                            processed_lines.append("# " + line)
                         else:
                             processed_lines.append(line)
-                    return yaml.safe_load('\n'.join(processed_lines))
+                    return yaml.safe_load("\n".join(processed_lines))
                 except:
                     pass
             self.add_issue(
@@ -284,13 +280,10 @@ class WorkflowHealthChecker:
 
         for line_num, line in enumerate(lines, 1):
             # Skip lines that match ignore patterns
-            should_ignore = any(
-                re.search(pattern, line, re.IGNORECASE) 
-                for pattern in self.IGNORE_PATTERNS
-            )
+            should_ignore = any(re.search(pattern, line, re.IGNORECASE) for pattern in self.IGNORE_PATTERNS)
             if should_ignore:
                 continue
-                
+
             for pattern, message in self.SECRET_PATTERNS.items():
                 if re.search(pattern, line, re.IGNORECASE):
                     self.add_issue(
@@ -310,7 +303,7 @@ class WorkflowHealthChecker:
         on_config = content.get("on")
         if on_config is None:
             on_config = content.get(True)  # YAML parses 'on' as True
-        
+
         # Valid triggers include push, pull_request, schedule, workflow_dispatch, etc.
         if not on_config or on_config is True:
             self.add_issue(
@@ -336,13 +329,13 @@ class WorkflowHealthChecker:
     def analyze_workflow(self, workflow_path: Path) -> bool:
         """Analyze a single workflow file. Returns True if issues found."""
         print(f"  [CHECK] {workflow_path.name}")
-        
+
         content = self.check_yaml_syntax(workflow_path)
         if content is None:
             return True
 
         initial_issue_count = len(self.issues)
-        
+
         self.check_action_versions(workflow_path, content)
         self.check_permissions(workflow_path, content)
         self.check_concurrency(workflow_path, content)
@@ -359,10 +352,8 @@ class WorkflowHealthChecker:
             print(f"Error: Workflows directory not found: {self.workflows_dir}")
             sys.exit(1)
 
-        workflow_files = list(self.workflows_dir.glob("*.yml")) + list(
-            self.workflows_dir.glob("*.yaml")
-        )
-        
+        workflow_files = list(self.workflows_dir.glob("*.yml")) + list(self.workflows_dir.glob("*.yaml"))
+
         # Filter out disabled workflows
         workflow_files = [w for w in workflow_files if ".disabled" not in w.name]
 
@@ -394,9 +385,7 @@ class WorkflowHealthChecker:
 
         if self.summary["issues_by_type"]:
             print("\n[BY TYPE] Issues by Type:")
-            for issue_type, count in sorted(
-                self.summary["issues_by_type"].items(), key=lambda x: -x[1]
-            ):
+            for issue_type, count in sorted(self.summary["issues_by_type"].items(), key=lambda x: -x[1]):
                 print(f"  - {issue_type}: {count}")
 
         if verbose and self.issues:
@@ -409,13 +398,13 @@ class WorkflowHealthChecker:
                 if issue["workflow"] != current_workflow:
                     current_workflow = issue["workflow"]
                     print(f"\n[FILE] {current_workflow}")
-                
+
                 prefix = {
                     "error": "[ERR]",
                     "warning": "[WARN]",
                     "info": "[INFO]",
                 }.get(issue["severity"], "[?]")
-                
+
                 line_info = f" (line {issue['line']})" if issue["line"] else ""
                 print(f"  {prefix} [{issue['type']}]{line_info}: {issue['message']}")
 
@@ -429,7 +418,8 @@ class WorkflowHealthChecker:
             print("  3. Add timeout-minutes to all jobs")
             print("  4. Update deprecated action versions")
             print("\nExample minimal configuration:")
-            print("""
+            print(
+                """
 name: Workflow Name
 
 on:
@@ -451,10 +441,11 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
-""")
+"""
+            )
 
         print("\n" + "=" * 80)
-        
+
         # Return exit code based on errors
         if self.summary["issues_by_severity"]["error"] > 0:
             print("[FAIL] Health check completed with ERRORS")
@@ -468,28 +459,20 @@ jobs:
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="GitHub Actions Workflow Health Checker"
-    )
+    parser = argparse.ArgumentParser(description="GitHub Actions Workflow Health Checker")
     parser.add_argument(
         "--workflows-dir",
         default=".github/workflows",
         help="Path to workflows directory",
     )
-    parser.add_argument(
-        "--verbose", "-v", action="store_true", help="Show detailed issue information"
-    )
+    parser.add_argument("--verbose", "-v", action="store_true", help="Show detailed issue information")
     parser.add_argument(
         "--fix-suggestions",
         action="store_true",
         help="Show fix suggestions and examples",
     )
-    parser.add_argument(
-        "--json", "-j", action="store_true", help="Output report as JSON"
-    )
-    parser.add_argument(
-        "--output", "-o", help="Save report to file"
-    )
+    parser.add_argument("--json", "-j", action="store_true", help="Output report as JSON")
+    parser.add_argument("--output", "-o", help="Save report to file")
 
     args = parser.parse_args()
 
@@ -503,23 +486,23 @@ def main():
         }
         output = json.dumps(report, indent=2)
         if args.output:
-            with open(args.output, "w", encoding='utf-8') as f:
+            with open(args.output, "w", encoding="utf-8") as f:
                 f.write(output)
             print(f"\n[SAVE] Report saved to {args.output}")
         else:
             print(output)
     else:
         exit_code = checker.print_report(args.verbose, args.fix_suggestions)
-        
+
         if args.output:
             report = {
                 "summary": summary,
                 "issues": checker.issues,
             }
-            with open(args.output, "w", encoding='utf-8') as f:
+            with open(args.output, "w", encoding="utf-8") as f:
                 json.dump(report, indent=2, fp=f)
             print(f"[SAVE] JSON report saved to {args.output}")
-        
+
         sys.exit(exit_code)
 
 

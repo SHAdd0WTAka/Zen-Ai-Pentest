@@ -6,14 +6,7 @@ Tests additional helper functions.
 
 import pytest
 
-from utils.helpers import (
-    banner,
-    colorize,
-    format_duration,
-    get_severity_color,
-    sanitize_filename,
-    truncate_string,
-)
+from utils.helpers import banner, colorize, format_duration, get_severity_color, sanitize_filename, truncate_string
 
 pytestmark = pytest.mark.unit
 

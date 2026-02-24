@@ -3,37 +3,39 @@ Tests for Cloud Scanner Module
 Q2 2026 - AWS/Azure/GCP Cloud Security Scanning
 """
 
-import json
-import pytest
 import asyncio
+import json
+import os
+import tempfile
 from datetime import datetime
 from pathlib import Path
-from unittest.mock import Mock, patch, AsyncMock, MagicMock
-import tempfile
-import os
+from unittest.mock import AsyncMock, MagicMock, Mock, patch
+
+import pytest
 
 # Skip tests if scoutsuite_integration is not available
 pytest.importorskip("scoutsuite_integration", allow_module_level=True)
 
+from scoutsuite_integration import CloudProvider, ScoutSuiteConfig, ScoutSuiteFinding, ScoutSuiteReport
+
 from modules.cloud_scanner import (
-    CloudScanner,
-    CloudAccountManager,
     CloudAccount,
-    ScanResult,
-    ScheduledScan,
-    ScanType,
-    ScanSchedule,
-    FindingDelta,
+    CloudAccountManager,
+    CloudScanner,
     CloudScannerAPI,
+    FindingDelta,
+    ScanResult,
+    ScanSchedule,
+    ScanType,
+    ScheduledScan,
 )
-from scoutsuite_integration import CloudProvider, ScoutSuiteConfig, ScoutSuiteReport, ScoutSuiteFinding
 
 
 # Fixtures
 @pytest.fixture
 def temp_accounts_file():
     """Create a temporary accounts file"""
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
         json.dump({"accounts": []}, f)
         path = f.name
     yield path
@@ -115,14 +117,14 @@ class TestCloudAccountManager:
     def test_add_account_aws(self, temp_accounts_file, aws_account):
         """Test adding AWS account"""
         manager = CloudAccountManager(storage_path=temp_accounts_file)
-        
+
         account = manager.add_account(
             name=aws_account.name,
             provider=aws_account.provider,
             credentials=aws_account.credentials,
             metadata=aws_account.metadata,
         )
-        
+
         assert account.name == aws_account.name
         assert account.provider == CloudProvider.AWS
         assert account.id in manager.accounts
@@ -131,26 +133,26 @@ class TestCloudAccountManager:
     def test_add_account_azure(self, temp_accounts_file, azure_account):
         """Test adding Azure account"""
         manager = CloudAccountManager(storage_path=temp_accounts_file)
-        
+
         account = manager.add_account(
             name=azure_account.name,
             provider=azure_account.provider,
             credentials=azure_account.credentials,
         )
-        
+
         assert account.provider == CloudProvider.AZURE
         assert len(manager.accounts) == 1
 
     def test_add_account_gcp(self, temp_accounts_file, gcp_account):
         """Test adding GCP account"""
         manager = CloudAccountManager(storage_path=temp_accounts_file)
-        
+
         account = manager.add_account(
             name=gcp_account.name,
             provider=gcp_account.provider,
             credentials=gcp_account.credentials,
         )
-        
+
         assert account.provider == CloudProvider.GCP
 
     def test_get_account(self, temp_accounts_file, aws_account):
@@ -161,7 +163,7 @@ class TestCloudAccountManager:
             provider=aws_account.provider,
             credentials=aws_account.credentials,
         )
-        
+
         retrieved = manager.get_account(added.id)
         assert retrieved is not None
         assert retrieved.id == added.id
@@ -174,7 +176,7 @@ class TestCloudAccountManager:
     def test_get_accounts_by_provider(self, temp_accounts_file, aws_account, azure_account):
         """Test getting accounts by provider"""
         manager = CloudAccountManager(storage_path=temp_accounts_file)
-        
+
         manager.add_account(
             name=aws_account.name,
             provider=aws_account.provider,
@@ -185,7 +187,7 @@ class TestCloudAccountManager:
             provider=azure_account.provider,
             credentials=azure_account.credentials,
         )
-        
+
         aws_accounts = manager.get_accounts_by_provider(CloudProvider.AWS)
         assert len(aws_accounts) == 1
         assert aws_accounts[0].provider == CloudProvider.AWS
@@ -198,13 +200,13 @@ class TestCloudAccountManager:
             provider=aws_account.provider,
             credentials=aws_account.credentials,
         )
-        
+
         success = manager.update_account(
             added.id,
             name="Updated Name",
             enabled=False,
         )
-        
+
         assert success is True
         updated = manager.get_account(added.id)
         assert updated.name == "Updated Name"
@@ -218,7 +220,7 @@ class TestCloudAccountManager:
             provider=aws_account.provider,
             credentials=aws_account.credentials,
         )
-        
+
         success = manager.delete_account(added.id)
         assert success is True
         assert manager.get_account(added.id) is None
@@ -226,7 +228,7 @@ class TestCloudAccountManager:
     def test_list_accounts(self, temp_accounts_file, aws_account, azure_account):
         """Test listing all accounts"""
         manager = CloudAccountManager(storage_path=temp_accounts_file)
-        
+
         manager.add_account(
             name=aws_account.name,
             provider=aws_account.provider,
@@ -237,7 +239,7 @@ class TestCloudAccountManager:
             provider=azure_account.provider,
             credentials=azure_account.credentials,
         )
-        
+
         accounts = manager.list_accounts()
         assert len(accounts) == 2
 
@@ -249,11 +251,11 @@ class TestCloudAccountManager:
             provider=aws_account.provider,
             credentials=aws_account.credentials,
         )
-        
+
         # Create new manager instance with same file
         manager2 = CloudAccountManager(storage_path=temp_accounts_file)
         retrieved = manager2.get_account(added.id)
-        
+
         assert retrieved is not None
         assert retrieved.name == aws_account.name
 
@@ -280,14 +282,14 @@ class TestCloudScanner:
     def test_create_scan_config_full(self, scanner, aws_account):
         """Test creating full scan config"""
         config = scanner.create_scan_config(aws_account, ScanType.FULL)
-        
+
         assert isinstance(config, ScoutSuiteConfig)
         assert config.provider == CloudProvider.AWS
 
     def test_create_scan_config_quick(self, scanner, aws_account):
         """Test creating quick scan config"""
         config = scanner.create_scan_config(aws_account, ScanType.QUICK)
-        
+
         assert isinstance(config, ScoutSuiteConfig)
         assert len(config.services) > 0
         assert "iam" in config.services
@@ -295,17 +297,15 @@ class TestCloudScanner:
     def test_create_scan_config_compliance(self, scanner, aws_account):
         """Test creating compliance scan config"""
         config = scanner.create_scan_config(aws_account, ScanType.COMPLIANCE)
-        
+
         assert isinstance(config, ScoutSuiteConfig)
         assert "cloudtrail" in config.services
 
     def test_create_scan_config_custom(self, scanner, aws_account):
         """Test creating custom scan config"""
         custom_services = ["s3", "ec2"]
-        config = scanner.create_scan_config(
-            aws_account, ScanType.CUSTOM, custom_services=custom_services
-        )
-        
+        config = scanner.create_scan_config(aws_account, ScanType.CUSTOM, custom_services=custom_services)
+
         assert config.services == custom_services
 
     @pytest.mark.asyncio
@@ -323,7 +323,7 @@ class TestCloudScanner:
             credentials=aws_account.credentials,
         )
         scanner.account_manager.update_account(account.id, enabled=False)
-        
+
         with pytest.raises(ValueError, match="Konto ist deaktiviert"):
             await scanner.scan_account(account.id, ScanType.QUICK)
 
@@ -335,13 +335,13 @@ class TestCloudScanner:
             provider=aws_account.provider,
             credentials=aws_account.credentials,
         )
-        
+
         # Mock the scoutsuite scan
         scanner.scoutsuite.scan = AsyncMock(return_value=mock_scoutsuite_report)
         scanner._setup_credentials = Mock()
-        
+
         result = await scanner.scan_account(account.id, ScanType.QUICK)
-        
+
         assert result.account_id == account.id
         assert result.status == "completed"
         assert result.report is not None
@@ -355,13 +355,13 @@ class TestCloudScanner:
             provider=aws_account.provider,
             credentials=aws_account.credentials,
         )
-        
+
         # Mock the scoutsuite scan to raise exception
         scanner.scoutsuite.scan = AsyncMock(side_effect=Exception("Scan failed"))
         scanner._setup_credentials = Mock()
-        
+
         result = await scanner.scan_account(account.id, ScanType.QUICK)
-        
+
         assert result.status == "error"
         assert result.error_message == "Scan failed"
 
@@ -378,12 +378,12 @@ class TestCloudScanner:
             provider=azure_account.provider,
             credentials=azure_account.credentials,
         )
-        
+
         scanner.scoutsuite.scan = AsyncMock(return_value=mock_scoutsuite_report)
         scanner._setup_credentials = Mock()
-        
+
         results = await scanner.scan_multiple_accounts([aws.id, azure.id], ScanType.QUICK)
-        
+
         assert len(results) == 2
 
     @pytest.mark.asyncio
@@ -399,9 +399,9 @@ class TestCloudScanner:
             provider=azure_account.provider,
             credentials=azure_account.credentials,
         )
-        
+
         scan_ids = scanner.scan_all_accounts(scan_type=ScanType.QUICK)
-        
+
         assert len(scan_ids) == 2
 
     def test_calculate_delta(self, scanner, mock_scoutsuite_report):
@@ -412,15 +412,15 @@ class TestCloudScanner:
             Mock(spec=ScoutSuiteFinding, id="finding-1"),
             Mock(spec=ScoutSuiteFinding, id="finding-2"),
         ]
-        
+
         report2 = Mock(spec=ScoutSuiteReport)
         report2.findings = [
             Mock(spec=ScoutSuiteFinding, id="finding-2"),
             Mock(spec=ScoutSuiteFinding, id="finding-3"),
         ]
-        
+
         delta = scanner.calculate_delta(report2, report1)
-        
+
         assert len(delta.new_findings) == 1  # finding-3
         assert len(delta.resolved_findings) == 1  # finding-1
         assert len(delta.unchanged_findings) == 1  # finding-2
@@ -432,11 +432,9 @@ class TestCloudScanner:
             provider=aws_account.provider,
             credentials=aws_account.credentials,
         )
-        
-        scheduled = scanner.schedule_scan(
-            account.id, ScanType.QUICK, ScanSchedule.DAILY
-        )
-        
+
+        scheduled = scanner.schedule_scan(account.id, ScanType.QUICK, ScanSchedule.DAILY)
+
         assert scheduled.account_id == account.id
         assert scheduled.scan_type == ScanType.QUICK
         assert scheduled.schedule == ScanSchedule.DAILY
@@ -457,7 +455,7 @@ class TestCloudScanner:
             status="completed",
         )
         scanner.scan_results["test-scan-123"] = result
-        
+
         retrieved = scanner.get_scan_result("test-scan-123")
         assert retrieved == result
 
@@ -479,7 +477,7 @@ class TestCloudScanner:
         )
         scanner.scan_results["scan-1"] = result1
         scanner.scan_results["scan-2"] = result2
-        
+
         history = scanner.get_scan_history(account_id="account-1")
         assert len(history) == 2
 
@@ -493,9 +491,9 @@ class TestCloudScanner:
             status="completed",
         )
         scanner.scan_results["scan-1"] = result
-        
+
         stats = scanner.get_statistics()
-        
+
         assert stats["total_scans"] == 1
         assert stats["successful_scans"] == 1
         assert stats["failed_scans"] == 0
@@ -504,7 +502,7 @@ class TestCloudScanner:
         """Test adding scan callback"""
         callback = Mock()
         scanner.add_scan_callback(callback)
-        
+
         assert callback in scanner.scan_callbacks
 
     def test_cleanup_old_reports(self, scanner):
@@ -518,9 +516,9 @@ class TestCloudScanner:
             status="completed",
         )
         scanner.scan_results["old-scan"] = result
-        
+
         scanner.cleanup_old_reports(days=30)
-        
+
         assert "old-scan" not in scanner.scan_results
 
 
@@ -543,17 +541,17 @@ class TestCloudScannerAPI:
             provider=aws_account.provider,
             credentials=aws_account.credentials,
         )
-        
-        with patch.object(api.scanner, 'scan_account', new_callable=AsyncMock) as mock_scan:
+
+        with patch.object(api.scanner, "scan_account", new_callable=AsyncMock) as mock_scan:
             mock_result = Mock()
             mock_result.scan_id = "test-scan-123"
             mock_result.status = "completed"
             mock_result.report = Mock(findings=[1, 2, 3])
             mock_scan.return_value = mock_result
-            
+
             request = {"account_id": account.id, "scan_type": "quick"}
             response = await api.handle_scan_request(request)
-            
+
             assert response["scan_id"] == "test-scan-123"
             assert response["status"] == "completed"
 
@@ -562,7 +560,7 @@ class TestCloudScannerAPI:
         """Test handling scan request without account_id"""
         request = {"scan_type": "quick"}
         response = await api.handle_scan_request(request)
-        
+
         assert "error" in response
 
     def test_handle_add_account(self, api, aws_account):
@@ -573,9 +571,9 @@ class TestCloudScannerAPI:
             "credentials": aws_account.credentials,
             "metadata": aws_account.metadata,
         }
-        
+
         response = api.handle_add_account(request)
-        
+
         assert "account_id" in response
         assert response["status"] == "created"
 
@@ -583,7 +581,7 @@ class TestCloudScannerAPI:
         """Test handling add account with error"""
         request = {"name": "test"}  # Missing required fields
         response = api.handle_add_account(request)
-        
+
         assert "error" in response
 
     def test_handle_get_results(self, api):
@@ -596,31 +594,31 @@ class TestCloudScannerAPI:
             status="completed",
         )
         api.scanner.scan_results["test-scan"] = result
-        
+
         request = {"scan_id": "test-scan"}
         response = api.handle_get_results(request)
-        
+
         assert response["scan_id"] == "test-scan"
 
     def test_handle_get_results_not_found(self, api):
         """Test handling get results for non-existent scan"""
         request = {"scan_id": "non-existent"}
         response = api.handle_get_results(request)
-        
+
         assert "error" in response
 
     def test_handle_get_results_list(self, api):
         """Test handling get results list request"""
         request = {"limit": 10}
         response = api.handle_get_results(request)
-        
+
         assert "results" in response
         assert "total" in response
 
     def test_handle_get_statistics(self, api):
         """Test handling get statistics request"""
         response = api.handle_get_statistics()
-        
+
         assert "total_scans" in response
 
 
@@ -631,7 +629,7 @@ class TestDataClasses:
     def test_cloud_account_to_dict(self, aws_account):
         """Test CloudAccount to_dict"""
         data = aws_account.to_dict()
-        
+
         assert data["id"] == aws_account.id
         assert data["name"] == aws_account.name
         assert data["provider"] == "aws"
@@ -645,7 +643,7 @@ class TestDataClasses:
             start_time=datetime.now(),
         )
         data = result.to_dict()
-        
+
         assert data["scan_id"] == "test"
         assert data["scan_type"] == "quick"
 
@@ -660,7 +658,7 @@ class TestDataClasses:
             config=config,
         )
         data = scheduled.to_dict()
-        
+
         assert data["id"] == "test-schedule"
         assert data["schedule"] == "daily"
 
@@ -668,7 +666,7 @@ class TestDataClasses:
         """Test FindingDelta to_dict"""
         delta = FindingDelta()
         data = delta.to_dict()
-        
+
         assert "new_findings" in data
         assert "resolved_findings" in data
         assert "unchanged_findings_count" in data

@@ -21,10 +21,9 @@ from unittest.mock import AsyncMock, MagicMock, Mock, patch
 import pytest
 
 from scheduler.core import ScheduleConfig, TaskScheduler
-from scheduler.cron import CronExpression, CronParser, CRON_PATTERNS
-from scheduler.job import JobBuilder, JobExecution, JobStatus, ScheduleType, ScheduledJob
+from scheduler.cron import CRON_PATTERNS, CronExpression, CronParser
+from scheduler.job import JobBuilder, JobExecution, JobStatus, ScheduledJob, ScheduleType
 from scheduler.recurring import RecurringSchedule, SchedulePresets, calculate_next_occurrence
-
 
 # =============================================================================
 # ScheduleConfig Tests
@@ -52,11 +51,7 @@ class TestScheduleConfig:
     def test_custom_config(self):
         """Test custom configuration."""
         config = ScheduleConfig(
-            check_interval=30,
-            max_concurrent_jobs=10,
-            default_timeout=7200,
-            persistence_enabled=False,
-            catch_up_missed=False
+            check_interval=30, max_concurrent_jobs=10, default_timeout=7200, persistence_enabled=False, catch_up_missed=False
         )
 
         assert config.check_interval == 30
@@ -77,11 +72,7 @@ class TestTaskScheduler:
     @pytest.fixture
     async def scheduler(self):
         """Create a test scheduler."""
-        config = ScheduleConfig(
-            check_interval=1,
-            persistence_enabled=False,
-            enable_notifications=False
-        )
+        config = ScheduleConfig(check_interval=1, persistence_enabled=False, enable_notifications=False)
         scheduler = TaskScheduler(config)
         yield scheduler
         if scheduler._running:
@@ -121,10 +112,7 @@ class TestTaskScheduler:
     async def test_schedule_cron_job(self, scheduler):
         """Test scheduling a cron job."""
         job_id = await scheduler.schedule(
-            name="Daily Scan",
-            task_type="vulnerability_scan",
-            task_data={"target": "example.com"},
-            cron="0 2 * * *"
+            name="Daily Scan", task_type="vulnerability_scan", task_data={"target": "example.com"}, cron="0 2 * * *"
         )
 
         assert job_id is not None
@@ -141,12 +129,7 @@ class TestTaskScheduler:
     @pytest.mark.asyncio
     async def test_schedule_interval_job(self, scheduler):
         """Test scheduling an interval job."""
-        job_id = await scheduler.schedule(
-            name="Frequent Check",
-            task_type="health_check",
-            task_data={},
-            interval=30
-        )
+        job_id = await scheduler.schedule(name="Frequent Check", task_type="health_check", task_data={}, interval=30)
 
         job = scheduler._jobs[job_id]
         assert job.schedule_type == ScheduleType.INTERVAL
@@ -158,12 +141,7 @@ class TestTaskScheduler:
         """Test scheduling a one-time job."""
         run_at = datetime.utcnow() + timedelta(hours=1)
 
-        job_id = await scheduler.schedule(
-            name="One Time Task",
-            task_type="cleanup",
-            task_data={},
-            once=run_at
-        )
+        job_id = await scheduler.schedule(name="One Time Task", task_type="cleanup", task_data={}, once=run_at)
 
         job = scheduler._jobs[job_id]
         assert job.schedule_type == ScheduleType.ONCE
@@ -173,11 +151,7 @@ class TestTaskScheduler:
     async def test_schedule_no_schedule_type(self, scheduler):
         """Test that scheduling without schedule type raises error."""
         with pytest.raises(ValueError, match="Must specify cron, interval, or once"):
-            await scheduler.schedule(
-                name="Invalid Job",
-                task_type="test",
-                task_data={}
-            )
+            await scheduler.schedule(name="Invalid Job", task_type="test", task_data={})
 
     @pytest.mark.asyncio
     async def test_schedule_with_options(self, scheduler):
@@ -190,7 +164,7 @@ class TestTaskScheduler:
             description="Test description",
             timezone="America/New_York",
             retries=5,
-            timeout=1800
+            timeout=1800,
         )
 
         job = scheduler._jobs[job_id]
@@ -202,12 +176,7 @@ class TestTaskScheduler:
     @pytest.mark.asyncio
     async def test_unschedule(self, scheduler):
         """Test removing a scheduled job."""
-        job_id = await scheduler.schedule(
-            name="Temporary Job",
-            task_type="test",
-            task_data={},
-            cron="0 * * * *"
-        )
+        job_id = await scheduler.schedule(name="Temporary Job", task_type="test", task_data={}, cron="0 * * * *")
 
         result = await scheduler.unschedule(job_id)
         assert result is True
@@ -222,12 +191,7 @@ class TestTaskScheduler:
     @pytest.mark.asyncio
     async def test_pause_resume_job(self, scheduler):
         """Test pausing and resuming a job."""
-        job_id = await scheduler.schedule(
-            name="Pausable Job",
-            task_type="test",
-            task_data={},
-            cron="0 * * * *"
-        )
+        job_id = await scheduler.schedule(name="Pausable Job", task_type="test", task_data={}, cron="0 * * * *")
 
         # Pause
         result = await scheduler.pause_job(job_id)
@@ -259,10 +223,7 @@ class TestTaskScheduler:
         scheduler.register_callback("test_task", test_callback)
 
         job_id = await scheduler.schedule(
-            name="Manual Job",
-            task_type="test_task",
-            task_data={},
-            cron="0 0 * * *"  # Would normally not run soon
+            name="Manual Job", task_type="test_task", task_data={}, cron="0 0 * * *"  # Would normally not run soon
         )
 
         execution_id = await scheduler.run_job_now(job_id)
@@ -277,19 +238,9 @@ class TestTaskScheduler:
     @pytest.mark.asyncio
     async def test_update_job(self, scheduler):
         """Test updating job properties."""
-        job_id = await scheduler.schedule(
-            name="Original Name",
-            task_type="test",
-            task_data={"old": "data"},
-            cron="0 * * * *"
-        )
+        job_id = await scheduler.schedule(name="Original Name", task_type="test", task_data={"old": "data"}, cron="0 * * * *")
 
-        result = await scheduler.update_job(
-            job_id,
-            name="New Name",
-            description="New description",
-            task_data={"new": "data"}
-        )
+        result = await scheduler.update_job(job_id, name="New Name", description="New description", task_data={"new": "data"})
 
         assert result is True
         job = scheduler._jobs[job_id]
@@ -300,12 +251,7 @@ class TestTaskScheduler:
     @pytest.mark.asyncio
     async def test_update_job_schedule(self, scheduler):
         """Test updating job schedule."""
-        job_id = await scheduler.schedule(
-            name="Test Job",
-            task_type="test",
-            task_data={},
-            cron="0 * * * *"
-        )
+        job_id = await scheduler.schedule(name="Test Job", task_type="test", task_data={}, cron="0 * * * *")
 
         original_next_run = scheduler._jobs[job_id].next_run
 
@@ -325,12 +271,7 @@ class TestTaskScheduler:
     @pytest.mark.asyncio
     async def test_get_job(self, scheduler):
         """Test getting a job by ID."""
-        job_id = await scheduler.schedule(
-            name="Test Job",
-            task_type="test",
-            task_data={},
-            cron="0 * * * *"
-        )
+        job_id = await scheduler.schedule(name="Test Job", task_type="test", task_data={}, cron="0 * * * *")
 
         job = await scheduler.get_job(job_id)
         assert job is not None
@@ -405,10 +346,7 @@ class TestTaskScheduler:
         # Schedule a job that should run soon
         run_at = datetime.utcnow() + timedelta(seconds=1)
         job_id = await scheduler.schedule(
-            name="Immediate Job",
-            task_type="test_task",
-            task_data={"param": "value"},
-            once=run_at
+            name="Immediate Job", task_type="test_task", task_data={"param": "value"}, once=run_at
         )
 
         # Wait for execution
@@ -428,6 +366,7 @@ class TestTaskScheduler:
     @pytest.mark.asyncio
     async def test_job_execution_failure(self, scheduler):
         """Test job execution failure handling."""
+
         async def failing_callback(data):
             raise ValueError("Test error")
 
@@ -436,12 +375,7 @@ class TestTaskScheduler:
         await scheduler.start()
 
         run_at = datetime.utcnow() + timedelta(seconds=0.5)
-        job_id = await scheduler.schedule(
-            name="Failing Job",
-            task_type="failing_task",
-            task_data={},
-            once=run_at
-        )
+        job_id = await scheduler.schedule(name="Failing Job", task_type="failing_task", task_data={}, once=run_at)
 
         await asyncio.sleep(1.5)
 
@@ -454,6 +388,7 @@ class TestTaskScheduler:
     @pytest.mark.asyncio
     async def test_job_execution_timeout(self, scheduler):
         """Test job execution timeout."""
+
         async def slow_callback(data):
             await asyncio.sleep(10)  # Longer than timeout
             return {}
@@ -464,11 +399,7 @@ class TestTaskScheduler:
 
         run_at = datetime.utcnow() + timedelta(seconds=0.5)
         job_id = await scheduler.schedule(
-            name="Slow Job",
-            task_type="slow_task",
-            task_data={},
-            once=run_at,
-            timeout=1  # 1 second timeout
+            name="Slow Job", task_type="slow_task", task_data={}, once=run_at, timeout=1  # 1 second timeout
         )
 
         await asyncio.sleep(2.5)
@@ -486,17 +417,11 @@ class TestTaskScheduler:
             state_file = os.path.join(tmpdir, "state.json")
 
             # Create and populate scheduler
-            config = ScheduleConfig(
-                persistence_enabled=True,
-                persistence_path=state_file
-            )
+            config = ScheduleConfig(persistence_enabled=True, persistence_path=state_file)
             scheduler1 = TaskScheduler(config)
 
             job_id = await scheduler1.schedule(
-                name="Persistent Job",
-                task_type="test",
-                task_data={"key": "value"},
-                cron="0 * * * *"
+                name="Persistent Job", task_type="test", task_data={"key": "value"}, cron="0 * * * *"
             )
 
             await scheduler1.start()
@@ -524,11 +449,7 @@ class TestTaskScheduler:
 
         # Add a job that should have run recently
         job = ScheduledJob.create(
-            name="Missed Job",
-            task_type="test_task",
-            task_data={},
-            schedule_type=ScheduleType.CRON,
-            schedule_expr="* * * * *"
+            name="Missed Job", task_type="test_task", task_data={}, schedule_type=ScheduleType.CRON, schedule_expr="* * * * *"
         )
         job.next_run = datetime.utcnow() - timedelta(minutes=5)
         job.enabled = True
@@ -582,7 +503,7 @@ class TestScheduledJob:
             task_data={"target": "example.com"},
             schedule_type=ScheduleType.CRON,
             schedule_expr="0 2 * * *",
-            description="Test description"
+            description="Test description",
         )
 
         assert job.name == "Test Job"
@@ -597,11 +518,7 @@ class TestScheduledJob:
     def test_record_execution_success(self):
         """Test recording successful execution."""
         job = ScheduledJob.create(
-            name="Test",
-            task_type="test",
-            task_data={},
-            schedule_type=ScheduleType.CRON,
-            schedule_expr="0 * * * *"
+            name="Test", task_type="test", task_data={}, schedule_type=ScheduleType.CRON, schedule_expr="0 * * * *"
         )
 
         job.record_execution(success=True, result={"data": "value"})
@@ -614,11 +531,7 @@ class TestScheduledJob:
     def test_record_execution_failure(self):
         """Test recording failed execution."""
         job = ScheduledJob.create(
-            name="Test",
-            task_type="test",
-            task_data={},
-            schedule_type=ScheduleType.CRON,
-            schedule_expr="0 * * * *"
+            name="Test", task_type="test", task_data={}, schedule_type=ScheduleType.CRON, schedule_expr="0 * * * *"
         )
 
         job.record_execution(success=False, error="Test error")
@@ -634,7 +547,7 @@ class TestScheduledJob:
             task_type="test",
             task_data={},
             schedule_type=ScheduleType.ONCE,
-            schedule_expr="2024-01-01T00:00:00"
+            schedule_expr="2024-01-01T00:00:00",
         )
 
         job.record_execution(success=True)
@@ -644,11 +557,7 @@ class TestScheduledJob:
     def test_pause_resume(self):
         """Test pause and resume."""
         job = ScheduledJob.create(
-            name="Test",
-            task_type="test",
-            task_data={},
-            schedule_type=ScheduleType.CRON,
-            schedule_expr="0 * * * *"
+            name="Test", task_type="test", task_data={}, schedule_type=ScheduleType.CRON, schedule_expr="0 * * * *"
         )
 
         job.pause()
@@ -662,11 +571,7 @@ class TestScheduledJob:
     def test_disable(self):
         """Test disabling a job."""
         job = ScheduledJob.create(
-            name="Test",
-            task_type="test",
-            task_data={},
-            schedule_type=ScheduleType.CRON,
-            schedule_expr="0 * * * *"
+            name="Test", task_type="test", task_data={}, schedule_type=ScheduleType.CRON, schedule_expr="0 * * * *"
         )
 
         job.disable()
@@ -680,7 +585,7 @@ class TestScheduledJob:
             task_type="test",
             task_data={"key": "value"},
             schedule_type=ScheduleType.CRON,
-            schedule_expr="0 * * * *"
+            schedule_expr="0 * * * *",
         )
         job.run_count = 5
         job.fail_count = 1
@@ -714,7 +619,7 @@ class TestScheduledJob:
             "next_run": "2024-01-02T00:00:00",
             "run_count": 0,
             "fail_count": 0,
-            "metadata": {}
+            "metadata": {},
         }
 
         job = ScheduledJob.from_dict(data)
@@ -736,11 +641,7 @@ class TestJobExecution:
 
     def test_execution_creation(self):
         """Test execution record creation."""
-        execution = JobExecution(
-            id="exec-123",
-            job_id="job-456",
-            started_at=datetime(2024, 1, 1, 12, 0, 0)
-        )
+        execution = JobExecution(id="exec-123", job_id="job-456", started_at=datetime(2024, 1, 1, 12, 0, 0))
 
         assert execution.id == "exec-123"
         assert execution.job_id == "job-456"
@@ -753,7 +654,7 @@ class TestJobExecution:
             id="exec-123",
             job_id="job-456",
             started_at=datetime(2024, 1, 1, 12, 0, 0),
-            completed_at=datetime(2024, 1, 1, 12, 5, 30)
+            completed_at=datetime(2024, 1, 1, 12, 5, 30),
         )
 
         duration = execution.duration_seconds()
@@ -761,11 +662,7 @@ class TestJobExecution:
 
     def test_duration_running(self):
         """Test duration for running job."""
-        execution = JobExecution(
-            id="exec-123",
-            job_id="job-456",
-            started_at=datetime.utcnow()
-        )
+        execution = JobExecution(id="exec-123", job_id="job-456", started_at=datetime.utcnow())
 
         duration = execution.duration_seconds()
         assert duration is None
@@ -788,7 +685,8 @@ class TestJobBuilder:
 
     def test_build_complete_job(self):
         """Test building a complete job."""
-        job = (JobBuilder()
+        job = (
+            JobBuilder()
             .name("Complete Job")
             .description("Test")
             .task("vulnerability_scan", target="example.com")
@@ -811,12 +709,7 @@ class TestJobBuilder:
 
     def test_build_interval_job(self):
         """Test building interval job."""
-        job = (JobBuilder()
-            .name("Interval Job")
-            .task("health_check")
-            .interval(30)
-            .build()
-        )
+        job = JobBuilder().name("Interval Job").task("health_check").interval(30).build()
 
         assert job.schedule_type == ScheduleType.INTERVAL
         assert job.schedule_expr == "30"
@@ -825,12 +718,7 @@ class TestJobBuilder:
         """Test building one-time job."""
         run_at = datetime(2024, 12, 25, 0, 0, 0)
 
-        job = (JobBuilder()
-            .name("One Time Job")
-            .task("cleanup")
-            .once(run_at)
-            .build()
-        )
+        job = JobBuilder().name("One Time Job").task("cleanup").once(run_at).build()
 
         assert job.schedule_type == ScheduleType.ONCE
         assert job.schedule_expr == "2024-12-25T00:00:00"
@@ -1172,7 +1060,7 @@ class TestCalculateNextOccurrence:
 
         # Next 30-minute interval from base should be base + 30 min
         next_time = calculate_next_occurrence(base, 30)
-        
+
         # Should be at a 30-minute boundary after now
         assert next_time > now
         assert next_time.minute % 30 == 0
@@ -1201,19 +1089,13 @@ class TestSchedulerIntegration:
     @pytest.mark.asyncio
     async def test_full_job_lifecycle(self):
         """Test complete job lifecycle."""
-        config = ScheduleConfig(
-            check_interval=1,
-            persistence_enabled=False
-        )
+        config = ScheduleConfig(check_interval=1, persistence_enabled=False)
         scheduler = TaskScheduler(config)
 
         execution_log = []
 
         async def test_callback(data):
-            execution_log.append({
-                "timestamp": datetime.utcnow(),
-                "data": data
-            })
+            execution_log.append({"timestamp": datetime.utcnow(), "data": data})
             return {"status": "completed"}
 
         scheduler.register_callback("integration_test", test_callback)
@@ -1223,10 +1105,7 @@ class TestSchedulerIntegration:
         # Schedule a one-time job
         run_at = datetime.utcnow() + timedelta(seconds=2)
         job_id = await scheduler.schedule(
-            name="Integration Test Job",
-            task_type="integration_test",
-            task_data={"test": "value"},
-            once=run_at
+            name="Integration Test Job", task_type="integration_test", task_data={"test": "value"}, once=run_at
         )
 
         # Wait for execution
@@ -1249,10 +1128,7 @@ class TestSchedulerIntegration:
     @pytest.mark.asyncio
     async def test_multiple_scheduled_jobs(self):
         """Test multiple jobs scheduled at different intervals."""
-        config = ScheduleConfig(
-            check_interval=1,
-            persistence_enabled=False
-        )
+        config = ScheduleConfig(check_interval=1, persistence_enabled=False)
         scheduler = TaskScheduler(config)
 
         execution_count = {"job1": 0, "job2": 0}
@@ -1275,19 +1151,9 @@ class TestSchedulerIntegration:
 
         # Schedule jobs to run soon
         now = datetime.utcnow()
-        await scheduler.schedule(
-            name="Job 1",
-            task_type="job1",
-            task_data={},
-            once=now + timedelta(seconds=0.5)
-        )
+        await scheduler.schedule(name="Job 1", task_type="job1", task_data={}, once=now + timedelta(seconds=0.5))
 
-        await scheduler.schedule(
-            name="Job 2",
-            task_type="job2",
-            task_data={},
-            once=now + timedelta(seconds=1)
-        )
+        await scheduler.schedule(name="Job 2", task_type="job2", task_data={}, once=now + timedelta(seconds=1))
 
         # Wait for both to complete with some buffer
         await asyncio.sleep(2.5)
@@ -1301,10 +1167,7 @@ class TestSchedulerIntegration:
     @pytest.mark.asyncio
     async def test_execution_callback(self):
         """Test on_execution_complete callback."""
-        config = ScheduleConfig(
-            check_interval=1,
-            persistence_enabled=False
-        )
+        config = ScheduleConfig(check_interval=1, persistence_enabled=False)
         scheduler = TaskScheduler(config)
 
         completed_jobs = []
@@ -1313,11 +1176,7 @@ class TestSchedulerIntegration:
             return {"result": "ok"}
 
         async def on_complete(job, execution):
-            completed_jobs.append({
-                "job_name": job.name,
-                "execution_id": execution.id,
-                "status": execution.status
-            })
+            completed_jobs.append({"job_name": job.name, "execution_id": execution.id, "status": execution.status})
 
         scheduler.register_callback("test", test_callback)
         scheduler.on_execution_complete(on_complete)
@@ -1325,12 +1184,7 @@ class TestSchedulerIntegration:
         await scheduler.start()
 
         run_at = datetime.utcnow() + timedelta(seconds=1)
-        await scheduler.schedule(
-            name="Callback Test",
-            task_type="test",
-            task_data={},
-            once=run_at
-        )
+        await scheduler.schedule(name="Callback Test", task_type="test", task_data={}, once=run_at)
 
         await asyncio.sleep(2)
 

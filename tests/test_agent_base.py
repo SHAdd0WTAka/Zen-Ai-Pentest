@@ -8,12 +8,7 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 
-from agents.agent_base import (
-    AgentMessage,
-    AgentRole,
-    AgentState,
-    BaseAgent,
-)
+from agents.agent_base import AgentMessage, AgentRole, AgentState, BaseAgent
 
 
 class TestAgentRole:

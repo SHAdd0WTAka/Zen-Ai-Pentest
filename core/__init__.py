@@ -109,6 +109,7 @@ def _get_performance_module():
 # Public API with Lazy Loading
 # =============================================================================
 
+
 # Cache API
 class CacheProxy:
     """Proxy for cache module with lazy loading"""
@@ -155,6 +156,7 @@ try:
         SeverityLevel,
         run_health_check,
     )
+
     _health_check_available = True
 except ImportError:
     _health_check_available = False
@@ -171,6 +173,7 @@ except ImportError:
 # =============================================================================
 # Conditional/Lazy Exports
 # =============================================================================
+
 
 def __getattr__(name: str) -> Any:
     """Lazy load heavy modules on first access"""
@@ -288,12 +291,14 @@ __all__ = [
 
 # Add health check to __all__ only if available
 if _health_check_available:
-    __all__.extend([
-        "HealthCheckConfig",
-        "HealthCheckResult",
-        "HealthCheckRunner",
-        "HealthReport",
-        "HealthStatus",
-        "SeverityLevel",
-        "run_health_check",
-    ])
+    __all__.extend(
+        [
+            "HealthCheckConfig",
+            "HealthCheckResult",
+            "HealthCheckRunner",
+            "HealthReport",
+            "HealthStatus",
+            "SeverityLevel",
+            "run_health_check",
+        ]
+    )

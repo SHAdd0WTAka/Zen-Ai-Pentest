@@ -67,7 +67,8 @@ class TestReconTargetAnalysis:
     @pytest.mark.asyncio
     async def test_analyze_target_success(self, recon_module, mock_orchestrator):
         """Test successful target analysis"""
-        mock_orchestrator.process.return_value = MockResponse(content="""
+        mock_orchestrator.process.return_value = MockResponse(
+            content="""
 Attack Vectors:
 1. Web application vulnerabilities
 2. Outdated SSL/TLS configuration
@@ -77,7 +78,8 @@ Suggested Tools:
 - nmap for port scanning
 - gobuster for directory enumeration
 - sslscan for SSL analysis
-""")
+"""
+        )
 
         with patch.object(recon_module, "_resolve_ip", return_value="93.184.216.34"):
             with patch.object(recon_module, "_get_dns_records", return_value=["A: 93.184.216.34"]):

@@ -17,10 +17,7 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
 # Business Impact Calculator importieren
-from .business_impact_calculator import (
-    AssetContext,
-    BusinessImpactCalculator,
-)
+from .business_impact_calculator import AssetContext, BusinessImpactCalculator
 
 # Logger konfigurieren
 logger = logging.getLogger(__name__)

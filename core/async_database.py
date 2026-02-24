@@ -14,23 +14,11 @@ from contextlib import asynccontextmanager
 from typing import Any, AsyncGenerator, Dict, List, Optional, TypeVar
 
 from sqlalchemy import select, text
-from sqlalchemy.ext.asyncio import (
-    AsyncSession,
-    async_sessionmaker,
-    create_async_engine,
-)
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import selectinload
 
 # Import models
-from database.models import (
-    AuditLog,
-    Finding,
-    Report,
-    Scan,
-    ScanStatus,
-    Severity,
-    User,
-)
+from database.models import AuditLog, Finding, Report, Scan, ScanStatus, Severity, User
 
 logger = logging.getLogger(__name__)
 
@@ -245,9 +233,7 @@ class AsyncDatabaseManager:
         finding_id: int,
     ) -> Optional[Finding]:
         """Get finding by ID"""
-        result = await session.execute(
-            select(Finding).where(Finding.id == finding_id)
-        )
+        result = await session.execute(select(Finding).where(Finding.id == finding_id))
         return result.scalar_one_or_none()
 
     async def get_findings(
@@ -290,9 +276,7 @@ class AsyncDatabaseManager:
         user_id: int,
     ) -> Optional[User]:
         """Get user by ID"""
-        result = await session.execute(
-            select(User).where(User.id == user_id)
-        )
+        result = await session.execute(select(User).where(User.id == user_id))
         return result.scalar_one_or_none()
 
     async def get_user_by_username(
@@ -301,9 +285,7 @@ class AsyncDatabaseManager:
         username: str,
     ) -> Optional[User]:
         """Get user by username"""
-        result = await session.execute(
-            select(User).where(User.username == username)
-        )
+        result = await session.execute(select(User).where(User.username == username))
         return result.scalar_one_or_none()
 
     # ========================================================================

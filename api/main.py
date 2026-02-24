@@ -57,13 +57,7 @@ from database.models import Report, SessionLocal, get_db, init_db
 
 # Import new auth system
 try:
-    from auth import (
-        AuthMiddleware,
-        JWTHandler,
-        PasswordHasher,
-        RBACManager,
-        UserManager,
-    )
+    from auth import AuthMiddleware, JWTHandler, PasswordHasher, RBACManager, UserManager
     from database.auth_models import init_auth_db
 
     NEW_AUTH_AVAILABLE = True

@@ -131,11 +131,13 @@ Run 'zen <command> --help' for more information.
             return 1
 
         if not args or args[0] in ("-h", "--help", "help"):
-            print("""
+            print(
+                """
 Agent Commands:
   zen agent start   - Start interactive agent session
   zen agent status  - Show agent status
-            """)
+            """
+            )
             return 0
 
         subcommand = args[0].lower()

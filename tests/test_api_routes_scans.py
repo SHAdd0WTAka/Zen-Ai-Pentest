@@ -33,14 +33,7 @@ sys.modules["api.core.auth"] = mock_auth
 sys.modules["api.models.scan"] = mock_scan_model
 sys.modules["api.models.user"] = mock_user
 
-from api.routes.scans import (
-    create_scan,
-    delete_scan,
-    get_scan,
-    list_scans,
-    run_scan,
-    stop_scan,
-)
+from api.routes.scans import create_scan, delete_scan, get_scan, list_scans, run_scan, stop_scan
 
 # ==================== Test Fixtures ====================
 

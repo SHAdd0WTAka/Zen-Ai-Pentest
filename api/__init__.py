@@ -15,10 +15,12 @@ Version: 1.0.0
 __version__ = "1.0.0"
 __all__ = ["app", "create_app"]
 
+
 # Lazy import to avoid loading FastAPI on module import
 def _lazy_import(name: str):
     """Lazy import helper"""
     import importlib
+
     return importlib.import_module(name)
 
 
@@ -31,6 +33,7 @@ def app():
     global _app
     if _app is None:
         from api.main import app as _app_instance
+
         _app = _app_instance
     return _app
 
@@ -38,4 +41,5 @@ def app():
 def create_app(**kwargs):
     """Create a new FastAPI app instance with custom config"""
     from api.main import create_app as _create_app
+
     return _create_app(**kwargs)

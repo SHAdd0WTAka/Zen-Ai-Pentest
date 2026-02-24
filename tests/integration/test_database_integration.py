@@ -29,6 +29,16 @@ from sqlalchemy.pool import StaticPool
 # Ensure project root is in path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
+from database.crud import (
+    create_finding,
+    create_report,
+    create_scan,
+    get_findings,
+    get_reports,
+    get_scan,
+    get_scans,
+    update_scan_status,
+)
 from database.models import (
     Asset,
     AuditLog,
@@ -43,16 +53,6 @@ from database.models import (
     User,
     VulnerabilityDB,
 )
-from database.crud import (
-    create_finding,
-    create_report,
-    create_scan,
-    get_findings,
-    get_reports,
-    get_scan,
-    get_scans,
-    update_scan_status,
-)
 
 # Mark all tests in this file
 pytestmark = [pytest.mark.integration, pytest.mark.database]
@@ -61,6 +61,7 @@ pytestmark = [pytest.mark.integration, pytest.mark.database]
 # ============================================================================
 # FIXTURES
 # ============================================================================
+
 
 @pytest.fixture(scope="function")
 def engine():
@@ -145,6 +146,7 @@ def sample_finding(db_session: Session, sample_scan: Scan) -> Finding:
 # TEST CLASS: Database Connection
 # ============================================================================
 
+
 class TestDatabaseConnection:
     """Test database connection and basic operations."""
 
@@ -183,6 +185,7 @@ class TestDatabaseConnection:
 # ============================================================================
 # TEST CLASS: CRUD Operations - Users
 # ============================================================================
+
 
 class TestUserCRUD:
     """Test CRUD operations for User model."""
@@ -257,6 +260,7 @@ class TestUserCRUD:
 # TEST CLASS: CRUD Operations - Scans
 # ============================================================================
 
+
 class TestScanCRUD:
     """Test CRUD operations for Scan model."""
 
@@ -296,9 +300,7 @@ class TestScanCRUD:
         assert updated_scan.started_at is not None
 
         # Complete the scan
-        updated_scan = update_scan_status(
-            db_session, sample_scan.id, "completed", {"findings_count": 5}
-        )
+        updated_scan = update_scan_status(db_session, sample_scan.id, "completed", {"findings_count": 5})
         assert updated_scan.status == "completed"
         assert updated_scan.completed_at is not None
 
@@ -362,6 +364,7 @@ class TestScanCRUD:
 # ============================================================================
 # TEST CLASS: CRUD Operations - Findings
 # ============================================================================
+
 
 class TestFindingCRUD:
     """Test CRUD operations for Finding model."""
@@ -466,6 +469,7 @@ class TestFindingCRUD:
 # TEST CLASS: CRUD Operations - Reports
 # ============================================================================
 
+
 class TestReportCRUD:
     """Test CRUD operations for Report model."""
 
@@ -531,6 +535,7 @@ class TestReportCRUD:
 # TEST CLASS: Relationships
 # ============================================================================
 
+
 class TestRelationships:
     """Test relationships between models."""
 
@@ -544,9 +549,7 @@ class TestRelationships:
         assert sample_scan.user is not None
         assert sample_scan.user.id == sample_user.id
 
-    def test_scan_findings_relationship(
-        self, db_session: Session, sample_scan: Scan, sample_finding: Finding
-    ):
+    def test_scan_findings_relationship(self, db_session: Session, sample_scan: Scan, sample_finding: Finding):
         """Test cascade delete of findings when scan is deleted."""
         scan_id = sample_scan.id
         finding_id = sample_finding.id
@@ -599,6 +602,7 @@ class TestRelationships:
 # ============================================================================
 # TEST CLASS: Transactions
 # ============================================================================
+
 
 class TestTransactions:
     """Test database transactions."""
@@ -694,6 +698,7 @@ class TestTransactions:
 # TEST CLASS: Complex Queries
 # ============================================================================
 
+
 class TestComplexQueries:
     """Test complex database queries."""
 
@@ -701,12 +706,7 @@ class TestComplexQueries:
         """Test join query between users and scans."""
         from sqlalchemy.orm import joinedload
 
-        result = (
-            db_session.query(Scan)
-            .options(joinedload(Scan.user))
-            .filter(Scan.user_id == sample_user.id)
-            .all()
-        )
+        result = db_session.query(Scan).options(joinedload(Scan.user)).filter(Scan.user_id == sample_user.id).all()
 
         assert len(result) >= 1
         assert result[0].user.username == "testuser"
@@ -756,10 +756,7 @@ class TestComplexQueries:
         # Filter by date
         cutoff_date = datetime.utcnow() - timedelta(days=3)
         recent_scans = (
-            db_session.query(Scan)
-            .filter(Scan.created_at >= cutoff_date)
-            .filter(Scan.user_id == sample_user.id)
-            .all()
+            db_session.query(Scan).filter(Scan.created_at >= cutoff_date).filter(Scan.user_id == sample_user.id).all()
         )
 
         assert len(recent_scans) >= 3
@@ -768,6 +765,7 @@ class TestComplexQueries:
 # ============================================================================
 # TEST CLASS: Additional Models
 # ============================================================================
+
 
 class TestAdditionalModels:
     """Test additional database models."""

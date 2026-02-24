@@ -22,15 +22,7 @@ sys.modules["requests"] = MagicMock()
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from tools.kimi_helper import (
-    PERSONAS,
-    check_kimi_cli,
-    check_kimi_logged_in,
-    get_api_key,
-    main,
-    query_kimi_api,
-    query_kimi_cli,
-)
+from tools.kimi_helper import PERSONAS, check_kimi_cli, check_kimi_logged_in, get_api_key, main, query_kimi_api, query_kimi_cli
 
 # ============================================================================
 # Test Personas

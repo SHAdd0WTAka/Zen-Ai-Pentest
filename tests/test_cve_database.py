@@ -14,7 +14,7 @@ from unittest.mock import MagicMock, mock_open, patch
 
 import pytest
 
-from modules.cve_database import CVEEntry, CVEDatabase, RansomwareEntry
+from modules.cve_database import CVEDatabase, CVEEntry, RansomwareEntry
 
 
 class TestCVEEntry:
@@ -105,11 +105,12 @@ class TestCVEDatabaseInit:
     """Test CVEDatabase initialization"""
 
     @patch("os.path.exists")
-    @patch("builtins.open", mock_open(read_data=json.dumps({
-        "ransomware_campaigns": {},
-        "critical_historical_cves": {},
-        "common_exploit_chains": {}
-    })))
+    @patch(
+        "builtins.open",
+        mock_open(
+            read_data=json.dumps({"ransomware_campaigns": {}, "critical_historical_cves": {}, "common_exploit_chains": {}})
+        ),
+    )
     def test_init_no_existing_db(self, mock_exists):
         """Test initialization when DB file doesn't exist"""
         mock_exists.return_value = False
@@ -120,17 +121,18 @@ class TestCVEDatabaseInit:
         assert db.cve_data == {}
 
     @patch("os.path.exists")
-    @patch("builtins.open", mock_open(read_data=json.dumps({
-        "ransomware_campaigns": {
-            "lockbit": {"name": "LockBit", "cves": ["CVE-2021-1234"]}
-        },
-        "critical_historical_cves": {
-            "CVE-2021-44228": {"name": "Log4Shell", "cvss": 10.0}
-        },
-        "common_exploit_chains": {
-            "chain1": {"name": "Test Chain"}
-        }
-    })))
+    @patch(
+        "builtins.open",
+        mock_open(
+            read_data=json.dumps(
+                {
+                    "ransomware_campaigns": {"lockbit": {"name": "LockBit", "cves": ["CVE-2021-1234"]}},
+                    "critical_historical_cves": {"CVE-2021-44228": {"name": "Log4Shell", "cvss": 10.0}},
+                    "common_exploit_chains": {"chain1": {"name": "Test Chain"}},
+                }
+            )
+        ),
+    )
     def test_init_with_existing_db(self, mock_exists):
         """Test initialization with existing DB file"""
         mock_exists.return_value = True
@@ -550,9 +552,11 @@ class TestAnalyzeVulnerability:
         mock_orch = MagicMock()
         mock_response = MagicMock()
         mock_response.content = "Detailed AI analysis of the ransomware risk"
+
         # Make process a coroutine to be awaitable
         async def async_process(*args, **kwargs):
             return mock_response
+
         mock_orch.process = async_process
         db.orchestrator = mock_orch
 

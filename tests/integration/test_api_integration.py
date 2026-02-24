@@ -34,6 +34,7 @@ pytestmark = [pytest.mark.integration, pytest.mark.asyncio]
 # FIXTURES
 # ============================================================================
 
+
 @pytest.fixture(scope="function")
 def test_db_engine():
     """Create a SQLite in-memory database engine for testing."""
@@ -111,6 +112,7 @@ def auth_headers(auth_token):
 # ============================================================================
 # TEST CLASS: Authentication Flow
 # ============================================================================
+
 
 class TestAuthenticationFlow:
     """Test complete authentication flow including login, token validation, and logout."""
@@ -193,6 +195,7 @@ class TestAuthenticationFlow:
 # ============================================================================
 # TEST CLASS: Scan Management
 # ============================================================================
+
 
 class TestScanManagement:
     """Test scan creation, retrieval, and management."""
@@ -345,6 +348,7 @@ class TestScanManagement:
 # TEST CLASS: Findings Management
 # ============================================================================
 
+
 class TestFindingsManagement:
     """Test findings creation, retrieval, and management."""
 
@@ -493,6 +497,7 @@ class TestFindingsManagement:
 # TEST CLASS: Tool Execution
 # ============================================================================
 
+
 class TestToolExecution:
     """Test tool execution endpoints."""
 
@@ -546,6 +551,7 @@ class TestToolExecution:
 # ============================================================================
 # TEST CLASS: Report Generation
 # ============================================================================
+
 
 class TestReportGeneration:
     """Test report generation endpoints."""
@@ -629,6 +635,7 @@ class TestReportGeneration:
 # TEST CLASS: WebSocket Connections
 # ============================================================================
 
+
 class TestWebSocketConnections:
     """Test WebSocket endpoints."""
 
@@ -679,10 +686,12 @@ class TestWebSocketConnections:
         client_id = "test_client_456"
         with client.websocket_connect(f"/ws/{client_id}") as websocket:
             # Subscribe to channel
-            websocket.send_json({
-                "type": "subscribe",
-                "channel": "scans",
-            })
+            websocket.send_json(
+                {
+                    "type": "subscribe",
+                    "channel": "scans",
+                }
+            )
 
             # Receive subscription confirmation
             data = websocket.receive_json()
@@ -694,6 +703,7 @@ class TestWebSocketConnections:
 # ============================================================================
 # TEST CLASS: Health and Info
 # ============================================================================
+
 
 class TestHealthAndInfo:
     """Test health check and info endpoints."""
@@ -722,6 +732,7 @@ class TestHealthAndInfo:
 # ============================================================================
 # TEST CLASS: Full API Workflow
 # ============================================================================
+
 
 class TestFullAPIWorkflow:
     """Test complete API workflow from scan creation to report generation."""
@@ -819,6 +830,7 @@ class TestFullAPIWorkflow:
 # ============================================================================
 # TEST CLASS: Error Handling
 # ============================================================================
+
 
 class TestErrorHandling:
     """Test API error handling and edge cases."""

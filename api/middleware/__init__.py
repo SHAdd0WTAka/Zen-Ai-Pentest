@@ -4,11 +4,7 @@ API Middleware Package
 Performance monitoring and optimization middleware.
 """
 
-from .performance import (
-    ConnectionPoolMiddleware,
-    PerformanceMonitoringMiddleware,
-    track_request_performance,
-)
+from .performance import ConnectionPoolMiddleware, PerformanceMonitoringMiddleware, track_request_performance
 
 __all__ = [
     "PerformanceMonitoringMiddleware",

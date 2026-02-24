@@ -74,7 +74,8 @@ async def demo_secure_core():
     vpn = ProtonVPNManager()
 
     print("[Secure Core Explanation]")
-    print("""
+    print(
+        """
     Secure Core routes your traffic through two servers:
     1. Entry Server (in a privacy-friendly country)
        ↓ Encrypted tunnel
@@ -85,7 +86,8 @@ async def demo_secure_core():
     - Compromised exit servers
     - Traffic correlation attacks
     - Advanced adversaries
-    """)
+    """
+    )
 
     print("[1] Connecting via Secure Core...")
     status = await vpn.connect(
@@ -177,7 +179,8 @@ async def demo_pentest_workflow():
     print("  Proton VPN - Pentest Workflow Integration")
     print("=" * 60 + "\n")
 
-    print("""
+    print(
+        """
     [Scenario: External Penetration Test]
 
     As a penetration tester, you need to:
@@ -185,7 +188,8 @@ async def demo_pentest_workflow():
     2. Avoid attribution
     3. Bypass geo-restrictions
     4. Maintain secure C2 communications
-    """)
+    """
+    )
 
     vpn = ProtonVPNManager()
 
@@ -293,7 +297,8 @@ async def main():
     print("\n" + "=" * 60)
     print("  All demos completed!")
     print("=" * 60)
-    print("""
+    print(
+        """
 Proton VPN Integration Features:
 ✅ Anonymous reconnaissance
 ✅ IP rotation & switching
@@ -309,7 +314,8 @@ For production use:
 2. Install CLI: protonvpn-cli
 3. Login: protonvpn-cli login
 4. Use this module for automated operations
-    """)
+    """
+    )
 
 
 if __name__ == "__main__":

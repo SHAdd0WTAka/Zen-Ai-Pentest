@@ -20,10 +20,12 @@ class TestEnhancedReconModuleInit:
 
     def test_default_init(self):
         """Test default initialization"""
-        with patch("modules.enhanced_recon.ZenOrchestrator") as mock_orch, \
-             patch("modules.enhanced_recon.FFuFIntegration"), \
-             patch("modules.enhanced_recon.WhatWebIntegration"), \
-             patch("modules.enhanced_recon.WAFW00FIntegration"):
+        with (
+            patch("modules.enhanced_recon.ZenOrchestrator") as mock_orch,
+            patch("modules.enhanced_recon.FFuFIntegration"),
+            patch("modules.enhanced_recon.WhatWebIntegration"),
+            patch("modules.enhanced_recon.WAFW00FIntegration"),
+        ):
 
             mock_orch.return_value = MagicMock()
             recon = EnhancedReconModule()
@@ -32,9 +34,11 @@ class TestEnhancedReconModuleInit:
 
     def test_custom_orchestrator_init(self):
         """Test initialization with custom orchestrator"""
-        with patch("modules.enhanced_recon.FFuFIntegration"), \
-             patch("modules.enhanced_recon.WhatWebIntegration"), \
-             patch("modules.enhanced_recon.WAFW00FIntegration"):
+        with (
+            patch("modules.enhanced_recon.FFuFIntegration"),
+            patch("modules.enhanced_recon.WhatWebIntegration"),
+            patch("modules.enhanced_recon.WAFW00FIntegration"),
+        ):
 
             mock_orch = MagicMock()
             recon = EnhancedReconModule(orchestrator=mock_orch)
@@ -47,10 +51,12 @@ class TestTechnologyDetection:
 
     @pytest.fixture
     def recon(self):
-        with patch("modules.enhanced_recon.ZenOrchestrator"), \
-             patch("modules.enhanced_recon.FFuFIntegration"), \
-             patch("modules.enhanced_recon.WhatWebIntegration"), \
-             patch("modules.enhanced_recon.WAFW00FIntegration"):
+        with (
+            patch("modules.enhanced_recon.ZenOrchestrator"),
+            patch("modules.enhanced_recon.FFuFIntegration"),
+            patch("modules.enhanced_recon.WhatWebIntegration"),
+            patch("modules.enhanced_recon.WAFW00FIntegration"),
+        ):
             return EnhancedReconModule()
 
     def test_technology_detection_success(self, recon):
@@ -132,10 +138,12 @@ class TestWAFDetection:
 
     @pytest.fixture
     def recon(self):
-        with patch("modules.enhanced_recon.ZenOrchestrator"), \
-             patch("modules.enhanced_recon.FFuFIntegration"), \
-             patch("modules.enhanced_recon.WhatWebIntegration"), \
-             patch("modules.enhanced_recon.WAFW00FIntegration"):
+        with (
+            patch("modules.enhanced_recon.ZenOrchestrator"),
+            patch("modules.enhanced_recon.FFuFIntegration"),
+            patch("modules.enhanced_recon.WhatWebIntegration"),
+            patch("modules.enhanced_recon.WAFW00FIntegration"),
+        ):
             return EnhancedReconModule()
 
     def test_waf_detection_found(self, recon):
@@ -218,10 +226,12 @@ class TestDirectoryBruteforce:
 
     @pytest.fixture
     def recon(self):
-        with patch("modules.enhanced_recon.ZenOrchestrator"), \
-             patch("modules.enhanced_recon.FFuFIntegration"), \
-             patch("modules.enhanced_recon.WhatWebIntegration"), \
-             patch("modules.enhanced_recon.WAFW00FIntegration"):
+        with (
+            patch("modules.enhanced_recon.ZenOrchestrator"),
+            patch("modules.enhanced_recon.FFuFIntegration"),
+            patch("modules.enhanced_recon.WhatWebIntegration"),
+            patch("modules.enhanced_recon.WAFW00FIntegration"),
+        ):
             return EnhancedReconModule()
 
     def test_directory_bruteforce_success(self, recon):
@@ -325,17 +335,21 @@ class TestFullRecon:
 
     @pytest.fixture
     def recon(self):
-        with patch("modules.enhanced_recon.ZenOrchestrator"), \
-             patch("modules.enhanced_recon.FFuFIntegration"), \
-             patch("modules.enhanced_recon.WhatWebIntegration"), \
-             patch("modules.enhanced_recon.WAFW00FIntegration"):
+        with (
+            patch("modules.enhanced_recon.ZenOrchestrator"),
+            patch("modules.enhanced_recon.FFuFIntegration"),
+            patch("modules.enhanced_recon.WhatWebIntegration"),
+            patch("modules.enhanced_recon.WAFW00FIntegration"),
+        ):
             return EnhancedReconModule()
 
     def test_full_recon_with_url(self, recon):
         """Test full recon with URL input"""
-        with patch.object(recon, "technology_detection") as mock_tech, \
-             patch.object(recon, "waf_detection") as mock_waf, \
-             patch.object(recon, "directory_bruteforce") as mock_dir:
+        with (
+            patch.object(recon, "technology_detection") as mock_tech,
+            patch.object(recon, "waf_detection") as mock_waf,
+            patch.object(recon, "directory_bruteforce") as mock_dir,
+        ):
 
             mock_tech.return_value = {
                 "success": True,
@@ -360,9 +374,11 @@ class TestFullRecon:
 
     def test_full_recon_with_domain(self, recon):
         """Test full recon with domain input (no protocol)"""
-        with patch.object(recon, "technology_detection") as mock_tech, \
-             patch.object(recon, "waf_detection") as mock_waf, \
-             patch.object(recon, "directory_bruteforce") as mock_dir:
+        with (
+            patch.object(recon, "technology_detection") as mock_tech,
+            patch.object(recon, "waf_detection") as mock_waf,
+            patch.object(recon, "directory_bruteforce") as mock_dir,
+        ):
 
             mock_tech.return_value = {"success": True, "technologies": []}
             mock_waf.return_value = {"success": True, "firewall_detected": False}
@@ -385,9 +401,11 @@ class TestFullRecon:
         ]
 
         for waf_detected, num_findings, expected_risk in test_cases:
-            with patch.object(recon, "technology_detection") as mock_tech, \
-                 patch.object(recon, "waf_detection") as mock_waf, \
-                 patch.object(recon, "directory_bruteforce") as mock_dir:
+            with (
+                patch.object(recon, "technology_detection") as mock_tech,
+                patch.object(recon, "waf_detection") as mock_waf,
+                patch.object(recon, "directory_bruteforce") as mock_dir,
+            ):
 
                 mock_tech.return_value = {"success": True, "technologies": []}
                 mock_waf.return_value = {
@@ -400,14 +418,17 @@ class TestFullRecon:
                 }
 
                 result = recon.full_recon("http://example.com")
-                assert result["summary"]["risk_level"] == expected_risk, \
-                    f"Expected {expected_risk} for waf={waf_detected}, findings={num_findings}"
+                assert (
+                    result["summary"]["risk_level"] == expected_risk
+                ), f"Expected {expected_risk} for waf={waf_detected}, findings={num_findings}"
 
     def test_full_recon_recommendations_no_waf(self, recon):
         """Test recommendations when no WAF detected"""
-        with patch.object(recon, "technology_detection") as mock_tech, \
-             patch.object(recon, "waf_detection") as mock_waf, \
-             patch.object(recon, "directory_bruteforce") as mock_dir:
+        with (
+            patch.object(recon, "technology_detection") as mock_tech,
+            patch.object(recon, "waf_detection") as mock_waf,
+            patch.object(recon, "directory_bruteforce") as mock_dir,
+        ):
 
             mock_tech.return_value = {"success": True, "technologies": []}
             mock_waf.return_value = {"success": True, "firewall_detected": False}
@@ -420,9 +441,11 @@ class TestFullRecon:
 
     def test_full_recon_recommendations_outdated_software(self, recon):
         """Test recommendations for outdated software"""
-        with patch.object(recon, "technology_detection") as mock_tech, \
-             patch.object(recon, "waf_detection") as mock_waf, \
-             patch.object(recon, "directory_bruteforce") as mock_dir:
+        with (
+            patch.object(recon, "technology_detection") as mock_tech,
+            patch.object(recon, "waf_detection") as mock_waf,
+            patch.object(recon, "directory_bruteforce") as mock_dir,
+        ):
 
             mock_tech.return_value = {
                 "success": True,
@@ -440,9 +463,11 @@ class TestFullRecon:
 
     def test_full_recon_recommendations_sensitive_dirs(self, recon):
         """Test recommendations for sensitive directories"""
-        with patch.object(recon, "technology_detection") as mock_tech, \
-             patch.object(recon, "waf_detection") as mock_waf, \
-             patch.object(recon, "directory_bruteforce") as mock_dir:
+        with (
+            patch.object(recon, "technology_detection") as mock_tech,
+            patch.object(recon, "waf_detection") as mock_waf,
+            patch.object(recon, "directory_bruteforce") as mock_dir,
+        ):
 
             mock_tech.return_value = {"success": True, "technologies": []}
             mock_waf.return_value = {"success": True, "firewall_detected": True}
@@ -459,9 +484,11 @@ class TestFullRecon:
 
     def test_full_recon_summary_counts(self, recon):
         """Test summary counts"""
-        with patch.object(recon, "technology_detection") as mock_tech, \
-             patch.object(recon, "waf_detection") as mock_waf, \
-             patch.object(recon, "directory_bruteforce") as mock_dir:
+        with (
+            patch.object(recon, "technology_detection") as mock_tech,
+            patch.object(recon, "waf_detection") as mock_waf,
+            patch.object(recon, "directory_bruteforce") as mock_dir,
+        ):
 
             mock_tech.return_value = {
                 "success": True,
@@ -485,10 +512,12 @@ class TestEnhancedReconIntegration:
 
     @pytest.fixture
     def recon(self):
-        with patch("modules.enhanced_recon.ZenOrchestrator"), \
-             patch("modules.enhanced_recon.FFuFIntegration"), \
-             patch("modules.enhanced_recon.WhatWebIntegration"), \
-             patch("modules.enhanced_recon.WAFW00FIntegration"):
+        with (
+            patch("modules.enhanced_recon.ZenOrchestrator"),
+            patch("modules.enhanced_recon.FFuFIntegration"),
+            patch("modules.enhanced_recon.WhatWebIntegration"),
+            patch("modules.enhanced_recon.WAFW00FIntegration"),
+        ):
             return EnhancedReconModule()
 
     def test_complete_recon_workflow(self, recon):
@@ -514,9 +543,11 @@ class TestEnhancedReconIntegration:
         mock_dir_result.total_requests = 1000
         mock_dir_result.duration = 5.0
 
-        with patch("modules.enhanced_recon.scan_sync", return_value=mock_tech_result), \
-             patch("modules.enhanced_recon.detect_sync", return_value=mock_waf_result), \
-             patch("modules.enhanced_recon.directory_bruteforce_sync", return_value=mock_dir_result):
+        with (
+            patch("modules.enhanced_recon.scan_sync", return_value=mock_tech_result),
+            patch("modules.enhanced_recon.detect_sync", return_value=mock_waf_result),
+            patch("modules.enhanced_recon.directory_bruteforce_sync", return_value=mock_dir_result),
+        ):
 
             result = recon.full_recon("http://example.com")
 
@@ -527,9 +558,11 @@ class TestEnhancedReconIntegration:
 
     def test_recon_handles_empty_results(self, recon):
         """Test that recon handles empty results gracefully"""
-        with patch.object(recon, "technology_detection") as mock_tech, \
-             patch.object(recon, "waf_detection") as mock_waf, \
-             patch.object(recon, "directory_bruteforce") as mock_dir:
+        with (
+            patch.object(recon, "technology_detection") as mock_tech,
+            patch.object(recon, "waf_detection") as mock_waf,
+            patch.object(recon, "directory_bruteforce") as mock_dir,
+        ):
 
             mock_tech.return_value = {"success": True, "technologies": []}
             mock_waf.return_value = {"success": True, "firewall_detected": False}
@@ -543,9 +576,11 @@ class TestEnhancedReconIntegration:
 
     def test_recon_handles_errors(self, recon):
         """Test that recon handles errors gracefully"""
-        with patch.object(recon, "technology_detection") as mock_tech, \
-             patch.object(recon, "waf_detection") as mock_waf, \
-             patch.object(recon, "directory_bruteforce") as mock_dir:
+        with (
+            patch.object(recon, "technology_detection") as mock_tech,
+            patch.object(recon, "waf_detection") as mock_waf,
+            patch.object(recon, "directory_bruteforce") as mock_dir,
+        ):
 
             mock_tech.return_value = {"success": False, "error": "Connection failed"}
             mock_waf.return_value = {"success": False, "error": "Timeout"}
@@ -564,10 +599,12 @@ class TestToolIntegrations:
 
     def test_ffuf_integration_initialized(self):
         """Test that FFuF integration is initialized"""
-        with patch("modules.enhanced_recon.ZenOrchestrator"), \
-             patch("modules.enhanced_recon.FFuFIntegration") as mock_ffuf, \
-             patch("modules.enhanced_recon.WhatWebIntegration"), \
-             patch("modules.enhanced_recon.WAFW00FIntegration"):
+        with (
+            patch("modules.enhanced_recon.ZenOrchestrator"),
+            patch("modules.enhanced_recon.FFuFIntegration") as mock_ffuf,
+            patch("modules.enhanced_recon.WhatWebIntegration"),
+            patch("modules.enhanced_recon.WAFW00FIntegration"),
+        ):
 
             mock_ffuf.return_value = MagicMock()
             recon = EnhancedReconModule()
@@ -576,10 +613,12 @@ class TestToolIntegrations:
 
     def test_whatweb_integration_initialized(self):
         """Test that WhatWeb integration is initialized"""
-        with patch("modules.enhanced_recon.ZenOrchestrator"), \
-             patch("modules.enhanced_recon.FFuFIntegration"), \
-             patch("modules.enhanced_recon.WhatWebIntegration") as mock_whatweb, \
-             patch("modules.enhanced_recon.WAFW00FIntegration"):
+        with (
+            patch("modules.enhanced_recon.ZenOrchestrator"),
+            patch("modules.enhanced_recon.FFuFIntegration"),
+            patch("modules.enhanced_recon.WhatWebIntegration") as mock_whatweb,
+            patch("modules.enhanced_recon.WAFW00FIntegration"),
+        ):
 
             mock_whatweb.return_value = MagicMock()
             recon = EnhancedReconModule()
@@ -588,10 +627,12 @@ class TestToolIntegrations:
 
     def test_wafw00f_integration_initialized(self):
         """Test that WAFW00F integration is initialized"""
-        with patch("modules.enhanced_recon.ZenOrchestrator"), \
-             patch("modules.enhanced_recon.FFuFIntegration"), \
-             patch("modules.enhanced_recon.WhatWebIntegration"), \
-             patch("modules.enhanced_recon.WAFW00FIntegration") as mock_wafw00f:
+        with (
+            patch("modules.enhanced_recon.ZenOrchestrator"),
+            patch("modules.enhanced_recon.FFuFIntegration"),
+            patch("modules.enhanced_recon.WhatWebIntegration"),
+            patch("modules.enhanced_recon.WAFW00FIntegration") as mock_wafw00f,
+        ):
 
             mock_wafw00f.return_value = MagicMock()
             recon = EnhancedReconModule()

@@ -260,13 +260,15 @@ class TestScanResult:
         """Test result to dictionary conversion"""
         result.end_time = result.start_time + 60
         result.add_endpoint(APIEndpoint(path="/api/users", method="GET"))
-        result.add_vulnerability(Vulnerability(
-            vuln_type=VulnerabilityType.MISSING_AUTH,
-            severity=VulnerabilitySeverity.HIGH,
-            title="Missing Auth",
-            description="...",
-            endpoint="/api/admin",
-        ))
+        result.add_vulnerability(
+            Vulnerability(
+                vuln_type=VulnerabilityType.MISSING_AUTH,
+                severity=VulnerabilitySeverity.HIGH,
+                title="Missing Auth",
+                description="...",
+                endpoint="/api/admin",
+            )
+        )
 
         data = result.to_dict()
         assert data["target_url"] == "https://api.example.com"
@@ -287,6 +289,7 @@ class TestBaseAPIScannerInit:
 
     def test_basic_init(self):
         """Test basic scanner initialization"""
+
         class TestScanner(BaseAPIScanner):
             async def scan(self):
                 return self.result
@@ -303,6 +306,7 @@ class TestBaseAPIScannerInit:
 
     def test_custom_config(self):
         """Test initialization with custom config"""
+
         class TestScanner(BaseAPIScanner):
             async def scan(self):
                 return self.result
@@ -323,6 +327,7 @@ class TestBaseAPIScannerInit:
 
     def test_url_stripping(self):
         """Test that trailing slash is stripped from URL"""
+
         class TestScanner(BaseAPIScanner):
             async def scan(self):
                 return self.result
@@ -459,11 +464,13 @@ class TestCheckAPIPath:
     @pytest.mark.asyncio
     async def test_check_api_path_json_response(self, scanner):
         """Test detecting API from JSON response"""
-        scanner._make_request = AsyncMock(return_value=(
-            200,
-            {"content-type": "application/json"},
-            {"data": []},
-        ))
+        scanner._make_request = AsyncMock(
+            return_value=(
+                200,
+                {"content-type": "application/json"},
+                {"data": []},
+            )
+        )
 
         result = await scanner._check_api_path("https://api.example.com/api")
         assert result is True
@@ -471,11 +478,13 @@ class TestCheckAPIPath:
     @pytest.mark.asyncio
     async def test_check_api_path_swagger(self, scanner):
         """Test detecting API from Swagger endpoint"""
-        scanner._make_request = AsyncMock(return_value=(
-            200,
-            {"content-type": "text/plain"},
-            "swagger content",
-        ))
+        scanner._make_request = AsyncMock(
+            return_value=(
+                200,
+                {"content-type": "text/plain"},
+                "swagger content",
+            )
+        )
 
         result = await scanner._check_api_path("https://api.example.com/swagger.json")
         assert result is True
@@ -483,11 +492,13 @@ class TestCheckAPIPath:
     @pytest.mark.asyncio
     async def test_check_api_path_graphql(self, scanner):
         """Test detecting GraphQL endpoint"""
-        scanner._make_request = AsyncMock(return_value=(
-            400,
-            {"content-type": "application/json"},
-            {},
-        ))
+        scanner._make_request = AsyncMock(
+            return_value=(
+                400,
+                {"content-type": "application/json"},
+                {},
+            )
+        )
 
         result = await scanner._check_api_path("https://api.example.com/graphql")
         assert result is True
@@ -495,11 +506,13 @@ class TestCheckAPIPath:
     @pytest.mark.asyncio
     async def test_check_api_path_auth_required(self, scanner):
         """Test detecting API from auth-required response"""
-        scanner._make_request = AsyncMock(return_value=(
-            401,
-            {},
-            {},
-        ))
+        scanner._make_request = AsyncMock(
+            return_value=(
+                401,
+                {},
+                {},
+            )
+        )
 
         result = await scanner._check_api_path("https://api.example.com/api")
         assert result is True
@@ -507,11 +520,13 @@ class TestCheckAPIPath:
     @pytest.mark.asyncio
     async def test_check_api_path_not_found(self, scanner):
         """Test non-API path detection"""
-        scanner._make_request = AsyncMock(return_value=(
-            404,
-            {"content-type": "text/html"},
-            "<html>Not found</html>",
-        ))
+        scanner._make_request = AsyncMock(
+            return_value=(
+                404,
+                {"content-type": "text/html"},
+                "<html>Not found</html>",
+            )
+        )
 
         result = await scanner._check_api_path("https://api.example.com/notapi")
         assert result is False
@@ -715,11 +730,13 @@ class TestInjectionTests:
     @pytest.mark.asyncio
     async def test_sql_injection_detected(self, scanner):
         """Test SQL injection detection"""
-        scanner._make_request = AsyncMock(return_value=(
-            500,
-            {},
-            "You have an error in your SQL syntax",
-        ))
+        scanner._make_request = AsyncMock(
+            return_value=(
+                500,
+                {},
+                "You have an error in your SQL syntax",
+            )
+        )
 
         endpoint = APIEndpoint(path="/api/search", method="GET")
         vulnerabilities = await scanner._test_sql_injection(endpoint, "' OR '1'='1")
@@ -730,11 +747,13 @@ class TestInjectionTests:
     @pytest.mark.asyncio
     async def test_nosql_injection_detected(self, scanner):
         """Test NoSQL injection detection"""
-        scanner._make_request = AsyncMock(return_value=(
-            500,
-            {},
-            "MongoError: invalid objectid",
-        ))
+        scanner._make_request = AsyncMock(
+            return_value=(
+                500,
+                {},
+                "MongoError: invalid objectid",
+            )
+        )
 
         endpoint = APIEndpoint(path="/api/users", method="POST")
         vulnerabilities = await scanner._test_nosql_injection(endpoint, '{"$ne": null}')
@@ -745,11 +764,13 @@ class TestInjectionTests:
     @pytest.mark.asyncio
     async def test_command_injection_detected(self, scanner):
         """Test command injection detection"""
-        scanner._make_request = AsyncMock(return_value=(
-            200,
-            {},
-            "root:x:0:0:root:/root:/bin/bash",
-        ))
+        scanner._make_request = AsyncMock(
+            return_value=(
+                200,
+                {},
+                "root:x:0:0:root:/root:/bin/bash",
+            )
+        )
 
         endpoint = APIEndpoint(path="/api/ping", method="GET")
         vulnerabilities = await scanner._test_command_injection(endpoint, "; cat /etc/passwd")
@@ -775,11 +796,13 @@ class TestSecurityHeaders:
     @pytest.mark.asyncio
     async def test_missing_security_headers(self, scanner):
         """Test detection of missing security headers"""
-        scanner._make_request = AsyncMock(return_value=(
-            200,
-            {"content-type": "application/json"},
-            {},
-        ))
+        scanner._make_request = AsyncMock(
+            return_value=(
+                200,
+                {"content-type": "application/json"},
+                {},
+            )
+        )
 
         vulnerabilities = await scanner.test_security_headers("https://api.example.com")
 
@@ -789,20 +812,22 @@ class TestSecurityHeaders:
     @pytest.mark.asyncio
     async def test_security_headers_present(self, scanner):
         """Test when security headers are present"""
-        scanner._make_request = AsyncMock(return_value=(
-            200,
-            {
-                "content-type": "application/json",
-                "strict-transport-security": "max-age=31536000",
-                "content-security-policy": "default-src 'self'",
-                "x-content-type-options": "nosniff",
-                "x-frame-options": "DENY",
-                "x-xss-protection": "1; mode=block",
-                "referrer-policy": "strict-origin",
-                "permissions-policy": "geolocation=()",
-            },
-            {},
-        ))
+        scanner._make_request = AsyncMock(
+            return_value=(
+                200,
+                {
+                    "content-type": "application/json",
+                    "strict-transport-security": "max-age=31536000",
+                    "content-security-policy": "default-src 'self'",
+                    "x-content-type-options": "nosniff",
+                    "x-frame-options": "DENY",
+                    "x-xss-protection": "1; mode=block",
+                    "referrer-policy": "strict-origin",
+                    "permissions-policy": "geolocation=()",
+                },
+                {},
+            )
+        )
 
         vulnerabilities = await scanner.test_security_headers("https://api.example.com")
 
@@ -827,14 +852,16 @@ class TestCORS:
     @pytest.mark.asyncio
     async def test_dangerous_cors_wildcard_with_credentials(self, scanner):
         """Test detection of dangerous CORS config with wildcard and credentials"""
-        scanner._make_request = AsyncMock(return_value=(
-            200,
-            {
-                "access-control-allow-origin": "*",
-                "access-control-allow-credentials": "true",
-            },
-            {},
-        ))
+        scanner._make_request = AsyncMock(
+            return_value=(
+                200,
+                {
+                    "access-control-allow-origin": "*",
+                    "access-control-allow-credentials": "true",
+                },
+                {},
+            )
+        )
 
         vulnerabilities = await scanner._test_cors("https://api.example.com", {})
 
@@ -845,14 +872,16 @@ class TestCORS:
     @pytest.mark.asyncio
     async def test_dangerous_cors_reflected_origin(self, scanner):
         """Test detection of reflected origin with credentials"""
-        scanner._make_request = AsyncMock(return_value=(
-            200,
-            {
-                "access-control-allow-origin": "https://evil.com",
-                "access-control-allow-credentials": "true",
-            },
-            {},
-        ))
+        scanner._make_request = AsyncMock(
+            return_value=(
+                200,
+                {
+                    "access-control-allow-origin": "https://evil.com",
+                    "access-control-allow-credentials": "true",
+                },
+                {},
+            )
+        )
 
         vulnerabilities = await scanner._test_cors("https://api.example.com", {})
 
@@ -900,6 +929,7 @@ class TestFinalizeScan:
 
     def test_finalize_scan(self):
         """Test scan finalization"""
+
         class TestScanner(BaseAPIScanner):
             async def scan(self):
                 return self.result
@@ -909,13 +939,15 @@ class TestFinalizeScan:
 
         scanner = TestScanner("https://api.example.com")
         scanner.result.add_endpoint(APIEndpoint(path="/api/users", method="GET"))
-        scanner.result.add_vulnerability(Vulnerability(
-            vuln_type=VulnerabilityType.MISSING_AUTH,
-            severity=VulnerabilitySeverity.HIGH,
-            title="Missing Auth",
-            description="...",
-            endpoint="/api/admin",
-        ))
+        scanner.result.add_vulnerability(
+            Vulnerability(
+                vuln_type=VulnerabilityType.MISSING_AUTH,
+                severity=VulnerabilitySeverity.HIGH,
+                title="Missing Auth",
+                description="...",
+                endpoint="/api/admin",
+            )
+        )
 
         start_time = scanner.result.start_time
         scanner.finalize_scan()

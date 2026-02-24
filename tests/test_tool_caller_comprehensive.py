@@ -14,13 +14,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from tools.tool_caller import (
-    ToolCaller,
-    ToolCallResult,
-    call_tool,
-    call_tools_batch,
-    get_tool_caller,
-)
+from tools.tool_caller import ToolCaller, ToolCallResult, call_tool, call_tools_batch, get_tool_caller
 from tools.tool_registry import ToolRegistry
 
 # Try to import LangChain tools

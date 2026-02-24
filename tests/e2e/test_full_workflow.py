@@ -43,6 +43,7 @@ pytestmark = [pytest.mark.e2e, pytest.mark.asyncio, pytest.mark.slow]
 # FIXTURES
 # ============================================================================
 
+
 @pytest.fixture(scope="function")
 def test_db_engine():
     """Create a SQLite in-memory database engine for testing."""
@@ -57,6 +58,7 @@ def test_db_engine():
     Base.metadata.drop_all(bind=engine)
     # Cleanup database file
     import os
+
     if os.path.exists("./test_e2e.db"):
         os.remove("./test_e2e.db")
 
@@ -101,9 +103,11 @@ def auth_headers(client):
 @pytest.fixture
 def mock_scan_tools():
     """Mock all external scan tools."""
-    with patch("api.main.run_scan_task") as mock_scan, \
-         patch("api.main.execute_tool_task") as mock_tool, \
-         patch("api.main.generate_report_task") as mock_report:
+    with (
+        patch("api.main.run_scan_task") as mock_scan,
+        patch("api.main.execute_tool_task") as mock_tool,
+        patch("api.main.generate_report_task") as mock_report,
+    ):
 
         mock_scan.return_value = None
         mock_tool.return_value = None
@@ -119,8 +123,7 @@ def mock_scan_tools():
 @pytest.fixture
 def mock_external_services():
     """Mock all external services."""
-    with patch("api.main.redis") as mock_redis, \
-         patch("agents.react_agent.ReActAgent") as mock_agent:
+    with patch("api.main.redis") as mock_redis, patch("agents.react_agent.ReActAgent") as mock_agent:
 
         # Mock Redis
         mock_redis_client = MagicMock()
@@ -149,6 +152,7 @@ def mock_external_services():
 # ============================================================================
 # TEST CLASS: Complete Pentest Workflow
 # ============================================================================
+
 
 class TestCompletePentestWorkflow:
     """Test complete pentest workflow from target creation to report generation."""
@@ -428,6 +432,7 @@ class TestCompletePentestWorkflow:
 # TEST CLASS: Error Scenarios
 # ============================================================================
 
+
 class TestWorkflowErrorScenarios:
     """Test error scenarios in the workflow."""
 
@@ -494,6 +499,7 @@ class TestWorkflowErrorScenarios:
 # TEST CLASS: WebSocket Workflow
 # ============================================================================
 
+
 class TestWebSocketWorkflow:
     """Test workflow with WebSocket connections."""
 
@@ -531,6 +537,7 @@ class TestWebSocketWorkflow:
 # ============================================================================
 # TEST CLASS: Complex Workflow Scenarios
 # ============================================================================
+
 
 class TestComplexWorkflowScenarios:
     """Test complex workflow scenarios."""
@@ -680,6 +687,7 @@ class TestComplexWorkflowScenarios:
 # ============================================================================
 # TEST CLASS: Workflow Metrics
 # ============================================================================
+
 
 class TestWorkflowMetrics:
     """Test workflow metrics and statistics."""

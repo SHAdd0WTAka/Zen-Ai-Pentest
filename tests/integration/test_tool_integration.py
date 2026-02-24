@@ -35,6 +35,7 @@ pytestmark = [pytest.mark.integration, pytest.mark.tools]
 # FIXTURES
 # ============================================================================
 
+
 @pytest.fixture
 def mock_subprocess():
     """Mock subprocess for tool execution."""
@@ -121,6 +122,7 @@ def sample_tool_parameters():
 # TEST CLASS: Tool Registry
 # ============================================================================
 
+
 class TestToolRegistry:
     """Test tool registration and discovery."""
 
@@ -153,6 +155,7 @@ class TestToolRegistry:
 # ============================================================================
 # TEST CLASS: Tool Execution Flow
 # ============================================================================
+
 
 class TestToolExecutionFlow:
     """Test tool execution flow with mocked binaries."""
@@ -223,6 +226,7 @@ class TestToolExecutionFlow:
 # TEST CLASS: Tool Parameter Validation
 # ============================================================================
 
+
 class TestToolParameterValidation:
     """Test tool parameter validation."""
 
@@ -275,6 +279,7 @@ class TestToolParameterValidation:
 # ============================================================================
 # TEST CLASS: Error Handling
 # ============================================================================
+
 
 class TestErrorHandling:
     """Test error handling in tool chain."""
@@ -334,6 +339,7 @@ class TestErrorHandling:
 # TEST CLASS: Tool Chain Execution
 # ============================================================================
 
+
 class TestToolChainExecution:
     """Test execution of multiple tools in sequence."""
 
@@ -373,10 +379,7 @@ class TestToolChainExecution:
         nmap_result = mock_nmap(target="scanme.nmap.org")
 
         # Conditionally run sqlmap only if HTTP port is open
-        http_open = any(
-            p.get("port") == 80 and p.get("state") == "open"
-            for p in nmap_result.get("ports", [])
-        )
+        http_open = any(p.get("port") == 80 and p.get("state") == "open" for p in nmap_result.get("ports", []))
 
         if http_open or any(p.get("service") == "http" for p in nmap_result.get("ports", [])):
             sqlmap_result = mock_sqlmap(target="http://scanme.nmap.org")
@@ -402,6 +405,7 @@ class TestToolChainExecution:
     @pytest.mark.asyncio
     async def test_parallel_tool_execution(self):
         """Test running multiple tools in parallel."""
+
         async def mock_tool_execution(tool_name: str, duration: float) -> Dict[str, Any]:
             await asyncio.sleep(duration)
             return {"tool": tool_name, "status": "success"}
@@ -424,6 +428,7 @@ class TestToolChainExecution:
 # ============================================================================
 # TEST CLASS: Tool Output Parsing
 # ============================================================================
+
 
 class TestToolOutputParsing:
     """Test parsing of tool outputs."""
@@ -498,6 +503,7 @@ class TestToolOutputParsing:
 # TEST CLASS: Tool Safety Controls
 # ============================================================================
 
+
 class TestToolSafetyControls:
     """Test safety controls for tool execution."""
 
@@ -567,6 +573,7 @@ class TestToolSafetyControls:
 # TEST CLASS: Tool Configuration
 # ============================================================================
 
+
 class TestToolConfiguration:
     """Test tool configuration management."""
 
@@ -627,6 +634,7 @@ class TestToolConfiguration:
 # TEST CLASS: Integration with Agent Loop
 # ============================================================================
 
+
 class TestToolAgentIntegration:
     """Test tool integration with agent loop."""
 
@@ -634,11 +642,13 @@ class TestToolAgentIntegration:
     async def test_tool_execution_via_agent(self):
         """Test tool execution through agent interface."""
         mock_agent = MagicMock()
-        mock_agent.execute_tool = AsyncMock(return_value={
-            "status": "success",
-            "tool": "nmap",
-            "results": {"ports": [80, 443]},
-        })
+        mock_agent.execute_tool = AsyncMock(
+            return_value={
+                "status": "success",
+                "tool": "nmap",
+                "results": {"ports": [80, 443]},
+            }
+        )
 
         result = await mock_agent.execute_tool("nmap", {"target": "scanme.nmap.org"})
 
@@ -661,11 +671,13 @@ class TestToolAgentIntegration:
         # Simulate agent processing
         processed_findings = []
         for finding in tool_result.get("findings", []):
-            processed_findings.append({
-                "title": f"{finding['service']} on port {finding['port']}",
-                "description": f"Service: {finding['service']}, Version: {finding.get('version', 'unknown')}",
-                "severity": "info",
-            })
+            processed_findings.append(
+                {
+                    "title": f"{finding['service']} on port {finding['port']}",
+                    "description": f"Service: {finding['service']}, Version: {finding.get('version', 'unknown')}",
+                    "severity": "info",
+                }
+            )
 
         assert len(processed_findings) == 2
         assert processed_findings[0]["title"] == "ssh on port 22"

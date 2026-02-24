@@ -24,18 +24,19 @@ import pytest
 from core.cache import (
     CacheBackend,
     MemoryCache,
-    SQLiteCache,
     MultiTierCache,
-    generate_cache_key,
-    cached,
+    SQLiteCache,
     _get_cache_backend,
-    get_cached_cve,
     cache_cve,
+    cached,
+    generate_cache_key,
+    get_cached_cve,
 )
 
 # Try to import RedisCache, but skip tests if not available
 try:
     from core.cache import RedisCache
+
     REDIS_AVAILABLE = True
 except ImportError:
     REDIS_AVAILABLE = False
@@ -56,7 +57,7 @@ class TestCacheBackend:
         try:
             backend = CacheBackend()
             # If instantiation succeeded, verify abstract methods are not implemented
-            assert not hasattr(backend, '_cache')
+            assert not hasattr(backend, "_cache")
         except TypeError:
             pass  # Expected in most Python versions
 
@@ -350,6 +351,7 @@ class TestSQLiteCache:
         class TestObj:
             def __init__(self):
                 self.value = 42
+
             def __eq__(self, other):
                 return isinstance(other, TestObj) and self.value == other.value
 
@@ -784,7 +786,7 @@ class TestCveCacheHelpers:
             await cache.set("cve:CVE-2023-1234", {"description": "Test CVE"})
 
             # Patch the global _sqlite_cache
-            with patch('core.cache._sqlite_cache', cache):
+            with patch("core.cache._sqlite_cache", cache):
                 result = await get_cached_cve("CVE-2023-1234")
                 assert result == {"description": "Test CVE"}
 
@@ -801,7 +803,7 @@ class TestCveCacheHelpers:
             db_path = Path(tmpdir) / "cve.db"
             cache = SQLiteCache(db_path=db_path)
 
-            with patch('core.cache._sqlite_cache', cache):
+            with patch("core.cache._sqlite_cache", cache):
                 await cache_cve("CVE-2023-5678", {"description": "New CVE"})
 
                 result = await cache.get("cve:CVE-2023-5678")
@@ -870,7 +872,7 @@ class TestCacheIntegration:
             nonlocal call_count
             call_count += 1
             await asyncio.sleep(0.01)
-            return {"result": x ** y, "computed": True}
+            return {"result": x**y, "computed": True}
 
         # Multiple calls
         tasks = [compute_expensive(2, 10) for _ in range(10)]

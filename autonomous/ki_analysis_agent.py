@@ -879,12 +879,14 @@ async def run_ki_agent(
         human_in_loop: Menschliche Freigabe für kritische Aktionen
         verbose: Detaillierte Ausgabe
     """
-    print("""
+    print(
+        """
 +==================================================================+
 |     ZEN AI PENTEST - KI AUTONOMOUS AGENT v2.1                    |
 |     ReAct Pattern | State Machine | Memory System                |
 +==================================================================+
-""")
+"""
+    )
 
     print(f"[CONFIG] Target: {target}")
     print(f"[CONFIG] Goal: {goal}")

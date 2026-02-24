@@ -14,11 +14,13 @@ from modules.subdomain_scanner import SubdomainScanner
 async def main():
     target = "target.com"
 
-    print(f"""
+    print(
+        f"""
 ╔══════════════════════════════════════════════════════════════╗
 ║           Subdomain Scanner - {target:<20}           ║
 ╚══════════════════════════════════════════════════════════════╝
-""")
+"""
+    )
 
     print(f"[*] Starting scan at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print("[*] Techniques: DNS + Wordlist + Certificate Transparency\n")

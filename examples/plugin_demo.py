@@ -143,7 +143,8 @@ async def demo_plugin_system():
     print("  Plugin System Demo Complete!")
     print("=" * 60)
 
-    print("""
+    print(
+        """
 Plugin System Features:
 ✅ Dynamic plugin discovery
 ✅ Runtime loading/unloading
@@ -161,7 +162,8 @@ To create your own plugin:
 5. Optionally add plugin.json for metadata
 
 See plugins/example_plugin/ for reference implementation.
-""")
+"""
+    )
 
 
 if __name__ == "__main__":

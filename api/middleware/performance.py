@@ -92,11 +92,7 @@ class PerformanceMonitoringMiddleware(BaseHTTPMiddleware):
         stats = {
             "total_requests": self._total_requests,
             "slow_requests": self._slow_requests,
-            "slow_request_percentage": (
-                (self._slow_requests / self._total_requests * 100)
-                if self._total_requests > 0
-                else 0
-            ),
+            "slow_request_percentage": ((self._slow_requests / self._total_requests * 100) if self._total_requests > 0 else 0),
             "endpoints": {},
         }
 
@@ -149,6 +145,7 @@ class ConnectionPoolMiddleware(BaseHTTPMiddleware):
 # =============================================================================
 # Dependency for route-level performance tracking
 # =============================================================================
+
 
 async def track_request_performance(request: Request):
     """

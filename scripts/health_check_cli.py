@@ -33,12 +33,7 @@ from typing import List, Optional
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from core.health_check import (
-    HealthCheckConfig,
-    HealthCheckRunner,
-    HealthReport,
-    HealthStatus,
-)
+from core.health_check import HealthCheckConfig, HealthCheckRunner, HealthReport, HealthStatus
 
 # Configure logging
 logging.basicConfig(

@@ -8,14 +8,7 @@ from datetime import datetime
 
 import pytest
 
-from core.models import (
-    APIKeyConfig,
-    BackendType,
-    ScanConfig,
-    ScanStatus,
-    Severity,
-    TimestampedModel,
-)
+from core.models import APIKeyConfig, BackendType, ScanConfig, ScanStatus, Severity, TimestampedModel
 
 # Mark all tests as unit tests
 pytestmark = pytest.mark.unit

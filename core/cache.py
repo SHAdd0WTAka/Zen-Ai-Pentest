@@ -203,8 +203,7 @@ class MemoryCache(CacheBackend):
 
         # Evict entries if needed
         while (
-            len(self._cache) >= self._max_size
-            or self._current_memory + value_size > self._max_memory_bytes
+            len(self._cache) >= self._max_size or self._current_memory + value_size > self._max_memory_bytes
         ) and self._cache:
             self._evict_lru()
 
@@ -480,9 +479,7 @@ class SQLiteCache(CacheBackend):
                 # Clean up expired keys
                 if expired_keys:
                     placeholders = ",".join("?" * len(expired_keys))
-                    await db.execute(
-                        f"DELETE FROM cache WHERE key IN ({placeholders})", expired_keys
-                    )
+                    await db.execute(f"DELETE FROM cache WHERE key IN ({placeholders})", expired_keys)
                     await db.commit()
 
                 return result

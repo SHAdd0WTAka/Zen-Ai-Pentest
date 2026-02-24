@@ -12,11 +12,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from modules.false_positive_filter import (
-    ConfidenceLevel,
-    FalsePositiveFilter,
-    Finding,
-)
+from modules.false_positive_filter import ConfidenceLevel, FalsePositiveFilter, Finding
 
 
 class TestConfidenceLevel:

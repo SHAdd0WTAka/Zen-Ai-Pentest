@@ -41,7 +41,8 @@ def start_kimi_with_persona(persona, context=""):
 
     persona_desc = PERSONAS[persona]
 
-    print(f"""
+    print(
+        f"""
 {'='*60}
 🧠 ZEN-KIMI PENTEST CLI
 {'='*60}
@@ -49,7 +50,8 @@ Persona: {persona_desc}
 {'='*60}
 💡 Befehle: /help - Hilfe | /exit - Beenden | /clear - Clear
 {'='*60}
-""")
+"""
+    )
 
     # Erste Nachricht vorbereiten (Persona als Kontext)
     if context:

@@ -71,9 +71,7 @@ class PerformanceTimer:
         """Record a timing result"""
         if not self._enabled:
             return
-        result = TimingResult(
-            name=name, duration_ms=duration_ms, metadata=metadata or {}
-        )
+        result = TimingResult(name=name, duration_ms=duration_ms, metadata=metadata or {})
         self._timings[name].append(result)
 
     def get_stats(self, name: str) -> Dict[str, float]:
@@ -241,7 +239,10 @@ class MemoryProfiler:
             return []
         snapshot = tracemalloc.take_snapshot()
         top_stats = snapshot.statistics("lineno")[:limit]
-        return [{"file": str(stat.traceback.format()[-1]), "size_mb": stat.size / 1024 / 1024, "count": stat.count} for stat in top_stats]
+        return [
+            {"file": str(stat.traceback.format()[-1]), "size_mb": stat.size / 1024 / 1024, "count": stat.count}
+            for stat in top_stats
+        ]
 
 
 @contextmanager
@@ -502,9 +503,7 @@ async def gather_with_concurrency(limit: int, *tasks, return_exceptions: bool = 
         async with semaphore:
             return await task
 
-    return await asyncio.gather(
-        *[sem_task(task) for task in tasks], return_exceptions=return_exceptions
-    )
+    return await asyncio.gather(*[sem_task(task) for task in tasks], return_exceptions=return_exceptions)
 
 
 async def run_in_thread(func: Callable, *args, executor=None, **kwargs):
@@ -604,9 +603,7 @@ class PerformanceMiddleware:
         return {
             "request_count": self._request_count,
             "total_time_ms": self._total_time_ms,
-            "avg_time_ms": self._total_time_ms / self._request_count
-            if self._request_count > 0
-            else 0,
+            "avg_time_ms": self._total_time_ms / self._request_count if self._request_count > 0 else 0,
         }
 
 
@@ -643,7 +640,7 @@ def print_performance_report():
         logger.info(f"  Avg: {stat['avg_ms']:.2f}ms")
         logger.info(f"  Min: {stat['min_ms']:.2f}ms")
         logger.info(f"  Max: {stat['max_ms']:.2f}ms")
-        if 'p95_ms' in stat:
+        if "p95_ms" in stat:
             logger.info(f"  P95: {stat['p95_ms']:.2f}ms")
 
 

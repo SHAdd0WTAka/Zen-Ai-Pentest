@@ -4,17 +4,15 @@ Obsidian MCP Server for Secure Credential Storage
 Reads encrypted or plaintext secrets from Obsidian vault
 """
 
-import os
 import json
-import yaml
+import os
 from pathlib import Path
 from typing import Optional
 
+import yaml
+
 # Obsidian Vault Path (anpassen!)
-VAULT_PATH = os.getenv(
-    "OBSIDIAN_VAULT_PATH",
-    "~/Documents/Obsidian Vault/Secrets"
-)
+VAULT_PATH = os.getenv("OBSIDIAN_VAULT_PATH", "~/Documents/Obsidian Vault/Secrets")
 
 
 def get_secret(name: str) -> Optional[str]:
@@ -93,10 +91,7 @@ def main():
                     # Return full value to client, but log masked version
                     response = {"result": value, "error": None}
                     # Log to stderr (not stdout which is MCP protocol)
-                    print(
-                        f"Secret '{name}' retrieved (masked: {mask_sensitive_data(value)})",
-                        file=os.sys.stderr
-                    )
+                    print(f"Secret '{name}' retrieved (masked: {mask_sensitive_data(value)})", file=os.sys.stderr)
                 else:
                     msg = f"Secret '{name}' not found"
                     response = {"result": None, "error": msg}

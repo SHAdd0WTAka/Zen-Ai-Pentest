@@ -207,8 +207,12 @@ class TestTargetedWordlist:
 
         # Check for name combinations
         combinations = [
-            "JohnDoe", "John.Doe", "John_Doe",
-            "JDoe", "JohnD", "DoeJohn",
+            "JohnDoe",
+            "John.Doe",
+            "John_Doe",
+            "JDoe",
+            "JohnD",
+            "DoeJohn",
         ]
         for combo in combinations:
             assert combo in words or combo.lower() in words or combo.upper() in words
@@ -380,6 +384,7 @@ class TestSaveWordlist:
         """Test that save_wordlist creates directories"""
         words = ["test"]
         import tempfile
+
         temp_dir = tempfile.mkdtemp()
         filepath = os.path.join(temp_dir, "subdir", "wordlist.txt")
 
@@ -388,6 +393,7 @@ class TestSaveWordlist:
             assert os.path.exists(result)
         finally:
             import shutil
+
             shutil.rmtree(temp_dir, ignore_errors=True)
 
     def test_save_empty_wordlist(self, generator):

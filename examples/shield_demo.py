@@ -218,13 +218,15 @@ async def demo_circuit_breaker():
     console.print(table)
 
     console.print("\n[bold]Behavior:[/]")
-    console.print("""
+    console.print(
+        """
 1. [green]CLOSED[/]: Normal operation, LLM compression active
 2. [yellow]HALF_OPEN[/]: Testing recovery after failures
 3. [red]OPEN[/]: Fallback to regex-only mode (safe but slower)
 
 Fallback ensures: No external calls, deterministic output, 100% privacy
-    """)
+    """
+    )
 
 
 async def main():

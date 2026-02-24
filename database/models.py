@@ -12,18 +12,7 @@ import enum
 import os
 from datetime import datetime, timezone
 
-from sqlalchemy import (
-    JSON,
-    Column,
-    DateTime,
-    Float,
-    ForeignKey,
-    Index,
-    Integer,
-    String,
-    Text,
-    create_engine,
-)
+from sqlalchemy import JSON, Column, DateTime, Float, ForeignKey, Index, Integer, String, Text, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 
@@ -88,9 +77,7 @@ class User(Base):
     reports = relationship("Report", back_populates="user", lazy="dynamic")
 
     # Composite index for common lookup pattern
-    __table_args__ = (
-        Index("ix_users_role_active", "role", "is_active"),
-    )
+    __table_args__ = (Index("ix_users_role_active", "role", "is_active"),)
 
 
 class Scan(Base):
@@ -188,9 +175,7 @@ class Report(Base):
     scan = relationship("Scan", back_populates="reports")
     user = relationship("User", back_populates="reports")
 
-    __table_args__ = (
-        Index("ix_reports_status_created", "status", "created_at"),
-    )
+    __table_args__ = (Index("ix_reports_status_created", "status", "created_at"),)
 
 
 class VulnerabilityDB(Base):
@@ -293,9 +278,7 @@ class ToolConfig(Base):
     created_at = Column(DateTime, default=datetime.utcnow, index=True)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    __table_args__ = (
-        Index("ix_toolconfig_user_tool", "user_id", "tool_name"),
-    )
+    __table_args__ = (Index("ix_toolconfig_user_tool", "user_id", "tool_name"),)
 
 
 # ============================================================================
@@ -303,10 +286,7 @@ class ToolConfig(Base):
 # ============================================================================
 
 # PostgreSQL URL - in production aus Umgebungsvariablen
-DATABASE_URL = os.getenv(
-    "DATABASE_URL",
-    "postgresql://postgres:postgres@localhost:5432/zen_pentest"
-)
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/zen_pentest")
 
 # =============================================================================
 # Connection Pool Configuration - Optimized
@@ -388,9 +368,7 @@ def get_db():
 # ============================================================================
 
 
-def create_scan(
-    db, name: str, target: str, scan_type: str, config: dict, user_id: int
-):
+def create_scan(db, name: str, target: str, scan_type: str, config: dict, user_id: int):
     """Erstellt neuen Scan"""
     db_scan = Scan(
         name=name,
@@ -421,14 +399,7 @@ def get_scans(db, skip: int = 0, limit: int = 100, status: str = None):
 
 def get_scans_by_user(db, user_id: int, skip: int = 0, limit: int = 100):
     """Get scans for a specific user - uses composite index"""
-    return (
-        db.query(Scan)
-        .filter(Scan.user_id == user_id)
-        .order_by(Scan.created_at.desc())
-        .offset(skip)
-        .limit(limit)
-        .all()
-    )
+    return db.query(Scan).filter(Scan.user_id == user_id).order_by(Scan.created_at.desc()).offset(skip).limit(limit).all()
 
 
 def update_scan_status(db, scan_id: int, status: str, result: dict = None):
@@ -491,13 +462,7 @@ def get_findings(db, scan_id: int, severity: str = None):
 
 def get_findings_by_severity(db, severity: str, limit: int = 100):
     """Get findings filtered by severity - uses index"""
-    return (
-        db.query(Finding)
-        .filter(Finding.severity == severity)
-        .order_by(Finding.created_at.desc())
-        .limit(limit)
-        .all()
-    )
+    return db.query(Finding).filter(Finding.severity == severity).order_by(Finding.created_at.desc()).limit(limit).all()
 
 
 def create_report(db, scan_id: int, format: str, template: str, user_id: int):

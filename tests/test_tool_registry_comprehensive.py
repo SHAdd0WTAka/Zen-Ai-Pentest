@@ -13,14 +13,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from tools.tool_registry import (
-    ToolCategory,
-    ToolMetadata,
-    ToolRegistry,
-    ToolSafetyLevel,
-    register_tool,
-    registry,
-)
+from tools.tool_registry import ToolCategory, ToolMetadata, ToolRegistry, ToolSafetyLevel, register_tool, registry
 
 # Try to import LangChain tools
 try:

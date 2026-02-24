@@ -786,7 +786,8 @@ if __name__ == "__main__":
     # Führe Demo aus
     # asyncio.run(demo())
 
-    print("""
+    print(
+        """
 Cloud Scanner für Zen-Ai-Pentest
 ================================
 
@@ -816,4 +817,5 @@ Nutzung:
     )
 
 Führe 'asyncio.run(demo())' für eine vollständige Demo aus.
-""")
+"""
+    )

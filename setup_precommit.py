@@ -66,7 +66,8 @@ def install_precommit() -> bool:
     print("\n" + "=" * 60)
     print("Pre-commit setup complete!")
     print("=" * 60)
-    print("""
+    print(
+        """
 Hooks installed:
   - Ruff (linting & formatting)
   - Bandit (security scanning)
@@ -79,7 +80,8 @@ Usage:
   - Run manually: pre-commit run --all-files
   - Update hooks: pre-commit autoupdate
   - Skip hooks: git commit --no-verify (not recommended!)
-""")
+"""
+    )
 
     return True
 

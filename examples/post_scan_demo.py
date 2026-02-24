@@ -30,7 +30,8 @@ async def demo_post_scan_workflow():
     print("  ZEN AI PENTEST - Post-Scan Workflow Demo")
     print("  Professional Pentester Methodology Automation")
     print("=" * 70)
-    print("""
+    print(
+        """
 This demo simulates what a professional penetration tester does AFTER
 running automated scanning tools. Based on PTES (Penetration Testing
 Execution Standard) methodology.
@@ -44,7 +45,8 @@ Phases:
   6. Loot Documentation       - Credentials, sensitive data
   7. Cleanup                  - Remove backdoors, restore systems
   8. Report Preparation       - Prepare professional report
-""")
+"""
+    )
 
     # Simulated scan findings (what automated tools would produce)
     simulated_findings = [
@@ -166,7 +168,8 @@ Phases:
     print("\n" + "=" * 70)
     print("  Demo Complete!")
     print("=" * 70)
-    print("""
+    print(
+        """
 Key Takeaways:
 1. Automated scans find POTENTIAL vulnerabilities
 2. Post-scan workflow ELIMINATES false positives
@@ -177,7 +180,8 @@ Key Takeaways:
 
 This automation follows PTES (Penetration Testing Execution Standard)
 and industry best practices from professional penetration testers.
-""")
+"""
+    )
 
 
 async def demo_individual_phases():

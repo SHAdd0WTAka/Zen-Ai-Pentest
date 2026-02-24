@@ -104,7 +104,8 @@ class TestAnalyzeNmapOutput:
     @pytest.mark.asyncio
     async def test_analyze_nmap_output_success(self, vuln_scanner, mock_orchestrator):
         """Test successful nmap output analysis"""
-        mock_orchestrator.process.return_value = MockResponse(content="""
+        mock_orchestrator.process.return_value = MockResponse(
+            content="""
 [VULN]
 Name: Open SSH Port
 Severity: Medium
@@ -122,7 +123,8 @@ Evidence: Apache/2.4.29
 Remediation: Update to latest version
 CVE: CVE-2021-44790
 [/VULN]
-""")
+"""
+        )
 
         nmap_output = "22/tcp open ssh\n80/tcp open http Apache httpd 2.4.29"
         result = await vuln_scanner.analyze_nmap_output(nmap_output)
@@ -161,7 +163,8 @@ class TestAnalyzeWebHeaders:
     @pytest.mark.asyncio
     async def test_analyze_web_headers_success(self, vuln_scanner, mock_orchestrator):
         """Test successful header analysis"""
-        mock_orchestrator.process.return_value = MockResponse(content="""
+        mock_orchestrator.process.return_value = MockResponse(
+            content="""
 [VULN]
 Name: Missing HSTS Header
 Severity: Medium
@@ -177,7 +180,8 @@ Description: Clickjacking protection not enabled
 Evidence: No X-Frame-Options header
 Remediation: Add X-Frame-Options: DENY or SAMEORIGIN
 [/VULN]
-""")
+"""
+        )
 
         headers = {
             "Server": "nginx/1.18.0",
@@ -204,7 +208,8 @@ class TestAnalyzeWebPage:
     @pytest.mark.asyncio
     async def test_analyze_web_page_success(self, vuln_scanner, mock_orchestrator):
         """Test successful web page analysis"""
-        mock_orchestrator.process.return_value = MockResponse(content="""
+        mock_orchestrator.process.return_value = MockResponse(
+            content="""
 [VULN]
 Name: Missing CSRF Token
 Severity: High
@@ -212,7 +217,8 @@ Description: Form submission lacks CSRF protection
 Evidence: <form action="/login" method="POST">
 Remediation: Add CSRF tokens to all forms
 [/VULN]
-""")
+"""
+        )
 
         html = """
 <html>
@@ -248,11 +254,13 @@ class TestCheckCVEDatabase:
     @pytest.mark.asyncio
     async def test_check_cve_database_success(self, vuln_scanner, mock_orchestrator):
         """Test successful CVE lookup"""
-        mock_orchestrator.process.return_value = MockResponse(content="""
+        mock_orchestrator.process.return_value = MockResponse(
+            content="""
 CVE-2021-44790: Apache HTTP Server buffer overflow
 CVE-2021-42013: Apache HTTP Server path traversal
 CVE-2021-41773: Apache HTTP Server path traversal
-""")
+"""
+        )
 
         result = await vuln_scanner.check_cve_database("apache", "2.4.49")
 
@@ -283,7 +291,8 @@ class TestSSLTLSAnalysis:
     @pytest.mark.asyncio
     async def test_ssl_tls_analysis_success(self, vuln_scanner, mock_orchestrator):
         """Test successful SSL/TLS analysis"""
-        mock_orchestrator.process.return_value = MockResponse(content="""
+        mock_orchestrator.process.return_value = MockResponse(
+            content="""
 [VULN]
 Name: Weak Cipher Suite
 Severity: Medium
@@ -299,7 +308,8 @@ Description: Certificate expires in 7 days
 Evidence: Not After: 2024-01-01
 Remediation: Renew certificate immediately
 [/VULN]
-""")
+"""
+        )
 
         cert_info = "Certificate chain\nTLS 1.2 enabled\nTLS_RSA_WITH_AES_128_CBC_SHA"
         result = await vuln_scanner.ssl_tls_analysis(cert_info)

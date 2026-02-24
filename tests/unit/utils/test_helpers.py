@@ -10,13 +10,7 @@ import tempfile
 
 import pytest
 
-from utils.helpers import (
-    load_config,
-    load_session,
-    save_config,
-    save_session,
-    validate_target,
-)
+from utils.helpers import load_config, load_session, save_config, save_session, validate_target
 
 pytestmark = pytest.mark.unit
 

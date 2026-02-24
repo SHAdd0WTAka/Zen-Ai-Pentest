@@ -3,18 +3,19 @@ Tests for VPN Integration Module
 ProtonVPN, OpenVPN, WireGuard
 """
 
-import pytest
 import asyncio
-from datetime import datetime
-from unittest.mock import Mock, patch, AsyncMock, MagicMock
 import subprocess
+from datetime import datetime
+from unittest.mock import AsyncMock, MagicMock, Mock, patch
+
+import pytest
 
 from modules.protonvpn import (
     ProtonVPNManager,
-    VPNStatus,
-    VPNServer,
     VPNProtocol,
     VPNSecurityLevel,
+    VPNServer,
+    VPNStatus,
     quick_connect,
     secure_connect,
 )
@@ -61,7 +62,7 @@ class TestVPNStatus:
     def test_initialization(self):
         """Test VPNStatus initialization"""
         status = VPNStatus()
-        
+
         assert status.connected is False
         assert status.server_ip is None
         assert status.server_location is None
@@ -84,7 +85,7 @@ class TestVPNStatus:
     def test_to_dict(self, mock_vpn_status):
         """Test VPNStatus to_dict conversion"""
         data = mock_vpn_status.to_dict()
-        
+
         assert data["connected"] is True
         assert data["server_ip"] == "10.0.0.1"
         assert data["server_location"] == "CH-Zurich"
@@ -109,7 +110,7 @@ class TestVPNServer:
             features=["secure-core", "p2p"],
             tier=2,
         )
-        
+
         assert server.name == "CH-01"
         assert server.country == "CH"
         assert server.city == "Zurich"
@@ -121,9 +122,9 @@ class TestVPNServer:
     def test_str_representation(self):
         """Test VPNServer string representation"""
         server = VPNServer("CH-01", "CH", "Zurich", "185.159.158.1", 45, [], 2)
-        
+
         str_repr = str(server)
-        
+
         assert "CH-01" in str_repr
         assert "Zurich" in str_repr
         assert "CH" in str_repr
@@ -172,10 +173,10 @@ class TestProtonVPNManager:
         mock_proc = AsyncMock()
         mock_proc.communicate.return_value = (b"1.2.3.4\n", b"")
         mock_proc.returncode = 0
-        
-        with patch('asyncio.create_subprocess_exec', return_value=mock_proc):
+
+        with patch("asyncio.create_subprocess_exec", return_value=mock_proc):
             ip = await vpn_manager.get_public_ip()
-            
+
             assert ip == "1.2.3.4"
 
     @pytest.mark.asyncio
@@ -184,10 +185,10 @@ class TestProtonVPNManager:
         mock_proc = AsyncMock()
         mock_proc.communicate.return_value = (b"", b"Error")
         mock_proc.returncode = 1
-        
-        with patch('asyncio.create_subprocess_exec', return_value=mock_proc):
+
+        with patch("asyncio.create_subprocess_exec", return_value=mock_proc):
             ip = await vpn_manager.get_public_ip()
-            
+
             assert ip == "unknown"
 
     def test_is_valid_ip_valid(self, vpn_manager):
@@ -213,10 +214,10 @@ class TestProtonVPNManager:
         mock_proc = AsyncMock()
         mock_proc.communicate.return_value = (b"", b"Command not found")
         mock_proc.returncode = 127
-        
-        with patch('asyncio.create_subprocess_exec', return_value=mock_proc):
+
+        with patch("asyncio.create_subprocess_exec", return_value=mock_proc):
             status = await vpn_manager.connect(country="CH")
-            
+
             assert status.connected is True
             assert status.server_location == "MOCK-CH"
             assert status.protocol == "wireguard"
@@ -229,16 +230,16 @@ class TestProtonVPNManager:
         help_proc = AsyncMock()
         help_proc.communicate.return_value = (b"Usage: protonvpn-cli...", b"")
         help_proc.returncode = 0
-        
+
         # Mock the connect command
         connect_proc = AsyncMock()
         connect_proc.communicate.return_value = (b"Connected successfully", b"")
         connect_proc.returncode = 0
-        
-        with patch('asyncio.create_subprocess_exec', side_effect=[help_proc, connect_proc, AsyncMock()]):
-            with patch.object(vpn_manager, 'get_public_ip', return_value="185.159.158.100"):
+
+        with patch("asyncio.create_subprocess_exec", side_effect=[help_proc, connect_proc, AsyncMock()]):
+            with patch.object(vpn_manager, "get_public_ip", return_value="185.159.158.100"):
                 status = await vpn_manager.connect(country="CH")
-                
+
                 assert status.connected is True
                 assert status.server_location is not None
 
@@ -248,8 +249,8 @@ class TestProtonVPNManager:
         mock_proc = AsyncMock()
         mock_proc.communicate.return_value = (b"", b"Command not found")
         mock_proc.returncode = 127
-        
-        with patch('asyncio.create_subprocess_exec', return_value=mock_proc):
+
+        with patch("asyncio.create_subprocess_exec", return_value=mock_proc):
             status = await vpn_manager.connect(
                 country="NL",
                 city="Amsterdam",
@@ -258,7 +259,7 @@ class TestProtonVPNManager:
                 p2p=True,
                 kill_switch=True,
             )
-            
+
             assert status.connected is True
 
     @pytest.mark.asyncio
@@ -267,10 +268,10 @@ class TestProtonVPNManager:
         mock_proc = AsyncMock()
         mock_proc.communicate.return_value = (b"", b"Command not found")
         mock_proc.returncode = 127
-        
-        with patch('asyncio.create_subprocess_exec', return_value=mock_proc):
+
+        with patch("asyncio.create_subprocess_exec", return_value=mock_proc):
             status = await vpn_manager.connect(country="US", p2p=True)
-            
+
             assert status.connected is True
             # Should pick a valid P2P country instead of US
             assert status.server_location is not None
@@ -282,18 +283,18 @@ class TestProtonVPNManager:
         mock_proc = AsyncMock()
         mock_proc.communicate.return_value = (b"", b"Command not found")
         mock_proc.returncode = 127
-        
-        with patch('asyncio.create_subprocess_exec', return_value=mock_proc):
+
+        with patch("asyncio.create_subprocess_exec", return_value=mock_proc):
             await vpn_manager.connect(country="CH")
-            
+
             # Then disconnect
             disconnect_proc = AsyncMock()
             disconnect_proc.communicate.return_value = (b"Disconnected", b"")
-            
-            with patch('asyncio.create_subprocess_exec', return_value=disconnect_proc):
-                with patch.object(vpn_manager, 'get_public_ip', return_value="192.168.1.100"):
+
+            with patch("asyncio.create_subprocess_exec", return_value=disconnect_proc):
+                with patch.object(vpn_manager, "get_public_ip", return_value="192.168.1.100"):
                     status = await vpn_manager.disconnect()
-                    
+
                     assert status.connected is False
                     assert status.server_ip is None
 
@@ -303,15 +304,15 @@ class TestProtonVPNManager:
         mock_proc = AsyncMock()
         mock_proc.communicate.return_value = (b"", b"Command not found")
         mock_proc.returncode = 127
-        
-        with patch('asyncio.create_subprocess_exec', return_value=mock_proc):
+
+        with patch("asyncio.create_subprocess_exec", return_value=mock_proc):
             # Set initial connection
             vpn_manager.connected = True
             vpn_manager.status.server_location = "CH"
-            
-            with patch('asyncio.sleep'):
+
+            with patch("asyncio.sleep"):
                 status = await vpn_manager.rotate_ip()
-                
+
                 assert status.connected is True
 
     def test_get_server_name(self, vpn_manager):
@@ -324,7 +325,7 @@ class TestProtonVPNManager:
     async def test_mock_connect(self, vpn_manager):
         """Test mock connect method"""
         status = await vpn_manager._mock_connect("CH", VPNProtocol.WIREGUARD)
-        
+
         assert status.connected is True
         assert status.server_location == "MOCK-CH"
         assert status.protocol == "wireguard"
@@ -334,14 +335,14 @@ class TestProtonVPNManager:
     def test_get_status(self, vpn_manager):
         """Test getting VPN status"""
         status = vpn_manager.get_status()
-        
+
         assert status == vpn_manager.status
 
     def test_is_connected(self, vpn_manager):
         """Test checking connection status"""
         vpn_manager.connected = True
         assert vpn_manager.is_connected() is True
-        
+
         vpn_manager.connected = False
         assert vpn_manager.is_connected() is False
 
@@ -349,7 +350,7 @@ class TestProtonVPNManager:
     async def test_get_server_list(self, vpn_manager):
         """Test getting server list"""
         servers = await vpn_manager.get_server_list()
-        
+
         assert len(servers) > 0
         assert all(isinstance(s, VPNServer) for s in servers)
 
@@ -357,14 +358,14 @@ class TestProtonVPNManager:
     async def test_get_server_list_by_country(self, vpn_manager):
         """Test getting server list filtered by country"""
         servers = await vpn_manager.get_server_list(country="CH")
-        
+
         assert all(s.country == "CH" for s in servers)
 
     @pytest.mark.asyncio
     async def test_get_server_list_sorted_by_load(self, vpn_manager):
         """Test that servers are sorted by load"""
         servers = await vpn_manager.get_server_list()
-        
+
         loads = [s.load for s in servers]
         assert loads == sorted(loads)
 
@@ -372,7 +373,7 @@ class TestProtonVPNManager:
     async def test_recommend_server_general(self, vpn_manager):
         """Test server recommendation for general use"""
         server = await vpn_manager.recommend_server(purpose="general")
-        
+
         assert server is not None
         assert isinstance(server, VPNServer)
 
@@ -380,7 +381,7 @@ class TestProtonVPNManager:
     async def test_recommend_server_pentest(self, vpn_manager):
         """Test server recommendation for pentesting"""
         server = await vpn_manager.recommend_server(purpose="pentest")
-        
+
         assert server is not None
         # Should prefer secure-core servers
         assert "secure-core" in server.features
@@ -389,7 +390,7 @@ class TestProtonVPNManager:
     async def test_recommend_server_c2(self, vpn_manager):
         """Test server recommendation for C2"""
         server = await vpn_manager.recommend_server(purpose="c2")
-        
+
         assert server is not None
         # Should pick lowest load server
         all_servers = await vpn_manager.get_server_list()
@@ -399,7 +400,7 @@ class TestProtonVPNManager:
     async def test_recommend_server_fileshare(self, vpn_manager):
         """Test server recommendation for file sharing"""
         server = await vpn_manager.recommend_server(purpose="fileshare")
-        
+
         assert server is not None
         # Should prefer P2P servers
         assert "p2p" in server.features
@@ -411,7 +412,7 @@ class TestProtonVPNManager:
             require_p2p=True,
             require_secure_core=True,
         )
-        
+
         assert server is not None
         assert "p2p" in server.features
         assert "secure-core" in server.features
@@ -423,14 +424,14 @@ class TestProtonVPNManager:
             require_p2p=True,
             require_secure_core=True,
         )
-        
+
         # If no server matches both requirements, should still return a server
         assert server is not None
 
     def test_get_connection_history_empty(self, vpn_manager):
         """Test getting empty connection history"""
         history = vpn_manager.get_connection_history()
-        
+
         assert history == []
 
     def test_get_connection_history_with_entries(self, vpn_manager):
@@ -443,9 +444,9 @@ class TestProtonVPNManager:
                 "public_ip": "185.159.158.100",
             }
         ]
-        
+
         history = vpn_manager.get_connection_history()
-        
+
         assert len(history) == 1
         assert history[0]["server"] == "CH-Zurich"
 
@@ -455,16 +456,16 @@ class TestProtonVPNManager:
         vpn_manager.status.server_location = "CH-Zurich"
         vpn_manager.status.protocol = "wireguard"
         vpn_manager.status.public_ip = "185.159.158.100"
-        
+
         vpn_manager._log_connection()
-        
+
         assert len(vpn_manager._connection_history) == 1
         assert vpn_manager._connection_history[0]["server"] == "CH-Zurich"
 
     def test_get_timestamp(self, vpn_manager):
         """Test getting timestamp"""
         timestamp = vpn_manager._get_timestamp()
-        
+
         assert isinstance(timestamp, str)
         # Should be ISO format
         assert "T" in timestamp
@@ -472,7 +473,7 @@ class TestProtonVPNManager:
     def test_check_ip_leak(self, vpn_manager):
         """Test IP leak check"""
         results = vpn_manager.check_ip_leak()
-        
+
         assert "dns_leak" in results
         assert "webrtc_leak" in results
         assert "ipv6_leak" in results
@@ -485,10 +486,10 @@ class TestProtonVPNManager:
         mock_proc = AsyncMock()
         mock_proc.communicate.return_value = (b"5.0,1250000", b"")
         mock_proc.returncode = 0
-        
-        with patch('asyncio.create_subprocess_exec', return_value=mock_proc):
+
+        with patch("asyncio.create_subprocess_exec", return_value=mock_proc):
             result = await vpn_manager.speed_test()
-            
+
             assert result["status"] == "success"
             assert result["download_mbps"] > 0
             assert result["latency_ms"] > 0
@@ -499,10 +500,10 @@ class TestProtonVPNManager:
         mock_proc = AsyncMock()
         mock_proc.communicate.return_value = (b"", b"Error")
         mock_proc.returncode = 1
-        
-        with patch('asyncio.create_subprocess_exec', return_value=mock_proc):
+
+        with patch("asyncio.create_subprocess_exec", return_value=mock_proc):
             result = await vpn_manager.speed_test()
-            
+
             assert result["status"] == "failed"
             assert result["download_mbps"] == 0
             assert result["latency_ms"] == 0
@@ -518,10 +519,10 @@ class TestConvenienceFunctions:
         mock_proc = AsyncMock()
         mock_proc.communicate.return_value = (b"", b"Command not found")
         mock_proc.returncode = 127
-        
-        with patch('asyncio.create_subprocess_exec', return_value=mock_proc):
+
+        with patch("asyncio.create_subprocess_exec", return_value=mock_proc):
             status = await quick_connect(country="CH")
-            
+
             assert status.connected is True
 
     @pytest.mark.asyncio
@@ -530,10 +531,10 @@ class TestConvenienceFunctions:
         mock_proc = AsyncMock()
         mock_proc.communicate.return_value = (b"", b"Command not found")
         mock_proc.returncode = 127
-        
-        with patch('asyncio.create_subprocess_exec', return_value=mock_proc):
+
+        with patch("asyncio.create_subprocess_exec", return_value=mock_proc):
             status = await quick_connect()
-            
+
             assert status.connected is True
             assert status.server_location is not None
 
@@ -543,10 +544,10 @@ class TestConvenienceFunctions:
         mock_proc = AsyncMock()
         mock_proc.communicate.return_value = (b"", b"Command not found")
         mock_proc.returncode = 127
-        
-        with patch('asyncio.create_subprocess_exec', return_value=mock_proc):
+
+        with patch("asyncio.create_subprocess_exec", return_value=mock_proc):
             status = await secure_connect()
-            
+
             assert status.connected is True
             assert status.protocol == "wireguard"
 
@@ -561,28 +562,28 @@ class TestIntegration:
         mock_proc = AsyncMock()
         mock_proc.communicate.return_value = (b"", b"Command not found")
         mock_proc.returncode = 127
-        
-        with patch('asyncio.create_subprocess_exec', return_value=mock_proc):
+
+        with patch("asyncio.create_subprocess_exec", return_value=mock_proc):
             # Initial state
             assert vpn_manager.is_connected() is False
-            
+
             # Connect
             connect_status = await vpn_manager.connect(country="CH")
             assert connect_status.connected is True
             assert vpn_manager.is_connected() is True
-            
+
             # Get status
             status = vpn_manager.get_status()
             assert status.connected is True
-            
+
             # Get servers
             servers = await vpn_manager.get_server_list()
             assert len(servers) > 0
-            
+
             # Recommend server
             recommended = await vpn_manager.recommend_server(purpose="pentest")
             assert recommended is not None
-            
+
             # Check connection history - _log_connection is called after successful connect
             # In mock mode, the connection happens but _log_connection may not be called
             # depending on implementation details, so we check status instead
@@ -596,19 +597,19 @@ class TestIntegration:
         mock_proc = AsyncMock()
         mock_proc.communicate.return_value = (b"", b"Command not found")
         mock_proc.returncode = 127
-        
-        with patch('asyncio.create_subprocess_exec', return_value=mock_proc):
+
+        with patch("asyncio.create_subprocess_exec", return_value=mock_proc):
             # Connect to first country
             await vpn_manager.connect(country="CH")
             first_location = vpn_manager.status.server_location
-            
+
             # Connect to second country
             await vpn_manager.connect(country="NL")
             second_location = vpn_manager.status.server_location
-            
+
             # Should have different locations
             assert first_location != second_location
-            
+
             # Status should reflect latest connection
             assert vpn_manager.is_connected() is True
 
@@ -616,7 +617,7 @@ class TestIntegration:
     async def test_recommend_server_integration(self, vpn_manager):
         """Test server recommendation with real server list"""
         servers = await vpn_manager.get_server_list()
-        
+
         # Test each purpose
         purposes = ["general", "pentest", "c2", "fileshare"]
         for purpose in purposes:
@@ -632,10 +633,10 @@ class TestEdgeCases:
     @pytest.mark.asyncio
     async def test_connect_exception_handling(self, vpn_manager):
         """Test exception handling during connect"""
-        with patch('asyncio.create_subprocess_exec', side_effect=Exception("Process error")):
+        with patch("asyncio.create_subprocess_exec", side_effect=Exception("Process error")):
             # Should fallback to mock mode
             status = await vpn_manager.connect()
-            
+
             assert status.connected is True
             assert status.server_location.startswith("MOCK-")
 
@@ -643,11 +644,11 @@ class TestEdgeCases:
     async def test_disconnect_exception_handling(self, vpn_manager):
         """Test exception handling during disconnect"""
         vpn_manager.connected = True
-        
-        with patch('asyncio.create_subprocess_exec', side_effect=Exception("Process error")):
+
+        with patch("asyncio.create_subprocess_exec", side_effect=Exception("Process error")):
             # Should handle exception gracefully
             status = await vpn_manager.disconnect()
-            
+
             # Status should reflect disconnected state
             assert status.connected is False
 
@@ -657,17 +658,17 @@ class TestEdgeCases:
         mock_proc = AsyncMock()
         mock_proc.communicate.return_value = (b"", b"Error")
         mock_proc.returncode = 1
-        
-        with patch('asyncio.create_subprocess_exec', return_value=mock_proc):
+
+        with patch("asyncio.create_subprocess_exec", return_value=mock_proc):
             ip = await vpn_manager.get_public_ip()
-            
+
             assert ip == "unknown"
 
     def test_server_comparison(self):
         """Test server comparison by load"""
         server1 = VPNServer("CH-01", "CH", "Zurich", "185.159.158.1", 30, [], 2)
         server2 = VPNServer("CH-02", "CH", "Geneva", "185.159.158.2", 60, [], 2)
-        
+
         # Lower load should be preferred
         assert server1.load < server2.load
 

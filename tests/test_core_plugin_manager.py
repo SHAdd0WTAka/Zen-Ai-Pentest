@@ -22,9 +22,7 @@ from core.plugin_manager import (
     execute_hook,
 )
 from core.plugin_manager import plugin_manager as global_plugin_manager
-from core.plugin_manager import (
-    register_hook,
-)
+from core.plugin_manager import register_hook
 
 # ==================== Test Fixtures ====================
 

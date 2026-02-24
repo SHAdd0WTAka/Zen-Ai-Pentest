@@ -1003,7 +1003,8 @@ class BaseAPIScanner(ABC):
 # Beispiel für die Verwendung
 async def example_usage():
     """Beispiel für die Verwendung des BaseAPIScanner"""
-    print("""
+    print(
+        """
     === Zen-Ai-Pentest API Scanner ===
 
     Dies ist die Basisklasse für API-Scanner.
@@ -1028,7 +1029,8 @@ async def example_usage():
     - Injection-Schwachstellen
     - Rate-Limiting-Probleme
     - Fehlende Sicherheits-Header
-    """)
+    """
+    )
 
 
 if __name__ == "__main__":
