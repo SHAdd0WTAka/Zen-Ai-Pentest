@@ -42,8 +42,10 @@ jobs:
 
       - name: Check Discord Webhook Secret
         id: check-secret
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: |
-          if [ -n "${{ secrets.DISCORD_WEBHOOK_URL }}" ]; then
+          if [ -n "$DISCORD_WEBHOOK" ]; then
             echo "has_secret=true" >> $GITHUB_OUTPUT
             echo "✅ Discord webhook secret is configured"
           else
@@ -60,8 +62,22 @@ jobs:
       - name: Prepare Notification
         id: prep
         if: steps.check-secret.outputs.has_secret == 'true'
+        # SECURITY: All github.event values are passed via env to prevent script injection
+        # See: https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-an-intermediate-environment-variable
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          # Push event
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+          # Issues event
+          ISSUE_ACTION: ${{ github.event.action }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          # Workflow run event
+          WORKFLOW_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          WORKFLOW_NAME: ${{ github.event.workflow_run.name }}
+          # Workflow dispatch event
+          INPUT_MESSAGE: ${{ github.event.inputs.message }}
         run: |
-          EVENT="${{ github.event_name }}"
+          EVENT="$EVENT_NAME"
           COLOR="3447003"
           TITLE="ZenClaw Alert"
           DESCRIPTION=""
@@ -70,32 +86,32 @@ jobs:
             push)
               COLOR="3066993"
               TITLE="🚀 Push to main"
-              DESCRIPTION="${{ github.event.head_commit.message }}"
+              DESCRIPTION="$COMMIT_MESSAGE"
               ;;
             issues)
-              if [ "${{ github.event.action }}" == "opened" ]; then
+              if [ "$ISSUE_ACTION" == "opened" ]; then
                 COLOR="15158332"
                 TITLE="🐛 New Issue"
               else
                 COLOR="3066993"
                 TITLE="✅ Issue Resolved"
               fi
-              DESCRIPTION="${{ github.event.issue.title }}"
+              DESCRIPTION="$ISSUE_TITLE"
               ;;
             workflow_run)
-              if [ "${{ github.event.workflow_run.conclusion }}" == "success" ]; then
+              if [ "$WORKFLOW_CONCLUSION" == "success" ]; then
                 COLOR="3066993"
                 TITLE="✅ Workflow Success"
               else
                 COLOR="15158332"
                 TITLE="❌ Workflow Failed"
               fi
-              DESCRIPTION="${{ github.event.workflow_run.name }}"
+              DESCRIPTION="$WORKFLOW_NAME"
               ;;
             workflow_dispatch)
               COLOR="3447003"
               TITLE="🧪 Test Message"
-              DESCRIPTION="${{ github.event.inputs.message }}"
+              DESCRIPTION="$INPUT_MESSAGE"
               ;;
           esac
           
@@ -163,10 +179,14 @@ jobs:
 
       - name: Summary
         if: always()
+        env:
+          PREP_EVENT: ${{ steps.prep.outputs.event }}
+          HAS_SECRET: ${{ steps.check-secret.outputs.has_secret }}
+          EVENT_NAME: ${{ github.event_name }}
         run: |
           echo "## ZenClaw Discord Notification" >> $GITHUB_STEP_SUMMARY
-          echo "Event: ${{ steps.prep.outputs.event || github.event_name }}" >> $GITHUB_STEP_SUMMARY
-          if [ "${{ steps.check-secret.outputs.has_secret }}" == "true" ]; then
+          echo "Event: ${PREP_EVENT:-$EVENT_NAME}" >> $GITHUB_STEP_SUMMARY
+          if [ "$HAS_SECRET" == "true" ]; then
             echo "Status: Webhook configured" >> $GITHUB_STEP_SUMMARY
           else
             echo "Status: Webhook NOT configured" >> $GITHUB_STEP_SUMMARY

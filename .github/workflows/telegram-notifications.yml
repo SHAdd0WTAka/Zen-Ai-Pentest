@@ -36,63 +36,71 @@ jobs:
     env:
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
       TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      # SECURITY: All event data passed via env to prevent script injection
+      EVENT_NAME: ${{ github.event_name }}
+      # Workflow run event
+      WORKFLOW_NAME: ${{ github.event.workflow_run.name }}
+      WORKFLOW_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+      WORKFLOW_BRANCH: ${{ github.event.workflow_run.head_branch }}
+      WORKFLOW_URL: ${{ github.event.workflow_run.html_url }}
+      # Issues event
+      ISSUE_TITLE: ${{ github.event.issue.title }}
+      ISSUE_URL: ${{ github.event.issue.html_url }}
+      ISSUE_ACTION: ${{ github.event.action }}
+      # PR event
+      PR_TITLE: ${{ github.event.pull_request.title }}
+      PR_URL: ${{ github.event.pull_request.html_url }}
+      PR_ACTION: ${{ github.event.action }}
+      # Workflow dispatch
+      INPUT_MESSAGE: ${{ github.event.inputs.message }}
+      # Common
+      REPO: ${{ github.repository }}
+      ACTOR: ${{ github.actor }}
+      REF_NAME: ${{ github.ref_name }}
     
     steps:
       - name: Send Telegram Notification
         if: ${{ env.TELEGRAM_BOT_TOKEN != '' && env.TELEGRAM_CHAT_ID != '' }}
         run: |
           # Determine notification type and message
-          if [ "${{ github.event_name }}" == "workflow_run" ]; then
-            WORKFLOW_NAME="${{ github.event.workflow_run.name }}"
-            CONCLUSION="${{ github.event.workflow_run.conclusion }}"
-            BRANCH="${{ github.event.workflow_run.head_branch }}"
-            URL="${{ github.event.workflow_run.html_url }}"
-            
-            if [ "$CONCLUSION" == "success" ]; then
+          if [ "$EVENT_NAME" == "workflow_run" ]; then
+            if [ "$WORKFLOW_CONCLUSION" == "success" ]; then
               STATUS="✅ SUCCESS"
-            elif [ "$CONCLUSION" == "failure" ]; then
+            elif [ "$WORKFLOW_CONCLUSION" == "failure" ]; then
               STATUS="❌ FAILED"
             else
-              STATUS="⚠️ $CONCLUSION"
+              STATUS="⚠️ $WORKFLOW_CONCLUSION"
             fi
             
-            MESSAGE="<b>Workflow $STATUS</b> - Name: $WORKFLOW_NAME, Branch: $BRANCH, Repo: ${{ github.repository }} - $URL"
+            MESSAGE="<b>Workflow $STATUS</b> - Name: $WORKFLOW_NAME, Branch: $WORKFLOW_BRANCH, Repo: $REPO - $WORKFLOW_URL"
           
-          elif [ "${{ github.event_name }}" == "issues" ]; then
-            ISSUE_TITLE="${{ github.event.issue.title }}"
-            ISSUE_URL="${{ github.event.issue.html_url }}"
-            ACTION="${{ github.event.action }}"
-            
-            if [ "$ACTION" == "opened" ]; then
+          elif [ "$EVENT_NAME" == "issues" ]; then
+            if [ "$ISSUE_ACTION" == "opened" ]; then
               ICON="📋"
-            elif [ "$ACTION" == "closed" ]; then
+            elif [ "$ISSUE_ACTION" == "closed" ]; then
               ICON="✅"
             else
               ICON="📝"
             fi
             
-            MESSAGE="<b>$ICON Issue $ACTION</b> - $ISSUE_TITLE - ${{ github.repository }} - $ISSUE_URL"
+            MESSAGE="<b>$ICON Issue $ISSUE_ACTION</b> - $ISSUE_TITLE - $REPO - $ISSUE_URL"
           
-          elif [ "${{ github.event_name }}" == "pull_request" ]; then
-            PR_TITLE="${{ github.event.pull_request.title }}"
-            PR_URL="${{ github.event.pull_request.html_url }}"
-            ACTION="${{ github.event.action }}"
-            
-            if [ "$ACTION" == "opened" ]; then
+          elif [ "$EVENT_NAME" == "pull_request" ]; then
+            if [ "$PR_ACTION" == "opened" ]; then
               ICON="🔀"
-            elif [ "$ACTION" == "closed" ]; then
+            elif [ "$PR_ACTION" == "closed" ]; then
               ICON="✅"
             else
               ICON="📝"
             fi
             
-            MESSAGE="<b>$ICON PR $ACTION</b> - $PR_TITLE - ${{ github.repository }} - $PR_URL"
+            MESSAGE="<b>$ICON PR $PR_ACTION</b> - $PR_TITLE - $REPO - $PR_URL"
           
-          elif [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-            MESSAGE="<b>🧪 Test Notification</b> - ${{ github.event.inputs.message }} - ${{ github.repository }} by ${{ github.actor }}"
+          elif [ "$EVENT_NAME" == "workflow_dispatch" ]; then
+            MESSAGE="<b>🧪 Test Notification</b> - $INPUT_MESSAGE - $REPO by $ACTOR"
           
           else
-            MESSAGE="<b>🔔 Repository Event</b> - ${{ github.event_name }} - ${{ github.repository }} - ${{ github.ref_name }} by ${{ github.actor }}"
+            MESSAGE="<b>🔔 Repository Event</b> - $EVENT_NAME - $REPO - $REF_NAME by $ACTOR"
           fi
           
           # Send Telegram message

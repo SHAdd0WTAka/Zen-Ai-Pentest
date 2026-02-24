@@ -68,6 +68,13 @@ def list_secrets() -> list:
     return secrets
 
 
+def mask_sensitive_data(value: str) -> str:
+    """Mask sensitive data for logging - only show first/last 4 chars"""
+    if not value or len(value) <= 8:
+        return "***"
+    return f"{value[:4]}...{value[-4:]}"
+
+
 def main():
     """MCP Server main loop"""
     print("Obsidian MCP Server started", file=os.sys.stderr)
@@ -83,7 +90,13 @@ def main():
                 name = params.get("name")
                 value = get_secret(name)
                 if value:
+                    # Return full value to client, but log masked version
                     response = {"result": value, "error": None}
+                    # Log to stderr (not stdout which is MCP protocol)
+                    print(
+                        f"Secret '{name}' retrieved (masked: {mask_sensitive_data(value)})",
+                        file=os.sys.stderr
+                    )
                 else:
                     msg = f"Secret '{name}' not found"
                     response = {"result": None, "error": msg}
@@ -106,6 +119,8 @@ def main():
             else:
                 response = {"error": f"Unknown method: {method}"}
 
+            # Output JSON response to stdout (MCP protocol)
+            # Note: Secret values are masked in logs but returned full to client
             print(json.dumps(response))
 
         except EOFError:

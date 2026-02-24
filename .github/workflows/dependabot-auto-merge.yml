@@ -62,10 +62,11 @@ jobs:
       - name: Parse Renovate metadata
         if: steps.check.outputs.is-renovate == 'true'
         id: renovate-metadata
+        # SECURITY: PR title passed via env to prevent script injection
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
           # Extract metadata from PR title for Renovate
-          PR_TITLE="${{ github.event.pull_request.title }}"
-          
           # Try to determine update type from title
           if echo "$PR_TITLE" | grep -q "update.*dependency"; then
             # Check for major/minor/patch in title
