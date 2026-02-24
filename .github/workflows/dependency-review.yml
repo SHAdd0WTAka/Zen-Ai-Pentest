@@ -25,6 +25,8 @@ jobs:
   dependency-review:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    # Dependency Review Action requires PR context (base/head refs)
+    if: github.event_name == 'pull_request'
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v6
