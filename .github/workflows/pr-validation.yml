@@ -236,7 +236,7 @@ jobs:
           fetch-depth: 0
 
       - name: Run TruffleHog OSS
-        uses: trufflesecurity/trufflehog@7d7dc1c3e5e6e6e6e5e6e6e6e6e6e6e6e6e5e5e # v3.0.0
+        uses: trufflesecurity/trufflehog@v3 # v3.0.0
         with:
           path: ./
           base: ${{ github.event.pull_request.base.sha }}
@@ -245,7 +245,7 @@ jobs:
         continue-on-error: true
 
       - name: Run GitLeaks
-        uses: gitleaks/gitleaks-action@7d7dc1c3e5e6e6e6e5e6e6e6e6e6e6e6e6e5e5e # v2.3.0
+        uses: gitleaks/gitleaks-action@v3 # v2.3.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
@@ -267,7 +267,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Dependency Review
-        uses: actions/dependency-review-action@7d7dc1c3e5e6e6e6e5e6e6e6e6e6e6e6e6e5e5e # v4.0.0
+        uses: actions/dependency-review-action@v3 # v4.0.0
         with:
           comment-summary-in-pr: always
           fail-on-severity: critical

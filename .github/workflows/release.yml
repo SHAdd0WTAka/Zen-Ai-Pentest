@@ -427,7 +427,7 @@ jobs:
     steps:
       - name: Notify Slack
         if: ${{ env.SLACK_WEBHOOK_URL != '' }}
-        uses: 8398a7/action-slack@7d7dc1c3e5e6e6e6e5e6e6e6e6e6e6e6e6e5e5e # v3.15.0
+        uses: 8398a7/action-slack@v3 # v3.15.0
         with:
           status: ${{ job.status }}
           channel: '#releases'
@@ -443,7 +443,7 @@ jobs:
 
       - name: Notify Discord
         if: ${{ env.DISCORD_WEBHOOK_URL != '' }}
-        uses: Ilshidur/action-discord@7d7dc1c3e5e6e6e6e5e6e6e6e6e6e6e6e6e5e5e # v0.3.0
+        uses: Ilshidur/action-discord@v3 # v0.3.0
         with:
           args: |
             ${{ needs.pre-release-checks.outputs.is_prerelease == 'true' && '🧪 Pre-release' || '🚀 Release' }} **${{ needs.pre-release-checks.outputs.version }}** ${{ job.status == 'success' && 'published!' || 'failed!' }}

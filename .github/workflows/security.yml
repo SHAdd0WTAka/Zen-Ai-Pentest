@@ -167,13 +167,13 @@ jobs:
           ls -la
 
       - name: Run GitLeaks
-        uses: gitleaks/gitleaks-action@7d7dc1c3e5e6e6e6e5e6e6e6e6e6e6e6e6e5e5e # v2.3.0
+        uses: gitleaks/gitleaks-action@v3 # v2.3.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true
 
       - name: Run TruffleHog
-        uses: trufflesecurity/trufflehog@7d7dc1c3e5e6e6e6e5e6e6e6e6e6e6e6e6e5e5e # v3.0.0
+        uses: trufflesecurity/trufflehog@v3 # v3.0.0
         with:
           path: ./
           base: main

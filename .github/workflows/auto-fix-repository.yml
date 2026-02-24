@@ -231,7 +231,7 @@ jobs:
           fi
 
       - name: Create PR for Security Fixes
-        uses: peter-evans/create-pull-request@67e4e6e6e6e6e6e6e5e6e6e6e6e6e6e6e6e5e5e # v7.0.0
+        uses: peter-evans/create-pull-request@v7 # v7.0.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: auto/security-fixes
@@ -252,7 +252,7 @@ jobs:
     steps:
       - name: Slack Notification
         if: ${{ needs.analyze-and-fix.outputs.score < 50 || failure() }}
-        uses: 8398a7/action-slack@7d7dc1c3e5e6e6e6e5e6e6e6e6e6e6e6e6e5e5e # v3.15.0
+        uses: 8398a7/action-slack@v3 # v3.15.0
         with:
           status: ${{ job.status }}
           fields: repo,message,commit,author,action,eventName,ref,workflow
@@ -263,7 +263,7 @@ jobs:
 
       - name: Discord Notification
         if: ${{ needs.analyze-and-fix.outputs.score < 50 || failure() }}
-        uses: Ilshidur/action-discord@7d7dc1c3e5e6e6e6e5e6e6e6e6e6e6e6e6e5e5e # v0.3.0
+        uses: Ilshidur/action-discord@v3 # v0.3.0
         with:
           args: |
             🚨 **Repository Health Check Alert**

@@ -138,7 +138,7 @@ jobs:
 
       # Coverage upload disabled - use codecov.yml instead
       # - name: Upload coverage to Codecov
-      #   uses: codecov/codecov-action@e28a75e2bfe8e5e5e6e6e6e6e6e6e6e6e6e5e5e # v4.6.0
+      #   uses: codecov/codecov-action@v4
       #   if: matrix.python-version == '3.13'
       #   with:
       #     file: ./coverage.xml
