@@ -7,9 +7,10 @@ JWT-based authentication with access and refresh tokens.
 from datetime import datetime, timedelta
 from typing import Optional
 
+import jwt
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from jose import JWTError, jwt
+from jwt import ExpiredSignatureError, InvalidTokenError
 from passlib.context import CryptContext
 from pydantic import BaseModel, EmailStr, Field
 
@@ -101,7 +102,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)) -> User:
         if user_id is None or token_type != "access":
             raise credentials_exception
 
-    except JWTError:
+    except (ExpiredSignatureError, InvalidTokenError):
         raise credentials_exception
 
     user = await User.find_one(id=user_id)
@@ -217,7 +218,7 @@ async def refresh_token(refresh_token: str):
                 status_code=401, detail="Invalid refresh token"
             )
 
-    except JWTError:
+    except (ExpiredSignatureError, InvalidTokenError):
         raise HTTPException(status_code=401, detail="Invalid refresh token")
 
     user = await User.find_one(id=user_id)

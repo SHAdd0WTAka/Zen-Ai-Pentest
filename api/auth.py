@@ -12,9 +12,10 @@ import secrets
 from datetime import datetime, timedelta, timezone
 from typing import Dict, Optional
 
+import jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from jose import JWTError, jwt
+from jwt import ExpiredSignatureError, InvalidTokenError
 from passlib.context import CryptContext
 
 # =============================================================================
@@ -84,7 +85,7 @@ def decode_token(token: str) -> Optional[Dict]:
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         return payload
-    except JWTError:
+    except (ExpiredSignatureError, InvalidTokenError):
         return None
 
 
