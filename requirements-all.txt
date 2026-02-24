@@ -123,3 +123,5 @@ build>=0.10.0
 twine>=4.0.0
 setuptools>=68.0.0
 wheel>=0.41.0
+pydantic-settings>=2.0.0
+email-validator>=2.0.0

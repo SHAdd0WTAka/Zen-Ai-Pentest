@@ -251,19 +251,25 @@ async def get_current_user_info(
     return current_user.to_response()
 
 
+class PasswordChangeRequest(BaseModel):
+    """Password change request"""
+
+    old_password: str
+    new_password: str = Field(..., min_length=8)
+
+
 @router.post("/change-password")
 async def change_password(
-    old_password: str,
-    new_password: str = Field(..., min_length=8),
+    request: PasswordChangeRequest,
     current_user: User = Depends(get_current_user),
 ):
     """Change user password"""
-    if not verify_password(old_password, current_user.hashed_password):
+    if not verify_password(request.old_password, current_user.hashed_password):
         raise HTTPException(
             status_code=400, detail="Incorrect current password"
         )
 
-    current_user.hashed_password = get_password_hash(new_password)
+    current_user.hashed_password = get_password_hash(request.new_password)
     await current_user.save()
 
     return {"message": "Password changed successfully"}

@@ -70,3 +70,5 @@ python-dateutil>=2.8.0
 
 # System monitoring
 psutil>=5.9.0  # Required for health check system resource monitoring
+pydantic-settings>=2.0.0
+email-validator>=2.0.0  # Required for pydantic EmailStr
