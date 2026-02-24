@@ -1,82 +1,102 @@
 # Security Policy
 
-## Supported Versions
+## Sicherheitsstandards
 
-The following versions of Zen-AI-Pentest are currently supported with security updates:
+Zen-AI-Pentest folgt strikten Sicherheitsstandards:
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 2.3.x   | :white_check_mark: |
-| 2.2.x   | :white_check_mark: |
-| < 2.2   | :x:                |
+- ✅ Alle Code-Änderungen durch Pre-commit Hooks
+- ✅ Automatische Snyk Scans bei jedem Push
+- ✅ CodeQL Analyse für statische Code-Analyse
+- ✅ pip-audit für Dependency Scanning
+- ✅ Private IP Blocking für alle Tools
+- ✅ Docker Sandbox für Tool-Ausführung
 
-## Reporting a Vulnerability
+## Aktuelle Sicherheitslage
 
-We take security seriously. If you discover a security vulnerability, please do **NOT** open a public issue.
+### Gefixte Vulnerabilities (letzte 24h)
 
-### How to Report
+| Package | Alt | Neu | Issue |
+|---------|-----|-----|-------|
+| black | 24.1.1 | 26.1.0 | CVE-2024-21503 (ReDoS) |
+| tqdm | 4.66.x | 4.67.3 | Injection |
 
-**Preferred Method (Private):**
-1. **GitHub Security Advisories**: Use [GitHub's private vulnerability reporting](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/security/advisories/new) - this keeps your report confidential
+### Bekannte Vulnerabilities ohne Fix
 
-2. **Security Email**: security@zen-ai-pentest.dev
+Die folgenden Vulnerabilities haben **keine verfügbaren Fixes**:
 
-3. **Direct Contact**: Contact @SHAdd0WTAka directly on GitHub
+#### 1. ecdsa 0.19.1 - CVE-2024-23342
 
-### What Happens Next
+- **Severity:** Medium
+- **Beschreibung:** Minerva timing attack on P-256 curve
+- **Verwendet von:** python-jose (JWT-Handling)
+- **Risiko:** Niedrig (nur interne JWT-Signierung)
+- **Grund:** Projekt betrachtet Side-Channel als out of scope
+- **Workaround:** Keiner verfügbar, wird überwacht
 
-1. **Acknowledgment**: We will acknowledge receipt within 48 hours
-2. **Assessment**: We will assess the vulnerability within 1 week
-3. **Fix Timeline**: We aim to fix critical vulnerabilities within 30 days
-4. **Disclosure**: After fixing, we will publicly disclose the vulnerability with credit to the reporter (unless they prefer anonymity)
+#### 2. py 1.11.0 - PYSEC-2022-42969
 
-### Security Response Team
+- **Severity:** Low
+- **Beschreibung:** ReDoS via Subversion repository
+- **Verwendet von:** retry (Dev-Dependency für pysnyk)
+- **Risiko:** Niedrig (nur in Dev-Tools verwendet)
+- **Grund:** Kein neueres Release verfügbar
+- **Workaround:** Keiner verfügbar, wird überwacht
 
-- @SHAdd0WTAka - Security Lead
+## Risikobewertung
 
-### What to Include
+Die verbleibenden Vulnerabilities stellen **kein kritisches Risiko** dar:
 
-- Description of the vulnerability
-- Steps to reproduce
-- Potential impact
-- Suggested fix (if any)
+1. **ecdsa:** Nur für interne JWT-Signierung verwendet, keine externe Angriffsfläche
+2. **py:** Nur in Dev-Dependencies (pysnyk), nicht in Production
 
-### Response Time
+## Monitoring
 
-- **Acknowledgment**: Within 48 hours
-- **Assessment**: Within 1 week
-- **Fix & Release**: Within 30 days (depending on severity)
+### Automatische Scans
 
-## Security Best Practices
+- **Snyk:** Täglich um 06:00 UTC
+- **CodeQL:** Bei jedem Push
+- **pip-audit:** Manuelle Prüfung vor Releases
 
-### For Users
+### Dashboards
 
-- **Never** run Zen-AI-Pentest against systems you don't own or have explicit permission to test
-- Keep your API keys secure (use environment variables, never commit them)
-- Regularly update to the latest version
-- Review generated reports before sharing
+- [GitHub Security](https://github.com/SHAdd0WTAka/zen-ai-pentest/security)
+- [Snyk Dashboard](https://app.snyk.io/org/shadd0wtaka/projects)
 
-### For Contributors
+## Melden von Sicherheitsproblemen
 
-- All code must pass security scanning (Bandit, CodeQL)
-- Dependencies are automatically checked for vulnerabilities
-- No hardcoded secrets or credentials
-- Input validation is mandatory for all user-facing functions
+**Nicht öffentlich melden!**
 
-## Security Features
+Bei Sicherheitsvorfällen:
+1. Security Advisory erstellen (privat)
+2. Oder Email: shadd0wtaka@protonmail.com
 
-- Automated dependency scanning via Dependabot
-- CodeQL static analysis for Python
-- Secret scanning enabled
-- Branch protection rules
-- Required security reviews for PRs
+## Sicherheitsmaßnahmen
 
-## Acknowledgments
+### Code-Sicherheit
+- Pre-commit Hooks (black, isort, flake8, bandit)
+- Secret Detection (detect-secrets)
+- Type Checking (mypy)
 
-We thank the following security researchers who have responsibly disclosed vulnerabilities:
+### Dependency-Sicherheit
+- Snyk Monitoring
+- pip-audit Scans
+- Automated Dependabot Updates
 
-- *List will be populated as disclosures are made*
+### Runtime-Sicherheit
+- Docker Sandbox für alle Tools
+- Private IP Blocking
+- Resource Limits (CPU, Memory, Time)
+- Read-only Filesysteme
+
+## Compliance
+
+- ✅ OpenSSF Best Practices (passing)
+- ✅ CodeQL aktiviert
+- ✅ Dependabot aktiviert
+- ✅ Snyk aktiviert
+- ✅ Branch Protection für main
 
 ---
 
-Last updated: 2026-02-16
+**Letzte Aktualisierung:** 2026-02-24
+**Nächste Review:** 2026-03-24
