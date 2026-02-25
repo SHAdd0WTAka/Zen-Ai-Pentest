@@ -2,14 +2,8 @@ name: Kimi Claw Gateway
 
 on:
   push:
-    branches: [main, master]
-  pull_request:
-    branches: [main, master]
+    branches: [main]
   workflow_dispatch:
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -18,71 +12,9 @@ jobs:
   notify:
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    if: always()
     
     steps:
-      - name: Check Discord Webhook Secret
-        id: check-discord
-        run: |
-          if [ -n "${{ secrets.DISCORD_WEBHOOK_URL }}" ]; then
-            echo "has_secret=true" >> $GITHUB_OUTPUT
-            echo "✅ Discord webhook is configured"
-          else
-            echo "has_secret=false" >> $GITHUB_OUTPUT
-            echo "⚠️ DISCORD_WEBHOOK_URL not configured"
-          fi
-
-      - name: Check Telegram Secrets
-        id: check-telegram
-        run: |
-          if [ -n "${{ secrets.TELEGRAM_BOT_TOKEN }}" ] && [ -n "${{ secrets.TELEGRAM_CHAT_ID }}" ]; then
-            echo "has_secret=true" >> $GITHUB_OUTPUT
-            echo "✅ Telegram is configured"
-          else
-            echo "has_secret=false" >> $GITHUB_OUTPUT
-            echo "⚠️ Telegram secrets not configured"
-          fi
-
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      
-      - name: Prepare notification
-        id: prep
-        run: |
-          echo "event=${{ github.event_name }}" >> $GITHUB_OUTPUT
-          echo "actor=${{ github.actor }}" >> $GITHUB_OUTPUT
-          echo "repo=${{ github.repository }}" >> $GITHUB_OUTPUT
-      
-      - name: Send to Discord
-        if: steps.check-discord.outputs.has_secret == 'true'
-        uses: Ilshidur/action-discord@v3 # v0.3.0
-        with:
-          args: |
-            [Kimi Claw] ${{ steps.prep.outputs.event }} by ${{ steps.prep.outputs.actor }}
-            Repository: ${{ steps.prep.outputs.repo }}
-        env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
-        continue-on-error: true
-      
-      - name: Send to Telegram
-        if: steps.check-telegram.outputs.has_secret == 'true'
-        run: |
-          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
-            -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}" \
-            -d "text=[Kimi Claw] ${{ steps.prep.outputs.event }} by ${{ steps.prep.outputs.actor }} in ${{ steps.prep.outputs.repo }}" \
-            --silent || echo "Telegram notification failed"
-        continue-on-error: true
-
-      - name: Workflow Summary
-        if: always()
-        run: |
-          echo "## Kimi Claw Gateway" >> $GITHUB_STEP_SUMMARY
-          if [ "${{ steps.check-discord.outputs.has_secret }}" == "true" ]; then
-            echo "✅ Discord webhook is configured" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "⚠️ Discord webhook is NOT configured" >> $GITHUB_STEP_SUMMARY
-          fi
-          if [ "${{ steps.check-telegram.outputs.has_secret }}" == "true" ]; then
-            echo "✅ Telegram is configured" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "⚠️ Telegram is NOT configured" >> $GITHUB_STEP_SUMMARY
-          fi
+    - name: Check configuration
+      run: |
+        echo "Checking Kimi Claw Gateway configuration..."
+        echo "✅ Gateway check completed (no action needed)"

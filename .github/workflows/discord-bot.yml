@@ -2,18 +2,8 @@ name: Discord Bot Integration
 
 on:
   push:
-    branches: [ main, master ]
-  pull_request:
-    types: [opened, closed, reopened, synchronize]
-  release:
-    types: [published]
-  issues:
-    types: [opened, closed, reopened]
+    branches: [main]
   workflow_dispatch:
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -24,43 +14,28 @@ jobs:
     timeout-minutes: 5
     
     steps:
-      - name: Check Discord Webhook Secret
-        id: check-secret
-        run: |
-          if [ -n "${{ secrets.DISCORD_WEBHOOK_URL }}" ]; then
-            echo "has_secret=true" >> $GITHUB_OUTPUT
-            echo "✅ Discord webhook secret is configured"
-          else
-            echo "has_secret=false" >> $GITHUB_OUTPUT
-            echo "⚠️ DISCORD_WEBHOOK_URL secret is not configured"
-          fi
-
-      - name: Send Discord Notification
-        if: steps.check-secret.outputs.has_secret == 'true'
-        uses: Ilshidur/action-discord@v3 # v0.3.0
-        env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
-        with:
-          args: |
-            🚀 **${{ github.event_name }}** by ${{ github.actor }}
-            
-            Repository: ${{ github.repository }}
-            Branch: ${{ github.ref }}
-            ${{ github.event.head_commit.message && format('Commit: {0}', github.event.head_commit.message) || '' }}
-            
-            [View on GitHub](${{ github.event.head_commit.url || format('{0}/{1}/commit/{2}', github.server_url, github.repository, github.sha) }})
-        continue-on-error: true
-
-      - name: Workflow Summary
-        if: always()
-        run: |
-          echo "## Discord Bot Integration" >> $GITHUB_STEP_SUMMARY
-          if [ "${{ steps.check-secret.outputs.has_secret }}" == "true" ]; then
-            echo "✅ Discord webhook is configured" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "⚠️ Discord webhook is NOT configured" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "To enable notifications:" >> $GITHUB_STEP_SUMMARY
-            echo '1. Create a Discord webhook in your server' >> $GITHUB_STEP_SUMMARY
-            echo '2. Add `DISCORD_WEBHOOK_URL` to GitHub Secrets' >> $GITHUB_STEP_SUMMARY
-          fi
+    - name: Check Discord webhook
+      run: |
+        if [ -z "${DISCORD_WEBHOOK}" ]; then
+          echo "⚠️ DISCORD_WEBHOOK not set - skipping notification"
+          echo "To enable: Settings > Secrets > DISCORD_WEBHOOK"
+          exit 0
+        fi
+        echo "✅ Discord webhook configured"
+      env:
+        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+    
+    - name: Send notification (if configured)
+      run: |
+        if [ -n "${DISCORD_WEBHOOK}" ]; then
+          curl -H "Content-Type: application/json" \
+               -d '{"content":"🚀 Push to main branch"}' \
+               "${DISCORD_WEBHOOK}" || echo "Discord send failed"
+        fi
+      env:
+        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+      continue-on-error: true
+    
+    - name: Summary
+      run: |
+        echo "✅ Discord bot check completed"

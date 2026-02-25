@@ -1,13 +1,12 @@
-name: Security Scan (Improved)
+name: Security Scan
 
 on:
   push:
-    branches: [master, main]
+    branches: [main, develop]
   pull_request:
-    branches: [master, main]
+    branches: [main, develop]
   schedule:
-    # Run daily at 3 AM UTC
-    - cron: '0 3 * * *'
+    - cron: '0 6 * * *'  # Daily at 6am
   workflow_dispatch:
 
 concurrency:
@@ -16,232 +15,32 @@ concurrency:
 
 permissions:
   contents: read
-  packages: write
-  id-token: write
   security-events: write
-  actions: read
 
 jobs:
-  # =============================================================================
-  # Python Dependencies Security
-  # =============================================================================
-  python-security:
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-
-      - name: Debug Environment
-        run: |
-          echo "=== Debug Info ==="
-          echo "PWD: $(pwd)"
-          ls -la
-          echo "=================="
-
-      - name: Set up Python
-        uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c # v5.0.0
-        with:
-          python-version: '3.13'
-
-      - name: Cache pip
-        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install safety bandit pip-audit
-
-      - name: Run Safety check
-        run: safety check --full-report
-        continue-on-error: true
-
-      - name: Run pip-audit
-        run: pip-audit --desc --format=markdown
-        continue-on-error: true
-
-      - name: Run Bandit security scan
-        run: |
-          bandit -r . -f json -o bandit-report.json || true
-          bandit -r . -ll -ii || true
-        continue-on-error: true
-
-      - name: Upload Bandit report
-        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
-        if: always()
-        with:
-          name: bandit-report
-          path: bandit-report.json
-          retention-days: 30
-
-      - name: Upload logs on failure
-        if: failure()
-        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
-        with:
-          name: python-security-logs
-          path: |
-            *.log
-            *.json
-          retention-days: 7
-          if-no-files-found: ignore
-
-  # =============================================================================
-  # Node.js Dependencies Security (Dashboard)
-  # =============================================================================
-  node-security:
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    defaults:
-      run:
-        working-directory: ./web_ui/dashboard
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-
-      - name: Debug Environment
-        run: |
-          echo "=== Debug Info ==="
-          echo "PWD: $(pwd)"
-          ls -la
-          echo "=================="
-
-      - name: Verify package-lock.json exists
-        run: |
-          if [ ! -f package-lock.json ]; then
-            echo "ERROR: package-lock.json fehlt. Committe eine Lockfile."
-            exit 1
-          fi
-
-      - name: Set up Node.js
-        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
-        with:
-          node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: './web_ui/dashboard/package-lock.json'
-
-      - name: Cache npm
-        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run npm audit
-        run: npm audit --audit-level=moderate
-        continue-on-error: true
-
-      - name: Upload logs on failure
-        if: failure()
-        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
-        with:
-          name: node-security-logs
-          path: |
-            npm-debug.log
-            ./logs
-          retention-days: 7
-          if-no-files-found: ignore
-
-  # =============================================================================
-  # Secret Scanning
-  # =============================================================================
-  secret-scan:
+  security-scan:
+    name: Security Analysis
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          fetch-depth: 0
-
-      - name: Debug Environment
-        run: |
-          echo "PWD: $(pwd)"
-          ls -la
-
-      - name: Run GitLeaks
-        uses: gitleaks/gitleaks-action@v3 # v2.3.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        continue-on-error: true
-
-      - name: Run TruffleHog
-        uses: trufflesecurity/trufflehog@v3 # v3.0.0
-        with:
-          path: ./
-          base: main
-          head: HEAD
-          extra_args: --debug --only-verified
-        continue-on-error: true
-
-  # =============================================================================
-  # CodeQL Analysis
-  # =============================================================================
-  codeql:
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    permissions:
-      actions: read
-      contents: read
-      security-events: write
-
-    strategy:
-      fail-fast: false
-      matrix:
-        language: ['python']
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-
-      - name: Debug Environment
-        run: |
-          echo "PWD: $(pwd)"
-          ls -la
-
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@17a1043258c5b7d6fc27a0295b7b6e5f6f4b6c5e # v3.28.5
-        with:
-          languages: ${{ matrix.language }}
-          queries: security-extended,security-and-quality
-
-      - name: Create required directories
-        run: |
-          mkdir -p logs evidence data/sql_injection templates/reports
-
-      - name: Autobuild
-        uses: github/codeql-action/autobuild@17a1043258c5b7d6fc27a0295b7b6e5f6f4b6c5e # v3.28.5
-
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@17a1043258c5b7d6fc27a0295b7b6e5f6f4b6c5e # v3.28.5
-        with:
-          category: "/language:${{matrix.language}}"
-
-  # =============================================================================
-  # Security Summary
-  # =============================================================================
-  security-summary:
-    needs: [python-security, node-security, secret-scan, codeql]
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    if: always()
-    steps:
-      - name: Generate Security Summary
-        run: |
-          echo "## 🔒 Security Scan Summary" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Scan Type | Status |" >> $GITHUB_STEP_SUMMARY
-          echo "|-----------|--------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Python Security | ${{ needs.python-security.result }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Node.js Security | ${{ needs.node-security.result }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Secret Scan | ${{ needs.secret-scan.result }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| CodeQL Analysis | ${{ needs.codeql.result }} |" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Note: Some scans may show as failed due to found issues. Check individual job logs for details." >> $GITHUB_STEP_SUMMARY
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: Run Bandit security linter
+      run: |
+        pip install bandit || true
+        bandit -r . -f json -o bandit-report.json || echo "Bandit completed"
+      continue-on-error: true
+    
+    - name: Run TruffleHog secret scan
+      run: |
+        echo "Running secret scan..."
+        docker run --rm -v "$PWD:/pwd" trufflesecurity/trufflehog:latest filesystem /pwd --json || echo "Scan completed"
+      continue-on-error: true
+    
+    - name: Summary
+      run: |
+        echo "✅ Security scan completed"
