@@ -21,45 +21,48 @@ jobs:
     name: Snyk Vulnerability Scan
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
-    
+
     - name: Check Snyk Token
+      id: check-token
       run: |
         if [ -z "${SNYK_TOKEN}" ]; then
           echo "⚠️ SNYK_TOKEN not set - skipping Snyk scan"
           echo "To enable: Settings > Secrets > SNYK_TOKEN"
-          exit 0
+          echo "has_token=false" >> $GITHUB_OUTPUT
+        else
+          echo "✅ SNYK_TOKEN is configured"
+          echo "has_token=true" >> $GITHUB_OUTPUT
         fi
-        echo "✅ SNYK_TOKEN is configured"
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-    
+
     - name: Set up Python
+      if: steps.check-token.outputs.has_token == 'true'
       uses: actions/setup-python@v5
       with:
         python-version: '3.11'
-    
+
     - name: Install Snyk CLI
+      if: steps.check-token.outputs.has_token == 'true'
       run: |
         npm install -g snyk || echo "Snyk install failed, continuing..."
       continue-on-error: true
-    
+
     - name: Run Snyk test
+      if: steps.check-token.outputs.has_token == 'true'
       run: |
-        if [ -z "${SNYK_TOKEN}" ]; then
-          echo "Skipping Snyk test - no token"
-          exit 0
-        fi
-        snyk test --severity-threshold=high || true
+        snyk test --severity-threshold=high || echo "Snyk test completed"
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       continue-on-error: true
-    
+
     - name: Summary
       run: |
         echo "✅ Snyk security check completed"
+        echo "Token available: ${{ steps.check-token.outputs.has_token }}"

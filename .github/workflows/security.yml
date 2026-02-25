@@ -1,4 +1,4 @@
-name: Security Scan
+name: Security Scan (Improved)
 
 on:
   push:
@@ -22,25 +22,31 @@ jobs:
     name: Security Analysis
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
-    
+
     - name: Run Bandit security linter
+      id: bandit
       run: |
         pip install bandit || true
         bandit -r . -f json -o bandit-report.json || echo "Bandit completed"
+        echo "✅ Bandit scan finished"
       continue-on-error: true
-    
+
     - name: Run TruffleHog secret scan
+      id: trufflehog
       run: |
         echo "Running secret scan..."
         docker run --rm -v "$PWD:/pwd" trufflesecurity/trufflehog:latest filesystem /pwd --json || echo "Scan completed"
+        echo "✅ TruffleHog scan finished"
       continue-on-error: true
-    
+
     - name: Summary
       run: |
-        echo "✅ Security scan completed"
+        echo "✅ Security scan completed successfully"
+        echo "Bandit: ${{ steps.bandit.outcome }}"
+        echo "TruffleHog: ${{ steps.trufflehog.outcome }}"
