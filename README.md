@@ -9,6 +9,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Security Scan](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/workflows/Security%20Scan%20(Improved)/badge.svg)](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/actions)
 [![Cloudflare Pages](https://img.shields.io/badge/Cloudflare%20Pages-Live-green)](https://zen-ai-pentest.pages.dev/)
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/11957/badge)](https://www.bestpractices.dev/projects/11957)
 
 - **Guest Control**: Execute tools inside isolated VMs
 
@@ -604,13 +605,13 @@ Ctrl+Shift+P → Developer: Reload Window
 # ~/Documents/Obsidian Vault/Secrets/secrets.yaml
 kimi:
   api_key: "sk-your-kimi-api-key"
-  
+
 openai:
   api_key: "sk-your-openai-key"
-  
+
 database:
   url: "postgresql://postgres:pass@localhost:5432/zen_pentest"
-  
+
 notifications:
   slack_webhook: "https://hooks.slack.com/..."
 ```
@@ -624,9 +625,9 @@ notifications:
 
 🔑 **Security Guarantees:**
 > Your secrets are **never sent to external servers**. All operations happen exclusively on your local system.
-> 
+>
 > We **cannot access your secrets** - the private key resides only on your system.
-> 
+>
 > **Open Source**: You can audit the code at any time.
 
 📖 **Full Vault Docs**: [mcp/obsidian/README.md](mcp/obsidian/README.md) | [Detailed Architecture](docs/SECRETS_ARCHITECTURE.md)
@@ -733,7 +734,7 @@ Ctrl+Shift+P → Developer: Reload Window
 ### 📁 Supported Secrets
 
 - **AI Providers**: Kimi, OpenAI, Anthropic, Gemini, OpenRouter
-- **Cloud**: AWS, Azure, GCP credentials  
+- **Cloud**: AWS, Azure, GCP credentials
 - **Database**: PostgreSQL, Redis passwords
 - **Security**: JWT secrets, encryption keys
 - **Notifications**: Slack, Discord, Email SMTP
