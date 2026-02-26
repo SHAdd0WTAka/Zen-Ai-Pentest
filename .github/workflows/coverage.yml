@@ -1,26 +1,29 @@
-# COVERAGE DISABLED - Use codecov.yml instead
-# This workflow has been disabled to avoid overwriting coverage with incorrect values
-name: Test Coverage (DISABLED)
+name: Coverage Check
 
 on:
-  # DISABLED to prevent coverage overwrite
-  # push:
-  #   branches: [main]
-  # pull_request:
-  #   branches: [main]
-  workflow_dispatch:
-
-permissions:
-  contents: read
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
 
 jobs:
   coverage:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
     steps:
-    - name: Skipped
-      run: echo "This workflow is disabled. Use codecov.yml for coverage."
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+        pip install pytest-cov
+    - name: Run coverage check
+      run: |
+        pytest tests/test_cache.py tests/test_core_cache_comprehensive.py \
+          --cov=core.cache --cov-report=xml --cov-fail-under=80
+    - name: Upload to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        file: ./coverage.xml
+        fail_ci_if_error: true

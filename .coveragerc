@@ -1,45 +1,17 @@
 [run]
+source = core
 branch = True
-# Include all source directories for coverage
-source = 
-    core/
-    tools/
-    modules/
-    agents/
-    autonomous/
-    database/
-    api/
-    backends/
-    risk_engine/
-    benchmarks/
-
-omit = 
-    tests/*
-    test_*.py
-    venv/*
-    .venv/*
-    build/*
-    dist/*
+data_file = .coverage
+omit =
+    */tests/*
+    */test_*
+    */venv/*
+    */.venv/*
     */__pycache__/*
-    */node_modules/*
-    logs/*
-    evidence/*
-
-parallel = False
 
 [report]
-exclude_lines =
-    pragma: no cover
-    def __repr__
-    raise NotImplementedError
-    if __name__ == .__main__.:
-    except ImportError
-    except ModuleNotFoundError
-    raise ImportError
-    pass
-
+precision = 2
 show_missing = True
-precision = 1
 skip_covered = False
 
 [html]
