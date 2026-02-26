@@ -553,15 +553,17 @@ zen-ai-pentest/
 ├── api/                   # FastAPI Backend (main.py, auth.py, websocket.py)
 ├── agents/                # AI Agents (react_agent.py, react_agent_vm.py)
 ├── autonomous/            # ReAct Loop (agent_loop.py, exploit_validator.py, memory.py)
-├── tools/                 # 40+ Security Tools
-│   ├── Network: nmap, masscan, scapy, tshark
-│   ├── Web: nuclei, sqlmap, nikto, zap, burpsuite, ffuf, gobuster
-│   ├── Recon: subfinder, amass, httpx, whatweb, wafw00f, subdomain_scan, unified_recon
-│   ├── AD: bloodhound, crackmapexec, responder
+├── tools/                 # 72+ Security Tools
+│   ├── Network: nmap, masscan, scapy, tshark, tcpdump, netdiscover, arp-scan
+│   ├── Web: nuclei, sqlmap, nikto, zap, burpsuite, ffuf, gobuster, wafw00f, whatweb
+│   ├── Recon: subfinder, amass, httpx, theharvester, subdomain_scan, unified_recon
+│   ├── AD: bloodhound, netexec, responder, ldapsearch, enum4linux, rpcclient, smbclient
 │   ├── OSINT: sherlock, scout, ignorant
-│   ├── Secrets: trufflehog, trivy
-│   ├── Wireless: aircrack
-│   ├── Code: semgrep
+│   ├── Secrets: trufflehog, gitleaks, trivy
+│   ├── Wireless: aircrack-ng, airmon-ng, airodump-ng, aireplay-ng
+│   ├── Brute Force: hydra, hashcat, john, ncrack
+│   ├── Code: semgrep, bandit
+│   ├── Cloud/Container: docker, kubectl
 │   ├── AI/Kimi: kimi_cli, kimi_helper, update_personas
 │   └── Core: tool_caller, tool_registry
 ├── risk_engine/           # Risk Analysis (cvss.py, epss.py, false_positive_engine.py)
