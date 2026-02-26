@@ -82,3 +82,6 @@ Für 20% Coverage benötigt:
 - Mehr Code-Execution Tests (nicht nur Imports)
 - Tests für Tool-Methoden (nicht nur Klassen)
 - Integration Tests für Workflows
+
+---
+**Session 2026-02-25:** Added `agent_comm/models.py` tests (20 tests, 100% coverage)
