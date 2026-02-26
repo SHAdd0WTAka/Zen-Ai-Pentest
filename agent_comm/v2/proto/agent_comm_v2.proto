@@ -1,0 +1,284 @@
+syntax = "proto3";
+
+package agentcomm.v2;
+
+option go_package = "github.com/zen-ai-pentest/agent_comm_v2/proto";
+option python_package = "zen_agent_comm.v2";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/any.proto";
+import "google/protobuf/empty.proto";
+
+// ==================== ENUMS ====================
+
+enum MessagePriority {
+    PRIORITY_LOW = 0;
+    PRIORITY_NORMAL = 1;
+    PRIORITY_HIGH = 2;
+    PRIORITY_CRITICAL = 3;
+}
+
+enum MessageType {
+    TYPE_COMMAND = 0;
+    TYPE_RESPONSE = 1;
+    TYPE_EVENT = 2;
+    TYPE_HEARTBEAT = 3;
+    TYPE_ERROR = 4;
+    TYPE_ACK = 5;
+}
+
+enum AgentStatus {
+    STATUS_UNKNOWN = 0;
+    STATUS_ONLINE = 1;
+    STATUS_BUSY = 2;
+    STATUS_OFFLINE = 3;
+    STATUS_ERROR = 4;
+}
+
+enum TaskType {
+    TASK_SCAN = 0;
+    TASK_EXPLOIT = 1;
+    TASK_ENUMERATE = 2;
+    TASK_COLLECT = 3;
+    TASK_ANALYZE = 4;
+    TASK_REPORT = 5;
+}
+
+enum TaskStatus {
+    TASK_PENDING = 0;
+    TASK_RUNNING = 1;
+    TASK_COMPLETED = 2;
+    TASK_FAILED = 3;
+    TASK_CANCELLED = 4;
+    TASK_TIMEOUT = 5;
+}
+
+// ==================== CORE MESSAGES ====================
+
+message AgentIdentity {
+    string agent_id = 1;
+    string session_id = 2;
+    string version = 3;
+    repeated string capabilities = 4;
+    map<string, string> metadata = 5;
+    google.protobuf.Timestamp registered_at = 6;
+}
+
+message EncryptedPayload {
+    bytes encrypted_data = 1;
+    bytes nonce = 2;
+    bytes auth_tag = 3;
+    string key_id = 4;
+    string algorithm = 5;  // e.g., "AES-256-GCM"
+}
+
+message MessageEnvelope {
+    string message_id = 1;
+    string correlation_id = 2;
+    MessageType message_type = 3;
+    MessagePriority priority = 4;
+    AgentIdentity sender = 5;
+    AgentIdentity recipient = 6;
+    google.protobuf.Timestamp timestamp = 7;
+    int32 ttl_seconds = 8;  // Time-to-live
+    
+    // Either encrypted_payload OR raw_payload (for internal use)
+    oneof payload_container {
+        EncryptedPayload encrypted_payload = 9;
+        google.protobuf.Any raw_payload = 10;
+    }
+    
+    map<string, string> headers = 11;
+    bytes signature = 12;  // HMAC signature
+}
+
+// ==================== COMMAND MESSAGES ====================
+
+message CommandRequest {
+    string command_id = 1;
+    TaskType task_type = 2;
+    string target = 3;
+    map<string, string> parameters = 4;
+    int32 timeout_seconds = 5;
+    bool require_ack = 6;
+}
+
+message CommandResponse {
+    string command_id = 1;
+    bool success = 2;
+    string result_data = 3;
+    string error_message = 4;
+    int32 exit_code = 5;
+    google.protobuf.Timestamp completed_at = 6;
+    map<string, string> metadata = 7;
+}
+
+// ==================== TASK MESSAGES ====================
+
+message Task {
+    string task_id = 1;
+    string parent_task_id = 2;
+    TaskType type = 3;
+    TaskStatus status = 4;
+    string assigned_agent_id = 5;
+    google.protobuf.Timestamp created_at = 6;
+    google.protobuf.Timestamp started_at = 7;
+    google.protobuf.Timestamp completed_at = 8;
+    int32 priority = 9;
+    map<string, string> parameters = 10;
+    repeated string dependencies = 11;
+    TaskResult result = 12;
+}
+
+message TaskResult {
+    bool success = 1;
+    string output = 2;
+    string error = 3;
+    map<string, bytes> artifacts = 4;
+    repeated Finding findings = 5;
+}
+
+message Finding {
+    string finding_id = 1;
+    string severity = 2;  // CRITICAL, HIGH, MEDIUM, LOW, INFO
+    string title = 3;
+    string description = 4;
+    string target = 5;
+    map<string, string> evidence = 6;
+    map<string, string> remediation = 7;
+    float cvss_score = 8;
+}
+
+// ==================== EVENT MESSAGES ====================
+
+message AgentEvent {
+    string event_id = 1;
+    string event_type = 2;
+    AgentIdentity agent = 3;
+    google.protobuf.Timestamp timestamp = 4;
+    map<string, string> data = 5;
+    AgentStatus status = 6;
+}
+
+message Heartbeat {
+    string agent_id = 1;
+    google.protobuf.Timestamp timestamp = 2;
+    AgentStatus status = 3;
+    float cpu_usage = 4;
+    float memory_usage = 5;
+    int32 active_tasks = 6;
+    map<string, string> metrics = 7;
+}
+
+// ==================== STREAMING MESSAGES ====================
+
+message StreamChunk {
+    string stream_id = 1;
+    int32 sequence_number = 2;
+    bytes data = 3;
+    bool is_last = 4;
+    string checksum = 5;
+}
+
+// ==================== SERVICE DEFINITIONS ====================
+
+service AgentCommunicationService {
+    // Unary RPCs
+    rpc SendCommand(CommandRequest) returns (CommandResponse);
+    rpc GetTaskStatus(TaskQuery) returns (Task);
+    rpc AcknowledgeMessage(AckRequest) returns (google.protobuf.Empty);
+    
+    // Bidirectional streaming for real-time communication
+    rpc StreamMessages(stream MessageEnvelope) returns (stream MessageEnvelope);
+    
+    // Server streaming for task results
+    rpc StreamTaskResults(TaskQuery) returns (stream TaskResult);
+    
+    // Client streaming for large data uploads
+    rpc UploadArtifact(stream StreamChunk) returns (UploadResponse);
+    
+    // Heartbeat streaming
+    rpc HeartbeatStream(stream Heartbeat) returns (stream HeartbeatResponse);
+}
+
+service TaskOrchestrationService {
+    rpc CreateTask(Task) returns (Task);
+    rpc UpdateTask(Task) returns (Task);
+    rpc CancelTask(TaskQuery) returns (Task);
+    rpc ListTasks(TaskFilter) returns (TaskList);
+    rpc SubscribeToTaskEvents(TaskQuery) returns (stream AgentEvent);
+}
+
+service AgentRegistryService {
+    rpc RegisterAgent(AgentIdentity) returns (RegistrationResponse);
+    rpc UnregisterAgent(AgentQuery) returns (google.protobuf.Empty);
+    rpc GetAgent(AgentQuery) returns (AgentIdentity);
+    rpc ListAgents(AgentFilter) returns (AgentList);
+    rpc UpdateAgentStatus(StatusUpdate) returns (google.protobuf.Empty);
+}
+
+// ==================== QUERY/REQUEST MESSAGES ====================
+
+message TaskQuery {
+    string task_id = 1;
+    string agent_id = 2;
+}
+
+message TaskFilter {
+    repeated TaskStatus statuses = 1;
+    repeated string agent_ids = 2;
+    TaskType task_type = 3;
+    int32 limit = 4;
+    int32 offset = 5;
+}
+
+message TaskList {
+    repeated Task tasks = 1;
+    int32 total_count = 2;
+}
+
+message AgentQuery {
+    string agent_id = 1;
+    string session_id = 2;
+}
+
+message AgentFilter {
+    repeated AgentStatus statuses = 1;
+    repeated string capabilities = 2;
+}
+
+message AgentList {
+    repeated AgentIdentity agents = 1;
+    int32 total_count = 2;
+}
+
+message AckRequest {
+    string message_id = 1;
+    string agent_id = 2;
+    google.protobuf.Timestamp received_at = 3;
+}
+
+message RegistrationResponse {
+    bool success = 1;
+    string session_token = 2;
+    google.protobuf.Timestamp expires_at = 3;
+    string message = 4;
+}
+
+message StatusUpdate {
+    string agent_id = 1;
+    AgentStatus status = 2;
+    map<string, string> details = 3;
+}
+
+message HeartbeatResponse {
+    bool acknowledged = 1;
+    repeated CommandRequest pending_commands = 2;
+    map<string, string> config_updates = 3;
+}
+
+message UploadResponse {
+    bool success = 1;
+    string artifact_id = 2;
+    string message = 3;
+}
