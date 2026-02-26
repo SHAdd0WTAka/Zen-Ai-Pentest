@@ -2,7 +2,7 @@
 
 ## Übersicht
 
-Zen-AI-Pentest integriert nun **20+ professionelle Pentesting-Tools** für comprehensive Security-Assessments.
+Zen-AI-Pentest integriert nun **72+ professionelle Pentesting-Tools** für comprehensive Security-Assessments.
 
 ---
 
@@ -219,4 +219,4 @@ pip install -r requirements.txt
 
 ---
 
-**Status**: ✅ 20+ Tools implementiert und integriert
+**Status**: ✅ 72+ Tools implementiert und integriert
