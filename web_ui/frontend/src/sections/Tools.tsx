@@ -178,7 +178,7 @@ export function Tools() {
             <span>Integrated Tools</span>
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-6">
-            40+ Professional
+            72+ Professional
             <br />
             <span className="bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">
               Security Tools

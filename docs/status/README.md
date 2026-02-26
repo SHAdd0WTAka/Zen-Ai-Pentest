@@ -22,7 +22,7 @@ The project evolves through 7 phases:
 4. 🛡️ **Phase 4: Security Engine** - Guardrails, risk engine (< 500 commits)
 5. 🏢 **Phase 5: Enterprise** - CI/CD, reporting, notifications (< 700 commits)
 6. 🧠 **Phase 6: AI Personas** - 11 personas, Kimi AI integration (< 900 commits)
-7. 🚀 **Phase 7: Mature** - 40+ tools, complete feature set (900+ commits)
+7. 🚀 **Phase 7: Mature** - 72+ tools, complete feature set (900+ commits)
 
 ## How It Works
 
@@ -33,7 +33,7 @@ The project evolves through 7 phases:
 
 2. **Generator Script** (`scripts/generate_status_card.py`)
    - Calculates repository statistics using git commands
-   - Counts integrated tools in the `tools/` directory
+   - Counts integrated tools in the `tools/` directory (currently 72+ tools)
    - Determines current evolution phase
    - Generates a PNG image with all information
 

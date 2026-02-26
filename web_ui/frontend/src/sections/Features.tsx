@@ -30,7 +30,7 @@ const features = [
   },
   {
     icon: Zap,
-    title: '40+ Security Tools',
+    title: '72+ Security Tools',
     description:
       'Real execution of professional security tools with no simulations or mocks',
     color: 'from-yellow-500 to-orange-500',

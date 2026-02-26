@@ -197,3 +197,5 @@ temp/
 # Downloaded files (like private keys)
 Downloads/*.pem
 Downloads/*.key
+coverage.json
+*.json

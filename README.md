@@ -76,7 +76,7 @@ All tools run with **safety controls**:
 
 [![PyPI](https://img.shields.io/pypi/v/zen-ai-pentest?color=green)](https://pypi.org/project/zen-ai-pentest/)
 [![Docker](https://img.shields.io/badge/Docker-Ready-blue?logo=docker)](docker/)
-[![Tests](https://img.shields.io/badge/Tests-40%2B%20Tools-brightgreen)](tools/)
+[![Tests](https://img.shields.io/badge/Tests-72%2B%20Tools-brightgreen)](tools/)
 [![CI](https://img.shields.io/badge/CI-Passing-brightgreen)](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/actions)
 [![Security](https://img.shields.io/badge/Security-Passing-brightgreen)](https://github.com/SHAdd0WTAka/Zen-Ai-Pentest/actions/workflows/security.yml)
 [![codecov](https://codecov.io/gh/SHAdd0WTAka/zen-ai-pentest/branch/main/graph/badge.svg)](https://codecov.io/gh/SHAdd0WTAka/zen-ai-pentest)
@@ -187,7 +187,7 @@ All tools run with **safety controls**:
 - 🤖 **AI-Powered**: Leverages state-of-the-art LLMs for intelligent decision making
 - 🔒 **Security-First**: Multiple safety controls and validation layers
 - 🚀 **Production-Ready**: Enterprise-grade with CI/CD, monitoring, and support
-- 📊 **Comprehensive**: 40+ integrated security tools
+- 📊 **Comprehensive**: 72+ integrated security tools
 - 🔧 **Extensible**: Plugin system for custom tools and integrations
 - ☁️ **Cloud-Native**: Deploy on AWS, Azure, or GCP
 - 📱 **Quick Access**: Scan QR codes for instant mobile access
@@ -273,16 +273,21 @@ All tools run with **safety controls**:
 - **Scalable** - Run multiple agents
 - **Production Ready** - Health checks & monitoring
 
-### 🛠️ 40+ Integrated Tools
+### 🛠️ 72+ Integrated Tools
+
 | Category | Tools |
 |----------|-------|
-| **Network** | Nmap, Masscan, Scapy, Tshark |
-| **Web** | BurpSuite, SQLMap, Gobuster, OWASP ZAP |
-| **Exploitation** | Metasploit Framework |
-| **Brute Force** | Hydra, Hashcat |
-| **Reconnaissance** | Amass, Nuclei, TheHarvester, Subdomain Scanner |
-| **Active Directory** | BloodHound, CrackMapExec, Responder |
-| **Wireless** | Aircrack-ng Suite |
+| **Network** | Nmap, Masscan, Scapy, Tshark, tcpdump, netdiscover, arp-scan |
+| **Web** | BurpSuite, SQLMap, Gobuster, OWASP ZAP, FFuF, Nikto, WAFW00F, WhatWeb, Nuclei |
+| **Exploitation** | Metasploit Framework, SearchSploit |
+| **Brute Force** | Hydra, Hashcat, John, Ncrack |
+| **Reconnaissance** | Amass, Nuclei, TheHarvester, Subfinder, HTTPX, Sherlock, Ignorant, Scout |
+| **Active Directory** | BloodHound, NetExec, Responder, ldapsearch, enum4linux |
+| **Wireless** | Aircrack-ng Suite (aircrack-ng, airmon-ng, airodump-ng, aireplay-ng) |
+| **OSINT** | Sherlock, Ignorant, TheHarvester, Scout |
+| **Code Analysis** | Semgrep, TruffleHog, Gitleaks, Bandit |
+| **Container** | Trivy, Docker, Kubectl |
+| **System** | Netcat, Socat, OpenSSL, Proxychains, Tor |
 
 ### 🔍 Subdomain Scanner
 - **Multi-Technique Enumeration**: DNS, Wordlist, Certificate Transparency

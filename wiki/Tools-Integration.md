@@ -1,48 +1,32 @@
 # Tools & Integration
 
-Zen-AI-Pentest integriert 40+ professionelle Security-Tools.
+Zen-AI-Pentest integrates **72+ professional security tools** across all categories.
 
-## Integrierte Tools
+## Overview
 
-### Reconnaissance
+| Category | Count | Tools |
+|----------|-------|-------|
+| **Network & Scanning** | 8 | Nmap, Masscan, Scapy, Tshark, tcpdump, netdiscover, arp-scan, wireshark |
+| **Web Security** | 12 | BurpSuite, SQLMap, Gobuster, OWASP ZAP, FFuF, Nikto, WAFW00F, WhatWeb, Nuclei, curl, wget, httpx |
+| **Reconnaissance** | 9 | Amass, Nuclei, TheHarvester, Subfinder, HTTPX, Sherlock, Ignorant, Scout, whois |
+| **Exploitation** | 2 | Metasploit, SearchSploit |
+| **Brute Force** | 4 | Hydra, Hashcat, John, Ncrack |
+| **Active Directory** | 8 | BloodHound, NetExec, Responder, ldapsearch, rpcclient, smbclient, enum4linux |
+| **Wireless** | 6 | Aircrack-ng Suite |
+| **OSINT** | 4 | Sherlock, Ignorant, TheHarvester, Scout |
+| **Code Analysis** | 4 | Semgrep, TruffleHog, Gitleaks, Bandit |
+| **Container** | 3 | Trivy, Docker, Kubectl |
+| **System Utilities** | 8 | Netcat, Socat, OpenSSL, Proxychains, Tor |
+| **Core Framework** | 5 | Tool Registry, Tool Caller, Kimi CLI, Kimi Helper, AI Personas |
+| **Total** | **72+** | |
 
-| Tool | Zweck | Sicherheitsstufe |
-|------|-------|-----------------|
-| Nmap | Port Scanning | ✅ Safe |
-| Subfinder | Subdomain Enum | ✅ Safe |
-| HTTPX | HTTP Probing | ✅ Safe |
-| Whois | Domain Info | ✅ Safe |
-| Dig | DNS Queries | ✅ Safe |
+## Complete Tools List
 
-### Vulnerability Scanning
+See [Complete Tools List](Tools-Complete-List.md) for detailed information on all 72+ tools.
 
-| Tool | Zweck | Sicherheitsstufe |
-|------|-------|-----------------|
-| Nuclei | CVE Detection | ✅ Safe |
-| Nikto | Web Scanner | ✅ Safe |
-| SQLMap | SQL Injection | ⚠️ Medium |
-| WAFW00F | WAF Detection | ✅ Safe |
-| WhatWeb | Tech Detection | ✅ Safe |
+## Tool Execution
 
-### Exploitation
-
-| Tool | Zweck | Sicherheitsstufe |
-|------|-------|-----------------|
-| Metasploit | Exploitation | ⚠️ High |
-| SQLMap | SQL Injection | ⚠️ Medium |
-| FFuF | Web Fuzzing | ✅ Safe |
-
-### Brute Force
-
-| Tool | Zweck | Sicherheitsstufe |
-|------|-------|-----------------|
-| Hydra | Login Brute | ⚠️ Medium |
-| John | Password Crack | ✅ Safe |
-| Hashcat | Password Crack | ✅ Safe |
-
-## Tool Ausführung
-
-### Direkt
+### Direct
 
 ```python
 from tools.executor import ToolExecutor
@@ -78,7 +62,7 @@ curl -X POST http://localhost:8000/api/v1/tools/execute \
 
 ## Docker Sandbox
 
-Tools laufen in isolierten Docker-Containern:
+Tools run in isolated Docker containers:
 
 ```python
 from tools.docker_sandbox import DockerSandbox
@@ -91,7 +75,7 @@ sandbox = DockerSandbox(
 
 result = await sandbox.run(
     command="nmap -sV example.com",
-    read_only=True  # Keine Schreibzugriffe
+    read_only=True  # No write access
 )
 ```
 
@@ -100,7 +84,7 @@ result = await sandbox.run(
 ### Private IP Blocking
 
 ```python
-# Blockiert automatisch:
+# Automatically blocks:
 # - 10.0.0.0/8
 # - 172.16.0.0/12
 # - 192.168.0.0/16
@@ -110,8 +94,8 @@ result = await sandbox.run(
 ### Timeout Management
 
 ```python
-# Standard: 10 Minuten
-# Anpassbar:
+# Default: 10 minutes
+# Customizable:
 executor = ToolExecutor(timeout=600)
 ```
 
@@ -126,16 +110,16 @@ deploy:
       memory: 4G
 ```
 
-## Output Formate
+## Output Formats
 
-| Format | Beschreibung |
-|--------|--------------|
-| JSON | Maschinenlesbar |
-| XML | Für Integration |
-| HTML | Für Reports |
-| PDF | Für Kunden |
+| Format | Description |
+|--------|-------------|
+| JSON | Machine readable |
+| XML | For integration |
+| HTML | For reports |
+| PDF | For customers |
 
-## Neue Tools hinzufügen
+## Adding New Tools
 
 ### 1. Tool Definition
 
@@ -152,7 +136,7 @@ class MyTool(BaseTool):
         return {"result": "..."}
 ```
 
-### 2. Registrieren
+### 2. Register
 
 ```python
 # tools/registry.py
@@ -161,7 +145,7 @@ from tools.custom.my_tool import MyTool
 registry.register(MyTool())
 ```
 
-### 3. Testen
+### 3. Test
 
 ```bash
 python3 -m pytest tests/tools/test_my_tool.py
@@ -209,7 +193,7 @@ pipeline {
 
 ## Plugins
 
-Zen-AI-Pentest unterstützt ein Plugin-System:
+Zen-AI-Pentest supports a plugin system:
 
 ```python
 # plugins/my_plugin.py
@@ -224,3 +208,7 @@ class MyPlugin(BasePlugin):
     def on_scan_complete(self, scan, results):
         print(f"Scan completed: {scan.id}")
 ```
+
+---
+
+*For the complete list of all 72+ tools, see [Tools-Complete-List.md](Tools-Complete-List.md)*

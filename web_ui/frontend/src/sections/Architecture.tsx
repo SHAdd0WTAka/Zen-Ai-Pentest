@@ -56,7 +56,7 @@ const architectureLayers = [
     color: 'from-green-500 to-emerald-500',
     items: [
       { name: 'Docker Sandbox', icon: Container, desc: 'Isolated execution' },
-      { name: '40+ Tools', icon: Shield, desc: 'Security tool suite' },
+      { name: '72+ Tools', icon: Shield, desc: 'Security tool suite' },
       { name: 'Safety Controls', icon: Lock, desc: 'IP blocking, timeouts' },
       { name: 'Result Parser', icon: FileText, desc: 'Output processing' },
     ],

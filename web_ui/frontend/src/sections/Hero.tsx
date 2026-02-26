@@ -73,7 +73,7 @@ export function Hero() {
 
             {/* Description */}
             <p className="text-lg text-slate-400 max-w-xl leading-relaxed">
-              Zen-AI-Pentest combines cutting-edge AI with 40+ professional security
+              Zen-AI-Pentest combines cutting-edge AI with 72+ professional security
               tools. Execute real vulnerability scans with intelligent automation,
               comprehensive reporting, and enterprise-grade safety controls.
             </p>
@@ -81,7 +81,7 @@ export function Hero() {
             {/* Key Features Pills */}
             <div className="flex flex-wrap gap-3">
               {[
-                { icon: Shield, text: '40+ Security Tools' },
+                { icon: Shield, text: '72+ Security Tools' },
                 { icon: Terminal, text: 'Real Execution' },
                 { icon: Zap, text: 'AI-Powered' },
                 { icon: Lock, text: 'Safety First' },
@@ -121,7 +121,7 @@ export function Hero() {
             <div className="flex gap-8 pt-4">
               {[
                 { value: '205+', label: 'GitHub Stars' },
-                { value: '40+', label: 'Security Tools' },
+                { value: '72+', label: 'Security Tools' },
                 { value: 'v2.3.9', label: 'Latest Version' },
               ].map((stat, index) => (
                 <div key={index} className="text-center">

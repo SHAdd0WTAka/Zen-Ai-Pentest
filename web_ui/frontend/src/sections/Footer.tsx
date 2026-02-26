@@ -77,7 +77,7 @@ export function Footer() {
               </span>
             </a>
             <p className="text-slate-400 text-sm mb-6 max-w-xs">
-              AI-powered penetration testing framework with 40+ security tools,
+              AI-powered penetration testing framework with 72+ security tools,
               autonomous agents, and enterprise-grade safety controls.
             </p>
 
