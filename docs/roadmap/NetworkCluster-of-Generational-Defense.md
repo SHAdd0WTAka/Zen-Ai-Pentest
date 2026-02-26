@@ -181,6 +181,246 @@ Wie Antikörper - einmal gelernt, für immer immunisiert.
 
 ---
 
+## 🔄 Agent Communication Protocol (ACP)
+
+> **Inspiriert von x402** - aber statt Zahlungen: Nachrichten zwischen Agents
+
+Das Herzstück des NetworkClusters ist ein dezentrales Kommunikationsprotokoll, das es Agents ermöglicht, direkt miteinander zu kommunizieren - ohne zentralen Orchestrator, ohne Single Point of Failure.
+
+### Das Problem: Zentralisierte Kommunikation
+
+```
+Traditionell (heute):
+┌─────────┐     ┌─────────────┐     ┌─────────┐
+│ Agent A │◄───►│ Orchestrator│◄───►│ Agent B │
+└─────────┘     └──────┬──────┘     └─────────┘
+                       │
+              Single Point of Failure
+              Wenn Orchestrator ausfällt:
+              → Keine Kommunikation möglich
+```
+
+### Die Lösung: P2P wie TCP für Agents (x402-Style)
+
+```
+Mit ACP (Zukunft):
+┌─────────┐◄─────────────────────────►┌─────────┐
+│ Agent A │      P2P Messages         │ Agent B │
+│  (Recon)│◄─────────────────────────►│(Exploit)│
+└────┬────┘                           └────┬────┘
+     │                                     │
+     └──────────────┬──────────────────────┘
+                    │
+         ┌──────────▼──────────┐
+         │  Shared State       │
+         │ (Distributed DB)    │
+         │  - Threat Intel     │
+         │  - Agent Registry   │
+         │  - Consensus        │
+         └─────────────────────┘
+```
+
+### ACP Message Format
+
+Jede Nachricht folgt dem x402-Prinzip - minimale Metadaten, maximale Effizienz:
+
+```python
+class ACPMessage:
+    """
+    Agent Communication Protocol Message
+    Inspiriert von x402 - aber für Daten statt Zahlungen
+    """
+    
+    # Header (wie HTTP 402, aber für Agenten)
+    version: str = "ACP/1.0"
+    message_type: "DIRECT" | "BROADCAST" | "REQUEST" | "RESPONSE" | "EVENT"
+    
+    # Identität (kryptographisch verifizierbar)
+    from_agent: str  # Public Key / Agent ID
+    to_agent: str    # Target Agent oder "*" für Broadcast
+    signature: str   # Signiert mit Agent's Private Key
+    
+    # Routing (wie TCP, aber für Agent-Netzwerk)
+    ttl: int = 5           # Time-to-live (Max hops)
+    timestamp: int         # Unix timestamp
+    message_id: str        # Unique ID für Deduplizierung
+    
+    # Payload (die eigentlichen Daten)
+    payload: dict = {
+        "action": "share_threat_intelligence",
+        "data": {
+            "cve": "CVE-2021-44228",
+            "confidence": 0.95,
+            "affected_targets": ["192.168.1.100"],
+            "recommended_action": "patch_immediately"
+        },
+        "context": {
+            "scan_id": "scan_abc123",
+            "chain_of_trust": ["agent_recon_1", "agent_analyzer_2"]
+        }
+    }
+    
+    # Verifikation (Byzantinisch)
+    confirmations: list = []  # Liste von bestätigenden Agents
+```
+
+### Kommunikations-Muster
+
+#### 1. DIRECT - Punkt-zu-Punkt
+```python
+# Agent A (Recon) sendet an Agent B (Exploit)
+msg = ACPMessage(
+    message_type="DIRECT",
+    from_agent="agent_recon_1",
+    to_agent="agent_exploit_3",
+    payload={
+        "action": "exploit_request",
+        "target": "192.168.1.100",
+        "vulnerability": "CVE-2021-44228"
+    }
+)
+
+# Agent B antwortet
+response = ACPMessage(
+    message_type="RESPONSE",
+    from_agent="agent_exploit_3",
+    to_agent="agent_recon_1",
+    payload={
+        "status": "success",
+        "result": "RCE achieved",
+        "evidence": "shell_access_confirmed"
+    }
+)
+```
+
+#### 2. BROADCAST - An alle Agents
+```python
+# Agent entdeckt neue Bedrohung, informiert Netzwerk
+msg = ACPMessage(
+    message_type="BROADCAST",
+    from_agent="agent_sensor_5",
+    to_agent="*",  # Wildcard = alle Agents
+    payload={
+        "action": "threat_alert",
+        "threat": {
+            "type": "zero_day",
+            "signature": "malware_xyz_hash",
+            "severity": "critical"
+        }
+    }
+)
+```
+
+#### 3. REQUEST/RESPONSE - Synchrone Abfrage
+```python
+# Agent braucht Spezialwissen
+request = ACPMessage(
+    message_type="REQUEST",
+    from_agent="agent_general_1",
+    to_agent="agent_specialist_crypto",
+    payload={
+        "action": "query",
+        "question": "analyze_ssl_config",
+        "data": "cert_details_here"
+    }
+)
+
+# Spezialist antwortet
+response = ACPMessage(
+    message_type="RESPONSE",
+    from_agent="agent_specialist_crypto",
+    to_agent="agent_general_1",
+    payload={
+        "answer": "weak_cipher_detected",
+        "recommendation": "disable_tls_1_0"
+    }
+)
+```
+
+#### 4. EVENT - Asynchrone Benachrichtigung
+```python
+# Agent meldet Fortschritt
+msg = ACPMessage(
+    message_type="EVENT",
+    from_agent="agent_scanner_2",
+    to_agent="agent_orchestrator",
+    payload={
+        "action": "progress_update",
+        "scan_id": "scan_123",
+        "progress": 75,
+        "findings_count": 12
+    }
+)
+```
+
+### Das "x402-Prinzip" für Agents
+
+Wie x402 nutzt ACP existierende HTTP-Infrastruktur, aber mit einem Twist:
+
+```
+x402 (Zahlungen):
+Client ──HTTP Request──► Server
+Server ──402 Payment Required──► Client
+Client ──Zahlung (Crypto)──► Server
+Server ──Zugriff gewährt──► Client
+
+ACP (Agent Kommunikation):
+Agent A ──ACP Message──► Netzwerk
+Netzwerk ──Route zu Agent B──► Agent B
+Agent B ──Verifikation──► Konsens-Check
+Agent B ──Response──► Agent A
+```
+
+### Vorteile gegenüber zentralisiertem Orchestrator
+
+| Aspekt | Orchestrator (heute) | ACP (Zukunft) |
+|--------|---------------------|---------------|
+| **Skalierung** | Flaschenhals bei vielen Agents | Linear skalierend (je mehr Agents, desto besser) |
+| **Resilienz** | SPoF - Ausfall = System down | Dezentral - Agents können ausfallen |
+| **Latenz** | Zusätzlicher Hop | Direkte P2P Verbindung |
+| **Privatsphäre** | Orchestrator sieht alles | Nur beteiligte Agents sehen Nachricht |
+| **Konsens** | Zentral entschieden | Byzantinisches Voting |
+
+### Implementierungs-Stack
+
+```
+┌─────────────────────────────────────────┐
+│        ACP Application Layer            │
+│  - Message Types (DIRECT, BROADCAST...) │
+│  - Payload Schemas                      │
+│  - Agent Capabilities                   │
+├─────────────────────────────────────────┤
+│        LibP2P Transport Layer           │
+│  - Node Discovery (DHT)                 │
+│  - NAT Traversal (WebRTC/Hole Punching) │
+│  - Encrypted Channels (Noise Protocol)  │
+├─────────────────────────────────────────┤
+│        Network Layer                    │
+│  - TCP/QUIC                             │
+│  - UDP for Broadcasts                   │
+└─────────────────────────────────────────┘
+```
+
+### Unterschied zu traditionellen Message Queues
+
+| Feature | RabbitMQ/Kafka | ACP |
+|---------|---------------|-----|
+| Zentralisiert | Ja | Nein (P2P) |
+| Agent Identity | Username/Password | Public Key Kryptographie |
+| Nachweisbarkeit | Logs | Byzantine Consensus |
+| Skalierung | Server-Cluster | Jeder Node = Server |
+| Offline-Fähigkeit | Nein | Ja (Store & Forward) |
+
+### Verbindung zu Phase 2
+
+ACP ist das Kommunikations-Rückgrat für:
+- **2.2** Byzantinischer Konsens (Stimmen werden als ACP Messages gesendet)
+- **2.3** Föderiertes Lernen (Modelle werden via ACP geteilt)
+- **2.4** Distributed Threat DB (Updates via ACP Broadcast)
+- **2.5** Auto-Immunisierung (Patches via ACP verteilt)
+
+---
+
 ## 📋 Phasenplan
 
 ### Phase 1: Foundation (Jahre 1-5)
@@ -202,10 +442,11 @@ Wie Antikörper - einmal gelernt, für immer immunisiert.
 | Meilenstein | Beschreibung | Status |
 |-------------|--------------|--------|
 | **2.1** | LibP2P Integration für Node-Discovery | 📋 Planned |
-| **2.2** | Byzantinischer Konsens-Algorithmus | 📋 Planned |
-| **2.3** | Föderiertes Lernen (Modelle teilen, keine Daten) | 📋 Planned |
-| **2.4** | Distributed Threat Database (IPFS-basiert) | 📋 Planned |
-| **2.5** | Auto-Immunisierung (Patches werden automatisch verteilt) | 📋 Planned |
+| **2.2** | **Agent Communication Protocol (ACP)** | 🚧 In Design |
+| **2.3** | Byzantinischer Konsens-Algorithmus | 📋 Planned |
+| **2.4** | Föderiertes Lernen (Modelle teilen, keine Daten) | 📋 Planned |
+| **2.5** | Distributed Threat Database (IPFS-basiert) | 📋 Planned |
+| **2.6** | Auto-Immunisierung (Patches werden automatisch verteilt) | 📋 Planned |
 
 ### Phase 3: Schwarm-Intelligenz (Jahre 15-30)
 
@@ -314,6 +555,6 @@ Es ist der Sandwurm - aber statt zu zerstören, zu schützen. Mit Zustimmung. Mi
 
 ---
 
-**Letzte Aktualisierung:** 2026-02-24  
+**Letzte Aktualisierung:** 2026-02-25  
 **Autor:** SHAdd0WTAka mit Unterstützung von Kimi AI  
 **Status:** Visionärer Entwurf - Open for Discussion
