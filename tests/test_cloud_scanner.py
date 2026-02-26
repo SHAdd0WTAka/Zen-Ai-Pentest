@@ -12,7 +12,7 @@ from unittest.mock import AsyncMock, Mock, patch
 import pytest
 
 # Skip tests if scoutsuite_integration is not available
-pytest.importorskip("scoutsuite_integration", allow_module_level=True)
+pytest.importorskip("scoutsuite_integration")
 
 from scoutsuite_integration import (
     CloudProvider,

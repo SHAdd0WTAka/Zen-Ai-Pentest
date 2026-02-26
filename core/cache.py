@@ -583,9 +583,9 @@ class RedisCache(CacheBackend):
         self.db = db
         self.password = password
         self.max_connections = max_connections
-        self._pool: Optional[redis.Redis] = None
+        self._pool = None
 
-    async def _get_pool(self) -> redis.Redis:
+    async def _get_pool(self):
         if self._pool is None:
             self._pool = redis.Redis(
                 host=self.host,

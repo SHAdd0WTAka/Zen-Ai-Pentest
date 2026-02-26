@@ -596,7 +596,7 @@ class TestNotificationIntegration:
     @patch("smtplib.SMTP")
     @patch("requests.post")
     @patch("builtins.open", mock_open(read_data=b"PDF content"))
-    def test_dual_notification(self, mock_post, mock_smtp_class, mock_file):
+    def test_dual_notification(self, mock_post, mock_smtp_class):
         """Test sending both email and Slack notifications."""
         # Setup mocks
         mock_smtp = Mock()

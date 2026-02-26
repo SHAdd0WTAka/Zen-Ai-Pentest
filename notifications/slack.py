@@ -7,7 +7,7 @@ See: https://api.slack.com/messaging/webhooks
 
 import logging
 from datetime import datetime
-from typing import Dict, Final, Tuple
+from typing import Dict, Final, Tuple, Union
 from urllib.parse import urlparse
 
 import requests
@@ -17,8 +17,8 @@ logger = logging.getLogger(__name__)
 # Allowed webhook hosts (constant for code analysis visibility)
 # codeql[python/ssrf]: These are the only allowed hosts for SSRF protection
 ALLOWED_SLACK_HOSTS: Final[Tuple[str, ...]] = (
-    "hooks.slack.com",      # Official Slack incoming webhooks
-    "hooks.slack.dev",      # Slack development/testing environment
+    "hooks.slack.com",  # Official Slack incoming webhooks
+    "hooks.slack.dev",  # Slack development/testing environment
 )
 
 # Validate scheme (prevent file://, ftp://, etc.)
@@ -71,8 +71,8 @@ class ValidatedSlackWebhook:
         # Validate scheme (prevent file://, ftp://, etc.)
         if parsed.scheme not in ALLOWED_SCHEMES:
             raise ValueError(
-                f"Invalid scheme '{parsed.scheme}'. "
-                f"Only {ALLOWED_SCHEMES} are allowed for security reasons."
+                f"Invalid webhook URL scheme: '{parsed.scheme}'. "
+                f"Only HTTPS is allowed for security reasons."
             )
 
         # Validate hostname exists
@@ -86,9 +86,8 @@ class ValidatedSlackWebhook:
         # Only allow official Slack webhook domains
         if host not in ALLOWED_SLACK_HOSTS:
             raise ValueError(
-                f"Invalid webhook host '{host}'. "
-                f"Only official Slack hosts {ALLOWED_SLACK_HOSTS} are allowed. "
-                f"This restriction prevents server-side request forgery (SSRF) attacks."
+                f"Webhook host is not allowed: '{host}'. "
+                f"Only official Slack hosts are permitted."
             )
 
         return url
@@ -101,21 +100,52 @@ class ValidatedSlackWebhook:
         """Return masked representation."""
         # Mask the URL for secure logging
         parsed = urlparse(self.url)
-        masked_path = parsed.path[:15] + "..." if len(parsed.path) > 15 else parsed.path
+        masked_path = (
+            parsed.path[:15] + "..." if len(parsed.path) > 15 else parsed.path
+        )
         return f"ValidatedSlackWebhook(https://{parsed.netloc}{masked_path})"
+
+
+def _validate_slack_webhook_url(url: str) -> str:
+    """
+    Validate that the provided URL is a legitimate Slack webhook URL.
+
+    This is a convenience function that wraps ValidatedSlackWebhook._validate
+    for backward compatibility with existing code and tests.
+
+    SSRF Protection: Only official Slack webhook hosts are allowed.
+
+    Args:
+        url: The webhook URL to validate
+
+    Returns:
+        The validated URL (unchanged, but confirmed safe)
+
+    Raises:
+        ValueError: If URL fails any validation check
+    """
+    return ValidatedSlackWebhook._validate(url)
 
 
 class SlackNotifier:
     """Sendet Benachrichtigungen an Slack"""
 
-    def __init__(self, webhook_url: ValidatedSlackWebhook) -> None:
+    def __init__(self, webhook_url: Union[str, ValidatedSlackWebhook]) -> None:
         """
         Initialize with a validated Slack webhook URL.
 
         Args:
-            webhook_url: A pre-validated Slack webhook URL
+            webhook_url: A pre-validated Slack webhook URL or a raw URL string.
+                        If a string is provided, it will be validated automatically.
         """
+        if isinstance(webhook_url, str):
+            webhook_url = ValidatedSlackWebhook(webhook_url)
         self._webhook: Final[str] = webhook_url.url
+
+    @property
+    def webhook_url(self) -> str:
+        """Return the webhook URL."""
+        return self._webhook
 
     @classmethod
     def from_raw_url(cls, webhook_url: str) -> "SlackNotifier":
@@ -154,8 +184,9 @@ class SlackNotifier:
                 timeout=10,
                 headers={"Content-Type": "application/json"},
             )
-            response.raise_for_status()
-            return True
+            if response.status_code == 200:
+                return True
+            return False
         except requests.RequestException as e:
             logger.error(f"Slack send error: {e}")
             return False
@@ -211,8 +242,9 @@ class SlackNotifier:
                 timeout=10,
                 headers={"Content-Type": "application/json"},
             )
-            response.raise_for_status()
-            return True
+            if response.status_code == 200:
+                return True
+            return False
         except requests.RequestException as e:
             logger.error(f"Slack send error: {e}")
             return False
@@ -259,8 +291,9 @@ class SlackNotifier:
                 timeout=10,
                 headers={"Content-Type": "application/json"},
             )
-            response.raise_for_status()
-            return True
+            if response.status_code == 200:
+                return True
+            return False
         except requests.RequestException as e:
             logger.error(f"Slack send error: {e}")
             return False
@@ -277,8 +310,8 @@ def slack_notify_scan_complete(
         return "Slack webhook not configured"
 
     try:
-        # Validate URL before creating notifier
-        notifier = SlackNotifier.from_raw_url(webhook)
+        # Validate URL by creating notifier directly
+        notifier = SlackNotifier(webhook)
     except ValueError as e:
         logger.error(f"Invalid Slack webhook URL from environment: {e}")
         return "Invalid Slack webhook configuration"

@@ -6,6 +6,18 @@ Target: 80%+ Coverage
 import sys
 from unittest.mock import MagicMock, patch
 
+# Mock langchain_core before importing the module
+mock_base_tool = MagicMock()
+mock_base_tool.name = "mock_tool"
+mock_base_tool.description = "Mock tool description"
+
+mock_langchain = MagicMock()
+mock_langchain.BaseTool = mock_base_tool
+mock_langchain.Tool = MagicMock(return_value=MagicMock(name="mock_tool", description="Mock tool"))
+
+sys.modules['langchain_core'] = MagicMock()
+sys.modules['langchain_core.tools'] = mock_langchain
+
 import pytest
 
 sys.path.insert(0, "/home/atakan/zen-ai-pentest")

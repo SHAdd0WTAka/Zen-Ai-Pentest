@@ -900,24 +900,412 @@ def get_zen_swagger_html() -> str:
             border-radius: 8px;
             padding: 15px;
         }}
+        
+        /* SCHEMAS SECTION - Fix white backgrounds */
+        .swagger-ui section.models {{
+            background: var(--bg-card) !important;
+            border: 1px solid var(--border) !important;
+            border-radius: 12px;
+            margin: 20px;
+        }}
+        
+        .swagger-ui section.models.is-open {{
+            background: var(--bg-card) !important;
+        }}
+        
+        .swagger-ui section.models h4 {{
+            color: var(--text-primary) !important;
+            background: var(--bg-secondary) !important;
+            padding: 15px 20px;
+            margin: 0;
+            border-bottom: 1px solid var(--border);
+        }}
+        
+        .swagger-ui section.models h4 span {{
+            color: var(--text-secondary) !important;
+        }}
+        
+        .swagger-ui section.models .model-container {{
+            background: var(--bg-card) !important;
+            border-bottom: 1px solid var(--border) !important;
+        }}
+        
+        .swagger-ui .model-box {{
+            background: var(--bg-secondary) !important;
+            border: 1px solid var(--border) !important;
+            border-radius: 8px;
+            padding: 15px;
+        }}
+        
+        .swagger-ui .model {{
+            color: var(--text-primary) !important;
+        }}
+        
+        .swagger-ui .model .property {{
+            color: var(--text-primary) !important;
+        }}
+        
+        .swagger-ui .model .property-name {{
+            color: var(--accent) !important;
+            font-weight: 600;
+        }}
+        
+        .swagger-ui .model .property-type {{
+            color: var(--success) !important;
+        }}
+        
+        .swagger-ui .model .property.primitive {{
+            color: var(--text-secondary) !important;
+        }}
+        
+        .swagger-ui .model .model-box .model-box {{
+            background: var(--bg-card) !important;
+        }}
+        
+        .swagger-ui .model-title {{
+            color: var(--text-primary) !important;
+            font-weight: 600;
+        }}
+        
+        .swagger-ui .model-title__text {{
+            color: var(--text-primary) !important;
+        }}
+        
+        .swagger-ui .model-toggle {{
+            color: var(--accent) !important;
+            background: var(--bg-secondary) !important;
+            border-radius: 4px;
+            padding: 2px 6px;
+        }}
+        
+        .swagger-ui .model-toggle:hover {{
+            background: var(--accent) !important;
+            color: #000 !important;
+        }}
+        
+        .swagger-ui .model-toggle.collapsed {{
+            color: var(--accent) !important;
+        }}
+        
+        .swagger-ui .model-toggle::after {{
+            background: var(--accent) !important;
+        }}
+        
+        .swagger-ui .brace-open, 
+        .swagger-ui .brace-close {{
+            color: var(--text-secondary) !important;
+        }}
+        
+        .swagger-ui .inner-object {{
+            background: var(--bg-card) !important;
+            border-left: 2px solid var(--border) !important;
+            padding-left: 15px;
+            margin-left: 10px;
+        }}
+        
+        .swagger-ui .prop-type {{
+            color: var(--success) !important;
+        }}
+        
+        .swagger-ui .prop-format {{
+            color: var(--text-secondary) !important;
+        }}
+        
+        .swagger-ui .prop-enum {{
+            color: var(--warning) !important;
+        }}
+        
+        .swagger-ui .prop-readonly {{
+            color: var(--error) !important;
+            font-weight: 600;
+        }}
+        
+        .swagger-ui .prop-keyword {{
+            color: var(--accent) !important;
+        }}
+        
+        /* Model collapse/expand button */
+        .swagger-ui .model-box-control {{
+            color: var(--accent) !important;
+        }}
+        
+        /* Array items styling */
+        .swagger-ui .model-box .items {{
+            color: var(--text-secondary) !important;
+        }}
+        
+        /* Table in models */
+        .swagger-ui .model-box table {{
+            background: transparent !important;
+        }}
+        
+        .swagger-ui .model-box table tr {{
+            background: transparent !important;
+            border-bottom: 1px solid var(--border) !important;
+        }}
+        
+        .swagger-ui .model-box table tr:last-child {{
+            border-bottom: none !important;
+        }}
+        
+        .swagger-ui .model-box table td {{
+            background: transparent !important;
+            color: var(--text-primary) !important;
+            border: none !important;
+        }}
+        
+        .swagger-ui .model-box table .header-row {{
+            background: var(--bg-secondary) !important;
+        }}
+        
+        /* Additional schema containers */
+        .swagger-ui .json-schema-2020-12 {{
+            background: var(--bg-secondary) !important;
+        }}
+        
+        .swagger-ui .json-schema-2020-12-property {{
+            color: var(--text-primary) !important;
+        }}
+        
+        .swagger-ui .json-schema-2020-12__title {{
+            color: var(--text-primary) !important;
+        }}
+        
+        /* Schema accordion */
+        .swagger-ui .model-deprecated-warning {{
+            background: rgba(239,68,68,0.1) !important;
+            border: 1px solid var(--error) !important;
+            color: var(--error) !important;
+            border-radius: 6px;
+            padding: 10px;
+        }}
+        
+        /* Content type selection */
+        .swagger-ui .content-type {{
+            background: var(--bg-secondary) !important;
+            border: 1px solid var(--border) !important;
+            color: var(--text-primary) !important;
+        }}
+        
+        /* Response samples */
+        .swagger-ui .example {{
+            background: var(--bg-secondary) !important;
+            border: 1px solid var(--border) !important;
+            border-radius: 8px;
+        }}
+        
+        .swagger-ui .example .example__section-header {{
+            color: var(--text-primary) !important;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+        }}
+        
+        /* Code samples */
+        .swagger-ui .microlight {{
+            color: var(--text-primary) !important;
+        }}
+        
+        /* Execute button area */
+        .swagger-ui .execute-wrapper {{
+            background: var(--bg-secondary) !important;
+            border: 1px solid var(--border) !important;
+            border-radius: 8px;
+            padding: 15px;
+        }}
+        
+        /* Clear button */
+        .swagger-ui .btn-clear {{
+            background: transparent !important;
+            border: 1px solid var(--error) !important;
+            color: var(--error) !important;
+        }}
+        
+        .swagger-ui .btn-clear:hover {{
+            background: var(--error) !important;
+            color: #fff !important;
+        }}
+        
+        /* Schema Buttons (Expand/Collapse) */
+        .swagger-ui .model-box-control {{
+            background: var(--bg-secondary) !important;
+            border: 1px solid var(--border) !important;
+            color: var(--text-primary) !important;
+            border-radius: 6px;
+            padding: 4px 12px !important;
+            font-size: 0.85em;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }}
+        
+        .swagger-ui .model-box-control:hover {{
+            background: var(--accent) !important;
+            color: #000 !important;
+            border-color: var(--accent) !important;
+        }}
+        
+        .swagger-ui .model-box-control:focus {{
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(6,182,212,0.3);
+        }}
+        
+        /* Section controls (Expand all / Collapse all) */
+        .swagger-ui section.models .model-box-control {{
+            background: var(--bg-secondary) !important;
+            border: 1px solid var(--border) !important;
+            color: var(--text-secondary) !important;
+            margin-left: 10px;
+        }}
+        
+        .swagger-ui section.models .model-box-control:hover {{
+            background: var(--accent) !important;
+            color: #000 !important;
+        }}
+        
+        /* Model control arrows */
+        .swagger-ui .model-box-control .pointer {{
+            color: var(--accent) !important;
+        }}
+        
+        /* Schema header buttons container */
+        .swagger-ui section.models .models-control {{
+            display: flex;
+            gap: 10px;
+        }}
+        
+        /* Theme Toggle Button */
+        .theme-toggle {{
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 50px;
+            padding: 10px 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-primary);
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }}
+        
+        .theme-toggle:hover {{
+            background: var(--accent);
+            color: #000;
+            border-color: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(6,182,212,0.3);
+        }}
+        
+        .theme-toggle:active {{
+            transform: translateY(0);
+        }}
+        
+        .theme-toggle .icon {{
+            font-size: 16px;
+        }}
+        
+        /* Light Theme Variables */
+        body[data-theme="light"] {{
+            --bg-primary: #f8fafc;
+            --bg-secondary: #f1f5f9;
+            --bg-card: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border: #e2e8f0;
+        }}
+        
+        body[data-theme="light"] .swagger-ui {{
+            background: #f8fafc !important;
+        }}
+        
+        body[data-theme="light"] .swagger-ui .topbar {{
+            background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%) !important;
+            border-bottom: 1px solid #e2e8f0;
+        }}
+        
+        body[data-theme="light"] .swagger-ui .info {{
+            background: linear-gradient(135deg, rgba(6,182,212,0.05) 0%, transparent 100%);
+            border: 1px solid rgba(6,182,212,0.15);
+        }}
+        
+        body[data-theme="light"] .swagger-ui .info .title {{
+            color: #0891b2 !important;
+            text-shadow: none;
+        }}
+        
+        body[data-theme="light"] .swagger-ui .opblock {{
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }}
+        
+        body[data-theme="light"] .theme-toggle {{
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }}
     </style>
 </head>
 <body>
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">
+        <span class="icon" id="themeIcon">🌙</span>
+        <span id="themeText">Dark</span>
+    </button>
+    
     <div id="swagger-ui"></div>
+    
     <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
     <script>
+        // Theme Management
+        const THEME_KEY = 'zen-api-theme';
+        
+        function getPreferredTheme() {{
+            const savedTheme = localStorage.getItem(THEME_KEY);
+            if (savedTheme) return savedTheme;
+            return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }}
+        
+        function applyTheme(theme) {{
+            document.body.setAttribute('data-theme', theme);
+            const icon = document.getElementById('themeIcon');
+            const text = document.getElementById('themeText');
+            
+            if (theme === 'dark') {{
+                icon.textContent = '☀️';
+                text.textContent = 'Light';
+            }} else {{
+                icon.textContent = '🌙';
+                text.textContent = 'Dark';
+            }}
+        }}
+        
+        function toggleTheme() {{
+            const currentTheme = document.body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            localStorage.setItem(THEME_KEY, newTheme);
+            applyTheme(newTheme);
+        }}
+        
+        // Initialize theme
+        document.addEventListener('DOMContentLoaded', function() {{
+            const theme = getPreferredTheme();
+            applyTheme(theme);
+        }});
+        
+        // Initialize Swagger UI
         const ui = SwaggerUIBundle({{
             url: '/openapi.json',
             dom_id: '#swagger-ui',
             deepLinking: true,
             presets: [
-                SwaggerUIBundle.presets.apis,
-                SwaggerUIBundle.SwaggerUIStandalonePreset
+                SwaggerUIBundle.presets.apis
             ],
             plugins: [
                 SwaggerUIBundle.plugins.DownloadUrl
             ],
-            layout: "StandaloneLayout",
+            layout: "BaseLayout",
             validatorUrl: null,
             tryItOutEnabled: true,
             supportedSubmitMethods: ['get', 'post', 'put', 'delete', 'patch'],
