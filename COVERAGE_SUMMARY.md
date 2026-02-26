@@ -1,6 +1,6 @@
 # Test Coverage Summary
 
-## Current Status: 23 Modules Tested
+## Current Status: 24 Modules Tested
 
 | Module | Lines | Coverage | Tests |
 |--------|-------|----------|-------|
@@ -26,19 +26,21 @@
 | async_fix.py | 6 | 37.5% | 2 |
 | agent_comm/models.py | 240 | 100% | 20 |
 | risk/cvss.py | 273 | ~95% | 27 |
+| risk/epss.py | 148 | ~95% | 23 |
 
-**Total: 23 modules, ~560+ tests, ~90% average coverage**
+**Total: 24 modules, ~585+ tests, ~91% average coverage**
 
-## Next Priority Modules (Target: 30)
+## Target: 30 Modules (Gold Badge)
 
-- risk/epss.py (148 lines)
+### Next Priority:
 - risk/business_impact.py (190 lines)
-- core/cache.py (997 lines)
 - core/rate_limiter.py (415 lines)
+- core/state_machine.py (660 lines)
+- notifications/models.py (check size)
 
 ## Notes
 
+- All tests use mocking for external APIs (EPSS, Redis, etc.)
 - Safety controls maintained (IP blocking, timeouts)
-- Heavy mocking for external dependencies
-- Windows-specific code skipped on Linux
-- OpenSSF Badge target: 40-50% total project coverage
+- Windows-specific code has lower coverage on Linux
+- OpenSSF Silver ✅ | Gold target: 40-50% total coverage
