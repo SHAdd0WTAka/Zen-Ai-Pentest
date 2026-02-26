@@ -71,7 +71,7 @@ All tools run with **safety controls**:
 [![Version](https://img.shields.io/badge/Version-3.0.0-orange)](https://github.com/SHAdd0WTAka/zen-ai-pentest/releases)
 [![Python](https://img.shields.io/badge/Python-3.9%2B-blue)](https://python.org)
 [![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
-[![Commits](https://img.shields.io/badge/Commits-740+-brightgreen)](https://github.com/SHAdd0WTAka/zen-ai-pentest/commits/main)
+[![Commits](https://img.shields.io/badge/Commits-862+-brightgreen)](https://github.com/SHAdd0WTAka/zen-ai-pentest/commits/main)
 [![Phase](https://img.shields.io/badge/Phase-6%20AI%20Personas-blueviolet)](./docs/status/repo_status_card.svg)
 
 [![PyPI](https://img.shields.io/pypi/v/zen-ai-pentest?color=green)](https://pypi.org/project/zen-ai-pentest/)
@@ -208,7 +208,7 @@ All tools run with **safety controls**:
 - **ReAct Pattern**: Reason → Act → Observe → Reflect
 - **State Machine**: IDLE → PLANNING → EXECUTING → OBSERVING → REFLECTING → COMPLETED
 - **Memory System**: Short-term, long-term, and context window management
-- **Tool Orchestration**: Automatic selection and execution of 20+ pentesting tools
+- **Tool Orchestration**: Automatic selection and execution of 72+ pentesting tools
 - **Self-Correction**: Retry logic and adaptive planning
 - **Human-in-the-Loop**: Optional pause for critical decisions
 

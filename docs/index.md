@@ -15,7 +15,7 @@ Zen-AI-Pentest is an autonomous, AI-powered penetration testing framework that c
 ### Key Features
 
 - **Autonomous AI Agent** with ReAct pattern
-- **20+ Integrated Security Tools** (Nmap, SQLMap, Metasploit, etc.)
+- **72+ Integrated Security Tools** (Nmap, SQLMap, Metasploit, etc.)
 - **Multi-Agent Orchestration** system
 - **FastAPI-based REST API** with WebSocket support
 - **Risk Engine** with CVSS/EPSS scoring
