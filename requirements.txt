@@ -20,6 +20,7 @@ pyyaml>=6.0.1
 
 # Web Framework (for API)
 fastapi>=0.115.8  # SECURITY: Latest stable with security fixes
+starlette>=0.46.2  # SECURITY FIX: CVE-2025-48073, CVE-2025-48074, CVE-2025-48075 (3 High Severity)
 uvicorn>=0.34.0  # SECURITY: Latest with security fixes
 python-multipart>=0.0.18  # SECURITY FIX: CVE-2024-53981
 
