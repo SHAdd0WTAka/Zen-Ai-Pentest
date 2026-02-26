@@ -1,70 +1,64 @@
 # Test Coverage Summary
 
-## Current Status: 25 Modules Tested 🎉
+## Current Status: 28 Modules Tested
 
-| Module | Lines | Coverage | Tests |
-|--------|-------|----------|-------|
-| api/auth.py | 66 | 92.3% | 15 |
-| api/schemas.py | 244 | 100% | 45 |
-| api/core/config.py | 12 | 100% | 4 |
-| core/database.py | 68 | 100% | 8 |
-| core/llm_backend.py | 12 | 100% | 4 |
-| core/input_validator.py | 152 | 91.5% | 16 |
-| core/models.py | 186 | 98.6% | 27 |
-| core/container.py | 140 | 88.9% | 14 |
-| core/secure_config.py | 155 | 68.7% | 12 |
-| memory/base.py | 47 | 100% | 8 |
-| memory/manager.py | 37 | 100% | 7 |
-| memory/storage.py | 60 | 77.1% | 9 |
-| memory/config.py | 1 | 100% | 1 |
-| utils/stealth.py | 31 | 100% | 5 |
-| utils/helpers.py | 85 | 99.1% | 11 |
-| utils/security.py | 55 | 100% | 7 |
-| utils/async_fixes.py | 61 | 88.7% | 9 |
-| tools/wifi_packet_editor.py | 220 | 70.8% | 26 |
-| safety/config.py | 2 | 100% | 1 |
-| async_fix.py | 6 | 37.5% | 2 |
-| agent_comm/models.py | 240 | 100% | 20 |
-| risk/cvss.py | 273 | ~95% | 27 |
-| risk/epss.py | 148 | ~95% | 23 |
-| risk/business_impact.py | 190 | ~95% | 21 |
+| # | Module | Lines | Tests | Status |
+|---|--------|-------|-------|--------|
+| 1 | api/auth.py | 66 | 15 | ✅ 92% |
+| 2 | api/schemas.py | 244 | 45 | ✅ 100% |
+| 3 | api/core/config.py | 12 | 4 | ✅ 100% |
+| 4 | api/core/agents.py | 25 | 7 | ✅ 100% |
+| 5 | api/core/scans.py | 32 | 9 | ✅ 100% |
+| 6 | api/websocket.py | 100 | 12 | ✅ ~90% |
+| 7 | core/database.py | 68 | 8 | ✅ 100% |
+| 8 | core/llm_backend.py | 12 | 4 | ✅ 100% |
+| 9 | core/input_validator.py | 152 | 16 | ✅ 91% |
+| 10 | core/models.py | 186 | 27 | ✅ 98% |
+| 11 | core/container.py | 140 | 14 | ✅ 88% |
+| 12 | core/secure_config.py | 155 | 12 | ✅ 68% |
+| 13 | memory/base.py | 47 | 8 | ✅ 100% |
+| 14 | memory/manager.py | 37 | 7 | ✅ 100% |
+| 15 | memory/storage.py | 60 | 9 | ✅ 77% |
+| 16 | memory/config.py | 1 | 1 | ✅ 100% |
+| 17 | utils/stealth.py | 31 | 5 | ✅ 100% |
+| 18 | utils/helpers.py | 85 | 11 | ✅ 99% |
+| 19 | utils/security.py | 55 | 7 | ✅ 100% |
+| 20 | utils/async_fixes.py | 61 | 9 | ✅ 88% |
+| 21 | tools/wifi_packet_editor.py | 220 | 26 | ✅ 70% |
+| 22 | tools/subfinder_integration.py | 127 | 9 | ✅ ~80% |
+| 23 | safety/config.py | 2 | 1 | ✅ 100% |
+| 24 | async_fix.py | 6 | 2 | ✅ 37% |
+| 25 | agent_comm/models.py | 240 | 20 | ✅ 100% |
+| 26 | risk/cvss.py | 273 | 27 | ✅ ~95% |
+| 27 | risk/epss.py | 148 | 23 | ✅ ~95% |
+| 28 | risk/business_impact.py | 190 | 21 | ✅ ~95% |
 
-**Total: 25 modules, ~600+ tests, ~92% average coverage**
+**Total: 28 modules, ~620+ tests, ~90% average coverage on tested modules**
 
-## Module Categories Covered
+## Problem: Gesamtcoverage nur ~17%
 
-### API Layer (3 modules)
-- api/auth.py, api/schemas.py, api/core/config.py
+Um auf **40% Gesamtcoverage** zu kommen, müssen wir Module mit **>5000 Zeilen** testen.
 
-### Core Framework (5 modules)
-- core/database.py, core/llm_backend.py, core/input_validator.py
-- core/models.py, core/container.py, core/secure_config.py
+### Große ungetestete Module (Priorität für 40% Ziel):
 
-### Memory System (4 modules)
-- memory/base.py, memory/manager.py, memory/storage.py, memory/config.py
+| Modul | Zeilen | Impact |
+|-------|--------|--------|
+| api/main.py | 720 | 🔴 Kritisch |
+| core/cache.py | 550 | 🔴 Kritisch |
+| core/state_machine.py | 660 | 🔴 Kritisch |
+| core/rate_limiter.py | 415 | 🟡 Hoch |
+| tools/plugin_system.py | 428 | 🟡 Hoch |
+| integrations/zap_integration.py | 330 | 🟡 Hoch |
 
-### Risk Engine (3 modules)
-- risk/cvss.py, risk/epss.py, risk/business_impact.py
+### Empfohlene Strategie:
+1. **api/main.py** testen (FastAPI App) → +5-7% Coverage
+2. **core/cache.py** testen → +4-5% Coverage  
+3. **core/state_machine.py** testen → +5-6% Coverage
+4. **core/rate_limiter.py** testen → +3-4% Coverage
 
-### Utilities (4 modules)
-- utils/stealth.py, utils/helpers.py, utils/security.py, utils/async_fixes.py
+Damit kämen wir auf ~35-40% Gesamtcoverage.
 
-### Communication & Tools (3 modules)
-- agent_comm/models.py, tools/wifi_packet_editor.py, safety/config.py
-
-### Infrastructure (2 modules)
-- async_fix.py
-
-## OpenSSF Best Practices Badge
-
-- ✅ **Silver**: Achieved
-- 🥇 **Gold Target**: 30+ modules (5 more to go)
-- 📊 **Total Coverage**: ~92% on tested modules
-- 🎯 **Project Coverage**: Estimated 15-20% (improving)
-
-## Test Strategy
-
-- **Unit tests** with heavy mocking for external dependencies
-- **Safety controls** verified (IP blocking, timeouts, validation)
-- **Edge cases** covered (empty inputs, invalid data, boundary values)
-- **Security focus** maintained throughout
+## Testansatz
+- Mocking für externe APIs/Tools
+- Async-Test-Problematik beachten (kein pytest-asyncio verfügbar)
+- Fokus auf Business-Logik, nicht Framework-Boilerplate
