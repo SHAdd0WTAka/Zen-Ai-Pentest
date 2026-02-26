@@ -11,6 +11,8 @@ import { GettingStarted } from './sections/GettingStarted';
 import { Footer } from './sections/Footer';
 import { Login } from './sections/Login';
 import { ParticleBackground } from './components/ParticleBackground';
+import { Dashboard } from './dashboard/Dashboard';
+omponents/ui/button';/d
 
 function HomePage() {
   const [scrollY, setScrollY] = useState(0);
@@ -47,6 +49,7 @@ function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/dashboard/*" element={<Dashboard />} />
       </Routes>
     </Router>
   );
