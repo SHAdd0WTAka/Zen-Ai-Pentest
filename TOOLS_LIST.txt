@@ -1,0 +1,110 @@
+╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+║                                              📁 VOLLSTÄNDIGE TOOL-LISTE (72+ TOOLS)                                            ║
+╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+
+NETZWERK (8 Tools)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ 1  🌐 Port Scanning     Nmap              Port Scanner                    🟢 Registry
+ 2  🌐 Port Scanning     Masscan           High-speed Port Scanner         🟡 Integration  
+ 3  🌐 Packet Analysis   Scapy             Packet Manipulation             🟡 Integration
+ 4  🌐 Protocol Analysis Tshark            Network Protocol Analyzer       🟡 Integration
+ 5  🌐 Packet Capture    tcpdump           Packet Capture                  🟡 Integration
+ 6  🌐 Network Discovery netdiscover       ARP Reconnaissance             🟡 Integration
+ 7  🌐 ARP Scanning      arp-scan          ARP Scanner                     🟡 Integration
+ 8  🌐 GUI Analysis      Wireshark         Wireshark GUI                   🟡 Integration
+
+WEB SICHERHEIT (12 Tools)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ 9  🕸️ Proxy             Burp Suite        Web Proxy & Scanner             🟡 Integration
+ 10 🕸️ Scanner           SQLMap            SQL Injection Scanner           🟡 Integration
+ 11 🕸️ Scanner           Nikto             Web Vulnerability Scanner       🟡 Integration
+ 12 🕸️ Proxy             OWASP ZAP         Web Proxy & Scanner             🟡 Integration
+ 13 🕸️ Fuzzer            FFuF              Fast Web Fuzzer                 🟡 Integration
+ 14 🕸️ Fuzzer            FFuF Enhanced     Advanced Fuzzer                 🟡 Integration
+ 15 🕸️ Buster            Gobuster          Directory/Subdomain Buster      🟡 Integration
+ 16 🕸️ Detection         WAFW00F           WAF Detector                    🟡 Integration
+ 17 🕸️ Fingerprint       WhatWeb           Technology Fingerprinter        🟡 Integration
+ 18 🕸️ Scanner           Nuclei            Vulnerability Scanner           🟡 Integration
+ 19 🕸️ HTTP Client       curl              HTTP Client                     🟡 Integration
+ 20 🕸️ Downloader        wget              File Downloader                 🟡 Integration
+
+RECONNAISSANCE & OSINT (10 Tools)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ 21 🔍 Subdomain         Subdomain Enum    Advanced Subdomain Scanner      🟡 CLI
+ 22 🔍 Subdomain         Subdomain Scanner Subdomain Discovery             🟡 CLI
+ 23 🔍 Subdomain         Subfinder         Subdomain Discovery             🟡 Integration
+ 24 🔍 Subdomain         Amass             Attack Surface Mapping          🟡 Integration
+ 25 🔍 HTTP              HTTPX             Fast HTTP Prober                🟡 Integration
+ 26 🔍 OSINT             TheHarvester      Email/OSINT Collector           🟡 Integration
+ 27 🔍 DNS               whois/dig/nslookup DNS Lookup Tools               🟡 System
+ 28 🕵️ Username          Sherlock          Username Enumeration            🟡 Integration
+ 29 🕵️ Framework         Scout             OSINT Framework                 🟡 Integration
+ 30 🕵️ Email             Ignorant          Email OSINT                     🟡 Integration
+
+EXPLOITATION (2 Tools)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ 31 💥 Framework         Metasploit        Exploitation Framework          🟡 Integration
+ 32 💥 Scanner           SearchSploit      Exploit Database                🟡 Integration
+
+BRUTE FORCE (4 Tools)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ 33 🔓 Cracker           Hydra             Login Cracker                   🟡 Integration
+ 34 🔓 Cracker           Hashcat           GPU Password Cracker            🟡 Integration
+ 35 🔓 Cracker           John              John the Ripper                 🟡 Integration
+ 36 🔓 Cracker           Ncrack            Network Cracker                 🟡 Integration
+
+ACTIVE DIRECTORY (8 Tools)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ 37 🏢 Enumeration       BloodHound        AD Enumeration GUI              🟡 Integration
+ 38 🏢 Enumeration       bloodhound-python AD Data Collector               🟡 Integration
+ 39 🏢 Pentesting        NetExec           AD Pentesting                   🟡 Integration
+ 40 🏢 Poisoner          Responder         LLMNR/NBT-NS/mDNS Poisoner      🟡 Integration
+ 41 🏢 LDAP              ldapsearch        LDAP Query Tool                 🟡 System
+ 42 🏢 RPC               rpcclient         RPC Client                      🟡 System
+ 43 🏢 SMB               smbclient         SMB Client                      🟡 System
+ 44 🏢 Enumeration       enum4linux        SMB Enumeration                 🟡 Integration
+
+WIRELESS (6 Tools)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ 45 📡 Cracking          Aircrack-ng       Wireless Cracking               🟡 Integration
+ 46 📡 Monitor           airmon-ng         Monitor Mode                    🟡 System
+ 47 📡 Capture           airodump-ng       Packet Capture                  🟡 System
+ 48 📡 Injection         aireplay-ng       Packet Injection                🟡 System
+ 49 📡 Config            iwconfig          Wireless Config                 🟡 System
+ 50 📡 Tool              iw                Wireless Tool                   🟡 System
+
+CODE ANALYSIS (4 Tools)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ 51 📝 SAST              Semgrep           Static Analysis (SAST)          🟡 Integration
+ 52 🔐 Secrets           TruffleHog        Secret Scanner                  🟡 Integration
+ 53 🔐 Secrets           Gitleaks          Git Secret Scanner              🟡 Integration
+ 54 📝 Python            Bandit            Python Security Linter          🟡 Integration
+
+CONTAINER & CLOUD (3 Tools)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ 55 🐳 Security          Trivy             Container Image Scanner         🟡 Integration
+ 56 🐳 Platform          Docker            Container Platform              🟡 System
+ 57 ☁️  Orchestration    Kubectl           Kubernetes CLI                  🟡 Integration
+
+SYSTEM UTILITIES (8 Tools)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ 58 🔧 Network           netcat/nc         Netcat Swiss Army Knife         🟡 System
+ 59 🔧 Socket            socat             Socket Cat                      🟡 Integration
+ 60 🔧 Crypto            openssl           OpenSSL Toolkit                 🟡 System
+ 61 🔧 Remote            ssh               SSH Client                      🟡 System
+ 62 🔧 Proxy             proxychains       Proxy Chains                    🟡 System
+ 63 🔧 Anonymity         tor               Tor Anonymity Network           🟡 System
+ 64 🔧 DNS               host              DNS Lookup                      🟡 System
+ 65 🔧 HTTP              httprobe          HTTP Prober                     🟡 Integration
+
+AI & CORE FRAMEWORK (5 Tools)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ 66 🤖 AI                Kimi CLI          Kimi AI Integration             🟡 Integration
+ 67 🤖 Helper            Kimi Helper       AI Utilities                    🟡 Core
+ 68 🤖 Personas          AI Personas       Persona Management              🟡 Core
+ 69 ⚙️ Core              Tool Registry     Tool Management                 🟢 Core
+ 70 ⚙️ Core              Tool Caller       Tool Execution                  🟢 Core
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GESAMT: 70 Tools │ ✅ Alle installiert und bereit!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

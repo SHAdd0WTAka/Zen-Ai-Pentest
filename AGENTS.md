@@ -6,13 +6,14 @@
 
 ## 📋 Project Overview
 
-**Zen-AI-Pentest** is an autonomous, AI-powered penetration testing framework that executes **real security tools** with intelligent orchestration.
+**Zen-AI-Pentest** is a professional, autonomous AI-powered penetration testing framework that executes **real security tools** with intelligent orchestration. It is built for security professionals, bug bounty hunters, and enterprise security teams.
 
 - **Name**: zen-ai-pentest
 - **Version**: 3.0.0
 - **License**: MIT
 - **Python**: 3.9+
 - **Repository**: https://github.com/SHAdd0WTAka/zen-ai-pentest
+- **Status**: Production Ready
 
 ### 🎯 Core Philosophy: Real Data Execution (No Mocks!)
 
@@ -20,7 +21,8 @@ This framework executes **actual security tools** - no simulations:
 - ✅ **Nmap** - Real port scanning with XML output parsing
 - ✅ **Nuclei** - Real vulnerability detection with JSON output
 - ✅ **SQLMap** - Real SQL injection testing with safety controls
-- ✅ **Multi-Agent** - Researcher & Analyst agents cooperating
+- ✅ **72+ Tools** - Including FFuF, WhatWeb, WAFW00F, Subfinder, HTTPX, Nikto, and more
+- ✅ **Multi-Agent** - Researcher, Analyst, Exploit agents cooperating
 - ✅ **Docker Sandbox** - Isolated tool execution for safety
 
 ---
@@ -29,106 +31,163 @@ This framework executes **actual security tools** - no simulations:
 
 ```
 zen-ai-pentest/
-├── agents/                 # AI Agents (ReAct, orchestration)
+├── agents/                 # AI Agent implementations (ReAct, orchestration)
 │   ├── react_agent.py     # Core ReAct implementation
 │   ├── agent_base.py      # Multi-agent base classes
-│   └── agent_orchestrator.py
-├── autonomous/            # Autonomous agent system ⭐
-│   ├── agent_loop.py      # ReAct loop with REAL tool execution
+│   ├── agent_orchestrator.py
+│   └── research_agent.py, exploit_agent.py, analysis_agent.py
+├── api/                    # FastAPI Backend
+│   ├── main.py           # FastAPI app entry point
+│   ├── auth*.py          # Authentication (JWT, RBAC)
+│   ├── schemas.py        # Pydantic models
+│   ├── websocket*.py     # WebSocket handlers
+│   └── routes/           # API route handlers
+├── autonomous/            # Autonomous agent system (ReAct Loop)
+│   ├── agent_loop.py      # Core ReAct loop with REAL tool execution
 │   ├── sqlmap_integration.py  # SQLMap with safety controls
 │   ├── exploit_validator.py
 │   └── memory.py
-├── api/                   # FastAPI backend
-│   ├── main.py           # FastAPI app
-│   ├── routes/           # API endpoints
-│   └── schemas.py        # Pydantic models
-├── docker/                # Docker configuration ⭐
-│   ├── Dockerfile.tools  # Tool sandbox image
-│   └── sandboxed_executor.py  # Secure execution
-├── examples/              # Usage examples ⭐
-│   └── multi_agent_demo.py    # Researcher+Analyst demo
-├── tests/                 # Test suite
-│   ├── test_real_nuclei.py    # Real Nuclei tests
-│   └── test_sqlmap.py         # SQLMap tests
-├── tools/                 # Tool integrations
+├── core/                  # Core framework components
+│   ├── orchestrator.py    # ZenOrchestrator - Central coordination
+│   ├── models.py          # Data models
+│   ├── database.py        # Database connection management
+│   ├── llm_backend.py     # Multi-LLM routing
+│   └── workflow_engine.py
+├── tools/                 # 72+ Security tool integrations
 │   ├── nmap_integration.py
-│   └── nuclei_integration.py
-└── docs/                  # Documentation
-    └── IMPLEMENTATION_SUMMARY.md  # Complete feature overview
+│   ├── nuclei_integration.py
+│   ├── sqlmap_integration.py
+│   ├── ffuf_integration.py
+│   ├── subdomain_scan.py
+│   └── tool_registry.py, tool_caller.py
+├── guardrails/            # Security guardrails
+│   ├── ip_validator.py    # Blocks private networks
+│   ├── domain_validator.py
+│   ├── risk_levels.py     # 4-level risk system
+│   └── rate_limiter.py
+├── risk_engine/           # Risk analysis engine
+│   ├── cvss.py, epss.py
+│   └── false_positive_engine.py
+├── database/              # SQLAlchemy models
+│   ├── models.py          # User, Scan, Finding, Report models
+│   └── crud.py
+├── integrations/          # CI/CD integrations (GitHub, GitLab, Slack, JIRA)
+├── notifications/         # Alerts (Slack, Email, Discord, Telegram)
+├── benchmarks/            # Performance testing
+├── tests/                 # Test suite (300+ test files)
+│   ├── unit/             # Unit tests
+│   ├── integration/      # Integration tests
+│   ├── e2e/              # End-to-end tests
+│   ├── security/         # Security tests (SAST, DAST)
+│   └── autonomous/       # Autonomous agent tests
+├── docs/                  # Documentation (70+ markdown files)
+├── docker/                # Docker configurations
+└── scripts/               # Utility scripts
 ```
 
 ---
 
-## 🔑 Key Components
+## 💻 Technology Stack
 
-### 1. Autonomous Agent System (`autonomous/`)
+### Core Dependencies
+- **Python**: 3.9+ (Primary: 3.11)
+- **Web Framework**: FastAPI 0.115.8+ (REST API + WebSocket)
+- **Server**: Uvicorn 0.34.0+
+- **Database**: PostgreSQL 15+ (SQLAlchemy 2.0+, Alembic migrations)
+- **Cache/Queue**: Redis 7+ (Celery 5.3+ for task queue)
+- **Validation**: Pydantic 2.0+
+- **HTTP**: requests 2.32.0+, aiohttp 3.13.3+, urllib3 2.6.3+
+- **DNS**: dnspython 2.7.0+
 
-The heart of the framework - executes real tools with safety controls.
+### Security & Cryptography
+- **JWT**: PyJWT 2.8.0+
+- **Password Hashing**: passlib 1.7.4+, bcrypt 4.0.0+
+- **Cryptography**: cryptography 44.0.0+
 
-**Key Files:**
-- `agent_loop.py` - Core ReAct loop with tool execution
-- `sqlmap_integration.py` - SQLMap integration
-- `exploit_validator.py` - Safe exploit validation
+### AI/LLM Integration
+- **Framework**: LangChain 0.3.17+, langchain-core 0.3.35+
+- **Backends**: Kimi AI (default), OpenAI, Anthropic, OpenRouter
 
-**Pattern:**
-```python
-class NmapScanner(BaseTool):
-    async def execute(self, parameters: Dict[str, Any]) -> ToolResult:
-        # Real subprocess execution
-        cmd = f"nmap {options} -p {ports} {target}"
-        process = await asyncio.create_subprocess_exec(...)
-        # Parse XML/JSON output
-        parsed_data = self._parse_nmap_xml(xml_output)
-        return ToolResult(success=True, data=parsed_data)
-```
+### Container & Deployment
+- **Docker**: docker 6.1.0+
+- **Compose**: docker-compose 3.8+
+- **Images**: python:3.11-slim, postgres:15-alpine, redis:7-alpine
 
-### 2. Multi-Agent System (`agents/`)
+### Data Processing
+- **Data Analysis**: pandas 2.0.0+, numpy 1.24.0+
+- **Reporting**: Jinja2 3.1.5+, WeasyPrint 61.0+ (PDF), markdown 3.5.0+
 
-Cooperative agents that share context via message passing.
-
-**Agent Roles:**
-- `RESEARCHER` - Gathers information
-- `ANALYST` - Analyzes findings
-- `EXPLOIT` - Manages exploitation
-- `COORDINATOR` - Orchestrates workflow
-
-**Usage:**
-```python
-from examples.multi_agent_demo import run_demo
-# See Researcher + Analyst cooperation
-```
-
-### 3. Docker Sandbox (`docker/`)
-
-Secure, isolated tool execution.
-
-**Key Features:**
-- Resource limits (CPU, memory)
-- Network isolation
-- Read-only filesystems
-- Container lifecycle management
-
-**File:** `docker/sandboxed_executor.py`
+### Async & Utilities
+- **Async**: asyncio, aiofiles 23.0.0+, websockets 12.0+
+- **CLI**: click 8.1.0+, rich 13.0.0+, typer 0.9.0+
+- **Config**: python-dotenv 1.0.0+, pyyaml 6.0.1+, pydantic-settings 2.0.0+
 
 ---
 
-## 🛡️ Safety Controls
+## 🔧 Build & Development Commands
 
-All tool executions include safety guardrails:
+### Setup
 
-| Control | Implementation |
-|---------|---------------|
-| Private IP Blocking | Blocks 192.168.x.x, 10.x.x.x, 172.16-31.x.x |
-| Timeout Management | Prevents hanging processes (default: 300s) |
-| Resource Limits | CPU/memory constraints in Docker |
-| Read-only FS | Container filesystem isolation |
-| Risk Levels | SQLMap: 0-3 (0=safe, 3=aggressive) |
+```bash
+# 1. Clone and enter repository
+git clone https://github.com/SHAdd0WTAka/zen-ai-pentest.git
+cd zen-ai-pentest
 
-**Important:** Never disable safety controls for production use.
+# 2. Create virtual environment
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+
+# 3. Install dependencies
+pip install -r requirements.txt
+pip install -r requirements-dev.txt
+
+# 4. Copy and configure environment
+cp .env.example .env
+# Edit .env with your settings (DATABASE_URL, SECRET_KEY, API keys)
+
+# 5. Initialize database
+python scripts/init_db.py
+
+# 6. Install pre-commit hooks
+pre-commit install
+```
+
+### Running the Application
+
+```bash
+# API server (development)
+uvicorn api.main:app --reload --host 0.0.0.0 --port 8000
+
+# API server (production)
+uvicorn api.main:app --host 0.0.0.0 --port 8000 --workers 2
+
+# CLI mode
+python zen_ai_pentest.py --interactive
+python zen_cli.py
+
+# Docker deployment
+docker-compose up -d
+
+# View logs
+docker-compose logs -f api
+```
+
+### Make Commands (Makefile)
+
+```bash
+make test           # Run tests
+coverage            # Coverage report (terminal)
+make coverage-xml   # Coverage XML for VS Code
+make coverage-html  # Coverage HTML report
+make open-coverage  # Open coverage in browser
+make install        # Install dependencies and hooks
+make setup          # Full setup
+make clean          # Clean cache files
+```
 
 ---
 
-## 🧪 Testing
+## 🧪 Testing Commands
 
 ### Running Tests
 
@@ -136,119 +195,265 @@ All tool executions include safety guardrails:
 # All tests
 pytest
 
-# Specific test files
-pytest tests/test_real_nuclei.py -v
-pytest tests/test_sqlmap.py -v
+# With verbose output
+pytest -v
 
-# With coverage
-pytest --cov=autonomous --cov=tools
+# With coverage (HTML + terminal)
+pytest --cov=. --cov-report=html --cov-report=term
+
+# Specific test file
+pytest tests/unit/test_react_agent.py -v
+
+# Specific test class/method
+pytest tests/unit/test_react_agent.py::TestReActAgent::test_reasoning -v
+
+# Unit tests only
+pytest tests/unit/ -v
+
+# Integration tests
+pytest tests/integration/ -v
+
+# Exclude slow tests
+pytest -m "not slow"
+
+# Security tests only
+pytest tests/security/ -v
 ```
 
-### Test Structure
+### Test Markers
 
-```
-tests/
-├── test_real_nuclei.py     # Real Nuclei execution tests
-├── test_sqlmap.py          # SQLMap integration tests
-├── unit/                   # Unit tests
-├── integration/            # Integration tests
-└── autonomous/             # Autonomous agent tests
-```
+- `slow`: Marks tests as slow (deselect with `-m "not slow"`)
+- `integration`: Integration tests requiring external services
+- `unit`: Unit tests (isolated)
+- `security`: Security-focused tests
+
+### Coverage Requirements
+
+| Component | Minimum Coverage |
+|-----------|-----------------|
+| Core modules | 85% |
+| API endpoints | 80% |
+| Tool integrations | 75% |
+| Security/guardrails | 100% |
+| Database models | 80% |
+| Risk engine | 90% |
 
 ---
 
-## 🚀 Development Guidelines
+## 📐 Code Style Guidelines
 
-### Adding a New Tool Integration
+### Formatters & Linters
 
-1. **Create file** in `tools/` or `autonomous/`
-2. **Extend `BaseTool`** class
-3. **Implement `execute()`** method with real subprocess
-4. **Add safety checks** (IP validation, timeouts)
-5. **Parse output** (XML/JSON/stdout)
-6. **Add tests** in `tests/`
-7. **Update documentation**
+- **Black**: Code formatting (line length: 127)
+- **isort**: Import sorting (black profile)
+- **Ruff**: Linting (E, F, W rules)
+- **mypy**: Type checking (optional)
+- **Bandit**: Security linting
 
-### Example Template:
+### Python Style Rules
 
 ```python
-from autonomous.agent_loop import BaseTool, ToolResult
+# Line length: 127 characters
 
-class NewTool(BaseTool):
-    name = "new_tool"
-    description = "Description of the tool"
+# Imports: grouped and sorted (stdlib, third-party, local)
+import asyncio
+import json
+from pathlib import Path
+from typing import Dict, List, Optional
 
-    async def execute(self, parameters: Dict[str, Any]) -> ToolResult:
-        # 1. Validate parameters
-        target = parameters.get("target")
-        if not self._is_valid_target(target):
-            return ToolResult(success=False, error="Invalid target")
+import httpx
+from fastapi import FastAPI
 
-        # 2. Build command
-        cmd = ["tool_name", "-flag", target]
+from tools.nmap_integration import NmapScanner
 
-        # 3. Execute with timeout
-        try:
-            process = await asyncio.create_subprocess_exec(
-                *cmd,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE
-            )
-            stdout, stderr = await asyncio.wait_for(
-                process.communicate(),
-                timeout=self.timeout
-            )
-        except asyncio.TimeoutError:
-            return ToolResult(success=False, error="Timeout")
+# Class naming: PascalCase
+class MyClassName:
+    """Docstring with description.
+    
+    Attributes:
+        attr1: Description of attr1
+        attr2: Description of attr2
+    """
+    
+    # Constants: UPPER_CASE
+    MAX_RETRIES = 3
+    
+    def __init__(self, param1: str, param2: int = 10) -> None:
+        """Initialize the class.
+        
+        Args:
+            param1: First parameter
+            param2: Second parameter (default: 10)
+        """
+        self.param1 = param1
+        self._param2 = param2  # Private prefix with _
 
-        # 4. Parse output
-        data = self._parse_output(stdout.decode())
-
-        return ToolResult(success=True, data=data)
+# Function naming: snake_case
+def my_function_name(param: str) -> bool:
+    """Function description.
+    
+    Args:
+        param: Parameter description
+        
+    Returns:
+        Boolean result
+    """
+    return True
 ```
 
-### Code Style
+### Running Code Quality Checks
 
-- **Formatter**: Black (line-length: 127)
-- **Imports**: isort with black profile
-- **Types**: Use type hints where possible
-- **Docs**: Google-style docstrings
-- **Async**: Prefer async/await for I/O operations
+```bash
+# Format code
+black .
+
+# Check formatting
+black --check .
+
+# Sort imports
+isort .
+
+# Linting
+ruff check .
+
+# Security scan
+bandit -r . -ll
+
+# Run all pre-commit hooks
+pre-commit run --all-files
+```
+
+### Pre-commit Hooks
+
+Configured in `.pre-commit-config.yaml`:
+- Black (code formatting)
+- isort (import sorting)
+- Flake8 (linting)
+- Trailing whitespace fixer
+- YAML/JSON validator
+- detect-private-key
+- detect-secrets
+- Bandit (security)
 
 ---
 
-## 📚 Important Documentation
+## 🛡️ Security Considerations
 
-| File | Purpose |
-|------|---------|
-| `IMPLEMENTATION_SUMMARY.md` | Complete feature overview (Phases A-E) |
-| `README.md` | Main project documentation |
-| `docs/ARCHITECTURE.md` | System architecture |
-| `docs/API.md` | API reference |
+### Legal Responsibility
 
----
+**⚠️ MANDATORY**: Always include these warnings when assisting with this framework:
 
-## 🔐 Security Guidelines
+```
+⚠️ LEGAL WARNING: Only scan systems you own or have EXPLICIT WRITTEN
+permission to test. Unauthorized scanning is ILLEGAL and can result in:
+- Criminal prosecution
+- Civil liability
+- Fines and imprisonment
 
-### For AI Agents Working on This Codebase:
+You are SOLELY RESPONSIBLE for your actions.
+```
 
-1. **Never commit API keys** - Use environment variables
-2. **Keep safety controls** - Don't disable IP blocking
-3. **Validate inputs** - Sanitize all user inputs
+### Safety Controls (Guardrails)
+
+The framework includes multi-layer protection:
+
+| Control | Implementation |
+|---------|---------------|
+| Private IP Blocking | Blocks 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 127.0.0.0/8 |
+| Domain Filtering | Blocks .local, .internal, .corp, .home, localhost |
+| Risk Levels | 4 levels (0=SAFE, 3=AGGRESSIVE) controlling tool access |
+| Rate Limiting | Prevents accidental DoS |
+| Docker Sandbox | Resource limits, read-only filesystems |
+| Timeout Management | Default 300s per tool execution |
+
+### Risk Levels
+
+| Level | Name | Tools | Description |
+|-------|------|-------|-------------|
+| 0 | SAFE | whois, dns, subdomain | Reconnaissance only |
+| 1 | NORMAL | + nmap, nuclei | Standard scanning |
+| 2 | ELEVATED | + sqlmap, exploit | Light exploitation |
+| 3 | AGGRESSIVE | + pivot, lateral | Full exploitation |
+
+### For AI Agents Working on This Codebase
+
+1. **Never commit API keys** - Use environment variables or Obsidian Vault
+2. **Keep safety controls** - Don't disable IP blocking or domain filtering
+3. **Validate all inputs** - Use guardrails validators
 4. **Use timeouts** - Always set execution timeouts
 5. **Test safely** - Use scanme.nmap.org for testing
 6. **Docker isolation** - Use sandboxed executor when possible
 
-### Pre-commit Checks
+---
+
+## 🔐 Configuration & Secrets
+
+### Environment Variables
+
+Copy `.env.example` to `.env` and configure:
 
 ```bash
-# API key validation
-./scripts/check_api_keys.sh
+# Database
+DATABASE_URL=postgresql://postgres:password@localhost:5432/zen_pentest
 
-# Security scanning
-bandit -r . -ll
-safety check -r requirements.txt
+# Security
+SECRET_KEY=your-secret-key-here
+JWT_EXPIRATION=3600
+
+# AI Providers (Kimi AI recommended)
+KIMI_API_KEY=your-kimi-api-key
+DEFAULT_BACKEND=kimi
+DEFAULT_MODEL=kimi-k2.5
+
+# Alternative Backends (optional)
+# OPENAI_API_KEY=sk-...
+# ANTHROPIC_API_KEY=sk-ant-...
+# OPENROUTER_API_KEY=...
+
+# Notifications
+SLACK_WEBHOOK_URL=https://hooks.slack.com/...
+SMTP_HOST=smtp.gmail.com
+
+# Cloud Providers
+AWS_ACCESS_KEY_ID=AKIA...
+AZURE_SUBSCRIPTION_ID=...
 ```
+
+### Obsidian Vault (Recommended for Production)
+
+Store secrets securely in an encrypted Obsidian vault:
+
+```bash
+# Setup Obsidian Secrets Vault
+bash mcp/obsidian/setup.sh
+
+# Edit secrets
+~/Documents/Obsidian Vault/Secrets/secrets.yaml
+```
+
+---
+
+## 🔄 CI/CD Pipeline
+
+The project uses GitHub Actions with 70+ workflows:
+
+| Workflow | Purpose |
+|----------|---------|
+| `ci.yml` | Continuous Integration |
+| `tests-coverage.yml` | Test execution and coverage |
+| `security.yml` | Security scanning (Bandit, Snyk, CodeQL) |
+| `docker.yml` | Docker image build and push |
+| `pypi-release.yml` | PyPI package publishing |
+| `deploy-cloudflare.yml` | Cloudflare Pages deployment |
+
+### Pull Request Checklist
+
+- [ ] Code follows style guide (Black, Ruff)
+- [ ] All tests pass locally
+- [ ] New code has test coverage (minimum 80%)
+- [ ] Security components have 100% coverage
+- [ ] No new security vulnerabilities (`bandit -r .`)
+- [ ] Documentation updated
 
 ---
 
@@ -261,206 +466,95 @@ safety check -r requirements.txt
 | Timeout errors | Increase timeout in tool configuration |
 | XML parsing fails | Validate tool output format |
 | Import errors | Install requirements: `pip install -r requirements.txt` |
+| Database connection | Check DATABASE_URL and PostgreSQL status |
+| Redis connection | Verify Redis is running on port 6379 |
 
 ---
 
-## 🎯 Quick Reference
+## 📚 Important Documentation
 
-### Running the Framework
+| File | Purpose |
+|------|---------|
+| `README.md` | Main project documentation |
+| `IMPLEMENTATION_SUMMARY.md` | Complete feature overview |
+| `GUARDRAILS.md` | Security guardrails documentation |
+| `CONTRIBUTING.md` | Contribution guidelines |
+| `docs/DEVELOPMENT.md` | Development setup guide |
+| `docs/TESTING.md` | Testing guide |
+| `docs/API.md` | API reference |
+| `VPN_INTEGRATION.md` | VPN setup and usage |
+
+---
+
+## 🚀 Quick Reference
+
+### API Endpoints
 
 ```bash
-# API server
-uvicorn api.main:app --reload
+# Authentication
+curl -X POST http://localhost:8000/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"admin"}'
 
-# CLI mode
-python zen_ai_pentest.py --interactive
+# Create scan
+curl -X POST http://localhost:8000/scans \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Network Scan","target":"scanme.nmap.org","scan_type":"network"}'
 
-# Docker
-docker-compose up -d
-
-# Multi-agent demo
-python examples/multi_agent_demo.py
+# Execute tool
+curl -X POST http://localhost:8000/tools/execute \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{"tool_name":"nmap_scan","target":"scanme.nmap.org","parameters":{"ports":"22,80,443"}}'
 ```
 
-### Environment Variables
+### Project Scripts
 
 ```bash
-# Required for tool execution
-NMAP_PATH=/usr/bin/nmap
-SQLMAP_PATH=/usr/bin/sqlmap
-NUCLEI_PATH=/usr/local/bin/nuclei
+# Initialize database
+python scripts/init_db.py
 
-# AI Backends (Kimi AI recommended for best performance)
-KIMI_API_KEY=your-kimi-api-key      # Recommended: https://platform.moonshot.cn
-DEFAULT_BACKEND=kimi                 # Default AI provider
-DEFAULT_MODEL=kimi-k2.5              # Default model
+# Run setup wizard
+python setup_wizard.py
 
-# Alternative Backends (optional)
-# OPENAI_API_KEY=sk-...
-# ANTHROPIC_API_KEY=sk-ant-...
-# OPENROUTER_API_KEY=...
+# Subdomain scan
+python scan_target_subdomains.py
 
-# Docker
-DOCKER_HOST=unix:///var/run/docker.sock
+# Tool-specific scans
+python tools/subdomain_enum.py example.com --advanced
 ```
-
-> 💡 **Recommendation**: Kimi AI (Moonshot) provides excellent performance for security analysis tasks with long context support and tool reasoning capabilities.
 
 ---
 
 ## 📊 Project Status
 
-**Current State: 100% Complete**
+**Current State: Production Ready (v3.0.0)**
 
-- ✅ Phase A: Nuclei Integration
-- ✅ Phase B: SQLMap Integration
-- ✅ Phase C: Multi-Agent System
-- ✅ Phase D: Docker Sandbox
-- ✅ Phase E: Documentation
-
-**Last Updated**: 2025-02-14
+- ✅ 72+ Integrated Security Tools
+- ✅ Multi-Agent System with ReAct Pattern
+- ✅ Risk Engine with CVSS/EPSS Scoring
+- ✅ Docker Sandbox for Safe Execution
+- ✅ FastAPI Backend with WebSocket
+- ✅ PostgreSQL Database with SQLAlchemy
+- ✅ 300+ Test Files
+- ✅ CI/CD Pipeline with 70+ Workflows
+- ✅ Security Guardrails (100% coverage required)
 
 ---
 
 ## 🤝 Contributing
 
 When making changes:
-1. Follow the existing code style
-2. Add tests for new features
+1. Follow the existing code style (Black, line length 127)
+2. Add tests for new features (minimum 80% coverage)
 3. Update relevant documentation
 4. Ensure safety controls are maintained
 5. Run pre-commit hooks before committing
 
----
-
----
-
-## 📈 Repository Evolution (Chronological)
-
-> **For AI Agents**: This timeline helps you understand the project's evolution and current state.
-
-### Phase 1: Foundation (Early Development)
-- **Initial Setup** - Basic project structure, FastAPI backend
-- **Core Architecture** - Agent base classes, tool integration framework
-- **First Tools** - Nmap integration, basic port scanning
-
-### Phase 2: Real Tool Execution
-- **Nuclei Integration** - Real vulnerability scanning with JSON parsing
-- **SQLMap Integration** - SQL injection testing with safety controls
-- **Docker Sandbox** - Isolated tool execution environment
-
-### Phase 3: Multi-Agent System
-- **ReAct Pattern** - Reason → Act → Observe → Reflect loop
-- **Agent Orchestrator** - Workflow management for multiple agents
-- **Memory System** - Short-term and long-term memory for agents
-
-### Phase 4: Security & Risk Engine
-- **Guardrails** - IP blocking, domain filtering, risk levels
-- **Risk Engine** - CVSS/EPSS scoring, false positive reduction
-- **Exploit Validator** - Sandboxed exploit validation
-
-### Phase 5: Enterprise Features
-- **CI/CD Integration** - GitHub Actions, GitLab CI, Jenkins
-- **Reporting** - PDF/HTML/JSON report generation
-- **Notifications** - Slack, Email, JIRA integrations
-
-### Phase 6: AI Persona System
-- **11 Personas** - Recon, Exploit, Report, Audit, Social, Network, Mobile, Red Team, ICS, Cloud, Crypto
-- **Kimi AI Integration** - Native CLI and helper tools
-- **Screenshot Analysis** - Visual vulnerability assessment
-
-### Phase 7: Current State (v2.3.9)
-- **40+ Tools** - Complete security toolkit integration
-- **VPN Integration** - ProtonVPN, OpenVPN, WireGuard support
-- **Benchmarking** - Performance testing and competitor comparison
-
----
-
-## ⚖️ CRITICAL: Legal Guardrails for AI Agents
-
-> **⚠️ MANDATORY**: You MUST follow these guidelines when assisting users with this framework.
-
-### Legal Responsibility
-
-1. **Explicit Authorization Required**
-   - **ALWAYS** remind users they need explicit written authorization before scanning ANY system
-   - Unauthorized scanning is **ILLEGAL** in most jurisdictions
-   - Legal consequences include: criminal charges, civil lawsuits, fines, imprisonment
-
-2. **User Responsibility**
-   - **The USER is solely responsible** for their actions
-   - AI assistants **CANNOT** be held legally liable
-   - Document that the user acts with intent and full knowledge of consequences
-
-3. **Jurisdiction-Specific Notes**
-   - **Germany**: AI systems cannot be criminally prosecuted, only users
-   - **USA**: CFAA (Computer Fraud and Abuse Act) violations carry heavy penalties
-   - **EU**: GDPR violations + cybercrime laws apply
-   - **Global**: Most countries have similar cybercrime legislation
-
-### Required User Warnings
-
-When assisting with this framework, you MUST include warnings like:
-
-```
-⚠️ LEGAL WARNING: Only scan systems you own or have EXPLICIT WRITTEN
-permission to test. Unauthorized scanning is ILLEGAL and can result in:
-- Criminal prosecution
-- Civil liability
-- Fines and imprisonment
-
-You are SOLELY RESPONSIBLE for your actions.
-```
-
-### Ethical Guidelines
-
-1. **Educational Context** - Emphasize this is for learning/authorized testing only
-2. **Defense-Oriented** - Frame tools for defensive security (finding your own vulnerabilities)
-3. **Bug Bounty** - Mention authorized programs (HackerOne, Bugcrowd) as legal outlets
-
----
-
-## 📝 Optional: Prompt Logging
-
-> **For Users**: Enable local prompt logging for accountability and session recovery.
-
-### Enable Prompt Logging
-
-```bash
-# Set environment variable
-export ZEN_LOG_PROMPTS=true
-export ZEN_LOG_DIR=~/.zen-ai-pentest/logs
-
-# Or in .env file
-ZEN_LOG_PROMPTS=true
-ZEN_LOG_DIR=~/.zen-ai-pentest/logs
-```
-
-### Log Format
-
-```
-~/.zen-ai-pentest/logs/
-├── 2025-02-18/
-│   ├── prompt_001_103052.txt
-│   ├── prompt_002_103145.txt
-│   └── response_001_103052.txt
-```
-
-Each log file contains:
-- Timestamp
-- User prompt
-- AI response
-- Tool calls made
-
-### Benefits
-
-1. **Accountability** - Track what was requested
-2. **Session Recovery** - Restore previous states
-3. **Debugging** - Review AI decision-making
-4. **Legal Protection** - Documentation of authorized use
-
-> **Note**: Logs are stored LOCALLY only. No data is sent to external servers.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
 ---
 
 *This document is for AI agents working on Zen-AI-Pentest. For human contributors, see README.md and CONTRIBUTING.md.*
+
+**Last Updated**: 2026-02-25

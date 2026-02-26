@@ -12,7 +12,6 @@ import { Footer } from './sections/Footer';
 import { Login } from './sections/Login';
 import { ParticleBackground } from './components/ParticleBackground';
 import { Dashboard } from './dashboard/Dashboard';
-omponents/ui/button';/d
 
 function HomePage() {
   const [scrollY, setScrollY] = useState(0);
