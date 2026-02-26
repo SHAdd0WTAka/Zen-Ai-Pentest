@@ -19,8 +19,13 @@ Thank you to all the amazing people who have contributed to Zen AI Pentest!
 
 Special thanks to the AI assistants who contributed to this project:
 - **Kimi AI** (Moonshot AI) - Primary AI development partner
-- Grok (xAI) - Strategic analysis and roadmap planning
-- GitHub Copilot - Code assistance
+- **Grok (xAI)** - Strategic analysis and roadmap planning
+- **GitHub Copilot** - Code assistance
+- **Agent Zero** - Autonomous agent architecture inspiration
+- **Anthropic (Claude)** - Advanced reasoning and safety research
+- **Google (Gemini)** - Multi-modal AI integration
+- **DeepSeek** - Open-source LLM code generation
+- **OpenAI (ChatGPT/GPT-4)** - Foundation LLM research
 
 ## Contributors
 

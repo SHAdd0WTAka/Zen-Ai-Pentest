@@ -742,6 +742,11 @@ This project is licensed under the MIT License - see [LICENSE](LICENSE) file for
 
 - **Grok (xAI)** - Strategic analysis and competitive research
 - **GitHub Copilot** - Code assistance and suggestions
+- **Agent Zero** - Autonomous agent architecture inspiration and hierarchical agent patterns
+- **Anthropic (Claude)** - Advanced reasoning capabilities and safety research
+- **Google (Gemini)** - Multi-modal AI integration and context understanding
+- **DeepSeek** - Open-source LLM excellence and code generation capabilities
+- **OpenAI (ChatGPT/GPT-4)** - Foundation LLM research and tool use patterns
 - **Security Community** - Feedback, bug reports, and feature requests
 
 ---
