@@ -34,7 +34,7 @@
 |-------|-----------|---------|
 | **UI** | React Dashboard, CLI, REST API | User interaction |
 | **Core** | ReAct Agent, Risk Engine, Subdomain Scanner | Intelligence |
-| **Tools** | 20+ integrated security tools | Execution |
+| **Tools** | 72+ integrated security tools | Execution |
 | **Data** | PostgreSQL, Redis, Evidence Store | Persistence |
 
 ## Key Features
