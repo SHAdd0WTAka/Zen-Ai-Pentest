@@ -1,8 +1,10 @@
 """Agents Module Tests"""
-import pytest
+
 from unittest.mock import Mock, patch
 
-from agents.agent_base import BaseAgent, AgentState, AgentRole
+import pytest
+
+from agents.agent_base import AgentRole, AgentState, BaseAgent
 
 
 def test_agent_state_enum():

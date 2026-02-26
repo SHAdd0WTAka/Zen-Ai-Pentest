@@ -1,9 +1,11 @@
 """Tools Module Coverage Tests"""
+
+from unittest.mock import AsyncMock, Mock, patch
+
 import pytest
-from unittest.mock import Mock, patch, AsyncMock
 
 # Test nmap integration
-from tools.nmap_integration import NmapScanner, NmapResult, NmapHost
+from tools.nmap_integration import NmapHost, NmapResult, NmapScanner
 
 
 def test_nmap_scanner_init():
@@ -24,7 +26,7 @@ def test_nmap_host_init():
     assert host.ip == "192.168.1.1"
 
 
-# Test sqlmap integration  
+# Test sqlmap integration
 from tools.sqlmap_integration import SQLMapScanner
 
 
@@ -35,7 +37,7 @@ def test_sqlmap_scanner_init():
 
 
 # Test nuclei integration
-from tools.nuclei_integration import NucleiTool, NucleiScanner
+from tools.nuclei_integration import NucleiScanner, NucleiTool
 
 
 def test_nuclei_tool_init():
@@ -51,7 +53,7 @@ def test_nuclei_scanner_init():
 
 
 # Test ffuf integration
-from tools.ffuf_integration import FfufTool, FfufFuzzer
+from tools.ffuf_integration import FfufFuzzer, FfufTool
 
 
 def test_ffuf_tool_init():
@@ -67,7 +69,7 @@ def test_ffuf_fuzzer_init():
 
 
 # Test gobuster integration
-from tools.gobuster_integration import GobusterScanner, GobusterResult
+from tools.gobuster_integration import GobusterResult, GobusterScanner
 
 
 def test_gobuster_scanner_init():
@@ -79,10 +81,7 @@ def test_gobuster_scanner_init():
 def test_gobuster_result_init():
     """Test GobusterResult initialization."""
     result = GobusterResult(
-        url="http://example.com",
-        status_code=200,
-        size=1000,
-        found=True
+        url="http://example.com", status_code=200, size=1000, found=True
     )
     assert result.url == "http://example.com"
 
@@ -162,7 +161,7 @@ def test_whatweb_result_init():
 
 
 # Test metasploit integration
-from tools.metasploit_integration import MetasploitManager, MetasploitCLI
+from tools.metasploit_integration import MetasploitCLI, MetasploitManager
 
 
 def test_metasploit_manager_init():

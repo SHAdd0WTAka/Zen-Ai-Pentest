@@ -3,24 +3,25 @@ Comprehensive Core Module Tests - Target: 80%+ Coverage
 
 Tests für:
 - core/orchestrator.py
-- core/state_machine.py  
+- core/state_machine.py
 - core/cache.py
 """
 
 import asyncio
-import pytest
 from datetime import datetime
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
+import pytest
+
 # Test State Machine
 from core.state_machine import (
-    StateType,
-    HistoryType,
-    StateEvent,
-    State,
-    Transition,
     AdvancedStateMachine,
+    HistoryType,
     PentestStateMachine,
+    State,
+    StateEvent,
+    StateType,
+    Transition,
 )
 
 
@@ -78,12 +79,12 @@ class TestStateMachine:
 
 # Test Cache
 from core.cache import (
-    CacheStats,
     CacheBackend,
+    CacheStats,
     MemoryCache,
+    cache_cve,
     generate_cache_key,
     get_cached_cve,
-    cache_cve,
 )
 
 

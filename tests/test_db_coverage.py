@@ -1,7 +1,10 @@
 """Database Module Tests"""
-import pytest
+
 from datetime import datetime
-from database.models import Scan, Finding, User
+
+import pytest
+
+from database.models import Finding, Scan, User
 
 
 def test_scan_model():

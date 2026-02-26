@@ -1,10 +1,12 @@
 """API Module Tests"""
+
 import pytest
 from fastapi.testclient import TestClient
 
+from api.auth import create_access_token
+
 # Test basic imports
 from api.main import app
-from api.auth import create_access_token
 from api.schemas import ScanCreate, ScanResponse
 
 client = TestClient(app)
