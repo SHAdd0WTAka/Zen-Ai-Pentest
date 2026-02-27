@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import {
-  Terminal,
   Cpu,
   MemoryStick,
   Activity,
@@ -8,7 +7,6 @@ import {
   AlertCircle,
   Loader2,
   Send,
-  Power,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
