@@ -100,3 +100,26 @@ class ApiClient {
 
 export const api = new ApiClient();
 export default api;
+
+// Types
+export interface SystemStats {
+  agents: number;
+  scans: number;
+  evidence: number;
+  reports: number;
+  vulnerabilities: number;
+  tools: number;
+}
+
+// Stats API
+export async function getStats(): Promise<SystemStats> {
+  // Return mock stats for now - connect to real endpoint later
+  return {
+    agents: 5,
+    scans: 12,
+    evidence: 8,
+    reports: 3,
+    vulnerabilities: 24,
+    tools: 40,
+  };
+}
