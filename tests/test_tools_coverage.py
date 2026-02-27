@@ -98,7 +98,7 @@ def test_subfinder_integration_init():
 
 def test_subfinder_result_init():
     """Test SubfinderResult initialization."""
-    result = SubfinderResult(subdomains=["test.example.com"])
+    result = SubfinderResult(success=True, subdomains=["test.example.com"])
     assert "test.example.com" in result.subdomains
 
 
