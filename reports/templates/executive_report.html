@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --bg-color: #ffffff;
+            --text-color: #333333;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-size: 11pt;
+            line-height: 1.6;
+            color: var(--text-color);
+            background: var(--bg-color);
+        }
+        
+        @page {
+            size: A4;
+            margin: 2cm;
+            @bottom-center {
+                content: "Confidential - {{ company_name }} - Page " counter(page) " of " counter(pages);
+                font-size: 8pt;
+                color: #666;
+            }
+        }
+        
+        /* Cover Page */
+        .cover-page {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            page-break-after: always;
+        }
+        
+        .cover-logo {
+            width: 120px;
+            height: 120px;
+            margin-bottom: 40px;
+        }
+        
+        .cover-title {
+            font-size: 36pt;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+        
+        .cover-subtitle {
+            font-size: 20pt;
+            color: var(--secondary-color);
+            margin-bottom: 60px;
+        }
+        
+        .cover-meta {
+            font-size: 12pt;
+            color: #666;
+            line-height: 2;
+        }
+        
+        .cover-classification {
+            margin-top: 80px;
+            padding: 15px 40px;
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 5px;
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+        
+        /* Table of Contents */
+        .toc {
+            page-break-after: always;
+        }
+        
+        .toc h2 {
+            font-size: 24pt;
+            color: var(--primary-color);
+            margin-bottom: 30px;
+            border-bottom: 3px solid var(--secondary-color);
+            padding-bottom: 10px;
+        }
+        
+        .toc ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .toc li {
+            margin: 15px 0;
+            display: flex;
+            justify-content: space-between;
+            font-size: 12pt;
+        }
+        
+        .toc a {
+            color: var(--text-color);
+            text-decoration: none;
+        }
+        
+        .toc a:hover {
+            color: var(--secondary-color);
+        }
+        
+        /* Section Styling */
+        h1 {
+            font-size: 24pt;
+            color: var(--primary-color);
+            margin-top: 40px;
+            margin-bottom: 20px;
+            border-bottom: 3px solid var(--secondary-color);
+            padding-bottom: 10px;
+            page-break-after: avoid;
+        }
+        
+        h2 {
+            font-size: 18pt;
+            color: var(--primary-color);
+            margin-top: 30px;
+            margin-bottom: 15px;
+            page-break-after: avoid;
+        }
+        
+        h3 {
+            font-size: 14pt;
+            color: #555;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            page-break-after: avoid;
+        }
+        
+        p {
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+        
+        /* Executive Summary Box */
+        .executive-summary {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-left: 5px solid var(--secondary-color);
+            padding: 25px;
+            margin: 30px 0;
+            border-radius: 0 10px 10px 0;
+        }
+        
+        .executive-summary h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+        }
+        
+        /* Risk Meter */
+        .risk-meter {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 20px;
+            margin: 30px 0;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .risk-item {
+            text-align: center;
+            padding: 20px;
+            border-radius: 8px;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .risk-number {
+            font-size: 36pt;
+            font-weight: 700;
+            display: block;
+        }
+        
+        .risk-label {
+            font-size: 10pt;
+            text-transform: uppercase;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .risk-critical { color: #dc3545; }
+        .risk-high { color: #fd7e14; }
+        .risk-medium { color: #ffc107; }
+        .risk-low { color: #28a745; }
+        .risk-info { color: #17a2b8; }
+        
+        /* Findings Table */
+        .findings-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 10pt;
+        }
+        
+        .findings-table th,
+        .findings-table td {
+            border: 1px solid #dee2e6;
+            padding: 12px;
+            text-align: left;
+        }
+        
+        .findings-table th {
+            background: var(--primary-color);
+            color: white;
+            font-weight: 600;
+        }
+        
+        .findings-table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        
+        /* Severity Badges */
+        .severity {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 9pt;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        
+        .severity-critical {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .severity-high {
+            background: #fd7e14;
+            color: white;
+        }
+        
+        .severity-medium {
+            background: #ffc107;
+            color: #333;
+        }
+        
+        .severity-low {
+            background: #28a745;
+            color: white;
+        }
+        
+        .severity-info {
+            background: #17a2b8;
+            color: white;
+        }
+        
+        /* Info Boxes */
+        .info-box {
+            background: #e8f4fd;
+            border-left: 4px solid var(--secondary-color);
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 0 5px 5px 0;
+        }
+        
+        .warning-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 0 5px 5px 0;
+        }
+        
+        .danger-box {
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 0 5px 5px 0;
+        }
+        
+        /* Charts/Graphics */
+        .chart-container {
+            margin: 30px 0;
+            text-align: center;
+        }
+        
+        /* Page Breaks */
+        .page-break {
+            page-break-before: always;
+        }
+        
+        /* Lists */
+        ul, ol {
+            margin: 15px 0;
+            padding-left: 30px;
+        }
+        
+        li {
+            margin: 8px 0;
+        }
+        
+        /* Footer */
+        .report-footer {
+            margin-top: 60px;
+            padding-top: 20px;
+            border-top: 1px solid #dee2e6;
+            font-size: 9pt;
+            color: #666;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- Cover Page -->
+    <div class="cover-page">
+        <div class="cover-logo">
+            <svg viewBox="0 0 100 100" width="120" height="120">
+                <circle cx="50" cy="50" r="45" fill="#2c3e50"/>
+                <path d="M50 15 L80 30 L80 50 C80 70 50 85 50 85 C50 85 20 70 20 50 L20 30 Z" fill="#3498db"/>
+                <path d="M35 45 L45 55 L65 35" stroke="white" stroke-width="4" fill="none" stroke-linecap="round"/>
+            </svg>
+        </div>
+        
+        <h1 class="cover-title">Penetration Test Report</h1>
+        <h2 class="cover-subtitle">Executive Summary</h2>
+        
+        <div class="cover-meta">
+            <p><strong>{{ company_name }}</strong></p>
+            <p>Assessment Period: {{ pentest_start }} - {{ pentest_end }}</p>
+            <p>Report Date: {{ report_date }}</p>
+            <p>Prepared by: Zen-AI-Pentest Security Team</p>
+            <p>Version: {{ report_version }}</p>
+        </div>
+        
+        <div class="cover-classification">
+            CONFIDENTIAL - FOR AUTHORIZED DISTRIBUTION ONLY
+        </div>
+    </div>
+    
+    <!-- Table of Contents -->
+    <div class="toc">
+        <h2>Table of Contents</h2>
+        <ul>
+            <li><span>1. Executive Summary</span> <span>3</span></li>
+            <li><span>2. Risk Assessment</span> <span>4</span></li>
+            <li><span>3. Key Findings Overview</span> <span>5</span></li>
+            <li><span>4. Strategic Recommendations</span> <span>6</span></li>
+            <li><span>5. Compliance Overview</span> <span>7</span></li>
+            <li><span>6. Next Steps</span> <span>8</span></li>
+        </ul>
+    </div>
+    
+    <!-- Executive Summary -->
+    <section class="page-break">
+        <h1>1. Executive Summary</h1>
+        
+        <div class="executive-summary">
+            <h3>At a Glance</h3>
+            <p>{{ executive_summary }}</p>
+        </div>
+        
+        <h2>Assessment Scope</h2>
+        <div class="info-box">
+            <p><strong>Included in Scope:</strong></p>
+            <p>{{ scope_included }}</p>
+        </div>
+        
+        <div class="warning-box">
+            <p><strong>Excluded from Scope:</strong></p>
+            <p>{{ scope_excluded }}</p>
+        </div>
+        
+        <h2>Overall Risk Rating: {{ overall_risk }}</h2>
+        
+        <div class="risk-meter">
+            <div class="risk-item">
+                <span class="risk-number risk-critical">{{ risk_summary.critical }}</span>
+                <span class="risk-label">Critical</span>
+            </div>
+            <div class="risk-item">
+                <span class="risk-number risk-high">{{ risk_summary.high }}</span>
+                <span class="risk-label">High</span>
+            </div>
+            <div class="risk-item">
+                <span class="risk-number risk-medium">{{ risk_summary.medium }}</span>
+                <span class="risk-label">Medium</span>
+            </div>
+            <div class="risk-item">
+                <span class="risk-number risk-low">{{ risk_summary.low }}</span>
+                <span class="risk-label">Low</span>
+            </div>
+            <div class="risk-item">
+                <span class="risk-number risk-info">{{ risk_summary.info }}</span>
+                <span class="risk-label">Info</span>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Risk Assessment -->
+    <section class="page-break">
+        <h1>2. Risk Assessment</h1>
+        
+        <h2>Risk Methodology</h2>
+        <p>
+            This assessment utilized industry-standard methodologies including OWASP Testing Guide, 
+            PTES (Penetration Testing Execution Standard), and CVSS v3.1 scoring. Each vulnerability 
+            was evaluated based on likelihood of exploitation and potential business impact.
+        </p>
+        
+        <h2>Risk Distribution</h2>
+        <table class="findings-table">
+            <thead>
+                <tr>
+                    <th>Severity</th>
+                    <th>Count</th>
+                    <th>Percentage</th>
+                    <th>Priority</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><span class="severity severity-critical">Critical</span></td>
+                    <td>{{ risk_summary.critical }}</td>
+                    <td>{{ (risk_summary.critical / risk_summary.total * 100)|round(1) }}%</td>
+                    <td>Immediate action required</td>
+                </tr>
+                <tr>
+                    <td><span class="severity severity-high">High</span></td>
+                    <td>{{ risk_summary.high }}</td>
+                    <td>{{ (risk_summary.high / risk_summary.total * 100)|round(1) }}%</td>
+                    <td>Address within 30 days</td>
+                </tr>
+                <tr>
+                    <td><span class="severity severity-medium">Medium</span></td>
+                    <td>{{ risk_summary.medium }}</td>
+                    <td>{{ (risk_summary.medium / risk_summary.total * 100)|round(1) }}%</td>
+                    <td>Address within 90 days</td>
+                </tr>
+                <tr>
+                    <td><span class="severity severity-low">Low</span></td>
+                    <td>{{ risk_summary.low }}</td>
+                    <td>{{ (risk_summary.low / risk_summary.total * 100)|round(1) }}%</td>
+                    <td>Address as resources allow</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <h2>Business Impact Analysis</h2>
+        <div class="danger-box">
+            <p><strong>Critical Business Risks Identified:</strong></p>
+            <ul>
+                {% if risk_summary.critical > 0 %}
+                <li>Data breach potential through identified critical vulnerabilities</li>
+                {% endif %}
+                {% if risk_summary.high > 0 %}
+                <li>Unauthorized access to sensitive systems</li>
+                {% endif %}
+                <li>Regulatory compliance violations possible</li>
+                <li>Reputational damage risk</li>
+            </ul>
+        </div>
+    </section>
+    
+    <!-- Key Findings -->
+    <section class="page-break">
+        <h1>3. Key Findings Overview</h1>
+        
+        <p>
+            The following table summarizes the most critical findings requiring immediate attention.
+            For complete technical details, refer to the Technical Report.
+        </p>
+        
+        <table class="findings-table">
+            <thead>
+                <tr>
+                    <th>Finding</th>
+                    <th>Severity</th>
+                    <th>Business Impact</th>
+                    <th>Effort to Fix</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for finding in top_findings %}
+                <tr>
+                    <td>{{ finding.title }}</td>
+                    <td><span class="severity severity-{{ finding.severity }}">{{ finding.severity|upper }}</span></td>
+                    <td>{{ finding.business_impact }}</td>
+                    <td>{{ finding.remediation_effort }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+    
+    <!-- Strategic Recommendations -->
+    <section class="page-break">
+        <h1>4. Strategic Recommendations</h1>
+        
+        <h2>Immediate Actions (0-30 Days)</h2>
+        <ol>
+            {% for rec in immediate_recommendations %}
+            <li><strong>{{ rec.title }}:</strong> {{ rec.description }}</li>
+            {% endfor %}
+        </ol>
+        
+        <h2>Short-term Improvements (30-90 Days)</h2>
+        <ul>
+            {% for rec in short_term_recommendations %}
+            <li><strong>{{ rec.title }}:</strong> {{ rec.description }}</li>
+            {% endfor %}
+        </ul>
+        
+        <h2>Long-term Strategy (90+ Days)</h2>
+        <ul>
+            {% for rec in long_term_recommendations %}
+            <li><strong>{{ rec.title }}:</strong> {{ rec.description }}</li>
+            {% endfor %}
+        </ul>
+    </section>
+    
+    <!-- Compliance Overview -->
+    <section class="page-break">
+        <h1>5. Compliance Overview</h1>
+        
+        <h2>Framework Mappings</h2>
+        <p>This assessment covers the following compliance frameworks:</p>
+        <ul>
+            <li>OWASP Top 10 (2021)</li>
+            <li>ISO 27001:2022 Controls</li>
+            <li>PCI DSS 4.0 Requirements</li>
+            <li>NIST Cybersecurity Framework 2.0</li>
+        </ul>
+        
+        <h2>Compliance Gaps</h2>
+        <table class="findings-table">
+            <thead>
+                <tr>
+                    <th>Framework</th>
+                    <th>Control</th>
+                    <th>Gap Description</th>
+                    <th>Priority</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for gap in compliance_gaps %}
+                <tr>
+                    <td>{{ gap.framework }}</td>
+                    <td>{{ gap.control }}</td>
+                    <td>{{ gap.description }}</td>
+                    <td><span class="severity severity-{{ gap.priority }}">{{ gap.priority|upper }}</span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+    
+    <!-- Next Steps -->
+    <section class="page-break">
+        <h1>6. Next Steps</h1>
+        
+        <h2>Remediation Planning</h2>
+        <ol>
+            <li>Prioritize critical and high-severity findings for immediate remediation</li>
+            <li>Assign ownership for each finding to specific teams/individuals</li>
+            <li>Establish remediation timeline with milestones</li>
+            <li>Schedule retest to validate remediation effectiveness</li>
+        </ol>
+        
+        <h2>Continuous Improvement</h2>
+        <ul>
+            <li>Implement security awareness training for development teams</li>
+            <li>Establish regular penetration testing schedule (quarterly recommended)</li>
+            <li>Integrate security testing into CI/CD pipeline</li>
+            <li>Consider bug bounty program to supplement assessments</li>
+        </ul>
+        
+        <h2>Contact Information</h2>
+        <div class="info-box">
+            <p><strong>Zen-AI-Pentest Security Team</strong></p>
+            <p>Email: security@zen-pentest.local</p>
+            <p>For questions regarding this report or to schedule remediation validation testing.</p>
+        </div>
+    </section>
+    
+    <div class="report-footer">
+        <p>This report contains confidential and sensitive information. Distribution is restricted to authorized personnel only.</p>
+        <p>© 2026 Zen-AI-Pentest. All rights reserved.</p>
+    </div>
+</body>
+</html>

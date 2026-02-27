@@ -102,6 +102,36 @@ except ImportError as e:
     logger.warning(f"Agent v2 routes not available: {e}")
     AGENTS_V2_AVAILABLE = False
 
+# Import Evidence routes
+try:
+    from api.routes.evidence import router as evidence_router
+
+    EVIDENCE_ROUTES_AVAILABLE = True
+except ImportError as e:
+    logger = logging.getLogger(__name__)
+    logger.warning(f"Evidence routes not available: {e}")
+    EVIDENCE_ROUTES_AVAILABLE = False
+
+# Import Reports routes
+try:
+    from api.routes.reports import router as reports_router
+
+    REPORTS_ROUTES_AVAILABLE = True
+except ImportError as e:
+    logger = logging.getLogger(__name__)
+    logger.warning(f"Reports routes not available: {e}")
+    REPORTS_ROUTES_AVAILABLE = False
+
+# Import Attack Path routes
+try:
+    from api.routes.attack_path import router as attack_path_router
+
+    ATTACK_PATH_ROUTES_AVAILABLE = True
+except ImportError as e:
+    logger = logging.getLogger(__name__)
+    logger.warning(f"Reports routes not available: {e}")
+    REPORTS_ROUTES_AVAILABLE = False
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -185,6 +215,14 @@ async def lifespan(app: FastAPI):
     init_db()
     logger.info("Database initialized")
 
+    # Initialize evidence database
+    try:
+        from evidence.models import init_evidence_db
+        init_evidence_db()
+        logger.info("Evidence database initialized")
+    except Exception as e:
+        logger.warning(f"Could not initialize evidence database: {e}")
+
     # Initialize auth database
     if NEW_AUTH_AVAILABLE:
         try:
@@ -240,66 +278,66 @@ SWAGGER_UI_DARK_CSS = """
         --warning: #f59e0b;
         --error: #ef4444;
     }
-    
-    body { 
+
+    body {
         background: var(--bg-primary) !important;
         color: var(--text-primary) !important;
     }
-    
+
     .swagger-ui {
         background: var(--bg-primary);
         color: var(--text-primary);
         filter: invert(1) hue-rotate(180deg);
     }
-    
+
     .swagger-ui .topbar {
         background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%) !important;
         border-bottom: 1px solid var(--border);
     }
-    
+
     .swagger-ui .information-container {
         background: var(--bg-secondary) !important;
     }
-    
+
     .swagger-ui .scheme-container {
         background: var(--bg-card) !important;
         border: 1px solid var(--border);
         box-shadow: 0 4px 20px rgba(0,0,0,0.3);
     }
-    
+
     .swagger-ui .opblock {
         background: var(--bg-card) !important;
         border: 1px solid var(--border) !important;
         box-shadow: 0 2px 10px rgba(0,0,0,0.2);
     }
-    
+
     .swagger-ui .opblock-tag {
         color: var(--text-primary) !important;
         border-bottom: 1px solid var(--border);
     }
-    
+
     .swagger-ui .opblock .opblock-summary-method {
         background: var(--accent) !important;
         color: #000 !important;
         font-weight: 600;
     }
-    
+
     .swagger-ui .opblock.opblock-get { border-color: var(--accent); }
     .swagger-ui .opblock.opblock-post { border-color: var(--success); }
     .swagger-ui .opblock.opblock-put { border-color: var(--warning); }
     .swagger-ui .opblock.opblock-delete { border-color: var(--error); }
-    
+
     .swagger-ui .btn {
         background: var(--bg-secondary) !important;
         border: 1px solid var(--border) !important;
         color: var(--text-primary) !important;
     }
-    
+
     .swagger-ui .btn.authorize {
         background: var(--success) !important;
         color: #000 !important;
     }
-    
+
     .swagger-ui input[type=text],
     .swagger-ui textarea,
     .swagger-ui select {
@@ -307,26 +345,26 @@ SWAGGER_UI_DARK_CSS = """
         border: 1px solid var(--border) !important;
         color: var(--text-primary) !important;
     }
-    
+
     .swagger-ui .model-box {
         background: var(--bg-secondary) !important;
     }
-    
+
     .swagger-ui table thead tr th {
         background: var(--bg-secondary) !important;
         color: var(--text-primary) !important;
         border-bottom: 2px solid var(--border);
     }
-    
+
     .swagger-ui .responses-inner h4,
     .swagger-ui .responses-inner h5 {
         color: var(--text-primary) !important;
     }
-    
+
     .swagger-ui .response-col_status {
         color: var(--text-primary) !important;
     }
-    
+
     /* Toggle Switch for Dark/Light Mode */
     .theme-toggle {
         position: fixed;
@@ -345,7 +383,7 @@ SWAGGER_UI_DARK_CSS = """
         font-size: 14px;
         transition: all 0.3s ease;
     }
-    
+
     .theme-toggle:hover {
         background: var(--accent);
         color: #000;
@@ -361,34 +399,34 @@ REDOC_DARK_CSS = """
         --text-secondary: #94a3b8;
         --accent: #06b6d4;
     }
-    
+
     body {
         background: var(--bg-primary) !important;
         color: var(--text-primary) !important;
     }
-    
+
     .menu-content {
         background: var(--bg-secondary) !important;
         border-right: 1px solid #27273a;
     }
-    
+
     .api-content {
         background: var(--bg-primary) !important;
     }
-    
+
     h1, h2, h3, h4, h5, h6 {
         color: var(--text-primary) !important;
     }
-    
+
     p, span, div {
         color: var(--text-secondary) !important;
     }
-    
+
     code {
         background: #1e1e2e !important;
         color: var(--accent) !important;
     }
-    
+
     pre {
         background: #1e1e2e !important;
         border: 1px solid #27273a !important;
@@ -398,7 +436,7 @@ REDOC_DARK_CSS = """
 app = FastAPI(
     title="Zen-AI-Pentest API",
     description="""Professional Pentesting Framework API
-    
+
 ## 🌓 API Documentation Dark Mode
 
 Switch between **Swagger UI** (`/docs`) and **ReDoc** (`/redoc`) - both support dark themes.
@@ -437,13 +475,13 @@ if NEW_AUTH_AVAILABLE:
 # =============================================================================
 # CUSTOM API DOCUMENTATION WITH DARK MODE
 # =============================================================================
-from fastapi.openapi.docs import get_swagger_ui_html, get_redoc_html
+from fastapi.openapi.docs import get_redoc_html, get_swagger_ui_html
 from fastapi.responses import HTMLResponse
 
 
 def get_zen_swagger_html() -> str:
     """Generate custom Swagger UI HTML with dark theme"""
-    html_template = f'''<!DOCTYPE html>
+    html_template = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -466,30 +504,30 @@ def get_zen_swagger_html() -> str:
             --warning: #f59e0b;
             --error: #ef4444;
         }}
-        
+
         * {{
             scrollbar-width: thin;
             scrollbar-color: #27273a #0a0a0f;
         }}
-        
+
         body {{
             background: var(--bg-primary) !important;
             margin: 0;
             padding: 0;
         }}
-        
+
         /* Swagger UI Dark Overrides */
         .swagger-ui {{
             background: var(--bg-primary) !important;
             color: var(--text-primary) !important;
         }}
-        
+
         .swagger-ui .topbar {{
             background: linear-gradient(135deg, #1a1a2e 0%, #0f172a 100%) !important;
             border-bottom: 1px solid var(--border);
             padding: 15px 0;
         }}
-        
+
         .swagger-ui .topbar .download-url-wrapper input[type=text] {{
             background: var(--bg-secondary) !important;
             color: var(--text-primary) !important;
@@ -497,26 +535,26 @@ def get_zen_swagger_html() -> str:
             border-radius: 6px;
             padding: 8px 12px;
         }}
-        
+
         .swagger-ui .topbar .download-url-wrapper .download-url-button {{
             background: var(--accent) !important;
             color: #000 !important;
             font-weight: 600;
             border-radius: 6px;
         }}
-        
+
         /* Info Section */
         .swagger-ui .information-container {{
             background: var(--bg-secondary) !important;
             padding: 30px 0;
         }}
-        
+
         .swagger-ui .info {{
             max-width: 1400px;
             margin: 0 auto;
             padding: 0 20px;
         }}
-        
+
         .swagger-ui .info .title {{
             color: var(--accent) !important;
             font-size: 2.8em;
@@ -524,7 +562,7 @@ def get_zen_swagger_html() -> str:
             text-shadow: 0 0 40px rgba(6,182,212,0.3);
             margin-bottom: 10px;
         }}
-        
+
         .swagger-ui .info .version {{
             background: var(--accent) !important;
             color: #000 !important;
@@ -533,18 +571,18 @@ def get_zen_swagger_html() -> str:
             font-weight: 600;
             vertical-align: middle;
         }}
-        
+
         .swagger-ui .info .description {{
             color: var(--text-secondary) !important;
             font-size: 1.1em;
             line-height: 1.6;
         }}
-        
+
         .swagger-ui .info .description h2 {{
             color: var(--text-primary) !important;
             margin-top: 20px;
         }}
-        
+
         /* Scheme Container */
         .swagger-ui .scheme-container {{
             background: var(--bg-card) !important;
@@ -554,15 +592,15 @@ def get_zen_swagger_html() -> str:
             margin: 20px;
             padding: 20px;
         }}
-        
+
         .swagger-ui .schemes-title {{
             color: var(--text-primary) !important;
         }}
-        
+
         .swagger-ui .scheme-container .schemes > label {{
             color: var(--text-secondary) !important;
         }}
-        
+
         /* Operation Blocks */
         .swagger-ui .opblock-tag {{
             font-size: 1.3em;
@@ -571,11 +609,11 @@ def get_zen_swagger_html() -> str:
             padding: 20px 0;
             margin: 0 20px;
         }}
-        
+
         .swagger-ui .opblock-tag small {{
             color: var(--text-secondary) !important;
         }}
-        
+
         .swagger-ui .opblock {{
             background: var(--bg-card) !important;
             border-radius: 12px;
@@ -583,61 +621,61 @@ def get_zen_swagger_html() -> str:
             border: 1px solid var(--border) !important;
             box-shadow: 0 2px 10px rgba(0,0,0,0.2);
         }}
-        
+
         .swagger-ui .opblock-summary {{
             padding: 15px 20px;
         }}
-        
+
         .swagger-ui .opblock .opblock-summary-method {{
             border-radius: 6px;
             font-weight: 600;
             min-width: 70px;
             text-align: center;
         }}
-        
+
         .swagger-ui .opblock.opblock-get .opblock-summary-method {{
             background: var(--accent) !important;
             color: #000 !important;
         }}
-        
+
         .swagger-ui .opblock.opblock-post .opblock-summary-method {{
             background: var(--success) !important;
             color: #000 !important;
         }}
-        
+
         .swagger-ui .opblock.opblock-put .opblock-summary-method {{
             background: var(--warning) !important;
             color: #000 !important;
         }}
-        
+
         .swagger-ui .opblock.opblock-delete .opblock-summary-method {{
             background: var(--error) !important;
             color: #fff !important;
         }}
-        
+
         .swagger-ui .opblock .opblock-summary-path {{
             color: var(--text-primary) !important;
         }}
-        
+
         .swagger-ui .opblock .opblock-summary-description {{
             color: var(--text-secondary) !important;
         }}
-        
+
         /* Parameters */
         .swagger-ui .parameter__name {{
             color: var(--accent) !important;
             font-weight: 600;
         }}
-        
+
         .swagger-ui .parameter__type {{
             color: var(--text-secondary) !important;
         }}
-        
+
         .swagger-ui .parameter__in {{
             color: var(--text-secondary) !important;
             font-style: italic;
         }}
-        
+
         /* Tables */
         .swagger-ui table thead tr th {{
             background: var(--bg-secondary) !important;
@@ -645,14 +683,14 @@ def get_zen_swagger_html() -> str:
             border-bottom: 2px solid var(--border);
             padding: 12px;
         }}
-        
+
         .swagger-ui table tbody tr td {{
             background: var(--bg-card) !important;
             color: var(--text-primary) !important;
             border-bottom: 1px solid var(--border);
             padding: 12px;
         }}
-        
+
         /* Models */
         .swagger-ui .model-box {{
             background: var(--bg-secondary) !important;
@@ -660,34 +698,34 @@ def get_zen_swagger_html() -> str:
             border-radius: 8px;
             padding: 15px;
         }}
-        
+
         .swagger-ui .model-title {{
             color: var(--accent) !important;
         }}
-        
+
         .swagger-ui .prop-type {{
             color: var(--success) !important;
         }}
-        
+
         /* Response Section */
         .swagger-ui .responses-inner h4,
         .swagger-ui .responses-inner h5 {{
             color: var(--text-primary) !important;
         }}
-        
+
         .swagger-ui .response-col_status {{
             color: var(--text-primary) !important;
             font-weight: 600;
         }}
-        
+
         .swagger-ui .response-col_description {{
             color: var(--text-secondary) !important;
         }}
-        
+
         .swagger-ui .responses-table td.response-col_status {{
             color: var(--text-primary) !important;
         }}
-        
+
         /* Input Fields */
         .swagger-ui input[type=text],
         .swagger-ui input[type=password],
@@ -702,7 +740,7 @@ def get_zen_swagger_html() -> str:
             border-radius: 6px;
             padding: 8px 12px;
         }}
-        
+
         .swagger-ui input:focus,
         .swagger-ui textarea:focus,
         .swagger-ui select:focus {{
@@ -710,13 +748,13 @@ def get_zen_swagger_html() -> str:
             outline: none;
             box-shadow: 0 0 0 3px rgba(6,182,212,0.1);
         }}
-        
+
         .swagger-ui .response-content-type {{
             background: var(--bg-secondary) !important;
             border: 1px solid var(--border) !important;
             color: var(--text-primary) !important;
         }}
-        
+
         /* Buttons */
         .swagger-ui .btn {{
             background: var(--bg-secondary) !important;
@@ -726,25 +764,25 @@ def get_zen_swagger_html() -> str:
             padding: 8px 16px;
             transition: all 0.2s ease;
         }}
-        
+
         .swagger-ui .btn:hover {{
             background: var(--accent) !important;
             color: #000 !important;
             border-color: var(--accent) !important;
         }}
-        
+
         .swagger-ui .btn.authorize {{
             background: var(--success) !important;
             color: #000 !important;
             border-color: var(--success) !important;
         }}
-        
+
         .swagger-ui .btn.execute {{
             background: var(--accent) !important;
             color: #000 !important;
             border-color: var(--accent) !important;
         }}
-        
+
         /* Auth */
         .swagger-ui .auth-container {{
             background: var(--bg-card) !important;
@@ -752,29 +790,29 @@ def get_zen_swagger_html() -> str:
             border-radius: 12px;
             padding: 20px;
         }}
-        
+
         .swagger-ui .auth-container .errors {{
             background: rgba(239,68,68,0.1) !important;
             border: 1px solid var(--error) !important;
             border-radius: 6px;
         }}
-        
+
         /* Dialogs */
         .swagger-ui .dialog-ux .backdrop-ux {{
             background: rgba(0,0,0,0.8) !important;
         }}
-        
+
         .swagger-ui .dialog-ux .modal-ux {{
             background: var(--bg-card) !important;
             border: 1px solid var(--border) !important;
             border-radius: 12px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.5);
         }}
-        
+
         .swagger-ui .dialog-ux .modal-ux-content h4 {{
             color: var(--text-primary) !important;
         }}
-        
+
         /* Code */
         .swagger-ui code {{
             background: var(--bg-secondary) !important;
@@ -782,68 +820,68 @@ def get_zen_swagger_html() -> str:
             padding: 2px 6px;
             border-radius: 4px;
         }}
-        
+
         .swagger-ui pre {{
             background: var(--bg-secondary) !important;
             border: 1px solid var(--border) !important;
             border-radius: 8px;
             padding: 15px;
         }}
-        
+
         /* Scrollbar */
         ::-webkit-scrollbar {{
             width: 10px;
             height: 10px;
         }}
-        
+
         ::-webkit-scrollbar-track {{
             background: var(--bg-primary);
         }}
-        
+
         ::-webkit-scrollbar-thumb {{
             background: var(--border);
             border-radius: 5px;
         }}
-        
+
         ::-webkit-scrollbar-thumb:hover {{
             background: var(--accent);
         }}
-        
+
         /* Links */
         .swagger-ui a {{
             color: var(--accent) !important;
             transition: color 0.2s ease;
         }}
-        
+
         .swagger-ui a:hover {{
             color: var(--accent-hover) !important;
         }}
-        
+
         /* Highlight */
         .swagger-ui .highlight-code {{
             background: var(--bg-secondary) !important;
         }}
-        
+
         /* Loading */
         .swagger-ui .loading-container {{
             background: var(--bg-primary) !important;
         }}
-        
+
         .swagger-ui .loading-container .loading::after {{
             border-color: var(--accent) !important;
         }}
-        
+
         /* Error */
         .swagger-ui .errors-wrapper {{
             background: rgba(239,68,68,0.1) !important;
             border: 1px solid var(--error) !important;
             border-radius: 8px;
         }}
-        
+
         .swagger-ui .errors-wrapper .errors h4 {{
             color: var(--error) !important;
         }}
-        
+
         /* Curl Command */
         .swagger-ui .curl {{
             background: var(--bg-secondary) !important;
@@ -851,16 +889,16 @@ def get_zen_swagger_html() -> str:
             border-radius: 8px;
             padding: 15px;
         }}
-        
+
         .swagger-ui .curl .curl-command {{
             color: var(--text-primary) !important;
         }}
-        
+
         /* Try-it-out section */
         .swagger-ui .try-out {{
             margin-top: 10px;
         }}
-        
+
         .swagger-ui .try-out__btn {{
             background: var(--accent) !important;
             color: #000 !important;
@@ -869,18 +907,18 @@ def get_zen_swagger_html() -> str:
             padding: 6px 16px;
             font-weight: 600;
         }}
-        
+
         /* Copy button */
         .swagger-ui .copy-to-clipboard {{
             background: var(--bg-secondary) !important;
             border: 1px solid var(--border) !important;
             border-radius: 4px;
         }}
-        
+
         .swagger-ui .copy-to-clipboard:hover {{
             background: var(--accent) !important;
         }}
-        
+
         /* Filter */
         .swagger-ui .filter .filter-input {{
             background: var(--bg-secondary) !important;
@@ -889,18 +927,18 @@ def get_zen_swagger_html() -> str:
             border-radius: 6px;
             padding: 8px 12px;
         }}
-        
+
         /* Servers */
         .swagger-ui .servers > label {{
             color: var(--text-secondary) !important;
         }}
-        
+
         .swagger-ui .servers {{
             background: var(--bg-secondary) !important;
             border-radius: 8px;
             padding: 15px;
         }}
-        
+
         /* SCHEMAS SECTION - Fix white backgrounds */
         .swagger-ui section.models {{
             background: var(--bg-card) !important;
@@ -908,11 +946,11 @@ def get_zen_swagger_html() -> str:
             border-radius: 12px;
             margin: 20px;
         }}
-        
+
         .swagger-ui section.models.is-open {{
             background: var(--bg-card) !important;
         }}
-        
+
         .swagger-ui section.models h4 {{
             color: var(--text-primary) !important;
             background: var(--bg-secondary) !important;
@@ -920,157 +958,157 @@ def get_zen_swagger_html() -> str:
             margin: 0;
             border-bottom: 1px solid var(--border);
         }}
-        
+
         .swagger-ui section.models h4 span {{
             color: var(--text-secondary) !important;
         }}
-        
+
         .swagger-ui section.models .model-container {{
             background: var(--bg-card) !important;
             border-bottom: 1px solid var(--border) !important;
         }}
-        
+
         .swagger-ui .model-box {{
             background: var(--bg-secondary) !important;
             border: 1px solid var(--border) !important;
             border-radius: 8px;
             padding: 15px;
         }}
-        
+
         .swagger-ui .model {{
             color: var(--text-primary) !important;
         }}
-        
+
         .swagger-ui .model .property {{
             color: var(--text-primary) !important;
         }}
-        
+
         .swagger-ui .model .property-name {{
             color: var(--accent) !important;
             font-weight: 600;
         }}
-        
+
         .swagger-ui .model .property-type {{
             color: var(--success) !important;
         }}
-        
+
         .swagger-ui .model .property.primitive {{
             color: var(--text-secondary) !important;
         }}
-        
+
         .swagger-ui .model .model-box .model-box {{
             background: var(--bg-card) !important;
         }}
-        
+
         .swagger-ui .model-title {{
             color: var(--text-primary) !important;
             font-weight: 600;
         }}
-        
+
         .swagger-ui .model-title__text {{
             color: var(--text-primary) !important;
         }}
-        
+
         .swagger-ui .model-toggle {{
             color: var(--accent) !important;
             background: var(--bg-secondary) !important;
             border-radius: 4px;
             padding: 2px 6px;
         }}
-        
+
         .swagger-ui .model-toggle:hover {{
             background: var(--accent) !important;
             color: #000 !important;
         }}
-        
+
         .swagger-ui .model-toggle.collapsed {{
             color: var(--accent) !important;
         }}
-        
+
         .swagger-ui .model-toggle::after {{
             background: var(--accent) !important;
         }}
-        
-        .swagger-ui .brace-open, 
+
+        .swagger-ui .brace-open,
         .swagger-ui .brace-close {{
             color: var(--text-secondary) !important;
         }}
-        
+
         .swagger-ui .inner-object {{
             background: var(--bg-card) !important;
             border-left: 2px solid var(--border) !important;
             padding-left: 15px;
             margin-left: 10px;
         }}
-        
+
         .swagger-ui .prop-type {{
             color: var(--success) !important;
         }}
-        
+
         .swagger-ui .prop-format {{
             color: var(--text-secondary) !important;
         }}
-        
+
         .swagger-ui .prop-enum {{
             color: var(--warning) !important;
         }}
-        
+
         .swagger-ui .prop-readonly {{
             color: var(--error) !important;
             font-weight: 600;
         }}
-        
+
         .swagger-ui .prop-keyword {{
             color: var(--accent) !important;
         }}
-        
+
         /* Model collapse/expand button */
         .swagger-ui .model-box-control {{
             color: var(--accent) !important;
         }}
-        
+
         /* Array items styling */
         .swagger-ui .model-box .items {{
             color: var(--text-secondary) !important;
         }}
-        
+
         /* Table in models */
         .swagger-ui .model-box table {{
             background: transparent !important;
         }}
-        
+
         .swagger-ui .model-box table tr {{
             background: transparent !important;
             border-bottom: 1px solid var(--border) !important;
         }}
-        
+
         .swagger-ui .model-box table tr:last-child {{
             border-bottom: none !important;
         }}
-        
+
         .swagger-ui .model-box table td {{
             background: transparent !important;
             color: var(--text-primary) !important;
             border: none !important;
         }}
-        
+
         .swagger-ui .model-box table .header-row {{
             background: var(--bg-secondary) !important;
         }}
-        
+
         /* Additional schema containers */
         .swagger-ui .json-schema-2020-12 {{
             background: var(--bg-secondary) !important;
         }}
-        
+
         .swagger-ui .json-schema-2020-12-property {{
             color: var(--text-primary) !important;
         }}
-        
+
         .swagger-ui .json-schema-2020-12__title {{
             color: var(--text-primary) !important;
         }}
-        
+
         /* Schema accordion */
         .swagger-ui .model-deprecated-warning {{
             background: rgba(239,68,68,0.1) !important;
@@ -1079,32 +1117,32 @@ def get_zen_swagger_html() -> str:
             border-radius: 6px;
             padding: 10px;
         }}
-        
+
         /* Content type selection */
         .swagger-ui .content-type {{
             background: var(--bg-secondary) !important;
             border: 1px solid var(--border) !important;
             color: var(--text-primary) !important;
         }}
-        
+
         /* Response samples */
         .swagger-ui .example {{
             background: var(--bg-secondary) !important;
             border: 1px solid var(--border) !important;
             border-radius: 8px;
         }}
-        
+
         .swagger-ui .example .example__section-header {{
             color: var(--text-primary) !important;
             border-bottom: 1px solid var(--border);
             padding-bottom: 10px;
         }}
-        
+
         /* Code samples */
         .swagger-ui .microlight {{
             color: var(--text-primary) !important;
         }}
-        
+
         /* Execute button area */
         .swagger-ui .execute-wrapper {{
             background: var(--bg-secondary) !important;
@@ -1112,19 +1150,19 @@ def get_zen_swagger_html() -> str:
             border-radius: 8px;
             padding: 15px;
         }}
-        
+
         /* Clear button */
         .swagger-ui .btn-clear {{
             background: transparent !important;
             border: 1px solid var(--error) !important;
             color: var(--error) !important;
         }}
-        
+
         .swagger-ui .btn-clear:hover {{
             background: var(--error) !important;
             color: #fff !important;
         }}
-        
+
         /* Schema Buttons (Expand/Collapse) */
         .swagger-ui .model-box-control {{
             background: var(--bg-secondary) !important;
@@ -1136,18 +1174,18 @@ def get_zen_swagger_html() -> str:
             font-weight: 500;
             transition: all 0.2s ease;
         }}
-        
+
         .swagger-ui .model-box-control:hover {{
             background: var(--accent) !important;
             color: #000 !important;
             border-color: var(--accent) !important;
         }}
-        
+
         .swagger-ui .model-box-control:focus {{
             outline: none;
             box-shadow: 0 0 0 2px rgba(6,182,212,0.3);
         }}
-        
+
         /* Section controls (Expand all / Collapse all) */
         .swagger-ui section.models .model-box-control {{
             background: var(--bg-secondary) !important;
@@ -1155,23 +1193,23 @@ def get_zen_swagger_html() -> str:
             color: var(--text-secondary) !important;
             margin-left: 10px;
         }}
-        
+
         .swagger-ui section.models .model-box-control:hover {{
             background: var(--accent) !important;
             color: #000 !important;
         }}
-        
+
         /* Model control arrows */
         .swagger-ui .model-box-control .pointer {{
             color: var(--accent) !important;
         }}
-        
+
         /* Schema header buttons container */
         .swagger-ui section.models .models-control {{
             display: flex;
             gap: 10px;
         }}
-        
+
         /* Theme Toggle Button */
         .theme-toggle {{
             position: fixed;
@@ -1192,7 +1230,7 @@ def get_zen_swagger_html() -> str:
             transition: all 0.3s ease;
             box-shadow: 0 4px 20px rgba(0,0,0,0.3);
         }}
-        
+
         .theme-toggle:hover {{
             background: var(--accent);
             color: #000;
@@ -1200,15 +1238,15 @@ def get_zen_swagger_html() -> str:
             transform: translateY(-2px);
             box-shadow: 0 6px 25px rgba(6,182,212,0.3);
         }}
-        
+
         .theme-toggle:active {{
             transform: translateY(0);
         }}
-        
+
         .theme-toggle .icon {{
             font-size: 16px;
         }}
-        
+
         /* Light Theme Variables */
         body[data-theme="light"] {{
             --bg-primary: #f8fafc;
@@ -1218,30 +1256,30 @@ def get_zen_swagger_html() -> str:
             --text-secondary: #64748b;
             --border: #e2e8f0;
         }}
-        
+
         body[data-theme="light"] .swagger-ui {{
             background: #f8fafc !important;
         }}
-        
+
         body[data-theme="light"] .swagger-ui .topbar {{
             background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%) !important;
             border-bottom: 1px solid #e2e8f0;
         }}
-        
+
         body[data-theme="light"] .swagger-ui .info {{
             background: linear-gradient(135deg, rgba(6,182,212,0.05) 0%, transparent 100%);
             border: 1px solid rgba(6,182,212,0.15);
         }}
-        
+
         body[data-theme="light"] .swagger-ui .info .title {{
             color: #0891b2 !important;
             text-shadow: none;
         }}
-        
+
         body[data-theme="light"] .swagger-ui .opblock {{
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }}
-        
+
         body[data-theme="light"] .theme-toggle {{
             box-shadow: 0 4px 20px rgba(0,0,0,0.1);
         }}
@@ -1253,25 +1291,25 @@ def get_zen_swagger_html() -> str:
         <span class="icon" id="themeIcon">🌙</span>
         <span id="themeText">Dark</span>
     </button>
-    
+
     <div id="swagger-ui"></div>
-    
+
     <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
     <script>
         // Theme Management
         const THEME_KEY = 'zen-api-theme';
-        
+
         function getPreferredTheme() {{
             const savedTheme = localStorage.getItem(THEME_KEY);
             if (savedTheme) return savedTheme;
             return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
         }}
-        
+
         function applyTheme(theme) {{
             document.body.setAttribute('data-theme', theme);
             const icon = document.getElementById('themeIcon');
             const text = document.getElementById('themeText');
-            
+
             if (theme === 'dark') {{
                 icon.textContent = '☀️';
                 text.textContent = 'Light';
@@ -1280,20 +1318,20 @@ def get_zen_swagger_html() -> str:
                 text.textContent = 'Dark';
             }}
         }}
-        
+
         function toggleTheme() {{
             const currentTheme = document.body.getAttribute('data-theme');
             const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
             localStorage.setItem(THEME_KEY, newTheme);
             applyTheme(newTheme);
         }}
-        
+
         // Initialize theme
         document.addEventListener('DOMContentLoaded', function() {{
             const theme = getPreferredTheme();
             applyTheme(theme);
         }});
-        
+
         // Initialize Swagger UI
         const ui = SwaggerUIBundle({{
             url: '/openapi.json',
@@ -1312,7 +1350,7 @@ def get_zen_swagger_html() -> str:
         }});
     </script>
 </body>
-</html>'''
+</html>"""
     return html_template
 
 
@@ -1324,7 +1362,7 @@ async def custom_swagger_ui_html() -> HTMLResponse:
 
 def get_zen_redoc_html() -> str:
     """Generate custom ReDoc HTML with dark theme"""
-    return '''<!DOCTYPE html>
+    return """<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -1347,52 +1385,52 @@ def get_zen_redoc_html() -> str:
             --warning: #f59e0b;
             --error: #ef4444;
         }
-        
+
         * {
             scrollbar-width: thin;
             scrollbar-color: #27273a #0a0a0f;
         }
-        
+
         body {
             background: var(--bg-primary) !important;
             margin: 0;
             padding: 0;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
         }
-        
+
         /* Menu / Sidebar */
         .menu-content {
             background: var(--bg-secondary) !important;
             border-right: 1px solid var(--border) !important;
         }
-        
+
         .menu-item {
             color: var(--text-secondary) !important;
             transition: all 0.2s ease;
         }
-        
+
         .menu-item:hover {
             color: var(--text-primary) !important;
             background: rgba(6,182,212,0.1) !important;
         }
-        
+
         .menu-item.active {
             color: var(--accent) !important;
             background: rgba(6,182,212,0.15) !important;
             border-left: 3px solid var(--accent);
         }
-        
+
         .menu-item-title {
             font-weight: 500;
         }
-        
+
         /* API Info Header */
         .api-info {
             background: linear-gradient(135deg, rgba(6,182,212,0.1) 0%, transparent 100%) !important;
             padding: 40px !important;
             border-bottom: 1px solid var(--border) !important;
         }
-        
+
         .api-info h1 {
             color: var(--accent) !important;
             font-size: 2.8em !important;
@@ -1400,74 +1438,74 @@ def get_zen_redoc_html() -> str:
             text-shadow: 0 0 40px rgba(6,182,212,0.3);
             margin-bottom: 10px !important;
         }
-        
+
         .api-info p {
             color: var(--text-secondary) !important;
             font-size: 1.1em;
             line-height: 1.6;
         }
-        
+
         .api-info a {
             color: var(--accent) !important;
         }
-        
+
         /* Content Area */
         .api-content {
             background: var(--bg-primary) !important;
             padding: 40px !important;
         }
-        
+
         /* Section Headers */
         h1, h2, h3, h4, h5, h6 {
             color: var(--text-primary) !important;
         }
-        
+
         h2 {
             border-bottom: 2px solid var(--border) !important;
             padding-bottom: 15px;
         }
-        
+
         h3 {
             color: var(--accent) !important;
         }
-        
+
         /* Operation Labels */
         .http-verb {
             border-radius: 6px !important;
             font-weight: 600 !important;
             padding: 4px 10px !important;
         }
-        
+
         .http-verb.get {
             background: rgba(6,182,212,0.2) !important;
             color: var(--accent) !important;
             border: 1px solid rgba(6,182,212,0.3) !important;
         }
-        
+
         .http-verb.post {
             background: rgba(16,185,129,0.2) !important;
             color: var(--success) !important;
             border: 1px solid rgba(16,185,129,0.3) !important;
         }
-        
+
         .http-verb.put {
             background: rgba(245,158,11,0.2) !important;
             color: var(--warning) !important;
             border: 1px solid rgba(245,158,11,0.3) !important;
         }
-        
+
         .http-verb.delete {
             background: rgba(239,68,68,0.2) !important;
             color: var(--error) !important;
             border: 1px solid rgba(239,68,68,0.3) !important;
         }
-        
+
         .http-verb.patch {
             background: rgba(139,92,246,0.2) !important;
             color: #8b5cf6 !important;
             border: 1px solid rgba(139,92,246,0.3) !important;
         }
-        
+
         /* Code Blocks */
         code {
             background: var(--bg-secondary) !important;
@@ -1476,46 +1514,46 @@ def get_zen_redoc_html() -> str:
             border-radius: 4px !important;
             font-family: 'JetBrains Mono', 'Fira Code', Monaco, Consolas, monospace !important;
         }
-        
+
         pre {
             background: var(--bg-card) !important;
             border: 1px solid var(--border) !important;
             border-radius: 8px !important;
             padding: 20px !important;
         }
-        
+
         pre code {
             background: transparent !important;
             color: var(--text-primary) !important;
         }
-        
+
         /* JSON Viewer */
         .redoc-json {
             background: var(--bg-card) !important;
             border: 1px solid var(--border) !important;
             border-radius: 8px !important;
         }
-        
+
         .redoc-json .string {
             color: var(--success) !important;
         }
-        
+
         .redoc-json .number {
             color: var(--accent) !important;
         }
-        
+
         .redoc-json .boolean {
             color: var(--warning) !important;
         }
-        
+
         .redoc-json .null {
             color: var(--error) !important;
         }
-        
+
         .redoc-json .key {
             color: var(--text-primary) !important;
         }
-        
+
         /* Schema Tables */
         table {
             background: var(--bg-card) !important;
@@ -1523,54 +1561,54 @@ def get_zen_redoc_html() -> str:
             border-radius: 8px !important;
             overflow: hidden;
         }
-        
+
         table tr {
             border-bottom: 1px solid var(--border) !important;
         }
-        
+
         table th {
             background: var(--bg-secondary) !important;
             color: var(--text-primary) !important;
             font-weight: 600;
             padding: 12px !important;
         }
-        
+
         table td {
             color: var(--text-secondary) !important;
             padding: 12px !important;
         }
-        
+
         /* Property Types */
         .property-type {
             color: var(--success) !important;
         }
-        
+
         .property-name {
             color: var(--accent) !important;
         }
-        
+
         /* Required Badge */
         .required {
             color: var(--error) !important;
             font-size: 0.85em;
         }
-        
+
         /* Pattern / Constraints */
         .pattern, .constraints {
             color: var(--text-secondary) !important;
             font-size: 0.9em;
         }
-        
+
         /* Description */
         .property-description {
             color: var(--text-secondary) !important;
         }
-        
+
         /* Default Value */
         .default-value {
             color: var(--warning) !important;
         }
-        
+
         /* Enum Values */
         .enum-value {
             background: var(--bg-secondary) !important;
@@ -1579,7 +1617,7 @@ def get_zen_redoc_html() -> str:
             border-radius: 4px !important;
             margin: 2px !important;
         }
-        
+
         /* Collapsible Sections */
         .collapsible {
             border: 1px solid var(--border) !important;
@@ -1587,33 +1625,33 @@ def get_zen_redoc_html() -> str:
             background: var(--bg-card) !important;
             margin: 10px 0 !important;
         }
-        
+
         .collapsible-header {
             background: var(--bg-secondary) !important;
             padding: 15px !important;
             border-radius: 8px 8px 0 0 !important;
         }
-        
+
         .collapsible-body {
             padding: 15px !important;
         }
-        
+
         /* Tabs */
         .react-tabs__tab-list {
             border-bottom: 2px solid var(--border) !important;
         }
-        
+
         .react-tabs__tab {
             color: var(--text-secondary) !important;
             padding: 12px 20px !important;
         }
-        
+
         .react-tabs__tab--selected {
             color: var(--accent) !important;
             border-bottom: 2px solid var(--accent) !important;
             background: rgba(6,182,212,0.1) !important;
         }
-        
+
         /* Try It Button */
         .try-it {
             background: var(--accent) !important;
@@ -1625,25 +1663,25 @@ def get_zen_redoc_html() -> str:
             cursor: pointer;
             transition: all 0.2s ease;
         }
-        
+
         .try-it:hover {
             background: var(--accent-hover) !important;
         }
-        
+
         /* Response Samples */
         .samples {
             background: var(--bg-card) !important;
             border: 1px solid var(--border) !important;
             border-radius: 8px !important;
         }
-        
+
         .samples-header {
             background: var(--bg-secondary) !important;
             padding: 15px !important;
             border-radius: 8px 8px 0 0 !important;
             color: var(--text-primary) !important;
         }
-        
+
         /* Copy Button */
         .copy-button {
             background: var(--bg-secondary) !important;
@@ -1652,29 +1690,29 @@ def get_zen_redoc_html() -> str:
             border-radius: 4px !important;
             padding: 4px 8px !important;
         }
-        
+
         .copy-button:hover {
             background: var(--accent) !important;
             color: #000 !important;
         }
-        
+
         /* Links */
         a {
             color: var(--accent) !important;
             text-decoration: none !important;
             transition: color 0.2s ease;
         }
-        
+
         a:hover {
             color: var(--accent-hover) !important;
             text-decoration: underline !important;
         }
-        
+
         /* Loading */
         .loading {
             color: var(--text-secondary) !important;
         }
-        
+
         /* Errors */
         .error {
             background: rgba(239,68,68,0.1) !important;
@@ -1683,31 +1721,31 @@ def get_zen_redoc_html() -> str:
             color: var(--error) !important;
             padding: 15px !important;
         }
-        
+
         /* Scrollbar Styling */
         ::-webkit-scrollbar {
             width: 10px;
             height: 10px;
         }
-        
+
         ::-webkit-scrollbar-track {
             background: var(--bg-primary);
         }
-        
+
         ::-webkit-scrollbar-thumb {
             background: var(--border);
             border-radius: 5px;
         }
-        
+
         ::-webkit-scrollbar-thumb:hover {
             background: var(--accent);
         }
-        
+
         /* Left Sidebar Scrollbar */
         .menu-content::-webkit-scrollbar {
             width: 6px;
         }
-        
+
         /* Version Badge */
         .version {
             background: var(--accent) !important;
@@ -1717,7 +1755,7 @@ def get_zen_redoc_html() -> str:
             font-weight: 600 !important;
             font-size: 0.9em !important;
         }
-        
+
         /* Download Button */
         .download-button {
             background: var(--accent) !important;
@@ -1729,11 +1767,11 @@ def get_zen_redoc_html() -> str:
             cursor: pointer;
             transition: all 0.2s ease;
         }
-        
+
         .download-button:hover {
             background: var(--accent-hover) !important;
         }
-        
+
         /* Search Box */
         .search-box {
             background: var(--bg-card) !important;
@@ -1742,16 +1780,16 @@ def get_zen_redoc_html() -> str:
             color: var(--text-primary) !important;
             padding: 10px 15px !important;
         }
-        
+
         .search-box::placeholder {
             color: var(--text-secondary) !important;
         }
-        
+
         .search-box:focus {
             border-color: var(--accent) !important;
             outline: none;
         }
-        
+
         /* Security Badge */
         .security-badge {
             background: rgba(16,185,129,0.2) !important;
@@ -1761,7 +1799,7 @@ def get_zen_redoc_html() -> str:
             padding: 2px 8px !important;
             font-size: 0.85em !important;
         }
-        
+
         /* Callback Badge */
         .callback-badge {
             background: rgba(139,92,246,0.2) !important;
@@ -1771,12 +1809,12 @@ def get_zen_redoc_html() -> str:
             padding: 2px 8px !important;
             font-size: 0.85em !important;
         }
-        
+
         /* Deprecated */
         .deprecated {
             opacity: 0.6;
         }
-        
+
         .deprecated-badge {
             background: rgba(239,68,68,0.2) !important;
             color: var(--error) !important;
@@ -1785,16 +1823,16 @@ def get_zen_redoc_html() -> str:
             padding: 2px 8px !important;
             font-size: 0.85em !important;
         }
-        
+
         /* External Docs */
         .external-docs {
             color: var(--text-secondary) !important;
         }
-        
+
         .external-docs a {
             color: var(--accent) !important;
         }
-        
+
         /* Tag Description */
         .tag-description {
             color: var(--text-secondary) !important;
@@ -1806,7 +1844,7 @@ def get_zen_redoc_html() -> str:
     <redoc spec-url="/openapi.json"></redoc>
     <script src="https://cdn.jsdelivr.net/npm/redoc@2/bundles/redoc.standalone.js"></script>
 </body>
-</html>'''
+</html>"""
 
 
 @app.get("/redoc", include_in_schema=False)
@@ -1819,6 +1857,7 @@ async def custom_redoc_html() -> HTMLResponse:
 async def root_redirect():
     """Redirect root to docs"""
     from fastapi.responses import RedirectResponse
+
     return RedirectResponse(url="/docs")
 
 
@@ -1826,9 +1865,9 @@ async def root_redirect():
 async def favicon():
     """Custom Zen favicon"""
     from fastapi.responses import Response
-    
+
     # Zen-themed SVG favicon (cyan shield)
-    svg = '''<?xml version="1.0" encoding="UTF-8"?>
+    svg = """<?xml version="1.0" encoding="UTF-8"?>
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="32" height="32">
       <defs>
         <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -1837,11 +1876,11 @@ async def favicon():
         </linearGradient>
       </defs>
       <rect width="100" height="100" rx="20" fill="#0a0a0f"/>
-      <path d="M50 10 L80 25 L80 50 C80 70 50 90 50 90 C50 90 20 70 20 50 L20 25 Z" 
+      <path d="M50 10 L80 25 L80 50 C80 70 50 90 50 90 C50 90 20 70 20 50 L20 25 Z"
             fill="url(#grad)" stroke="#06b6d4" stroke-width="2"/>
       <path d="M35 45 L45 55 L65 35" fill="none" stroke="#0a0a0f" stroke-width="4" stroke-linecap="round"/>
-    </svg>'''
-    
+    </svg>"""
+
     return Response(content=svg.encode(), media_type="image/svg+xml")
 
 
@@ -3557,6 +3596,30 @@ if AGENTS_V2_AVAILABLE:
         logger.info("✅ Agent Communication v2 endpoints loaded")
     except Exception as e:
         logger.warning(f"Could not load Agent v2 endpoints: {e}")
+
+# Evidence routes
+if EVIDENCE_ROUTES_AVAILABLE:
+    try:
+        app.include_router(evidence_router, prefix="/api/v1")
+        logger.info("✅ Evidence endpoints loaded")
+    except Exception as e:
+        logger.warning(f"Could not load Evidence endpoints: {e}")
+
+# Attack Path routes
+if ATTACK_PATH_ROUTES_AVAILABLE:
+    try:
+        app.include_router(attack_path_router, prefix="/api/v1")
+        logger.info("✅ Attack Path endpoints loaded")
+    except Exception as e:
+        logger.warning(f"Could not load Attack Path endpoints: {e}")
+
+# Reports routes
+if REPORTS_ROUTES_AVAILABLE:
+    try:
+        app.include_router(reports_router, prefix="/api/v1")
+        logger.info("✅ Reports endpoints loaded")
+    except Exception as e:
+        logger.warning(f"Could not load Reports endpoints: {e}")
 
 # Workflow routes - import directly to avoid circular imports
 try:

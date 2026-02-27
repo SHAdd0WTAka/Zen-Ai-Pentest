@@ -1,486 +1,535 @@
 """
-Report Generator für Zen-AI-Pentest
+Report Generator
 
-Erstellt professionelle PDF, HTML und JSON Reports.
+Main class for generating penetration test reports.
+
+Usage:
+    generator = ReportGenerator()
+    
+    # Generate executive summary
+    report = generator.generate_executive_report(
+        scan_id="scan-123",
+        company_name="ACME Corp",
+        output_path="reports/executive.pdf"
+    )
+    
+    # Generate technical report
+    report = generator.generate_technical_report(
+        scan_id="scan-123",
+        output_path="reports/technical.pdf",
+        include_evidence=True
+    )
 """
 
-import json
-import logging
+import hashlib
+import os
+import uuid
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional
 
-try:
-    from weasyprint import HTML
+from sqlalchemy.orm import Session
 
-    WEASYPRINT_AVAILABLE = True
-except ImportError:
-    WEASYPRINT_AVAILABLE = False
-
-from jinja2 import Template
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+from database.models import SessionLocal
+from evidence.models import Evidence
+from reports.compliance import ComplianceMapper
+from reports.export import DOCXExporter, HTMLExporter, JSONExporter, PDFExporter
+from reports.models import Report, ReportFormat, ReportStatus, ReportType
 
 
 class ReportGenerator:
-    """Generiert Pentest-Reports in verschiedenen Formaten"""
-
-    def __init__(self, output_dir: str = "/tmp/reports"):
-        self.output_dir = Path(output_dir)
-        self.output_dir.mkdir(exist_ok=True)
-
-        # Report-Templates
-        self.html_template = self._get_html_template()
-
-    def generate_pdf(
+    """
+    Main report generator class.
+    
+    Handles all aspects of report generation:
+    - Data collection
+    - Template rendering
+    - Export to multiple formats
+    - Report tracking
+    """
+    
+    def __init__(self, templates_dir: str = "reports/templates"):
+        self.templates_dir = Path(templates_dir)
+        self.pdf_exporter = PDFExporter(templates_dir)
+        self.html_exporter = HTMLExporter(templates_dir)
+        self.docx_exporter = DOCXExporter()
+        self.json_exporter = JSONExporter()
+        self.compliance_mapper = ComplianceMapper()
+    
+    def generate_executive_report(
         self,
-        scan_id: int,
-        findings: List[Dict],
-        scan_info: Dict,
-        template: str = "default",
-    ) -> str:
-        """Generiert PDF-Report"""
-        if not WEASYPRINT_AVAILABLE:
-            logger.warning(
-                "WeasyPrint nicht verfügbar, erstelle HTML stattdessen"
-            )
-            return self.generate_html(scan_id, findings, scan_info)
-
-        try:
-            # HTML erstellen
-            html_content = self._render_html(scan_id, findings, scan_info)
-
-            # PDF generieren
-            output_file = (
-                self.output_dir
-                / f"report_{scan_id}_{int(datetime.now().timestamp())}.pdf"
-            )
-            HTML(string=html_content).write_pdf(str(output_file))
-
-            logger.info(f"PDF Report erstellt: {output_file}")
-            return str(output_file)
-
-        except Exception as e:
-            logger.error(f"PDF Generierung fehlgeschlagen: {e}")
-            # Fallback zu HTML
-            return self.generate_html(scan_id, findings, scan_info)
-
-    def generate_html(
-        self,
-        scan_id: int,
-        findings: List[Dict],
-        scan_info: Dict,
-        template: str = "default",
-    ) -> str:
-        """Generiert HTML-Report"""
-        html_content = self._render_html(scan_id, findings, scan_info)
-
-        output_file = (
-            self.output_dir
-            / f"report_{scan_id}_{int(datetime.now().timestamp())}.html"
-        )
-        output_file.write_text(html_content, encoding="utf-8")
-
-        logger.info(f"HTML Report erstellt: {output_file}")
-        return str(output_file)
-
-    def generate_json(
-        self, scan_id: int, findings: List[Dict], scan_info: Dict
-    ) -> str:
-        """Generiert JSON-Report (für API/Integrationen)"""
-        report_data = {
-            "report_metadata": {
-                "scan_id": scan_id,
-                "generated_at": datetime.utcnow().isoformat(),
-                "generator": "Zen-AI-Pentest v2.0",
-                "format": "json",
-            },
-            "scan_info": scan_info,
-            "summary": {
-                "total_findings": len(findings),
-                "severity_counts": self._count_by_severity(findings),
-                "tool_counts": self._count_by_tool(findings),
-            },
-            "findings": findings,
-        }
-
-        output_file = (
-            self.output_dir
-            / f"report_{scan_id}_{int(datetime.now().timestamp())}.json"
-        )
-        output_file.write_text(
-            json.dumps(report_data, indent=2), encoding="utf-8"
-        )
-
-        logger.info(f"JSON Report erstellt: {output_file}")
-        return str(output_file)
-
-    def generate_xml(
-        self, scan_id: int, findings: List[Dict], scan_info: Dict
-    ) -> str:
-        """Generiert XML-Report (für Import in andere Tools)"""
-        import xml.etree.ElementTree as ET
-
-        root = ET.Element("pentest_report")
-        root.set("generated", datetime.utcnow().isoformat())
-
-        # Metadata
-        meta = ET.SubElement(root, "metadata")
-        ET.SubElement(meta, "scan_id").text = str(scan_id)
-        ET.SubElement(meta, "target").text = scan_info.get("target", "")
-        ET.SubElement(meta, "scan_type").text = scan_info.get("scan_type", "")
-
-        # Findings
-        findings_elem = ET.SubElement(root, "findings")
-        findings_elem.set("count", str(len(findings)))
-
-        for finding in findings:
-            f_elem = ET.SubElement(findings_elem, "finding")
-            f_elem.set("id", str(finding.get("id", "")))
-            ET.SubElement(f_elem, "title").text = finding.get("title", "")
-            ET.SubElement(f_elem, "severity").text = finding.get(
-                "severity", ""
-            )
-            ET.SubElement(f_elem, "description").text = finding.get(
-                "description", ""
-            )
-            ET.SubElement(f_elem, "tool").text = finding.get("tool", "")
-
-        # Write to file
-        output_file = (
-            self.output_dir
-            / f"report_{scan_id}_{int(datetime.now().timestamp())}.xml"
-        )
-        tree = ET.ElementTree(root)
-        tree.write(str(output_file), encoding="utf-8", xml_declaration=True)
-
-        logger.info(f"XML Report erstellt: {output_file}")
-        return str(output_file)
-
-    def generate_markdown(
-        self, scan_id: int, findings: List[Dict], scan_info: Dict
-    ) -> str:
-        """Generiert Markdown-Report"""
-        md_content = f"""# Pentest Report
-
-**Scan ID:** {scan_id}
-**Target:** {scan_info.get("target", "N/A")}
-**Date:** {datetime.utcnow().strftime("%Y-%m-%d %H:%M")}
-**Type:** {scan_info.get("scan_type", "N/A")}
-
----
-
-## Summary
-
-- **Total Findings:** {len(findings)}
-- **Critical:** {sum(1 for f in findings if f.get("severity") == "critical")}
-- **High:** {sum(1 for f in findings if f.get("severity") == "high")}
-- **Medium:** {sum(1 for f in findings if f.get("severity") == "medium")}
-- **Low:** {sum(1 for f in findings if f.get("severity") == "low")}
-
----
-
-## Findings
-
-"""
-
-        # Sort by severity
-        severity_order = {
-            "critical": 0,
-            "high": 1,
-            "medium": 2,
-            "low": 3,
-            "info": 4,
-        }
-        sorted_findings = sorted(
-            findings,
-            key=lambda x: severity_order.get(x.get("severity", "info"), 5),
-        )
-
-        for finding in sorted_findings:
-            md_content += f"""### {finding.get("title", "Untitled")}
-
-- **Severity:** {finding.get("severity", "unknown").upper()}
-- **Tool:** {finding.get("tool", "unknown")}
-- **Target:** {finding.get("target", "N/A")}
-
-{finding.get("description", "No description available.")}
-
----
-
-"""
-
-        output_file = (
-            self.output_dir
-            / f"report_{scan_id}_{int(datetime.now().timestamp())}.md"
-        )
-        output_file.write_text(md_content, encoding="utf-8")
-
-        logger.info(f"Markdown Report erstellt: {output_file}")
-        return str(output_file)
-
-    def _render_html(
-        self, scan_id: int, findings: List[Dict], scan_info: Dict
-    ) -> str:
-        """Rendert HTML-Template"""
-        template = Template(self.html_template, autoescape=True)
-
-        # Sort findings by severity
-        severity_order = {
-            "critical": 0,
-            "high": 1,
-            "medium": 2,
-            "low": 3,
-            "info": 4,
-        }
-        sorted_findings = sorted(
-            findings,
-            key=lambda x: severity_order.get(x.get("severity", "info"), 5),
-        )
-
-        # Count by severity
-        severity_counts = self._count_by_severity(findings)
-
-        return template.render(
-            scan_id=scan_id,
-            scan_info=scan_info,
-            findings=sorted_findings,
-            severity_counts=severity_counts,
-            generated_at=datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
-            total_findings=len(findings),
-        )
-
-    def _count_by_severity(self, findings: List[Dict]) -> Dict[str, int]:
-        """Zählt Befunde nach Schweregrad"""
-        counts = {"critical": 0, "high": 0, "medium": 0, "low": 0, "info": 0}
-        for f in findings:
-            sev = f.get("severity", "info").lower()
-            if sev in counts:
-                counts[sev] += 1
-        return counts
-
-    def _count_by_tool(self, findings: List[Dict]) -> Dict[str, int]:
-        """Zählt Befunde nach Tool"""
-        counts = {}
-        for f in findings:
-            tool = f.get("tool", "unknown")
-            counts[tool] = counts.get(tool, 0) + 1
-        return counts
-
-    def _get_html_template(self) -> str:
-        """Gibt HTML-Template zurück"""
-        return """
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pentest Report - {{ scan_info.get('target', 'Unknown') }}</title>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f6f8fa;
-            color: #24292e;
-            line-height: 1.6;
-        }
-        .container { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
-
-        header {
-            background: linear-gradient(135deg, #1a237e 0%, #283593 100%);
-            color: white;
-            padding: 40px;
-            border-radius: 12px;
-            margin-bottom: 30px;
-        }
-        h1 { font-size: 32px; margin-bottom: 10px; }
-        .meta { opacity: 0.9; font-size: 14px; }
-        .meta span { margin-right: 20px; }
-
-        .summary {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        .summary-card {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            text-align: center;
-        }
-        .summary-card h3 { font-size: 14px; color: #586069; margin-bottom: 10px; }
-        .summary-card .number { font-size: 36px; font-weight: bold; }
-        .critical { color: #d32f2f; }
-        .high { color: #f57c00; }
-        .medium { color: #fbc02d; }
-        .low { color: #388e3c; }
-        .info { color: #1976d2; }
-
-        .findings { background: white; border-radius: 8px; padding: 30px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .findings h2 { margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #e1e4e8; }
-
-        .finding {
-            margin-bottom: 25px;
-            padding: 20px;
-            background: #f6f8fa;
-            border-radius: 8px;
-            border-left: 4px solid #ccc;
-        }
-        .finding.critical { border-left-color: #d32f2f; }
-        .finding.high { border-left-color: #f57c00; }
-        .finding.medium { border-left-color: #fbc02d; }
-        .finding.low { border-left-color: #388e3c; }
-
-        .finding-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        .finding-title { font-size: 18px; font-weight: 600; }
-        .severity-badge {
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-            color: white;
-        }
-        .severity-critical { background: #d32f2f; }
-        .severity-high { background: #f57c00; }
-        .severity-medium { background: #fbc02d; color: #333; }
-        .severity-low { background: #388e3c; }
-        .severity-info { background: #1976d2; }
-
-        .finding-meta { font-size: 12px; color: #586069; margin-bottom: 10px; }
-        .finding-meta span { margin-right: 15px; }
-
-        .finding-description { color: #444; }
-
-        footer {
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid #e1e4e8;
-            text-align: center;
-            color: #586069;
-            font-size: 12px;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <header>
-            <h1>Security Assessment Report</h1>
-            <div class="meta">
-                <span>Target: {{ scan_info.get('target', 'Unknown') }}</span>
-                <span>Scan Type: {{ scan_info.get('scan_type', 'Unknown') }}</span>
-                <span>Generated: {{ generated_at }}</span>
-            </div>
-        </header>
-
-        <div class="summary">
-            <div class="summary-card">
-                <h3>Total Findings</h3>
-                <div class="number">{{ total_findings }}</div>
-            </div>
-            <div class="summary-card">
-                <h3>Critical</h3>
-                <div class="number critical">{{ severity_counts.critical }}</div>
-            </div>
-            <div class="summary-card">
-                <h3>High</h3>
-                <div class="number high">{{ severity_counts.high }}</div>
-            </div>
-            <div class="summary-card">
-                <h3>Medium</h3>
-                <div class="number medium">{{ severity_counts.medium }}</div>
-            </div>
-            <div class="summary-card">
-                <h3>Low</h3>
-                <div class="number low">{{ severity_counts.low }}</div>
-            </div>
-        </div>
-
-        <div class="findings">
-            <h2>Detailed Findings</h2>
-
-            {% for finding in findings %}
-            <div class="finding {{ finding.get('severity', 'info') }}">
-                <div class="finding-header">
-                    <div class="finding-title">{{ finding.get('title', 'Untitled') }}</div>
-                    <span class="severity-badge severity-{{ finding.get('severity', 'info') }}">
-                        {{ finding.get('severity', 'info').upper() }}
-                    </span>
-                </div>
-                <div class="finding-meta">
-                    <span>Tool: {{ finding.get('tool', 'Unknown') }}</span>
-                    <span>Target: {{ finding.get('target', 'N/A') }}</span>
-                    {% if finding.get('cvss_score') %}
-                    <span>CVSS: {{ finding.get('cvss_score') }}</span>
-                    {% endif %}
-                </div>
-                <div class="finding-description">
-                    {{ finding.get('description', 'No description available.') }}
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-
-        <footer>
-            <p>Generated by Zen-AI-Pentest v2.0</p>
-            <p>Confidential - For authorized use only</p>
-        </footer>
-    </div>
-</body>
-</html>
+        scan_id: str,
+        output_path: str,
+        company_name: str = "Unknown Company",
+        pentest_start: Optional[str] = None,
+        pentest_end: Optional[str] = None,
+        db: Optional[Session] = None,
+    ) -> Dict:
         """
-
-
-if __name__ == "__main__":
-    # Test
-    generator = ReportGenerator()
-
-    # Test data
-    findings = [
-        {
-            "id": 1,
-            "title": "SQL Injection in login form",
-            "description": "The login form is vulnerable to SQL injection attacks.",
-            "severity": "critical",
-            "tool": "sqlmap",
-            "target": "http://example.com/login",
-            "cvss_score": 9.8,
-        },
-        {
-            "id": 2,
-            "title": "Outdated Apache Version",
-            "description": "Apache 2.4.29 detected, multiple CVEs applicable.",
-            "severity": "high",
-            "tool": "nmap",
-            "target": "192.168.1.1",
-            "cvss_score": 7.5,
-        },
-        {
-            "id": 3,
-            "title": "Missing Security Headers",
-            "description": "X-Frame-Options header not set.",
-            "severity": "medium",
-            "tool": "nuclei",
-            "target": "http://example.com",
-        },
-    ]
-
-    scan_info = {"target": "example.com", "scan_type": "comprehensive"}
-
-    # Generate reports
-    pdf_path = generator.generate_pdf(123, findings, scan_info)
-    html_path = generator.generate_html(123, findings, scan_info)
-    json_path = generator.generate_json(123, findings, scan_info)
-
-    print("Reports generated:")
-    print(f"  PDF: {pdf_path}")
-    print(f"  HTML: {html_path}")
-    print(f"  JSON: {json_path}")
+        Generate an executive summary report.
+        
+        Args:
+            scan_id: The scan ID to generate report for
+            output_path: Where to save the report
+            company_name: Client company name
+            pentest_start: Pentest start date (ISO format)
+            pentest_end: Pentest end date (ISO format)
+            db: Database session
+            
+        Returns:
+            Report metadata dict
+        """
+        if db is None:
+            db = SessionLocal()
+        
+        try:
+            # Collect data
+            findings = self._collect_findings(db, scan_id)
+            evidence = self._collect_evidence(db, scan_id)
+            
+            # Calculate statistics
+            stats = self._calculate_statistics(findings)
+            
+            # Prepare template data
+            data = {
+                "title": f"Penetration Test Report - {company_name}",
+                "company_name": company_name,
+                "report_date": datetime.utcnow().strftime("%Y-%m-%d"),
+                "pentest_start": pentest_start or datetime.utcnow().strftime("%Y-%m-%d"),
+                "pentest_end": pentest_end or datetime.utcnow().strftime("%Y-%m-%d"),
+                "report_version": "1.0",
+                "executive_summary": self._generate_executive_summary(stats, company_name),
+                "scope_included": "Web applications, APIs, Network infrastructure",
+                "scope_excluded": "Physical security, Social engineering, Denial of Service",
+                "overall_risk": stats["overall_risk"],
+                "risk_summary": {
+                    "total": stats["total"],
+                    "critical": stats["critical"],
+                    "high": stats["high"],
+                    "medium": stats["medium"],
+                    "low": stats["low"],
+                    "info": stats["info"],
+                },
+                "top_findings": self._get_top_findings(findings, 10),
+                "immediate_recommendations": self._get_recommendations(findings, "immediate"),
+                "short_term_recommendations": self._get_recommendations(findings, "short"),
+                "long_term_recommendations": self._get_recommendations(findings, "long"),
+                "compliance_gaps": self._get_compliance_gaps(findings),
+            }
+            
+            # Generate report
+            format = self._detect_format(output_path)
+            
+            if format == "pdf":
+                self.pdf_exporter.export(data, "executive_report", output_path)
+            elif format == "html":
+                self.html_exporter.export(data, "executive_report", output_path)
+            elif format == "docx":
+                self.docx_exporter.export(data, output_path)
+            elif format == "json":
+                self.json_exporter.export(data, output_path)
+            
+            # Create report record
+            report_record = self._create_report_record(
+                scan_id=scan_id,
+                report_type=ReportType.EXECUTIVE,
+                format=format,
+                output_path=output_path,
+                stats=stats,
+                company_name=company_name,
+                db=db,
+            )
+            
+            return {
+                "success": True,
+                "report_id": report_record.id,
+                "file_path": output_path,
+                "file_size": os.path.getsize(output_path) if os.path.exists(output_path) else 0,
+                "statistics": stats,
+            }
+            
+        finally:
+            if db:
+                db.close()
+    
+    def generate_technical_report(
+        self,
+        scan_id: str,
+        output_path: str,
+        include_evidence: bool = True,
+        include_remediation: bool = True,
+        db: Optional[Session] = None,
+    ) -> Dict:
+        """
+        Generate a detailed technical report.
+        
+        Args:
+            scan_id: The scan ID
+            output_path: Output file path
+            include_evidence: Include screenshots and evidence
+            include_remediation: Include remediation steps
+            db: Database session
+            
+        Returns:
+            Report metadata
+        """
+        if db is None:
+            db = SessionLocal()
+        
+        try:
+            findings = self._collect_findings(db, scan_id)
+            evidence = self._collect_evidence(db, scan_id) if include_evidence else []
+            
+            stats = self._calculate_statistics(findings)
+            
+            data = {
+                "title": "Technical Penetration Test Report",
+                "report_date": datetime.utcnow().strftime("%Y-%m-%d"),
+                "scan_id": scan_id,
+                "findings": findings,
+                "evidence": [e.to_dict() for e in evidence],
+                "statistics": stats,
+                "include_remediation": include_remediation,
+            }
+            
+            format = self._detect_format(output_path)
+            
+            if format == "pdf":
+                self.pdf_exporter.export(data, "technical_report", output_path)
+            elif format == "html":
+                self.html_exporter.export(data, "technical_report", output_path)
+            elif format == "docx":
+                self.docx_exporter.export(data, output_path)
+            elif format == "json":
+                self.json_exporter.export(data, output_path)
+            
+            report_record = self._create_report_record(
+                scan_id=scan_id,
+                report_type=ReportType.TECHNICAL,
+                format=format,
+                output_path=output_path,
+                stats=stats,
+                db=db,
+            )
+            
+            return {
+                "success": True,
+                "report_id": report_record.id,
+                "file_path": output_path,
+                "statistics": stats,
+            }
+            
+        finally:
+            if db:
+                db.close()
+    
+    def generate_compliance_report(
+        self,
+        scan_id: str,
+        output_path: str,
+        framework: str,
+        db: Optional[Session] = None,
+    ) -> Dict:
+        """
+        Generate a compliance-focused report.
+        
+        Args:
+            scan_id: The scan ID
+            output_path: Output file path
+            framework: Compliance framework (owasp, iso27001, pci_dss)
+            db: Database session
+            
+        Returns:
+            Report metadata
+        """
+        if db is None:
+            db = SessionLocal()
+        
+        try:
+            findings = self._collect_findings(db, scan_id)
+            
+            # Generate compliance mapping
+            compliance_summary = self.compliance_mapper.generate_compliance_summary(
+                findings, framework
+            )
+            
+            data = {
+                "title": f"{framework.upper()} Compliance Assessment Report",
+                "report_date": datetime.utcnow().strftime("%Y-%m-%d"),
+                "framework": framework,
+                "compliance_summary": compliance_summary,
+                "findings": findings,
+            }
+            
+            format = self._detect_format(output_path)
+            
+            if format == "pdf":
+                self.pdf_exporter.export(data, "compliance_report", output_path)
+            elif format == "html":
+                self.html_exporter.export(data, "compliance_report", output_path)
+            elif format == "json":
+                self.json_exporter.export(data, output_path)
+            
+            report_record = self._create_report_record(
+                scan_id=scan_id,
+                report_type=ReportType.COMPLIANCE,
+                format=format,
+                output_path=output_path,
+                stats=self._calculate_statistics(findings),
+                compliance_framework=framework,
+                db=db,
+            )
+            
+            return {
+                "success": True,
+                "report_id": report_record.id,
+                "file_path": output_path,
+                "compliance_summary": compliance_summary,
+            }
+            
+        finally:
+            if db:
+                db.close()
+    
+    def list_reports(
+        self,
+        scan_id: Optional[str] = None,
+        db: Optional[Session] = None,
+    ) -> List[Dict]:
+        """List all generated reports."""
+        if db is None:
+            db = SessionLocal()
+        
+        try:
+            query = db.query(Report)
+            if scan_id:
+                query = query.filter(Report.scan_id == scan_id)
+            
+            reports = query.order_by(Report.generated_at.desc()).all()
+            return [r.to_dict() for r in reports]
+            
+        finally:
+            if db:
+                db.close()
+    
+    def get_report(self, report_id: str, db: Optional[Session] = None) -> Optional[Dict]:
+        """Get a specific report by ID."""
+        if db is None:
+            db = SessionLocal()
+        
+        try:
+            report = db.query(Report).filter(Report.id == report_id).first()
+            return report.to_dict() if report else None
+            
+        finally:
+            if db:
+                db.close()
+    
+    def _collect_findings(self, db: Session, scan_id: str) -> List[Dict]:
+        """Collect findings from database."""
+        # This would integrate with your findings database
+        # For now, return mock data
+        return [
+            {
+                "id": "1",
+                "title": "SQL Injection in Login Form",
+                "severity": "critical",
+                "vulnerability_type": "SQL Injection",
+                "description": "The login form is vulnerable to SQL injection attacks.",
+                "proof_of_concept": "' OR 1=1 --",
+                "remediation": "Use parameterized queries",
+                "cvss_score": "9.8",
+                "target": "https://example.com/login",
+            },
+            {
+                "id": "2",
+                "title": "Cross-Site Scripting (XSS)",
+                "severity": "high",
+                "vulnerability_type": "XSS",
+                "description": "Reflected XSS in search parameter",
+                "proof_of_concept": "<script>alert('XSS')</script>",
+                "remediation": "Implement output encoding",
+                "cvss_score": "7.5",
+                "target": "https://example.com/search",
+            },
+        ]
+    
+    def _collect_evidence(self, db: Session, scan_id: str) -> List[Evidence]:
+        """Collect evidence from database."""
+        return db.query(Evidence).filter(Evidence.scan_id == scan_id).all()
+    
+    def _calculate_statistics(self, findings: List[Dict]) -> Dict:
+        """Calculate finding statistics."""
+        stats = {
+            "total": len(findings),
+            "critical": 0,
+            "high": 0,
+            "medium": 0,
+            "low": 0,
+            "info": 0,
+            "overall_risk": "LOW",
+        }
+        
+        cvss_scores = []
+        
+        for f in findings:
+            severity = f.get("severity", "info").lower()
+            if severity in stats:
+                stats[severity] += 1
+            
+            # Collect CVSS scores
+            cvss = f.get("cvss_score")
+            if cvss:
+                try:
+                    cvss_scores.append(float(cvss))
+                except ValueError:
+                    pass
+        
+        # Calculate overall risk
+        if stats["critical"] > 0:
+            stats["overall_risk"] = "CRITICAL"
+        elif stats["high"] > 0:
+            stats["overall_risk"] = "HIGH"
+        elif stats["medium"] > 0:
+            stats["overall_risk"] = "MEDIUM"
+        elif stats["low"] > 0:
+            stats["overall_risk"] = "LOW"
+        
+        # CVSS statistics
+        if cvss_scores:
+            stats["avg_cvss"] = round(sum(cvss_scores) / len(cvss_scores), 1)
+            stats["max_cvss"] = max(cvss_scores)
+        
+        return stats
+    
+    def _generate_executive_summary(self, stats: Dict, company_name: str) -> str:
+        """Generate executive summary text."""
+        risk = stats["overall_risk"]
+        
+        summaries = {
+            "CRITICAL": f"""
+The penetration test of {company_name}'s infrastructure revealed CRITICAL security vulnerabilities 
+that require immediate attention. A total of {stats['total']} findings were identified, including 
+{stats['critical']} critical and {stats['high']} high-severity issues. These vulnerabilities 
+present significant risk to the organization's data and operations. Immediate remediation is strongly 
+recommended.
+""",
+            "HIGH": f"""
+The penetration test of {company_name}'s infrastructure identified HIGH-risk security vulnerabilities. 
+A total of {stats['total']} findings were discovered, including {stats['high']} high-severity issues. 
+These vulnerabilities could lead to unauthorized access and data exposure. Prompt remediation is recommended.
+""",
+            "MEDIUM": f"""
+The penetration test of {company_name}'s infrastructure revealed MODERATE security risks. 
+{stats['total']} findings were identified, primarily medium and low severity. While no critical 
+issues were found, addressing these findings will improve the overall security posture.
+""",
+            "LOW": f"""
+The penetration test of {company_name}'s infrastructure found LOW overall risk. {stats['total']} 
+minor findings were identified, primarily informational. The security posture is generally good, 
+though implementing the recommended improvements will further strengthen defenses.
+""",
+        }
+        
+        return summaries.get(risk, summaries["LOW"])
+    
+    def _get_top_findings(self, findings: List[Dict], limit: int = 10) -> List[Dict]:
+        """Get top findings by severity."""
+        severity_order = {"critical": 0, "high": 1, "medium": 2, "low": 3, "info": 4}
+        
+        sorted_findings = sorted(
+            findings,
+            key=lambda x: severity_order.get(x.get("severity", "info").lower(), 5)
+        )
+        
+        return sorted_findings[:limit]
+    
+    def _get_recommendations(self, findings: List[Dict], timeframe: str) -> List[Dict]:
+        """Get recommendations based on timeframe."""
+        recommendations = {
+            "immediate": [
+                {"title": "Address Critical SQL Injection", "description": "Patch SQL injection vulnerability in login form immediately"},
+                {"title": "Enable WAF Rules", "description": "Deploy Web Application Firewall with SQLi/XSS protection"},
+            ],
+            "short": [
+                {"title": "Security Training", "description": "Conduct secure coding training for development team"},
+                {"title": "Implement Input Validation", "description": "Add comprehensive input validation across all forms"},
+            ],
+            "long": [
+                {"title": "DevSecOps Integration", "description": "Integrate security testing into CI/CD pipeline"},
+                {"title": "Bug Bounty Program", "description": "Consider establishing a bug bounty program"},
+            ],
+        }
+        
+        return recommendations.get(timeframe, [])
+    
+    def _get_compliance_gaps(self, findings: List[Dict]) -> List[Dict]:
+        """Get compliance gaps from findings."""
+        return [
+            {
+                "framework": "OWASP Top 10",
+                "control": "A03:2021 - Injection",
+                "description": "SQL Injection vulnerability found",
+                "priority": "critical",
+            },
+            {
+                "framework": "ISO 27001",
+                "control": "A.8.26 - Application Security",
+                "description": "Input validation insufficient",
+                "priority": "high",
+            },
+        ]
+    
+    def _detect_format(self, output_path: str) -> str:
+        """Detect format from file extension."""
+        ext = Path(output_path).suffix.lower()
+        
+        format_map = {
+            ".pdf": "pdf",
+            ".html": "html",
+            ".docx": "docx",
+            ".json": "json",
+        }
+        
+        return format_map.get(ext, "pdf")
+    
+    def _create_report_record(
+        self,
+        scan_id: str,
+        report_type: ReportType,
+        format: str,
+        output_path: str,
+        stats: Dict,
+        company_name: str = None,
+        compliance_framework: str = None,
+        db: Session = None,
+    ) -> Report:
+        """Create a report database record."""
+        report = Report(
+            id=str(uuid.uuid4()),
+            scan_id=scan_id,
+            report_type=report_type,
+            report_format=ReportFormat(format),
+            status=ReportStatus.COMPLETED,
+            title=f"{report_type.value.title()} Report",
+            company_name=company_name,
+            total_findings=stats.get("total", 0),
+            critical_count=stats.get("critical", 0),
+            high_count=stats.get("high", 0),
+            medium_count=stats.get("medium", 0),
+            low_count=stats.get("low", 0),
+            info_count=stats.get("info", 0),
+            file_path=output_path,
+            file_size=os.path.getsize(output_path) if os.path.exists(output_path) else 0,
+            generated_at=datetime.utcnow(),
+        )
+        
+        if compliance_framework:
+            from reports.models import ComplianceFramework
+            report.compliance_framework = ComplianceFramework(compliance_framework)
+        
+        db.add(report)
+        db.commit()
+        db.refresh(report)
+        
+        return report
