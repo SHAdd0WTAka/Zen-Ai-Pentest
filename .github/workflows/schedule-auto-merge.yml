@@ -21,7 +21,7 @@ jobs:
     steps:
       - name: Check for Dependabot PRs
         id: check
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const prs = await github.rest.pulls.list({
@@ -58,7 +58,7 @@ jobs:
 
       - name: Notify
         if: steps.check.outputs.has_prs == 'true'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             console.log(`Scheduled merge triggered for ${context.steps.check.outputs.count} PRs`);
