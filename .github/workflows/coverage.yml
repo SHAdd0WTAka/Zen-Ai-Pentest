@@ -48,7 +48,7 @@ jobs:
           --cov-report=term \
           --cov-fail-under=10 || true
     - name: Upload to Codecov
-      uses: codecov/codecov-action@v4
+      uses: codecov/codecov-action@v5
       with:
         file: ./coverage.xml
         fail_ci_if_error: false
