@@ -1,0 +1,93 @@
+// ============================================
+// Zen-AI-Pentest Platform - Auth Layout
+// ============================================
+
+import { Outlet } from 'react-router-dom';
+import { Zap, Shield, Brain, Network } from 'lucide-react';
+import { NeuralBackground } from '@/components/custom/NeuralBackground';
+
+export function AuthLayout() {
+  return (
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Neural Network Background */}
+      <NeuralBackground intensity="low" />
+
+      <div className="relative z-10 min-h-screen flex">
+        {/* Left Side - Branding */}
+        <div className="hidden lg:flex lg:w-1/2 xl:w-2/5 bg-gradient-to-br from-primary/10 via-primary/5 to-background flex-col justify-between p-12">
+          <div>
+            <div className="flex items-center gap-3 mb-8">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center">
+                <Zap className="w-7 h-7 text-primary-foreground" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold">Zen-AI-Pentest</h1>
+                <p className="text-sm text-muted-foreground">Intelligent Security Testing</p>
+              </div>
+            </div>
+
+            <div className="space-y-8">
+              <div className="flex items-start gap-4">
+                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <Brain className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-semibold mb-1">AI-Powered Analysis</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Advanced machine learning algorithms detect vulnerabilities with unprecedented accuracy
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-4">
+                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <Network className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-semibold mb-1">Neural Network Mapping</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Visualize your entire infrastructure and identify attack paths
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-4">
+                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <Shield className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-semibold mb-1">Compliance Automation</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Automated compliance checking against industry standards
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="text-sm text-muted-foreground">
+            <p>© 2026 Zen-AI-Pentest. All rights reserved.</p>
+            <p className="mt-1">Secure. Intelligent. Automated.</p>
+          </div>
+        </div>
+
+        {/* Right Side - Auth Form */}
+        <div className="flex-1 flex items-center justify-center p-4 sm:p-8">
+          <div className="w-full max-w-md">
+            {/* Mobile Logo */}
+            <div className="lg:hidden flex items-center justify-center gap-3 mb-8">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center">
+                <Zap className="w-6 h-6 text-primary-foreground" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold">Zen-AI-Pentest</h1>
+              </div>
+            </div>
+
+            <Outlet />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
