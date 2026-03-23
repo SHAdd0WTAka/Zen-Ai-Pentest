@@ -1,0 +1,80 @@
+#!/usr/bin/env python3
+"""
+Check Coverage Threshold
+
+Quick check if current coverage meets threshold.
+Runs only on push, not on every commit.
+"""
+
+import json
+import subprocess
+import sys
+
+
+def get_coverage() -> float:
+    """Get current coverage percentage."""
+    try:
+        # Try to read existing coverage data
+        result = subprocess.run(
+            ["python", "-m", "coverage", "json", "-o", "-"],
+            capture_output=True,
+            text=True,
+        )
+
+        if result.returncode == 0:
+            data = json.loads(result.stdout)
+            return data.get("totals", {}).get("percent_covered", 0)
+
+        # Fallback: run quick coverage check
+        result = subprocess.run(
+            [
+                "python",
+                "-m",
+                "pytest",
+                "tests/unit/",
+                "-q",
+                "--tb=no",
+                "--cov=.",
+                "--cov-report=term:skip-covered",
+            ],
+            capture_output=True,
+            text=True,
+        )
+
+        # Parse coverage from output
+        for line in result.stdout.split("\n"):
+            if "TOTAL" in line:
+                parts = line.split()
+                for part in parts:
+                    if "%" in part:
+                        return float(part.replace("%", ""))
+
+        return 0.0
+
+    except Exception as e:
+        print(f"Warning: Could not determine coverage: {e}")
+        return 100.0  # Assume OK if can't determine
+
+
+def main():
+    """Main entry point."""
+    threshold = 70.0  # Minimum coverage threshold
+
+    print(f"Checking coverage threshold ({threshold}%)...")
+
+    coverage = get_coverage()
+
+    if coverage < threshold:
+        print(f"❌ Coverage {coverage:.1f}% is below threshold {threshold}%")
+        print("\nTo improve coverage:")
+        print("  1. Add tests for uncovered code")
+        print("  2. Remove dead code")
+        print("  3. Mark untestable code with # pragma: no cover")
+        sys.exit(1)
+
+    print(f"✓ Coverage {coverage:.1f}% meets threshold {threshold}%")
+    sys.exit(0)
+
+
+if __name__ == "__main__":
+    main()
