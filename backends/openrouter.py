@@ -112,9 +112,7 @@ class OpenRouterBackend:
         try:
             # Try a simple request
             headers = {"Authorization": f"Bearer {self.api_key}"}
-            async with self.session.get(
-                "https://openrouter.ai/api/v1/auth/key", headers=headers
-            ) as resp:
+            async with self.session.get("https://openrouter.ai/api/v1/auth/key", headers=headers) as resp:
                 return resp.status == 200
         except Exception:
             return False
