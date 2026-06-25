@@ -1,0 +1,259 @@
+import json
+import os
+import tempfile
+from pathlib import Path
+from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
+
+from core.vault_manager import (
+    SecureVaultManager,
+    SecurityError,
+    VaultConfig,
+    get_vault_manager,
+)
+
+
+class TestVaultConfig:
+    def test_defaults(self):
+        config = VaultConfig()
+        assert "obsidian-vault" in str(config.vault_path)
+        assert ".secure" in str(config.encrypted_vault_path)
+        assert ".config/gh" in str(config.github_config_path)
+
+    def test_custom_paths(self):
+        config = VaultConfig(
+            vault_path=Path("/tmp/custom-vault"),
+            encrypted_vault_path=Path("/tmp/custom-vault.enc"),
+            key_file=Path("/tmp/custom.key"),
+        )
+        assert config.vault_path == Path("/tmp/custom-vault")
+        assert config.encrypted_vault_path == Path("/tmp/custom-vault.enc")
+        assert config.key_file == Path("/tmp/custom.key")
+
+
+class TestSecureVaultManagerInit:
+    def test_init_default_config(self):
+        vm = SecureVaultManager()
+        assert vm._master_key is None
+        assert vm._fernet is None
+        assert vm._is_unlocked is False
+
+    def test_init_custom_config(self):
+        config = VaultConfig(vault_path=Path("/tmp/test-vault"))
+        vm = SecureVaultManager(config=config)
+        assert vm.config.vault_path == Path("/tmp/test-vault")
+
+    def test_is_unlocked_initially_false(self):
+        vm = SecureVaultManager()
+        assert vm.is_unlocked() is False
+
+
+class TestSecureVaultManagerCredentials:
+    def test_get_credential_raises_when_locked(self):
+        vm = SecureVaultManager()
+        with pytest.raises(SecurityError, match="Vault is locked"):
+            vm.get_credential("test_key")
+
+    def test_store_credential_raises_when_locked(self):
+        vm = SecureVaultManager()
+        with pytest.raises(SecurityError, match="Vault is locked"):
+            vm.store_credential("test_key", "test_value")
+
+    def test_get_credential_returns_none_when_no_file(self, tmp_path):
+        config = VaultConfig(vault_path=tmp_path)
+        vm = SecureVaultManager(config=config)
+        vm._is_unlocked = True
+        result = vm.get_credential("nonexistent")
+        assert result is None
+
+    def test_store_and_get_credential(self, tmp_path):
+        config = VaultConfig(vault_path=tmp_path)
+        vm = SecureVaultManager(config=config)
+        vm._is_unlocked = True
+        vm.store_credential("api_key", "secret-123")
+        result = vm.get_credential("api_key")
+        assert result == "secret-123"
+
+    def test_get_credential_nonexistent_key(self, tmp_path):
+        config = VaultConfig(vault_path=tmp_path)
+        vm = SecureVaultManager(config=config)
+        vm._is_unlocked = True
+        vm.store_credential("key1", "val1")
+        assert vm.get_credential("key2") is None
+
+    def test_store_credential_updates_existing(self, tmp_path):
+        config = VaultConfig(vault_path=tmp_path)
+        vm = SecureVaultManager(config=config)
+        vm._is_unlocked = True
+        vm.store_credential("api_key", "old-value")
+        vm.store_credential("api_key", "new-value")
+        assert vm.get_credential("api_key") == "new-value"
+
+
+class TestSecureVaultManagerKeyDerivation:
+    def test_derive_key_returns_bytes(self):
+        vm = SecureVaultManager()
+        salt = os.urandom(16)
+        key = vm._derive_key("test-password", salt)
+        assert isinstance(key, bytes)
+        assert len(key) > 0
+
+    def test_derive_key_deterministic(self):
+        vm = SecureVaultManager()
+        salt = os.urandom(16)
+        key1 = vm._derive_key("same-password", salt)
+        key2 = vm._derive_key("same-password", salt)
+        assert key1 == key2
+
+    def test_derive_key_different_salts(self):
+        vm = SecureVaultManager()
+        key1 = vm._derive_key("password", os.urandom(16))
+        key2 = vm._derive_key("password", os.urandom(16))
+        assert key1 != key2
+
+
+class TestSecureVaultManagerEncryptDecrypt:
+    @pytest.mark.asyncio
+    async def test_decrypt_nonexistent_vault_creates_new(self):
+        with tempfile.TemporaryDirectory() as td:
+            enc_path = Path(td) / "nonexistent.enc"
+            config = VaultConfig(
+                vault_path=Path(td) / "vault",
+                encrypted_vault_path=enc_path,
+            )
+            vm = SecureVaultManager(config=config)
+            result = await vm.decrypt_vault("test-auth-token")
+            assert result is True
+            assert enc_path.exists()
+
+    @pytest.mark.asyncio
+    async def test_encrypt_from_unlocked_state(self):
+        with tempfile.TemporaryDirectory() as td:
+            vault_dir = Path(td) / "vault"
+            vault_dir.mkdir()
+            enc_path = Path(td) / "vault.enc"
+
+            test_file = vault_dir / "notes.md"
+            test_file.write_text("Secret notes")
+
+            config = VaultConfig(vault_path=vault_dir, encrypted_vault_path=enc_path)
+            vm = SecureVaultManager(config=config)
+
+            await vm.decrypt_vault("auth-token")
+            vm._is_unlocked = True
+
+            encrypt_result = await vm.encrypt_vault()
+            assert encrypt_result is True
+            assert vm._is_unlocked is False
+            assert enc_path.exists()
+
+    @pytest.mark.asyncio
+    async def test_decrypt_vault_with_wrong_token_fails(self):
+        with tempfile.TemporaryDirectory() as td:
+            enc_path = Path(td) / "vault.enc"
+            vault_dir = Path(td) / "vault"
+
+            config = VaultConfig(vault_path=vault_dir, encrypted_vault_path=enc_path)
+            vm = SecureVaultManager(config=config)
+            await vm.decrypt_vault("real-token")
+            vm._is_unlocked = True
+            await vm.encrypt_vault()
+
+            vm2 = SecureVaultManager(config=config)
+            result = await vm2.decrypt_vault("wrong-token")
+            assert result is False
+
+    @pytest.mark.asyncio
+    async def test_decrypt_vault_corrupted_data(self):
+        with tempfile.TemporaryDirectory() as td:
+            enc_path = Path(td) / "vault.enc"
+            enc_path.write_text("not-json-data")
+
+            config = VaultConfig(vault_path=Path(td) / "vault", encrypted_vault_path=enc_path)
+            vm = SecureVaultManager(config=config)
+            result = await vm.decrypt_vault("auth-token")
+            assert result is False
+
+
+class TestSecureVaultManagerEncryptEdgeCases:
+    @pytest.mark.asyncio
+    async def test_encrypt_without_fernet_key(self):
+        vm = SecureVaultManager()
+        vm._is_unlocked = True
+        vm._fernet = None
+        result = await vm.encrypt_vault()
+        assert result is False
+
+    @pytest.mark.asyncio
+    async def test_encrypt_when_locked(self):
+        vm = SecureVaultManager()
+        vm._is_unlocked = False
+        result = await vm.encrypt_vault()
+        assert result is True
+
+    @pytest.mark.asyncio
+    async def test_encrypt_non_existent_vault_dir(self):
+        with tempfile.TemporaryDirectory() as td:
+            config = VaultConfig(
+                vault_path=Path(td) / "nonexistent-vault",
+                encrypted_vault_path=Path(td) / "vault.enc",
+            )
+            vm = SecureVaultManager(config=config)
+            await vm.decrypt_vault("auth-token")
+            vm._is_unlocked = True
+            result = await vm.encrypt_vault()
+            assert result is True
+
+
+class TestSecureVaultManagerGithubCLI:
+    @pytest.mark.asyncio
+    async def test_setup_github_cli_no_gh_binary(self):
+        vm = SecureVaultManager()
+        with patch("shutil.which", return_value=None):
+            result = await vm.setup_github_cli("fake-token")
+        assert result is False
+
+    @pytest.mark.asyncio
+    async def test_setup_github_cli_success(self):
+        vm = SecureVaultManager()
+        mock_result = MagicMock()
+        mock_result.returncode = 0
+        with (
+            patch("shutil.which", return_value="/usr/bin/gh"),
+            patch("subprocess.run", return_value=mock_result),
+        ):
+            result = await vm.setup_github_cli("fake-token")
+        assert result is True
+
+    @pytest.mark.asyncio
+    async def test_setup_github_cli_failure(self):
+        vm = SecureVaultManager()
+        mock_result = MagicMock()
+        mock_result.returncode = 1
+        with (
+            patch("shutil.which", return_value="/usr/bin/gh"),
+            patch("subprocess.run", return_value=mock_result),
+        ):
+            result = await vm.setup_github_cli("invalid-token")
+        assert result is False
+
+    @pytest.mark.asyncio
+    async def test_logout_github_cli(self):
+        vm = SecureVaultManager()
+        with (
+            patch("shutil.which", return_value="/usr/bin/gh"),
+            patch("subprocess.run"),
+        ):
+            await vm.logout_github_cli()
+
+
+class TestGetVaultManager:
+    def test_returns_singleton(self):
+        vm1 = get_vault_manager()
+        vm2 = get_vault_manager()
+        assert vm1 is vm2
+
+    def test_returns_secure_vault_manager(self):
+        vm = get_vault_manager()
+        assert isinstance(vm, SecureVaultManager)
