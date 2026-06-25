@@ -16,7 +16,11 @@ class TestFunctionalTools:
     def test_nmap_functions_exist(self):
         from tools import nmap_integration
 
-        funcs = [x for x in dir(nmap_integration) if callable(getattr(nmap_integration, x)) and not x.startswith("_")]
+        funcs = [
+            x
+            for x in dir(nmap_integration)
+            if callable(getattr(nmap_integration, x)) and not x.startswith("_")
+        ]
         assert len(funcs) > 0
 
 

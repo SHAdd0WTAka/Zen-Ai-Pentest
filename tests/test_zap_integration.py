@@ -230,7 +230,9 @@ class TestParseAlerts:
         """Test parsing alerts from API response"""
         scanner = ZAPScanner(target="http://example.com")
 
-        with patch.object(scanner, "_api_request", new_callable=AsyncMock) as mock_api:
+        with patch.object(
+            scanner, "_api_request", new_callable=AsyncMock
+        ) as mock_api:
             mock_api.return_value = SAMPLE_ALERTS_RESPONSE
             alerts = await scanner.get_alerts()
 
@@ -243,7 +245,9 @@ class TestParseAlerts:
         """Test parsing empty alerts response"""
         scanner = ZAPScanner(target="http://example.com")
 
-        with patch.object(scanner, "_api_request", new_callable=AsyncMock) as mock_api:
+        with patch.object(
+            scanner, "_api_request", new_callable=AsyncMock
+        ) as mock_api:
             mock_api.return_value = {"alerts": []}
             alerts = await scanner.get_alerts()
 
@@ -254,7 +258,9 @@ class TestParseAlerts:
         """Test parsing alerts with base URL filter"""
         scanner = ZAPScanner(target="http://example.com")
 
-        with patch.object(scanner, "_api_request", new_callable=AsyncMock) as mock_api:
+        with patch.object(
+            scanner, "_api_request", new_callable=AsyncMock
+        ) as mock_api:
             mock_api.return_value = SAMPLE_ALERTS_RESPONSE
             alerts = await scanner.get_alerts(base_url="http://example.com/")
 
@@ -330,7 +336,9 @@ class TestReferenceParsing:
     def test_parse_multiple_references(self):
         """Test parsing multiple references"""
         scanner = ZAPScanner(target="http://example.com")
-        refs = scanner._parse_references("https://owasp.org/test https://cwe.mitre.org/79")
+        refs = scanner._parse_references(
+            "https://owasp.org/test https://cwe.mitre.org/79"
+        )
         assert "https://owasp.org/test" in refs
         assert "https://cwe.mitre.org/79" in refs
 
@@ -343,7 +351,9 @@ class TestReferenceParsing:
     def test_parse_multiline_reference(self):
         """Test parsing multiline references"""
         scanner = ZAPScanner(target="http://example.com")
-        refs = scanner._parse_references("https://owasp.org/test\nhttps://example.com/ref")
+        refs = scanner._parse_references(
+            "https://owasp.org/test\nhttps://example.com/ref"
+        )
         assert len(refs) == 2
 
 
@@ -380,7 +390,9 @@ class TestProgressCallbacks:
         def progress_callback(progress):
             progress_values.append(progress)
 
-        with patch.object(scanner, "_api_request", new_callable=AsyncMock) as mock_api:
+        with patch.object(
+            scanner, "_api_request", new_callable=AsyncMock
+        ) as mock_api:
             # Simulate progress
             mock_api.side_effect = [
                 SAMPLE_SCAN_ID_RESPONSE,  # Start scan
@@ -392,7 +404,9 @@ class TestProgressCallbacks:
             # Mock the spider scan completion
             with patch("asyncio.sleep", new_callable=AsyncMock):
                 try:
-                    await scanner.spider_scan(progress_callback=progress_callback)
+                    await scanner.spider_scan(
+                        progress_callback=progress_callback
+                    )
                 except Exception:
                     pass  # We expect this due to mocked responses
 
@@ -471,7 +485,9 @@ class TestErrorHandling:
             api_url="http://invalid:9999",
         )
 
-        with patch.object(scanner, "_api_request", new_callable=AsyncMock) as mock_api:
+        with patch.object(
+            scanner, "_api_request", new_callable=AsyncMock
+        ) as mock_api:
             mock_api.side_effect = RuntimeError("Connection refused")
 
             result = await scanner.scan()

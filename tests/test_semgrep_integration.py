@@ -38,7 +38,9 @@ SAMPLE_SEMGREP_OUTPUT = {
                 "confidence": "HIGH",
                 "lines": "result = eval(user_input)",
                 "metadata": {
-                    "cwe": ["CWE-95: Improper Neutralization of Directives in Dynamically Evaluated Code ('Eval Injection')"],
+                    "cwe": [
+                        "CWE-95: Improper Neutralization of Directives in Dynamically Evaluated Code ('Eval Injection')"
+                    ],
                     "owasp": ["A03:2021 - Injection"],
                     "references": [
                         "https://owasp.org/Top10/A03_2021-Injection",
@@ -63,7 +65,9 @@ SAMPLE_SEMGREP_OUTPUT = {
                 "confidence": "MEDIUM",
                 "lines": "const file = path.join(__dirname, req.query.file);",
                 "metadata": {
-                    "cwe": ["CWE-22: Improper Limitation of a Pathname to a Restricted Directory ('Path Traversal')"],
+                    "cwe": [
+                        "CWE-22: Improper Limitation of a Pathname to a Restricted Directory ('Path Traversal')"
+                    ],
                     "owasp": ["A01:2021 - Broken Access Control"],
                     "category": "security",
                     "technology": ["javascript"],
@@ -264,7 +268,9 @@ class TestCommandBuilding:
     def test_build_command_with_configs(self, mock_which):
         """Test command with multiple configs"""
         mock_which.return_value = "/usr/bin/semgrep"
-        scanner = SemgrepScanner(config=["p/security-audit", "p/owasp-top-ten"])
+        scanner = SemgrepScanner(
+            config=["p/security-audit", "p/owasp-top-ten"]
+        )
         cmd = scanner._build_command("/path/to/code")
 
         assert "--config" in cmd
@@ -326,7 +332,10 @@ class TestFindingParsing:
         findings = scanner._parse_findings(SAMPLE_SEMGREP_OUTPUT)
 
         assert len(findings) == 2
-        assert findings[0].check_id == "python.lang.security.audit.dangerous-eval-string"
+        assert (
+            findings[0].check_id
+            == "python.lang.security.audit.dangerous-eval-string"
+        )
         assert findings[0].severity == "ERROR"
         assert findings[0].metadata.get("cwe") is not None
 
@@ -384,7 +393,9 @@ class TestAsyncScanning:
         mock_result.stdout = json.dumps(SAMPLE_SEMGREP_OUTPUT)
         mock_result.stderr = ""
 
-        with patch.object(scanner, "_run_subprocess", return_value=mock_result):
+        with patch.object(
+            scanner, "_run_subprocess", return_value=mock_result
+        ):
             with patch("pathlib.Path.exists", return_value=True):
                 result = await scanner.scan("/path/to/code")
 
@@ -412,7 +423,9 @@ class TestAsyncScanning:
         mock_which.return_value = "/usr/bin/semgrep"
         scanner = SemgrepScanner()
 
-        with patch.object(scanner, "_run_subprocess", side_effect=asyncio.TimeoutError):
+        with patch.object(
+            scanner, "_run_subprocess", side_effect=asyncio.TimeoutError
+        ):
             with patch("pathlib.Path.exists", return_value=True):
                 result = await scanner.scan("/path/to/code")
 
@@ -431,9 +444,13 @@ class TestAsyncScanning:
         mock_result.stdout = json.dumps(SAMPLE_SEMGREP_OUTPUT)
         mock_result.stderr = ""
 
-        with patch.object(scanner, "_run_subprocess", return_value=mock_result):
+        with patch.object(
+            scanner, "_run_subprocess", return_value=mock_result
+        ):
             with patch("pathlib.Path.exists", return_value=True):
-                result = await scanner.scan("/path/to/code", custom_config=["p/owasp-top-ten"])
+                result = await scanner.scan(
+                    "/path/to/code", custom_config=["p/owasp-top-ten"]
+                )
 
                 assert result.success is True
 

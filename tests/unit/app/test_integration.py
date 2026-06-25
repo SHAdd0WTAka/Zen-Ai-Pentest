@@ -67,7 +67,9 @@ class TestDependencyContainer:
             call_count += 1
             return {"id": call_count}
 
-        container.register_factory("singleton", create_singleton, singleton=True)
+        container.register_factory(
+            "singleton", create_singleton, singleton=True
+        )
 
         # First resolve creates instance
         s1 = container.resolve("singleton")

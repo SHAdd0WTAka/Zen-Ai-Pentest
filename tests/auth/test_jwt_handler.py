@@ -19,7 +19,9 @@ class TestJWTHandler:
         from auth.jwt_handler import JWTHandler
 
         handler = JWTHandler()
-        token = handler.create_access_token(user_id="testuser", roles=["admin"], permissions=["read", "write"])
+        token = handler.create_access_token(
+            user_id="testuser", roles=["admin"], permissions=["read", "write"]
+        )
 
         assert token is not None
         assert isinstance(token, str)
@@ -29,7 +31,9 @@ class TestJWTHandler:
         from auth.jwt_handler import JWTHandler
 
         handler = JWTHandler()
-        token = handler.create_refresh_token(user_id="testuser", session_id="session123")
+        token = handler.create_refresh_token(
+            user_id="testuser", session_id="session123"
+        )
 
         assert token is not None
         assert isinstance(token, str)
@@ -39,7 +43,9 @@ class TestJWTHandler:
         from auth.jwt_handler import JWTHandler
 
         handler = JWTHandler()
-        token = handler.create_access_token(user_id="testuser", roles=["admin"], permissions=["read"])
+        token = handler.create_access_token(
+            user_id="testuser", roles=["admin"], permissions=["read"]
+        )
 
         payload = handler.decode_token(token)
 
@@ -62,7 +68,9 @@ class TestJWTHandler:
 
         handler = JWTHandler()
         # Create token with very short expiry (if supported)
-        token = handler.create_access_token(user_id="testuser", roles=["admin"], permissions=["read"])
+        token = handler.create_access_token(
+            user_id="testuser", roles=["admin"], permissions=["read"]
+        )
 
         # Token should be valid initially
         payload = handler.decode_token(token)
@@ -85,7 +93,9 @@ class TestTokenBlacklist:
         from auth.jwt_handler import JWTHandler
 
         handler = JWTHandler()
-        token = handler.create_access_token(user_id="testuser", roles=["admin"], permissions=["read"])
+        token = handler.create_access_token(
+            user_id="testuser", roles=["admin"], permissions=["read"]
+        )
 
         # Decode to get JTI
         payload = handler.decode_token(token)

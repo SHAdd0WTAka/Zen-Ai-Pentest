@@ -10,7 +10,9 @@ from unittest.mock import Mock
 
 import pytest
 
-sys.path.insert(0, "C:\\Users\\Ataka\\source\\repos\\SHAdd0WTAka\\Zen-Ai-Pentest")
+sys.path.insert(
+    0, "C:\\Users\\Ataka\\source\\repos\\SHAdd0WTAka\\Zen-Ai-Pentest"
+)
 
 os.environ["JWT_SECRET_KEY"] = "test-secret-key"
 

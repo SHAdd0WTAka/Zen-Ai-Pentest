@@ -166,7 +166,9 @@ class TestAuditLogger:
     @pytest.fixture
     async def logger(self):
         """Create test logger"""
-        config = AuditConfig(async_logging=False, sign_logs=True)  # Synchronous for tests
+        config = AuditConfig(
+            async_logging=False, sign_logs=True
+        )  # Synchronous for tests
         logger = AuditLogger(config)
         await logger.start()
         yield logger
@@ -192,22 +194,34 @@ class TestAuditLogger:
     async def test_convenience_methods(self, logger):
         """Test convenience logging methods"""
         # Test all levels
-        debug_entry = await logger.debug(EventCategory.SYSTEM, "debug_test", "Debug message")
+        debug_entry = await logger.debug(
+            EventCategory.SYSTEM, "debug_test", "Debug message"
+        )
         assert debug_entry.level == "debug"
 
-        info_entry = await logger.info(EventCategory.SYSTEM, "info_test", "Info message")
+        info_entry = await logger.info(
+            EventCategory.SYSTEM, "info_test", "Info message"
+        )
         assert info_entry.level == "info"
 
-        warning_entry = await logger.warning(EventCategory.SYSTEM, "warning_test", "Warning message")
+        warning_entry = await logger.warning(
+            EventCategory.SYSTEM, "warning_test", "Warning message"
+        )
         assert warning_entry.level == "warning"
 
-        error_entry = await logger.error(EventCategory.SYSTEM, "error_test", "Error message")
+        error_entry = await logger.error(
+            EventCategory.SYSTEM, "error_test", "Error message"
+        )
         assert error_entry.level == "error"
 
-        critical_entry = await logger.critical(EventCategory.SYSTEM, "critical_test", "Critical message")
+        critical_entry = await logger.critical(
+            EventCategory.SYSTEM, "critical_test", "Critical message"
+        )
         assert critical_entry.level == "critical"
 
-        security_entry = await logger.security("security_test", "Security message")
+        security_entry = await logger.security(
+            "security_test", "Security message"
+        )
         assert security_entry.level == "alert"
         assert security_entry.category == "security"
 
@@ -215,8 +229,12 @@ class TestAuditLogger:
     async def test_query_logs(self, logger):
         """Test querying logs"""
         # Create some entries
-        await logger.info(EventCategory.SYSTEM, "test1", "Message 1", user_id="user1")
-        await logger.info(EventCategory.SYSTEM, "test2", "Message 2", user_id="user2")
+        await logger.info(
+            EventCategory.SYSTEM, "test1", "Message 1", user_id="user1"
+        )
+        await logger.info(
+            EventCategory.SYSTEM, "test2", "Message 2", user_id="user2"
+        )
         await logger.warning(EventCategory.SECURITY, "test3", "Message 3")
 
         # Query all
@@ -313,10 +331,15 @@ class TestAuditConfig:
         from audit.config import RetentionPolicy
 
         # Critical logs should be permanent
-        assert config.retention_policies[LogLevel.CRITICAL] == RetentionPolicy.PERMANENT
+        assert (
+            config.retention_policies[LogLevel.CRITICAL]
+            == RetentionPolicy.PERMANENT
+        )
 
         # Debug logs should be short
-        assert config.retention_policies[LogLevel.DEBUG] == RetentionPolicy.SHORT
+        assert (
+            config.retention_policies[LogLevel.DEBUG] == RetentionPolicy.SHORT
+        )
 
 
 # Run tests
